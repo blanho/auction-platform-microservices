@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+option csharp_namespace = "BidService.API.Grpc";
+
+package bids;
+
+service BidGrpc {
+  rpc GetHighestBid (GetHighestBidRequest) returns (BidResponse);
+  rpc GetBidsForAuction (GetBidsForAuctionRequest) returns (BidListResponse);
+  rpc HasUserBidOnAuction (HasUserBidRequest) returns (HasUserBidResponse);
+  rpc GetBidStats (GetBidStatsRequest) returns (BidStatsResponse);
+  rpc GetTopBidders (GetTopBiddersRequest) returns (TopBiddersResponse);
+}
+
+message GetHighestBidRequest {
+  string auction_id = 1;
+}
+
+message GetBidsForAuctionRequest {
+  string auction_id = 1;
+}
+
+message HasUserBidRequest {
+  string auction_id = 1;
+  string bidder = 2;
+}
+
+message BidResponse {
+  string id = 1;
+  string auction_id = 2;
+  string bidder = 3;
+  double amount = 4;
+  string bid_time = 5;
+  string status = 6;
+}
+
+message BidListResponse {
+  repeated BidResponse bids = 1;
+  int32 total_count = 2;
+}
+
+message HasUserBidResponse {
+  bool has_bid = 1;
+  BidResponse highest_bid = 2;
+}
+
+message GetBidStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message BidStatsResponse {
+  int32 total_bids = 1;
+  int32 unique_bidders = 2;
+  double total_bid_amount = 3;
+  double average_bid_amount = 4;
+  int32 bids_today = 5;
+  int32 bids_this_week = 6;
+  int32 bids_this_month = 7;
+  repeated DailyBidStat daily_stats = 8;
+}
+
+message DailyBidStat {
+  string date = 1;
+  int32 bid_count = 2;
+  double total_amount = 3;
+}
+
+message GetTopBiddersRequest {
+  int32 limit = 1;
+  string period = 2;
+}
+
+message TopBiddersResponse {
+  repeated TopBidder bidders = 1;
+}
+
+message TopBidder {
+  string bidder_id = 1;
+  string username = 2;
+  int32 bid_count = 3;
+  double total_amount = 4;
+  int32 auctions_won = 5;
+}

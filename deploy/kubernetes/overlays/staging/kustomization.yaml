@@ -1,0 +1,76 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: auction-platform-staging
+
+resources:
+  - ../../base
+
+namePrefix: staging-
+
+commonLabels:
+  environment: staging
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      labelSelector: tier=backend
+  - patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 5
+    target:
+      kind: HorizontalPodAutoscaler
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 512Mi
+    target:
+      kind: Deployment
+      labelSelector: tier=backend
+
+configMapGenerator:
+  - name: auction-platform-config
+    behavior: merge
+    literals:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - LOG_LEVEL=Information
+
+secretGenerator:
+  - name: auction-platform-secrets
+    behavior: merge
+    literals:
+      - POSTGRES_USER=staging_user
+      - POSTGRES_PASSWORD=staging_password_change_me
+      - REDIS_PASSWORD=staging_redis_password
+      - RABBITMQ_USER=staging_rabbit
+      - RABBITMQ_PASSWORD=staging_rabbit_password
+      - JWT_SECRET=staging_jwt_secret_32_chars_minimum
+
+images:
+  - name: auction-platform/auction-api
+    newTag: staging
+  - name: auction-platform/bidding-api
+    newTag: staging
+  - name: auction-platform/payment-api
+    newTag: staging
+  - name: auction-platform/notification-api
+    newTag: staging
+  - name: auction-platform/storage-api
+    newTag: staging
+  - name: auction-platform/identity-api
+    newTag: staging
+  - name: auction-platform/analytics-api
+    newTag: staging
+  - name: auction-platform/gateway-api
+    newTag: staging

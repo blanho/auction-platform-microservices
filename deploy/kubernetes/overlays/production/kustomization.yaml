@@ -1,0 +1,88 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: auction-platform
+
+resources:
+  - ../../base
+
+commonLabels:
+  environment: production
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      labelSelector: app=gateway-api
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      labelSelector: app=bidding-api
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 200m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+    target:
+      kind: Deployment
+      labelSelector: tier=backend
+  - patch: |-
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 100Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 4Gi
+    target:
+      kind: StatefulSet
+      name: postgres
+
+configMapGenerator:
+  - name: auction-platform-config
+    behavior: merge
+    literals:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - LOG_LEVEL=Warning
+
+images:
+  - name: auction-platform/auction-api
+    newName: ghcr.io/your-org/auction-api
+    newTag: v1.0.0
+  - name: auction-platform/bidding-api
+    newName: ghcr.io/your-org/bidding-api
+    newTag: v1.0.0
+  - name: auction-platform/payment-api
+    newName: ghcr.io/your-org/payment-api
+    newTag: v1.0.0
+  - name: auction-platform/notification-api
+    newName: ghcr.io/your-org/notification-api
+    newTag: v1.0.0
+  - name: auction-platform/storage-api
+    newName: ghcr.io/your-org/storage-api
+    newTag: v1.0.0
+  - name: auction-platform/identity-api
+    newName: ghcr.io/your-org/identity-api
+    newTag: v1.0.0
+  - name: auction-platform/analytics-api
+    newName: ghcr.io/your-org/analytics-api
+    newTag: v1.0.0
+  - name: auction-platform/gateway-api
+    newName: ghcr.io/your-org/gateway-api
+    newTag: v1.0.0

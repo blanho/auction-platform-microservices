@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build AuctionService API",
+			"type": "shell",
+			"command": "dotnet build AuctionService/API/AuctionService.API.csproj",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run AuctionService API",
+			"type": "shell",
+			"command": "dotnet run --project AuctionService/API/AuctionService.API.csproj",
+			"isBackground": true,
+			"group": "test"
+		}
+	]
+}

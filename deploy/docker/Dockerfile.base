@@ -1,0 +1,84 @@
+# Base Dockerfile template for all .NET services
+# This is a reference - actual Dockerfiles are in each service's folder
+
+# ==============================================================================
+# STAGE 1: Build
+# ==============================================================================
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+WORKDIR /src
+
+# Install tools needed for build
+RUN apk add --no-cache git
+
+# Copy Directory.Build.props and global configs first (for caching)
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
+COPY ["*.sln", "./"]
+
+# Copy all project files for restore (enables better layer caching)
+COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
+
+# Service-specific project files (to be customized per service)
+# COPY ["src/Services/{Service}/{Service}.Domain/{Service}.Domain.csproj", "src/Services/{Service}/{Service}.Domain/"]
+# COPY ["src/Services/{Service}/{Service}.Application/{Service}.Application.csproj", "src/Services/{Service}/{Service}.Application/"]
+# COPY ["src/Services/{Service}/{Service}.Infrastructure/{Service}.Infrastructure.csproj", "src/Services/{Service}/{Service}.Infrastructure/"]
+# COPY ["src/Services/{Service}/{Service}.Api/{Service}.Api.csproj", "src/Services/{Service}/{Service}.Api/"]
+# COPY ["src/Services/{Service}/{Service}.Contracts/{Service}.Contracts.csproj", "src/Services/{Service}/{Service}.Contracts/"]
+
+# Restore dependencies
+# RUN dotnet restore "src/Services/{Service}/{Service}.Api/{Service}.Api.csproj" --runtime linux-musl-x64
+
+# Copy source code
+COPY . .
+
+# Build and publish
+# WORKDIR "/src/src/Services/{Service}/{Service}.Api"
+# RUN dotnet publish "{Service}.Api.csproj" \
+#     -c Release \
+#     -o /app/publish \
+#     --no-restore \
+#     --runtime linux-musl-x64 \
+#     --self-contained false \
+#     /p:PublishTrimmed=false
+
+# ==============================================================================
+# STAGE 2: Runtime
+# ==============================================================================
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+WORKDIR /app
+
+# Security: Run as non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -s /bin/sh -D appuser
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    curl \
+    tzdata \
+    icu-libs
+
+# Set environment variables
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    ASPNETCORE_URLS=http://+:8080 \
+    ASPNETCORE_ENVIRONMENT=Production
+
+# Expose ports
+EXPOSE 8080
+EXPOSE 8081
+
+# Copy published app
+# COPY --from=build /app/publish .
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Switch to non-root user
+USER appuser
+
+# ENTRYPOINT ["dotnet", "{Service}.Api.dll"]

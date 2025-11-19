@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BuildingBlocks.Application</RootNamespace>
+    <AssemblyName>BuildingBlocks.Application</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- 
+    BuildingBlocks.Application contains:
+    - CQRS abstractions (ICommand, IQuery, ICommandHandler, IQueryHandler)
+    - MediatR behaviors (Validation, Logging, Transaction)
+    - Result pattern types
+    - Application-level interfaces
+    
+    Dependencies: BuildingBlocks.Domain only
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
+    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

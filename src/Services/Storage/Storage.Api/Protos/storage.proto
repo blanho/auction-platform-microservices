@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+option csharp_namespace = "Storage.Api.Protos";
+
+package storage;
+
+service StorageGrpc {
+  rpc Upload (stream UploadRequest) returns (UploadResponse);
+  rpc ConfirmFile (ConfirmFileRequest) returns (ConfirmFileResponse);
+  rpc ConfirmFiles (ConfirmFilesRequest) returns (ConfirmFilesResponse);
+  rpc GetMetadata (GetMetadataRequest) returns (FileMetadataResponse);
+  rpc GetFilesByEntity (GetFilesByEntityRequest) returns (FilesResponse);
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+}
+
+message UploadRequest {
+  oneof data {
+    FileInfo file_info = 1;
+    bytes chunk = 2;
+  }
+}
+
+message FileInfo {
+  string file_name = 1;
+  string content_type = 2;
+  string uploaded_by = 3;
+}
+
+message UploadResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_name = 3;
+  string url = 4;
+  string error = 5;
+}
+
+message ConfirmFileRequest {
+  string file_id = 1;
+  string entity_id = 2;
+  string entity_type = 3;
+  map<string, string> tags = 4;
+}
+
+message ConfirmFileResponse {
+  bool success = 1;
+  FileMetadataResponse metadata = 2;
+  string error = 3;
+}
+
+message ConfirmFilesRequest {
+  repeated ConfirmFileRequest files = 1;
+}
+
+message ConfirmFilesResponse {
+  bool success = 1;
+  repeated FileMetadataResponse files = 2;
+  repeated string errors = 3;
+}
+
+message GetMetadataRequest {
+  string file_id = 1;
+}
+
+message GetFilesByEntityRequest {
+  string entity_type = 1;
+  string entity_id = 2;
+}
+
+message FilesResponse {
+  repeated FileMetadataResponse files = 1;
+}
+
+message FileMetadataResponse {
+  string id = 1;
+  string file_name = 2;
+  string original_file_name = 3;
+  string content_type = 4;
+  int64 size = 5;
+  string path = 6;
+  string url = 7;
+  string status = 8;
+  string entity_id = 9;
+  string entity_type = 10;
+  string uploaded_by = 11;
+  string created_at = 12;
+  string confirmed_at = 13;
+}
+
+message DeleteFileRequest {
+  string file_id = 1;
+}
+
+message DeleteFileResponse {
+  bool success = 1;
+  string error = 2;
+}

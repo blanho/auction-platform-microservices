@@ -1,0 +1,12 @@
+global using BuildingBlocks.Application.Abstractions;
+global using BuildingBlocks.Application.Abstractions.Messaging;
+global using BuildingBlocks.Application.Constants;
+global using BuildingBlocks.Infrastructure.Caching;
+global using BuildingBlocks.Infrastructure.Repository;
+global using Payment.Application.Interfaces;
+global using Payment.Domain.Entities;
+global using Payment.Domain.Enums;
+global using Microsoft.Extensions.Logging;
+global using AuctionService.Contracts.Events;
+global using BidService.Contracts.Events;
+global using Orchestration.Sagas.BuyNow.Events;

@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BuildingBlocks.Infrastructure</RootNamespace>
+    <AssemblyName>BuildingBlocks.Infrastructure</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- 
+    BuildingBlocks.Infrastructure contains:
+    - Data: Repository base classes, EF Core extensions, Unit of Work
+    - Caching: Redis abstractions and implementations
+    - Locking: Distributed locking (RedLock)
+    - Messaging: MassTransit configuration, consumers base
+    - Logging: Serilog configuration
+    - Observability: OpenTelemetry setup
+    - Scheduling: Quartz.NET configuration
+    - Storage: Blob storage abstractions
+    - Audit: Audit logging
+    - Localization: Resource management
+    
+    This is the largest BuildingBlock - all infrastructure concerns consolidated
+  -->
+
+  <ItemGroup>
+    <!-- Entity Framework -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+    
+    <!-- Messaging -->
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
+    
+    <!-- Caching -->
+    <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
+    
+    <!-- Locking -->
+    <PackageReference Include="RedLock.net" Version="2.3.2" />
+    
+    <!-- Logging & Observability -->
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
+    
+    <!-- gRPC -->
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.70.0" />
+    
+    <!-- Scheduling -->
+    <PackageReference Include="Quartz" Version="3.14.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
+    
+    <!-- Storage -->
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    
+    <!-- Excel -->
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

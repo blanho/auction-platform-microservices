@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BuildingBlocks.Domain</RootNamespace>
+    <AssemblyName>BuildingBlocks.Domain</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
+  </ItemGroup>
+
+  <!-- 
+    BuildingBlocks.Domain contains:
+    - BaseEntity and base classes
+    - Domain primitives (Value Objects)
+    - Domain event interfaces
+    - Shared enums (Status, BidStatus)
+    
+    NO dependencies on infrastructure or application concerns
+  -->
+
+</Project>

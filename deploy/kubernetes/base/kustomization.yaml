@@ -1,0 +1,29 @@
+# ==============================================================================
+# Kubernetes Base Manifests - Kustomization
+# ==============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: auction-platform
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - services/auction-api.yaml
+  - services/bidding-api.yaml
+  - services/payment-api.yaml
+  - services/notification-api.yaml
+  - services/storage-api.yaml
+  - services/identity-api.yaml
+  - services/analytics-api.yaml
+  - services/gateway-api.yaml
+  - infrastructure/postgres.yaml
+  - infrastructure/redis.yaml
+  - infrastructure/rabbitmq.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: auction-platform
+  app.kubernetes.io/managed-by: kustomize

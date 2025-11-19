@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option csharp_namespace = "Analytics.Api.Grpc";
+
+package bids;
+
+service BidStatsGrpc {
+  rpc GetBidStats (GetBidStatsRequest) returns (BidStatsResponse);
+  rpc GetTopBidders (GetTopBiddersRequest) returns (TopBiddersResponse);
+}
+
+message GetBidStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message BidStatsResponse {
+  int32 total_bids = 1;
+  int32 unique_bidders = 2;
+  double total_bid_amount = 3;
+  double average_bid_amount = 4;
+  int32 bids_today = 5;
+  int32 bids_this_week = 6;
+  int32 bids_this_month = 7;
+}
+
+message GetTopBiddersRequest {
+  int32 limit = 1;
+  string period = 2;
+}
+
+message TopBiddersResponse {
+  repeated TopBidder bidders = 1;
+}
+
+message TopBidder {
+  string bidder_id = 1;
+  string username = 2;
+  int32 bid_count = 3;
+  double total_amount = 4;
+  int32 auctions_won = 5;
+}

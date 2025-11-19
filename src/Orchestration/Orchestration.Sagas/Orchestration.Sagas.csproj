@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Orchestration.Sagas</RootNamespace>
+    <AssemblyName>Orchestration.Sagas</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- 
+    Orchestration.Sagas contains:
+    - BuyNowSaga: Coordinates buy-now flow across services
+    - AuctionCompletionSaga: Handles auction end workflow
+    
+    CRITICAL ARCHITECTURE DECISION:
+    Sagas are kept separate from services because:
+    1. They orchestrate ACROSS bounded contexts
+    2. They need to reference multiple *.Contracts
+    3. They are a cross-cutting concern, not owned by any single service
+    4. Clear deployment boundary for scaling
+    
+    Sagas reference ONLY:
+    - BuildingBlocks.Infrastructure (for MassTransit base classes)
+    - *.Contracts (for events they orchestrate)
+    
+    Sagas NEVER reference:
+    - Service internals (Domain, Application, Infrastructure)
+    - Database contexts
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- BuildingBlocks for MassTransit extensions -->
+    <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+    
+    <!-- Contracts for events being orchestrated -->
+    <ProjectReference Include="..\..\Services\Auction\Auction.Contracts\Auction.Contracts.csproj" />
+    <ProjectReference Include="..\..\Services\Payment\Payment.Contracts\Payment.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

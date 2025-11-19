@@ -1,0 +1,185 @@
+using BuildingBlocks.Domain.Entities;
+using Payment.Domain.Enums;
+using Payment.Domain.Events;
+
+namespace Payment.Domain.Entities;
+
+public class Order : BaseEntity
+{
+    private OrderStatus _status = OrderStatus.PendingPayment;
+    private PaymentStatus _paymentStatus = PaymentStatus.Pending;
+
+    public Guid AuctionId { get; private set; }
+    public Guid BuyerId { get; private set; }
+    public string BuyerUsername { get; private set; } = string.Empty;
+    public Guid SellerId { get; private set; }
+    public string SellerUsername { get; private set; } = string.Empty;
+    public string ItemTitle { get; private set; } = string.Empty;
+    public decimal WinningBid { get; private set; }
+    public decimal TotalAmount { get; private set; }
+    public decimal? ShippingCost { get; private set; }
+    public decimal? PlatformFee { get; private set; }
+
+    public OrderStatus Status
+    {
+        get => _status;
+        private set => _status = value;
+    }
+
+    public PaymentStatus PaymentStatus
+    {
+        get => _paymentStatus;
+        private set => _paymentStatus = value;
+    }
+
+    public string? PaymentTransactionId { get; private set; }
+    public string? ShippingAddress { get; private set; }
+    public string? TrackingNumber { get; private set; }
+    public string? ShippingCarrier { get; private set; }
+    public DateTimeOffset? PaidAt { get; private set; }
+    public DateTimeOffset? ShippedAt { get; private set; }
+    public DateTimeOffset? DeliveredAt { get; private set; }
+    public string? BuyerNotes { get; private set; }
+    public string? SellerNotes { get; private set; }
+
+    public static Order Create(
+        Guid auctionId,
+        Guid buyerId,
+        string buyerUsername,
+        Guid sellerId,
+        string sellerUsername,
+        string itemTitle,
+        decimal winningBid,
+        decimal? platformFeePercent = null)
+    {
+        decimal? platformFee = platformFeePercent.HasValue
+            ? winningBid * platformFeePercent.Value / 100
+            : null;
+
+        return new Order
+        {
+            Id = Guid.NewGuid(),
+            AuctionId = auctionId,
+            BuyerId = buyerId,
+            BuyerUsername = buyerUsername,
+            SellerId = sellerId,
+            SellerUsername = sellerUsername,
+            ItemTitle = itemTitle,
+            WinningBid = winningBid,
+            TotalAmount = winningBid,
+            PlatformFee = platformFee,
+            Status = OrderStatus.PendingPayment,
+            PaymentStatus = PaymentStatus.Pending,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+    }
+
+    public void SetShippingAddress(string address)
+    {
+        if (string.IsNullOrWhiteSpace(address))
+            throw new ArgumentException("Shipping address cannot be empty");
+        ShippingAddress = address;
+    }
+
+    public void SetShippingCost(decimal cost)
+    {
+        if (cost < 0)
+            throw new ArgumentOutOfRangeException(nameof(cost), "Shipping cost cannot be negative");
+        ShippingCost = cost;
+        TotalAmount = WinningBid + cost;
+    }
+
+    public void AddBuyerNotes(string notes)
+    {
+        BuyerNotes = notes;
+    }
+
+    public void AddSellerNotes(string notes)
+    {
+        SellerNotes = notes;
+    }
+
+    public void RaiseCreatedEvent()
+    {
+        AddDomainEvent(new OrderCreatedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername,
+            ItemTitle = ItemTitle,
+            TotalAmount = TotalAmount
+        });
+    }
+
+    public void ChangeStatus(OrderStatus newStatus)
+    {
+        var oldStatus = Status;
+        Status = newStatus;
+        AddDomainEvent(new OrderStatusChangedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            OldStatus = oldStatus,
+            NewStatus = newStatus
+        });
+    }
+
+    public void CompletePayment(string? transactionId)
+    {
+        PaymentStatus = PaymentStatus.Completed;
+        PaymentTransactionId = transactionId;
+        PaidAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.PaymentReceived;
+
+        AddDomainEvent(new PaymentCompletedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername,
+            Amount = TotalAmount,
+            TransactionId = transactionId
+        });
+    }
+
+    public void MarkAsShipped(string? trackingNumber, string? carrier)
+    {
+        TrackingNumber = trackingNumber;
+        ShippingCarrier = carrier;
+        ShippedAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.Shipped;
+
+        AddDomainEvent(new OrderShippedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            TrackingNumber = trackingNumber,
+            ShippingCarrier = carrier
+        });
+    }
+
+    public void MarkAsDelivered()
+    {
+        DeliveredAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.Delivered;
+
+        AddDomainEvent(new OrderDeliveredDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername
+        });
+    }
+}

@@ -1,0 +1,52 @@
+namespace Bidding.Application.Features.Bids.GetBidById;
+
+public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDto?>
+{
+    private readonly IBidRepository _repository;
+    private readonly IAppLogger<GetBidByIdQueryHandler> _logger;
+
+    public GetBidByIdQueryHandler(
+        IBidRepository repository,
+        IAppLogger<GetBidByIdQueryHandler> logger)
+    {
+        _repository = repository;
+        _logger = logger;
+    }
+
+    public async Task<Result<BidDetailDto?>> Handle(GetBidByIdQuery request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Getting bid details for {BidId}", request.BidId);
+
+        var bid = await _repository.GetByIdAsync(request.BidId, cancellationToken);
+        if (bid == null)
+        {
+            _logger.LogWarning("Bid {BidId} not found", request.BidId);
+            return Result.Success<BidDetailDto?>(null);
+        }
+
+        var allBidsForAuction = await _repository.GetBidsByAuctionIdAsync(bid.AuctionId, cancellationToken);
+        var orderedBids = allBidsForAuction.OrderByDescending(b => b.Amount).ToList();
+        
+        var highestBid = orderedBids.FirstOrDefault();
+        var bidPosition = orderedBids.FindIndex(b => b.Id == bid.Id) + 1;
+        var isHighestBid = highestBid?.Id == bid.Id;
+        var isWinningBid = isHighestBid && bid.Status == BidStatus.Accepted;
+
+        return Result.Success<BidDetailDto?>(new BidDetailDto
+        {
+            Id = bid.Id,
+            AuctionId = bid.AuctionId,
+            BidderId = bid.BidderId,
+            BidderUsername = bid.BidderUsername,
+            Amount = bid.Amount,
+            BidTime = bid.BidTime,
+            Status = bid.Status.ToString(),
+            IsHighestBid = isHighestBid,
+            IsWinningBid = isWinningBid,
+            NextMinimumBid = isHighestBid ? null : BidIncrement.GetMinimumNextBid(highestBid?.Amount ?? 0),
+            BidPosition = bidPosition,
+            TotalBidsOnAuction = allBidsForAuction.Count,
+            CreatedAt = bid.CreatedAt
+        });
+    }
+}

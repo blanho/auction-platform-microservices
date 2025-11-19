@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+option csharp_namespace = "Auctions.Api.Grpc";
+
+package auctions;
+
+service AuctionGrpc {
+  rpc ValidateAuctionForBid (ValidateAuctionRequest) returns (ValidateAuctionResponse);
+  rpc GetAuctionDetails (GetAuctionDetailsRequest) returns (AuctionDetailsResponse);
+  rpc ExtendAuction (ExtendAuctionRequest) returns (ExtendAuctionResponse);
+  rpc GetAuctionStats (GetAuctionStatsRequest) returns (AuctionStatsResponse);
+  rpc GetAuctionAnalytics (GetAuctionAnalyticsRequest) returns (AuctionAnalyticsResponse);
+  rpc GetTopAuctions (GetTopAuctionsRequest) returns (TopAuctionsResponse);
+  rpc GetCategoryStats (GetCategoryStatsRequest) returns (CategoryStatsResponse);
+  rpc GetUserDashboardStats (GetUserDashboardStatsRequest) returns (UserDashboardStatsResponse);
+  rpc GetSellerAnalytics (GetSellerAnalyticsRequest) returns (SellerAnalyticsResponse);
+  rpc GetQuickStats (GetQuickStatsRequest) returns (QuickStatsResponse);
+  rpc GetTrendingSearches (GetTrendingSearchesRequest) returns (TrendingSearchesResponse);
+}
+
+message GetAuctionStatsRequest {
+}
+
+message AuctionStatsResponse {
+  int32 live_auctions = 1;
+  int32 total_auctions = 2;
+  int32 completed_auctions = 3;
+  double total_revenue = 4;
+}
+
+message GetAuctionAnalyticsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message AuctionAnalyticsResponse {
+  int32 live_auctions = 1;
+  int32 completed_auctions = 2;
+  int32 cancelled_auctions = 3;
+  int32 pending_auctions = 4;
+  double total_revenue = 5;
+  double average_final_price = 6;
+  double success_rate = 7;
+  int32 auctions_ending_today = 8;
+  int32 auctions_ending_this_week = 9;
+  repeated DailyAuctionStat daily_stats = 10;
+}
+
+message DailyAuctionStat {
+  string date = 1;
+  int32 created = 2;
+  int32 completed = 3;
+  double revenue = 4;
+}
+
+message GetTopAuctionsRequest {
+  int32 limit = 1;
+  string sort_by = 2;
+}
+
+message TopAuctionsResponse {
+  repeated TopAuction auctions = 1;
+}
+
+message TopAuction {
+  string auction_id = 1;
+  string title = 2;
+  string seller_username = 3;
+  double final_price = 4;
+  int32 bid_count = 5;
+}
+
+message GetCategoryStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message CategoryStatsResponse {
+  repeated CategoryStat categories = 1;
+}
+
+message CategoryStat {
+  string category_id = 1;
+  string category_name = 2;
+  int32 auction_count = 3;
+  double revenue = 4;
+  double percentage = 5;
+}
+
+message ValidateAuctionRequest {
+  string auction_id = 1;
+  string bidder = 2;
+  int32 bid_amount = 3;
+}
+
+message ValidateAuctionResponse {
+  bool is_valid = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int32 current_high_bid = 4;
+  int32 reserve_price = 5;
+  string auction_end = 6;
+  string seller = 7;
+  string status = 8;
+}
+
+message GetAuctionDetailsRequest {
+  string auction_id = 1;
+}
+
+message AuctionDetailsResponse {
+  string id = 1;
+  string title = 2;
+  string seller = 3;
+  string winner = 4;
+  int32 current_high_bid = 5;
+  int32 reserve_price = 6;
+  int32 buy_now_price = 7;
+  string auction_end = 8;
+  string status = 9;
+  bool is_buy_now_available = 10;
+}
+
+message ExtendAuctionRequest {
+  string auction_id = 1;
+  int32 extend_minutes = 2;
+  string reason = 3;
+}
+
+message ExtendAuctionResponse {
+  bool success = 1;
+  string new_end_time = 2;
+  string error_message = 3;
+}
+
+message GetUserDashboardStatsRequest {
+  string username = 1;
+}
+
+message UserDashboardStatsResponse {
+  int32 active_auctions = 1;
+  int32 total_auctions = 2;
+  int32 won_auctions = 3;
+  int32 lost_auctions = 4;
+  double total_spent = 5;
+  double total_earned = 6;
+  int32 active_bids = 7;
+  int32 watching_count = 8;
+}
+
+message GetSellerAnalyticsRequest {
+  string username = 1;
+  string time_range = 2;
+}
+
+message SellerAnalyticsResponse {
+  int32 total_auctions = 1;
+  int32 active_auctions = 2;
+  int32 completed_auctions = 3;
+  int32 cancelled_auctions = 4;
+  double total_revenue = 5;
+  double average_final_price = 6;
+  int32 total_bids_received = 7;
+  double success_rate = 8;
+  repeated DailyRevenue daily_revenue = 9;
+  repeated CategoryBreakdown category_breakdown = 10;
+}
+
+message DailyRevenue {
+  string date = 1;
+  double revenue = 2;
+  int32 auctions_completed = 3;
+}
+
+message CategoryBreakdown {
+  string category_name = 1;
+  int32 auction_count = 2;
+  double revenue = 3;
+}
+
+message GetQuickStatsRequest {
+}
+
+message QuickStatsResponse {
+  int32 total_auctions = 1;
+  int32 live_auctions = 2;
+  int32 total_users = 3;
+  int32 total_bids = 4;
+}
+
+message GetTrendingSearchesRequest {
+  int32 limit = 1;
+}
+
+message TrendingSearchesResponse {
+  repeated TrendingSearch searches = 1;
+}
+
+message TrendingSearch {
+  string search_term = 1;
+  int32 search_count = 2;
+  double growth_rate = 3;
+}

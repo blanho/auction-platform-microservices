@@ -1,0 +1,11 @@
+global using BuildingBlocks.Web.Extensions;
+global using BuildingBlocks.Web.Middleware;
+global using BuildingBlocks.Web.Authorization;
+global using BuildingBlocks.Web.Observability;
+global using BuildingBlocks.Web.OpenApi;
+global using BuildingBlocks.Application.Abstractions;
+global using BuildingBlocks.Infrastructure.Caching;
+global using MediatR;
+global using Carter;
+global using Payment.Application;
+global using Payment.Infrastructure.Persistence;

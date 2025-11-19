@@ -1,0 +1,8 @@
+global using BuildingBlocks.Web.Authorization;
+global using BuildingBlocks.Web.Extensions;
+global using Analytics.Api.Entities;
+global using Analytics.Api.Models;
+global using Analytics.Api.Interfaces;
+global using Analytics.Api.Services;
+global using Analytics.Api.Repositories;
+global using Analytics.Api.Data;
