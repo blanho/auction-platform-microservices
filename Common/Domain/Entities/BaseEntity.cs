@@ -1,4 +1,4 @@
-namespace CommonService.Domain.Entities;
+namespace Common.Domain.Entities;
 
 /// <summary>
 /// Base entity class with common properties for all entities

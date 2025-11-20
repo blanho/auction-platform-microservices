@@ -1,4 +1,4 @@
-namespace CommonService.Application.Interfaces;
+namespace Common.Application.Interfaces;
 
 /// <summary>
 /// Generic repository interface for common CRUD operations

@@ -1,4 +1,4 @@
-namespace CommonService.Application.DTOs;
+namespace Common.Application.DTOs;
 
 /// <summary>
 /// Result pattern for consistent success/failure responses

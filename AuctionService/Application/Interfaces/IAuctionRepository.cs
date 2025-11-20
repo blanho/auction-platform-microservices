@@ -1,5 +1,5 @@
 using AuctionService.Domain.Entities;
-using CommonService.Application.Interfaces;
+using Common.Application.Interfaces;
 
 namespace AuctionService.Application.Interfaces
 {

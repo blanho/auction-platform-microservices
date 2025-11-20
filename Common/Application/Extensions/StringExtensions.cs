@@ -1,4 +1,4 @@
-namespace CommonService.Application.Extensions;
+namespace Common.Application.Extensions;
 
 /// <summary>
 /// Common string extension methods

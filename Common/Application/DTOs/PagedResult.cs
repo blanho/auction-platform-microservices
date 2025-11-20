@@ -1,4 +1,4 @@
-namespace CommonService.Application.DTOs;
+namespace Common.Application.DTOs;
 
 /// <summary>
 /// Generic paged result for pagination support
