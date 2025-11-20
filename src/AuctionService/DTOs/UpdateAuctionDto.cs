@@ -1,0 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace AuctionService.DTOs
+{
+    public class UpdateAuctionDto
+    {
+        public string Make { get; set; }
+        
+        public string Model { get; set; }
+        
+        [Range(1900, 2100)]
+        public int? Year { get; set; }
+        
+        public string Color { get; set; }
+        
+        [Range(0, int.MaxValue)]
+        public int? Mileage { get; set; }
+    }
+}
