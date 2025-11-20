@@ -1,16 +1,11 @@
 using AuctionService.Data;
-using Microsoft.EntityFrameworkCore;
+using AuctionService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllers();
-builder.Services.AddDbContext<AuctionDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
+builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddApiVersioningServices();
 var app = builder.Build();
 
-// Initialize database with seed data
 try
 {
     DbInitializer.InitDb(app);
