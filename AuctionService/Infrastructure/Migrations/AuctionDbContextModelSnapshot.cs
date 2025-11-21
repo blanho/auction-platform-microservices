@@ -3,20 +3,17 @@ using System;
 using AuctionService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AuctionService.Infrastructure.Data.Migrations
+namespace AuctionService.Infrastructure.Migrations
 {
     [DbContext(typeof(AuctionDbContext))]
-    [Migration("20251121100025_SyncModel_20251121")]
-    partial class SyncModel_20251121
+    partial class AuctionDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,26 +31,25 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("AuctionEnd")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("CurrentHighBid")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("DeletedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<int>("ReversePrice")
-                        .HasPrecision(18, 2)
                         .HasColumnType("integer");
 
                     b.Property<string>("Seller")
@@ -65,11 +61,11 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Winner")
                         .HasColumnType("text");
@@ -89,44 +85,40 @@ namespace AuctionService.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Color")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DeletedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Make")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Mileage")
                         .HasColumnType("integer");
 
                     b.Property<string>("Model")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Year")
                         .HasColumnType("integer");
@@ -136,7 +128,7 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.HasIndex("AuctionId")
                         .IsUnique();
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>

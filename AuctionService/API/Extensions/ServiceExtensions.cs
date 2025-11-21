@@ -2,13 +2,13 @@ using AuctionService.Application.Interfaces;
 using AuctionService.Application.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Repositories;
-using AuctionService.Infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 using AuctionService.Domain.Entities;
-using AuctionService.Infrastructure.Upgrades;
 using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Repository.Interfaces;
+using Common.Repository.Implementations;
+using AutoMapper;
 
 namespace AuctionService.API.Extensions
 {
@@ -21,15 +21,19 @@ namespace AuctionService.API.Extensions
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
-            // Register logger adapter
+            // Register generic logger
             services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
-
-            // Register repository directly (caching disabled for now - can add decorator later)
-            services.AddScoped<IAuctionRepository, AuctionRepository>();
+            
+            services.AddScoped<AuctionRepository>(); // inner
+            services.AddScoped<IAuctionRepository>(sp =>
+            {
+                var inner = sp.GetRequiredService<AuctionRepository>();
+                var cache = sp.GetRequiredService<ICacheService>();
+                var mapper = sp.GetRequiredService<IMapper>();
+                return new CachedAuctionRepository(inner, cache, mapper);
+            });
 
             services.AddScoped<IAuctionService, AuctionServiceImpl>();
-
-            services.AddAuctionUpgradeTasks();
 
             return services;
         }

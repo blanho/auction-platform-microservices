@@ -6,6 +6,7 @@ using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,13 @@ builder.Services.AddCommonOpenApi();
 
 var app = builder.Build();
 
-// Database migrations and seeding are handled by upgrade hosted service
+// Apply migrations and recreate database if needed
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
+    db.Database.EnsureDeleted();
+    db.Database.Migrate();
+}
 
 // Optional path base support (e.g., /auction)
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"]; 

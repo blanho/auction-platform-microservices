@@ -3,6 +3,7 @@ using AuctionService.Domain.Entities;
 using AuctionService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Common.Core.Interfaces;
+using Common.Core.Constants;
 
 namespace AuctionService.Infrastructure.Repositories
 {
@@ -37,7 +38,7 @@ namespace AuctionService.Infrastructure.Repositories
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.CreatedAt = _dateTime.UtcNow;
-            auction.CreatedBy = Guid.Empty; // TODO: Set from authenticated user
+            auction.CreatedBy = SystemGuids.System;
             
             await _context.Auctions.AddAsync(auction, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
@@ -60,7 +61,7 @@ namespace AuctionService.Infrastructure.Repositories
         public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.UpdatedAt = _dateTime.UtcNow;
-            auction.UpdatedBy = Guid.Empty; // TODO: Set from authenticated user
+            auction.UpdatedBy = SystemGuids.System;
             
             _context.Auctions.Update(auction);
             await _context.SaveChangesAsync(cancellationToken);
@@ -84,7 +85,7 @@ namespace AuctionService.Infrastructure.Repositories
             {
                 auction.IsDeleted = true;
                 auction.DeletedAt = _dateTime.UtcNow;
-                auction.DeletedBy = Guid.Empty; // TODO: Set from authenticated user
+                auction.DeletedBy = SystemGuids.System;
                 
                 _context.Auctions.Update(auction);
                 await _context.SaveChangesAsync(cancellationToken);
