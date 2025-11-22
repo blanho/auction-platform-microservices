@@ -19,6 +19,29 @@ services:
     networks:
       - microservices
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: shared-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - "5672"
+      - "15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices
+
   auction-postgres:
     image: postgres:16
     container_name: auction-postgres
@@ -52,6 +75,9 @@ services:
       ASPNETCORE_PATHBASE: /auction
       ConnectionStrings__DefaultConnection: Host=auction-postgres;Port=5432;Database=auction_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
@@ -61,6 +87,7 @@ services:
     depends_on:
       - auction-postgres
       - redis
+      - rabbitmq
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/auction/health"]
       interval: 30s
@@ -101,6 +128,9 @@ services:
       MongoDb__DatabaseName: search_db
       MongoDb__CollectionName: SearchItems
       ConnectionStrings__Redis: redis:6379
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
@@ -110,6 +140,7 @@ services:
     depends_on:
       - search-mongo
       - redis
+      - rabbitmq
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/search/health"]
       interval: 30s
@@ -120,6 +151,8 @@ services:
       - microservices
 volumes:
   redis_data:
+    driver: local
+  rabbitmq_data:
     driver: local
   auction_postgres_data:
     driver: local

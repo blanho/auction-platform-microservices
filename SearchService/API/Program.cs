@@ -1,4 +1,5 @@
 ﻿using SearchService.API.Extensions;
+using SearchService.Infrastructure.Messaging.Consumers;
 using SearchService.Infrastructure.Data;
 using SearchService.Infrastructure.Data.Upgrades;
 using Common.OpenApi.Extensions;
@@ -7,6 +8,7 @@ using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Messaging.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,13 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+builder.Services.AddMassTransitWithRabbitMq(builder.Configuration, cfg =>
+{
+    cfg.AddConsumer<AuctionCreatedConsumer>();
+    cfg.AddConsumer<AuctionUpdatedConsumer>();
+    cfg.AddConsumer<AuctionDeletedConsumer>();
+});
 
 builder.Services.AddApplicationServices(builder.Configuration);
 

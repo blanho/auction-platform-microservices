@@ -4,6 +4,8 @@ using AutoMapper;
 using Common.Core.Exceptions;
 using Common.Core.Interfaces;
 using Common.Repository.Interfaces;
+using Common.Messaging.Abstractions;
+using Common.Messaging.Events;
 
 namespace AuctionService.Application.Services;
 
@@ -13,17 +15,20 @@ public class AuctionServiceImpl : IAuctionService
     private readonly IMapper _mapper;
     private readonly IAppLogger<AuctionServiceImpl> _logger;
     private readonly IDateTimeProvider _dateTime;
+    private readonly IEventPublisher _eventPublisher;
 
     public AuctionServiceImpl(
         IAuctionRepository repository, 
         IMapper mapper,
         IAppLogger<AuctionServiceImpl> logger,
-        IDateTimeProvider dateTime)
+        IDateTimeProvider dateTime,
+        IEventPublisher eventPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
+        _eventPublisher = eventPublisher;
     }
 
     public async Task<List<AuctionDto>> GetAllAuctionsAsync(CancellationToken cancellationToken)
@@ -64,7 +69,27 @@ public class AuctionServiceImpl : IAuctionService
         
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
         
-        _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, seller);
+        await _eventPublisher.PublishAsync(new AuctionCreatedEvent
+        {
+            Id = createdAuction.Id,
+            Seller = createdAuction.Seller,
+            CreatedAt = createdAuction.CreatedAt.DateTime,
+            UpdatedAt = createdAuction.UpdatedAt?.DateTime,
+            AuctionEnd = createdAuction.AuctionEnd.DateTime,
+            Status = createdAuction.Status.ToString(),
+            ReservePrice = createdAuction.ReversePrice,
+            SoldAmount = createdAuction.SoldAmount,
+            CurrentHighBid = createdAuction.CurrentHighBid,
+            Winner = createdAuction.Winner,
+            Make = createdAuction.Item.Make,
+            Model = createdAuction.Item.Model,
+            Year = createdAuction.Item.Year,
+            Color = createdAuction.Item.Color,
+            Mileage = createdAuction.Item.Mileage,
+            ImageUrl = createdAuction.Item.ImageUrl
+        }, cancellationToken);
+        
+        _logger.LogInformation("Created auction {AuctionId} for seller {Seller} and published event", createdAuction.Id, seller);
         return _mapper.Map<AuctionDto>(createdAuction);
     }
 
@@ -89,7 +114,17 @@ public class AuctionServiceImpl : IAuctionService
         
         await _repository.UpdateAsync(auction, cancellationToken);
         
-        _logger.LogInformation("Updated auction {AuctionId}", id);
+        await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
+        {
+            Id = id,
+            Make = dto.Make,
+            Model = dto.Model,
+            Year = dto.Year,
+            Color = dto.Color,
+            Mileage = dto.Mileage
+        }, cancellationToken);
+        
+        _logger.LogInformation("Updated auction {AuctionId} and published event", id);
         return true;
     }
 
@@ -108,7 +143,12 @@ public class AuctionServiceImpl : IAuctionService
         
         await _repository.DeleteAsync(id, cancellationToken);
         
-        _logger.LogInformation("Deleted auction {AuctionId}", id);
+        await _eventPublisher.PublishAsync(new AuctionDeletedEvent
+        {
+            Id = id
+        }, cancellationToken);
+        
+        _logger.LogInformation("Deleted auction {AuctionId} and published event", id);
         return true;
     }
 }

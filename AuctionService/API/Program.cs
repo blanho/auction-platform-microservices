@@ -7,6 +7,7 @@ using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Messaging.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+builder.Services.AddMassTransitWithRabbitMq(builder.Configuration);
 
 builder.Services.AddApplicationServices(builder.Configuration);
 
