@@ -10,14 +10,12 @@ using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
 using AutoMapper;
 using Serilog;
+using AuctionService.Infrastructure;
 
 namespace AuctionService.API.Extensions
 {
     public static class ServiceExtensions
     {
-        
-        
-        
         public static WebApplicationBuilder AddApplicationLogging(this WebApplicationBuilder builder)
         {
             builder.Host.UseSerilog((context, loggerConfig) =>
@@ -52,6 +50,7 @@ namespace AuctionService.API.Extensions
                 return new CachedAuctionRepository(inner, cache, mapper, logger);
             });
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuctionService, AuctionServiceImpl>();
 
             return services;

@@ -1,6 +1,7 @@
 ﻿using AuctionService.API.Extensions;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Data.Upgrades;
+using AuctionService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Caching.Abstractions;
@@ -23,9 +24,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
-builder.Services.AddMassTransitWithRabbitMq(builder.Configuration);
-
 builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();

@@ -16,19 +16,22 @@ public class AuctionServiceImpl : IAuctionService
     private readonly IAppLogger<AuctionServiceImpl> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AuctionServiceImpl(
         IAuctionRepository repository, 
         IMapper mapper,
         IAppLogger<AuctionServiceImpl> logger,
         IDateTimeProvider dateTime,
-        IEventPublisher eventPublisher)
+        IEventPublisher eventPublisher,
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
         _eventPublisher = eventPublisher;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<AuctionDto>> GetAllAuctionsAsync(CancellationToken cancellationToken)
@@ -65,31 +68,14 @@ public class AuctionServiceImpl : IAuctionService
 
         var auction = _mapper.Map<Domain.Entities.Auction>(dto);
         auction.Seller = seller;
-        
-        
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
         
-        await _eventPublisher.PublishAsync(new AuctionCreatedEvent
-        {
-            Id = createdAuction.Id,
-            Seller = createdAuction.Seller,
-            CreatedAt = createdAuction.CreatedAt.DateTime,
-            UpdatedAt = createdAuction.UpdatedAt?.DateTime,
-            AuctionEnd = createdAuction.AuctionEnd.DateTime,
-            Status = createdAuction.Status.ToString(),
-            ReservePrice = createdAuction.ReversePrice,
-            SoldAmount = createdAuction.SoldAmount,
-            CurrentHighBid = createdAuction.CurrentHighBid,
-            Winner = createdAuction.Winner,
-            Make = createdAuction.Item.Make,
-            Model = createdAuction.Item.Model,
-            Year = createdAuction.Item.Year,
-            Color = createdAuction.Item.Color,
-            Mileage = createdAuction.Item.Mileage,
-            ImageUrl = createdAuction.Item.ImageUrl
-        }, cancellationToken);
+        var auctionCreatedEvent = _mapper.Map<AuctionCreatedEvent>(createdAuction);
+        await _eventPublisher.PublishAsync(auctionCreatedEvent, cancellationToken);
         
-        _logger.LogInformation("Created auction {AuctionId} for seller {Seller} and published event", createdAuction.Id, seller);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("Created auction {AuctionId} for seller {Seller} and queued event in outbox", createdAuction.Id, seller);
         return _mapper.Map<AuctionDto>(createdAuction);
     }
 
@@ -110,8 +96,7 @@ public class AuctionServiceImpl : IAuctionService
         auction.Item.Color = dto.Color ?? auction.Item.Color;
         auction.Item.Mileage = dto.Mileage ?? auction.Item.Mileage;
         auction.Item.Year = dto.Year ?? auction.Item.Year;
-        
-        
+
         await _repository.UpdateAsync(auction, cancellationToken);
         
         await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
@@ -124,7 +109,9 @@ public class AuctionServiceImpl : IAuctionService
             Mileage = dto.Mileage
         }, cancellationToken);
         
-        _logger.LogInformation("Updated auction {AuctionId} and published event", id);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("Updated auction {AuctionId} and queued event in outbox", id);
         return true;
     }
 
@@ -140,15 +127,16 @@ public class AuctionServiceImpl : IAuctionService
             throw new NotFoundException($"Auction with ID {id} was not found");
         }
 
-        
         await _repository.DeleteAsync(id, cancellationToken);
-        
+
         await _eventPublisher.PublishAsync(new AuctionDeletedEvent
         {
             Id = id
         }, cancellationToken);
         
-        _logger.LogInformation("Deleted auction {AuctionId} and published event", id);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation("Deleted auction {AuctionId} and queued event in outbox", id);
         return true;
     }
 }

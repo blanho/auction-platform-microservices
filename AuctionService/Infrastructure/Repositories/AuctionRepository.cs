@@ -41,7 +41,6 @@ namespace AuctionService.Infrastructure.Repositories
             auction.CreatedBy = SystemGuids.System;
             
             await _context.Auctions.AddAsync(auction, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
             
             return auction;
         }
@@ -54,7 +53,6 @@ namespace AuctionService.Infrastructure.Repositories
                 auction.CreatedAt = utcNow;
             }
             await _context.Auctions.AddRangeAsync(auctions, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
             return auctions;
         }
 
@@ -64,7 +62,6 @@ namespace AuctionService.Infrastructure.Repositories
             auction.UpdatedBy = SystemGuids.System;
             
             _context.Auctions.Update(auction);
-            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task UpdateRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
@@ -75,7 +72,6 @@ namespace AuctionService.Infrastructure.Repositories
                 auction.UpdatedAt = utcNow;
             }
             _context.Auctions.UpdateRange(auctions);
-            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -88,7 +84,6 @@ namespace AuctionService.Infrastructure.Repositories
                 auction.DeletedBy = SystemGuids.System;
                 
                 _context.Auctions.Update(auction);
-                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
@@ -104,7 +99,6 @@ namespace AuctionService.Infrastructure.Repositories
                 auction.UpdatedAt = utcNow;
             }
             _context.Auctions.UpdateRange(auctions);
-            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
