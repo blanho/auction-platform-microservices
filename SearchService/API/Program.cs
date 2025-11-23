@@ -1,7 +1,5 @@
 ﻿using SearchService.API.Extensions;
 using SearchService.Infrastructure.Messaging.Consumers;
-using SearchService.Infrastructure.Data;
-using SearchService.Infrastructure.Data.Upgrades;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Caching.Abstractions;
@@ -36,12 +34,6 @@ builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var mongo = scope.ServiceProvider.GetRequiredService<MongoSearchDbContext>();
-    await SearchSeeder.SeedSearchItemsAsync(mongo);
-}
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"]; 
 if (!string.IsNullOrWhiteSpace(pathBase))

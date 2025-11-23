@@ -3,7 +3,7 @@ services:
     ports:
       - "6379:6379"
 
-  auction-postgres:
+  postgres:
     ports:
       - "5433:5432"
 

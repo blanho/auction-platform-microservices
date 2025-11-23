@@ -42,18 +42,17 @@ services:
     networks:
       - microservices
 
-  auction-postgres:
+  postgres:
     image: postgres:16
-    container_name: auction-postgres
+    container_name: shared-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: auction_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     ports:
       - "5433:5432"
     volumes:
-      - auction_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -73,7 +72,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_PATHBASE: /auction
-      ConnectionStrings__DefaultConnection: Host=auction-postgres;Port=5432;Database=auction_db;Username=postgres;Password=postgres123
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=auction_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -85,7 +84,7 @@ services:
     volumes:
       - auction_api_logs:/app/logs
     depends_on:
-      - auction-postgres
+      - postgres
       - redis
       - rabbitmq
     healthcheck:
@@ -150,11 +149,11 @@ services:
     networks:
       - microservices
 volumes:
+  postgres_data:
+    driver: local
   redis_data:
     driver: local
   rabbitmq_data:
-    driver: local
-  auction_postgres_data:
     driver: local
   auction_api_logs:
     driver: local

@@ -1,6 +1,5 @@
 ﻿using AuctionService.API.Extensions;
 using AuctionService.Infrastructure.Data;
-using AuctionService.Infrastructure.Data.Upgrades;
 using AuctionService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
@@ -36,7 +35,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
     db.Database.Migrate();
-    await AuctionSeeder.SeedAuctionsAsync(db);
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"]; 

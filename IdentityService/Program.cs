@@ -3,6 +3,7 @@ using System.Text;
 using Duende.IdentityServer.Licensing;
 using IdentityService;
 using IdentityService.Data;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
