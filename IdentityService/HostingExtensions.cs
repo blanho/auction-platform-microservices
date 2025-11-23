@@ -2,6 +2,7 @@ using System.Globalization;
 using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
+using IdentityService.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,8 +15,6 @@ internal static class HostingExtensions
 {
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
-        // Write most logs to the console but diagnostic data to a file.
-        // See https://docs.duendesoftware.com/identityserver/diagnostics/data
         builder.Host.UseSerilog((ctx, lc) =>
         {
             lc.WriteTo.Logger(consoleLogger =>
@@ -75,6 +74,7 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients)
             .AddAspNetIdentity<ApplicationUser>()
+            .AddProfileService<CustomProfileService>()
             .AddLicenseSummary();
 
         builder.Services.ConfigureApplicationCookie(options =>

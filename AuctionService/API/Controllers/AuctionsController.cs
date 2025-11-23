@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionService.API.Controllers
@@ -18,6 +19,7 @@ namespace AuctionService.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions(CancellationToken cancellationToken)
         {
             var auctions = await _auctionService.GetAllAuctionsAsync(cancellationToken);
@@ -25,6 +27,7 @@ namespace AuctionService.API.Controllers
         }
 
         [HttpGet("{id:guid}")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuctionDto>> GetAuctionById(Guid id, CancellationToken cancellationToken)
         {
             
@@ -33,6 +36,7 @@ namespace AuctionService.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AuctionWrite")]
         public async Task<ActionResult<AuctionDto>> CreateAuction(
             CreateAuctionDto createAuctionDto,
             CancellationToken cancellationToken)
@@ -47,6 +51,7 @@ namespace AuctionService.API.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Policy = "AuctionOwner")]
         public async Task<ActionResult> UpdateAuction(
             Guid id,
             UpdateAuctionDto updateAuctionDto,
@@ -58,6 +63,7 @@ namespace AuctionService.API.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Policy = "AuctionOwner")]
         public async Task<ActionResult> DeleteAuction(Guid id, CancellationToken cancellationToken)
         {
             

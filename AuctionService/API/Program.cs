@@ -9,6 +9,9 @@ using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Messaging.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,8 +32,48 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 
-var app = builder.Build();
+// Authentication & Authorization
+var identityAuthority = builder.Configuration["Identity:Authority"];
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.Authority = identityAuthority;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = identityAuthority,
+        ValidateAudience = false,
+        NameClaimType = "username",
+        RoleClaimType = "role"
+    };
+});
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AuctionScope", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("scope", "auction");
+    });
+    
+    options.AddPolicy("AuctionWrite", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("scope", "auction");
+    });
+    
+    options.AddPolicy("AuctionOwner", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("scope", "auction");
+    });
+});
+
+var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
@@ -51,6 +94,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = Dat
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
