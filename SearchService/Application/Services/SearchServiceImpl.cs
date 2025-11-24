@@ -103,103 +103,28 @@ public class SearchServiceImpl : ISearchService
         return _mapper.Map<SearchItemDto>(item);
     }
 
-    public async Task<SearchItemDto> CreateItemAsync(CreateSearchItemDto dto, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Creating search item for source {Source}:{SourceId} at {Timestamp}", 
-            dto.Source, dto.SourceId, _dateTime.UtcNow);
-
-        var item = _mapper.Map<Domain.Entities.SearchItem>(dto);
-        
-        var createdItem = await _repository.CreateAsync(item, cancellationToken);
-        
-        _logger.LogInformation("Created search item {ItemId} for source {Source}:{SourceId}", 
-            createdItem.Id, dto.Source, dto.SourceId);
-        return _mapper.Map<SearchItemDto>(createdItem);
-    }
-
-    public async Task<bool> UpdateItemAsync(Guid id, UpdateSearchItemDto dto, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Updating search item {ItemId} at {Timestamp}", id, _dateTime.UtcNow);
-
-        var item = await _repository.GetByIdAsync(id, cancellationToken);
-        
-        if (item == null)
-        {
-            _logger.LogWarning("Search item {ItemId} not found for update", id);
-            throw new NotFoundException($"Search item with ID {id} was not found");
-        }
-
-        item.Title = dto.Title ?? item.Title;
-        item.Description = dto.Description ?? item.Description;
-        item.Category = dto.Category ?? item.Category;
-        item.Tags = dto.Tags ?? item.Tags;
-        item.ImageUrl = dto.ImageUrl ?? item.ImageUrl;
-        item.Price = dto.Price ?? item.Price;
-        item.Status = dto.Status ?? item.Status;
-        
-        await _repository.UpdateAsync(item, cancellationToken);
-        
-        _logger.LogInformation("Updated search item {ItemId}", id);
-        return true;
-    }
-
-    public async Task<bool> DeleteItemAsync(Guid id, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Deleting search item {ItemId} at {Timestamp}", id, _dateTime.UtcNow);
-
-        var exists = await _repository.ExistsAsync(id, cancellationToken);
-        
-        if (!exists)
-        {
-            _logger.LogWarning("Search item {ItemId} not found for deletion", id);
-            throw new NotFoundException($"Search item with ID {id} was not found");
-        }
-
-        await _repository.DeleteAsync(id, cancellationToken);
-        
-        _logger.LogInformation("Deleted search item {ItemId}", id);
-        return true;
-    }
-
-    public async Task<bool> IndexItemAsync(Guid id, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Indexing search item {ItemId}", id);
-
-        var item = await _repository.GetByIdAsync(id, cancellationToken);
-        
-        if (item == null)
-        {
-            _logger.LogWarning("Search item {ItemId} not found for indexing", id);
-            throw new NotFoundException($"Search item with ID {id} was not found");
-        }
-
-        
-        if (item.Metadata == null)
-        {
-            item.Metadata = new Domain.Entities.SearchMetadata
-            {
-                SearchItemId = item.Id
-            };
-        }
-
-        item.Metadata.LastIndexed = _dateTime.UtcNow;
-        item.Metadata.SearchVector = $"{item.Title} {item.Description} {item.Category} {item.Tags}".ToLowerInvariant();
-        
-        await _repository.UpdateAsync(item, cancellationToken);
-        
-        _logger.LogInformation("Indexed search item {ItemId}", id);
-        return true;
-    }
-
     public async Task ReindexAllAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting reindex of all search items at {Timestamp}", _dateTime.UtcNow);
 
         var items = await _repository.GetAllAsync(cancellationToken);
         
+        // Update metadata for all items
         foreach (var item in items)
         {
-            await IndexItemAsync(item.Id, cancellationToken);
+            if (item.Metadata == null)
+            {
+                item.Metadata = new Domain.Entities.SearchMetadata
+                {
+                    SearchItemId = item.Id
+                };
+            }
+
+            item.Metadata.LastIndexed = _dateTime.UtcNow;
+            item.Metadata.IndexedAt = _dateTime.UtcNow;
+            item.Metadata.SearchVector = $"{item.Make} {item.Model} {item.Color} {item.Year}".ToLowerInvariant();
+            
+            await _repository.UpdateAsync(item, cancellationToken);
         }
         
         _logger.LogInformation("Completed reindex of {Count} search items", items.Count);

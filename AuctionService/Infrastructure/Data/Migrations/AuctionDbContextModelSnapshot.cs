@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
-
 namespace AuctionService.Infrastructure.Migrations
 {
     [DbContext(typeof(AuctionDbContext))]

@@ -1,5 +1,4 @@
-﻿#nullable enable
-
+﻿
 namespace Common.Domain.Entities;
 
 public abstract class BaseEntity

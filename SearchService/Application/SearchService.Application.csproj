@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain\SearchService.Domain.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
   </ItemGroup>
 

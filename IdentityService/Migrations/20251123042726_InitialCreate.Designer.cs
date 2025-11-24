@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
-
 namespace IdentityService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]

@@ -1,5 +1,4 @@
-﻿#nullable enable
-
+﻿
 namespace Common.Core.Exceptions;
 
 public abstract class AppException : Exception

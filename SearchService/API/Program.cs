@@ -26,6 +26,8 @@ builder.Services.AddMassTransitWithRabbitMq(builder.Configuration, cfg =>
     cfg.AddConsumer<AuctionCreatedConsumer>();
     cfg.AddConsumer<AuctionUpdatedConsumer>();
     cfg.AddConsumer<AuctionDeletedConsumer>();
+    cfg.AddConsumer<BidPlacedConsumer>();
+    cfg.AddConsumer<AuctionFinishedConsumer>();
 });
 
 builder.Services.AddApplicationServices(builder.Configuration);

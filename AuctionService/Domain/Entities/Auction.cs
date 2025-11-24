@@ -1,4 +1,5 @@
 ﻿using Common.Domain.Entities;
+using Common.Domain.Enums;
 
 namespace AuctionService.Domain.Entities
 {

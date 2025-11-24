@@ -1,4 +1,4 @@
-﻿namespace AuctionService.Domain.Entities
+namespace Common.Domain.Enums
 {
     public enum Status
     {

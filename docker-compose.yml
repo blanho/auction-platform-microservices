@@ -148,6 +148,67 @@ services:
       start_period: 40s
     networks:
       - microservices
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: IdentityService/Dockerfile
+      target: final
+    container_name: identity-service
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5001
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=identity_db;Username=postgres;Password=postgres123
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5002:5001"
+    depends_on:
+      - postgres
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:5001/.well-known/openid-configuration"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
+  gateway:
+    build:
+      context: .
+      dockerfile: GatewayService/Dockerfile
+      target: final
+    container_name: gateway
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Identity__Authority: http://identity-service:5001
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+      Logging__LogLevel__Yarp: Information
+    ports:
+      - "6001:8080"
+    depends_on:
+      - identity-service
+      - auction-api
+      - search-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
 volumes:
   postgres_data:
     driver: local
@@ -162,6 +223,10 @@ volumes:
   search_postgres_data:
     driver: local
   search_api_logs:
+    driver: local
+  identity_logs:
+    driver: local
+  gateway_logs:
     driver: local
 
 networks:
