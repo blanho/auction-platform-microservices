@@ -209,6 +209,25 @@ services:
       start_period: 40s
     networks:
       - microservices
+
+  web:
+    build:
+      context: ./Web
+      dockerfile: Dockerfile
+    container_name: web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_GATEWAY_URL: http://gateway:8080
+      NEXT_PUBLIC_IDENTITY_URL: http://identity-service:5001
+      NEXT_PUBLIC_AUCTION_API_URL: http://gateway:8080/auction
+      NEXT_PUBLIC_SEARCH_API_URL: http://gateway:8080/search
+      NEXT_PUBLIC_ENABLE_DEVTOOLS: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+    networks:
+      - microservices
 volumes:
   postgres_data:
     driver: local
