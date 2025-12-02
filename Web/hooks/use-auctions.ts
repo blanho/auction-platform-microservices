@@ -14,7 +14,7 @@ export const useAuctions = (params?: {
     queryKey: [QUERY_KEYS.SEARCH, params],
     queryFn: () =>
       searchService.search({
-        pageNumber: params?.pageNumber || 1,
+        page: params?.pageNumber || 1,
         pageSize: params?.pageSize || 12
       })
   });
@@ -25,10 +25,10 @@ export const useAuction = (id: string) => {
     queryKey: [QUERY_KEYS.AUCTION, id],
     queryFn: async () => {
       const result = await searchService.search({
-        searchTerm: id,
+        query: id,
         pageSize: 1
       });
-      return result.results[0];
+      return result.items[0];
     },
     enabled: !!id
   });

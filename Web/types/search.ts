@@ -1,32 +1,33 @@
 export interface SearchItem {
   id: string;
-  title: string;
-  description: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  mileage: number;
-  imageUrl?: string;
+  title: string | null;
+  description: string | null;
+  category: string | null;
+  tags: string | null;
+  imageUrl: string | null;
+  price: number;
   status: string;
-  reservePrice: number;
-  soldAmount?: number;
-  currentHighBid?: number;
+  source: string;
+  sourceId: string;
   createdAt: string;
   updatedAt: string;
-  auctionEnd: string;
-  seller: string;
-  winner?: string;
+  viewCount: number;
+  relevance: number;
+  lastIndexed: string;
 }
 
 export interface SearchRequestDto {
-  searchTerm?: string;
-  pageNumber?: number;
+  query?: string;
+  page?: number;
   pageSize?: number;
   seller?: string;
   winner?: string;
-  orderBy?: SearchOrderBy;
-  filterBy?: SearchFilterBy;
+  status?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 export enum SearchOrderBy {
@@ -42,7 +43,12 @@ export enum SearchFilterBy {
 }
 
 export interface SearchResultDto {
-  results: SearchItem[];
-  pageCount: number;
+  items: SearchItem[];
   totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  query: string;
 }

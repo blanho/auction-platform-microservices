@@ -35,9 +35,14 @@ export function AuctionCard({ auction }: AuctionCardProps) {
         }
     };
 
-    const timeRemaining = formatDistance(new Date(auction.auctionEnd), new Date(), {
-        addSuffix: true,
-    });
+    const getTimeRemaining = () => {
+        if (!('auctionEnd' in auction) || !auction.auctionEnd) return 'Date not set';
+        const endDate = new Date(auction.auctionEnd);
+        if (isNaN(endDate.getTime())) return 'Invalid date';
+        return formatDistance(endDate, new Date(), { addSuffix: true });
+    };
+
+    const timeRemaining = getTimeRemaining();
 
     return (
         <Card className="overflow-hidden transition-all hover:shadow-lg">
@@ -46,7 +51,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
                     {auction.imageUrl ? (
                         <Image
                             src={auction.imageUrl}
-                            alt={auction.title}
+                            alt={auction.title || 'Auction item'}
                             fill
                             className="object-cover"
                         />
@@ -61,18 +66,31 @@ export function AuctionCard({ auction }: AuctionCardProps) {
                 </div>
             </CardHeader>
             <CardContent className="p-4">
-                <h3 className="mb-2 text-lg font-semibold line-clamp-1">{auction.title}</h3>
+                <h3 className="mb-2 text-lg font-semibold line-clamp-1">{auction.title || 'Untitled'}</h3>
                 <div className="space-y-1 text-sm">
-                    <p className="text-muted-foreground">
-                        {auction.year} {auction.make} {auction.model}
-                    </p>
+                    {'make' in auction && auction.make && (
+                        <p className="text-muted-foreground">
+                            {auction.year} {auction.make} {auction.model}
+                        </p>
+                    )}
+                    {'description' in auction && auction.description && (
+                        <p className="text-muted-foreground text-xs line-clamp-2">
+                            {auction.description}
+                        </p>
+                    )}
                     <p className="font-semibold">
-                        Current Bid: ${auction.currentHighBid?.toLocaleString() || '0'}
+                        {'currentHighBid' in auction
+                            ? `Current Bid: $${auction.currentHighBid?.toLocaleString() || '0'}`
+                            : `Price: $${('price' in auction ? auction.price : 0).toLocaleString()}`}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                        Reserve: ${auction.reservePrice.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Ends {timeRemaining}</p>
+                    {'reservePrice' in auction && auction.reservePrice && (
+                        <p className="text-xs text-muted-foreground">
+                            Reserve: ${auction.reservePrice.toLocaleString()}
+                        </p>
+                    )}
+                    {'auctionEnd' in auction && auction.auctionEnd && (
+                        <p className="text-xs text-muted-foreground">Ends {timeRemaining}</p>
+                    )}
                 </div>
             </CardContent>
             <CardFooter className="p-4 pt-0">

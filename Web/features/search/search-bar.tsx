@@ -10,24 +10,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { SearchFilterBy, SearchOrderBy } from '@/types/search';
 
 interface SearchBarProps {
     onSearch: (params: {
-        searchTerm: string;
-        orderBy?: SearchOrderBy;
-        filterBy?: SearchFilterBy;
+        query?: string;
+        sortBy?: string;
+        status?: string;
     }) => void;
 }
 
 export function SearchBar({ onSearch }: SearchBarProps) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [orderBy, setOrderBy] = useState<SearchOrderBy>();
-    const [filterBy, setFilterBy] = useState<SearchFilterBy>();
+    const [query, setQuery] = useState('');
+    const [sortBy, setSortBy] = useState<string>();
+    const [status, setStatus] = useState<string>();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSearch({ searchTerm, orderBy, filterBy });
+        onSearch({ query, sortBy, status });
     };
 
     return (
@@ -36,38 +35,38 @@ export function SearchBar({ onSearch }: SearchBarProps) {
                 <Input
                     type="text"
                     placeholder="Search auctions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                     className="flex-1"
                 />
                 <Button type="submit">Search</Button>
             </div>
             <div className="flex gap-4">
                 <Select
-                    value={orderBy}
-                    onValueChange={(value) => setOrderBy(value as SearchOrderBy)}
+                    value={sortBy}
+                    onValueChange={(value) => setSortBy(value)}
                 >
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value={SearchOrderBy.New}>Newest</SelectItem>
-                        <SelectItem value={SearchOrderBy.EndingSoon}>Ending Soon</SelectItem>
-                        <SelectItem value={SearchOrderBy.Make}>Make</SelectItem>
+                        <SelectItem value="new">Newest</SelectItem>
+                        <SelectItem value="endingSoon">Ending Soon</SelectItem>
+                        <SelectItem value="make">Make</SelectItem>
                     </SelectContent>
                 </Select>
 
                 <Select
-                    value={filterBy}
-                    onValueChange={(value) => setFilterBy(value as SearchFilterBy)}
+                    value={status}
+                    onValueChange={(value) => setStatus(value)}
                 >
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Filter by" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value={SearchFilterBy.Live}>Live</SelectItem>
-                        <SelectItem value={SearchFilterBy.EndingSoon}>Ending Soon</SelectItem>
-                        <SelectItem value={SearchFilterBy.Finished}>Finished</SelectItem>
+                        <SelectItem value="live">Live</SelectItem>
+                        <SelectItem value="endingSoon">Ending Soon</SelectItem>
+                        <SelectItem value="finished">Finished</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

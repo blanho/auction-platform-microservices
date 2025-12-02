@@ -13,15 +13,15 @@ import { EmptyState } from "@/components/common/empty-state";
 
 export default function SearchPage() {
     const [searchParams, setSearchParams] = useState<SearchRequestDto>({
-        searchTerm: '',
-        pageNumber: 1,
+        query: '',
+        page: 1,
         pageSize: 12,
     });
 
     const { data, isLoading } = useSearch(searchParams);
 
     const handleSearch = (params: Partial<SearchRequestDto>) => {
-        setSearchParams((prev) => ({ ...prev, ...params, pageNumber: 1 }));
+        setSearchParams((prev) => ({ ...prev, ...params, page: 1 }));
     };
 
     return (
@@ -40,18 +40,18 @@ export default function SearchPage() {
                     <div className="flex items-center justify-center py-12">
                         <LoadingSpinner size="lg" />
                     </div>
-                ) : data?.results && data.results.length > 0 ? (
+                ) : data?.items && data.items.length > 0 ? (
                     <>
                         <p className="text-sm text-muted-foreground">
                             Found {data.totalCount} results
                         </p>
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {data.results.map((item) => (
+                            {data.items.map((item) => (
                                 <AuctionCard key={item.id} auction={item as Auction} />
                             ))}
                         </div>
                     </>
-                ) : searchParams.searchTerm || searchParams.filterBy ? (
+                ) : searchParams.query || searchParams.status ? (
                     <EmptyState
                         title="No results found"
                         description="Try adjusting your search criteria"
