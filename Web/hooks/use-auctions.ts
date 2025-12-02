@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { auctionService } from "@/services/auction.service";
+import { searchService } from "@/services/search.service";
 import { CreateAuctionDto, UpdateAuctionDto } from "@/types/auction";
 import { QUERY_KEYS } from "@/constants/api";
 import { toast } from "sonner";
@@ -10,15 +11,25 @@ export const useAuctions = (params?: {
   pageSize?: number;
 }) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.AUCTIONS, params],
-    queryFn: () => auctionService.getAuctions(params)
+    queryKey: [QUERY_KEYS.SEARCH, params],
+    queryFn: () =>
+      searchService.search({
+        pageNumber: params?.pageNumber || 1,
+        pageSize: params?.pageSize || 12
+      })
   });
 };
 
 export const useAuction = (id: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.AUCTION, id],
-    queryFn: () => auctionService.getAuctionById(id),
+    queryFn: async () => {
+      const result = await searchService.search({
+        searchTerm: id,
+        pageSize: 1
+      });
+      return result.results[0];
+    },
     enabled: !!id
   });
 };

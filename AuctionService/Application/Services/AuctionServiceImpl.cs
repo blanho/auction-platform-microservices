@@ -34,34 +34,6 @@ public class AuctionServiceImpl : IAuctionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<AuctionDto>> GetAllAuctionsAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Fetching all auctions at {Timestamp}", _dateTime.UtcNow);
-
-        
-        var auctions = await _repository.GetAllAsync(cancellationToken);
-        var result = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
-        
-        _logger.LogInformation("Retrieved {Count} auctions (check cache decorator logs for cache hit/miss)", result.Count);
-        return result;
-    }
-
-    public async Task<AuctionDto> GetAuctionByIdAsync(Guid id, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Fetching auction {AuctionId}", id);
-
-        
-        var auction = await _repository.GetByIdAsync(id, cancellationToken);
-        
-        if (auction == null)
-        {
-            _logger.LogWarning("Auction {AuctionId} not found", id);
-            throw new NotFoundException($"Auction with ID {id} was not found");
-        }
-        
-        return _mapper.Map<AuctionDto>(auction);
-    }
-
     public async Task<AuctionDto> CreateAuctionAsync(CreateAuctionDto dto, string seller, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", seller, _dateTime.UtcNow);

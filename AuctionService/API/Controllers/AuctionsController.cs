@@ -18,23 +18,6 @@ namespace AuctionService.API.Controllers
             _auctionService = auctionService;
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions(CancellationToken cancellationToken)
-        {
-            var auctions = await _auctionService.GetAllAuctionsAsync(cancellationToken);
-            return Ok(auctions);
-        }
-
-        [HttpGet("{id:guid}")]
-        [AllowAnonymous]
-        public async Task<ActionResult<AuctionDto>> GetAuctionById(Guid id, CancellationToken cancellationToken)
-        {
-            
-            var auction = await _auctionService.GetAuctionByIdAsync(id, cancellationToken);
-            return Ok(auction);
-        }
-
         [HttpPost]
         [Authorize(Policy = "AuctionWrite")]
         public async Task<ActionResult<AuctionDto>> CreateAuction(
@@ -44,8 +27,7 @@ namespace AuctionService.API.Controllers
             var seller = User.Identity?.Name ?? "test";
             var auction = await _auctionService.CreateAuctionAsync(createAuctionDto, seller, cancellationToken);
 
-            return CreatedAtAction(
-                nameof(GetAuctionById),
+            return CreatedAtRoute(
                 new { id = auction.Id },
                 auction);
         }

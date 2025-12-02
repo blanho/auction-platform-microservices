@@ -30,7 +30,7 @@ export function AuctionList() {
         );
     }
 
-    if (!data?.items || data.items.length === 0) {
+    if (!data?.results || data.results.length === 0) {
         return (
             <EmptyState
                 title="No auctions found"
@@ -46,7 +46,7 @@ export function AuctionList() {
 
     return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {data.items.map((auction) => (
+            {data.results.map((auction) => (
                 <AuctionCard key={auction.id} auction={auction} />
             ))}
         </div>

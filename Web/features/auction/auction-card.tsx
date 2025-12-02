@@ -6,22 +6,29 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Auction, AuctionStatus } from '@/types/auction';
+import { SearchItem } from '@/types/search';
 import { formatDistance } from 'date-fns';
 
 interface AuctionCardProps {
-    auction: Auction;
+    auction: Auction | SearchItem;
 }
 
 export function AuctionCard({ auction }: AuctionCardProps) {
-    const getStatusColor = (status: AuctionStatus) => {
-        switch (status) {
-            case AuctionStatus.Live:
+    const getStatusColor = (status: string) => {
+        const statusUpper = status.toUpperCase();
+        switch (statusUpper) {
+            case 'LIVE':
+            case AuctionStatus.Live.toUpperCase():
                 return 'bg-green-500';
-            case AuctionStatus.Finished:
+            case 'FINISHED':
+            case AuctionStatus.Finished.toUpperCase():
                 return 'bg-gray-500';
-            case AuctionStatus.ReserveNotMet:
+            case 'RESERVENOTMET':
+            case 'RESERVE_NOT_MET':
+            case AuctionStatus.ReserveNotMet.toUpperCase():
                 return 'bg-yellow-500';
-            case AuctionStatus.Cancelled:
+            case 'CANCELLED':
+            case AuctionStatus.Cancelled.toUpperCase():
                 return 'bg-red-500';
             default:
                 return 'bg-gray-500';
