@@ -1,8 +1,10 @@
 export const API_ENDPOINTS = {
-  AUCTIONS: "/api/auctions",
-  AUCTION_BY_ID: (id: string) => `/api/auctions/${id}`,
-  SEARCH: "/api/search",
+  // Gateway inbound routes (Gateway rewrites to versioned backend paths)
+  AUCTIONS: "/auctions",
+  AUCTION_BY_ID: (id: string) => `/auctions/${id}`,
+  SEARCH: "/search",
   AUTH: {
+    // Leaving auth as-is until identity endpoints are confirmed
     LOGIN: "/api/auth/login",
     LOGOUT: "/api/auth/logout",
     REGISTER: "/api/auth/register",
