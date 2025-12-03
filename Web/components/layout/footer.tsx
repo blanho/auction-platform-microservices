@@ -153,13 +153,11 @@ export function Footer() {
 
                 <Separator />
 
-                {/* Bottom Bar */}
                 <div className="py-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-muted-foreground text-center md:text-left">
                         © {new Date().getFullYear()} AuctionHub. All rights reserved.
                     </p>
 
-                    {/* Social Links */}
                     <div className="flex items-center gap-4">
                         {socialLinks.map((social) => (
                             <a

@@ -1,4 +1,3 @@
-// Search page
 'use client';
 
 import { useState } from 'react';
@@ -6,7 +5,6 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { SearchBar } from "@/features/search/search-bar";
 import { useSearch } from "@/hooks/use-search";
 import { SearchRequestDto } from "@/types/search";
-import { Auction } from "@/types/auction";
 import { AuctionCard } from "@/features/auction/auction-card";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { EmptyState } from "@/components/common/empty-state";
@@ -47,7 +45,7 @@ export default function SearchPage() {
                         </p>
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {data.items.map((item) => (
-                                <AuctionCard key={item.id} auction={item as Auction} />
+                                <AuctionCard key={item.id} auction={item} />
                             ))}
                         </div>
                     </>

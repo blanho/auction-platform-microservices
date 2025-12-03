@@ -1,4 +1,3 @@
-// Header component
 'use client';
 
 import { useState } from 'react';
@@ -59,11 +58,9 @@ export function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 shadow-sm">
-            {/* Top Bar */}
             <div className="border-b border-gray-100 dark:border-gray-800">
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between gap-4">
-                        {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 shrink-0">
                             <div className="w-9 h-9 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                                 <Gavel className="h-5 w-5 text-white" />
@@ -73,7 +70,6 @@ export function Header() {
                             </span>
                         </Link>
 
-                        {/* Search Bar - Desktop */}
                         <div className="hidden md:flex flex-1 max-w-2xl">
                             <div className="flex w-full">
                                 <DropdownMenu>
@@ -115,15 +111,12 @@ export function Header() {
                             </div>
                         </div>
 
-                        {/* Right Actions */}
                         <div className="flex items-center gap-1 sm:gap-2">
-                            {/* Location/Language */}
                             <Button variant="ghost" size="sm" className="hidden lg:flex items-center gap-1 text-sm">
                                 <Globe className="h-4 w-4" />
                                 <span>EN</span>
                             </Button>
 
-                            {/* Wishlist */}
                             <Button variant="ghost" size="icon" className="relative" asChild>
                                 <Link href="/wishlist">
                                     <Heart className="h-5 w-5" />
@@ -133,7 +126,6 @@ export function Header() {
                                 </Link>
                             </Button>
 
-                            {/* Cart */}
                             <Button variant="ghost" size="icon" className="relative" asChild>
                                 <Link href="/cart">
                                     <ShoppingCart className="h-5 w-5" />
@@ -143,7 +135,6 @@ export function Header() {
                                 </Link>
                             </Button>
 
-                            {/* Auth */}
                             {isAuthenticated ? (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -197,7 +188,6 @@ export function Header() {
                                 </div>
                             )}
 
-                            {/* Mobile Menu */}
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon" className="md:hidden">
@@ -206,13 +196,11 @@ export function Header() {
                                 </SheetTrigger>
                                 <SheetContent side="left" className="w-80">
                                     <div className="flex flex-col gap-6 mt-6">
-                                        {/* Mobile Search */}
                                         <div className="relative">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input placeholder="Search..." className="pl-9" />
                                         </div>
 
-                                        {/* Mobile Categories */}
                                         <div>
                                             <h3 className="font-semibold mb-3">Categories</h3>
                                             <div className="grid grid-cols-2 gap-2">
@@ -229,7 +217,6 @@ export function Header() {
                                             </div>
                                         </div>
 
-                                        {/* Mobile Nav Links */}
                                         <div className="border-t pt-4">
                                             {navLinks.map((link) => (
                                                 <Link
@@ -250,11 +237,9 @@ export function Header() {
                 </div>
             </div>
 
-            {/* Navigation Bar */}
             <nav className="hidden md:block border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="flex items-center gap-1 h-12">
-                        {/* Categories Dropdown */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="gap-2">
@@ -277,7 +262,6 @@ export function Header() {
 
                         <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2" />
 
-                        {/* Nav Links */}
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
@@ -289,7 +273,6 @@ export function Header() {
                             </Link>
                         ))}
 
-                        {/* Sell Button */}
                         <div className="ml-auto">
                             <Button size="sm" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950" asChild>
                                 <Link href="/sell">

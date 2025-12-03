@@ -7,6 +7,6 @@ export const useSearch = (params: SearchRequestDto) => {
   return useQuery({
     queryKey: [QUERY_KEYS.SEARCH, params],
     queryFn: () => searchService.search(params),
-    enabled: !!params.searchTerm || !!params.filterBy
+    enabled: !!params.query || !!params.status || !!params.category
   });
 };
