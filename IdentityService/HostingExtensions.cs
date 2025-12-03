@@ -48,6 +48,7 @@ internal static class HostingExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddRazorPages();
+        builder.Services.AddControllers();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -113,11 +114,19 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
+        // Add CORS for development
+        app.UseCors(policy =>
+            policy.WithOrigins("http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+
         app.UseStaticFiles();
         app.UseRouting();
         app.UseIdentityServer();
         app.UseAuthorization();
 
+        app.MapControllers();
         app.MapRazorPages()
             .RequireAuthorization();
 
