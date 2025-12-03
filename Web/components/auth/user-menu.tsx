@@ -72,7 +72,7 @@ export function UserMenu() {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href="/my-auctions">
+                    <Link href="/auctions/my-auctions">
                         <Gavel className="mr-2 h-4 w-4" />
                         My Auctions
                     </Link>
