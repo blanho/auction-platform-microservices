@@ -4,6 +4,10 @@ namespace AuctionService.Application.DTOs
 {
     public class UpdateAuctionDto
     {
+        public string Title { get; set; }
+
+        public string Description { get; set; }
+
         public string Make { get; set; }
 
         public string Model { get; set; }

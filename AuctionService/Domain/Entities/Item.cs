@@ -4,6 +4,8 @@ namespace AuctionService.Domain.Entities
 {
     public class Item : BaseEntity
     {
+        public string Title { get; set; }
+        public string Description { get; set; }
         public string Make { get; set; }
         public string Model { get; set; }
         public int Year { get; set; }

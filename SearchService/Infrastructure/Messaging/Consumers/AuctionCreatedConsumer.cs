@@ -25,6 +25,8 @@ public class AuctionCreatedConsumer : IConsumer<AuctionCreatedEvent>
         var searchItem = new SearchItem
         {
             Id = message.Id,
+            Title = message.Title,
+            Description = message.Description,
             Make = message.Make,
             Model = message.Model,
             Year = message.Year,

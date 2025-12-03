@@ -5,6 +5,12 @@ namespace AuctionService.Application.DTOs
     public class CreateAuctionDto
     {
         [Required]
+        public required string Title { get; set; }
+
+        [Required]
+        public required string Description { get; set; }
+
+        [Required]
         public required string Make { get; set; }
 
         [Required]

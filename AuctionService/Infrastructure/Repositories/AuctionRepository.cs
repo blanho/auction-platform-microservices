@@ -23,7 +23,7 @@ namespace AuctionService.Infrastructure.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
-                .OrderBy(x => x.Item.Make)
+                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
 
@@ -39,6 +39,14 @@ namespace AuctionService.Infrastructure.Repositories
         {
             auction.CreatedAt = _dateTime.UtcNow;
             auction.CreatedBy = SystemGuids.System;
+            auction.IsDeleted = false;
+            
+            if (auction.Item != null)
+            {
+                auction.Item.CreatedAt = _dateTime.UtcNow;
+                auction.Item.CreatedBy = SystemGuids.System;
+                auction.Item.IsDeleted = false;
+            }
             
             await _context.Auctions.AddAsync(auction, cancellationToken);
             
@@ -51,6 +59,14 @@ namespace AuctionService.Infrastructure.Repositories
             foreach (var auction in auctions)
             {
                 auction.CreatedAt = utcNow;
+                auction.IsDeleted = false;
+                
+                if (auction.Item != null)
+                {
+                    auction.Item.CreatedAt = utcNow;
+                    auction.Item.CreatedBy = SystemGuids.System;
+                    auction.Item.IsDeleted = false;
+                }
             }
             await _context.Auctions.AddRangeAsync(auctions, cancellationToken);
             return auctions;

@@ -27,6 +27,8 @@ namespace AuctionService.Application.Mappings
                 .ForMember(d => d.AuctionEnd, o => o.MapFrom(s => s.AuctionEnd.DateTime))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
                 .ForMember(d => d.ReservePrice, o => o.MapFrom(s => s.ReversePrice))
+                .ForMember(d => d.Title, o => o.MapFrom(s => s.Item.Title))
+                .ForMember(d => d.Description, o => o.MapFrom(s => s.Item.Description))
                 .ForMember(d => d.Make, o => o.MapFrom(s => s.Item.Make))
                 .ForMember(d => d.Model, o => o.MapFrom(s => s.Item.Model))
                 .ForMember(d => d.Year, o => o.MapFrom(s => s.Item.Year))
