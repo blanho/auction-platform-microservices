@@ -47,7 +47,6 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddRazorPages();
         builder.Services.AddControllers();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -127,8 +126,7 @@ internal static class HostingExtensions
         app.UseAuthorization();
 
         app.MapControllers();
-        app.MapRazorPages()
-            .RequireAuthorization();
+        // Removed MapRazorPages() - using Next.js UI instead
 
         return app;
     }

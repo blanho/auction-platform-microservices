@@ -1,18 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useSearchParams } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export default function SignInPage() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/";
-    const error = searchParams.get("error");
     const registered = searchParams.get("registered");
 
-    const handleSignIn = async () => {
-        await signIn("id-server", { callbackUrl });
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!username || !password) {
+            setError("Please enter both username and password");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await signIn("id-server", {
+                username,
+                password,
+                redirect: false,
+                callbackUrl
+            });
+
+            if (result?.error) {
+                setError("Invalid username or password");
+            } else if (result?.ok) {
+                router.push(callbackUrl);
+            }
+        } catch {
+            setError("An error occurred during sign in");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -21,47 +58,80 @@ export default function SignInPage() {
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
                     <CardDescription>
-                        Sign in to your auction account
+                        Enter your credentials to access your account
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    {registered && (
-                        <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
-                            Registration successful! You can now sign in.
-                        </div>
-                    )}
-                    {error && (
-                        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                            {error === "OAuthSignin" && "Error occurred during sign in"}
-                            {error === "OAuthCallback" && "Error occurred during callback"}
-                            {error === "OAuthCreateAccount" && "Could not create account"}
-                            {error === "EmailCreateAccount" && "Could not create email account"}
-                            {error === "Callback" && "Error in callback"}
-                            {error === "OAuthAccountNotLinked" && "Account already linked to another provider"}
-                            {error === "EmailSignin" && "Check your email address"}
-                            {error === "CredentialsSignin" && "Sign in failed. Check your credentials"}
-                            {error === "SessionRequired" && "Please sign in to access this page"}
-                            {error === "default" && "Unable to sign in"}
-                        </div>
-                    )}
-                    <Button
-                        onClick={handleSignIn}
-                        className="w-full"
-                        size="lg"
-                    >
-                        Sign in with Identity Server
-                    </Button>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {registered && (
+                            <Alert className="bg-green-500/15 border-green-500/50">
+                                <AlertDescription className="text-green-600 dark:text-green-400">
+                                    Registration successful! You can now sign in.
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                    <div className="text-center text-sm text-muted-foreground">
-                        Don&apos;t have an account?{" "}
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="username">Username</Label>
+                            <Input
+                                id="username"
+                                type="text"
+                                placeholder="Enter your username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                disabled={loading}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                disabled={loading}
+                                required
+                            />
+                        </div>
+
                         <Button
-                            variant="link"
-                            className="p-0 h-auto font-semibold"
-                            onClick={() => window.location.href = "/auth/register"}
+                            type="submit"
+                            className="w-full"
+                            size="lg"
+                            disabled={loading}
                         >
-                            Register
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : (
+                                "Sign In"
+                            )}
                         </Button>
-                    </div>
+
+                        <div className="text-center text-sm text-muted-foreground">
+                            Don&apos;t have an account?{" "}
+                            <Button
+                                variant="link"
+                                className="p-0 h-auto font-semibold"
+                                onClick={() => router.push("/auth/register")}
+                                type="button"
+                            >
+                                Register
+                            </Button>
+                        </div>
+                    </form>
                 </CardContent>
             </Card>
         </div>

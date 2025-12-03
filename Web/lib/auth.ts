@@ -1,6 +1,15 @@
 import { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
-import DuendeIDS6Provider from "next-auth/providers/duende-identity-server6";
+import CredentialsProvider from "next-auth/providers/credentials";
+
+export interface ExtendedUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}
 
 export interface ExtendedToken extends JWT {
   access_token?: string;
@@ -68,28 +77,90 @@ async function refreshAccessToken(
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    DuendeIDS6Provider({
+    CredentialsProvider({
       id: "id-server",
       name: "Identity Server",
-      clientId,
-      clientSecret,
-      issuer: identityServerUrl,
-      authorization: {
-        params: {
-          scope: "openid profile auction"
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const response = await fetch(`${identityServerUrl}/connect/token`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+              grant_type: "password",
+              username: credentials.username,
+              password: credentials.password,
+              client_id: clientId,
+              client_secret: clientSecret,
+              scope: "openid profile auction"
+            })
+          });
+
+          if (!response.ok) {
+            return null;
+          }
+
+          const tokens = await response.json();
+
+          const userInfoResponse = await fetch(
+            `${identityServerUrl}/connect/userinfo`,
+            {
+              headers: {
+                Authorization: `Bearer ${tokens.access_token}`
+              }
+            }
+          );
+
+          if (!userInfoResponse.ok) {
+            return null;
+          }
+
+          const userInfo = await userInfoResponse.json();
+
+          return {
+            id: userInfo.sub,
+            name: userInfo.name || credentials.username,
+            email: userInfo.email,
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token,
+            expiresAt: Date.now() + tokens.expires_in * 1000
+          };
+        } catch (error) {
+          console.error("Authentication error:", error);
+          return null;
         }
       }
     })
   ],
   callbacks: {
-    async jwt({ token, account, profile }) {
-      if (account && profile) {
+    async jwt({ token, user, account }) {
+      if (user) {
+        const extendedUser = user as ExtendedUser;
+        return {
+          ...token,
+          access_token: extendedUser.accessToken,
+          refresh_token: extendedUser.refreshToken,
+          expires_at: extendedUser.expiresAt,
+          id: user.id
+        } as ExtendedToken;
+      }
+
+      if (account) {
         return {
           ...token,
           access_token: account.access_token,
           refresh_token: account.refresh_token,
           expires_at: account.expires_at! * 1000,
-          id: profile.sub
+          id: token.sub
         } as ExtendedToken;
       }
 
