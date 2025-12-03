@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
+import { UserMenu } from '@/components/auth/user-menu';
 import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
@@ -12,7 +12,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     Search,
     Heart,
@@ -52,7 +51,6 @@ const navLinks = [
 ];
 
 export function Header() {
-    const { isAuthenticated, user, logout } = useAuthStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All categories');
 
@@ -135,58 +133,7 @@ export function Header() {
                                 </Link>
                             </Button>
 
-                            {isAuthenticated ? (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarFallback className="bg-linear-to-br from-blue-500 to-indigo-600 text-white">
-                                                    {user?.username?.charAt(0).toUpperCase() || 'U'}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56">
-                                        <div className="flex items-center gap-3 p-3">
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarFallback className="bg-linear-to-br from-blue-500 to-indigo-600 text-white">
-                                                    {user?.username?.charAt(0).toUpperCase() || 'U'}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{user?.username}</p>
-                                                <p className="text-xs text-muted-foreground">{user?.email}</p>
-                                            </div>
-                                        </div>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/profile" className="cursor-pointer">My Profile</Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/my-auctions" className="cursor-pointer">My Auctions</Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/orders" className="cursor-pointer">Orders</Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/watchlist" className="cursor-pointer">Watchlist</Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={logout} className="text-red-500 cursor-pointer">
-                                            Log out
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                                        <Link href="/auth/login">Sign In</Link>
-                                    </Button>
-                                    <Button size="sm" asChild className="bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
-                                        <Link href="/auth/register">Sign Up</Link>
-                                    </Button>
-                                </div>
-                            )}
+                            <UserMenu />
 
                             <Sheet>
                                 <SheetTrigger asChild>

@@ -3,6 +3,7 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig
 } from "axios";
+import { getSession } from "next-auth/react";
 
 const baseURL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:6001";
 
@@ -15,14 +16,12 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("accessToken")
-        : null;
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== "undefined") {
+      const session = await getSession();
+      if (session?.accessToken && config.headers) {
+        config.headers.Authorization = `Bearer ${session.accessToken}`;
+      }
     }
 
     const correlationId = crypto.randomUUID();
@@ -44,7 +43,10 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest) {
       if (typeof window !== "undefined") {
-        window.location.href = "/auth/login";
+        const currentPath = window.location.pathname;
+        window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(
+          currentPath
+        )}`;
       }
     }
 
