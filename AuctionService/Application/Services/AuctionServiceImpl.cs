@@ -63,6 +63,8 @@ public class AuctionServiceImpl : IAuctionService
             throw new NotFoundException($"Auction with ID {id} was not found");
         }
 
+        auction.Item.Title = dto.Title ?? auction.Item.Title;
+        auction.Item.Description = dto.Description ?? auction.Item.Description;
         auction.Item.Make = dto.Make ?? auction.Item.Make;
         auction.Item.Model = dto.Model ?? auction.Item.Model;
         auction.Item.Color = dto.Color ?? auction.Item.Color;
@@ -74,6 +76,8 @@ public class AuctionServiceImpl : IAuctionService
         await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
         {
             Id = id,
+            Title = dto.Title,
+            Description = dto.Description,
             Make = dto.Make,
             Model = dto.Model,
             Year = dto.Year,

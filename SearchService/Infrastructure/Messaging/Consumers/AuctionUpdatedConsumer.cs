@@ -28,6 +28,8 @@ public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
             return;
         }
 
+        if (message.Title != null) searchItem.Title = message.Title;
+        if (message.Description != null) searchItem.Description = message.Description;
         if (message.Make != null) searchItem.Make = message.Make;
         if (message.Model != null) searchItem.Model = message.Model;
         if (message.Year.HasValue) searchItem.Year = message.Year.Value;
