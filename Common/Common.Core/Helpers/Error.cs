@@ -1,11 +1,11 @@
 ﻿namespace Common.Core.Helpers;
 
-public sealed record Error
+public record Error
 {
     public string Code { get; }
     public string Message { get; }
 
-    private Error(string code, string message)
+    protected Error(string code, string message)
     {
         Code = code;
         Message = message;
