@@ -11,6 +11,12 @@ public interface IAuditPublisher
         T? oldEntity = default,
         Dictionary<string, object>? metadata = null,
         CancellationToken cancellationToken = default) where T : class;
+
+    Task PublishBatchAsync<T>(
+        IEnumerable<(Guid EntityId, T Entity)> entities,
+        AuditAction action,
+        Dictionary<string, object>? metadata = null,
+        CancellationToken cancellationToken = default) where T : class;
 }
 
 public interface IAuditContext

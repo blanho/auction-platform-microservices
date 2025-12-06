@@ -92,8 +92,58 @@ namespace AuctionService.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted 
                     && x.AuctionEnd < now 
                     && x.Status != Status.Finished 
-                    && x.Status != Status.ReservedNotMet)
+                    && x.Status != Status.ReservedNotMet
+                    && x.Status != Status.Inactive)
                 .Include(x => x.Item)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default)
+        {
+            var now = _dateTime.UtcNow;
+            
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.AuctionEnd < now 
+                    && x.Status == Status.Live)
+                .Include(x => x.Item)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetAuctionsForExportAsync(
+            Status? status = null,
+            string? seller = null,
+            DateTimeOffset? startDate = null,
+            DateTimeOffset? endDate = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(x => x.Status == status.Value);
+            }
+
+            if (!string.IsNullOrEmpty(seller))
+            {
+                query = query.Where(x => x.Seller == seller);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(x => x.CreatedAt >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(x => x.CreatedAt <= endDate.Value);
+            }
+
+            return await query
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
     }

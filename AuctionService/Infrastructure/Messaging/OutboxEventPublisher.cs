@@ -16,4 +16,9 @@ public class OutboxEventPublisher : IEventPublisher
     {
         await _publishEndpoint.Publish(message, cancellationToken);
     }
+
+    public async Task PublishBatchAsync<T>(IEnumerable<T> messages, CancellationToken cancellationToken = default) where T : class
+    {
+        await _publishEndpoint.PublishBatch(messages, cancellationToken);
+    }
 }

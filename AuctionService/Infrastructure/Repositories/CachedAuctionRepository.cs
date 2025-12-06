@@ -4,6 +4,7 @@ using AuctionService.Domain.Entities;
 using AutoMapper;
 using Common.Caching.Abstractions;
 using Common.Caching.Keys;
+using Common.Domain.Enums;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Infrastructure.Repositories;
@@ -87,6 +88,17 @@ public class CachedAuctionRepository : IAuctionRepository
 
     public Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         => _inner.GetFinishedAuctionsAsync(cancellationToken);
+
+    public Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default)
+        => _inner.GetAuctionsToAutoDeactivateAsync(cancellationToken);
+
+    public Task<List<Auction>> GetAuctionsForExportAsync(
+        Status? status = null,
+        string? seller = null,
+        DateTimeOffset? startDate = null,
+        DateTimeOffset? endDate = null,
+        CancellationToken cancellationToken = default)
+        => _inner.GetAuctionsForExportAsync(status, seller, startDate, endDate, cancellationToken);
 
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {

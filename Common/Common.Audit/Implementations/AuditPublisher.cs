@@ -107,4 +107,35 @@ public class AuditPublisher : IAuditPublisher
 
         return changedProperties;
     }
+
+    public async Task PublishBatchAsync<T>(
+        IEnumerable<(Guid EntityId, T Entity)> entities,
+        AuditAction action,
+        Dictionary<string, object>? metadata = null,
+        CancellationToken cancellationToken = default) where T : class
+    {
+        if (!_options.Enabled) return;
+
+        var entityType = typeof(T).Name;
+        if (_options.ExcludedEntities.Contains(entityType)) return;
+
+        var auditEvents = entities.Select(e => new AuditEvent
+        {
+            EntityId = e.EntityId,
+            EntityType = entityType,
+            Action = action,
+            OldValues = null,
+            NewValues = SerializeEntity(e.Entity),
+            ChangedProperties = new List<string>(),
+            UserId = _auditContext.UserId,
+            Username = _auditContext.Username,
+            ServiceName = _options.ServiceName,
+            CorrelationId = _auditContext.CorrelationId,
+            IpAddress = _auditContext.IpAddress,
+            Timestamp = DateTimeOffset.UtcNow,
+            Metadata = metadata
+        }).ToList();
+
+        await _eventPublisher.PublishBatchAsync(auditEvents, cancellationToken);
+    }
 }

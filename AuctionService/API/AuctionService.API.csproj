@@ -43,6 +43,7 @@
     <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
     <ProjectReference Include="..\..\Common\Common.Observability\Common.Observability.csproj" />
     <ProjectReference Include="..\..\Common\Common.Audit\Common.Audit.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Utilities\Common.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

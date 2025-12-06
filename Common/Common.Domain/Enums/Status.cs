@@ -3,7 +3,13 @@ namespace Common.Domain.Enums
     public enum Status
     {
         Live,
+        
         Finished,
-        ReservedNotMet
+        
+        ReservedNotMet,
+        
+        Inactive,
+        
+        Scheduled
     }
 }

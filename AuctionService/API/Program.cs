@@ -1,4 +1,5 @@
 ﻿using AuctionService.API.Extensions;
+using AuctionService.Application.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
@@ -11,6 +12,7 @@ using Common.Messaging.Extensions;
 using Common.CQRS.Extensions;
 using Common.Observability;
 using Common.Audit.Extensions;
+using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +26,10 @@ builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
+
+// Common Utilities (Excel, CSV, etc.)
+builder.Services.AddCommonUtilities();
+builder.Services.AddScoped<IAuctionExcelService, AuctionExcelService>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -42,6 +48,7 @@ builder.Services.AddAuditServices(builder.Configuration);
 
 // Background Services
 builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();
+builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.ScheduledAuctionDeactivationService>();
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
