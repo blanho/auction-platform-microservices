@@ -182,6 +182,39 @@ services:
     networks:
       - microservices
 
+  notification-api:
+    build:
+      context: .
+      dockerfile: NotificationService/API/Dockerfile
+      target: final
+    container_name: notification-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=notification_db;Username=postgres;Password=postgres123
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Identity__Authority: http://identity-service:5001
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5004:8080"
+    volumes:
+      - notification_api_logs:/app/logs
+    depends_on:
+      - postgres
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
   identity-service:
     build:
       context: .
@@ -235,6 +268,7 @@ services:
       - auction-api
       - search-api
       - bid-api
+      - notification-api
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -278,6 +312,8 @@ volumes:
   search_api_logs:
     driver: local
   bid_api_logs:
+    driver: local
+  notification_api_logs:
     driver: local
   identity_logs:
     driver: local

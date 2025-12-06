@@ -76,6 +76,7 @@ public class AuctionServiceImpl : IAuctionService
         await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
         {
             Id = id,
+            Seller = auction.Seller,
             Title = dto.Title,
             Description = dto.Description,
             Make = dto.Make,
@@ -103,11 +104,14 @@ public class AuctionServiceImpl : IAuctionService
             throw new NotFoundException($"Auction with ID {id} was not found");
         }
 
+        var auction = await _repository.GetByIdAsync(id, cancellationToken);
+        
         await _repository.DeleteAsync(id, cancellationToken);
 
         await _eventPublisher.PublishAsync(new AuctionDeletedEvent
         {
-            Id = id
+            Id = id,
+            Seller = auction!.Seller
         }, cancellationToken);
         
         await _unitOfWork.SaveChangesAsync(cancellationToken);
