@@ -1,5 +1,6 @@
 export const API_ENDPOINTS = {
   AUCTIONS: "/auctions",
+  MY_AUCTIONS: "/auctions/my",
   AUCTION_BY_ID: (id: string) => `/auctions/${id}`,
   AUCTION_ACTIVATE: (id: string) => `/auctions/${id}/activate`,
   AUCTION_DEACTIVATE: (id: string) => `/auctions/${id}/deactivate`,
@@ -8,10 +9,8 @@ export const API_ENDPOINTS = {
   AUCTIONS_IMPORT_TEMPLATE: "/auctions/import/template",
   AUCTIONS_EXPORT: "/auctions/export",
 
-  SEARCH: "/search",
-  SEARCH_ITEM_BY_ID: (id: string) => `/search/items/${id}`,
-
   BIDS: "/bids",
+  MY_BIDS: "/bids/my",
   BIDS_BY_AUCTION: (auctionId: string) => `/bids/auction/${auctionId}`,
   BIDS_BY_BIDDER: (bidder: string) => `/bids/bidder/${bidder}`,
 
@@ -39,10 +38,11 @@ export const API_ENDPOINTS = {
 
 export const QUERY_KEYS = {
   AUCTIONS: "auctions",
+  MY_AUCTIONS: "my-auctions",
   AUCTION: "auction",
-  SEARCH: "search",
   USER: "user",
   BIDS: "bids",
+  MY_BIDS: "my-bids",
   BIDS_FOR_AUCTION: "bids-for-auction",
   BIDS_FOR_BIDDER: "bids-for-bidder",
   NOTIFICATIONS: "notifications",

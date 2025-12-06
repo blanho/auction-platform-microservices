@@ -47,6 +47,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../app/admin/auctions/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/admin/auctions">> = Specific
+  const handler = {} as typeof import("../../app/admin/auctions/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/admin/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/admin">> = Specific
+  const handler = {} as typeof import("../../app/admin/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/auctions/[id]/edit/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/auctions/[id]/edit">> = Specific

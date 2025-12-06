@@ -25,13 +25,11 @@ import {
     ToggleGroupItem,
 } from '@/components/ui/toggle-group';
 
-import apiClient from '@/lib/api/axios';
+import { auctionService } from '@/services/auction.service';
 import { Auction } from '@/types/auction';
-import { ApiResponse } from '@/types';
-import { API_ENDPOINTS } from '@/constants/api';
 
 export default function MyAuctionsPage() {
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const router = useRouter();
     const [auctions, setAuctions] = useState<Auction[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -39,28 +37,27 @@ export default function MyAuctionsPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
     const fetchAuctions = useCallback(async () => {
-        if (!session?.user?.name) return;
+        if (status !== 'authenticated') return;
         
         setIsLoading(true);
         try {
-            const { data } = await apiClient.get<ApiResponse<Auction[]>>(
-                `${API_ENDPOINTS.AUCTIONS}?seller=${session?.user?.name}`
-            );
-            setAuctions(data.data);
+            // Use the dedicated my-auctions endpoint (authenticated by token)
+            const response = await auctionService.getMyAuctions();
+            setAuctions(response.items);
             setError(null);
         } catch (err) {
             setError(err);
         } finally {
             setIsLoading(false);
         }
-    }, [session?.user?.name]);
+    }, [status]);
 
     useEffect(() => {
-        if (status !== 'authenticated' || !session?.user?.name) {
+        if (status !== 'authenticated') {
             return;
         }
         fetchAuctions();
-    }, [status, session?.user?.name, fetchAuctions]);
+    }, [status, fetchAuctions]);
 
     if (status === 'loading') {
         return (

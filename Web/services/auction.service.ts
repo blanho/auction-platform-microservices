@@ -9,8 +9,65 @@ import {
   ExportAuctionDto
 } from "@/types/auction";
 import { API_ENDPOINTS } from "@/constants/api";
+import { PaginatedResponse } from "@/types";
+
+export interface GetAuctionsParams {
+  status?: string;
+  seller?: string;
+  winner?: string;
+  searchTerm?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  orderBy?: string;
+  descending?: boolean;
+}
+
+export interface GetMyAuctionsParams {
+  status?: string;
+  searchTerm?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  orderBy?: string;
+  descending?: boolean;
+}
+
+// Response type that matches AuctionService PagedResult
+export interface AuctionPagedResult {
+  items: Auction[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
 
 export const auctionService = {
+  // Get all auctions with search/filter/pagination (replaces searchService.search)
+  getAuctions: async (params?: GetAuctionsParams): Promise<AuctionPagedResult> => {
+    const { data } = await apiClient.get<AuctionPagedResult>(
+      API_ENDPOINTS.AUCTIONS,
+      { params }
+    );
+    return data;
+  },
+
+  // Get auction by ID (replaces searchService.getById)
+  getAuctionById: async (id: string): Promise<Auction> => {
+    const { data } = await apiClient.get<Auction>(
+      API_ENDPOINTS.AUCTION_BY_ID(id)
+    );
+    return data;
+  },
+
+  getMyAuctions: async (params?: GetMyAuctionsParams): Promise<PaginatedResponse<Auction>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Auction>>(
+      API_ENDPOINTS.MY_AUCTIONS,
+      { params }
+    );
+    return data;
+  },
+
   createAuction: async (auction: CreateAuctionDto): Promise<Auction> => {
     const { data } = await apiClient.post<Auction>(
       API_ENDPOINTS.AUCTIONS,

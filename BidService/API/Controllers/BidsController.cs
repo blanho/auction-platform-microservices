@@ -34,6 +34,23 @@ namespace BidService.API.Controllers
             return Ok(bids);
         }
 
+        /// <summary>
+        /// Get all bids for the currently authenticated user
+        /// </summary>
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<ActionResult<List<BidDto>>> GetMyBids(CancellationToken cancellationToken)
+        {
+            var currentUser = User.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUser))
+            {
+                return Unauthorized();
+            }
+
+            var bids = await _bidService.GetBidsForBidderAsync(currentUser, cancellationToken);
+            return Ok(bids);
+        }
+
         [HttpGet("bidder/{bidder}")]
         [Authorize]
         public async Task<ActionResult<List<BidDto>>> GetBidsForBidder(string bidder, CancellationToken cancellationToken)

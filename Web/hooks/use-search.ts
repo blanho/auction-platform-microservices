@@ -1,15 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
-import { searchService } from "@/services/search.service";
-import { SearchRequestDto, SearchResultDto } from "@/types/search";
+import { auctionService, AuctionPagedResult, GetAuctionsParams } from "@/services/auction.service";
 
-export const useSearch = (params: SearchRequestDto) => {
-  const [data, setData] = useState<SearchResultDto | null>(null);
+export const useSearch = (params: GetAuctionsParams) => {
+  const [data, setData] = useState<AuctionPagedResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const enabled = useMemo(
-    () => !!params.query || !!params.status || !!params.category,
-    [params.query, params.status, params.category]
+    () => !!params.searchTerm || !!params.status,
+    [params.searchTerm, params.status]
   );
 
   useEffect(() => {
@@ -21,7 +20,7 @@ export const useSearch = (params: SearchRequestDto) => {
 
     const fetchData = async () => {
       try {
-        const result = await searchService.search(params);
+        const result = await auctionService.getAuctions(params);
         if (isMounted) {
           setData(result);
           setError(null);

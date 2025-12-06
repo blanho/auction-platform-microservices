@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { auctionService } from "@/services/auction.service";
-import { searchService } from "@/services/search.service";
+import { auctionService, AuctionPagedResult } from "@/services/auction.service";
 import { CreateAuctionDto, UpdateAuctionDto, Auction } from "@/types/auction";
-import { SearchRequestDto, SearchResultDto, SearchItem } from "@/types/search";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import {
@@ -13,34 +11,28 @@ import {
 export const useAuctions = () => {
   const params = useAuctionParams();
   const { setPaginationInfo } = useAuctionContext();
-  const [data, setData] = useState<SearchResultDto | null>(null);
+  const [data, setData] = useState<AuctionPagedResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const searchParams: SearchRequestDto = useMemo(
+  const searchParams = useMemo(
     () => ({
-      query: params.searchTerm || undefined,
-      page: params.page,
+      searchTerm: params.searchTerm || undefined,
+      pageNumber: params.page,
       pageSize: params.pageSize,
       status: params.status || undefined,
-      category: params.category || undefined,
       seller: params.seller || undefined,
       winner: params.winner || undefined,
-      minPrice: params.minPrice,
-      maxPrice: params.maxPrice,
-      sortBy: params.sortBy || undefined,
-      sortOrder: params.sortOrder || undefined
+      orderBy: params.sortBy || undefined,
+      descending: params.sortOrder === 'desc'
     }),
     [
       params.searchTerm,
       params.page,
       params.pageSize,
       params.status,
-      params.category,
       params.seller,
       params.winner,
-      params.minPrice,
-      params.maxPrice,
       params.sortBy,
       params.sortOrder
     ]
@@ -51,7 +43,7 @@ export const useAuctions = () => {
 
     const fetchData = async () => {
       try {
-        const result = await searchService.search(searchParams);
+        const result = await auctionService.getAuctions(searchParams);
         if (isMounted) {
           setData(result);
           setError(null);
@@ -88,7 +80,7 @@ export const useAuctionsWithParams = (params?: {
   pageNumber?: number;
   pageSize?: number;
 }) => {
-  const [data, setData] = useState<SearchResultDto | null>(null);
+  const [data, setData] = useState<AuctionPagedResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -97,8 +89,8 @@ export const useAuctionsWithParams = (params?: {
 
     const fetchData = async () => {
       try {
-        const result = await searchService.search({
-          page: params?.pageNumber || 1,
+        const result = await auctionService.getAuctions({
+          pageNumber: params?.pageNumber || 1,
           pageSize: params?.pageSize || 12
         });
         if (isMounted) {
@@ -128,7 +120,7 @@ export const useAuctionsWithParams = (params?: {
 };
 
 export const useAuction = (id: string) => {
-  const [data, setData] = useState<SearchItem | Auction | null>(null);
+  const [data, setData] = useState<Auction | null>(null);
   const [isLoading, setIsLoading] = useState(!!id);
   const [error, setError] = useState<Error | null>(null);
 
@@ -141,7 +133,7 @@ export const useAuction = (id: string) => {
 
     const fetchData = async () => {
       try {
-        const result = await searchService.getById(id);
+        const result = await auctionService.getAuctionById(id);
         if (isMounted) {
           setData(result);
           setError(null);

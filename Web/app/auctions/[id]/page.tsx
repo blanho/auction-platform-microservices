@@ -45,7 +45,7 @@ import { Auction, AuctionStatus } from '@/types/auction';
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
-import { searchService } from '@/services/search.service';
+import { auctionService } from '@/services/auction.service';
 import { AuditHistory } from '@/components/common/audit-history';
 
 export default function AuctionDetailPage() {
@@ -67,7 +67,7 @@ export default function AuctionDetailPage() {
 
         const fetchAuction = async () => {
             try {
-                const result = await searchService.getById(auctionId);
+                const result = await auctionService.getAuctionById(auctionId);
                 if (isMounted) {
                     setAuction(result);
                     setError(null);

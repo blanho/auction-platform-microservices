@@ -96,58 +96,6 @@ services:
     networks:
       - microservices
 
-  search-mongo:
-    image: mongo:7
-    container_name: search-mongo
-    restart: unless-stopped
-    ports:
-      - "27018:27017"
-    volumes:
-      - search_mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices
-
-  search-api:
-    build:
-      context: .
-      dockerfile: SearchService/API/Dockerfile
-      target: final
-    container_name: search-api
-    restart: unless-stopped
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      MongoDb__ConnectionString: mongodb://search-mongo:27017
-      MongoDb__DatabaseName: search_db
-      MongoDb__CollectionName: SearchItems
-      ConnectionStrings__Redis: redis:6379
-      RabbitMQ__Host: rabbitmq
-      RabbitMQ__Username: guest
-      RabbitMQ__Password: guest
-      Logging__LogLevel__Default: Information
-      Logging__LogLevel__Microsoft.AspNetCore: Warning
-    ports:
-      - "5001:8080"
-    volumes:
-      - search_api_logs:/app/logs
-    depends_on:
-      - search-mongo
-      - redis
-      - rabbitmq
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - microservices
-
   bid-api:
     build:
       context: .
@@ -266,7 +214,6 @@ services:
     depends_on:
       - identity-service
       - auction-api
-      - search-api
       - bid-api
       - notification-api
     healthcheck:
@@ -337,12 +284,6 @@ volumes:
   rabbitmq_data:
     driver: local
   auction_api_logs:
-    driver: local
-  search_mongo_data:
-    driver: local
-  search_postgres_data:
-    driver: local
-  search_api_logs:
     driver: local
   bid_api_logs:
     driver: local

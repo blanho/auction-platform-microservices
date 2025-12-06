@@ -12,6 +12,7 @@ using AuctionService.Application.DTOs.Requests;
 using AuctionService.Application.Queries.ExportAuctions;
 using AuctionService.Application.Queries.GetAuctionById;
 using AuctionService.Application.Queries.GetAuctions;
+using AuctionService.Application.Queries.GetMyAuctions;
 using Common.Core.Helpers;
 using Common.Utilities.Constants;
 using Common.Utilities.Helpers;
@@ -44,6 +45,31 @@ public class AuctionsController : ControllerBase
         var query = new GetAuctionsQuery(
             request.Status, request.Seller, request.Winner, request.SearchTerm,
             request.PageNumber, request.PageSize, request.OrderBy, request.Descending);
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("my")]
+    [Authorize(Policy = "AuctionScope")]
+    [ProducesResponseType(typeof(PagedResult<AuctionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<AuctionDto>>> GetMyAuctions(
+        [FromQuery] GetMyAuctionsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var username = UserHelper.GetUsername(User);
+        
+        var query = new GetMyAuctionsQuery(
+            username,
+            request.Status,
+            request.SearchTerm,
+            request.PageNumber,
+            request.PageSize,
+            request.OrderBy,
+            request.Descending);
 
         var result = await _mediator.Send(query, cancellationToken);
 

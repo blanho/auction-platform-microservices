@@ -30,7 +30,7 @@ export default function Home() {
           <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
             <h3 className="text-xl font-semibold mb-2">Microservices Architecture</h3>
             <p className="text-muted-foreground">
-              Built with clean architecture: AuctionService, SearchService, IdentityService, and Gateway using YARP.
+              Built with clean architecture: AuctionService, BidService, IdentityService, NotificationService, and Gateway using YARP.
             </p>
           </div>
           <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
@@ -42,7 +42,7 @@ export default function Home() {
           <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
             <h3 className="text-xl font-semibold mb-2">Modern Tech Stack</h3>
             <p className="text-muted-foreground">
-              Next.js 15, React Query, shadcn/ui on frontend. .NET 9, PostgreSQL, MongoDB, Redis on backend.
+              Next.js 15, React Query, shadcn/ui on frontend. .NET 9, PostgreSQL, Redis on backend.
             </p>
           </div>
         </div>
