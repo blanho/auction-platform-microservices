@@ -23,7 +23,8 @@ export enum AuctionStatus {
   Live = "Live",
   Finished = "Finished",
   ReserveNotMet = "ReserveNotMet",
-  Cancelled = "Cancelled"
+  Cancelled = "Cancelled",
+  Inactive = "Inactive"
 }
 
 export interface CreateAuctionDto {
@@ -47,4 +48,58 @@ export interface UpdateAuctionDto {
   year?: number;
   color?: string;
   mileage?: number;
+}
+
+// Import/Export types
+export interface ImportAuctionDto {
+  title: string;
+  description: string;
+  make: string;
+  model: string;
+  year: number;
+  color: string;
+  mileage: number;
+  reservePrice: number;
+  auctionEnd: string;
+}
+
+export interface ImportAuctionResultDto {
+  rowNumber: number;
+  success: boolean;
+  auctionId?: string;
+  error?: string;
+}
+
+export interface ImportAuctionsResultDto {
+  totalRows: number;
+  successCount: number;
+  failureCount: number;
+  results: ImportAuctionResultDto[];
+}
+
+export interface ExportAuctionsRequest {
+  status?: string;
+  seller?: string;
+  startDate?: string;
+  endDate?: string;
+  format?: "json" | "csv" | "excel";
+}
+
+export interface ExportAuctionDto {
+  id: string;
+  title: string;
+  description: string;
+  make: string;
+  model: string;
+  year: number;
+  color: string;
+  mileage: number;
+  reservePrice: number;
+  seller: string;
+  winner?: string;
+  soldAmount?: number;
+  currentHighBid?: number;
+  createdAt: string;
+  auctionEnd: string;
+  status: string;
 }

@@ -18,6 +18,40 @@ public class SeedData
             context.Database.Migrate();
 
             var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            
+            // Create admin user
+            var admin = userMgr.FindByNameAsync("admin").Result;
+            if (admin == null)
+            {
+                admin = new ApplicationUser
+                {
+                    UserName = "admin",
+                    Email = "admin@example.com",
+                    EmailConfirmed = true,
+                };
+                var result = userMgr.CreateAsync(admin, "Admin123$").Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+
+                result = userMgr.AddClaimsAsync(admin, new Claim[]{
+                            new Claim(JwtClaimTypes.Name, "Admin User"),
+                            new Claim(JwtClaimTypes.GivenName, "Admin"),
+                            new Claim(JwtClaimTypes.FamilyName, "User"),
+                            new Claim(JwtClaimTypes.Role, "admin"),
+                        }).Result;
+                if (!result.Succeeded)
+                {
+                    throw new Exception(result.Errors.First().Description);
+                }
+                Log.Debug("admin created");
+            }
+            else
+            {
+                Log.Debug("admin already exists");
+            }
+
             var alice = userMgr.FindByNameAsync("alice").Result;
             if (alice == null)
             {
@@ -38,6 +72,7 @@ public class SeedData
                             new Claim(JwtClaimTypes.GivenName, "Alice"),
                             new Claim(JwtClaimTypes.FamilyName, "Smith"),
                             new Claim(JwtClaimTypes.WebSite, "http://alice.example.com"),
+                            new Claim(JwtClaimTypes.Role, "user"),
                         }).Result;
                 if (!result.Succeeded)
                 {
@@ -70,6 +105,7 @@ public class SeedData
                             new Claim(JwtClaimTypes.GivenName, "Bob"),
                             new Claim(JwtClaimTypes.FamilyName, "Smith"),
                             new Claim(JwtClaimTypes.WebSite, "http://bob.example.com"),
+                            new Claim(JwtClaimTypes.Role, "user"),
                             new Claim("location", "somewhere")
                         }).Result;
                 if (!result.Succeeded)

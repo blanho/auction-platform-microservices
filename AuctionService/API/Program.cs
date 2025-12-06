@@ -92,6 +92,13 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser();
         policy.RequireClaim("scope", "auction");
     });
+    
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("scope", "auction");
+        policy.RequireClaim("role", "admin");
+    });
 });
 
 var app = builder.Build();

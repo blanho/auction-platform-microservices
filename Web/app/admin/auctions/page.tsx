@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Plus, Loader2, LayoutGrid, TableIcon } from 'lucide-react';
+import { Plus, Loader2, Upload, Download, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MainLayout } from '@/components/layout/main-layout';
-import { AuctionCardWithActions } from '@/features/auction/auction-card-with-actions';
+import { RequireAdmin } from '@/components/auth/require-admin';
 import { AuctionDataTable } from '@/features/auction/auction-data-table';
+import { ImportAuctionsDialog } from '@/features/auction/import-auctions-dialog';
+import { ExportAuctionsDialog } from '@/features/auction/export-auctions-dialog';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -20,31 +20,22 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import {
-    ToggleGroup,
-    ToggleGroupItem,
-} from '@/components/ui/toggle-group';
 
 import apiClient from '@/lib/api/axios';
 import { Auction } from '@/types/auction';
 import { ApiResponse } from '@/types';
 import { API_ENDPOINTS } from '@/constants/api';
 
-export default function MyAuctionsPage() {
-    const { data: session, status } = useSession();
-    const router = useRouter();
+function AdminAuctionsContent() {
     const [auctions, setAuctions] = useState<Auction[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<unknown>(null);
-    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
     const fetchAuctions = useCallback(async () => {
-        if (!session?.user?.name) return;
-        
         setIsLoading(true);
         try {
             const { data } = await apiClient.get<ApiResponse<Auction[]>>(
-                `${API_ENDPOINTS.AUCTIONS}?seller=${session?.user?.name}`
+                API_ENDPOINTS.AUCTIONS
             );
             setAuctions(data.data);
             setError(null);
@@ -53,29 +44,11 @@ export default function MyAuctionsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [session?.user?.name]);
+    }, []);
 
     useEffect(() => {
-        if (status !== 'authenticated' || !session?.user?.name) {
-            return;
-        }
         fetchAuctions();
-    }, [status, session?.user?.name, fetchAuctions]);
-
-    if (status === 'loading') {
-        return (
-            <MainLayout>
-                <div className="container py-8 flex justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            </MainLayout>
-        );
-    }
-
-    if (status === 'unauthenticated') {
-        router.push('/auth/signin?callbackUrl=/auctions/my-auctions');
-        return null;
-    }
+    }, [fetchAuctions]);
 
     return (
         <MainLayout>
@@ -90,35 +63,50 @@ export default function MyAuctionsPage() {
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
-                                <Link href="/auctions">Auctions</Link>
+                                <Link href="/admin">Admin</Link>
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbPage>My Auctions</BreadcrumbPage>
+                            <BreadcrumbPage>Auctions Management</BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
+
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">My Auctions</h1>
+                        <h1 className="text-3xl font-bold">Auctions Management</h1>
                         <p className="text-muted-foreground">
-                            Manage your auction listings
+                            Manage all auctions in the system
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <ToggleGroup 
-                            type="single" 
-                            value={viewMode} 
-                            onValueChange={(value) => value && setViewMode(value as 'table' | 'grid')}
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={fetchAuctions}
+                            disabled={isLoading}
                         >
-                            <ToggleGroupItem value="table" aria-label="Table view">
-                                <TableIcon className="h-4 w-4" />
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="grid" aria-label="Grid view">
-                                <LayoutGrid className="h-4 w-4" />
-                            </ToggleGroupItem>
-                        </ToggleGroup>
+                            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            <span className="sr-only">Refresh</span>
+                        </Button>
+                        <ImportAuctionsDialog
+                            onSuccess={fetchAuctions}
+                            trigger={
+                                <Button variant="outline">
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Import
+                                </Button>
+                            }
+                        />
+                        <ExportAuctionsDialog
+                            trigger={
+                                <Button variant="outline">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export
+                                </Button>
+                            }
+                        />
                         <Button asChild>
                             <Link href="/auctions/create">
                                 <Plus className="mr-2 h-4 w-4" />
@@ -128,7 +116,7 @@ export default function MyAuctionsPage() {
                     </div>
                 </div>
 
-                {isLoading && (
+                {isLoading && !auctions && (
                     <div className="flex justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
@@ -137,12 +125,12 @@ export default function MyAuctionsPage() {
                 {!!error && (
                     <Alert variant="destructive">
                         <AlertDescription>
-                            Failed to load your auctions. Please try again.
+                            Failed to load auctions. Please try again.
                         </AlertDescription>
                     </Alert>
                 )}
 
-                {!isLoading && !error && auctions && (
+                {!error && auctions && (
                     <>
                         {auctions.length === 0 ? (
                             <Card>
@@ -151,35 +139,33 @@ export default function MyAuctionsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-muted-foreground mb-4">
-                                        You haven&apos;t created any auctions yet. Create your first auction to get started!
+                                        There are no auctions in the system. Create the first auction to get started!
                                     </p>
                                     <Button asChild>
                                         <Link href="/auctions/create">
                                             <Plus className="mr-2 h-4 w-4" />
-                                            Create Your First Auction
+                                            Create First Auction
                                         </Link>
                                     </Button>
                                 </CardContent>
                             </Card>
-                        ) : viewMode === 'table' ? (
+                        ) : (
                             <AuctionDataTable 
                                 data={auctions} 
                                 onActionComplete={fetchAuctions}
                             />
-                        ) : (
-                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                {auctions.map((auction) => (
-                                    <AuctionCardWithActions 
-                                        key={auction.id} 
-                                        auction={auction}
-                                        onActionComplete={fetchAuctions}
-                                    />
-                                ))}
-                            </div>
                         )}
                     </>
                 )}
             </div>
         </MainLayout>
+    );
+}
+
+export default function AdminAuctionsPage() {
+    return (
+        <RequireAdmin>
+            <AdminAuctionsContent />
+        </RequireAdmin>
     );
 }

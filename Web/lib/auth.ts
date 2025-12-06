@@ -9,6 +9,7 @@ export interface ExtendedUser {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+  role?: string;
 }
 
 export interface ExtendedToken extends JWT {
@@ -16,6 +17,7 @@ export interface ExtendedToken extends JWT {
   refresh_token?: string;
   expires_at?: number;
   error?: string;
+  role?: string;
 }
 
 export interface ExtendedSession {
@@ -24,6 +26,7 @@ export interface ExtendedSession {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: string;
   };
   accessToken?: string;
   error?: string;
@@ -34,6 +37,22 @@ const identityServerUrl =
   process.env.IDENTITY_SERVER_URL || "http://localhost:5001";
 const clientId = process.env.IDENTITY_SERVER_CLIENT_ID || "nextApp";
 const clientSecret = process.env.IDENTITY_SERVER_CLIENT_SECRET || "secret";
+
+function parseJwt(token: string): Record<string, unknown> {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return {};
+  }
+}
 
 async function refreshAccessToken(
   token: ExtendedToken
@@ -101,7 +120,7 @@ export const authOptions: NextAuthOptions = {
               password: credentials.password,
               client_id: clientId,
               client_secret: clientSecret,
-              scope: "openid profile auction"
+              scope: "openid profile auction roles"
             })
           });
 
@@ -125,6 +144,10 @@ export const authOptions: NextAuthOptions = {
           }
 
           const userInfo = await userInfoResponse.json();
+          
+          // Extract role from access token
+          const tokenPayload = parseJwt(tokens.access_token);
+          const role = (tokenPayload.role as string) || "user";
 
           return {
             id: userInfo.sub,
@@ -132,7 +155,8 @@ export const authOptions: NextAuthOptions = {
             email: userInfo.email,
             accessToken: tokens.access_token,
             refreshToken: tokens.refresh_token,
-            expiresAt: Date.now() + tokens.expires_in * 1000
+            expiresAt: Date.now() + tokens.expires_in * 1000,
+            role
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -150,17 +174,21 @@ export const authOptions: NextAuthOptions = {
           access_token: extendedUser.accessToken,
           refresh_token: extendedUser.refreshToken,
           expires_at: extendedUser.expiresAt,
-          id: user.id
+          id: user.id,
+          role: extendedUser.role || "user"
         } as ExtendedToken;
       }
 
       if (account) {
+        // Extract role from access token on account-based auth
+        const tokenPayload = account.access_token ? parseJwt(account.access_token) : {};
         return {
           ...token,
           access_token: account.access_token,
           refresh_token: account.refresh_token,
           expires_at: account.expires_at! * 1000,
-          id: token.sub
+          id: token.sub,
+          role: (tokenPayload.role as string) || "user"
         } as ExtendedToken;
       }
 
@@ -182,7 +210,8 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: {
           ...session.user,
-          id: extendedToken.id || extendedToken.sub
+          id: extendedToken.id || extendedToken.sub,
+          role: extendedToken.role || "user"
         },
         accessToken: extendedToken.access_token,
         error: extendedToken.error,

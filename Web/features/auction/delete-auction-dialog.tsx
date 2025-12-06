@@ -24,12 +24,16 @@ interface DeleteAuctionDialogProps {
     auctionId: string;
     auctionTitle: string;
     redirectAfterDelete?: string;
+    onSuccess?: () => void;
+    trigger?: React.ReactNode;
 }
 
 export function DeleteAuctionDialog({
     auctionId,
     auctionTitle,
-    redirectAfterDelete = '/auctions',
+    redirectAfterDelete,
+    onSuccess,
+    trigger,
 }: DeleteAuctionDialogProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -41,7 +45,10 @@ export function DeleteAuctionDialog({
             await auctionService.deleteAuction(auctionId);
             toast.success('Auction deleted successfully');
             setOpen(false);
-            router.push(redirectAfterDelete);
+            onSuccess?.();
+            if (redirectAfterDelete) {
+                router.push(redirectAfterDelete);
+            }
         } catch (error) {
             const err = error as { response?: { data?: { message?: string } } };
             toast.error(err?.response?.data?.message || 'Failed to delete auction');
@@ -53,10 +60,12 @@ export function DeleteAuctionDialog({
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                </Button>
+                {trigger || (
+                    <Button variant="destructive" size="sm">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                    </Button>
+                )}
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>

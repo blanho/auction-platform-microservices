@@ -11,11 +11,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, User, Settings, Gavel } from "lucide-react";
+import { LogIn, LogOut, User, Settings, Gavel, Shield } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export function UserMenu() {
     const { data: session, status } = useSession();
+    const isAdmin = session?.user?.role === "admin";
 
     if (status === "loading") {
         return (
@@ -58,13 +60,31 @@ export function UserMenu() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                            {isAdmin && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                    Admin
+                                </Badge>
+                            )}
+                        </div>
                         <p className="text-xs leading-none text-muted-foreground">
                             {session.user?.email}
                         </p>
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {isAdmin && (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <Link href="/admin">
+                                <Shield className="mr-2 h-4 w-4" />
+                                Admin Dashboard
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                    </>
+                )}
                 <DropdownMenuItem asChild>
                     <Link href="/profile">
                         <User className="mr-2 h-4 w-4" />

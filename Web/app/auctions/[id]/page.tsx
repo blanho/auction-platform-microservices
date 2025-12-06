@@ -14,6 +14,8 @@ import {
     History,
     Loader2,
     MapPin,
+    PlayCircle,
+    PauseCircle,
     User
 } from 'lucide-react';
 
@@ -41,6 +43,8 @@ import {
 import { Auction, AuctionStatus } from '@/types/auction';
 
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
+import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
+import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { searchService } from '@/services/search.service';
 import { AuditHistory } from '@/components/common/audit-history';
 
@@ -165,8 +169,34 @@ export default function AuctionDetailPage() {
                     <Button variant="outline" onClick={() => router.back()}>
                         ← Back
                     </Button>
-                    {(
+                    {isOwner && (
                         <div className="flex gap-2">
+                            {auction.status === AuctionStatus.Inactive && (
+                                <ActivateAuctionDialog
+                                    auctionId={auction.id}
+                                    auctionTitle={auction.title}
+                                    onSuccess={() => window.location.reload()}
+                                    trigger={
+                                        <Button variant="outline" size="sm" className="text-green-600">
+                                            <PlayCircle className="mr-2 h-4 w-4" />
+                                            Activate
+                                        </Button>
+                                    }
+                                />
+                            )}
+                            {auction.status === AuctionStatus.Live && (
+                                <DeactivateAuctionDialog
+                                    auctionId={auction.id}
+                                    auctionTitle={auction.title}
+                                    onSuccess={() => window.location.reload()}
+                                    trigger={
+                                        <Button variant="outline" size="sm" className="text-orange-600">
+                                            <PauseCircle className="mr-2 h-4 w-4" />
+                                            Deactivate
+                                        </Button>
+                                    }
+                                />
+                            )}
                             <Button
                                 variant="outline"
                                 size="sm"

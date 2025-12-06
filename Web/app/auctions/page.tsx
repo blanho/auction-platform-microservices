@@ -1,8 +1,6 @@
-// Auctions page
+// Auctions page - Public view for browsing auctions
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { MainLayout } from "@/components/layout/main-layout";
 import { AuctionList } from "@/features/auction/auction-list";
 import { AuctionProvider } from "@/context/auction.context";
@@ -41,12 +39,6 @@ function AuctionsContent() {
                                 Browse all available auctions
                             </p>
                         </div>
-                        <Button asChild>
-                            <Link href="/auctions/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Create Auction
-                            </Link>
-                        </Button>
                     </div>
                     <AuctionList />
                 </div>
