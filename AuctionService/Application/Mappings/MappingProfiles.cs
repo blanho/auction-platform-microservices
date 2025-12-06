@@ -33,8 +33,9 @@ namespace AuctionService.Application.Mappings
                 .ForMember(d => d.Model, o => o.MapFrom(s => s.Item.Model))
                 .ForMember(d => d.Year, o => o.MapFrom(s => s.Item.Year))
                 .ForMember(d => d.Color, o => o.MapFrom(s => s.Item.Color))
-                .ForMember(d => d.Mileage, o => o.MapFrom(s => s.Item.Mileage))
-                .ForMember(d => d.ImageUrl, o => o.MapFrom(s => s.Item.ImageUrl));
+                .ForMember(d => d.Mileage, o => o.MapFrom(s => s.Item.Mileage));
+
+            CreateMap<AuctionFileInfo, AuctionFileDto>();
         }
     }
 }

@@ -36,6 +36,11 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
                .IsRequired()
                .HasDefaultValue(false);
 
+        builder.OwnsMany(x => x.Files, filesBuilder =>
+        {
+            filesBuilder.ToJson();
+        });
+
         builder.HasOne(x => x.Item)
                .WithOne(i => i.Auction)
                .HasForeignKey<Item>(i => i.AuctionId)

@@ -10,6 +10,7 @@ using Common.Core.Implementations;
 using Common.Messaging.Extensions;
 using Common.CQRS.Extensions;
 using Common.Observability;
+using Common.Audit.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,9 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
 // Add CQRS with MediatR and FluentValidation
 builder.Services.AddCQRS(typeof(AuctionService.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
+
+// Add Audit Services
+builder.Services.AddAuditServices(builder.Configuration);
 
 // Background Services
 builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();

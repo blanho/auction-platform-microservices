@@ -27,8 +27,6 @@ namespace AuctionService.Application.DTOs
         [Range(0, int.MaxValue)]
         public int Mileage { get; set; }
 
-        public string ImageUrl { get; set; }
-
         [Required]
         [Range(0, int.MaxValue)]
         public int ReservePrice { get; set; }

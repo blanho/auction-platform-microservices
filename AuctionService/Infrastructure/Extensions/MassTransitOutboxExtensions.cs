@@ -17,7 +17,6 @@ public static class MassTransitOutboxExtensions
     {
         services.AddMassTransit(x =>
         {
-            // Register consumers
             x.AddConsumer<BidPlacedConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
 
@@ -41,6 +40,7 @@ public static class MassTransitOutboxExtensions
                     h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
                     h.ContinuationTimeout(TimeSpan.FromSeconds(20));
                 });
+
                 cfg.UseMessageRetry(r => r.Immediate(5));
                 cfg.ConfigureEndpoints(context);
             });

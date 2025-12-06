@@ -6,6 +6,8 @@
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\..\Common\Common.Caching\Common.Caching.csproj" />
     <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Storage\Common.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>

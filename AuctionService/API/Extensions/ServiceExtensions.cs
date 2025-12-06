@@ -1,6 +1,7 @@
 ﻿using AuctionService.Application.Interfaces;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Repositories;
+using AuctionService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Common.Caching.Abstractions;
 using Common.Repository.Interfaces;
@@ -47,6 +48,7 @@ namespace AuctionService.API.Extensions
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IFileConfirmationService, FileConfirmationService>();
 
             return services;
         }

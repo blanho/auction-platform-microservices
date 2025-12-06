@@ -14,8 +14,8 @@ public record CreateAuctionCommand(
     int Year,
     string Color,
     int Mileage,
-    string? ImageUrl,
     int ReservePrice,
     DateTimeOffset AuctionEnd,
-    string Seller
+    string Seller,
+    List<Guid>? FileIds = null
 ) : ICommand<AuctionDto>;

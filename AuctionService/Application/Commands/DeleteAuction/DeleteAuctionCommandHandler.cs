@@ -1,4 +1,7 @@
 using AuctionService.Application.Interfaces;
+using AuctionService.Domain.Entities;
+using Common.Audit.Abstractions;
+using Common.Audit.Enums;
 using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
@@ -18,19 +21,22 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
     private readonly IDateTimeProvider _dateTime;
     private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public DeleteAuctionCommandHandler(
         IAuctionRepository repository,
         IAppLogger<DeleteAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IEventPublisher eventPublisher,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
         _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(DeleteAuctionCommand request, CancellationToken cancellationToken)
@@ -57,6 +63,13 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
                 Id = request.Id,
                 Seller = auction!.Seller
             }, cancellationToken);
+
+            // Publish audit event
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                auction,
+                AuditAction.Deleted,
+                cancellationToken: cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

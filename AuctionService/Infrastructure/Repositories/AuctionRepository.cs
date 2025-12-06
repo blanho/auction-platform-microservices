@@ -1,3 +1,4 @@
+#nullable enable
 using AuctionService.Application.Interfaces;
 using AuctionService.Domain.Entities;
 using AuctionService.Infrastructure.Data;
@@ -28,12 +29,14 @@ namespace AuctionService.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            
+            return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
         }
 
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
@@ -60,6 +63,7 @@ namespace AuctionService.Infrastructure.Repositories
             auction.UpdatedBy = SystemGuids.System;
             
             _context.Auctions.Update(auction);
+            await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

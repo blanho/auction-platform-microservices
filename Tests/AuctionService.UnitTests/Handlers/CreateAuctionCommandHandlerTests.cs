@@ -3,6 +3,7 @@ using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
 using AuctionService.Domain.Entities;
 using AutoMapper;
+using Common.Audit.Abstractions;
 using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.Domain.Enums;
@@ -22,6 +23,7 @@ public class CreateAuctionCommandHandlerTests
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<IEventPublisher> _eventPublisherMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IAuditPublisher> _auditPublisherMock;
     private readonly CreateAuctionCommandHandler _handler;
 
     public CreateAuctionCommandHandlerTests()
@@ -32,6 +34,7 @@ public class CreateAuctionCommandHandlerTests
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _eventPublisherMock = new Mock<IEventPublisher>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _auditPublisherMock = new Mock<IAuditPublisher>();
 
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
 
@@ -41,7 +44,8 @@ public class CreateAuctionCommandHandlerTests
             _loggerMock.Object,
             _dateTimeProviderMock.Object,
             _eventPublisherMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _auditPublisherMock.Object);
     }
 
     [Fact]

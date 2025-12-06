@@ -32,7 +32,7 @@ public class AuctionCreatedConsumer : IConsumer<AuctionCreatedEvent>
             Year = message.Year,
             Color = message.Color,
             Mileage = message.Mileage,
-            ImageUrl = message.ImageUrl,
+            ImageUrl = string.Empty, // Images are now managed via Files collection in AuctionService
             Status = message.Status,
             CreatedAt = message.CreatedAt,
             UpdatedAt = message.UpdatedAt,

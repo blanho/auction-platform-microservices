@@ -1,3 +1,4 @@
+#nullable enable
 using AuctionService.Application.Interfaces;
 using AuctionService.Domain.Entities;
 using AutoMapper;
@@ -41,7 +42,7 @@ public class CachedAuctionRepository : IAuctionRepository
         return auctions;
     }
 
-    public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.Auction(id);
         var cachedDto = await _cache.GetAsync<Application.DTOs.AuctionDto>(key, cancellationToken);
@@ -59,7 +60,7 @@ public class CachedAuctionRepository : IAuctionRepository
             await _cache.SetAsync(key, dto, SingleAuctionTtl, cancellationToken);
             _logger.LogInformation("Cache SET for auction {AuctionId}", id);
         }
-        return auction;
+        return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
     }
 
     public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)

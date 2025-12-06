@@ -27,7 +27,7 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, PagedResu
     public async Task<Result<PagedResult<AuctionDto>>> Handle(GetAuctionsQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching auctions with filters - Status: {Status}, Seller: {Seller}, Page: {Page}",
-            request.Status, request.Seller, request.PageNumber);
+            request.Status ?? "All", request.Seller ?? "All", request.PageNumber);
 
         try
         {

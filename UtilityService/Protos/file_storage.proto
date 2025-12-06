@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+option csharp_namespace = "UtilityService.Grpc";
+
+package filestorage;
+
+// File Storage gRPC Service
+service FileStorageGrpc {
+  // Upload file to temp storage and optionally confirm immediately
+  rpc UploadFile (stream FileChunk) returns (UploadFileResponse);
+  
+  // Confirm a temp file (move to permanent storage)
+  rpc ConfirmFile (ConfirmFileRequest) returns (ConfirmFileResponse);
+  
+  // Batch confirm multiple files at once
+  rpc ConfirmFilesBatch (ConfirmFilesBatchRequest) returns (ConfirmFilesBatchResponse);
+  
+  // Upload and confirm in one call (for small files)
+  rpc UploadAndConfirm (stream FileChunk) returns (ConfirmFileResponse);
+  
+  // Get file metadata
+  rpc GetFileMetadata (GetFileRequest) returns (FileMetadataResponse);
+  
+  // Delete a file
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+}
+
+// Streamed file chunk for upload
+message FileChunk {
+  oneof data {
+    FileMetadataRequest metadata = 1;  // First message contains metadata
+    bytes content = 2;                  // Subsequent messages contain file content
+  }
+}
+
+// File metadata sent as first chunk
+message FileMetadataRequest {
+  string file_name = 1;
+  string content_type = 2;
+  string entity_type = 3;
+  string entity_id = 4;
+  string uploaded_by = 5;
+  bool auto_confirm = 6;  // If true, immediately move to permanent storage
+}
+
+// Response after file upload
+message UploadFileResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_name = 3;
+  int64 size = 4;
+  string error = 5;
+  string temp_path = 6;
+}
+
+// Request to confirm a temp file
+message ConfirmFileRequest {
+  string file_id = 1;
+  string entity_type = 2;
+  string entity_id = 3;
+}
+
+// Response after confirming file
+message ConfirmFileResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_name = 3;
+  string url = 4;
+  string path = 5;
+  int64 size = 6;
+  string error = 7;
+}
+
+// Request to get file metadata
+message GetFileRequest {
+  string file_id = 1;
+}
+
+// File metadata response
+message FileMetadataResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_name = 3;
+  string content_type = 4;
+  int64 size = 5;
+  string url = 6;
+  string path = 7;
+  int32 status = 8;  // 1 = Temp, 2 = Permanent, 3 = Deleted
+  string entity_type = 9;
+  string entity_id = 10;
+  string error = 11;
+}
+
+// Request to delete a file
+message DeleteFileRequest {
+  string file_id = 1;
+}
+
+// Response after deleting file
+message DeleteFileResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// Batch confirm request
+message ConfirmFilesBatchRequest {
+  repeated ConfirmFileRequest files = 1;
+}
+
+// Batch confirm response
+message ConfirmFilesBatchResponse {
+  bool success = 1;
+  repeated ConfirmFileResponse results = 2;
+  string error = 3;
+}

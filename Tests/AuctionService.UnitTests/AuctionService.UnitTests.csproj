@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\AuctionService\Domain\AuctionService.Domain.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Audit\Common.Audit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

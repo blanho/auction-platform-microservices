@@ -296,6 +296,39 @@ services:
       - gateway
     networks:
       - microservices
+
+  utility-api:
+    build:
+      context: .
+      dockerfile: UtilityService/Dockerfile
+      target: final
+    container_name: utility-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=utility_db;Username=postgres;Password=postgres123
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5005:8080"
+    volumes:
+      - utility_api_logs:/app/logs
+    depends_on:
+      - postgres
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
 volumes:
   postgres_data:
     driver: local
@@ -318,6 +351,8 @@ volumes:
   identity_logs:
     driver: local
   gateway_logs:
+    driver: local
+  utility_api_logs:
     driver: local
 
 networks:

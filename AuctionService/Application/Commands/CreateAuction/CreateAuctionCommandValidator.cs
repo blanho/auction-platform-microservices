@@ -47,16 +47,5 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
 
         RuleFor(x => x.Seller)
             .NotEmpty().WithMessage("Seller is required");
-
-        RuleFor(x => x.ImageUrl)
-            .Must(BeAValidUrl).When(x => !string.IsNullOrEmpty(x.ImageUrl))
-            .WithMessage("Image URL must be a valid URL");
-    }
-
-    private bool BeAValidUrl(string? url)
-    {
-        if (string.IsNullOrEmpty(url)) return true;
-        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
-               && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
     }
 }

@@ -1,4 +1,6 @@
 using AuctionService.Application.Interfaces;
+using AuctionService.Domain.Entities;
+using Common.Audit.Abstractions;
 using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
@@ -18,19 +20,22 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly IDateTimeProvider _dateTime;
     private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public UpdateAuctionCommandHandler(
         IAuctionRepository repository,
         IAppLogger<UpdateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IEventPublisher eventPublisher,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
         _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(UpdateAuctionCommand request, CancellationToken cancellationToken)
@@ -46,6 +51,26 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 _logger.LogWarning("Auction {AuctionId} not found for update", request.Id);
                 return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
             }
+
+            // Capture old values for audit (using a copy of the auction)
+            var oldAuction = new Auction
+            {
+                Id = auction.Id,
+                Seller = auction.Seller,
+                ReversePrice = auction.ReversePrice,
+                AuctionEnd = auction.AuctionEnd,
+                Status = auction.Status,
+                Item = new Item
+                {
+                    Title = auction.Item.Title,
+                    Description = auction.Item.Description,
+                    Make = auction.Item.Make,
+                    Model = auction.Item.Model,
+                    Color = auction.Item.Color,
+                    Mileage = auction.Item.Mileage,
+                    Year = auction.Item.Year
+                }
+            };
 
             // Apply partial updates
             auction.Item.Title = request.Title ?? auction.Item.Title;
@@ -71,6 +96,14 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 Color = request.Color,
                 Mileage = request.Mileage
             }, cancellationToken);
+
+            // Publish audit event with old and new values
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                auction,
+                Common.Audit.Enums.AuditAction.Updated,
+                oldAuction,
+                cancellationToken: cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -28,10 +28,6 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.Property(x => x.Mileage)
                .IsRequired();
 
-        builder.Property(x => x.ImageUrl)
-               .IsRequired()
-               .HasMaxLength(500);
-
         builder.Property(x => x.AuctionId)
                .IsRequired();
 
