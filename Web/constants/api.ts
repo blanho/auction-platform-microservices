@@ -16,6 +16,11 @@ export const API_ENDPOINTS = {
   NOTIFICATIONS_MARK_ALL_READ: "/notifications/read-all",
   NOTIFICATIONS_HUB: "/hubs/notifications",
 
+  AUDIT_LOGS: "/auditlogs",
+  AUDIT_LOG_BY_ID: (id: string) => `/auditlogs/${id}`,
+  AUDIT_LOGS_BY_ENTITY: (entityType: string, entityId: string) =>
+    `/auditlogs/entity/${entityType}/${entityId}`,
+
   AUTH: {
     LOGIN: "/api/auth/login",
     LOGOUT: "/api/auth/logout",
@@ -34,7 +39,10 @@ export const QUERY_KEYS = {
   BIDS_FOR_AUCTION: "bids-for-auction",
   BIDS_FOR_BIDDER: "bids-for-bidder",
   NOTIFICATIONS: "notifications",
-  NOTIFICATIONS_SUMMARY: "notifications-summary"
+  NOTIFICATIONS_SUMMARY: "notifications-summary",
+  AUDIT_LOGS: "audit-logs",
+  AUDIT_LOG: "audit-log",
+  AUDIT_LOGS_BY_ENTITY: "audit-logs-by-entity"
 } as const;
 
 export const DEFAULT_PAGE_SIZE = 12;

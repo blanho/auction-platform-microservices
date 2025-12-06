@@ -11,6 +11,7 @@ import {
     DollarSign,
     Edit,
     Gauge,
+    History,
     Loader2,
     MapPin,
     User
@@ -41,6 +42,7 @@ import { Auction, AuctionStatus } from '@/types/auction';
 
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { searchService } from '@/services/search.service';
+import { AuditHistory } from '@/components/common/audit-history';
 
 export default function AuctionDetailPage() {
     const params = useParams();
@@ -302,6 +304,29 @@ export default function AuctionDetailPage() {
                         </p>
                     </CardContent>
                 </Card>
+
+                {/* Audit History */}
+                {isOwner && (
+                    <Card className="mt-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <History className="h-5 w-5" />
+                                Activity History
+                            </CardTitle>
+                            <CardDescription>
+                                Track all changes made to this auction
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <AuditHistory
+                                entityType="Auction"
+                                entityId={auction.id}
+                                maxHeight="400px"
+                                showDetails={true}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </MainLayout>
     );
