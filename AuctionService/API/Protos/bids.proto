@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option csharp_namespace = "BidService.API.Grpc";
+
+package bids;
+
+service BidGrpc {
+  rpc GetHighestBid (GetHighestBidRequest) returns (BidResponse);
+  
+  rpc GetBidsForAuction (GetBidsForAuctionRequest) returns (BidListResponse);
+  
+  rpc HasUserBidOnAuction (HasUserBidRequest) returns (HasUserBidResponse);
+}
+
+message GetHighestBidRequest {
+  string auction_id = 1;
+}
+
+message GetBidsForAuctionRequest {
+  string auction_id = 1;
+}
+
+message HasUserBidRequest {
+  string auction_id = 1;
+  string bidder = 2;
+}
+
+message BidResponse {
+  string id = 1;
+  string auction_id = 2;
+  string bidder = 3;
+  int32 amount = 4;
+  string bid_time = 5;
+  string status = 6;
+}
+
+message BidListResponse {
+  repeated BidResponse bids = 1;
+  int32 total_count = 2;
+}
+
+message HasUserBidResponse {
+  bool has_bid = 1;
+  BidResponse highest_bid = 2;
+}

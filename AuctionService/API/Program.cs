@@ -1,6 +1,8 @@
 ﻿using AuctionService.API.Extensions;
+using AuctionService.API.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Extensions;
+using BidService.API.Grpc;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Caching.Abstractions;
@@ -8,6 +10,7 @@ using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Messaging.Extensions;
+using Grpc.Net.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -28,6 +31,14 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+
+// gRPC Client for BidService
+var bidServiceGrpcUrl = builder.Configuration["BidService:GrpcUrl"] ?? "http://localhost:7004";
+builder.Services.AddGrpcClient<BidGrpc.BidGrpcClient>(options =>
+{
+    options.Address = new Uri(bidServiceGrpcUrl);
+});
+builder.Services.AddScoped<IBidGrpcClient, BidGrpcClient>();
 
 // Background Services
 builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();

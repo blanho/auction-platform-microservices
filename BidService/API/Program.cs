@@ -1,4 +1,5 @@
 using BidService.API.Extensions;
+using BidService.API.Services;
 using BidService.Infrastructure.Data;
 using BidService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
@@ -18,6 +19,12 @@ builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+builder.Services.AddGrpcReflection();
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
@@ -76,6 +83,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<BidGrpcService>();
+app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Bid Service");
