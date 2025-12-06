@@ -30,6 +30,7 @@ import {
     SheetContent,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { NotificationBell } from '@/components/common/notification-bell';
 
 const categories = [
     { name: 'Electronics', icon: '📱', href: '/search?category=electronics' },
@@ -114,6 +115,8 @@ export function Header() {
                                 <Globe className="h-4 w-4" />
                                 <span>EN</span>
                             </Button>
+
+                            <NotificationBell />
 
                             <Button variant="ghost" size="icon" className="relative" asChild>
                                 <Link href="/wishlist">

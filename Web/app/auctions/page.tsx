@@ -1,10 +1,12 @@
 // Auctions page
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MainLayout } from "@/components/layout/main-layout";
 import { AuctionList } from "@/features/auction/auction-list";
 import { AuctionProvider } from "@/context/auction.context";
+import { LoadingSpinner } from "@/components/common/loading-spinner";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -14,7 +16,7 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-export default function AuctionsPage() {
+function AuctionsContent() {
     return (
         <AuctionProvider>
             <MainLayout>
@@ -50,5 +52,23 @@ export default function AuctionsPage() {
                 </div>
             </MainLayout>
         </AuctionProvider>
+    );
+}
+
+function AuctionsLoading() {
+    return (
+        <MainLayout>
+            <div className="flex items-center justify-center min-h-[400px]">
+                <LoadingSpinner size="lg" />
+            </div>
+        </MainLayout>
+    );
+}
+
+export default function AuctionsPage() {
+    return (
+        <Suspense fallback={<AuctionsLoading />}>
+            <AuctionsContent />
+        </Suspense>
     );
 }
