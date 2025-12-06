@@ -1,5 +1,6 @@
 using BidService.Infrastructure.Data;
 using BidService.Infrastructure.Messaging;
+using BidService.Infrastructure.Messaging.Consumers;
 using Common.Messaging.Abstractions;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,9 @@ public static class MassTransitOutboxExtensions
     {
         services.AddMassTransit(x =>
         {
+            // Register consumers
+            x.AddConsumer<AuctionFinishedConsumer>();
+
             x.AddEntityFrameworkOutbox<BidDbContext>(o =>
             {
                 o.UsePostgres();

@@ -5,6 +5,8 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using AuctionService.Infrastructure.Messaging.Consumers;
+
 namespace AuctionService.Infrastructure.Extensions;
 
 public static class MassTransitOutboxExtensions
@@ -15,6 +17,10 @@ public static class MassTransitOutboxExtensions
     {
         services.AddMassTransit(x =>
         {
+            // Register consumers
+            x.AddConsumer<BidPlacedConsumer>();
+            x.AddConsumer<AuctionFinishedConsumer>();
+
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {
                 o.UsePostgres();

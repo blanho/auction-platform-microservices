@@ -29,6 +29,9 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
+// Background Services
+builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();
+
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 

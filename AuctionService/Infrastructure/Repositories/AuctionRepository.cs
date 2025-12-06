@@ -4,6 +4,7 @@ using AuctionService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Common.Core.Interfaces;
 using Common.Core.Constants;
+using Common.Domain.Enums;
 
 namespace AuctionService.Infrastructure.Repositories
 {
@@ -120,6 +121,19 @@ namespace AuctionService.Infrastructure.Repositories
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
+        {
+            var now = _dateTime.UtcNow;
+            
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.AuctionEnd < now 
+                    && x.Status != Status.Finished 
+                    && x.Status != Status.ReservedNotMet)
+                .Include(x => x.Item)
+                .ToListAsync(cancellationToken);
         }
     }
 }

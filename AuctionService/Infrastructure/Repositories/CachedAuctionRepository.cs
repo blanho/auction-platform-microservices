@@ -4,7 +4,6 @@ using AutoMapper;
 using Common.Caching.Abstractions;
 using Common.Caching.Keys;
 using Common.Repository.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace AuctionService.Infrastructure.Repositories;
 
@@ -112,6 +111,9 @@ public class CachedAuctionRepository : IAuctionRepository
 
     public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         => _inner.ExistsAsync(id, cancellationToken);
+
+    public Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
+        => _inner.GetFinishedAuctionsAsync(cancellationToken);
 
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {
