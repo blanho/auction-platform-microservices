@@ -1,16 +1,12 @@
 ﻿using AuctionService.Application.Interfaces;
-using AuctionService.Application.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using AuctionService.Domain.Entities;
 using Common.Caching.Abstractions;
-using Common.Caching.Implementations;
 using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
 using AutoMapper;
 using Serilog;
-using AuctionService.Infrastructure;
 
 namespace AuctionService.API.Extensions
 {
@@ -51,7 +47,6 @@ namespace AuctionService.API.Extensions
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IAuctionService, AuctionServiceImpl>();
 
             return services;
         }

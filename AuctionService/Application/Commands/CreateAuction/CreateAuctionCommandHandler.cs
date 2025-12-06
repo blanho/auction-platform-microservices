@@ -1,0 +1,96 @@
+using AuctionService.Application.DTOs;
+using AuctionService.Application.Interfaces;
+using AuctionService.Domain.Entities;
+using AutoMapper;
+using Common.Core.Helpers;
+using Common.Core.Interfaces;
+using Common.CQRS.Abstractions;
+using Common.Domain.Enums;
+using Common.Messaging.Abstractions;
+using Common.Messaging.Events;
+using Common.Repository.Interfaces;
+
+namespace AuctionService.Application.Commands.CreateAuction;
+
+/// <summary>
+/// Handler for CreateAuctionCommand - demonstrates CQRS pattern with Railway-Oriented Programming
+/// </summary>
+public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand, AuctionDto>
+{
+    private readonly IAuctionRepository _repository;
+    private readonly IMapper _mapper;
+    private readonly IAppLogger<CreateAuctionCommandHandler> _logger;
+    private readonly IDateTimeProvider _dateTime;
+    private readonly IEventPublisher _eventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CreateAuctionCommandHandler(
+        IAuctionRepository repository,
+        IMapper mapper,
+        IAppLogger<CreateAuctionCommandHandler> logger,
+        IDateTimeProvider dateTime,
+        IEventPublisher eventPublisher,
+        IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _mapper = mapper;
+        _logger = logger;
+        _dateTime = dateTime;
+        _eventPublisher = eventPublisher;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<AuctionDto>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.Seller, _dateTime.UtcNow);
+
+        try
+        {
+            // Create the auction entity
+            var auction = CreateAuctionEntity(request);
+
+            // Persist the auction
+            var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
+
+            // Publish the event
+            var auctionCreatedEvent = _mapper.Map<AuctionCreatedEvent>(createdAuction);
+            await _eventPublisher.PublishAsync(auctionCreatedEvent, cancellationToken);
+
+            // Save changes (including outbox)
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.Seller);
+
+            var dto = _mapper.Map<AuctionDto>(createdAuction);
+            return Result<AuctionDto>.Success(dto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to create auction for seller {Seller}: {Error}", request.Seller, ex.Message);
+            return Result.Failure<AuctionDto>(Error.Create("Auction.CreateFailed", $"Failed to create auction: {ex.Message}"));
+        }
+    }
+
+    private Auction CreateAuctionEntity(CreateAuctionCommand request)
+    {
+        return new Auction
+        {
+            Id = Guid.NewGuid(),
+            Seller = request.Seller,
+            ReversePrice = request.ReservePrice,
+            AuctionEnd = request.AuctionEnd,
+            Status = Status.Live,
+            Item = new Item
+            {
+                Title = request.Title,
+                Description = request.Description,
+                Make = request.Make,
+                Model = request.Model,
+                Year = request.Year,
+                Color = request.Color,
+                Mileage = request.Mileage,
+                ImageUrl = request.ImageUrl ?? string.Empty
+            }
+        };
+    }
+}

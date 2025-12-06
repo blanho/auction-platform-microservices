@@ -69,44 +69,16 @@ public class CachedAuctionRepository : IAuctionRepository
         return result;
     }
 
-    public async Task<IEnumerable<Auction>> AddRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
-    {
-        var result = await _inner.AddRangeAsync(auctions, cancellationToken);
-        foreach (var a in result)
-        {
-            await InvalidateAfterWrite(a.Id, cancellationToken);
-        }
-        return result;
-    }
-
     public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
     {
         await _inner.UpdateAsync(auction, cancellationToken);
         await InvalidateAfterWrite(auction.Id, cancellationToken);
     }
 
-    public async Task UpdateRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
-    {
-        await _inner.UpdateRangeAsync(auctions, cancellationToken);
-        foreach (var a in auctions)
-        {
-            await InvalidateAfterWrite(a.Id, cancellationToken);
-        }
-    }
-
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _inner.DeleteAsync(id, cancellationToken);
         await InvalidateAfterWrite(id, cancellationToken);
-    }
-
-    public async Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-    {
-        await _inner.DeleteRangeAsync(ids, cancellationToken);
-        foreach (var id in ids)
-        {
-            await InvalidateAfterWrite(id, cancellationToken);
-        }
     }
 
     public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)

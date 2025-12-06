@@ -40,6 +40,8 @@
     <ProjectReference Include="..\..\Common\Common.Caching\Common.Caching.csproj" />
     <ProjectReference Include="..\..\Common\Common.OpenApi\Common.OpenApi.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging\Common.Messaging.csproj" />
+    <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Observability\Common.Observability.csproj" />
   </ItemGroup>
 
   <ItemGroup>
