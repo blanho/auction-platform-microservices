@@ -76,6 +76,7 @@ services:
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      BidService__GrpcUrl: http://bid-api:8080
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
@@ -147,6 +148,40 @@ services:
     networks:
       - microservices
 
+  bid-api:
+    build:
+      context: .
+      dockerfile: BidService/API/Dockerfile
+      target: final
+    container_name: bid-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=bid_db;Username=postgres;Password=postgres123
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Identity__Authority: http://identity-service:5001
+      Kestrel__EndpointDefaults__Protocols: Http1AndHttp2
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5003:8080"
+    volumes:
+      - bid_api_logs:/app/logs
+    depends_on:
+      - postgres
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
   identity-service:
     build:
       context: .
@@ -199,6 +234,7 @@ services:
       - identity-service
       - auction-api
       - search-api
+      - bid-api
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -240,6 +276,8 @@ volumes:
   search_postgres_data:
     driver: local
   search_api_logs:
+    driver: local
+  bid_api_logs:
     driver: local
   identity_logs:
     driver: local
