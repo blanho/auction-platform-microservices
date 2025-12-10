@@ -24,7 +24,7 @@ export const useAuctions = () => {
       seller: params.seller || undefined,
       winner: params.winner || undefined,
       orderBy: params.sortBy || undefined,
-      descending: params.sortOrder === 'desc'
+      descending: params.sortOrder === "desc"
     }),
     [
       params.searchTerm,

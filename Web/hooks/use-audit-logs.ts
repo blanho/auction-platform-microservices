@@ -2,11 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { auditService } from "@/services/audit.service";
-import {
-  AuditLog,
-  AuditLogQueryParams,
-  PagedAuditLogs
-} from "@/types/audit";
+import { AuditLog, AuditLogQueryParams, PagedAuditLogs } from "@/types/audit";
 
 interface UseAuditLogsReturn {
   auditLogs: AuditLog[];
@@ -14,7 +10,10 @@ interface UseAuditLogsReturn {
   isLoading: boolean;
   error: string | null;
   fetchAuditLogs: (params?: AuditLogQueryParams) => Promise<PagedAuditLogs>;
-  fetchEntityHistory: (entityType: string, entityId: string) => Promise<AuditLog[]>;
+  fetchEntityHistory: (
+    entityType: string,
+    entityId: string
+  ) => Promise<AuditLog[]>;
   fetchAuditLogById: (id: string) => Promise<AuditLog>;
   clearError: () => void;
 }
@@ -48,7 +47,10 @@ export function useAuditLogs(): UseAuditLogsReturn {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await auditService.getEntityAuditHistory(entityType, entityId);
+        const data = await auditService.getEntityAuditHistory(
+          entityType,
+          entityId
+        );
         setAuditLogs(data);
         return data;
       } catch (err) {

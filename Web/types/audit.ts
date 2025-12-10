@@ -59,7 +59,7 @@ export interface ParsedAuditChanges {
 
 export function parseAuditChanges(log: AuditLog): ParsedAuditChanges[] {
   const changes: ParsedAuditChanges[] = [];
-  
+
   if (!log.changedProperties?.length) return changes;
 
   try {
@@ -69,7 +69,8 @@ export function parseAuditChanges(log: AuditLog): ParsedAuditChanges[] {
     for (const prop of log.changedProperties) {
       changes.push({
         property: prop,
-        oldValue: oldValues[prop] !== undefined ? String(oldValues[prop]) : null,
+        oldValue:
+          oldValues[prop] !== undefined ? String(oldValues[prop]) : null,
         newValue: newValues[prop] !== undefined ? String(newValues[prop]) : null
       });
     }

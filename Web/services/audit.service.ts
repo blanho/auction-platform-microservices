@@ -6,7 +6,9 @@ export const auditService = {
   /**
    * Get paginated audit logs with optional filters
    */
-  getAuditLogs: async (params?: AuditLogQueryParams): Promise<PagedAuditLogs> => {
+  getAuditLogs: async (
+    params?: AuditLogQueryParams
+  ): Promise<PagedAuditLogs> => {
     const { data } = await apiClient.get<PagedAuditLogs>(
       API_ENDPOINTS.AUDIT_LOGS,
       { params }

@@ -140,7 +140,7 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
             }
             className="max-w-sm"
           />
-          
+
           {/* Status Filter */}
           <Popover>
             <PopoverTrigger asChild>
@@ -172,11 +172,10 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
                       onClick={() => toggleStatus(option.value)}
                     >
                       <div
-                        className={`h-4 w-4 rounded-sm border flex items-center justify-center ${
-                          isSelected
+                        className={`h-4 w-4 rounded-sm border flex items-center justify-center ${isSelected
                             ? "bg-primary border-primary text-primary-foreground"
                             : "border-input"
-                        }`}
+                          }`}
                       >
                         {isSelected && <span className="text-xs">✓</span>}
                       </div>
@@ -241,14 +240,14 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
                     {column.id === "currentHighBid"
                       ? "Current Bid"
                       : column.id === "reservePrice"
-                      ? "Reserve Price"
-                      : column.id === "auctionEnd"
-                      ? "End Date"
-                      : column.id === "imageUrl"
-                      ? "Image"
-                      : column.id === "createdAt"
-                      ? "Created"
-                      : column.id}
+                        ? "Reserve Price"
+                        : column.id === "auctionEnd"
+                          ? "End Date"
+                          : column.id === "imageUrl"
+                            ? "Image"
+                            : column.id === "createdAt"
+                              ? "Created"
+                              : column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -277,9 +276,9 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>

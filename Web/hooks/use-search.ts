@@ -1,5 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
-import { auctionService, AuctionPagedResult, GetAuctionsParams } from "@/services/auction.service";
+import {
+  auctionService,
+  AuctionPagedResult,
+  GetAuctionsParams
+} from "@/services/auction.service";
 
 export const useSearch = (params: GetAuctionsParams) => {
   const [data, setData] = useState<AuctionPagedResult | null>(null);

@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { 
-    Gavel, 
-    Users, 
+import {
+    Gavel,
+    Users,
     Settings,
     ChevronRight
 } from 'lucide-react';
@@ -73,16 +73,15 @@ function AdminDashboardContent() {
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {adminLinks.map((link) => (
-                        <Link 
-                            key={link.href} 
+                        <Link
+                            key={link.href}
                             href={link.disabled ? '#' : link.href}
                             className={link.disabled ? 'cursor-not-allowed' : ''}
                         >
-                            <Card className={`h-full transition-colors ${
-                                link.disabled 
-                                    ? 'opacity-50' 
+                            <Card className={`h-full transition-colors ${link.disabled
+                                    ? 'opacity-50'
                                     : 'hover:bg-accent hover:text-accent-foreground'
-                            }`}>
+                                }`}>
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <link.icon className="h-8 w-8 text-primary" />

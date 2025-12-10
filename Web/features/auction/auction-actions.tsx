@@ -46,7 +46,7 @@ export function AuctionActions({ auction, onActionComplete }: AuctionActionsProp
             View Details
           </Link>
         </DropdownMenuItem>
-        
+
         <DropdownMenuItem asChild>
           <Link href={`/auctions/${auction.id}/edit`} className="flex items-center">
             <Edit className="mr-2 h-4 w-4" />

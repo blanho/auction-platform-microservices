@@ -44,7 +44,9 @@ export interface AuctionPagedResult {
 
 export const auctionService = {
   // Get all auctions with search/filter/pagination (replaces searchService.search)
-  getAuctions: async (params?: GetAuctionsParams): Promise<AuctionPagedResult> => {
+  getAuctions: async (
+    params?: GetAuctionsParams
+  ): Promise<AuctionPagedResult> => {
     const { data } = await apiClient.get<AuctionPagedResult>(
       API_ENDPOINTS.AUCTIONS,
       { params }
@@ -60,7 +62,9 @@ export const auctionService = {
     return data;
   },
 
-  getMyAuctions: async (params?: GetMyAuctionsParams): Promise<PaginatedResponse<Auction>> => {
+  getMyAuctions: async (
+    params?: GetMyAuctionsParams
+  ): Promise<PaginatedResponse<Auction>> => {
     const { data } = await apiClient.get<PaginatedResponse<Auction>>(
       API_ENDPOINTS.MY_AUCTIONS,
       { params }
@@ -131,9 +135,12 @@ export const auctionService = {
   },
 
   downloadImportTemplate: async (): Promise<Blob> => {
-    const { data } = await apiClient.get(API_ENDPOINTS.AUCTIONS_IMPORT_TEMPLATE, {
-      responseType: "blob"
-    });
+    const { data } = await apiClient.get(
+      API_ENDPOINTS.AUCTIONS_IMPORT_TEMPLATE,
+      {
+        responseType: "blob"
+      }
+    );
     return data;
   },
 

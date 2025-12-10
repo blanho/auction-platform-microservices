@@ -38,7 +38,7 @@ export default function MyAuctionsPage() {
 
     const fetchAuctions = useCallback(async () => {
         if (status !== 'authenticated') return;
-        
+
         setIsLoading(true);
         try {
             // Use the dedicated my-auctions endpoint (authenticated by token)
@@ -104,9 +104,9 @@ export default function MyAuctionsPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <ToggleGroup 
-                            type="single" 
-                            value={viewMode} 
+                        <ToggleGroup
+                            type="single"
+                            value={viewMode}
                             onValueChange={(value) => value && setViewMode(value as 'table' | 'grid')}
                         >
                             <ToggleGroupItem value="table" aria-label="Table view">
@@ -159,15 +159,15 @@ export default function MyAuctionsPage() {
                                 </CardContent>
                             </Card>
                         ) : viewMode === 'table' ? (
-                            <AuctionDataTable 
-                                data={auctions} 
+                            <AuctionDataTable
+                                data={auctions}
                                 onActionComplete={fetchAuctions}
                             />
                         ) : (
                             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {auctions.map((auction) => (
-                                    <AuctionCardWithActions 
-                                        key={auction.id} 
+                                    <AuctionCardWithActions
+                                        key={auction.id}
                                         auction={auction}
                                         onActionComplete={fetchAuctions}
                                     />

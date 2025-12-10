@@ -150,8 +150,8 @@ function AdminAuctionsContent() {
                                 </CardContent>
                             </Card>
                         ) : (
-                            <AuctionDataTable 
-                                data={auctions} 
+                            <AuctionDataTable
+                                data={auctions}
                                 onActionComplete={fetchAuctions}
                             />
                         )}

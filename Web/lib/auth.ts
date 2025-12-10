@@ -40,13 +40,13 @@ const clientSecret = process.env.IDENTITY_SERVER_CLIENT_SECRET || "secret";
 
 function parseJwt(token: string): Record<string, unknown> {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
     return JSON.parse(jsonPayload);
   } catch {
@@ -144,7 +144,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           const userInfo = await userInfoResponse.json();
-          
+
           // Extract role from access token
           const tokenPayload = parseJwt(tokens.access_token);
           const role = (tokenPayload.role as string) || "user";
@@ -181,7 +181,9 @@ export const authOptions: NextAuthOptions = {
 
       if (account) {
         // Extract role from access token on account-based auth
-        const tokenPayload = account.access_token ? parseJwt(account.access_token) : {};
+        const tokenPayload = account.access_token
+          ? parseJwt(account.access_token)
+          : {};
         return {
           ...token,
           access_token: account.access_token,
