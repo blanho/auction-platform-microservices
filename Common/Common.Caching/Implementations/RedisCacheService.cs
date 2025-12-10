@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+
+using System.Text.Json;
 using Common.Caching.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 

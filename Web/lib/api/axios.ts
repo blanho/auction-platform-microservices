@@ -12,7 +12,8 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 30000,
   headers: {
     "Content-Type": "application/json"
-  }
+  },
+  withCredentials: true
 });
 
 apiClient.interceptors.request.use(
@@ -44,9 +45,22 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest) {
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
-        window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(
-          currentPath
-        )}`;
+        const protectedRoutes = [
+          "/profile",
+          "/auctions/create",
+          "/auctions/my",
+          "/notifications",
+          "/admin"
+        ];
+        const isProtectedRoute = protectedRoutes.some((route) =>
+          currentPath.startsWith(route)
+        );
+
+        if (isProtectedRoute) {
+          window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(
+            currentPath
+          )}`;
+        }
       }
     }
 

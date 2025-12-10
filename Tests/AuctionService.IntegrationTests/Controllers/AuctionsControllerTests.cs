@@ -129,7 +129,6 @@ public class AuctionsControllerTests : IAsyncLifetime
             Year = 2023,
             Color = "Blue",
             Mileage = 1000,
-            ImageUrl = "https://example.com/bmw.jpg",
             ReservePrice = 50000,
             AuctionEnd = DateTime.UtcNow.AddDays(10)
         };
@@ -205,6 +204,8 @@ public class AuctionsControllerTests : IAsyncLifetime
         var auctionId = await SeedSingleAuction();
         var updateDto = new UpdateAuctionDto
         {
+            Title = "Updated Title",
+            Description = "Updated Description",
             Make = "Updated Make",
             Model = "Updated Model",
             Year = 2024,
@@ -226,7 +227,11 @@ public class AuctionsControllerTests : IAsyncLifetime
         var invalidId = Guid.NewGuid();
         var updateDto = new UpdateAuctionDto
         {
-            Make = "Updated Make"
+            Title = "Updated Title",
+            Description = "Updated Description",
+            Make = "Updated Make",
+            Model = "Updated Model",
+            Color = "Updated Color"
         };
 
         // Act
@@ -311,8 +316,7 @@ public class AuctionsControllerTests : IAsyncLifetime
                 Model = model,
                 Year = year,
                 Color = color,
-                Mileage = 10000,
-                ImageUrl = $"https://example.com/{make.ToLower()}.jpg"
+                Mileage = 10000
             }
         };
     }

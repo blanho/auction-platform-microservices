@@ -48,6 +48,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
       if (connectionRef.current) {
         connectionRef.current.stop().then(() => {
           connectionRef.current = null;
+          setConnectionState(signalR.HubConnectionState.Disconnected);
         });
       }
       return;
@@ -63,9 +64,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
       try {
         const connection = new signalR.HubConnectionBuilder()
           .withUrl(`${GATEWAY_URL}${API_ENDPOINTS.NOTIFICATIONS_HUB}`, {
-            accessTokenFactory: () => accessToken,
-            transport: signalR.HttpTransportType.WebSockets,
-            skipNegotiation: true
+            accessTokenFactory: () => accessToken
           })
           .withAutomaticReconnect({
             nextRetryDelayInMilliseconds: (retryContext) => {
@@ -75,7 +74,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
               return null;
             }
           })
-          .configureLogging(signalR.LogLevel.Warning)
+          .configureLogging(signalR.LogLevel.Information)
           .build();
 
         connection.onclose((err) => {
@@ -106,6 +105,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
           optionsRef.current.onNotification?.(notification);
         });
 
+        setConnectionState(signalR.HubConnectionState.Connecting);
         connectionRef.current = connection;
         await connection.start();
 
@@ -116,8 +116,8 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
         }
       } catch (err) {
         if (isMounted) {
+          setConnectionState(signalR.HubConnectionState.Disconnected);
           setError(err as Error);
-          console.error("SignalR connection error:", err);
         }
       }
     };

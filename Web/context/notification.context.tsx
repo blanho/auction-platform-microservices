@@ -54,6 +54,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     const [error, setError] = useState<string | null>(null);
 
     const fetchNotifications = useCallback(async () => {
+        if (status !== "authenticated") return;
+
         setIsLoading(true);
         setError(null);
         try {
@@ -66,9 +68,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [status]);
 
     const fetchSummary = useCallback(async () => {
+        if (status !== "authenticated") return;
+
         try {
             const summary = await notificationService.getSummary();
             setNotifications(summary.recentNotifications);
@@ -77,7 +81,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to fetch summary";
             setError(message);
         }
-    }, []);
+    }, [status]);
 
     const addNotification = useCallback((notification: Notification) => {
         setNotifications((prev) => [notification, ...prev]);
@@ -87,6 +91,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }, []);
 
     const markAsRead = useCallback(async (id: string) => {
+        if (status !== "authenticated") return;
+
         try {
             await notificationService.markAsRead(id);
             setNotifications((prev) =>
@@ -101,9 +107,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to mark as read";
             setError(message);
         }
-    }, []);
+    }, [status]);
 
     const markAllAsRead = useCallback(async () => {
+        if (status !== "authenticated") return;
+
         try {
             await notificationService.markAllAsRead();
             setNotifications((prev) =>
@@ -118,9 +126,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to mark all as read";
             setError(message);
         }
-    }, []);
+    }, [status]);
 
     const deleteNotification = useCallback(async (id: string) => {
+        if (status !== "authenticated") return;
+
         try {
             await notificationService.deleteNotification(id);
             setNotifications((prev) => {
@@ -134,7 +144,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to delete notification";
             setError(message);
         }
-    }, []);
+    }, [status]);
 
     const handleNotification = useCallback((notification: Notification) => {
         addNotification(notification);

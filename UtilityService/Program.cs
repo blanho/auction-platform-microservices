@@ -1,3 +1,5 @@
+using Common.Messaging.Abstractions;
+using Common.Messaging.Implementations;
 using Common.Storage.Abstractions;
 using Common.Storage.Extensions;
 using MassTransit;
@@ -60,6 +62,7 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

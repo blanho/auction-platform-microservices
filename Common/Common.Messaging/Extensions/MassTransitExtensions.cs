@@ -1,3 +1,5 @@
+#nullable enable
+
 using Common.Messaging.Abstractions;
 using Common.Messaging.Implementations;
 using MassTransit;

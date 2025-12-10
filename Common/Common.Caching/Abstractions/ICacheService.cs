@@ -1,4 +1,6 @@
-﻿namespace Common.Caching.Abstractions;
+﻿#nullable enable
+
+namespace Common.Caching.Abstractions;
 
 public interface ICacheService
 {

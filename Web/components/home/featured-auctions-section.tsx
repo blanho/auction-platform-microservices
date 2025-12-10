@@ -169,7 +169,7 @@ function AuctionCard({ auction }: { auction: Auction }) {
 }
 
 export function FeaturedAuctionsSection() {
-    const { data: featuredAuctions, isLoading } = useFeaturedAuctions(6);
+    const { data: featuredAuctions, isLoading, error } = useFeaturedAuctions(6);
 
     // If loading, show skeleton
     if (isLoading) {
@@ -184,8 +184,11 @@ export function FeaturedAuctionsSection() {
         );
     }
 
-    // If no featured auctions, don't render the section
-    if (!featuredAuctions || featuredAuctions.length === 0) {
+    // If error or no featured auctions, don't render the section
+    if (error || !featuredAuctions || !Array.isArray(featuredAuctions) || featuredAuctions.length === 0) {
+        if (error) {
+            console.error("[FeaturedAuctionsSection] Error fetching auctions:", error);
+        }
         return null;
     }
 

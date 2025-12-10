@@ -12,7 +12,10 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
     return (
-        <NextAuthSessionProvider>
+        <NextAuthSessionProvider
+            refetchInterval={5 * 60}
+            refetchOnWindowFocus={false}
+        >
             <ThemeProvider
                 attribute="class"
                 defaultTheme="system"

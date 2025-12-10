@@ -3,6 +3,7 @@ using AuctionService.Application.DTOs;
 using AuctionService.Application.Queries.GetCategories;
 using Common.Utilities.Helpers;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuctionService.API.Controllers;
@@ -24,6 +25,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<CategoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<CategoryDto>>> GetCategories(
         [FromQuery] bool activeOnly = true,

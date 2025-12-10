@@ -56,8 +56,7 @@ public class DatabaseIntegrationTests : IAsyncLifetime
                 Model = "Model 3",
                 Year = 2023,
                 Color = "White",
-                Mileage = 5000,
-                ImageUrl = "https://example.com/tesla.jpg"
+                Mileage = 5000
             }
         };
 
@@ -94,8 +93,7 @@ public class DatabaseIntegrationTests : IAsyncLifetime
                 Model = "Civic",
                 Year = 2022,
                 Color = "Blue",
-                Mileage = 20000,
-                ImageUrl = "https://example.com/honda.jpg"
+                Mileage = 20000
             }
         };
 
@@ -139,8 +137,7 @@ public class DatabaseIntegrationTests : IAsyncLifetime
                 Model = "Altima",
                 Year = 2021,
                 Color = "Gray",
-                Mileage = 30000,
-                ImageUrl = "https://example.com/nissan.jpg"
+                Mileage = 30000
             }
         };
 
@@ -193,8 +190,7 @@ public class DatabaseIntegrationTests : IAsyncLifetime
                 Model = "Car",
                 Year = 2023,
                 Color = "Black",
-                Mileage = 10000,
-                ImageUrl = "https://example.com/test.jpg"
+                Mileage = 10000
             }
         };
     }

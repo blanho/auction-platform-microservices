@@ -108,46 +108,6 @@ public class CreateAuctionCommandValidatorTests
     }
 
     [Fact]
-    public void Should_Have_Error_When_ImageUrl_Is_Invalid()
-    {
-        // Arrange
-        var command = CreateValidCommand() with { ImageUrl = "not-a-valid-url" };
-
-        // Act
-        var result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.ImageUrl)
-            .WithErrorMessage("Image URL must be a valid URL");
-    }
-
-    [Fact]
-    public void Should_Not_Have_Error_When_ImageUrl_Is_Valid()
-    {
-        // Arrange
-        var command = CreateValidCommand() with { ImageUrl = "https://example.com/image.jpg" };
-
-        // Act
-        var result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.ImageUrl);
-    }
-
-    [Fact]
-    public void Should_Not_Have_Error_When_ImageUrl_Is_Null()
-    {
-        // Arrange
-        var command = CreateValidCommand() with { ImageUrl = null };
-
-        // Act
-        var result = _validator.TestValidate(command);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.ImageUrl);
-    }
-
-    [Fact]
     public void Should_Pass_Validation_With_Valid_Command()
     {
         // Arrange
@@ -185,7 +145,6 @@ public class CreateAuctionCommandValidatorTests
             Year: 2023,
             Color: "White",
             Mileage: 15000,
-            ImageUrl: "https://example.com/tesla.jpg",
             ReservePrice: 50000,
             AuctionEnd: DateTimeOffset.UtcNow.AddDays(7),
             Seller: "test-seller"

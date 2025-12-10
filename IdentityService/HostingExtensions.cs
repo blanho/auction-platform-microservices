@@ -63,6 +63,9 @@ internal static class HostingExtensions
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
+                
+                // Set a consistent issuer URI for all environments
+                options.IssuerUri = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
 
                 // Use a large chunk size for diagnostic data in development where it will be redirected to a local file.
                 if (builder.Environment.IsDevelopment())

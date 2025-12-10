@@ -1,3 +1,5 @@
+#nullable enable
+
 using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

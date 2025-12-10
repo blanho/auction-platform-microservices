@@ -24,6 +24,7 @@ public class CreateAuctionCommandHandlerTests
     private readonly Mock<IEventPublisher> _eventPublisherMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IAuditPublisher> _auditPublisherMock;
+    private readonly Mock<IFileConfirmationService> _fileConfirmationServiceMock;
     private readonly CreateAuctionCommandHandler _handler;
 
     public CreateAuctionCommandHandlerTests()
@@ -35,6 +36,7 @@ public class CreateAuctionCommandHandlerTests
         _eventPublisherMock = new Mock<IEventPublisher>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _auditPublisherMock = new Mock<IAuditPublisher>();
+        _fileConfirmationServiceMock = new Mock<IFileConfirmationService>();
 
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
 
@@ -45,7 +47,8 @@ public class CreateAuctionCommandHandlerTests
             _dateTimeProviderMock.Object,
             _eventPublisherMock.Object,
             _unitOfWorkMock.Object,
-            _auditPublisherMock.Object);
+            _auditPublisherMock.Object,
+            _fileConfirmationServiceMock.Object);
     }
 
     [Fact]
@@ -196,7 +199,6 @@ public class CreateAuctionCommandHandlerTests
             Year: 2023,
             Color: "White",
             Mileage: 15000,
-            ImageUrl: "https://example.com/tesla.jpg",
             ReservePrice: 50000,
             AuctionEnd: DateTimeOffset.UtcNow.AddDays(7),
             Seller: "test-seller"
@@ -220,8 +222,7 @@ public class CreateAuctionCommandHandlerTests
                 Model = command.Model,
                 Year = command.Year,
                 Color = command.Color,
-                Mileage = command.Mileage,
-                ImageUrl = command.ImageUrl ?? string.Empty
+                Mileage = command.Mileage
             }
         };
     }
@@ -241,8 +242,7 @@ public class CreateAuctionCommandHandlerTests
             Model = command.Model,
             Year = command.Year,
             Color = command.Color,
-            Mileage = command.Mileage,
-            ImageUrl = command.ImageUrl ?? string.Empty
+            Mileage = command.Mileage
         };
     }
 }

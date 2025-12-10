@@ -1,4 +1,6 @@
-﻿namespace Common.Security.Interfaces;
+﻿#nullable enable
+
+namespace Common.Security.Interfaces;
 
 public interface IUserContext
 {
