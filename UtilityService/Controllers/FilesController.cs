@@ -21,7 +21,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("upload")]
-    [RequestSizeLimit(50 * 1024 * 1024)] // 50MB limit
+    [RequestSizeLimit(50 * 1024 * 1024)]
     public async Task<ActionResult<FileMetadata>> UploadFile(
         IFormFile file,
         CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ public class FilesController : ControllerBase
 
 
     [HttpPost("upload/batch")]
-    [RequestSizeLimit(100 * 1024 * 1024)] // 100MB limit for batch
+    [RequestSizeLimit(100 * 1024 * 1024)]
     public async Task<ActionResult<List<FileUploadResult>>> UploadFiles(
         IFormFileCollection files,
         CancellationToken cancellationToken)

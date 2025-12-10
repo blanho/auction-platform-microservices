@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UtilityService.Data;
 using UtilityService.DTOs;
+using UtilityService.Interfaces;
 
 namespace UtilityService.Controllers;
 
@@ -10,11 +8,11 @@ namespace UtilityService.Controllers;
 [Route("api/[controller]")]
 public class AuditLogsController : ControllerBase
 {
-    private readonly UtilityDbContext _context;
+    private readonly IAuditLogService _auditLogService;
 
-    public AuditLogsController(UtilityDbContext context)
+    public AuditLogsController(IAuditLogService auditLogService)
     {
-        _context = context;
+        _auditLogService = auditLogService;
     }
 
     [HttpGet]
@@ -22,46 +20,8 @@ public class AuditLogsController : ControllerBase
         [FromQuery] AuditLogQueryParams queryParams,
         CancellationToken cancellationToken)
     {
-        var query = _context.AuditLogs.AsQueryable();
-
-        if (queryParams.EntityId.HasValue)
-            query = query.Where(x => x.EntityId == queryParams.EntityId.Value);
-
-        if (!string.IsNullOrEmpty(queryParams.EntityType))
-            query = query.Where(x => x.EntityType == queryParams.EntityType);
-
-        if (queryParams.UserId.HasValue)
-            query = query.Where(x => x.UserId == queryParams.UserId.Value);
-
-        if (!string.IsNullOrEmpty(queryParams.ServiceName))
-            query = query.Where(x => x.ServiceName == queryParams.ServiceName);
-
-        if (queryParams.Action.HasValue)
-            query = query.Where(x => x.Action == queryParams.Action.Value);
-
-        if (queryParams.FromDate.HasValue)
-            query = query.Where(x => x.Timestamp >= queryParams.FromDate.Value);
-
-        if (queryParams.ToDate.HasValue)
-            query = query.Where(x => x.Timestamp <= queryParams.ToDate.Value);
-
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        var entities = await query
-            .OrderByDescending(x => x.Timestamp)
-            .Skip((queryParams.Page - 1) * queryParams.PageSize)
-            .Take(queryParams.PageSize)
-            .ToListAsync(cancellationToken);
-
-        var items = entities.Select(MapToDto).ToList();
-
-        return Ok(new PagedAuditLogsDto
-        {
-            Items = items,
-            TotalCount = totalCount,
-            Page = queryParams.Page,
-            PageSize = queryParams.PageSize
-        });
+        var result = await _auditLogService.GetPagedAuditLogsAsync(queryParams, cancellationToken);
+        return Ok(result);
     }
 
     [HttpGet("entity/{entityType}/{entityId}")]
@@ -70,13 +30,7 @@ public class AuditLogsController : ControllerBase
         Guid entityId,
         CancellationToken cancellationToken)
     {
-        var entities = await _context.AuditLogs
-            .Where(x => x.EntityType == entityType && x.EntityId == entityId)
-            .OrderByDescending(x => x.Timestamp)
-            .ToListAsync(cancellationToken);
-
-        var logs = entities.Select(MapToDto).ToList();
-
+        var logs = await _auditLogService.GetEntityAuditHistoryAsync(entityType, entityId, cancellationToken);
         return Ok(logs);
     }
 
@@ -85,35 +39,12 @@ public class AuditLogsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var entity = await _context.AuditLogs
-            .Where(x => x.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
+        var dto = await _auditLogService.GetByIdAsync(id, cancellationToken);
 
-        if (entity == null)
+        if (dto == null)
             return NotFound();
 
-        return Ok(MapToDto(entity));
+        return Ok(dto);
     }
 
-    private static AuditLogDto MapToDto(Domain.Entities.AuditLog entity)
-    {
-        return new AuditLogDto
-        {
-            Id = entity.Id,
-            EntityId = entity.EntityId,
-            EntityType = entity.EntityType,
-            Action = entity.Action,
-            OldValues = entity.OldValues,
-            NewValues = entity.NewValues,
-            ChangedProperties = !string.IsNullOrEmpty(entity.ChangedProperties)
-                ? JsonSerializer.Deserialize<List<string>>(entity.ChangedProperties)
-                : null,
-            UserId = entity.UserId,
-            Username = entity.Username,
-            ServiceName = entity.ServiceName,
-            CorrelationId = entity.CorrelationId,
-            IpAddress = entity.IpAddress,
-            Timestamp = entity.Timestamp
-        };
-    }
 }

@@ -21,6 +21,8 @@ public class StorageOptions
     
     public S3Options? S3 { get; set; }
     
+    public CloudinaryOptions? Cloudinary { get; set; }
+    
     public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
     
     public List<string> AllowedExtensions { get; set; } = new();
@@ -36,4 +38,12 @@ public class S3Options
     public string? SecretKey { get; set; }
     public string? Region { get; set; }
     public string? BucketName { get; set; }
+}
+
+public class CloudinaryOptions
+{
+    public string? CloudName { get; set; }
+    public string? ApiKey { get; set; }
+    public string? ApiSecret { get; set; }
+    public bool UseSecureUrl { get; set; } = true;
 }

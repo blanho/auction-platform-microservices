@@ -4,7 +4,8 @@ public enum StorageType
 {
     Local,
     AzureBlob,
-    S3
+    S3,
+    Cloudinary
 }
 
 

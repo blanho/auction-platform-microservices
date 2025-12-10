@@ -1,18 +1,18 @@
 using System.Text.Json;
 using Common.Audit.Events;
 using MassTransit;
-using UtilityService.Data;
 using UtilityService.Domain.Entities;
+using UtilityService.Interfaces;
 
 namespace UtilityService.Consumers;
 public class AuditEventConsumer : IConsumer<AuditEvent>
 {
-    private readonly UtilityDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuditEventConsumer> _logger;
 
-    public AuditEventConsumer(UtilityDbContext context, ILogger<AuditEventConsumer> logger)
+    public AuditEventConsumer(IUnitOfWork unitOfWork, ILogger<AuditEventConsumer> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -50,8 +50,8 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        _context.AuditLogs.Add(auditLog);
-        await _context.SaveChangesAsync(context.CancellationToken);
+        await _unitOfWork.AuditLogs.AddAsync(auditLog, context.CancellationToken);
+        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation("Audit log {Id} saved successfully", auditLog.Id);
     }

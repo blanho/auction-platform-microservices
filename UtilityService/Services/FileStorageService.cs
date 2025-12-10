@@ -5,31 +5,26 @@ using Common.Storage.Configuration;
 using Common.Storage.Enums;
 using Common.Storage.Events;
 using Common.Storage.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using UtilityService.Data;
 using UtilityService.Domain.Entities;
+using UtilityService.Interfaces;
 
 namespace UtilityService.Services;
-
-/// <summary>
-/// File storage service with temp/permanent workflow
-/// </summary>
 public class FileStorageService : IFileStorageService
 {
     private readonly IStorageProvider _storageProvider;
-    private readonly UtilityDbContext _dbContext;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly StorageOptions _options;
 
     public FileStorageService(
         IStorageProvider storageProvider,
-        UtilityDbContext dbContext,
+        IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         IOptions<StorageOptions> options)
     {
         _storageProvider = storageProvider;
-        _dbContext = dbContext;
+        _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _options = options.Value;
     }
@@ -41,13 +36,10 @@ public class FileStorageService : IFileStorageService
         string? uploadedBy = null,
         CancellationToken cancellationToken = default)
     {
-        // Validate file size
         if (stream.Length > _options.MaxFileSize)
         {
             return FileUploadResult.Fail($"File size exceeds maximum allowed size of {_options.MaxFileSize / 1024 / 1024}MB");
         }
-
-        // Validate extension
         if (_options.AllowedExtensions.Count > 0)
         {
             var extension = Path.GetExtension(fileName).ToLowerInvariant();
@@ -57,7 +49,6 @@ public class FileStorageService : IFileStorageService
             }
         }
 
-        // Upload to temp folder
         var result = await _storageProvider.UploadAsync(
             stream,
             fileName,
@@ -70,7 +61,6 @@ public class FileStorageService : IFileStorageService
             return result;
         }
 
-        // Save metadata to database
         var storedFile = new StoredFile
         {
             Id = result.Metadata.Id,
@@ -85,10 +75,9 @@ public class FileStorageService : IFileStorageService
             CreatedAt = DateTime.UtcNow
         };
 
-        _dbContext.StoredFiles.Add(storedFile);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.StoredFiles.AddAsync(storedFile, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Publish event
         await _eventPublisher.PublishAsync(new FileUploadedEvent
         {
             FileId = storedFile.Id,
@@ -108,15 +97,18 @@ public class FileStorageService : IFileStorageService
         FileConfirmRequest request,
         CancellationToken cancellationToken = default)
     {
-        var storedFile = await _dbContext.StoredFiles
-            .FirstOrDefaultAsync(f => f.Id == request.FileId && f.Status == FileStatus.Temporary, cancellationToken);
+        var storedFile = await _unitOfWork.StoredFiles.GetByIdAsync(request.FileId, cancellationToken);
+
+        if (storedFile != null && storedFile.Status != FileStatus.Temporary)
+        {
+            storedFile = null;
+        }
 
         if (storedFile == null)
         {
             return FileUploadResult.Fail("File not found or already confirmed");
         }
 
-        // Move to permanent storage
         var newPath = await _storageProvider.MoveAsync(
             storedFile.Path,
             _options.PermanentFolder,
@@ -127,7 +119,6 @@ public class FileStorageService : IFileStorageService
             return FileUploadResult.Fail("Failed to move file to permanent storage");
         }
 
-        // Update metadata
         storedFile.Path = newPath;
         storedFile.Url = _storageProvider.GetUrl(newPath);
         storedFile.Status = FileStatus.Permanent;
@@ -140,9 +131,8 @@ public class FileStorageService : IFileStorageService
             storedFile.Tags = JsonSerializer.Serialize(request.Tags);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Publish event
         await _eventPublisher.PublishAsync(new FileConfirmedEvent
         {
             FileId = storedFile.Id,
@@ -161,8 +151,12 @@ public class FileStorageService : IFileStorageService
         Guid fileId,
         CancellationToken cancellationToken = default)
     {
-        var storedFile = await _dbContext.StoredFiles
-            .FirstOrDefaultAsync(f => f.Id == fileId && f.Status != FileStatus.Deleted, cancellationToken);
+        var storedFile = await _unitOfWork.StoredFiles.GetByIdAsync(fileId, cancellationToken);
+
+        if (storedFile != null && storedFile.Status == FileStatus.Deleted)
+        {
+            storedFile = null;
+        }
 
         if (storedFile == null)
         {
@@ -175,23 +169,24 @@ public class FileStorageService : IFileStorageService
 
     public async Task<bool> DeleteAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
-        var storedFile = await _dbContext.StoredFiles
-            .FirstOrDefaultAsync(f => f.Id == fileId && f.Status != FileStatus.Deleted, cancellationToken);
+        var storedFile = await _unitOfWork.StoredFiles.GetByIdAsync(fileId, cancellationToken);
+
+        if (storedFile != null && storedFile.Status == FileStatus.Deleted)
+        {
+            storedFile = null;
+        }
 
         if (storedFile == null)
         {
             return false;
         }
 
-        // Delete from storage
         await _storageProvider.DeleteAsync(storedFile.Path, cancellationToken);
 
-        // Mark as deleted in database (soft delete)
         storedFile.Status = FileStatus.Deleted;
         storedFile.DeletedAt = DateTime.UtcNow;
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Publish event
         await _eventPublisher.PublishAsync(new FileDeletedEvent
         {
             FileId = storedFile.Id,
@@ -206,8 +201,12 @@ public class FileStorageService : IFileStorageService
 
     public async Task<FileMetadata?> GetMetadataAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
-        var storedFile = await _dbContext.StoredFiles
-            .FirstOrDefaultAsync(f => f.Id == fileId && f.Status != FileStatus.Deleted, cancellationToken);
+        var storedFile = await _unitOfWork.StoredFiles.GetByIdAsync(fileId, cancellationToken);
+
+        if (storedFile != null && storedFile.Status == FileStatus.Deleted)
+        {
+            storedFile = null;
+        }
 
         return storedFile == null ? null : MapToMetadata(storedFile);
     }
@@ -217,10 +216,8 @@ public class FileStorageService : IFileStorageService
         string entityId,
         CancellationToken cancellationToken = default)
     {
-        var files = await _dbContext.StoredFiles
-            .Where(f => f.EntityType == entityType && f.EntityId == entityId && f.Status == FileStatus.Permanent)
-            .OrderByDescending(f => f.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var allFiles = await _unitOfWork.StoredFiles.GetByEntityAsync(entityType, entityId, cancellationToken);
+        var files = allFiles.Where(f => f.Status == FileStatus.Permanent).ToList();
 
         return files.Select(MapToMetadata);
     }

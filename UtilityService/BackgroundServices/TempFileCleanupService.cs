@@ -1,9 +1,8 @@
 using Common.Storage.Abstractions;
 using Common.Storage.Configuration;
 using Common.Storage.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using UtilityService.Data;
+using UtilityService.Interfaces;
 
 namespace UtilityService.BackgroundServices;
 
@@ -46,23 +45,25 @@ public class TempFileCleanupService : BackgroundService
     private async Task CleanupExpiredTempFilesAsync(CancellationToken cancellationToken)
     {
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<UtilityDbContext>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var storageProvider = scope.ServiceProvider.GetRequiredService<IStorageProvider>();
 
         var expirationThreshold = DateTime.UtcNow.AddHours(-_options.TempFileExpirationHours);
 
-        var expiredFiles = await dbContext.StoredFiles
-            .Where(f => f.Status == FileStatus.Temporary && f.CreatedAt < expirationThreshold)
-            .ToListAsync(cancellationToken);
+        var expiredFiles = await unitOfWork.StoredFiles.GetTemporaryFilesAsync(
+            expirationThreshold,
+            cancellationToken);
 
-        if (expiredFiles.Count == 0)
+        var expiredFilesList = expiredFiles.ToList();
+
+        if (expiredFilesList.Count == 0)
         {
             return;
         }
 
-        _logger.LogInformation("Found {Count} expired temp files to clean up", expiredFiles.Count);
+        _logger.LogInformation("Found {Count} expired temp files to clean up", expiredFilesList.Count);
 
-        foreach (var file in expiredFiles)
+        foreach (var file in expiredFilesList)
         {
             try
             {
@@ -79,7 +80,7 @@ public class TempFileCleanupService : BackgroundService
             }
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Cleaned up {Count} expired temp files", expiredFiles.Count);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Cleaned up {Count} expired temp files", expiredFilesList.Count);
     }
 }
