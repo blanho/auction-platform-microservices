@@ -25,6 +25,7 @@ namespace AuctionService.Infrastructure.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
+                    .ThenInclude(i => i.Category)
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
@@ -34,6 +35,7 @@ namespace AuctionService.Infrastructure.Repositories
             var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
+                    .ThenInclude(i => i.Category)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             
             return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");

@@ -8,6 +8,8 @@ public record GetAuctionsQuery(
     string? Seller = null,
     string? Winner = null,
     string? SearchTerm = null,
+    string? Category = null,
+    bool? IsFeatured = null,
     int PageNumber = 1,
     int PageSize = 10,
     string? OrderBy = null,

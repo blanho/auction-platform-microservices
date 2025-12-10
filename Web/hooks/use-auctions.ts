@@ -249,3 +249,77 @@ export const useDeleteAuction = () => {
 
   return { mutate, isPending };
 };
+
+// Hook for fetching categories
+export const useCategories = () => {
+  const [data, setData] = useState<import("@/types/auction").Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const result = await auctionService.getCategories();
+        if (isMounted) {
+          setData(result);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err as Error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { data, isLoading, error };
+};
+
+// Hook for fetching featured auctions
+export const useFeaturedAuctions = (limit: number = 8) => {
+  const [data, setData] = useState<Auction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const result = await auctionService.getFeaturedAuctions(limit);
+        if (isMounted) {
+          setData(result);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err as Error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [limit]);
+
+  return { data, isLoading, error };
+};

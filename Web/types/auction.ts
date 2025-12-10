@@ -1,3 +1,14 @@
+export interface AuctionFile {
+  storageFileId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  url?: string;
+  fileType: string;
+  displayOrder: number;
+  isPrimary: boolean;
+}
+
 export interface Auction {
   id: string;
   title: string;
@@ -16,7 +27,25 @@ export interface Auction {
   year: number;
   color: string;
   mileage: number;
+  categoryId?: string;
+  categoryName?: string;
+  categorySlug?: string;
+  categoryIcon?: string;
+  isFeatured: boolean;
+  files: AuctionFile[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  description?: string;
   imageUrl?: string;
+  displayOrder: number;
+  isActive: boolean;
+  parentCategoryId?: string;
+  auctionCount: number;
 }
 
 export enum AuctionStatus {
@@ -37,6 +66,8 @@ export interface CreateAuctionDto {
   year: number;
   color: string;
   mileage: number;
+  categoryId?: string;
+  isFeatured?: boolean;
   imageUrl?: string;
 }
 

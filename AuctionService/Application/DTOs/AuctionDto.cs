@@ -19,6 +19,11 @@
         public int Year { get; set; }
         public required string Color { get; set; }
         public int Mileage { get; set; }
+        public Guid? CategoryId { get; set; }
+        public string? CategoryName { get; set; }
+        public string? CategorySlug { get; set; }
+        public string? CategoryIcon { get; set; }
+        public bool IsFeatured { get; set; }
         public List<AuctionFileDto> Files { get; set; } = new();
     }
 

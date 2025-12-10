@@ -6,7 +6,8 @@ import {
   ImportAuctionDto,
   ImportAuctionsResultDto,
   ExportAuctionsRequest,
-  ExportAuctionDto
+  ExportAuctionDto,
+  Category
 } from "@/types/auction";
 import { API_ENDPOINTS } from "@/constants/api";
 import { PaginatedResponse } from "@/types";
@@ -16,6 +17,8 @@ export interface GetAuctionsParams {
   seller?: string;
   winner?: string;
   searchTerm?: string;
+  category?: string;
+  isFeatured?: boolean;
   pageNumber?: number;
   pageSize?: number;
   orderBy?: string;
@@ -31,7 +34,6 @@ export interface GetMyAuctionsParams {
   descending?: boolean;
 }
 
-// Response type that matches AuctionService PagedResult
 export interface AuctionPagedResult {
   items: Auction[];
   totalCount: number;
@@ -43,7 +45,21 @@ export interface AuctionPagedResult {
 }
 
 export const auctionService = {
-  // Get all auctions with search/filter/pagination (replaces searchService.search)
+  getCategories: async (): Promise<Category[]> => {
+    const { data } = await apiClient.get<Category[]>(
+      API_ENDPOINTS.AUCTIONS_CATEGORIES
+    );
+    return data;
+  },
+
+  getFeaturedAuctions: async (limit: number = 8): Promise<Auction[]> => {
+    const { data } = await apiClient.get<Auction[]>(
+      API_ENDPOINTS.AUCTIONS_FEATURED,
+      { params: { limit } }
+    );
+    return data;
+  },
+
   getAuctions: async (
     params?: GetAuctionsParams
   ): Promise<AuctionPagedResult> => {

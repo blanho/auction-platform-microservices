@@ -47,6 +47,8 @@ namespace AuctionService.API.Extensions
                 return new CachedAuctionRepository(inner, cache, mapper, logger);
             });
 
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IFileConfirmationService, FileConfirmationService>();
 

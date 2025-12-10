@@ -51,6 +51,9 @@ namespace AuctionService.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("ReversePrice")
                         .HasColumnType("integer");
 
@@ -86,6 +89,85 @@ namespace AuctionService.Infrastructure.Migrations
                     b.ToTable("Auctions");
                 });
 
+            modelBuilder.Entity("AuctionService.Domain.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DeletedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("fa-box");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("ParentCategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive", "DisplayOrder");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -93,6 +175,9 @@ namespace AuctionService.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Color")
@@ -113,12 +198,8 @@ namespace AuctionService.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -139,6 +220,7 @@ namespace AuctionService.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
@@ -154,6 +236,8 @@ namespace AuctionService.Infrastructure.Migrations
 
                     b.HasIndex("AuctionId")
                         .IsUnique();
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Items");
                 });
@@ -326,6 +410,16 @@ namespace AuctionService.Infrastructure.Migrations
                     b.ToTable("OutboxState");
                 });
 
+            modelBuilder.Entity("AuctionService.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("AuctionService.Domain.Entities.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>
                 {
                     b.HasOne("AuctionService.Domain.Entities.Auction", "Auction")
@@ -334,7 +428,62 @@ namespace AuctionService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AuctionService.Domain.Entities.Category", "Category")
+                        .WithMany("Items")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.OwnsMany("AuctionService.Domain.Entities.ItemFileInfo", "Files", b1 =>
+                        {
+                            b1.Property<Guid>("ItemId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("text");
+
+                            b1.Property<int>("DisplayOrder")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("FileName")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FileType")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsPrimary")
+                                .HasColumnType("boolean");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<Guid>("StorageFileId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateTime>("UploadedAt")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("Url")
+                                .HasColumnType("text");
+
+                            b1.HasKey("ItemId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Items");
+
+                            b1.ToJson("Files");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ItemId");
+                        });
+
                     b.Navigation("Auction");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -351,7 +500,15 @@ namespace AuctionService.Infrastructure.Migrations
 
             modelBuilder.Entity("AuctionService.Domain.Entities.Auction", b =>
                 {
-                    b.Navigation("Item");
+                    b.Navigation("Item")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AuctionService.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("SubCategories");
                 });
 #pragma warning restore 612, 618
         }

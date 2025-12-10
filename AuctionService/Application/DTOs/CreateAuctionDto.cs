@@ -33,5 +33,9 @@ namespace AuctionService.Application.DTOs
 
         [Required]
         public DateTimeOffset AuctionEnd { get; set; }
+
+        public Guid? CategoryId { get; set; }
+
+        public bool IsFeatured { get; set; } = false;
     }
 }

@@ -12,6 +12,7 @@ using Common.Messaging.Extensions;
 using Common.CQRS.Extensions;
 using Common.Observability;
 using Common.Audit.Extensions;
+using Common.Storage.Extensions;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,13 +22,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddApplicationLogging();
 
-// Add OpenTelemetry Observability (Tracing, Metrics, Logging)
 builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
-// Common Utilities (Excel, CSV, etc.)
 builder.Services.AddCommonUtilities();
 builder.Services.AddScoped<IAuctionExcelService, AuctionExcelService>();
 
@@ -40,20 +39,20 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
-// Add CQRS with MediatR and FluentValidation
 builder.Services.AddCQRS(typeof(AuctionService.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
 
-// Add Audit Services
 builder.Services.AddAuditServices(builder.Configuration);
 
-// Background Services
+builder.Services.AddFileStorageGrpcClient(builder.Configuration);
+
+builder.Services.AddSeeders();
+
 builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();
 builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.ScheduledAuctionDeactivationService>();
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 
-// Authentication & Authorization
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>
 {
@@ -102,11 +101,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
-    db.Database.Migrate();
-}
+
+await app.Services.SeedDatabaseAsync();
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"]; 
 if (!string.IsNullOrWhiteSpace(pathBase))
@@ -132,6 +128,4 @@ app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Auction Service");
 
 app.Run();
-
-// Partial class declaration for WebApplicationFactory in integration tests
 public partial class Program { }

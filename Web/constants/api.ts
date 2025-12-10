@@ -1,6 +1,8 @@
 export const API_ENDPOINTS = {
   AUCTIONS: "/auctions",
   MY_AUCTIONS: "/auctions/my",
+  AUCTIONS_CATEGORIES: "/auctions/categories",
+  AUCTIONS_FEATURED: "/auctions/featured",
   AUCTION_BY_ID: (id: string) => `/auctions/${id}`,
   AUCTION_ACTIVATE: (id: string) => `/auctions/${id}/activate`,
   AUCTION_DEACTIVATE: (id: string) => `/auctions/${id}/deactivate`,
@@ -40,6 +42,8 @@ export const QUERY_KEYS = {
   AUCTIONS: "auctions",
   MY_AUCTIONS: "my-auctions",
   AUCTION: "auction",
+  CATEGORIES: "categories",
+  FEATURED_AUCTIONS: "featured-auctions",
   USER: "user",
   BIDS: "bids",
   MY_BIDS: "my-bids",

@@ -10,8 +10,12 @@ namespace AuctionService.Application.Mappings
         public MappingProfiles()
         {
             CreateMap<Auction, AuctionDto>()
-                .IncludeMembers(x => x.Item);
-            CreateMap<Item, AuctionDto>();
+                .IncludeMembers(x => x.Item)
+                .ForMember(d => d.Files, o => o.MapFrom(s => s.Item.Files));
+            CreateMap<Item, AuctionDto>()
+                .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.Name : null))
+                .ForMember(d => d.CategorySlug, o => o.MapFrom(s => s.Category != null ? s.Category.Slug : null))
+                .ForMember(d => d.CategoryIcon, o => o.MapFrom(s => s.Category != null ? s.Category.Icon : null));
 
             CreateMap<CreateAuctionDto, Auction>()
                 .ForMember(d => d.Item, o => o.MapFrom(s => s));
@@ -35,7 +39,12 @@ namespace AuctionService.Application.Mappings
                 .ForMember(d => d.Color, o => o.MapFrom(s => s.Item.Color))
                 .ForMember(d => d.Mileage, o => o.MapFrom(s => s.Item.Mileage));
 
-            CreateMap<AuctionFileInfo, AuctionFileDto>();
+            CreateMap<ItemFileInfo, AuctionFileDto>();
+
+            CreateMap<Category, CategoryDto>()
+                .ForMember(d => d.AuctionCount, o => o.MapFrom(s => s.Items.Count));
+            CreateMap<CreateCategoryDto, Category>();
+            CreateMap<UpdateCategoryDto, Category>();
         }
     }
 }

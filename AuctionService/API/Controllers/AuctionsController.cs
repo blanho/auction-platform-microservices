@@ -44,7 +44,26 @@ public class AuctionsController : ControllerBase
     {
         var query = new GetAuctionsQuery(
             request.Status, request.Seller, request.Winner, request.SearchTerm,
+            request.Category, request.IsFeatured,
             request.PageNumber, request.PageSize, request.OrderBy, request.Descending);
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("featured")]
+    [ProducesResponseType(typeof(PagedResult<AuctionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<AuctionDto>>> GetFeaturedAuctions(
+        [FromQuery] int pageSize = 8,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAuctionsQuery(
+            null, null, null, null,
+            null, true,
+            1, pageSize, "auctionEnd", false);
 
         var result = await _mediator.Send(query, cancellationToken);
 

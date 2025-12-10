@@ -1,8 +1,5 @@
 namespace Common.Utilities.Constants;
 
-/// <summary>
-/// Common file-related constants
-/// </summary>
 public static class FileConstants
 {
     public static class ContentTypes
