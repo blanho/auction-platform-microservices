@@ -45,8 +45,10 @@ import { Auction, AuctionStatus } from '@/types/auction';
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
+import { PlaceBidDialog } from '@/features/bid/place-bid-dialog';
 import { auctionService } from '@/services/auction.service';
 import { AuditHistory } from '@/components/common/audit-history';
+import { BidHistory } from '@/components/common/bid-history';
 
 export default function AuctionDetailPage() {
     const params = useParams();
@@ -56,6 +58,15 @@ export default function AuctionDetailPage() {
     const [auction, setAuction] = useState<Auction | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<unknown>(null);
+    const [bidRefreshTrigger, setBidRefreshTrigger] = useState(0);
+
+    const handleBidPlaced = () => {
+        setBidRefreshTrigger(prev => prev + 1);
+        // Refetch auction to update current high bid
+        if (auctionId) {
+            auctionService.getAuctionById(auctionId).then(setAuction);
+        }
+    };
 
     useEffect(() => {
         if (!auctionId) {
@@ -316,10 +327,30 @@ export default function AuctionDetailPage() {
                         </Card>
 
                         {auction.status === AuctionStatus.Live && !isOwner && (
-                            <Button className="w-full" size="lg">
-                                Place Bid
-                            </Button>
+                            <PlaceBidDialog
+                                auctionId={auction.id}
+                                currentHighBid={auction.currentHighBid || 0}
+                                reservePrice={auction.reservePrice}
+                                onBidPlaced={handleBidPlaced}
+                            />
                         )}
+
+                        {/* Bid History */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <History className="h-5 w-5" />
+                                    Bid History
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <BidHistory
+                                    auctionId={auction.id}
+                                    refreshTrigger={bidRefreshTrigger}
+                                    maxHeight="300px"
+                                />
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 

@@ -30,7 +30,7 @@ builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 
 // Authentication & Authorization
-var identityAuthority = builder.Configuration["Identity:Authority"];
+var identityAuthority = builder.Configuration["Identity:Authority"] ?? "http://localhost:5001";
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
