@@ -44,15 +44,21 @@ export function AuctionCardWithActions({
     return formatDistance(endDate, new Date(), { addSuffix: true });
   };
 
+  const getImageUrl = () => {
+    const primaryFile = auction.files?.find(f => f.isPrimary);
+    return primaryFile?.url || auction.files?.[0]?.url;
+  };
+
+  const imageUrl = getImageUrl();
   const timeRemaining = getTimeRemaining();
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg">
       <CardHeader className="p-0">
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
-          {auction.imageUrl ? (
+          {imageUrl ? (
             <Image
-              src={auction.imageUrl}
+              src={imageUrl}
               alt={auction.title || "Auction item"}
               fill
               className="object-cover"

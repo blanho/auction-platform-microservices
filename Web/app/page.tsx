@@ -4,7 +4,9 @@ import { Header } from "@/components/layout/header";
 import {
   HeroSection,
   TrustSection,
+  CategoriesSection,
   FeaturedAuctionsSection,
+  EndingSoonSection,
   HowItWorksSection,
   TestimonialsSection,
   PersonalizationSection,
@@ -18,7 +20,9 @@ export default function Home() {
       <main className="flex-1">
         <HeroSection />
         <TrustSection />
+        <CategoriesSection />
         <FeaturedAuctionsSection />
+        <EndingSoonSection />
         <HowItWorksSection />
         <TestimonialsSection />
         <PersonalizationSection />

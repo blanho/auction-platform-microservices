@@ -1,6 +1,8 @@
 export { HeroSection } from "./hero-section";
 export { TrustSection } from "./trust-section";
+export { CategoriesSection } from "./categories-section";
 export { FeaturedAuctionsSection } from "./featured-auctions-section";
+export { EndingSoonSection } from "./ending-soon-section";
 export { HowItWorksSection } from "./how-it-works-section";
 export { TestimonialsSection } from "./testimonials-section";
 export { PersonalizationSection } from "./personalization-section";

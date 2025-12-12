@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,10 +68,12 @@ function SmallAuctionCard({
     return (
         <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
             <div className="relative h-32 overflow-hidden">
-                <img
+                <Image
                     src={item.imageUrl}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 {showBadge && (
                     <Badge className="absolute top-2 left-2 bg-purple-500 text-white text-xs">

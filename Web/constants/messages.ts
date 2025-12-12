@@ -1,0 +1,119 @@
+// UI strings for consistent messaging
+export const MESSAGES = {
+  // Success messages
+  SUCCESS: {
+    AUCTION_CREATED: 'Auction created successfully',
+    AUCTION_UPDATED: 'Auction updated successfully',
+    AUCTION_DELETED: 'Auction deleted successfully',
+    AUCTION_ACTIVATED: 'Auction activated successfully',
+    AUCTION_DEACTIVATED: 'Auction deactivated successfully',
+    BID_PLACED: 'Bid placed successfully',
+    PROFILE_UPDATED: 'Profile updated successfully',
+    PASSWORD_CHANGED: 'Password changed successfully',
+    SETTINGS_SAVED: 'Settings saved successfully',
+    WATCHLIST_ADDED: 'Added to watchlist',
+    WATCHLIST_REMOVED: 'Removed from watchlist',
+    LINK_COPIED: 'Link copied to clipboard',
+    WITHDRAWAL_APPROVED: 'Withdrawal approved successfully',
+    WITHDRAWAL_REJECTED: 'Withdrawal rejected',
+    REPORT_SUBMITTED: 'Report submitted successfully',
+    REPORT_RESOLVED: 'Report resolved successfully',
+  },
+  
+  // Error messages
+  ERROR: {
+    GENERIC: 'Something went wrong. Please try again.',
+    NETWORK: 'Network error. Please check your connection.',
+    UNAUTHORIZED: 'You are not authorized to perform this action.',
+    NOT_FOUND: 'The requested resource was not found.',
+    SESSION_EXPIRED: 'Your session has expired. Please log in again.',
+    BID_TOO_LOW: 'Your bid must be higher than the current bid.',
+    INSUFFICIENT_BALANCE: 'Insufficient balance for this operation.',
+    INVALID_FORM: 'Please check the form for errors.',
+    FILE_TOO_LARGE: 'File size exceeds the maximum limit.',
+    INVALID_FILE_TYPE: 'Invalid file type.',
+    AUCTION_ENDED: 'This auction has ended.',
+  },
+  
+  // Loading states
+  LOADING: {
+    DEFAULT: 'Loading...',
+    SUBMITTING: 'Submitting...',
+    SAVING: 'Saving...',
+    UPLOADING: 'Uploading...',
+    PROCESSING: 'Processing...',
+  },
+  
+  // Empty states
+  EMPTY: {
+    AUCTIONS: 'No auctions found',
+    BIDS: 'No bids yet',
+    WATCHLIST: 'Your watchlist is empty',
+    NOTIFICATIONS: 'No notifications',
+    SEARCH_RESULTS: 'No results found for your search',
+    TRANSACTIONS: 'No transactions found',
+    REPORTS: 'No reports found',
+  },
+  
+  // Confirmation dialogs
+  CONFIRM: {
+    DELETE_AUCTION: 'Are you sure you want to delete this auction? This action cannot be undone.',
+    DEACTIVATE_AUCTION: 'Are you sure you want to deactivate this auction?',
+    CANCEL_BID: 'Are you sure you want to cancel this bid?',
+    LOGOUT: 'Are you sure you want to log out?',
+    SUSPEND_USER: 'Are you sure you want to suspend this user?',
+    DELETE_USER: 'Are you sure you want to delete this user? This action cannot be undone.',
+  },
+  
+  // UI Labels
+  LABELS: {
+    AUCTION_ENDED: 'Auction Ended',
+    RESERVE_MET: '✅ Reserve Met',
+    RESERVE_NOT_MET: 'Reserve Not Met',
+    TIME_LEFT: 'Time Left',
+    CURRENT_BID: 'Current Bid',
+    MIN_BID: 'Minimum Bid',
+    BIDS: 'Bids',
+    VIEWS: 'Views',
+    SELLER: 'Seller',
+    CATEGORY: 'Category',
+  },
+} as const;
+
+// Form labels
+export const LABELS = {
+  AUCTION: {
+    TITLE: 'Title',
+    DESCRIPTION: 'Description',
+    MAKE: 'Make',
+    MODEL: 'Model',
+    YEAR: 'Year',
+    COLOR: 'Color',
+    MILEAGE: 'Mileage',
+    RESERVE_PRICE: 'Reserve Price',
+    BUY_NOW_PRICE: 'Buy Now Price',
+    AUCTION_END: 'Auction End Date',
+    CATEGORY: 'Category',
+    CONDITION: 'Condition',
+    IMAGES: 'Images',
+  },
+  USER: {
+    USERNAME: 'Username',
+    EMAIL: 'Email',
+    PASSWORD: 'Password',
+    CONFIRM_PASSWORD: 'Confirm Password',
+    FULL_NAME: 'Full Name',
+    PHONE: 'Phone Number',
+    BIO: 'Bio',
+    LOCATION: 'Location',
+  },
+} as const;
+
+// Placeholders
+export const PLACEHOLDERS = {
+  SEARCH: 'Search auctions...',
+  EMAIL: 'Enter your email',
+  PASSWORD: 'Enter your password',
+  BID_AMOUNT: 'Enter bid amount',
+  DESCRIPTION: 'Enter description...',
+} as const;
