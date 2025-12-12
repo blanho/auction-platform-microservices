@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, Mail } from "lucide-react";
 
 interface RegisterFormData {
     username: string;
@@ -76,7 +76,7 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            const response = await fetch(`${identityServerUrl}/api/account`, {
+            const response = await fetch(`${identityServerUrl}/api/account/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -97,9 +97,6 @@ export default function RegisterPage() {
             }
 
             setSuccess(true);
-            setTimeout(() => {
-                router.push("/auth/signin?registered=true");
-            }, 2000);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
         } finally {
@@ -113,13 +110,31 @@ export default function RegisterPage() {
                 <Card className="w-full max-w-md">
                     <CardHeader className="space-y-1">
                         <div className="flex items-center justify-center mb-4">
-                            <CheckCircle2 className="h-12 w-12 text-green-500" />
+                            <div className="rounded-full bg-primary/10 p-3">
+                                <Mail className="h-8 w-8 text-primary" />
+                            </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold text-center">Registration Successful!</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">Check Your Email</CardTitle>
                         <CardDescription className="text-center">
-                            Redirecting you to sign in...
+                            We&apos;ve sent a confirmation link to <strong>{formData.email}</strong>.
+                            Please check your inbox and click the link to activate your account.
                         </CardDescription>
                     </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Alert>
+                            <Mail className="h-4 w-4" />
+                            <AlertDescription>
+                                Didn&apos;t receive the email? Check your spam folder or wait a few minutes.
+                            </AlertDescription>
+                        </Alert>
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => router.push("/auth/signin")}
+                        >
+                            Go to Sign In
+                        </Button>
+                    </CardContent>
                 </Card>
             </div>
         );
