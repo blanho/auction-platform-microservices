@@ -13,6 +13,7 @@ using AuctionService.Application.Queries.ExportAuctions;
 using AuctionService.Application.Queries.GetAuctionById;
 using AuctionService.Application.Queries.GetAuctions;
 using AuctionService.Application.Queries.GetMyAuctions;
+using AuctionService.Application.Queries.GetUserDashboardStats;
 using Common.Core.Helpers;
 using Common.Utilities.Constants;
 using Common.Utilities.Helpers;
@@ -90,6 +91,21 @@ public class AuctionsController : ControllerBase
             request.OrderBy,
             request.Descending);
 
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("dashboard/stats")]
+    [Authorize(Policy = "AuctionScope")]
+    [ProducesResponseType(typeof(UserDashboardStatsDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UserDashboardStatsDto>> GetDashboardStats(
+        CancellationToken cancellationToken = default)
+    {
+        var username = UserHelper.GetUsername(User);
+        var query = new GetUserDashboardStatsQuery(username);
         var result = await _mediator.Send(query, cancellationToken);
 
         return result.IsSuccess

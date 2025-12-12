@@ -2,7 +2,7 @@ using AuctionService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AuctionService.Infrastructure.Data.EntitiesConfiguration;
+namespace AuctionService.Infrastructure.Data.Configurations;
 
 public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
 {

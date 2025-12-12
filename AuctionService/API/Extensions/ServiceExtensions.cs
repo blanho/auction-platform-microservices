@@ -48,6 +48,7 @@ namespace AuctionService.API.Extensions
             });
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IWatchlistRepository, WatchlistRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IFileConfirmationService, FileConfirmationService>();

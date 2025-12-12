@@ -3,8 +3,10 @@ using Common.Messaging.Implementations;
 using Common.Storage.Abstractions;
 using Common.Storage.Extensions;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using UtilityService.BackgroundServices;
 using UtilityService.Consumers;
@@ -35,8 +37,16 @@ builder.Services.AddDbContext<UtilityDbContext>(options =>
 
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IStoredFileRepository, StoredFileRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IWalletRepository, WalletRepository>();
+builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
+
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddHostedService<TempFileCleanupService>();
@@ -64,6 +74,27 @@ builder.Services.AddMassTransit(x =>
 });
 builder.Services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
 
+var identityAuthority = builder.Configuration["Identity:Authority"] ?? "http://localhost:5001";
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.Authority = identityAuthority;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = identityAuthority,
+        ValidateAudience = false,
+        NameClaimType = "username",
+        RoleClaimType = "role"
+    };
+});
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -90,6 +121,9 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(app.Environment.ContentRootPath, "uploads")),
     RequestPath = "/files"
 });
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 app.MapGrpcService<FileStorageGrpcService>();
