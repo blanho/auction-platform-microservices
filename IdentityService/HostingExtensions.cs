@@ -3,6 +3,7 @@ using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
 using IdentityService.Services;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -52,9 +53,29 @@ internal static class HostingExtensions
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+            })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+        // Configure token lifespan
+        builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromHours(24); // Email confirmation tokens valid for 24 hours
+        });
+
+        // Register email service
+        builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
         builder.Services
             .AddIdentityServer(options =>
@@ -85,8 +106,43 @@ internal static class HostingExtensions
             options.Cookie.SameSite = SameSiteMode.Lax;
         });
 
-        builder.Services.AddAuthentication()
-            .AddOpenIdConnect("oidc", "Sign-in with demo.duendesoftware.com", options =>
+        // Configure external authentication providers
+        var authBuilder = builder.Services.AddAuthentication();
+
+        // Google OAuth
+        var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+        {
+            authBuilder.AddGoogle("Google", options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.ClientId = googleClientId;
+                options.ClientSecret = googleClientSecret;
+                options.Scope.Add("email");
+                options.Scope.Add("profile");
+            });
+        }
+
+        // Facebook OAuth
+        var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+        var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+        if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
+        {
+            authBuilder.AddFacebook("Facebook", options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.AppId = facebookAppId;
+                options.AppSecret = facebookAppSecret;
+                options.Scope.Add("email");
+                options.Scope.Add("public_profile");
+            });
+        }
+
+        // Demo OpenID Connect (can be removed in production)
+        if (builder.Environment.IsDevelopment())
+        {
+            authBuilder.AddOpenIdConnect("oidc", "Sign-in with demo.duendesoftware.com", options =>
             {
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                 options.SignOutScheme = IdentityServerConstants.SignoutScheme;
@@ -103,6 +159,7 @@ internal static class HostingExtensions
                     RoleClaimType = "role"
                 };
             });
+        }
 
         return builder.Build();
     }

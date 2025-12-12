@@ -35,9 +35,3 @@ public class NotificationPreferencesDto
     public bool PushNotifications { get; set; }
     public bool SmsNotifications { get; set; }
 }
-
-public class ChangePasswordDto
-{
-    public required string CurrentPassword { get; set; }
-    public required string NewPassword { get; set; }
-}
