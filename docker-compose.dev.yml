@@ -1,0 +1,67 @@
+# Docker Compose for local development
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  redis:
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  postgres:
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+
+  auction-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./AuctionService:/src/AuctionService:ro
+      - ./Common:/src/Common:ro
+
+  bid-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./BidService:/src/BidService:ro
+      - ./Common:/src/Common:ro
+
+  notification-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./NotificationService:/src/NotificationService:ro
+      - ./Common:/src/Common:ro
+
+  identity-service:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./IdentityService:/src/IdentityService:ro
+
+  gateway:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./GatewayService:/src/GatewayService:ro
+
+  utility-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./UtilityService:/src/UtilityService:ro
+
+  web:
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:6001
+      NEXT_PUBLIC_IDENTITY_SERVER_URL: http://localhost:5002
+    volumes:
+      - ./Web:/app:ro
+      - /app/node_modules
+      - /app/.next

@@ -61,6 +61,22 @@ services:
     networks:
       - microservices
 
+  search-mongo:
+    image: mongo:7
+    container_name: search-mongo
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    volumes:
+      - search_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices
+
   auction-api:
     build:
       context: .
@@ -77,6 +93,8 @@ services:
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
       BidService__GrpcUrl: http://bid-api:8080
+      UtilityService__GrpcUrl: http://utility-api:8080
+      Identity__Authority: http://identity-service:5001
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
@@ -84,9 +102,12 @@ services:
     volumes:
       - auction_api_logs:/app/logs
     depends_on:
-      - postgres
-      - redis
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -119,8 +140,10 @@ services:
     volumes:
       - bid_api_logs:/app/logs
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -152,8 +175,10 @@ services:
     volumes:
       - notification_api_logs:/app/logs
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -174,12 +199,16 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5001
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=identity_db;Username=postgres;Password=postgres123
+      FrontendUrl: http://localhost:3000
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
       - "5002:5001"
+    volumes:
+      - identity_keys:/app/keys
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -232,15 +261,26 @@ services:
     container_name: web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_GATEWAY_URL: http://gateway:8080
-      NEXT_PUBLIC_IDENTITY_URL: http://identity-service:5001
-      NEXT_PUBLIC_AUCTION_API_URL: http://gateway:8080/auction
-      NEXT_PUBLIC_SEARCH_API_URL: http://gateway:8080/search
-      NEXT_PUBLIC_ENABLE_DEVTOOLS: "true"
+      NODE_ENV: production
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:6001
+      NEXT_PUBLIC_IDENTITY_SERVER_URL: http://localhost:5002
+      NEXT_PUBLIC_NOTIFICATION_URL: http://localhost:5004
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: your-super-secret-key-change-in-production
+      IDENTITY_SERVER_URL: http://identity-service:5001
+      IDENTITY_CLIENT_ID: nextApp
+      IDENTITY_CLIENT_SECRET: secret
     ports:
       - "3000:3000"
     depends_on:
       - gateway
+      - identity-service
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - microservices
 
@@ -258,15 +298,20 @@ services:
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Identity__Authority: http://identity-service:5001
+      Kestrel__EndpointDefaults__Protocols: Http1AndHttp2
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
       - "5005:8080"
     volumes:
       - utility_api_logs:/app/logs
+      - utility_uploads:/app/uploads
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -283,17 +328,21 @@ volumes:
     driver: local
   rabbitmq_data:
     driver: local
+  search_mongo_data:
+    driver: local
   auction_api_logs:
     driver: local
   bid_api_logs:
     driver: local
   notification_api_logs:
     driver: local
-  identity_logs:
+  identity_keys:
     driver: local
   gateway_logs:
     driver: local
   utility_api_logs:
+    driver: local
+  utility_uploads:
     driver: local
 
 networks:

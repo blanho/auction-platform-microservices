@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+# Copy solution and project files for restore
 COPY ["Auction.sln", "./"]
 COPY ["AuctionService/API/AuctionService.API.csproj", "AuctionService/API/"]
 COPY ["AuctionService/Application/AuctionService.Application.csproj", "AuctionService/Application/"]
@@ -14,6 +15,12 @@ COPY ["Common/Common.Messaging/Common.Messaging.csproj", "Common/Common.Messagin
 COPY ["Common/Common.Repository/Common.Repository.csproj", "Common/Common.Repository/"]
 COPY ["Common/Common.OpenApi/Common.OpenApi.csproj", "Common/Common.OpenApi/"]
 COPY ["Common/Common.Security/Common.Security.csproj", "Common/Common.Security/"]
+COPY ["Common/Common.CQRS/Common.CQRS.csproj", "Common/Common.CQRS/"]
+COPY ["Common/Common.Observability/Common.Observability.csproj", "Common/Common.Observability/"]
+COPY ["Common/Common.Audit/Common.Audit.csproj", "Common/Common.Audit/"]
+COPY ["Common/Common.Utilities/Common.Utilities.csproj", "Common/Common.Utilities/"]
+COPY ["Common/Common.Storage/Common.Storage.csproj", "Common/Common.Storage/"]
+COPY ["Common/Common.Scheduling/Common.Scheduling.csproj", "Common/Common.Scheduling/"]
 
 RUN dotnet restore "AuctionService/API/AuctionService.API.csproj"
 

@@ -1,0 +1,109 @@
+# Docker Compose for production
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  redis:
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+
+  rabbitmq:
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-auction_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-auction_pass}
+
+  postgres:
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-auction_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-auction_pass}
+
+  auction-api:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=auction_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD:-redis123}
+      RabbitMQ__Username: ${RABBITMQ_USER:-auction_user}
+      RabbitMQ__Password: ${RABBITMQ_PASS:-auction_pass}
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  bid-api:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=bid_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      RabbitMQ__Username: ${RABBITMQ_USER:-auction_user}
+      RabbitMQ__Password: ${RABBITMQ_PASS:-auction_pass}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  notification-api:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=notification_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      RabbitMQ__Username: ${RABBITMQ_USER:-auction_user}
+      RabbitMQ__Password: ${RABBITMQ_PASS:-auction_pass}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  identity-service:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=identity_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      FrontendUrl: ${FRONTEND_URL:-http://localhost:3000}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  gateway:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  utility-api:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=utility_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      RabbitMQ__Username: ${RABBITMQ_USER:-auction_user}
+      RabbitMQ__Password: ${RABBITMQ_PASS:-auction_pass}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  web:
+    restart: always
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_GATEWAY_URL: ${GATEWAY_URL:-http://localhost:6001}
+      NEXT_PUBLIC_IDENTITY_SERVER_URL: ${IDENTITY_URL:-http://localhost:5002}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
