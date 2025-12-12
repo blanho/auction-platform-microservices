@@ -148,5 +148,31 @@ namespace AuctionService.Infrastructure.Repositories
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default)
+        {
+            // Get auctions that are scheduled and should be activated
+            // Note: Without a specific AuctionStart property, we activate all Scheduled auctions
+            // The business logic for when to activate should be handled at command level
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.Status == Status.Scheduled)
+                .Include(x => x.Item)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetAuctionsEndingBetweenAsync(
+            DateTime startTime, 
+            DateTime endTime, 
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.Status == Status.Live
+                    && x.AuctionEnd >= startTime 
+                    && x.AuctionEnd <= endTime)
+                .Include(x => x.Item)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Storage\Common.Storage.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Scheduling\Common.Scheduling.csproj" />
   </ItemGroup>
 
   <ItemGroup>

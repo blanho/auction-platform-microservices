@@ -92,4 +92,28 @@ public class ReportRepository : IReportRepository
     {
         return await _context.Reports.CountAsync(r => r.Priority == priority && r.Status != ReportStatus.Resolved, cancellationToken);
     }
+
+    public async Task<List<Report>> GetReportsForEscalationAsync(
+        TimeSpan unreviewedThreshold,
+        int maxEscalations,
+        CancellationToken cancellationToken = default)
+    {
+        var cutoffTime = DateTimeOffset.UtcNow - unreviewedThreshold;
+        
+        // Get pending reports older than threshold that haven't been escalated yet
+        // (EscalatedAt is null) or were escalated more than threshold ago
+        return await _context.Reports
+            .Where(r => r.Status == ReportStatus.Pending &&
+                       r.CreatedAt <= cutoffTime &&
+                       (r.EscalatedAt == null || r.EscalatedAt <= cutoffTime))
+            .OrderByDescending(r => r.Priority)
+            .ThenBy(r => r.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task UpdateRangeAsync(List<Report> reports, CancellationToken cancellationToken = default)
+    {
+        _context.Reports.UpdateRange(reports);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

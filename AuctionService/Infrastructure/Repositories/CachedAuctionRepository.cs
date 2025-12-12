@@ -92,6 +92,15 @@ public class CachedAuctionRepository : IAuctionRepository
     public Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default)
         => _inner.GetAuctionsToAutoDeactivateAsync(cancellationToken);
 
+    public Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default)
+        => _inner.GetScheduledAuctionsToActivateAsync(cancellationToken);
+
+    public Task<List<Auction>> GetAuctionsEndingBetweenAsync(
+        DateTime startTime,
+        DateTime endTime,
+        CancellationToken cancellationToken = default)
+        => _inner.GetAuctionsEndingBetweenAsync(startTime, endTime, cancellationToken);
+
     public Task<List<Auction>> GetAuctionsForExportAsync(
         Status? status = null,
         string? seller = null,

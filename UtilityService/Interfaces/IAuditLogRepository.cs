@@ -27,4 +27,6 @@ public interface IAuditLogRepository
     Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken = default);
     
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
+    
+    Task<List<AuditLog>> GetLogsOlderThanAsync(DateTimeOffset cutoffDate, CancellationToken cancellationToken = default);
 }

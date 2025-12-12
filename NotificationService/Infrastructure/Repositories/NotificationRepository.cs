@@ -114,5 +114,32 @@ namespace NotificationService.Infrastructure.Repositories
 
             _context.Notifications.UpdateRange(unreadNotifications);
         }
+
+        public async Task<List<Notification>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default)
+        {
+            var cutoffDate = _dateTime.UtcNow.AddDays(-retentionDays);
+            
+            return await _context.Notifications
+                .Where(x => !x.IsDeleted && 
+                           x.Status == NotificationStatus.Read && 
+                           x.ReadAt.HasValue && 
+                           x.ReadAt.Value < cutoffDate)
+                .OrderBy(x => x.ReadAt)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task DeleteRangeAsync(List<Notification> notifications, CancellationToken cancellationToken = default)
+        {
+            var now = _dateTime.UtcNow;
+            
+            foreach (var notification in notifications)
+            {
+                notification.IsDeleted = true;
+                notification.DeletedAt = now;
+                notification.DeletedBy = SystemGuids.System;
+            }
+            
+            _context.Notifications.UpdateRange(notifications);
+        }
     }
 }

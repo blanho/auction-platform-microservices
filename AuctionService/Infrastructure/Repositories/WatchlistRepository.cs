@@ -98,4 +98,11 @@ public class WatchlistRepository : IWatchlistRepository
             .Select(w => w.Username)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<List<WatchlistItem>> GetWatchersForAuctionAsync(Guid auctionId, bool notifyOnEnd, CancellationToken cancellationToken = default)
+    {
+        return await _context.WatchlistItems
+            .Where(w => w.AuctionId == auctionId && w.NotifyOnEnd == notifyOnEnd)
+            .ToListAsync(cancellationToken);
+    }
 }

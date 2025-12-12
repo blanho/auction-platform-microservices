@@ -10,6 +10,13 @@ public interface IAuctionRepository : IRepository<Auction>
     
     Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default);
     
+    Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default);
+    
+    Task<List<Auction>> GetAuctionsEndingBetweenAsync(
+        DateTime startTime, 
+        DateTime endTime, 
+        CancellationToken cancellationToken = default);
+    
     Task<List<Auction>> GetAuctionsForExportAsync(
         Status? status = null,
         string? seller = null,

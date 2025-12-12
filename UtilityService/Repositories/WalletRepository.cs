@@ -114,4 +114,23 @@ public class WalletRepository : IWalletRepository
     {
         return await _context.WalletTransactions.AnyAsync(t => t.Id == id, cancellationToken);
     }
+
+    public async Task<List<WalletTransaction>> GetTimedOutPendingTransactionsAsync(
+        TimeSpan timeout,
+        CancellationToken cancellationToken = default)
+    {
+        var cutoffTime = DateTimeOffset.UtcNow - timeout;
+        
+        return await _context.WalletTransactions
+            .Where(t => t.Status == TransactionStatus.Pending &&
+                       t.CreatedAt <= cutoffTime)
+            .OrderBy(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task UpdateRangeAsync(List<WalletTransaction> transactions, CancellationToken cancellationToken = default)
+    {
+        _context.WalletTransactions.UpdateRange(transactions);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

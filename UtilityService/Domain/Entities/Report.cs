@@ -14,6 +14,8 @@ public class Report
     public string? Resolution { get; set; }
     public string? ResolvedBy { get; set; }
     public DateTimeOffset? ResolvedAt { get; set; }
+    public string? AdminNotes { get; set; }
+    public DateTimeOffset? EscalatedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

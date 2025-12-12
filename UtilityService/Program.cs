@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using UtilityService.BackgroundServices;
 using UtilityService.Consumers;
 using UtilityService.Data;
+using UtilityService.Extensions;
 using UtilityService.GrpcServices;
 using UtilityService.Interfaces;
 using UtilityService.Repositories;
@@ -49,7 +49,7 @@ builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
 
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
-builder.Services.AddHostedService<TempFileCleanupService>();
+builder.Services.AddUtilityScheduling(builder.Configuration);
 builder.Services.AddGrpc();
 builder.Services.AddMassTransit(x =>
 {

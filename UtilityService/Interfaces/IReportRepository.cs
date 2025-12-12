@@ -19,4 +19,9 @@ public interface IReportRepository
     void Delete(Report report);
     Task<int> GetCountByStatusAsync(ReportStatus status, CancellationToken cancellationToken = default);
     Task<int> GetCountByPriorityAsync(ReportPriority priority, CancellationToken cancellationToken = default);
+    Task<List<Report>> GetReportsForEscalationAsync(
+        TimeSpan unreviewedThreshold,
+        int maxEscalations,
+        CancellationToken cancellationToken = default);
+    Task UpdateRangeAsync(List<Report> reports, CancellationToken cancellationToken = default);
 }

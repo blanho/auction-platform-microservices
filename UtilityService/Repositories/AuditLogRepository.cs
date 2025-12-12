@@ -87,4 +87,12 @@ public class AuditLogRepository : IAuditLogRepository
     {
         return await _context.AuditLogs.CountAsync(cancellationToken);
     }
+
+    public async Task<List<AuditLog>> GetLogsOlderThanAsync(DateTimeOffset cutoffDate, CancellationToken cancellationToken = default)
+    {
+        return await _context.AuditLogs
+            .Where(x => x.Timestamp < cutoffDate)
+            .OrderBy(x => x.Timestamp)
+            .ToListAsync(cancellationToken);
+    }
 }

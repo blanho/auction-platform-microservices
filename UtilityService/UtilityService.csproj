@@ -24,9 +24,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Quartz" Version="3.13.1" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.1" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Common\Common.Audit\Common.Audit.csproj" />
     <ProjectReference Include="..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\Common\Common.Messaging\Common.Messaging.csproj" />
+    <ProjectReference Include="..\Common\Common.Scheduling\Common.Scheduling.csproj" />
     <ProjectReference Include="..\Common\Common.Storage\Common.Storage.csproj" />
   </ItemGroup>
 

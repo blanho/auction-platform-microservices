@@ -37,6 +37,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
+builder.Services.AddNotificationScheduling(builder.Configuration);
 
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>

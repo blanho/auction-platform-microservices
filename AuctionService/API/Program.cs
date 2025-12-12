@@ -47,8 +47,7 @@ builder.Services.AddFileStorageGrpcClient(builder.Configuration);
 
 builder.Services.AddSeeders();
 
-builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.CheckAuctionFinishedService>();
-builder.Services.AddHostedService<AuctionService.Infrastructure.BackgroundServices.ScheduledAuctionDeactivationService>();
+builder.Services.AddAuctionScheduling(builder.Configuration);
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();

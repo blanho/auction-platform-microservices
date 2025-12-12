@@ -15,6 +15,8 @@ namespace NotificationService.Application.Interfaces
         Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default);
         Task MarkAsReadAsync(Guid id, CancellationToken cancellationToken = default);
         Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default);
+        Task<List<Notification>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default);
+        Task DeleteRangeAsync(List<Notification> notifications, CancellationToken cancellationToken = default);
     }
 
     public interface IUnitOfWork

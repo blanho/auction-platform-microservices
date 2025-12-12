@@ -20,4 +20,8 @@ public interface IWalletRepository
     Task<WalletTransaction> AddAsync(WalletTransaction transaction, CancellationToken cancellationToken = default);
     Task UpdateAsync(WalletTransaction transaction, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<List<WalletTransaction>> GetTimedOutPendingTransactionsAsync(
+        TimeSpan timeout,
+        CancellationToken cancellationToken = default);
+    Task UpdateRangeAsync(List<WalletTransaction> transactions, CancellationToken cancellationToken = default);
 }
