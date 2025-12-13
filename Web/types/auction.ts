@@ -81,7 +81,6 @@ export interface UpdateAuctionDto {
   mileage?: number;
 }
 
-// Import/Export types
 export interface ImportAuctionDto {
   title: string;
   description: string;

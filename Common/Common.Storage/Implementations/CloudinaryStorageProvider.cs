@@ -42,7 +42,6 @@ public class CloudinaryStorageProvider : IStorageProvider
             var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileNameWithoutExtension(fileName)}";
             var cloudinaryFolder = $"auction/{folder}";
             
-            // Determine if it's an image or raw file
             var isImage = contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
             
             string? publicId;
@@ -118,12 +117,10 @@ public class CloudinaryStorageProvider : IStorageProvider
     {
         try
         {
-            // Get the URL for the resource
             var url = GetUrl(path);
             if (string.IsNullOrEmpty(url))
                 return null;
 
-            // Download the file from Cloudinary URL
             using var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(url, cancellationToken);
             
@@ -164,7 +161,6 @@ public class CloudinaryStorageProvider : IStorageProvider
     {
         try
         {
-            // Extract the filename from the source path
             var fileName = Path.GetFileName(sourcePath);
             var newPublicId = $"auction/{destinationFolder}/{fileName}";
             
@@ -209,7 +205,6 @@ public class CloudinaryStorageProvider : IStorageProvider
 
         try
         {
-            // Generate a secure URL for the resource
             var url = _cloudinary.Api.UrlImgUp
                 .Secure(_options.Cloudinary?.UseSecureUrl ?? true)
                 .BuildUrl(path);

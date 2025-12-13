@@ -16,7 +16,6 @@ public static class MassTransitOutboxExtensions
     {
         services.AddMassTransit(x =>
         {
-            // Register consumers
             x.AddConsumer<AuctionFinishedConsumer>();
 
             x.AddEntityFrameworkOutbox<BidDbContext>(o =>

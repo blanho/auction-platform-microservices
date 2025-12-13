@@ -23,32 +23,20 @@ public record FileConfirmResult
     public string? Error { get; init; }
 }
 
-/// <summary>
-/// HTTP client for interacting with the UtilityService file storage API
-/// </summary>
 public interface IFileStorageClient
 {
-    /// <summary>
-    /// Upload a file to temporary storage (Status = Temp)
-    /// </summary>
     Task<TempUploadResult> UploadToTempAsync(
         Stream stream,
         string fileName,
         string contentType,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Confirm a temporary file and move to permanent storage (Status = Permanent)
-    /// </summary>
     Task<FileConfirmResult> ConfirmFileAsync(
         Guid fileId,
         string entityType,
         string entityId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Upload and immediately confirm (convenience method for small files)
-    /// </summary>
     Task<FileConfirmResult> UploadAndConfirmAsync(
         Stream stream,
         string fileName,
@@ -57,33 +45,18 @@ public interface IFileStorageClient
         string entityId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Download a file by ID
-    /// </summary>
     Task<Stream?> DownloadAsync(Guid fileId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Get file metadata by ID
-    /// </summary>
     Task<FileMetadata?> GetMetadataAsync(Guid fileId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Get files by entity
-    /// </summary>
     Task<IEnumerable<FileMetadata>> GetByEntityAsync(
         string entityType,
         string entityId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Delete a file by ID
-    /// </summary>
     Task<bool> DeleteAsync(Guid fileId, CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Implementation of the file storage HTTP client
-/// </summary>
 public class FileStorageClient : IFileStorageClient
 {
     private readonly HttpClient _httpClient;
@@ -173,7 +146,6 @@ public class FileStorageClient : IFileStorageClient
         string entityId,
         CancellationToken cancellationToken = default)
     {
-        // Step 1: Upload to temp
         var uploadResult = await UploadToTempAsync(stream, fileName, contentType, cancellationToken);
         
         if (!uploadResult.Success)
@@ -181,7 +153,6 @@ public class FileStorageClient : IFileStorageClient
             return new FileConfirmResult { Success = false, Error = uploadResult.Error };
         }
 
-        // Step 2: Confirm and link to entity
         return await ConfirmFileAsync(uploadResult.FileId, entityType, entityId, cancellationToken);
     }
 

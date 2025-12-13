@@ -9,7 +9,6 @@ import { Sparkles, Clock, Eye, ArrowRight, Heart } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
-// Mock personalized data
 const recommendedAuctions = [
     {
         id: "r1",
@@ -109,7 +108,6 @@ function SmallAuctionCard({
 export function PersonalizationSection() {
     const { data: session } = useSession();
 
-    // If not logged in, show a CTA instead
     if (!session) {
         return (
             <section className="py-20 bg-white dark:bg-slate-950">

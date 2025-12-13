@@ -324,9 +324,6 @@ public class ExcelService : IExcelService
     }
 }
 
-/// <summary>
-/// Implementation of IExcelRowReader
-/// </summary>
 internal class ExcelRowReader : IExcelRowReader
 {
     private readonly IXLRow _row;

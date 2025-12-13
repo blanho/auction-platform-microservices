@@ -20,7 +20,6 @@ try
         .ConfigureLogging()
         .ConfigureServices();
 
-    // Apply pending EF Core migrations for Identity database on startup
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -29,8 +28,6 @@ try
 
     app = app.ConfigurePipeline();
 
-    // this seeding is only for the template to bootstrap the DB and users.
-    // in production you will likely want a different approach.
     if (args.Contains("/seed"))
     {
         Log.Information("Seeding database...");

@@ -1,29 +1,17 @@
 namespace Common.Utilities.Extensions;
 
-/// <summary>
-/// Extension methods for collections
-/// </summary>
 public static class CollectionExtensions
 {
-    /// <summary>
-    /// Check if collection is null or empty
-    /// </summary>
     public static bool IsNullOrEmpty<T>(this IEnumerable<T>? collection)
     {
         return collection == null || !collection.Any();
     }
 
-    /// <summary>
-    /// Return empty enumerable if null
-    /// </summary>
     public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? collection)
     {
         return collection ?? Enumerable.Empty<T>();
     }
 
-    /// <summary>
-    /// Execute action for each item in collection
-    /// </summary>
     public static void ForEach<T>(this IEnumerable<T> collection, Action<T> action)
     {
         foreach (var item in collection)
@@ -32,9 +20,6 @@ public static class CollectionExtensions
         }
     }
 
-    /// <summary>
-    /// Execute async action for each item in collection sequentially
-    /// </summary>
     public static async Task ForEachAsync<T>(
         this IEnumerable<T> collection,
         Func<T, Task> action,
@@ -47,9 +32,6 @@ public static class CollectionExtensions
         }
     }
 
-    /// <summary>
-    /// Execute async action for each item in collection with concurrency limit
-    /// </summary>
     public static async Task ForEachAsync<T>(
         this IEnumerable<T> collection,
         Func<T, Task> action,
@@ -73,9 +55,6 @@ public static class CollectionExtensions
         await Task.WhenAll(tasks);
     }
 
-    /// <summary>
-    /// Split collection into batches of specified size
-    /// </summary>
     public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> collection, int batchSize)
     {
         var batch = new List<T>(batchSize);
@@ -95,9 +74,6 @@ public static class CollectionExtensions
         }
     }
 
-    /// <summary>
-    /// Distinct by selector
-    /// </summary>
     public static IEnumerable<T> DistinctBy<T, TKey>(
         this IEnumerable<T> collection,
         Func<T, TKey> keySelector)

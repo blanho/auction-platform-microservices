@@ -9,11 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AuctionService.Infrastructure.Jobs;
 
-/// <summary>
-/// Activates scheduled auctions when their start time arrives
-/// Changes status from Scheduled to Live and publishes AuctionStartedEvent
-/// Runs every 30 seconds to ensure timely activation
-/// </summary>
 public class AuctionActivationJob : BaseJob
 {
     public const string JobId = "auction-activation";

@@ -37,7 +37,6 @@ import { NotificationBell } from "@/components/common/notification-bell";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/use-auctions";
 
-// Simplified nav links with Font Awesome icons
 const navLinks = [
     { name: "Hot Deals", href: "/deals", icon: faFire, badge: "New", badgeColor: "bg-red-500" },
     { name: "Live", href: "/live", icon: faBolt, badge: "Live", badgeColor: "bg-green-500 animate-pulse" },

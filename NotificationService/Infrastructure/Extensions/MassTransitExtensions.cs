@@ -19,7 +19,6 @@ namespace NotificationService.Infrastructure.Extensions
                     o.UseBusOutbox();
                 });
 
-                // Register consumers
                 x.AddConsumer<AuctionCreatedConsumer>();
                 x.AddConsumer<AuctionFinishedConsumer>();
                 x.AddConsumer<BidPlacedConsumer>();

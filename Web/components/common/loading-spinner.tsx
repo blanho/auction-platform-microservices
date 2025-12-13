@@ -1,4 +1,3 @@
-// Loading spinner component
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {

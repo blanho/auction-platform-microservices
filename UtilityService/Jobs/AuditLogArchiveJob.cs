@@ -5,11 +5,6 @@ using UtilityService.Interfaces;
 
 namespace UtilityService.Jobs;
 
-/// <summary>
-/// Monitors old audit logs for archival purposes
-/// In production, would export to cold storage before deletion
-/// Runs daily at 2 AM
-/// </summary>
 public class AuditLogArchiveJob : BaseJob
 {
     public const string JobId = "audit-log-archive";
@@ -38,11 +33,6 @@ public class AuditLogArchiveJob : BaseJob
             Logger.LogDebug("No audit logs older than {CutoffDate} found", cutoffDate);
             return;
         }
-
-        // In production, this would:
-        // 1. Export logs to cold storage (Azure Blob, S3, etc.)
-        // 2. Delete from database after successful export
-        // For now, we just log the count for monitoring purposes
         
         Logger.LogInformation(
             "Found {Count} audit logs older than {RetentionDays} days. " +

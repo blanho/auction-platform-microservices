@@ -220,7 +220,6 @@ export default function AuctionDetailPage() {
                                 setRelatedAuctions(related.items.filter(a => a.id !== result.id).slice(0, 4));
                             }
                         } catch {
-                            // Ignore related auctions error
                         }
                     }
                 }

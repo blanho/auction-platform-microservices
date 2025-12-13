@@ -1,4 +1,3 @@
-// Pagination defaults
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PAGE_SIZE: 12,
@@ -7,7 +6,6 @@ export const PAGINATION = {
   TRANSACTIONS_PAGE_SIZE: 20,
 } as const;
 
-// Time constants (in milliseconds)
 export const TIME = {
   SECOND: 1000,
   MINUTE: 60 * 1000,
@@ -17,27 +15,23 @@ export const TIME = {
   COUNTDOWN_INTERVAL: 1000,
 } as const;
 
-// Auction bid defaults
 export const AUCTION_BID = {
   MIN_INCREMENT: 100,
   DEFAULT_RESERVE_PRICE: 0,
   AUTO_EXTEND_MINUTES: 5,
 } as const;
 
-// Cache/stale time for React Query
 export const CACHE = {
   STALE_TIME: 5 * TIME.MINUTE,
   CACHE_TIME: 10 * TIME.MINUTE,
   REFETCH_INTERVAL: TIME.MINUTE,
 } as const;
 
-// SignalR reconnection
 export const SIGNALR = {
   RECONNECT_TIMEOUT: TIME.MINUTE,
   MAX_RETRY_DELAY: 10 * TIME.SECOND,
 } as const;
 
-// File upload limits
 export const FILE_UPLOAD = {
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   MAX_FILES: 10,
@@ -45,7 +39,6 @@ export const FILE_UPLOAD = {
   ACCEPTED_DOCUMENT_TYPES: ['application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
 } as const;
 
-// Validation limits
 export const VALIDATION = {
   MIN_TITLE_LENGTH: 3,
   MAX_TITLE_LENGTH: 200,
@@ -58,7 +51,6 @@ export const VALIDATION = {
   MAX_YEAR: new Date().getFullYear() + 1,
 } as const;
 
-// Local storage keys
 export const STORAGE_KEYS = {
   WATCHLIST: 'watchlist',
   THEME: 'theme',
@@ -66,7 +58,6 @@ export const STORAGE_KEYS = {
   RECENT_SEARCHES: 'recent-searches',
 } as const;
 
-// Sort options
 export const SORT_OPTIONS = {
   AUCTION: {
     NEW: 'new',

@@ -2,9 +2,6 @@ using Common.Audit.Enums;
 
 namespace UtilityService.Domain.Entities;
 
-/// <summary>
-/// Audit log entity stored in the database
-/// </summary>
 public class AuditLog
 {
     public Guid Id { get; set; }

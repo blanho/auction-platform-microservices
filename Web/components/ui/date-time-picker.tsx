@@ -42,7 +42,6 @@ export function DateTimePicker({ date, setDate, disabled }: DateTimePickerProps)
             return;
         }
 
-        // Preserve the time when selecting a new date
         const [hours, minutes] = timeValue.split(':').map(Number);
         newDate.setHours(hours, minutes, 0, 0);
         setSelectedDate(newDate);

@@ -5,10 +5,6 @@ using UtilityService.Grpc;
 
 namespace UtilityService.GrpcServices;
 
-/// <summary>
-/// gRPC service for file storage operations.
-/// Used by other microservices to upload/manage files efficiently.
-/// </summary>
 public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
 {
     private readonly IFileStorageService _fileStorageService;
@@ -22,9 +18,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Stream upload file to temp storage
-    /// </summary>
     public override async Task<UploadFileResponse> UploadFile(
         IAsyncStreamReader<FileChunk> requestStream,
         ServerCallContext context)
@@ -102,9 +95,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         }
     }
 
-    /// <summary>
-    /// Confirm a temp file and move to permanent storage
-    /// </summary>
     public override async Task<ConfirmFileResponse> ConfirmFile(
         Grpc.ConfirmFileRequest request,
         ServerCallContext context)
@@ -151,9 +141,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         };
     }
 
-    /// <summary>
-    /// Batch confirm multiple files at once
-    /// </summary>
     public override async Task<ConfirmFilesBatchResponse> ConfirmFilesBatch(
         ConfirmFilesBatchRequest request,
         ServerCallContext context)
@@ -215,9 +202,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         return response;
     }
 
-    /// <summary>
-    /// Upload and immediately confirm (convenience method)
-    /// </summary>
     public override async Task<ConfirmFileResponse> UploadAndConfirm(
         IAsyncStreamReader<FileChunk> requestStream,
         ServerCallContext context)
@@ -265,9 +249,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         };
     }
 
-    /// <summary>
-    /// Get file metadata
-    /// </summary>
     public override async Task<FileMetadataResponse> GetFileMetadata(
         GetFileRequest request,
         ServerCallContext context)
@@ -307,9 +288,6 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         };
     }
 
-    /// <summary>
-    /// Delete a file
-    /// </summary>
     public override async Task<DeleteFileResponse> DeleteFile(
         DeleteFileRequest request,
         ServerCallContext context)

@@ -43,11 +43,9 @@ export function AuctionCard({ auction }: AuctionCardProps) {
     };
 
     const getImageUrl = () => {
-        // SearchItem has imageUrl directly
         if ('imageUrl' in auction && auction.imageUrl) {
             return auction.imageUrl;
         }
-        // Auction has files array
         if ('files' in auction && auction.files) {
             const primaryFile = auction.files.find(f => f.isPrimary);
             return primaryFile?.url || auction.files[0]?.url;

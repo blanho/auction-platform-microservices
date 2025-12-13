@@ -6,9 +6,6 @@ namespace Common.Scheduling.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Adds Quartz.NET scheduling infrastructure to the service collection
-    /// </summary>
     public static IServiceCollection AddScheduling(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -35,9 +32,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Adds a job with a cron schedule
-    /// </summary>
     public static IServiceCollectionQuartzConfigurator AddCronJob<TJob>(
         this IServiceCollectionQuartzConfigurator q,
         string cronExpression,
@@ -69,9 +63,6 @@ public static class ServiceCollectionExtensions
         return q;
     }
 
-    /// <summary>
-    /// Adds a job with a simple interval schedule
-    /// </summary>
     public static IServiceCollectionQuartzConfigurator AddIntervalJob<TJob>(
         this IServiceCollectionQuartzConfigurator q,
         TimeSpan interval,

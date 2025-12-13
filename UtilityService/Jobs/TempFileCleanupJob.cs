@@ -9,11 +9,6 @@ using UtilityService.Interfaces;
 
 namespace UtilityService.Jobs;
 
-/// <summary>
-/// Cleans up expired temporary files from storage
-/// Deletes files that have exceeded the expiration period
-/// Runs every hour
-/// </summary>
 public class TempFileCleanupJob : BaseJob
 {
     public const string JobId = "temp-file-cleanup";

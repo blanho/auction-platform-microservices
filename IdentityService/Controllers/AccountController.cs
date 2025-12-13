@@ -380,9 +380,6 @@ public class AccountController : ControllerBase
         return username;
     }
 
-    /// <summary>
-    /// Get user by ID
-    /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -404,9 +401,6 @@ public class AccountController : ControllerBase
         return Ok(ApiResponse<UserDto>.SuccessResponse(userDto));
     }
 
-    /// <summary>
-    /// Check if username is available
-    /// </summary>
     [HttpGet("check-username/{username}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<bool>>> CheckUsername(string username)
@@ -422,9 +416,6 @@ public class AccountController : ControllerBase
         return Ok(ApiResponse<bool>.SuccessResponse(available));
     }
 
-    /// <summary>
-    /// Check if email is available
-    /// </summary>
     [HttpGet("check-email/{email}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<bool>>> CheckEmail(string email)

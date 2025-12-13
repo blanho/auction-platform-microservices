@@ -2,9 +2,6 @@ using Common.CQRS.Abstractions;
 
 namespace AuctionService.Application.Commands.UpdateAuction;
 
-/// <summary>
-/// Command to update an existing auction
-/// </summary>
 public record UpdateAuctionCommand(
     Guid Id,
     string? Title,

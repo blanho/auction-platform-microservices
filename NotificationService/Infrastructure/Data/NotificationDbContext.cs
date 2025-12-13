@@ -32,7 +32,6 @@ namespace NotificationService.Infrastructure.Data
                 entity.HasIndex(e => e.CreatedAt);
             });
 
-            // MassTransit Outbox
             modelBuilder.AddInboxStateEntity();
             modelBuilder.AddOutboxMessageEntity();
             modelBuilder.AddOutboxStateEntity();

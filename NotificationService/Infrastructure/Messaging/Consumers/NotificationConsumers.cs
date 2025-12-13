@@ -68,7 +68,6 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
 
             try
             {
-                // Notify seller
                 var sellerNotification = new CreateNotificationDto
                 {
                     UserId = context.Message.Seller,
@@ -87,7 +86,6 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
                 };
                 await _notificationService.CreateNotificationAsync(sellerNotification);
 
-                // Notify winner if item sold
                 if (context.Message.ItemSold && !string.IsNullOrEmpty(context.Message.Winner))
                 {
                     var winnerNotification = new CreateNotificationDto
@@ -130,7 +128,6 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
 
             try
             {
-                // Create notification for bid placed
                 var notification = new CreateNotificationDto
                 {
                     UserId = context.Message.Bidder,

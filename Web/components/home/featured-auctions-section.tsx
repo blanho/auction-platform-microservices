@@ -20,7 +20,6 @@ function AuctionCard({ auction }: { auction: Auction }) {
 
     const endTime = useMemo(() => new Date(auction.auctionEnd), [auction.auctionEnd]);
 
-    // Get primary image or first image
     const imageUrl = useMemo(() => {
         const primaryFile = auction.files?.find(f => f.isPrimary);
         const firstFile = auction.files?.[0];
@@ -48,10 +47,8 @@ function AuctionCard({ auction }: { auction: Auction }) {
                 setTimeLeft(`${seconds}s`);
             }
 
-            // Check if ending soon (less than 1 hour)
             setIsEndingSoon(diff < 60 * 60 * 1000);
 
-            // Calculate intensity based on time left
             const timeIntensity = Math.max(0, 100 - (diff / (1000 * 60 * 60 * 6)) * 100);
             setIntensity(timeIntensity);
         };
@@ -171,7 +168,6 @@ function AuctionCard({ auction }: { auction: Auction }) {
 export function FeaturedAuctionsSection() {
     const { data: featuredAuctions, isLoading, error } = useFeaturedAuctions(6);
 
-    // If loading, show skeleton
     if (isLoading) {
         return (
             <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
@@ -184,7 +180,6 @@ export function FeaturedAuctionsSection() {
         );
     }
 
-    // If error or no featured auctions, don't render the section
     if (error || !featuredAuctions || !Array.isArray(featuredAuctions) || featuredAuctions.length === 0) {
         if (error) {
             console.error("[FeaturedAuctionsSection] Error fetching auctions:", error);

@@ -100,8 +100,6 @@ public class ReportRepository : IReportRepository
     {
         var cutoffTime = DateTimeOffset.UtcNow - unreviewedThreshold;
         
-        // Get pending reports older than threshold that haven't been escalated yet
-        // (EscalatedAt is null) or were escalated more than threshold ago
         return await _context.Reports
             .Where(r => r.Status == ReportStatus.Pending &&
                        r.CreatedAt <= cutoffTime &&

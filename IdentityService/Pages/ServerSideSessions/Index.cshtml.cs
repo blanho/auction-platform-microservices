@@ -31,7 +31,6 @@ public class IndexModel : PageModel
 
     public async Task<ActionResult> OnGet()
     {
-        //Replace with an authorization policy check
         if (HttpContext.Connection.IsRemote())
         {
             return NotFound();
@@ -57,7 +56,6 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPost()
     {
-        //Replace with an authorization policy check
         if (HttpContext.Connection.IsRemote())
         {
             return NotFound();

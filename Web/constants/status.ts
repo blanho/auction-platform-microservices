@@ -1,4 +1,3 @@
-// Auction status constants
 export const AUCTION_STATUS = {
   LIVE: 'Live',
   FINISHED: 'Finished',
@@ -8,7 +7,6 @@ export const AUCTION_STATUS = {
 
 export type AuctionStatusType = (typeof AUCTION_STATUS)[keyof typeof AUCTION_STATUS];
 
-// Status color mapping for UI
 export const AUCTION_STATUS_COLORS: Record<string, string> = {
   [AUCTION_STATUS.LIVE]: 'bg-green-500',
   [AUCTION_STATUS.FINISHED]: 'bg-gray-500',
@@ -16,7 +14,6 @@ export const AUCTION_STATUS_COLORS: Record<string, string> = {
   [AUCTION_STATUS.CANCELLED]: 'bg-red-500',
 } as const;
 
-// Status badge variants
 export const AUCTION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   [AUCTION_STATUS.LIVE]: 'default',
   [AUCTION_STATUS.FINISHED]: 'secondary',
@@ -24,7 +21,6 @@ export const AUCTION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | '
   [AUCTION_STATUS.CANCELLED]: 'destructive',
 } as const;
 
-// Report status
 export const REPORT_STATUS = {
   PENDING: 'Pending',
   UNDER_REVIEW: 'UnderReview',
@@ -34,7 +30,6 @@ export const REPORT_STATUS = {
 
 export type ReportStatusType = (typeof REPORT_STATUS)[keyof typeof REPORT_STATUS];
 
-// Report priority
 export const REPORT_PRIORITY = {
   LOW: 'Low',
   MEDIUM: 'Medium',
@@ -44,7 +39,6 @@ export const REPORT_PRIORITY = {
 
 export type ReportPriorityType = (typeof REPORT_PRIORITY)[keyof typeof REPORT_PRIORITY];
 
-// Report type
 export const REPORT_TYPE = {
   FRAUD: 'Fraud',
   FAKE_ITEM: 'FakeItem',
@@ -57,7 +51,6 @@ export const REPORT_TYPE = {
 
 export type ReportTypeValue = (typeof REPORT_TYPE)[keyof typeof REPORT_TYPE];
 
-// Transaction status
 export const TRANSACTION_STATUS = {
   PENDING: 'Pending',
   COMPLETED: 'Completed',
@@ -67,7 +60,6 @@ export const TRANSACTION_STATUS = {
 
 export type TransactionStatusType = (typeof TRANSACTION_STATUS)[keyof typeof TRANSACTION_STATUS];
 
-// Transaction type
 export const TRANSACTION_TYPE = {
   DEPOSIT: 'Deposit',
   WITHDRAWAL: 'Withdrawal',
@@ -79,7 +71,6 @@ export const TRANSACTION_TYPE = {
 
 export type TransactionTypeValue = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 
-// User status
 export const USER_STATUS = {
   ACTIVE: 'active',
   INACTIVE: 'inactive',

@@ -250,7 +250,6 @@ export const useDeleteAuction = () => {
   return { mutate, isPending };
 };
 
-// Hook for fetching categories
 export const useCategories = () => {
   const [data, setData] = useState<import("@/types/auction").Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -287,7 +286,6 @@ export const useCategories = () => {
   return { data, isLoading, error };
 };
 
-// Hook for fetching featured auctions
 export const useFeaturedAuctions = (limit: number = 8) => {
   const [data, setData] = useState<Auction[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -10,10 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AuctionService.Infrastructure.Jobs;
 
-/// <summary>
-/// Auto-deactivates expired auctions and updates their final status
-/// Runs every minute to handle auction lifecycle transitions
-/// </summary>
 public class AuctionDeactivationJob : BaseJob
 {
     public const string JobId = "auction-deactivation";

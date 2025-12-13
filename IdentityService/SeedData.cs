@@ -19,7 +19,6 @@ public class SeedData
 
             var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             
-            // Create admin user
             var admin = userMgr.FindByNameAsync("admin").Result;
             if (admin == null)
             {

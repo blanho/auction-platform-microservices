@@ -34,9 +34,6 @@ namespace BidService.API.Controllers
             return Ok(bids);
         }
 
-        /// <summary>
-        /// Get all bids for the currently authenticated user
-        /// </summary>
         [HttpGet("my")]
         [Authorize]
         public async Task<ActionResult<List<BidDto>>> GetMyBids(CancellationToken cancellationToken)

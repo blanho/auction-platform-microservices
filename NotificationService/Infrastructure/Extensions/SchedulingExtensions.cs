@@ -11,10 +11,8 @@ public static class SchedulingExtensions
     {
         services.AddScheduling(configuration, q =>
         {
-            // Notification Cleanup Job - Daily at 3 AM
-            // Removes read notifications older than 30 days to prevent database bloat
             q.AddCronJob<NotificationCleanupJob>(
-                cronExpression: "0 0 3 * * ?", // Daily at 3:00 AM
+                cronExpression: "0 0 3 * * ?",
                 jobId: "notification-cleanup",
                 description: "Removes old read notifications"
             );

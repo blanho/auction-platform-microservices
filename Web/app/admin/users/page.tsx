@@ -239,7 +239,6 @@ export default function AdminUsersPage() {
             const statsData = await adminService.getStats();
             setStats(statsData);
         } catch {
-            // Stats are optional, don't show error
         }
     }, []);
 

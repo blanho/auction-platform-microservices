@@ -70,7 +70,6 @@ export const auctionService = {
     return data;
   },
 
-  // Get auction by ID (replaces searchService.getById)
   getAuctionById: async (id: string): Promise<Auction> => {
     const { data } = await apiClient.get<Auction>(
       API_ENDPOINTS.AUCTION_BY_ID(id)
@@ -107,7 +106,6 @@ export const auctionService = {
     await apiClient.delete(API_ENDPOINTS.AUCTION_BY_ID(id));
   },
 
-  // Activate/Deactivate
   activateAuction: async (id: string): Promise<Auction> => {
     const { data } = await apiClient.post<Auction>(
       API_ENDPOINTS.AUCTION_ACTIVATE(id)
@@ -124,7 +122,6 @@ export const auctionService = {
     return data;
   },
 
-  // Import
   importAuctions: async (
     auctions: ImportAuctionDto[]
   ): Promise<ImportAuctionsResultDto> => {
@@ -160,7 +157,6 @@ export const auctionService = {
     return data;
   },
 
-  // Export
   exportAuctions: async (
     params?: ExportAuctionsRequest
   ): Promise<ExportAuctionDto[] | Blob> => {
@@ -174,7 +170,6 @@ export const auctionService = {
       return data;
     }
 
-    // For CSV and Excel, return as blob
     const { data } = await apiClient.get(API_ENDPOINTS.AUCTIONS_EXPORT, {
       params,
       responseType: "blob"

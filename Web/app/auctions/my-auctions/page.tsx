@@ -41,7 +41,6 @@ export default function MyAuctionsPage() {
 
         setIsLoading(true);
         try {
-            // Use the dedicated my-auctions endpoint (authenticated by token)
             const response = await auctionService.getMyAuctions();
             setAuctions(response.items);
             setError(null);

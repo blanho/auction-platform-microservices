@@ -4,9 +4,6 @@ using Quartz;
 
 namespace Common.Scheduling.Jobs;
 
-/// <summary>
-/// Base class for scheduled jobs with common functionality
-/// </summary>
 public abstract class BaseJob : IJob
 {
     protected readonly ILogger Logger;
@@ -51,13 +48,9 @@ public abstract class BaseJob : IJob
                 "Job {JobName} failed after {ElapsedMs}ms",
                 jobName, stopwatch.ElapsedMilliseconds);
             
-            // Re-throw to let Quartz handle retry logic if configured
             throw new JobExecutionException(ex, refireImmediately: false);
         }
     }
 
-    /// <summary>
-    /// Implement job-specific logic here
-    /// </summary>
     protected abstract Task ExecuteJobAsync(IServiceProvider scopedProvider, CancellationToken cancellationToken);
 }

@@ -83,13 +83,11 @@ export function ExportAuctionsDialog({
       const result = await auctionService.exportAuctions(params);
 
       if (format === "json") {
-        // Download as JSON file
         const blob = new Blob([JSON.stringify(result, null, 2)], {
           type: "application/json"
         });
         downloadBlob(blob, `auctions_export_${Date.now()}.json`);
       } else {
-        // CSV or Excel - already a blob
         const extension = format === "csv" ? "csv" : "xlsx";
         downloadBlob(result as Blob, `auctions_export_${Date.now()}.${extension}`);
       }

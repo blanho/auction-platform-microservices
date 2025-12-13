@@ -75,7 +75,6 @@ export function parseAuditChanges(log: AuditLog): ParsedAuditChanges[] {
       });
     }
   } catch {
-    // If parsing fails, return empty changes
   }
 
   return changes;

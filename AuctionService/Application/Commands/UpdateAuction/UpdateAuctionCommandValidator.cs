@@ -2,9 +2,6 @@ using FluentValidation;
 
 namespace AuctionService.Application.Commands.UpdateAuction;
 
-/// <summary>
-/// FluentValidation validator for UpdateAuctionCommand
-/// </summary>
 public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionCommand>
 {
     public UpdateAuctionCommandValidator()

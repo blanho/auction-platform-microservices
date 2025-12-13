@@ -1,8 +1,5 @@
 namespace AuctionService.Application.Interfaces;
 
-/// <summary>
-/// Service for confirming temporary files
-/// </summary>
 public interface IFileConfirmationService
 {
     Task ConfirmFilesAsync(

@@ -1,8 +1,5 @@
 namespace Common.Messaging.Events;
 
-/// <summary>
-/// Event published when an auction is ending soon to notify watchers
-/// </summary>
 public class AuctionEndingSoonEvent
 {
     public Guid AuctionId { get; set; }

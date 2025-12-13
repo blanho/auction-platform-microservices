@@ -83,7 +83,6 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient, IDisposable
         {
             using var call = _client.UploadFile(cancellationToken: cancellationToken);
 
-            // Send metadata first
             await call.RequestStream.WriteAsync(new FileChunk
             {
                 Metadata = new FileMetadataRequest
@@ -219,7 +218,6 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient, IDisposable
         {
             using var call = _client.UploadAndConfirm(cancellationToken: cancellationToken);
 
-            // Send metadata first with entity info
             await call.RequestStream.WriteAsync(new FileChunk
             {
                 Metadata = new FileMetadataRequest
@@ -233,7 +231,6 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient, IDisposable
                 }
             }, cancellationToken);
 
-            // Stream file content
             var buffer = new byte[_options.ChunkSize];
             int bytesRead;
 

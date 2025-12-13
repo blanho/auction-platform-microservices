@@ -38,14 +38,12 @@ namespace BidService.Application.Services
         {
             _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder}", dto.AuctionId, bidder);
 
-            // Get highest current bid for this auction
             var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, cancellationToken);
 
             var bid = _mapper.Map<Bid>(dto);
             bid.Bidder = bidder;
             bid.BidTime = _dateTime.UtcNow;
 
-            // Determine bid status
             if (highestBid == null)
             {
                 bid.Status = BidStatus.Accepted;
@@ -65,7 +63,6 @@ namespace BidService.Application.Services
 
             var createdBid = await _repository.CreateAsync(bid, cancellationToken);
 
-            // Publish event
             var bidPlacedEvent = _mapper.Map<BidPlacedEvent>(createdBid);
             await _eventPublisher.PublishAsync(bidPlacedEvent, cancellationToken);
 

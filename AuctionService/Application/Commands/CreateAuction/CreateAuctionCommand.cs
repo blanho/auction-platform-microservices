@@ -3,9 +3,6 @@ using Common.CQRS.Abstractions;
 
 namespace AuctionService.Application.Commands.CreateAuction;
 
-/// <summary>
-/// Command to create a new auction
-/// </summary>
 public record CreateAuctionCommand(
     string Title,
     string Description,

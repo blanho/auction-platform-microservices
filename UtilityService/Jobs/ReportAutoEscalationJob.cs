@@ -6,11 +6,6 @@ using UtilityService.Interfaces;
 
 namespace UtilityService.Jobs;
 
-/// <summary>
-/// Auto-escalates unreviewed reports after a specified period
-/// Increases priority of reports that haven't been addressed
-/// Runs every 4 hours
-/// </summary>
 public class ReportAutoEscalationJob : BaseJob
 {
     public const string JobId = "report-auto-escalation";

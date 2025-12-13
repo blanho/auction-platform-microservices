@@ -8,11 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AuctionService.Infrastructure.Jobs;
 
-/// <summary>
-/// Sends notifications when auctions are ending soon
-/// Notifies watchers and bidders at configurable intervals (1 hour, 15 min, 5 min before end)
-/// Runs every minute to ensure timely notifications
-/// </summary>
 public class AuctionEndingSoonNotificationJob : BaseJob
 {
     public const string JobId = "auction-ending-soon";

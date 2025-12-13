@@ -1,8 +1,5 @@
 namespace Common.Messaging.Events;
 
-/// <summary>
-/// Event published when a scheduled auction starts (goes live)
-/// </summary>
 public class AuctionStartedEvent
 {
     public Guid AuctionId { get; set; }

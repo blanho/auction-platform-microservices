@@ -65,7 +65,6 @@ export const storage = {
   },
 };
 
-// Typed storage helpers for common use cases
 export const watchlistStorage = {
   get: (): string[] => storage.get<string[]>(STORAGE_KEYS.WATCHLIST, []) ?? [],
   

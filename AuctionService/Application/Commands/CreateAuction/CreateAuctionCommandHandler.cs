@@ -14,9 +14,6 @@ using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.CreateAuction;
 
-/// <summary>
-/// Handler for CreateAuctionCommand - demonstrates CQRS pattern with Railway-Oriented Programming
-/// </summary>
 public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand, AuctionDto>
 {
     private readonly IAuctionRepository _repository;

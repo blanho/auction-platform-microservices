@@ -2,9 +2,6 @@ using FluentValidation;
 
 namespace AuctionService.Application.Commands.CreateAuction;
 
-/// <summary>
-/// FluentValidation validator for CreateAuctionCommand - demonstrates advanced validation patterns
-/// </summary>
 public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionCommand>
 {
     public CreateAuctionCommandValidator()

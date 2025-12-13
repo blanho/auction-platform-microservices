@@ -5,11 +5,6 @@ using UtilityService.Interfaces;
 
 namespace UtilityService.Jobs;
 
-/// <summary>
-/// Times out pending wallet transactions after a specified period
-/// Releases held funds that weren't completed
-/// Runs every 15 minutes
-/// </summary>
 public class PendingTransactionTimeoutJob : BaseJob
 {
     public const string JobId = "pending-transaction-timeout";

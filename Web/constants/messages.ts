@@ -1,6 +1,4 @@
-// UI strings for consistent messaging
 export const MESSAGES = {
-  // Success messages
   SUCCESS: {
     AUCTION_CREATED: 'Auction created successfully',
     AUCTION_UPDATED: 'Auction updated successfully',
@@ -20,7 +18,6 @@ export const MESSAGES = {
     REPORT_RESOLVED: 'Report resolved successfully',
   },
   
-  // Error messages
   ERROR: {
     GENERIC: 'Something went wrong. Please try again.',
     NETWORK: 'Network error. Please check your connection.',
@@ -35,7 +32,6 @@ export const MESSAGES = {
     AUCTION_ENDED: 'This auction has ended.',
   },
   
-  // Loading states
   LOADING: {
     DEFAULT: 'Loading...',
     SUBMITTING: 'Submitting...',
@@ -44,7 +40,6 @@ export const MESSAGES = {
     PROCESSING: 'Processing...',
   },
   
-  // Empty states
   EMPTY: {
     AUCTIONS: 'No auctions found',
     BIDS: 'No bids yet',
@@ -55,7 +50,6 @@ export const MESSAGES = {
     REPORTS: 'No reports found',
   },
   
-  // Confirmation dialogs
   CONFIRM: {
     DELETE_AUCTION: 'Are you sure you want to delete this auction? This action cannot be undone.',
     DEACTIVATE_AUCTION: 'Are you sure you want to deactivate this auction?',
@@ -65,7 +59,6 @@ export const MESSAGES = {
     DELETE_USER: 'Are you sure you want to delete this user? This action cannot be undone.',
   },
   
-  // UI Labels
   LABELS: {
     AUCTION_ENDED: 'Auction Ended',
     RESERVE_MET: '✅ Reserve Met',
@@ -80,7 +73,6 @@ export const MESSAGES = {
   },
 } as const;
 
-// Form labels
 export const LABELS = {
   AUCTION: {
     TITLE: 'Title',
@@ -109,7 +101,6 @@ export const LABELS = {
   },
 } as const;
 
-// Placeholders
 export const PLACEHOLDERS = {
   SEARCH: 'Search auctions...',
   EMAIL: 'Enter your email',

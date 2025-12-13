@@ -46,9 +46,6 @@ import {
     getAuctionImageUrl,
 } from "@/utils";
 
-// ============================================================================
-// Types
-// ============================================================================
 type ViewMode = "grid" | "list";
 
 interface TimeLeft {
@@ -57,14 +54,8 @@ interface TimeLeft {
     seconds: number;
 }
 
-// ============================================================================
-// Constants
-// ============================================================================
 const PLACEHOLDER_IMAGE = "/placeholder-car.jpg";
 
-// ============================================================================
-// Helper Components
-// ============================================================================
 function CountdownTimer({ endTime }: { endTime: Date }) {
     const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, seconds: 0 });
 
@@ -140,9 +131,6 @@ function RemoveDialog({ onConfirm, trigger }: RemoveDialogProps) {
     );
 }
 
-// ============================================================================
-// Auction Card Components
-// ============================================================================
 interface AuctionCardProps {
     auction: Auction;
     onRemove: (id: string) => void;
@@ -276,9 +264,6 @@ function AuctionListCard({ auction, onRemove }: AuctionCardProps) {
     );
 }
 
-// ============================================================================
-// Main Component
-// ============================================================================
 export default function WatchlistPage() {
     const { status } = useSession();
     const router = useRouter();
@@ -333,7 +318,6 @@ export default function WatchlistPage() {
         }
     }, []);
 
-    // Loading state
     if (status === "loading" || isLoading) {
         return (
             <DashboardLayout title="Watchlist" description="Items you're tracking">
@@ -344,7 +328,6 @@ export default function WatchlistPage() {
         );
     }
 
-    // Render content
     const renderAuctionList = () => {
         if (watchlist.length === 0) {
             return <EmptyWatchlist />;

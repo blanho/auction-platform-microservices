@@ -145,7 +145,6 @@ export const authOptions: NextAuthOptions = {
 
           const userInfo = await userInfoResponse.json();
 
-          // Extract role from access token
           const tokenPayload = parseJwt(tokens.access_token);
           const role = (tokenPayload.role as string) || "user";
 
@@ -180,7 +179,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (account) {
-        // Extract role from access token on account-based auth
         const tokenPayload = account.access_token
           ? parseJwt(account.access_token)
           : {};

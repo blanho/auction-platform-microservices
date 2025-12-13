@@ -15,7 +15,6 @@ public class ApplicationUser : IdentityUser
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? LastLoginAt { get; set; }
     
-    // Notification preferences
     public bool EmailBidUpdates { get; set; } = true;
     public bool EmailOutbid { get; set; } = true;
     public bool EmailAuctionEnd { get; set; } = true;

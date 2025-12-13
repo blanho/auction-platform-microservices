@@ -5,10 +5,6 @@ using NotificationService.Application.Interfaces;
 
 namespace NotificationService.Infrastructure.Jobs;
 
-/// <summary>
-/// Quartz job that cleans up old read notifications to prevent database bloat.
-/// Runs daily at 3 AM and removes notifications that have been read for more than 30 days.
-/// </summary>
 public class NotificationCleanupJob : BaseJob
 {
     private const int RetentionDays = 30;

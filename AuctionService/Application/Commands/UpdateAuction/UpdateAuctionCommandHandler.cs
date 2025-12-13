@@ -10,9 +10,6 @@ using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.UpdateAuction;
 
-/// <summary>
-/// Handler for UpdateAuctionCommand - demonstrates CQRS pattern with partial updates
-/// </summary>
 public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand, bool>
 {
     private readonly IAuctionRepository _repository;

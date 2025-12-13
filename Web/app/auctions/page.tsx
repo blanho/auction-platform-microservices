@@ -1,4 +1,3 @@
-// Auctions page - Public view for browsing auctions
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { MainLayout } from "@/components/layout/main-layout";

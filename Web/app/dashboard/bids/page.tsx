@@ -73,7 +73,6 @@ export default function MyBidsPage() {
                     session.user.name
                 );
 
-                // Fetch auction details for each bid
                 const bidsWithAuctions = await Promise.all(
                     bidData.map(async (bid) => {
                         try {

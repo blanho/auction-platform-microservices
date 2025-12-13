@@ -55,13 +55,10 @@ export function canPlaceBid(
   currentUser?: string,
   seller?: string
 ): boolean {
-  // Cannot bid on non-live auctions
   if (!isAuctionActive(status)) return false;
   
-  // Cannot bid on your own auction
   if (currentUser && seller && currentUser === seller) return false;
   
-  // Cannot bid if auction has ended
   if (auctionEnd) {
     const endDate = new Date(auctionEnd);
     if (endDate.getTime() <= Date.now()) return false;
@@ -92,11 +89,9 @@ export function getAuctionImageUrl(
 ): string {
   if (!files || files.length === 0) return fallback;
   
-  // Find primary image first
   const primary = files.find(f => f.isPrimary && f.fileType === 'Image' && f.url);
   if (primary?.url) return primary.url;
   
-  // Find any image
   const anyImage = files.find(f => f.fileType === 'Image' && f.url);
   if (anyImage?.url) return anyImage.url;
   

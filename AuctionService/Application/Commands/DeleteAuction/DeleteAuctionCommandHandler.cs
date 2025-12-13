@@ -11,9 +11,6 @@ using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.DeleteAuction;
 
-/// <summary>
-/// Handler for DeleteAuctionCommand
-/// </summary>
 public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand, bool>
 {
     private readonly IAuctionRepository _repository;

@@ -21,12 +21,6 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             message.AuctionId,
             message.ItemSold);
 
-        // This consumer can be used to:
-        // 1. Stop accepting new bids for this auction
-        // 2. Notify bidders about auction results
-        // 3. Update bid records with final auction status
-        
-        // For now, just log the event
         if (message.ItemSold)
         {
             _logger.LogInformation(

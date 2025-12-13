@@ -269,7 +269,6 @@ export default function AdminReportsPage() {
                 resolved: resolvedReports.totalCount,
             });
         } catch {
-            // Stats are optional
         }
     }, []);
 

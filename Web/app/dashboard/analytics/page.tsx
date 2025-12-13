@@ -89,7 +89,6 @@ export default function AnalyticsPage() {
             return;
         }
 
-        // Simulate API call - replace with actual analytics service
         setTimeout(() => {
             setAnalytics({
                 totalRevenue: 125000,

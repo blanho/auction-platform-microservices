@@ -206,7 +206,6 @@ export default function AdminPaymentsPage() {
             const stats = await adminPaymentService.getStatistics();
             setStatistics(stats);
         } catch {
-            // Stats are optional
         }
     }, []);
 

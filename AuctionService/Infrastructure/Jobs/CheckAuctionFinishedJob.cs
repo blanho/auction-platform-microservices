@@ -8,10 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AuctionService.Infrastructure.Jobs;
 
-/// <summary>
-/// Checks for finished auctions and publishes AuctionFinishedEvent
-/// Runs every 5 seconds for time-critical auction endings
-/// </summary>
 public class CheckAuctionFinishedJob : BaseJob
 {
     public const string JobId = "check-auction-finished";

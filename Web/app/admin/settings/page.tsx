@@ -33,20 +33,17 @@ import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
     const [settings, setSettings] = useState({
-        // Platform Settings
         platformName: "Auction Platform",
         platformFee: "5",
         currency: "USD",
         timezone: "America/New_York",
 
-        // Auction Settings
         minBidIncrement: "50",
         maxAuctionDuration: "30",
         autoExtendTime: "5",
         enableAutoBid: true,
         enableBuyNow: true,
 
-        // Notification Settings
         emailNotifications: true,
         pushNotifications: true,
         smsNotifications: false,
@@ -54,13 +51,11 @@ export default function AdminSettingsPage() {
         notifyOnOutbid: true,
         notifyOnAuctionEnd: true,
 
-        // Security Settings
         requireEmailVerification: true,
         requirePhoneVerification: false,
         twoFactorAuth: false,
         maxLoginAttempts: "5",
 
-        // Email Settings
         smtpHost: "smtp.example.com",
         smtpPort: "587",
         smtpUser: "noreply@auction.com",

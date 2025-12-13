@@ -2,9 +2,6 @@ using Common.Storage.Enums;
 
 namespace UtilityService.Domain.Entities;
 
-/// <summary>
-/// Entity for storing file metadata in the database
-/// </summary>
 public class StoredFile
 {
     public Guid Id { get; set; }

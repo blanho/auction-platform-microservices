@@ -18,7 +18,6 @@ export function HeroSection() {
     const [isUrgent, setIsUrgent] = useState(false);
     const { data: featuredAuctions } = useFeaturedAuctions(1);
 
-    // Get the first featured auction for the hero
     const heroAuction = featuredAuctions?.[0];
 
     const endTime = useMemo(() => {
@@ -26,7 +25,6 @@ export function HeroSection() {
         return new Date(heroAuction.auctionEnd);
     }, [heroAuction]);
 
-    // Get primary image
     const imageUrl = useMemo(() => {
         if (!heroAuction) return "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800";
         const primaryFile = heroAuction.files?.find(f => f.isPrimary);
