@@ -13,6 +13,7 @@ using AuctionService.Application.Queries.ExportAuctions;
 using AuctionService.Application.Queries.GetAuctionById;
 using AuctionService.Application.Queries.GetAuctions;
 using AuctionService.Application.Queries.GetMyAuctions;
+using AuctionService.Application.Queries.GetSellerAnalytics;
 using AuctionService.Application.Queries.GetUserDashboardStats;
 using Common.Core.Helpers;
 using Common.Utilities.Constants;
@@ -106,6 +107,22 @@ public class AuctionsController : ControllerBase
     {
         var username = UserHelper.GetUsername(User);
         var query = new GetUserDashboardStatsQuery(username);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("analytics/seller")]
+    [Authorize(Policy = "AuctionScope")]
+    [ProducesResponseType(typeof(SellerAnalyticsDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<SellerAnalyticsDto>> GetSellerAnalytics(
+        [FromQuery] string timeRange = "30d",
+        CancellationToken cancellationToken = default)
+    {
+        var username = UserHelper.GetUsername(User);
+        var query = new GetSellerAnalyticsQuery(username, timeRange);
         var result = await _mediator.Send(query, cancellationToken);
 
         return result.IsSuccess

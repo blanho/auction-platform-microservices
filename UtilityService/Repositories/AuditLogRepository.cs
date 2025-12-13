@@ -95,4 +95,12 @@ public class AuditLogRepository : IAuditLogRepository
             .OrderBy(x => x.Timestamp)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<List<AuditLog>> GetRecentAsync(int limit, CancellationToken cancellationToken = default)
+    {
+        return await _context.AuditLogs
+            .OrderByDescending(x => x.Timestamp)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
 }

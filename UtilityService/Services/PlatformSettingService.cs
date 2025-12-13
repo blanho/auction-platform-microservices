@@ -111,6 +111,42 @@ public class PlatformSettingService : IPlatformSettingService
         _logger.LogInformation("Platform setting '{Key}' deleted", setting.Key);
     }
 
+    public async Task BulkUpdateSettingsAsync(
+        List<SettingKeyValue> settings,
+        string? modifiedBy,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var item in settings)
+        {
+            var setting = await _settingRepository.GetByKeyAsync(item.Key, cancellationToken);
+            
+            if (setting == null)
+            {
+                setting = new PlatformSetting
+                {
+                    Id = Guid.NewGuid(),
+                    Key = item.Key,
+                    Value = item.Value,
+                    Category = SettingCategory.Platform,
+                    IsSystem = false,
+                    LastModifiedBy = modifiedBy,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                await _settingRepository.AddAsync(setting, cancellationToken);
+            }
+            else
+            {
+                setting.Value = item.Value;
+                setting.LastModifiedBy = modifiedBy;
+                setting.UpdatedAt = DateTimeOffset.UtcNow;
+                await _settingRepository.UpdateAsync(setting, cancellationToken);
+            }
+        }
+
+        _logger.LogInformation("Bulk update of {Count} settings by {User}", settings.Count, modifiedBy);
+    }
+
     private static PlatformSettingDto MapToDto(PlatformSetting setting)
     {
         return new PlatformSettingDto

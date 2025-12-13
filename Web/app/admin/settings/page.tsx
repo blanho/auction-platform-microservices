@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Save,
     Globe,
@@ -8,7 +8,12 @@ import {
     Bell,
     Shield,
     Mail,
+    Loader2,
+    RefreshCw,
 } from "lucide-react";
+
+import { MESSAGES } from "@/constants";
+
 import { AdminLayout } from "@/components/layout/admin-layout";
 import {
     Card,
@@ -22,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Select,
     SelectContent,
@@ -31,41 +37,162 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export default function AdminSettingsPage() {
-    const [settings, setSettings] = useState({
-        platformName: "Auction Platform",
-        platformFee: "5",
-        currency: "USD",
-        timezone: "America/New_York",
+import { settingsService, PlatformSetting } from "@/services/settings.service";
 
-        minBidIncrement: "50",
-        maxAuctionDuration: "30",
-        autoExtendTime: "5",
-        enableAutoBid: true,
-        enableBuyNow: true,
+interface SettingsState {
+    platformName: string;
+    platformFee: string;
+    currency: string;
+    timezone: string;
+    minBidIncrement: string;
+    maxAuctionDuration: string;
+    autoExtendTime: string;
+    enableAutoBid: boolean;
+    enableBuyNow: boolean;
+    emailNotifications: boolean;
+    pushNotifications: boolean;
+    smsNotifications: boolean;
+    notifyOnNewBid: boolean;
+    notifyOnOutbid: boolean;
+    notifyOnAuctionEnd: boolean;
+    requireEmailVerification: boolean;
+    requirePhoneVerification: boolean;
+    twoFactorAuth: boolean;
+    maxLoginAttempts: string;
+    smtpHost: string;
+    smtpPort: string;
+    fromEmail: string;
+    fromName: string;
+}
 
-        emailNotifications: true,
-        pushNotifications: true,
-        smsNotifications: false,
-        notifyOnNewBid: true,
-        notifyOnOutbid: true,
-        notifyOnAuctionEnd: true,
+const defaultSettings: SettingsState = {
+    platformName: "Auction Platform",
+    platformFee: "5",
+    currency: "USD",
+    timezone: "America/New_York",
+    minBidIncrement: "50",
+    maxAuctionDuration: "30",
+    autoExtendTime: "5",
+    enableAutoBid: true,
+    enableBuyNow: true,
+    emailNotifications: true,
+    pushNotifications: true,
+    smsNotifications: false,
+    notifyOnNewBid: true,
+    notifyOnOutbid: true,
+    notifyOnAuctionEnd: true,
+    requireEmailVerification: true,
+    requirePhoneVerification: false,
+    twoFactorAuth: false,
+    maxLoginAttempts: "5",
+    smtpHost: "",
+    smtpPort: "587",
+    fromEmail: "",
+    fromName: "Auction Platform",
+};
 
-        requireEmailVerification: true,
-        requirePhoneVerification: false,
-        twoFactorAuth: false,
-        maxLoginAttempts: "5",
-
-        smtpHost: "smtp.example.com",
-        smtpPort: "587",
-        smtpUser: "noreply@auction.com",
-        fromEmail: "noreply@auction.com",
-        fromName: "Auction Platform",
+function settingsArrayToState(settingsArray: PlatformSetting[]): Partial<SettingsState> {
+    const result: Record<string, string | boolean> = {};
+    
+    settingsArray.forEach((setting) => {
+        const key = setting.key as keyof SettingsState;
+        if (key in defaultSettings) {
+            const defaultValue = defaultSettings[key];
+            if (typeof defaultValue === "boolean") {
+                result[key] = setting.value === "true";
+            } else {
+                result[key] = setting.value;
+            }
+        }
     });
+    
+    return result as Partial<SettingsState>;
+}
 
-    const handleSave = () => {
-        toast.success("Settings saved successfully");
+function stateToSettingsArray(state: SettingsState): { key: string; value: string }[] {
+    return Object.entries(state).map(([key, value]) => ({
+        key,
+        value: String(value),
+    }));
+}
+
+function SettingsSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function AdminSettingsPage() {
+    const [settings, setSettings] = useState<SettingsState>(defaultSettings);
+    const [originalSettings, setOriginalSettings] = useState<PlatformSetting[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const fetchSettings = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const data = await settingsService.getSettings();
+            setOriginalSettings(data);
+            const mappedSettings = settingsArrayToState(data);
+            setSettings((prev) => ({ ...prev, ...mappedSettings }));
+        } catch {
+            toast.error(MESSAGES.ERROR.GENERIC);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const changedSettings = stateToSettingsArray(settings).filter(({ key, value }) => {
+                const original = originalSettings.find((s) => s.key === key);
+                return !original || original.value !== value;
+            });
+
+            if (changedSettings.length > 0) {
+                await settingsService.bulkUpdateSettings(changedSettings);
+            }
+            
+            toast.success(MESSAGES.SUCCESS.SETTINGS_SAVED);
+            fetchSettings();
+        } catch {
+            toast.error(MESSAGES.ERROR.GENERIC);
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (isLoading) {
+        return (
+            <AdminLayout title="Settings" description="Configure platform settings">
+                <div className="space-y-6">
+                    <SettingsSkeleton />
+                    <SettingsSkeleton />
+                    <SettingsSkeleton />
+                </div>
+            </AdminLayout>
+        );
+    }
 
     return (
         <AdminLayout
@@ -73,6 +200,17 @@ export default function AdminSettingsPage() {
             description="Configure platform settings"
         >
             <div className="space-y-6">
+                <div className="flex justify-end">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={fetchSettings}
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
+                </div>
                 {/* Platform Settings */}
                 <Card>
                     <CardHeader>
@@ -517,14 +655,18 @@ export default function AdminSettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Save Button */}
                 <div className="flex justify-end">
                     <Button
                         onClick={handleSave}
                         className="bg-amber-500 hover:bg-amber-600"
+                        disabled={isSaving}
                     >
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Settings
+                        {isSaving ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {isSaving ? "Saving..." : "Save Settings"}
                     </Button>
                 </div>
             </div>

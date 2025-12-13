@@ -114,4 +114,10 @@ public class ReportRepository : IReportRepository
         _context.Reports.UpdateRange(reports);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Reports
+            .CountAsync(r => r.Status == ReportStatus.Pending || r.Status == ReportStatus.UnderReview, cancellationToken);
+    }
 }

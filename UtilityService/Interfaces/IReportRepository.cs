@@ -24,4 +24,5 @@ public interface IReportRepository
         int maxEscalations,
         CancellationToken cancellationToken = default);
     Task UpdateRangeAsync(List<Report> reports, CancellationToken cancellationToken = default);
+    Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default);
 }

@@ -108,4 +108,19 @@ public class SettingsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPut("bulk")]
+    public async Task<IActionResult> BulkUpdateSettings(
+        [FromBody] BulkUpdateSettingsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var username = User.Identity?.Name;
+        await _settingService.BulkUpdateSettingsAsync(dto.Settings, username, cancellationToken);
+        return Ok();
+    }
+}
+
+public class BulkUpdateSettingsDto
+{
+    public List<SettingKeyValue> Settings { get; set; } = new();
 }

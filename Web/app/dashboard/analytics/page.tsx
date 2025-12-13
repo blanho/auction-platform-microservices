@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,6 +11,8 @@ import {
     TrendingUp,
     TrendingDown,
     BarChart3,
+    AlertCircle,
+    RefreshCw,
 } from "lucide-react";
 
 import { formatCurrency, formatNumber } from "@/utils";
@@ -28,7 +30,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { analyticsService, SellerAnalyticsData } from "@/services/analytics.service";
 
 interface AnalyticsData {
     totalRevenue: number;
@@ -53,7 +57,7 @@ interface AnalyticsData {
 }
 
 function SimpleBarChart({ data }: { data: { date: string; revenue: number }[] }) {
-    const maxValue = Math.max(...data.map((d) => d.revenue));
+    const maxValue = Math.max(...data.map((d) => d.revenue), 1);
 
     return (
         <div className="flex items-end justify-between gap-2 h-48 pt-8">
@@ -80,8 +84,34 @@ export default function AnalyticsPage() {
     const { status } = useSession();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState("30d");
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+
+    const fetchAnalytics = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const data: SellerAnalyticsData = await analyticsService.getSellerAnalytics(timeRange);
+            setAnalytics(data);
+        } catch (err) {
+            console.error("Failed to fetch analytics:", err);
+            setError("Failed to load analytics data");
+            setAnalytics({
+                totalRevenue: 0,
+                revenueChange: 0,
+                itemsSold: 0,
+                itemsChange: 0,
+                activeListings: 0,
+                viewsToday: 0,
+                viewsChange: 0,
+                topListings: [],
+                chartData: [],
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [timeRange]);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -89,51 +119,10 @@ export default function AnalyticsPage() {
             return;
         }
 
-        setTimeout(() => {
-            setAnalytics({
-                totalRevenue: 125000,
-                revenueChange: 12.5,
-                itemsSold: 23,
-                itemsChange: 8,
-                activeListings: 5,
-                viewsToday: 342,
-                viewsChange: -3.2,
-                topListings: [
-                    {
-                        id: "1",
-                        title: "2024 Porsche 911 GT3",
-                        currentBid: 195000,
-                        views: 1250,
-                        bids: 24,
-                    },
-                    {
-                        id: "2",
-                        title: "Vintage Rolex Daytona",
-                        currentBid: 45000,
-                        views: 890,
-                        bids: 18,
-                    },
-                    {
-                        id: "3",
-                        title: "2023 BMW M4 Competition",
-                        currentBid: 78000,
-                        views: 654,
-                        bids: 12,
-                    },
-                ],
-                chartData: [
-                    { date: "Mon", revenue: 12000 },
-                    { date: "Tue", revenue: 8500 },
-                    { date: "Wed", revenue: 15000 },
-                    { date: "Thu", revenue: 22000 },
-                    { date: "Fri", revenue: 18500 },
-                    { date: "Sat", revenue: 28000 },
-                    { date: "Sun", revenue: 21000 },
-                ],
-            });
-            setIsLoading(false);
-        }, 500);
-    }, [status, router, timeRange]);
+        if (status === "authenticated") {
+            fetchAnalytics();
+        }
+    }, [status, router, fetchAnalytics]);
 
     if (status === "loading" || isLoading) {
         return (
@@ -148,13 +137,37 @@ export default function AnalyticsPage() {
         );
     }
 
+    if (error) {
+        return (
+            <DashboardLayout
+                title="Analytics"
+                description="Track your sales performance"
+            >
+                <Card className="border-red-200 dark:border-red-800">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+                        <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+                        <Button onClick={fetchAnalytics} variant="outline">
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Retry
+                        </Button>
+                    </CardContent>
+                </Card>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout
             title="Analytics"
             description="Track your sales performance"
         >
             {/* Time Range Selector */}
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-between items-center mb-6">
+                <Button onClick={fetchAnalytics} variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                </Button>
                 <Select value={timeRange} onValueChange={setTimeRange}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select range" />

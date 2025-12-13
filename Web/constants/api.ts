@@ -35,6 +35,39 @@ export const API_ENDPOINTS = {
     REGISTER: "/api/auth/register",
     ME: "/api/auth/me",
     REFRESH: "/api/auth/refresh"
+  },
+
+  ADMIN: {
+    DASHBOARD_STATS: "/utility/api/v1/admin/dashboard/stats",
+    RECENT_ACTIVITY: "/utility/api/v1/admin/dashboard/activity",
+    PLATFORM_HEALTH: "/utility/api/v1/admin/dashboard/health",
+    
+    SETTINGS: "/utility/api/v1/admin/settings",
+    SETTING_BY_ID: (id: string) => `/utility/api/v1/admin/settings/${id}`,
+    SETTING_BY_KEY: (key: string) => `/utility/api/v1/admin/settings/key/${key}`,
+    SETTINGS_BULK: "/utility/api/v1/admin/settings/bulk",
+
+    USERS: "/identity/api/admin/users",
+    USER_BY_ID: (id: string) => `/identity/api/admin/users/${id}`,
+    USER_SUSPEND: (id: string) => `/identity/api/admin/users/${id}/suspend`,
+    USER_ACTIVATE: (id: string) => `/identity/api/admin/users/${id}/activate`,
+    USER_STATS: "/identity/api/admin/users/stats",
+
+    REPORTS: "/utility/api/v1/reports",
+    REPORT_BY_ID: (id: string) => `/utility/api/v1/reports/${id}`,
+    REPORT_STATS: "/utility/api/v1/reports/stats",
+
+    PAYMENTS_PENDING: "/utility/api/v1/admin/payments/withdrawals/pending",
+    PAYMENTS_STATS: "/utility/api/v1/admin/payments/stats",
+    PAYMENT_APPROVE: (id: string) => `/utility/api/v1/admin/payments/withdrawals/${id}/approve`,
+    PAYMENT_REJECT: (id: string) => `/utility/api/v1/admin/payments/withdrawals/${id}/reject`
+  },
+
+  WALLET: {
+    BALANCE: "/utility/api/v1/wallet/balance",
+    TRANSACTIONS: "/utility/api/v1/wallet/transactions",
+    DEPOSIT: "/utility/api/v1/wallet/deposit",
+    WITHDRAW: "/utility/api/v1/wallet/withdraw"
   }
 } as const;
 
@@ -53,7 +86,18 @@ export const QUERY_KEYS = {
   NOTIFICATIONS_SUMMARY: "notifications-summary",
   AUDIT_LOGS: "audit-logs",
   AUDIT_LOG: "audit-log",
-  AUDIT_LOGS_BY_ENTITY: "audit-logs-by-entity"
+  AUDIT_LOGS_BY_ENTITY: "audit-logs-by-entity",
+  
+  ADMIN_DASHBOARD_STATS: "admin-dashboard-stats",
+  ADMIN_RECENT_ACTIVITY: "admin-recent-activity",
+  ADMIN_PLATFORM_HEALTH: "admin-platform-health",
+  ADMIN_SETTINGS: "admin-settings",
+  ADMIN_USERS: "admin-users",
+  ADMIN_USER_STATS: "admin-user-stats",
+  ADMIN_REPORTS: "admin-reports",
+  ADMIN_REPORT_STATS: "admin-report-stats",
+  ADMIN_PAYMENTS: "admin-payments",
+  ADMIN_PAYMENT_STATS: "admin-payment-stats"
 } as const;
 
 export const DEFAULT_PAGE_SIZE = 12;
