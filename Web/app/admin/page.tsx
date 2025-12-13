@@ -14,6 +14,7 @@ import {
     AlertTriangle,
     CheckCircle,
     RefreshCw,
+    FolderTree,
 } from 'lucide-react';
 
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/utils';
@@ -39,6 +40,13 @@ const quickActions = [
         href: '/admin/auctions',
         icon: Gavel,
         color: 'bg-amber-500',
+    },
+    {
+        title: 'Categories',
+        description: 'Manage auction categories',
+        href: '/admin/categories',
+        icon: FolderTree,
+        color: 'bg-purple-500',
     },
     {
         title: 'User Management',

@@ -14,6 +14,7 @@ import {
     Menu,
     Shield,
     ChevronRight,
+    FolderTree,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface NavItem {
 const adminNavItems: NavItem[] = [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { title: "Auctions", href: "/admin/auctions", icon: Gavel },
+    { title: "Categories", href: "/admin/categories", icon: FolderTree },
     { title: "Users", href: "/admin/users", icon: Users },
     { title: "Reports", href: "/admin/reports", icon: Flag },
     { title: "Payments", href: "/admin/payments", icon: CreditCard },
