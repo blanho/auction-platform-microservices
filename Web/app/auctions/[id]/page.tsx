@@ -75,7 +75,7 @@ import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { BuyNowButton } from '@/features/auction/buy-now-button';
-import { PlaceBidDialog } from '@/features/bid/place-bid-dialog';
+import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
 import { auctionService } from '@/services/auction.service';
 import { AuditHistory } from '@/components/common/audit-history';
 import { BidHistory } from '@/components/common/bid-history';
@@ -507,9 +507,16 @@ export default function AuctionDetailPage() {
                                                     onBidPlaced={handleBidPlaced}
                                                 />
                                             </div>
-                                            <p className="text-xs text-zinc-500">
-                                                Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
-                                            </p>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-xs text-zinc-500">
+                                                    Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
+                                                </p>
+                                                <AutoBidDialog
+                                                    auctionId={auction.id}
+                                                    currentHighBid={auction.currentHighBid || 0}
+                                                    reservePrice={auction.reservePrice}
+                                                />
+                                            </div>
                                         </div>
                                     )}
 

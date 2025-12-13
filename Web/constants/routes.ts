@@ -16,6 +16,11 @@ export const ROUTES = {
     MY_AUCTIONS: '/auctions/my-auctions',
   },
   
+  CATEGORIES: {
+    LIST: '/categories',
+    DETAIL: (slug: string) => `/categories/${slug}`,
+  },
+  
   DASHBOARD: {
     ROOT: '/dashboard',
     HOME: '/dashboard',
@@ -40,6 +45,8 @@ export const ROUTES = {
     SETTINGS: '/admin/settings',
   },
   
+  CHECKOUT: (auctionId: string) => `/checkout/${auctionId}`,
+  
   DEALS: '/deals',
   LIVE: '/live',
   GIFTS: '/gifts',
@@ -48,7 +55,14 @@ export const ROUTES = {
   
   NOTIFICATIONS: '/notifications',
   SEARCH: '/search',
+  
+  LEGAL: {
+    TERMS: '/terms',
+    PRIVACY: '/privacy',
+    ABOUT: '/about',
+  },
 } as const;
+
 
 export const EXTERNAL_URLS = {
   TWITTER_SHARE: (text: string, url: string) =>

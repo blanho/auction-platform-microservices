@@ -11,6 +11,7 @@ import {
     DollarSign,
     ImagePlus,
     Loader2,
+    Package,
     Upload,
     X,
 } from 'lucide-react';
@@ -48,7 +49,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { auctionService } from '@/services/auction.service';
-import { CreateAuctionDto, Category } from '@/types/auction';
+import { CreateAuctionDto, Category, ShippingType, SHIPPING_TYPE_LABELS } from '@/types/auction';
 
 const createAuctionSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -68,9 +69,21 @@ const createAuctionSchema = z.object({
     autoExtend: z.boolean(),
     isFeatured: z.boolean(),
     imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+    shippingType: z.nativeEnum(ShippingType),
+    shippingCost: z.number().min(0).optional(),
+    handlingTime: z.number().min(1).max(30),
+    shipsFrom: z.string().optional(),
+    localPickupAvailable: z.boolean(),
+    localPickupAddress: z.string().optional(),
 }).refine((data) => !data.buyNowPrice || data.buyNowPrice > data.reservePrice, {
     message: 'Buy Now price must be greater than reserve price',
     path: ['buyNowPrice'],
+}).refine((data) => data.shippingType !== ShippingType.Flat || (data.shippingCost && data.shippingCost > 0), {
+    message: 'Flat rate shipping requires a shipping cost',
+    path: ['shippingCost'],
+}).refine((data) => !data.localPickupAvailable || data.localPickupAddress, {
+    message: 'Local pickup requires an address',
+    path: ['localPickupAddress'],
 });
 
 type CreateAuctionFormValues = z.infer<typeof createAuctionSchema>;
@@ -110,6 +123,12 @@ export function CreateAuctionForm() {
             autoExtend: true,
             isFeatured: false,
             imageUrl: '',
+            shippingType: ShippingType.Flat,
+            shippingCost: 0,
+            handlingTime: 3,
+            shipsFrom: '',
+            localPickupAvailable: false,
+            localPickupAddress: '',
         },
     });
 
@@ -174,6 +193,12 @@ export function CreateAuctionForm() {
             categoryId: values.categoryId || undefined,
             isFeatured: values.isFeatured,
             imageUrl: uploadedImages[0]?.url || values.imageUrl || undefined,
+            shippingType: values.shippingType,
+            shippingCost: values.shippingType === ShippingType.Flat ? values.shippingCost : undefined,
+            handlingTime: values.handlingTime,
+            shipsFrom: values.shipsFrom || undefined,
+            localPickupAvailable: values.localPickupAvailable,
+            localPickupAddress: values.localPickupAvailable ? values.localPickupAddress : undefined,
         };
         
         try {
@@ -568,6 +593,163 @@ export function CreateAuctionForm() {
                                     )}
                                 />
                             </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Shipping Options */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <Package className="h-5 w-5" />
+                                Shipping Options
+                            </h3>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="shippingType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Shipping Method</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select shipping method" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {Object.entries(SHIPPING_TYPE_LABELS).map(([key, label]) => (
+                                                        <SelectItem key={key} value={key}>
+                                                            {label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {form.watch('shippingType') === ShippingType.Flat && (
+                                    <FormField
+                                        control={form.control}
+                                        name="shippingCost"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Shipping Cost ($)</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="15.00"
+                                                        value={field.value || ''}
+                                                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    Fixed shipping cost for this item
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+
+                                <FormField
+                                    control={form.control}
+                                    name="handlingTime"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Handling Time (days)</FormLabel>
+                                            <Select 
+                                                onValueChange={(value) => field.onChange(parseInt(value))} 
+                                                value={field.value?.toString()}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select handling time" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="1">1 business day</SelectItem>
+                                                    <SelectItem value="2">2 business days</SelectItem>
+                                                    <SelectItem value="3">3 business days</SelectItem>
+                                                    <SelectItem value="5">5 business days</SelectItem>
+                                                    <SelectItem value="7">7 business days</SelectItem>
+                                                    <SelectItem value="10">10 business days</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Time to prepare and ship after payment
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="shipsFrom"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Ships From</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="City, State or Country"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Location where item will ship from
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="localPickupAvailable"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">
+                                                Local Pickup Available
+                                            </FormLabel>
+                                            <FormDescription>
+                                                Allow buyers to pick up the item in person
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+
+                            {form.watch('localPickupAvailable') && (
+                                <FormField
+                                    control={form.control}
+                                    name="localPickupAddress"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Pickup Address</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Enter pickup address or area"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                General area or specific address for pickup
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </div>
 
                         <Separator />

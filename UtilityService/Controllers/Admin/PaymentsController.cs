@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using UtilityService.DTOs;
 using UtilityService.Interfaces;
 
-namespace UtilityService.Controllers;
+namespace UtilityService.Controllers.Admin;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]

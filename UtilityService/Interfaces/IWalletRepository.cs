@@ -24,4 +24,6 @@ public interface IWalletRepository
         TimeSpan timeout,
         CancellationToken cancellationToken = default);
     Task UpdateRangeAsync(List<WalletTransaction> transactions, CancellationToken cancellationToken = default);
+    Task<decimal> GetTotalRevenueAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default);
+    Task<int> GetActiveUsersCountAsync(int daysActive = 30, CancellationToken cancellationToken = default);
 }

@@ -68,6 +68,13 @@ export const API_ENDPOINTS = {
     TRANSACTIONS: "/utility/api/v1/wallet/transactions",
     DEPOSIT: "/utility/api/v1/wallet/deposit",
     WITHDRAW: "/utility/api/v1/wallet/withdraw"
+  },
+
+  PAYMENTS: {
+    CREATE_PAYMENT_INTENT: "/utility/api/payments/create-payment-intent",
+    CREATE_CHECKOUT_SESSION: "/utility/api/payments/create-checkout-session",
+    PAYMENT_INTENT_STATUS: (id: string) => `/utility/api/payments/payment-intent/${id}`,
+    REFUND: "/utility/api/payments/refund"
   }
 } as const;
 

@@ -2,6 +2,7 @@ using AutoMapper;
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.Entities;
+using BidService.Domain.ValueObjects;
 using Common.Core.Interfaces;
 using Common.Messaging.Abstractions;
 using Common.Messaging.Events;
@@ -39,6 +40,25 @@ namespace BidService.Application.Services
             _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder}", dto.AuctionId, bidder);
 
             var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, cancellationToken);
+            var currentHighBid = highestBid?.Amount ?? 0;
+
+            if (!BidIncrement.IsValidBidAmount(dto.Amount, currentHighBid))
+            {
+                var minimumNextBid = BidIncrement.GetMinimumNextBid(currentHighBid);
+                _logger.LogWarning(
+                    "Bid amount {Amount} does not meet minimum increment. Current high: {CurrentHigh}, Minimum next: {MinimumNext}",
+                    dto.Amount, currentHighBid, minimumNextBid);
+                
+                return new BidDto
+                {
+                    AuctionId = dto.AuctionId,
+                    Bidder = bidder,
+                    Amount = dto.Amount,
+                    BidTime = _dateTime.UtcNow,
+                    Status = BidStatus.TooLow.ToString(),
+                    ErrorMessage = BidIncrement.GetIncrementErrorMessage(dto.Amount, currentHighBid)
+                };
+            }
 
             var bid = _mapper.Map<Bid>(dto);
             bid.Bidder = bidder;

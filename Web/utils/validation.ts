@@ -75,29 +75,6 @@ export function isValidUrl(url: string): boolean {
 }
 
 /**
- * Validate bid amount
- */
-export function isValidBidAmount(
-  amount: number,
-  currentHighBid: number,
-  minimumIncrement: number = 1
-): { isValid: boolean; error?: string } {
-  if (isNaN(amount) || amount <= 0) {
-    return { isValid: false, error: 'Please enter a valid bid amount' };
-  }
-  
-  const minimumBid = currentHighBid + minimumIncrement;
-  if (amount < minimumBid) {
-    return {
-      isValid: false,
-      error: `Bid must be at least $${minimumBid.toLocaleString()}`,
-    };
-  }
-  
-  return { isValid: true };
-}
-
-/**
  * Validate year (for vehicle auctions)
  */
 export function isValidYear(year: number): boolean {

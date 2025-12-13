@@ -1,5 +1,6 @@
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
+using BidService.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,5 +62,26 @@ namespace BidService.API.Controllers
             var bids = await _bidService.GetBidsForBidderAsync(bidder, cancellationToken);
             return Ok(bids);
         }
+
+        [HttpGet("increment/{currentBid:int}")]
+        public ActionResult<BidIncrementInfoDto> GetBidIncrementInfo(int currentBid)
+        {
+            var minimumIncrement = BidIncrement.GetMinimumIncrement(currentBid);
+            var minimumNextBid = BidIncrement.GetMinimumNextBid(currentBid);
+
+            return Ok(new BidIncrementInfoDto
+            {
+                CurrentBid = currentBid,
+                MinimumIncrement = minimumIncrement,
+                MinimumNextBid = minimumNextBid
+            });
+        }
+    }
+
+    public class BidIncrementInfoDto
+    {
+        public int CurrentBid { get; set; }
+        public int MinimumIncrement { get; set; }
+        public int MinimumNextBid { get; set; }
     }
 }

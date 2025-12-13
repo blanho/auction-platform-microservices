@@ -48,6 +48,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStripePaymentService, StripePaymentService>();
 
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();

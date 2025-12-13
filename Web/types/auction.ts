@@ -9,6 +9,67 @@ export interface AuctionFile {
   isPrimary: boolean;
 }
 
+export enum ItemCondition {
+  New = "New",
+  LikeNew = "LikeNew",
+  Excellent = "Excellent",
+  Good = "Good",
+  Fair = "Fair",
+  Poor = "Poor",
+}
+
+export const ITEM_CONDITION_LABELS: Record<ItemCondition, string> = {
+  [ItemCondition.New]: "Brand New",
+  [ItemCondition.LikeNew]: "Like New",
+  [ItemCondition.Excellent]: "Excellent",
+  [ItemCondition.Good]: "Good",
+  [ItemCondition.Fair]: "Fair",
+  [ItemCondition.Poor]: "Poor",
+};
+
+export const ITEM_CONDITION_DESCRIPTIONS: Record<ItemCondition, string> = {
+  [ItemCondition.New]: "Never used, in original packaging",
+  [ItemCondition.LikeNew]: "Used once or twice, no visible wear",
+  [ItemCondition.Excellent]: "Minimal signs of use, excellent condition",
+  [ItemCondition.Good]: "Normal wear, fully functional",
+  [ItemCondition.Fair]: "Visible wear, works as intended",
+  [ItemCondition.Poor]: "Heavy wear, may have defects",
+};
+
+export enum ShippingType {
+  Free = "Free",
+  Flat = "Flat",
+  Calculated = "Calculated",
+  LocalPickup = "LocalPickup",
+  NoShipping = "NoShipping",
+}
+
+export const SHIPPING_TYPE_LABELS: Record<ShippingType, string> = {
+  [ShippingType.Free]: "Free Shipping",
+  [ShippingType.Flat]: "Flat Rate",
+  [ShippingType.Calculated]: "Calculated at Checkout",
+  [ShippingType.LocalPickup]: "Local Pickup Only",
+  [ShippingType.NoShipping]: "No Shipping",
+};
+
+export interface ShippingOptions {
+  shippingType: ShippingType;
+  flatRateAmount?: number;
+  estimatedWeight?: number;
+  packageDimensions?: PackageDimensions;
+  handlingTime: number;
+  shipsFrom?: string;
+  shipsTo: string[];
+  localPickupAddress?: string;
+}
+
+export interface PackageDimensions {
+  length: number;
+  width: number;
+  height: number;
+  unit: "in" | "cm";
+}
+
 export interface Auction {
   id: string;
   title: string;
@@ -29,13 +90,22 @@ export interface Auction {
   year: number;
   color: string;
   mileage: number;
+  condition?: ItemCondition;
   categoryId?: string;
   categoryName?: string;
   categorySlug?: string;
   categoryIcon?: string;
   isFeatured: boolean;
   files: AuctionFile[];
+  shippingType?: ShippingType;
+  shippingCost?: number;
+  handlingTime?: number;
+  shipsFrom?: string;
+  shipsTo?: string[];
+  localPickupAvailable?: boolean;
+  localPickupAddress?: string;
 }
+
 
 export interface Category {
   id: string;
@@ -72,6 +142,14 @@ export interface CreateAuctionDto {
   categoryId?: string;
   isFeatured?: boolean;
   imageUrl?: string;
+  condition?: ItemCondition;
+  shippingType?: ShippingType;
+  shippingCost?: number;
+  handlingTime?: number;
+  shipsFrom?: string;
+  shipsTo?: string[];
+  localPickupAvailable?: boolean;
+  localPickupAddress?: string;
 }
 
 export interface UpdateAuctionDto {

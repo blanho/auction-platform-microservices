@@ -8,6 +8,9 @@ namespace BidService.Application.DTOs
         public int Amount { get; set; }
         public DateTime BidTime { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string? ErrorMessage { get; set; }
+        public int MinimumNextBid { get; set; }
+        public int MinimumIncrement { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
     }

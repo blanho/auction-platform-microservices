@@ -67,17 +67,61 @@ export function canPlaceBid(
   return true;
 }
 
-/**
- * Calculate minimum next bid
- */
+const BID_INCREMENT_RULES = [
+  { minBid: 0, maxBid: 99, increment: 5 },
+  { minBid: 100, maxBid: 499, increment: 10 },
+  { minBid: 500, maxBid: 999, increment: 25 },
+  { minBid: 1000, maxBid: 4999, increment: 50 },
+  { minBid: 5000, maxBid: 9999, increment: 100 },
+  { minBid: 10000, maxBid: 24999, increment: 250 },
+  { minBid: 25000, maxBid: 49999, increment: 500 },
+  { minBid: 50000, maxBid: 99999, increment: 1000 },
+  { minBid: 100000, maxBid: 249999, increment: 2500 },
+  { minBid: 250000, maxBid: 499999, increment: 5000 },
+  { minBid: 500000, maxBid: Number.MAX_SAFE_INTEGER, increment: 10000 },
+];
+
+export function getMinimumBidIncrement(currentBid: number): number {
+  const rule = BID_INCREMENT_RULES.find(
+    (r) => currentBid >= r.minBid && currentBid <= r.maxBid
+  );
+  return rule?.increment ?? 10;
+}
+
 export function calculateMinimumBid(
   currentHighBid: number | null | undefined,
-  reservePrice: number = 0,
-  incrementPercentage: number = 0.05
+  reservePrice: number = 0
 ): number {
   const current = currentHighBid ?? reservePrice;
-  const increment = Math.max(1, Math.ceil(current * incrementPercentage));
+  if (current === 0) return reservePrice > 0 ? reservePrice : 1;
+  
+  const increment = getMinimumBidIncrement(current);
   return current + increment;
+}
+
+export function isValidBidAmount(
+  bidAmount: number,
+  currentHighBid: number | null | undefined,
+  reservePrice: number = 0
+): boolean {
+  const minimumNextBid = calculateMinimumBid(currentHighBid, reservePrice);
+  return bidAmount >= minimumNextBid;
+}
+
+export function getBidIncrementError(
+  bidAmount: number,
+  currentHighBid: number | null | undefined,
+  reservePrice: number = 0
+): string | null {
+  if (isValidBidAmount(bidAmount, currentHighBid, reservePrice)) {
+    return null;
+  }
+  
+  const current = currentHighBid ?? reservePrice;
+  const increment = getMinimumBidIncrement(current);
+  const minimumNextBid = calculateMinimumBid(currentHighBid, reservePrice);
+  
+  return `Bid must be at least $${minimumNextBid.toLocaleString()}. Minimum increment is $${increment.toLocaleString()} for bids at this level.`;
 }
 
 /**

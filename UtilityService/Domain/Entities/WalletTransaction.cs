@@ -23,7 +23,8 @@ public enum TransactionType
     Withdrawal,
     Hold,
     Payment,
-    Refund
+    Refund,
+    Fee
 }
 
 public enum TransactionStatus

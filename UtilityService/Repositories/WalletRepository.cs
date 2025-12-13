@@ -133,4 +133,35 @@ public class WalletRepository : IWalletRepository
         _context.WalletTransactions.UpdateRange(transactions);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<decimal> GetTotalRevenueAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.WalletTransactions
+            .Where(t => t.Type == TransactionType.Fee && t.Status == TransactionStatus.Completed);
+
+        if (startDate.HasValue)
+        {
+            var start = new DateTimeOffset(startDate.Value, TimeSpan.Zero);
+            query = query.Where(t => t.CreatedAt >= start);
+        }
+
+        if (endDate.HasValue)
+        {
+            var end = new DateTimeOffset(endDate.Value, TimeSpan.Zero);
+            query = query.Where(t => t.CreatedAt <= end);
+        }
+
+        return await query.SumAsync(t => t.Amount, cancellationToken);
+    }
+
+    public async Task<int> GetActiveUsersCountAsync(int daysActive = 30, CancellationToken cancellationToken = default)
+    {
+        var cutoffDate = DateTimeOffset.UtcNow.AddDays(-daysActive);
+        
+        return await _context.WalletTransactions
+            .Where(t => t.CreatedAt >= cutoffDate)
+            .Select(t => t.Username)
+            .Distinct()
+            .CountAsync(cancellationToken);
+    }
 }
