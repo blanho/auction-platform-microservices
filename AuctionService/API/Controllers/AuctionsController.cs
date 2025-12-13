@@ -14,6 +14,8 @@ using AuctionService.Application.Queries.GetAuctionById;
 using AuctionService.Application.Queries.GetAuctions;
 using AuctionService.Application.Queries.GetMyAuctions;
 using AuctionService.Application.Queries.GetSellerAnalytics;
+using AuctionService.Application.Queries.GetQuickStats;
+using AuctionService.Application.Queries.GetTrendingSearches;
 using AuctionService.Application.Queries.GetUserDashboardStats;
 using Common.Core.Helpers;
 using Common.Utilities.Constants;
@@ -125,6 +127,35 @@ public class AuctionsController : ControllerBase
         var query = new GetSellerAnalyticsQuery(username, timeRange);
         var result = await _mediator.Send(query, cancellationToken);
 
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("analytics/quick-stats")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(QuickStatsDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<QuickStatsDto>> GetQuickStats(
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetQuickStatsQuery();
+        var result = await _mediator.Send(query, cancellationToken);
+        
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpGet("analytics/trending-searches")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<TrendingSearchDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<TrendingSearchDto>>> GetTrendingSearches(
+        [FromQuery] int limit = 6,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetTrendingSearchesQuery(limit);
+        var result = await _mediator.Send(query, cancellationToken);
+        
         return result.IsSuccess
             ? Ok(result.Value)
             : BadRequest(ProblemDetailsHelper.FromError(result.Error!));

@@ -26,6 +26,24 @@ export interface SellerAnalyticsData {
     chartData: ChartDataPoint[];
 }
 
+export interface QuickStats {
+    liveAuctions: number;
+    liveAuctionsChange?: string;
+    activeUsers: number;
+    activeUsersChange?: string;
+    endingSoon: number;
+    endingSoonChange?: string;
+}
+
+export interface TrendingSearch {
+    searchTerm: string;
+    icon?: string;
+    trending?: boolean;
+    hot?: boolean;
+    isNew?: boolean;
+    count?: number;
+}
+
 export const analyticsService = {
     async getSellerAnalytics(timeRange: string = "30d"): Promise<SellerAnalyticsData> {
         const response = await apiClient.get<SellerAnalyticsData>("/auctions/analytics/seller", {
@@ -39,5 +57,29 @@ export const analyticsService = {
             params: { limit },
         });
         return response.data;
+    },
+
+    async getQuickStats(): Promise<QuickStats> {
+        try {
+            const response = await apiClient.get<QuickStats>("/auctions/analytics/quick-stats");
+            return response.data;
+        } catch (error) {
+            return {
+                liveAuctions: 0,
+                activeUsers: 0,
+                endingSoon: 0,
+            };
+        }
+    },
+
+    async getTrendingSearches(limit: number = 6): Promise<TrendingSearch[]> {
+        try {
+            const response = await apiClient.get<TrendingSearch[]>("/auctions/analytics/trending-searches", {
+                params: { limit },
+            });
+            return response.data;
+        } catch (error) {
+            return [];
+        }
     },
 };

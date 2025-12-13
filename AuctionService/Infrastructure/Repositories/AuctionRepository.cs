@@ -174,5 +174,37 @@ namespace AuctionService.Infrastructure.Repositories
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<int> CountLiveAuctionsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == Status.Live)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default)
+        {
+            var now = _dateTime.UtcNow;
+            var endingSoonThreshold = now.AddHours(24);
+            
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.Status == Status.Live 
+                    && x.AuctionEnd >= now 
+                    && x.AuctionEnd <= endingSoonThreshold)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == Status.Live)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .OrderByDescending(x => x.CurrentHighBid ?? 0)
+                .ThenByDescending(x => x.IsFeatured)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

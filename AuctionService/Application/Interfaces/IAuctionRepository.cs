@@ -23,4 +23,10 @@ public interface IAuctionRepository : IRepository<Auction>
         DateTimeOffset? startDate = null,
         DateTimeOffset? endDate = null,
         CancellationToken cancellationToken = default);
+    
+    Task<int> CountLiveAuctionsAsync(CancellationToken cancellationToken = default);
+    
+    Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default);
+    
+    Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default);
 }
