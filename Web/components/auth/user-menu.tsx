@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, User, Settings, Gavel, Shield } from "lucide-react";
+import { LogIn, LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
@@ -86,9 +86,9 @@ export function UserMenu() {
                     </>
                 )}
                 <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
+                    <Link href="/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -98,7 +98,38 @@ export function UserMenu() {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href="/settings">
+                    <Link href="/dashboard/bids">
+                        <User className="mr-2 h-4 w-4" />
+                        My Bids
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/watchlist">
+                        <Eye className="mr-2 h-4 w-4" />
+                        Watchlist
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/wishlist">
+                        <Heart className="mr-2 h-4 w-4" />
+                        Wishlist
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/wallet">
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Wallet
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/analytics">
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Analytics
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                     </Link>

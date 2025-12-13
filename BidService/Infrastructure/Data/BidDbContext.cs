@@ -1,4 +1,5 @@
 using BidService.Domain.Entities;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Common.Domain.Entities;
 
@@ -15,6 +16,10 @@ namespace BidService.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
 
             modelBuilder.Entity<Bid>(entity =>
             {

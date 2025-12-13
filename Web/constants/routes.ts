@@ -17,16 +17,19 @@ export const ROUTES = {
   },
   
   DASHBOARD: {
+    ROOT: '/dashboard',
     HOME: '/dashboard',
     PROFILE: '/dashboard/profile',
     BIDS: '/dashboard/bids',
     LISTINGS: '/dashboard/listings',
     WATCHLIST: '/dashboard/watchlist',
+    ANALYTICS: '/dashboard/analytics',
     WALLET: '/dashboard/wallet',
     SETTINGS: '/dashboard/settings',
   },
   
   ADMIN: {
+    ROOT: '/admin',
     HOME: '/admin',
     USERS: '/admin/users',
     AUCTIONS: '/admin/auctions',
@@ -34,6 +37,12 @@ export const ROUTES = {
     PAYMENTS: '/admin/payments',
     SETTINGS: '/admin/settings',
   },
+  
+  DEALS: '/deals',
+  LIVE: '/live',
+  GIFTS: '/gifts',
+  WISHLIST: '/wishlist',
+  HELP: '/help',
   
   NOTIFICATIONS: '/notifications',
   SEARCH: '/search',

@@ -11,6 +11,8 @@ export const MESSAGES = {
     SETTINGS_SAVED: 'Settings saved successfully',
     WATCHLIST_ADDED: 'Added to watchlist',
     WATCHLIST_REMOVED: 'Removed from watchlist',
+    WISHLIST_ADDED: 'Added to wishlist',
+    WISHLIST_REMOVED: 'Removed from wishlist',
     LINK_COPIED: 'Link copied to clipboard',
     WITHDRAWAL_APPROVED: 'Withdrawal approved successfully',
     WITHDRAWAL_REJECTED: 'Withdrawal rejected',

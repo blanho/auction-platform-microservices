@@ -8,6 +8,7 @@ import {
     User,
     Gavel,
     Heart,
+    Eye,
     Package,
     PlusCircle,
     Wallet,
@@ -34,7 +35,8 @@ interface NavItem {
 const buyerNavItems: NavItem[] = [
     { title: "Profile", href: "/dashboard", icon: User },
     { title: "My Bids", href: "/dashboard/bids", icon: Gavel },
-    { title: "Watchlist", href: "/dashboard/watchlist", icon: Heart },
+    { title: "Watchlist", href: "/dashboard/watchlist", icon: Eye },
+    { title: "Wishlist", href: "/wishlist", icon: Heart },
     { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
