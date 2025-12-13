@@ -106,6 +106,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             Id = Guid.NewGuid(),
             Seller = request.Seller,
             ReversePrice = request.ReservePrice,
+            BuyNowPrice = request.BuyNowPrice,
             AuctionEnd = request.AuctionEnd,
             Status = Status.Live,
             Item = new Item

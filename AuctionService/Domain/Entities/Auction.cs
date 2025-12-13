@@ -7,6 +7,9 @@ namespace AuctionService.Domain.Entities
     public class Auction : BaseEntity
     {
         public int ReversePrice { get; set; } = 0;
+        public int? BuyNowPrice { get; set; }
+        public bool IsBuyNowEnabled => BuyNowPrice.HasValue && BuyNowPrice > 0;
+        public bool IsBuyNowAvailable => IsBuyNowEnabled && Status == Status.Live && !SoldAmount.HasValue;
         public required string Seller { get; set; }
         public string? Winner { get; set; }
         public int? SoldAmount { get; set; }

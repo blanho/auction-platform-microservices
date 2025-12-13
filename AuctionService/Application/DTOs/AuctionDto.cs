@@ -4,6 +4,8 @@
     {
         public Guid Id { get; set; }
         public int ReservePrice { get; set; }
+        public int? BuyNowPrice { get; set; }
+        public bool IsBuyNowAvailable { get; set; }
         public required string Seller { get; set; }
         public string? Winner { get; set; }
         public int? SoldAmount { get; set; }

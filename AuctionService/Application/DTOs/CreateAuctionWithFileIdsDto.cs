@@ -33,6 +33,9 @@ public class CreateAuctionWithFileIdsDto
     [Range(0, int.MaxValue)]
     public int ReservePrice { get; set; }
 
+    [Range(0, int.MaxValue)]
+    public int? BuyNowPrice { get; set; }
+
     [Required]
     public DateTimeOffset AuctionEnd { get; set; }
 }

@@ -26,6 +26,8 @@ export const ROUTES = {
     ANALYTICS: '/dashboard/analytics',
     WALLET: '/dashboard/wallet',
     SETTINGS: '/dashboard/settings',
+    ORDERS: '/dashboard/orders',
+    CREATE_LISTING: '/auctions/create',
   },
   
   ADMIN: {

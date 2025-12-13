@@ -7,7 +7,8 @@ import {
   ImportAuctionsResultDto,
   ExportAuctionsRequest,
   ExportAuctionDto,
-  Category
+  Category,
+  BuyNowResult
 } from "@/types/auction";
 import { API_ENDPOINTS } from "@/constants/api";
 import { PaginatedResponse } from "@/types";
@@ -118,6 +119,13 @@ export const auctionService = {
       API_ENDPOINTS.AUCTION_DEACTIVATE(id),
       null,
       { params: { reason } }
+    );
+    return data;
+  },
+
+  buyNow: async (id: string): Promise<BuyNowResult> => {
+    const { data } = await apiClient.post<BuyNowResult>(
+      `${API_ENDPOINTS.AUCTIONS}/${id}/buy-now`
     );
     return data;
   },

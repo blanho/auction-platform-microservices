@@ -54,11 +54,16 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
     public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
     {
         private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
         private readonly ILogger<AuctionFinishedConsumer> _logger;
 
-        public AuctionFinishedConsumer(INotificationService notificationService, ILogger<AuctionFinishedConsumer> logger)
+        public AuctionFinishedConsumer(
+            INotificationService notificationService, 
+            IEmailService emailService,
+            ILogger<AuctionFinishedConsumer> logger)
         {
             _notificationService = notificationService;
+            _emailService = emailService;
             _logger = logger;
         }
 
@@ -102,6 +107,12 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
                         })
                     };
                     await _notificationService.CreateNotificationAsync(winnerNotification);
+
+                    await _emailService.SendAuctionWonEmailAsync(
+                        context.Message.Winner,
+                        "Auction Item",
+                        context.Message.SoldAmount ?? 0,
+                        context.Message.AuctionId);
                 }
             }
             catch (Exception ex)
@@ -228,6 +239,73 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing AuctionDeletedEvent for auction {AuctionId}", context.Message.Id);
+            }
+        }
+    }
+
+    public class BuyNowExecutedConsumer : IConsumer<BuyNowExecutedEvent>
+    {
+        private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<BuyNowExecutedConsumer> _logger;
+
+        public BuyNowExecutedConsumer(
+            INotificationService notificationService,
+            IEmailService emailService,
+            ILogger<BuyNowExecutedConsumer> logger)
+        {
+            _notificationService = notificationService;
+            _emailService = emailService;
+            _logger = logger;
+        }
+
+        public async Task Consume(ConsumeContext<BuyNowExecutedEvent> context)
+        {
+            _logger.LogInformation("Consuming BuyNowExecutedEvent for auction {AuctionId}", context.Message.AuctionId);
+
+            try
+            {
+                var buyerNotification = new CreateNotificationDto
+                {
+                    UserId = context.Message.Buyer,
+                    Type = NotificationType.BuyNowExecuted,
+                    Title = "Purchase Successful!",
+                    Message = $"You purchased '{context.Message.ItemTitle}' for ${context.Message.BuyNowPrice}",
+                    AuctionId = context.Message.AuctionId,
+                    Data = JsonSerializer.Serialize(new
+                    {
+                        context.Message.BuyNowPrice,
+                        context.Message.ItemTitle,
+                        context.Message.ExecutedAt
+                    })
+                };
+                await _notificationService.CreateNotificationAsync(buyerNotification);
+
+                var sellerNotification = new CreateNotificationDto
+                {
+                    UserId = context.Message.Seller,
+                    Type = NotificationType.BuyNowExecuted,
+                    Title = "Item Sold via Buy Now!",
+                    Message = $"Your item '{context.Message.ItemTitle}' was purchased for ${context.Message.BuyNowPrice} by {context.Message.Buyer}",
+                    AuctionId = context.Message.AuctionId,
+                    Data = JsonSerializer.Serialize(new
+                    {
+                        context.Message.BuyNowPrice,
+                        context.Message.Buyer,
+                        context.Message.ExecutedAt
+                    })
+                };
+                await _notificationService.CreateNotificationAsync(sellerNotification);
+
+                await _emailService.SendBuyNowConfirmationEmailAsync(
+                    context.Message.Buyer,
+                    context.Message.ItemTitle,
+                    context.Message.BuyNowPrice,
+                    context.Message.AuctionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing BuyNowExecutedEvent for auction {AuctionId}", context.Message.AuctionId);
             }
         }
     }

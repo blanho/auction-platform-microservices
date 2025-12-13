@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import api from "@/lib/api/axios";
 
 export interface AutoBid {
     id: string;

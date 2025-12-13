@@ -164,6 +164,7 @@ public class AuctionsController : ControllerBase
             dto.Color,
             dto.Mileage,
             dto.ReservePrice,
+            dto.BuyNowPrice,
             dto.AuctionEnd,
             seller,
             dto.FileIds);
@@ -253,6 +254,29 @@ public class AuctionsController : ControllerBase
     {
         var command = new DeactivateAuctionCommand(id, reason);
         var result = await _mediator.Send(command, cancellationToken);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return result.Error!.Code.Contains("NotFound")
+            ? NotFound(ProblemDetailsHelper.FromError(result.Error!))
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpPost("{id:guid}/buy-now")]
+    [Authorize(Policy = "AuctionScope")]
+    [ProducesResponseType(typeof(BuyNowResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BuyNowResultDto>> BuyNow(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var buyer = UserHelper.GetUsername(User);
+        var command = new Application.Commands.BuyNow.BuyNowCommand(id, buyer);
+        var result = await _mediator.Send(command, cancellationToken);
+
         if (result.IsSuccess)
         {
             return Ok(result.Value);

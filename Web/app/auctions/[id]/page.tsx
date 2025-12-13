@@ -74,6 +74,7 @@ import { Auction, AuctionStatus } from '@/types/auction';
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
+import { BuyNowButton } from '@/features/auction/buy-now-button';
 import { PlaceBidDialog } from '@/features/bid/place-bid-dialog';
 import { auctionService } from '@/services/auction.service';
 import { AuditHistory } from '@/components/common/audit-history';
@@ -509,6 +510,29 @@ export default function AuctionDetailPage() {
                                             <p className="text-xs text-zinc-500">
                                                 Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {/* Buy Now Option */}
+                                    {auction.isBuyNowAvailable && auction.buyNowPrice && auction.status === AuctionStatus.Live && !isOwner && (
+                                        <div className="space-y-3">
+                                            <Separator />
+                                            <div className="rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 border border-amber-200 dark:border-amber-800">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Buy Now Available!</p>
+                                                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-500">
+                                                            {formatCurrency(auction.buyNowPrice)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <BuyNowButton
+                                                    auctionId={auction.id}
+                                                    buyNowPrice={auction.buyNowPrice}
+                                                    auctionTitle={auction.title}
+                                                    onSuccess={() => window.location.reload()}
+                                                />
+                                            </div>
                                         </div>
                                     )}
 

@@ -24,6 +24,7 @@ namespace NotificationService.Infrastructure.Extensions
                 x.AddConsumer<BidPlacedConsumer>();
                 x.AddConsumer<AuctionUpdatedConsumer>();
                 x.AddConsumer<AuctionDeletedConsumer>();
+                x.AddConsumer<BuyNowExecutedConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {

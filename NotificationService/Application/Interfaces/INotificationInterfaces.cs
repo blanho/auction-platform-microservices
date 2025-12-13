@@ -1,3 +1,4 @@
+#nullable enable
 using NotificationService.Application.DTOs;
 using NotificationService.Domain.Entities;
 
@@ -38,5 +39,16 @@ namespace NotificationService.Application.Interfaces
     {
         Task SendNotificationToUserAsync(string userId, NotificationDto notification);
         Task SendNotificationToAllAsync(NotificationDto notification);
+    }
+
+    public interface IEmailService
+    {
+        Task<SendEmailResultDto> SendEmailAsync(EmailDto email, CancellationToken cancellationToken = default);
+        Task<SendEmailResultDto> SendTemplatedEmailAsync(string to, string templateName, Dictionary<string, string> data, CancellationToken cancellationToken = default);
+        Task SendAuctionWonEmailAsync(string to, string auctionTitle, int winningBid, Guid auctionId, CancellationToken cancellationToken = default);
+        Task SendOutbidEmailAsync(string to, string auctionTitle, int newBid, Guid auctionId, CancellationToken cancellationToken = default);
+        Task SendBuyNowConfirmationEmailAsync(string to, string auctionTitle, int price, Guid auctionId, CancellationToken cancellationToken = default);
+        Task SendOrderShippedEmailAsync(string to, string itemTitle, string trackingNumber, string? carrier, CancellationToken cancellationToken = default);
+        Task SendAuctionEndingSoonEmailAsync(string to, string auctionTitle, TimeSpan timeRemaining, Guid auctionId, CancellationToken cancellationToken = default);
     }
 }

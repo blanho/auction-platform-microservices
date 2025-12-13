@@ -12,6 +12,7 @@ public record CreateAuctionCommand(
     string Color,
     int Mileage,
     int ReservePrice,
+    int? BuyNowPrice,
     DateTimeOffset AuctionEnd,
     string Seller,
     List<Guid>? FileIds = null

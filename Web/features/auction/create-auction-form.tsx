@@ -59,7 +59,7 @@ const createAuctionSchema = z.object({
     color: z.string().min(2, 'Color is required'),
     mileage: z.number().min(0, 'Mileage must be positive'),
     reservePrice: z.number().min(1, 'Reserve price must be at least 1'),
-    buyNowPrice: z.number().optional(),
+    buyNowPrice: z.number().min(1, 'Buy Now price must be at least 1').optional(),
     auctionEnd: z.string().refine((date) => new Date(date) > new Date(), {
         message: 'Auction end date must be in the future',
     }),
@@ -68,6 +68,9 @@ const createAuctionSchema = z.object({
     autoExtend: z.boolean(),
     isFeatured: z.boolean(),
     imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+}).refine((data) => !data.buyNowPrice || data.buyNowPrice > data.reservePrice, {
+    message: 'Buy Now price must be greater than reserve price',
+    path: ['buyNowPrice'],
 });
 
 type CreateAuctionFormValues = z.infer<typeof createAuctionSchema>;
@@ -166,6 +169,7 @@ export function CreateAuctionForm() {
             color: values.color,
             mileage: values.mileage,
             reservePrice: values.reservePrice,
+            buyNowPrice: values.buyNowPrice || undefined,
             auctionEnd: values.auctionEnd,
             categoryId: values.categoryId || undefined,
             isFeatured: values.isFeatured,

@@ -14,6 +14,8 @@ export interface Auction {
   title: string;
   description: string;
   reservePrice: number;
+  buyNowPrice?: number;
+  isBuyNowAvailable: boolean;
   soldAmount?: number;
   currentHighBid?: number;
   createdAt: string;
@@ -60,6 +62,7 @@ export interface CreateAuctionDto {
   title: string;
   description: string;
   reservePrice: number;
+  buyNowPrice?: number;
   auctionEnd: string;
   make: string;
   model: string;
@@ -132,4 +135,12 @@ export interface ExportAuctionDto {
   createdAt: string;
   auctionEnd: string;
   status: string;
+}
+
+export interface BuyNowResult {
+  isSuccess: boolean;
+  auctionId: string;
+  buyNowPrice: number;
+  buyer: string;
+  message: string;
 }

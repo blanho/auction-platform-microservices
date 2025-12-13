@@ -2,6 +2,7 @@ using NotificationService.API.Extensions;
 using NotificationService.API.Hubs;
 using NotificationService.API.Services;
 using NotificationService.Application.Interfaces;
+using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
@@ -22,6 +23,7 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddCors(options =>
 {

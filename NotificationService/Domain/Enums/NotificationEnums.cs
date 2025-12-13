@@ -10,7 +10,14 @@ namespace NotificationService.Domain.Enums
         BidAccepted,
         OutBid,
         AuctionWon,
-        AuctionEndingSoon
+        AuctionEndingSoon,
+        BuyNowExecuted,
+        OrderCreated,
+        OrderShipped,
+        OrderDelivered,
+        ReviewReceived,
+        WelcomeEmail,
+        PasswordReset
     }
 
     public enum NotificationStatus
@@ -18,5 +25,12 @@ namespace NotificationService.Domain.Enums
         Unread,
         Read,
         Dismissed
+    }
+
+    public enum NotificationChannel
+    {
+        InApp,
+        Email,
+        Both
     }
 }

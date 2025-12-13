@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { MainLayout } from "@/components/layout/main-layout";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,10 +50,28 @@ import {
     getPaymentStatusColor,
     getPaymentStatusLabel,
 } from "@/services/order.service";
-import { formatCurrency, formatDate, formatRelativeTime } from "@/utils";
+import { formatCurrency, formatRelativeTime } from "@/utils";
 import { toast } from "sonner";
 
 export default function OrdersPage() {
+    return (
+        <Suspense fallback={<OrdersPageSkeleton />}>
+            <OrdersPageContent />
+        </Suspense>
+    );
+}
+
+function OrdersPageSkeleton() {
+    return (
+        <MainLayout>
+            <div className="flex items-center justify-center min-h-[400px]">
+                <LoadingSpinner size="lg" />
+            </div>
+        </MainLayout>
+    );
+}
+
+function OrdersPageContent() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -142,7 +160,7 @@ export default function OrdersPage() {
     const OrderCard = ({ order, isSeller }: { order: Order; isSeller: boolean }) => (
         <Card className="overflow-hidden">
             <div className="flex">
-                <div className="relative w-32 h-32 bg-zinc-100 dark:bg-zinc-900 flex-shrink-0">
+                <div className="relative w-32 h-32 bg-zinc-100 dark:bg-zinc-900 shrink-0">
                     {order.itemImageUrl ? (
                         <Image
                             src={order.itemImageUrl}

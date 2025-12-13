@@ -11,7 +11,8 @@ namespace AuctionService.Application.Mappings
         {
             CreateMap<Auction, AuctionDto>()
                 .IncludeMembers(x => x.Item)
-                .ForMember(d => d.Files, o => o.MapFrom(s => s.Item.Files));
+                .ForMember(d => d.Files, o => o.MapFrom(s => s.Item.Files))
+                .ForMember(d => d.IsBuyNowAvailable, o => o.MapFrom(s => s.IsBuyNowAvailable));
             CreateMap<Item, AuctionDto>()
                 .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.Name : null))
                 .ForMember(d => d.CategorySlug, o => o.MapFrom(s => s.Category != null ? s.Category.Slug : null))
