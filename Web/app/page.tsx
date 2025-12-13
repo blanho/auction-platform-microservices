@@ -3,11 +3,13 @@
 import { Header } from "@/components/layout/header";
 import {
   HeroSection,
+  LiveAuctionTicker,
   TrustSection,
   CategoriesSection,
   FeaturedAuctionsSection,
   EndingSoonSection,
   HowItWorksSection,
+  StatsCounterSection,
   TestimonialsSection,
   PersonalizationSection,
   FooterSection,
@@ -19,11 +21,13 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <HeroSection />
+        <LiveAuctionTicker />
         <TrustSection />
         <CategoriesSection />
         <FeaturedAuctionsSection />
         <EndingSoonSection />
         <HowItWorksSection />
+        <StatsCounterSection />
         <TestimonialsSection />
         <PersonalizationSection />
       </main>

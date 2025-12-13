@@ -1,9 +1,11 @@
 export { HeroSection } from "./hero-section";
+export { LiveAuctionTicker } from "./live-auction-ticker";
 export { TrustSection } from "./trust-section";
 export { CategoriesSection } from "./categories-section";
 export { FeaturedAuctionsSection } from "./featured-auctions-section";
 export { EndingSoonSection } from "./ending-soon-section";
 export { HowItWorksSection } from "./how-it-works-section";
+export { StatsCounterSection } from "./stats-counter-section";
 export { TestimonialsSection } from "./testimonials-section";
 export { PersonalizationSection } from "./personalization-section";
 export { FooterSection } from "./footer-section";

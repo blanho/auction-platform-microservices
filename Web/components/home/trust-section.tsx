@@ -1,92 +1,50 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Shield, CreditCard, RefreshCcw, Star } from "lucide-react";
-
-const trustItems = [
-    {
-        icon: Shield,
-        title: "Verified Sellers",
-        description: "All sellers are vetted and verified",
-        color: "text-blue-500",
-        bgColor: "bg-blue-50 dark:bg-blue-950",
-    },
-    {
-        icon: CreditCard,
-        title: "Secure Payments",
-        description: "256-bit SSL encrypted transactions",
-        color: "text-green-500",
-        bgColor: "bg-green-50 dark:bg-green-950",
-    },
-    {
-        icon: RefreshCcw,
-        title: "Money-Back Guarantee",
-        description: "Full refund within 7 days",
-        color: "text-purple-500",
-        bgColor: "bg-purple-50 dark:bg-purple-950",
-    },
-    {
-        icon: Star,
-        title: "Top Rated",
-        description: "4.9★ from 10,000+ reviews",
-        color: "text-orange-500",
-        bgColor: "bg-orange-50 dark:bg-orange-950",
-    },
-];
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.5,
-        },
-    },
-};
+import { TRUST_FEATURES } from "@/constants/landing";
+import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated";
 
 export function TrustSection() {
     return (
-        <section className="py-16 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
+        <AnimatedSection className="py-20 bg-white dark:bg-slate-950">
             <div className="container mx-auto px-4">
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8"
-                >
-                    {trustItems.map((item, index) => (
-                        <motion.div
+                <div className="text-center mb-16">
+                    <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wider">
+                        Why Trust Us
+                    </p>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+                        Your Security Is Our Priority
+                    </h2>
+                    <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                        We&apos;ve built the most trusted online auction platform with industry-leading 
+                        security measures and customer protection policies.
+                    </p>
+                </div>
+
+                <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    {TRUST_FEATURES.map((feature, index) => (
+                        <StaggerItem
                             key={index}
-                            variants={itemVariants}
-                            className="flex flex-col items-center text-center group"
+                            className="group relative p-8 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-300 hover:shadow-lg"
                         >
-                            <div
-                                className={`${item.bgColor} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300`}
-                            >
-                                <item.icon className={`w-8 h-8 ${item.color}`} />
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                                    <feature.icon className="w-7 h-7 text-white" />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{feature.stat}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{feature.statLabel}</p>
+                                </div>
                             </div>
-                            <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
-                                {item.title}
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+                                {feature.title}
                             </h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400">
-                                {item.description}
+                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                                {feature.description}
                             </p>
-                        </motion.div>
+                        </StaggerItem>
                     ))}
-                </motion.div>
+                </StaggerContainer>
             </div>
-        </section>
+        </AnimatedSection>
     );
 }

@@ -1,185 +1,135 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Quote, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const testimonials = [
-    {
-        id: 1,
-        name: "Sarah Johnson",
-        avatar: "SJ",
-        role: "Collector",
-        rating: 5,
-        text: "Won my dream vintage watch at 40% below retail! The bidding experience was thrilling.",
-        image: "https://randomuser.me/api/portraits/women/1.jpg",
-    },
-    {
-        id: 2,
-        name: "Michael Chen",
-        avatar: "MC",
-        role: "Tech Enthusiast",
-        rating: 5,
-        text: "Incredible deals on electronics. The real-time notifications kept me ahead of other bidders.",
-        image: "https://randomuser.me/api/portraits/men/2.jpg",
-    },
-    {
-        id: 3,
-        name: "Emily Williams",
-        avatar: "EW",
-        role: "Fashion Buyer",
-        rating: 5,
-        text: "Authentic luxury items at unbeatable prices. The verification process gives me confidence.",
-        image: "https://randomuser.me/api/portraits/women/3.jpg",
-    },
-    {
-        id: 4,
-        name: "David Martinez",
-        avatar: "DM",
-        role: "Car Collector",
-        rating: 5,
-        text: "Found a rare classic car I'd been searching for years. The platform is trustworthy.",
-        image: "https://randomuser.me/api/portraits/men/4.jpg",
-    },
-    {
-        id: 5,
-        name: "Jessica Lee",
-        avatar: "JL",
-        role: "Art Investor",
-        rating: 5,
-        text: "The auction process is transparent and secure. Already won 5 pieces for my collection!",
-        image: "https://randomuser.me/api/portraits/women/5.jpg",
-    },
-];
+import { TESTIMONIALS, TESTIMONIALS_CONTENT } from "@/constants/landing";
+import { AnimatedSection } from "@/components/ui/animated";
 
 export function TestimonialsSection() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [autoPlay, setAutoPlay] = useState(true);
 
+    const goToNext = useCallback(() => {
+        setCurrentIndex((prev) => (prev + 1) % TESTIMONIALS.length);
+    }, []);
+
     useEffect(() => {
         if (!autoPlay) return;
 
-        const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-        }, 5000);
+        const interval = setInterval(goToNext, TESTIMONIALS_CONTENT.AUTOPLAY_INTERVAL);
 
         return () => clearInterval(interval);
-    }, [autoPlay]);
+    }, [autoPlay, goToNext]);
 
     const goToPrev = () => {
         setAutoPlay(false);
-        setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+        setCurrentIndex((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
     };
 
-    const goToNext = () => {
+    const handleNext = () => {
         setAutoPlay(false);
-        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+        goToNext();
     };
+
+    const current = TESTIMONIALS[currentIndex];
 
     return (
-        <section className="py-20 bg-gradient-to-b from-purple-50 to-white dark:from-slate-900 dark:to-slate-950 overflow-hidden">
+        <AnimatedSection className="py-24 bg-white dark:bg-slate-950 overflow-hidden">
             <div className="container mx-auto px-4">
-                {/* Header */}
                 <div className="text-center mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-                            What Our Bidders Say
-                        </h2>
-                        <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                            Join thousands of satisfied customers who found amazing deals
-                        </p>
-                    </motion.div>
+                    <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wider">
+                        {TESTIMONIALS_CONTENT.LABEL}
+                    </p>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+                        {TESTIMONIALS_CONTENT.TITLE}
+                    </h2>
+                    <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                        {TESTIMONIALS_CONTENT.DESCRIPTION}
+                    </p>
                 </div>
 
-                {/* Testimonials carousel */}
                 <div className="relative max-w-4xl mx-auto">
-                    {/* Navigation buttons */}
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={goToPrev}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-10 rounded-full shadow-lg"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 md:-translate-x-16 z-10 rounded-full shadow-lg bg-white dark:bg-slate-800 w-12 h-12"
                     >
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="w-6 h-6" />
                     </Button>
                     <Button
                         variant="outline"
                         size="icon"
-                        onClick={goToNext}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-10 rounded-full shadow-lg"
+                        onClick={handleNext}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 md:translate-x-16 z-10 rounded-full shadow-lg bg-white dark:bg-slate-800 w-12 h-12"
                     >
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="w-6 h-6" />
                     </Button>
 
-                    {/* Card */}
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentIndex}
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <Card className="p-8 md:p-12 bg-white dark:bg-slate-800 shadow-xl border-0">
-                                <div className="flex flex-col items-center text-center">
-                                    {/* Quote icon */}
-                                    <Quote className="w-12 h-12 text-purple-200 dark:text-purple-800 mb-6" />
-
-                                    {/* Rating */}
-                                    <div className="flex gap-1 mb-6">
-                                        {Array.from({ length: testimonials[currentIndex].rating }).map((_, i) => (
-                                            <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                                        ))}
-                                    </div>
-
-                                    {/* Text */}
-                                    <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-200 mb-8 leading-relaxed">
-                                        &ldquo;{testimonials[currentIndex].text}&rdquo;
-                                    </p>
-
-                                    {/* Author */}
-                                    <Avatar className="w-16 h-16 mb-4 ring-4 ring-purple-100 dark:ring-purple-900">
-                                        <AvatarImage src={testimonials[currentIndex].image} />
-                                        <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300 text-lg font-semibold">
-                                            {testimonials[currentIndex].avatar}
+                    <Card className="p-8 md:p-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl">
+                        <div className="flex flex-col md:flex-row gap-8 items-center">
+                            <div className="flex flex-col items-center text-center md:w-1/3">
+                                <div className="relative mb-4">
+                                    <Avatar className="w-24 h-24 ring-4 ring-purple-100 dark:ring-purple-900 shadow-xl">
+                                        <AvatarImage src={current.image} />
+                                        <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl font-bold">
+                                            {current.avatar}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="font-semibold text-slate-900 dark:text-white">
-                                        {testimonials[currentIndex].name}
-                                    </div>
-                                    <div className="text-sm text-slate-500 dark:text-slate-400">
-                                        {testimonials[currentIndex].role}
-                                    </div>
+                                    {current.verified && (
+                                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-900">
+                                            <BadgeCheck className="w-4 h-4 text-white" />
+                                        </div>
+                                    )}
                                 </div>
-                            </Card>
-                        </motion.div>
-                    </AnimatePresence>
+                                <div className="font-bold text-xl text-slate-900 dark:text-white">
+                                    {current.name}
+                                </div>
+                                <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                                    {current.role}
+                                </div>
+                                <div className="text-sm text-slate-500 dark:text-slate-400">
+                                    {current.location}
+                                </div>
+                                <div className="flex gap-0.5 mt-3">
+                                    {Array.from({ length: current.rating }).map((_, i) => (
+                                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                </div>
+                                <div className="mt-3 px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold rounded-full">
+                                    {current.savings}
+                                </div>
+                            </div>
 
-                    {/* Dots indicator */}
+                            <div className="flex-1 md:pl-8 md:border-l border-slate-200 dark:border-slate-700">
+                                <Quote className="w-10 h-10 text-purple-200 dark:text-purple-800 mb-4" />
+                                <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-200 leading-relaxed font-light">
+                                    {current.text}
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+
                     <div className="flex justify-center gap-2 mt-8">
-                        {testimonials.map((_, index) => (
+                        {TESTIMONIALS.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => {
                                     setAutoPlay(false);
                                     setCurrentIndex(index);
                                 }}
-                                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                                        ? "bg-purple-600 w-8"
-                                        : "bg-slate-300 dark:bg-slate-600 hover:bg-purple-400"
+                                className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
+                                    ? "bg-purple-600 w-8"
+                                    : "bg-slate-300 dark:bg-slate-600 hover:bg-purple-400 w-2"
                                     }`}
                             />
                         ))}
                     </div>
                 </div>
             </div>
-        </section>
+        </AnimatedSection>
     );
 }

@@ -1,133 +1,81 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Search, Gavel, Trophy } from "lucide-react";
-
-const steps = [
-    {
-        icon: Search,
-        title: "Browse Items",
-        description: "Explore thousands of unique items from verified sellers worldwide.",
-        color: "from-blue-500 to-cyan-500",
-        step: "01",
-    },
-    {
-        icon: Gavel,
-        title: "Place Your Bid",
-        description: "Set your maximum bid and watch the real-time auction unfold.",
-        color: "from-purple-500 to-pink-500",
-        step: "02",
-    },
-    {
-        icon: Trophy,
-        title: "Win & Checkout",
-        description: "Secure your item with our protected payment system.",
-        color: "from-orange-500 to-red-500",
-        step: "03",
-    },
-];
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.2,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.6,
-        },
-    },
-};
+import { CheckCircle, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { HOW_IT_WORKS_STEPS, HOW_IT_WORKS_CONTENT } from "@/constants/landing";
+import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated";
 
 export function HowItWorksSection() {
     return (
-        <section id="how-it-works" className="py-20 bg-white dark:bg-slate-950">
+        <AnimatedSection id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-900/50">
             <div className="container mx-auto px-4">
-                {/* Header */}
                 <div className="text-center mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-                            How It Works
-                        </h2>
-                        <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                            Start bidding in minutes with our simple 3-step process. No complicated setup required.
-                        </p>
-                    </motion.div>
+                    <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wider">
+                        {HOW_IT_WORKS_CONTENT.LABEL}
+                    </p>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+                        {HOW_IT_WORKS_CONTENT.TITLE}
+                    </h2>
+                    <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                        {HOW_IT_WORKS_CONTENT.DESCRIPTION}
+                    </p>
                 </div>
 
-                {/* Steps */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    className="grid md:grid-cols-3 gap-8 lg:gap-12"
-                >
-                    {steps.map((step, index) => (
-                        <motion.div
-                            key={index}
-                            variants={itemVariants}
-                            className="relative"
-                        >
-                            {/* Connector line */}
-                            {index < steps.length - 1 && (
-                                <div className="hidden md:block absolute top-20 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-slate-300 to-transparent dark:from-slate-700" />
+                <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {HOW_IT_WORKS_STEPS.map((step, index) => (
+                        <StaggerItem key={index} className="relative group">
+                            {index < HOW_IT_WORKS_STEPS.length - 1 && (
+                                <div className="hidden lg:block absolute top-20 left-full w-full h-0.5 bg-gradient-to-r from-slate-300 to-transparent dark:from-slate-700 z-0 -translate-x-8" />
                             )}
-
-                            <div className="flex flex-col items-center text-center">
-                                {/* Step number */}
-                                <div className="text-6xl font-bold text-slate-100 dark:text-slate-800 mb-4">
-                                    {step.step}
+                            
+                            <div className={`relative h-full p-6 rounded-2xl ${step.bgColor} border border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-lg`}>
+                                        <step.icon className="w-7 h-7 text-white" />
+                                    </div>
+                                    <span className="text-4xl font-bold text-slate-200 dark:text-slate-800">{step.step}</span>
                                 </div>
 
-                                {/* Icon */}
-                                <motion.div
-                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg`}
-                                >
-                                    <step.icon className="w-10 h-10 text-white" />
-                                </motion.div>
-
-                                {/* Content */}
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">
                                     {step.title}
                                 </h3>
-                                <p className="text-slate-600 dark:text-slate-400 max-w-xs">
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-5 leading-relaxed">
                                     {step.description}
                                 </p>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
 
-                {/* Decorative elements */}
-                <div className="flex justify-center mt-16">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        className="px-8 py-4 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 border border-purple-200 dark:border-purple-800"
-                    >
-                        <span className="text-slate-700 dark:text-slate-300">
-                            🎉 Join <span className="font-bold text-purple-600 dark:text-purple-400">50,000+</span> happy bidders today!
-                        </span>
-                    </motion.div>
+                                <ul className="space-y-2">
+                                    {step.features.map((feature, idx) => (
+                                        <li key={idx} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                            <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </StaggerItem>
+                    ))}
+                </StaggerContainer>
+
+                <div className="mt-16 text-center">
+                    <div className="inline-flex flex-col sm:flex-row items-center gap-6 p-8 rounded-3xl bg-gradient-to-r from-purple-600 to-pink-600 shadow-xl">
+                        <div className="text-center sm:text-left text-white">
+                            <h3 className="text-2xl font-bold mb-1">{HOW_IT_WORKS_CONTENT.CTA.TITLE}</h3>
+                            <p className="text-purple-100">{HOW_IT_WORKS_CONTENT.CTA.SUBTITLE}</p>
+                        </div>
+                        <Button 
+                            size="lg" 
+                            className="bg-white text-purple-700 hover:bg-purple-50 font-semibold px-8 h-12 shadow-lg"
+                            asChild
+                        >
+                            <Link href="/auth/register">
+                                {HOW_IT_WORKS_CONTENT.CTA.BUTTON}
+                                <ArrowRight className="ml-2 w-4 h-4" />
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
-        </section>
+        </AnimatedSection>
     );
 }

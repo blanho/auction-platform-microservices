@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Clock, Eye, ArrowRight, Heart } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { CTA_CONTENT } from "@/constants/landing";
+import { AnimatedSection } from "@/components/ui/animated";
 
 const recommendedAuctions = [
     {
@@ -110,35 +112,63 @@ export function PersonalizationSection() {
 
     if (!session) {
         return (
-            <section className="py-20 bg-white dark:bg-slate-950">
-                <div className="container mx-auto px-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-center max-w-2xl mx-auto"
-                    >
-                        <Sparkles className="w-12 h-12 text-purple-500 mx-auto mb-6" />
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-                            Get Personalized Recommendations
-                        </h2>
-                        <p className="text-slate-600 dark:text-slate-400 mb-8">
-                            Sign in to see auctions tailored to your interests, track your watchlist,
-                            and never miss a deal on items you love.
-                        </p>
-                        <Button
-                            size="lg"
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                            asChild
-                        >
-                            <Link href="/auth/signin">
-                                Sign In for Personalized Experience
-                                <ArrowRight className="ml-2 w-5 h-5" />
-                            </Link>
-                        </Button>
-                    </motion.div>
+            <AnimatedSection className="py-24 bg-slate-950 relative overflow-hidden">
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/50 via-slate-950 to-slate-950" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[150px]" />
                 </div>
-            </section>
+                
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
+                            <Sparkles className="w-4 h-4 text-purple-400" />
+                            <span className="text-sm font-medium text-purple-300">{CTA_CONTENT.BADGE}</span>
+                        </div>
+                        
+                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                            {CTA_CONTENT.TITLE.split(".")[0]}.<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
+                                {CTA_CONTENT.TITLE.split(".")[1]?.trim() || "Start Winning."}
+                            </span>
+                        </h2>
+                        <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                            {CTA_CONTENT.DESCRIPTION}
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+                            <Button
+                                size="lg"
+                                className="bg-white text-slate-900 hover:bg-slate-100 font-semibold px-10 h-14 text-lg rounded-xl shadow-xl shadow-white/10 transition-all"
+                                asChild
+                            >
+                                <Link href="/auth/register">
+                                    {CTA_CONTENT.BUTTON}
+                                    <ArrowRight className="ml-2 w-5 h-5" />
+                                </Link>
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="border-2 border-white/20 text-white hover:bg-white/10 font-semibold px-10 h-14 text-lg rounded-xl backdrop-blur-sm"
+                                asChild
+                            >
+                                <Link href="/auctions">
+                                    Browse Auctions
+                                </Link>
+                            </Button>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-slate-400">
+                            {CTA_CONTENT.FEATURES.map((feature, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                    <span className="text-sm">{feature}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </AnimatedSection>
         );
     }
 

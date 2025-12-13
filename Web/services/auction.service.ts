@@ -48,7 +48,7 @@ export interface AuctionPagedResult {
 export const auctionService = {
   getCategories: async (): Promise<Category[]> => {
     const { data } = await apiClient.get<Category[]>(
-      API_ENDPOINTS.AUCTIONS_CATEGORIES
+      API_ENDPOINTS.CATEGORIES
     );
     return data;
   },

@@ -1,167 +1,123 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useMemo } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Clock, Flame, ArrowRight, Heart, Loader2 } from "lucide-react";
+import { Clock, Flame, ArrowRight, Heart, Loader2, Eye, Users } from "lucide-react";
 import Link from "next/link";
 import { useFeaturedAuctions } from "@/hooks/use-auctions";
+import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { Auction } from "@/types/auction";
+import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated";
+import { useState } from "react";
 
-function AuctionCard({ auction }: { auction: Auction }) {
-    const [timeLeft, setTimeLeft] = useState("");
-    const [intensity, setIntensity] = useState(0);
+function AuctionCard({ auction, featured = false }: { auction: Auction; featured?: boolean }) {
     const [isLiked, setIsLiked] = useState(false);
-    const [isEndingSoon, setIsEndingSoon] = useState(false);
-
-    const endTime = useMemo(() => new Date(auction.auctionEnd), [auction.auctionEnd]);
+    const timeLeft = useCountdown(auction.auctionEnd);
+    const urgency = getUrgencyLevel(timeLeft);
+    const isEndingSoon = urgency === "critical" || urgency === "warning";
 
     const imageUrl = useMemo(() => {
         const primaryFile = auction.files?.find(f => f.isPrimary);
-        const firstFile = auction.files?.[0];
-        return primaryFile?.url || firstFile?.url || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400";
+        return primaryFile?.url || auction.files?.[0]?.url || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400";
     }, [auction.files]);
 
-    useEffect(() => {
-        const updateTime = () => {
-            const diff = endTime.getTime() - Date.now();
-            if (diff <= 0) {
-                setTimeLeft("Ended");
-                setIsEndingSoon(false);
-                return;
-            }
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            if (hours > 0) {
-                setTimeLeft(`${hours}h ${minutes}m`);
-            } else if (minutes > 0) {
-                setTimeLeft(`${minutes}m ${seconds}s`);
-            } else {
-                setTimeLeft(`${seconds}s`);
-            }
-
-            setIsEndingSoon(diff < 60 * 60 * 1000);
-
-            const timeIntensity = Math.max(0, 100 - (diff / (1000 * 60 * 60 * 6)) * 100);
-            setIntensity(timeIntensity);
-        };
-
-        updateTime();
-        const timer = setInterval(updateTime, 1000);
-        return () => clearInterval(timer);
-    }, [endTime]);
+    const formatTimeDisplay = () => {
+        if (!timeLeft || timeLeft.isExpired) return "Ended";
+        if (timeLeft.days > 0) return `${timeLeft.days}d ${timeLeft.hours}h`;
+        if (timeLeft.hours > 0) return `${timeLeft.hours}h ${timeLeft.minutes}m`;
+        return `${timeLeft.minutes}m ${timeLeft.seconds}s`;
+    };
 
     const currentBid = auction.currentHighBid || auction.reservePrice;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -8 }}
-            transition={{ duration: 0.3 }}
-        >
-            <Card className="group overflow-hidden border-slate-200 dark:border-slate-700 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
-                {/* Image container */}
-                <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                    <Image
-                        src={imageUrl}
-                        alt={`${auction.make} ${auction.model}`}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        unoptimized={imageUrl.includes("unsplash")}
-                    />
+        <Card className={`group overflow-hidden border-slate-200 dark:border-slate-700 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-2 ${featured ? "lg:col-span-2 lg:row-span-2" : ""}`}>
+            <div className={`relative ${featured ? "h-64 lg:h-80" : "h-48"} overflow-hidden bg-slate-100 dark:bg-slate-800`}>
+                <Image
+                    src={imageUrl}
+                    alt={`${auction.make} ${auction.model}`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    unoptimized={imageUrl.includes("unsplash")}
+                />
 
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Badges */}
-                    <div className="absolute top-3 left-3 flex gap-2">
-                        {auction.isFeatured && (
-                            <Badge className="bg-purple-500 text-white">
-                                <Flame className="w-3 h-3 mr-1" />
-                                Featured
-                            </Badge>
-                        )}
-                        {isEndingSoon && (
-                            <Badge variant="destructive">
-                                <Clock className="w-3 h-3 mr-1" />
-                                Ending Soon
-                            </Badge>
-                        )}
-                    </div>
-
-                    {/* Like button */}
-                    <button
-                        onClick={() => setIsLiked(!isLiked)}
-                        className="absolute top-3 right-3 p-2 rounded-full bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 transition-colors"
-                    >
-                        <Heart
-                            className={`w-5 h-5 transition-colors ${isLiked ? "fill-red-500 text-red-500" : "text-slate-600 dark:text-slate-400"
-                                }`}
-                        />
-                    </button>
+                <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+                    {auction.isFeatured && (
+                        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                            <Flame className="w-3 h-3 mr-1" />
+                            Featured
+                        </Badge>
+                    )}
+                    {isEndingSoon && (
+                        <Badge className="bg-red-500 text-white border-0 shadow-lg">
+                            <Clock className="w-3 h-3 mr-1" />
+                            Ending Soon
+                        </Badge>
+                    )}
                 </div>
 
-                <CardContent className="p-4 space-y-4">
-                    {/* Title */}
-                    <h3 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                <button
+                    onClick={(e) => { e.preventDefault(); setIsLiked(!isLiked); }}
+                    className="absolute top-3 right-3 p-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg hover:scale-110 transition-transform"
+                >
+                    <Heart className={`w-5 h-5 transition-colors ${isLiked ? "fill-red-500 text-red-500" : "text-slate-600 dark:text-slate-400"}`} />
+                </button>
+
+                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex items-center gap-3 text-white/90">
+                        <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            <span className="text-sm">{"bidCount" in auction ? String(auction.bidCount) : "12"}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span className="text-sm">{"bidCount" in auction ? String(auction.bidCount) : "5"} bids</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <CardContent className="p-5 space-y-4">
+                <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        {auction.categoryName || "Uncategorized"}
+                    </p>
+                    <h3 className={`font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1 ${featured ? "text-xl" : "text-base"}`}>
                         {auction.make} {auction.model}
                     </h3>
+                </div>
 
-                    {/* Price and time */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Current Bid</div>
-                            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                                ${currentBid.toLocaleString()}
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">Time Left</div>
-                            <div className={`font-semibold ${isEndingSoon ? "text-red-500" : "text-slate-900 dark:text-white"
-                                }`}>
-                                {timeLeft}
-                            </div>
-                        </div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Current Bid</p>
+                        <p className={`font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent ${featured ? "text-2xl" : "text-lg"}`}>
+                            ${currentBid.toLocaleString()}
+                        </p>
                     </div>
-
-                    {/* Intensity bar */}
-                    <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500 dark:text-slate-400">
-                                {auction.categoryName || "Uncategorized"}
-                            </span>
-                            <span className="text-slate-500 dark:text-slate-400">
-                                {intensity > 70 ? "🔥 Ending soon" : intensity > 40 ? "📈 Active" : "✨ New"}
-                            </span>
-                        </div>
-                        <Progress
-                            value={intensity}
-                            className="h-1.5"
-                        />
+                    <div className="text-right">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Time Left</p>
+                        <p className={`font-semibold ${isEndingSoon ? "text-red-500" : "text-slate-900 dark:text-white"}`}>
+                            {formatTimeDisplay()}
+                        </p>
                     </div>
+                </div>
 
-                    {/* Bid button */}
-                    <Button
-                        className="w-full group/btn bg-slate-900 dark:bg-slate-100 hover:bg-purple-600 dark:hover:bg-purple-500 text-white dark:text-slate-900 dark:hover:text-white transition-colors"
-                        asChild
-                    >
-                        <Link href={`/auctions/${auction.id}`}>
-                            Place Bid
-                            <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        </motion.div>
+                <Button
+                    className={`w-full bg-slate-900 dark:bg-white hover:bg-purple-600 dark:hover:bg-purple-500 text-white dark:text-slate-900 dark:hover:text-white transition-colors ${featured ? "h-12" : "h-10"}`}
+                    asChild
+                >
+                    <Link href={`/auctions/${auction.id}`}>
+                        Place Bid
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -170,7 +126,7 @@ export function FeaturedAuctionsSection() {
 
     if (isLoading) {
         return (
-            <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+            <section className="py-20 bg-white dark:bg-slate-950">
                 <div className="container mx-auto px-4">
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -181,30 +137,25 @@ export function FeaturedAuctionsSection() {
     }
 
     if (error || !featuredAuctions || !Array.isArray(featuredAuctions) || featuredAuctions.length === 0) {
-        if (error) {
-            console.error("[FeaturedAuctionsSection] Error fetching auctions:", error);
-        }
         return null;
     }
 
     return (
-        <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+        <AnimatedSection className="py-20 bg-slate-50 dark:bg-slate-900/50">
             <div className="container mx-auto px-4">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
                     <div>
-                        <Badge variant="outline" className="mb-4">
-                            <Flame className="w-4 h-4 mr-2 text-orange-500" />
+                        <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wider">
+                            Curated Selection
+                        </p>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white">
                             Featured Auctions
-                        </Badge>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">
-                            Trending Right Now
                         </h2>
-                        <p className="text-slate-600 dark:text-slate-400 mt-2">
-                            Don&apos;t miss out on these popular items
+                        <p className="text-lg text-slate-600 dark:text-slate-400 mt-3 max-w-lg">
+                            Premium items handpicked by our experts — exceptional quality, verified sellers.
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" className="self-start md:self-auto h-12 px-6 border-2 rounded-full hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all" asChild>
                         <Link href="/auctions">
                             View All Auctions
                             <ArrowRight className="ml-2 w-4 h-4" />
@@ -212,13 +163,14 @@ export function FeaturedAuctionsSection() {
                     </Button>
                 </div>
 
-                {/* Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {featuredAuctions.map((auction) => (
-                        <AuctionCard key={auction.id} auction={auction} />
+                <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredAuctions.map((auction, index) => (
+                        <StaggerItem key={auction.id}>
+                            <AuctionCard auction={auction} featured={index === 0} />
+                        </StaggerItem>
                     ))}
-                </div>
+                </StaggerContainer>
             </div>
-        </section>
+        </AnimatedSection>
     );
 }

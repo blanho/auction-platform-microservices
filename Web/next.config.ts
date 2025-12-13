@@ -18,7 +18,10 @@ const nextConfig: NextConfig = {
       fullUrl: true
     }
   },
-  output: "standalone"
+  output: "standalone",
+  turbopack: {
+    root: ".."
+  }
 };
 
 export default nextConfig;
