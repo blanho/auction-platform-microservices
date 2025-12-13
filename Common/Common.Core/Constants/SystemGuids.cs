@@ -1,4 +1,4 @@
-﻿namespace Common.Core.Constants;
+namespace Common.Core.Constants;
 
 public static class SystemGuids
 {

@@ -1,4 +1,4 @@
-﻿using Common.Logging.Abstractions;
+using Common.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Common.Logging.Implementations;

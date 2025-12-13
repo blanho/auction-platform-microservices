@@ -1,4 +1,4 @@
-﻿namespace Common.Core.Exceptions;
+namespace Common.Core.Exceptions;
 
 public sealed class ValidationException : Exception
 {

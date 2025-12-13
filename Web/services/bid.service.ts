@@ -20,5 +20,10 @@ export const bidService = {
       API_ENDPOINTS.BIDS_BY_BIDDER(bidder)
     );
     return data;
+  },
+
+  getMyBids: async (): Promise<Bid[]> => {
+    const { data } = await apiClient.get<Bid[]>(API_ENDPOINTS.MY_BIDS);
+    return data;
   }
 } as const;

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Common.Domain.Entities;
 
 namespace AuctionService.Domain.Entities

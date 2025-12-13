@@ -1,4 +1,4 @@
-﻿using AuctionService.API.Extensions;
+using AuctionService.API.Extensions;
 using AuctionService.Application.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Extensions;

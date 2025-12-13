@@ -69,9 +69,7 @@ export default function MyBidsPage() {
             if (!session?.user?.name) return;
 
             try {
-                const bidData = await bidService.getBidsForBidder(
-                    session.user.name
-                );
+                const bidData = await bidService.getMyBids();
 
                 const bidsWithAuctions = await Promise.all(
                     bidData.map(async (bid) => {

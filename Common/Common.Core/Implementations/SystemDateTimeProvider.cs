@@ -1,4 +1,4 @@
-﻿using Common.Core.Interfaces;
+using Common.Core.Interfaces;
 
 namespace Common.Core.Implementations;
 

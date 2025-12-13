@@ -1,4 +1,4 @@
-﻿using Common.Repository.Interfaces;
+using Common.Repository.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Common.Repository.Implementations;

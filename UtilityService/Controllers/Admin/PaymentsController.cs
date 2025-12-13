@@ -7,7 +7,7 @@ namespace UtilityService.Controllers.Admin;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "admin")]
 public class PaymentsController : ControllerBase
 {
     private readonly IWalletService _walletService;

@@ -73,7 +73,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost("refund")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     public async Task<ActionResult<RefundResponse>> CreateRefund([FromBody] RefundRequest request)
     {
         var refund = await _stripeService.CreateRefundAsync(request.PaymentIntentId, request.AmountInCents);

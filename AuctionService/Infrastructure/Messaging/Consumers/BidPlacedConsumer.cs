@@ -1,4 +1,4 @@
-﻿using AuctionService.Application.Interfaces;
+using AuctionService.Application.Interfaces;
 using Common.Messaging.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;

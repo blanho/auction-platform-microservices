@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Asp.Versioning;
 using AuctionService.Application.Services;
 using AuctionService.Application.Commands.ActivateAuction;
@@ -253,7 +253,7 @@ public class AuctionsController : ControllerBase
     }
 
     [HttpPost("bulk-update")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> BulkUpdateAuctions(

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using IdentityService.Models;
@@ -35,6 +35,16 @@ public class CustomProfileService : IProfileService
 
         var roles = await _userManager.GetRolesAsync(user);
         claims.AddRange(roles.Select(r => new Claim("role", r)));
+
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var roleClaims = userClaims.Where(c => c.Type == "role");
+        foreach (var roleClaim in roleClaims)
+        {
+            if (!claims.Any(c => c.Type == "role" && c.Value == roleClaim.Value))
+            {
+                claims.Add(new Claim("role", roleClaim.Value));
+            }
+        }
 
         var requested = claims.Where(c => context.RequestedClaimTypes.Contains(c.Type)).ToList();
         if (!requested.Any())

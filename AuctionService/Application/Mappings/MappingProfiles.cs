@@ -1,4 +1,4 @@
-﻿using AuctionService.Application.DTOs;
+using AuctionService.Application.DTOs;
 using AuctionService.Domain.Entities;
 using AutoMapper;
 using Common.Messaging.Events;

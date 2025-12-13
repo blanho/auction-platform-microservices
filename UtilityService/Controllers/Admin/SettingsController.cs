@@ -8,7 +8,7 @@ namespace UtilityService.Controllers;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "admin")]
 public class SettingsController : ControllerBase
 {
     private readonly IPlatformSettingService _settingService;

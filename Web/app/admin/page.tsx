@@ -153,15 +153,28 @@ export default function AdminPage() {
         }
 
         try {
-            const [statsData, activityData, healthData] = await Promise.all([
+            const [statsResult, activityResult, healthResult] = await Promise.allSettled([
                 adminDashboardService.getStats(),
                 adminDashboardService.getRecentActivity(5),
                 adminDashboardService.getPlatformHealth(),
             ]);
 
-            setStats(statsData);
-            setRecentActivity(activityData);
-            setPlatformHealth(healthData);
+            if (statsResult.status === 'fulfilled') {
+                setStats(statsResult.value);
+            }
+            if (activityResult.status === 'fulfilled') {
+                setRecentActivity(activityResult.value ?? []);
+            }
+            if (healthResult.status === 'fulfilled') {
+                setPlatformHealth(healthResult.value);
+            }
+
+            const hasErrors = [statsResult, activityResult, healthResult].some(
+                r => r.status === 'rejected'
+            );
+            if (hasErrors) {
+                toast.error(MESSAGES.ERROR.GENERIC);
+            }
         } catch {
             toast.error(MESSAGES.ERROR.GENERIC);
         } finally {
@@ -317,7 +330,7 @@ export default function AdminPage() {
                                     <ActivitySkeleton />
                                     <ActivitySkeleton />
                                 </>
-                            ) : recentActivity.length === 0 ? (
+                            ) : !recentActivity || recentActivity.length === 0 ? (
                                 <p className="text-sm text-zinc-500 text-center py-4">
                                     No recent activity
                                 </p>

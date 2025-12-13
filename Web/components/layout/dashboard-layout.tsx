@@ -16,6 +16,7 @@ import {
     BarChart3,
     Menu,
     ChevronRight,
+    ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ interface NavItem {
 const buyerNavItems: NavItem[] = [
     { title: "Profile", href: "/dashboard", icon: User },
     { title: "My Bids", href: "/dashboard/bids", icon: Gavel },
+    { title: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
     { title: "Watchlist", href: "/dashboard/watchlist", icon: Eye },
     { title: "Wishlist", href: "/wishlist", icon: Heart },
     { title: "Settings", href: "/dashboard/settings", icon: Settings },

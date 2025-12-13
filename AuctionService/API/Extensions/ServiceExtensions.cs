@@ -1,4 +1,4 @@
-﻿using AuctionService.Application.Interfaces;
+using AuctionService.Application.Interfaces;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Repositories;
 using AuctionService.Infrastructure.Services;

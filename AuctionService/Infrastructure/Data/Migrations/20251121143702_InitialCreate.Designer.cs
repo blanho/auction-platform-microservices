@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using AuctionService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

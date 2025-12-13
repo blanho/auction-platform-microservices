@@ -1,4 +1,4 @@
-﻿namespace Common.Security.Models;
+namespace Common.Security.Models;
 
 public sealed record CurrentUser
 {

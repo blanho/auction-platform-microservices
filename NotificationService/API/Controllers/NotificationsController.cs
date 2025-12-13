@@ -78,7 +78,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<NotificationDto>> Create([FromBody] CreateNotificationDto dto)
         {
             var notification = await _notificationService.CreateNotificationAsync(dto);

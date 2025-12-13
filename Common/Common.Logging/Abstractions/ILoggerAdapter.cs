@@ -1,4 +1,4 @@
-﻿namespace Common.Logging.Abstractions;
+namespace Common.Logging.Abstractions;
 
 public interface ILoggerAdapter<T>
 {

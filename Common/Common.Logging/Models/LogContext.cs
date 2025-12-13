@@ -1,4 +1,4 @@
-﻿namespace Common.Logging.Models;
+namespace Common.Logging.Models;
 
 public sealed record LogContext
 {

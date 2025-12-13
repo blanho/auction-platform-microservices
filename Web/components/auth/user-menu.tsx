@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3 } from "lucide-react";
+import { LogIn, LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
@@ -95,6 +95,18 @@ export function UserMenu() {
                     <Link href="/auctions/my-auctions">
                         <Gavel className="mr-2 h-4 w-4" />
                         My Auctions
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/listings">
+                        <Package className="mr-2 h-4 w-4" />
+                        My Listings
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/orders">
+                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        Orders
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

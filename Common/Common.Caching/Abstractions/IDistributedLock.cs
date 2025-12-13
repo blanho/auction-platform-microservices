@@ -1,4 +1,4 @@
-﻿namespace Common.Caching.Abstractions;
+namespace Common.Caching.Abstractions;
 
 public interface IDistributedLock
 {

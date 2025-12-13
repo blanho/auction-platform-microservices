@@ -1,4 +1,4 @@
-﻿namespace Common.Repository.Interfaces;
+namespace Common.Repository.Interfaces;
 
 public interface IAppLogger<T>
 {

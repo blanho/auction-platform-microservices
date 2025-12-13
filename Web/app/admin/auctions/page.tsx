@@ -23,7 +23,7 @@ import {
 
 import apiClient from '@/lib/api/axios';
 import { Auction } from '@/types/auction';
-import { ApiResponse } from '@/types';
+import { PaginatedResponse } from '@/types';
 import { API_ENDPOINTS } from '@/constants/api';
 
 function AdminAuctionsContent() {
@@ -34,10 +34,10 @@ function AdminAuctionsContent() {
     const fetchAuctions = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { data } = await apiClient.get<ApiResponse<Auction[]>>(
+            const { data } = await apiClient.get<PaginatedResponse<Auction>>(
                 API_ENDPOINTS.AUCTIONS
             );
-            setAuctions(data.data);
+            setAuctions(data.items);
             setError(null);
         } catch (err) {
             setError(err);

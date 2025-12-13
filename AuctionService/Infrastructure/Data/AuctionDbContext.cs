@@ -1,4 +1,4 @@
-﻿using AuctionService.Domain.Entities;
+using AuctionService.Domain.Entities;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

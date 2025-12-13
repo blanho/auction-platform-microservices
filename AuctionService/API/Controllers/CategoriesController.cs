@@ -47,7 +47,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -74,7 +74,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -109,7 +109,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -133,7 +133,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost("bulk-update")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -151,7 +151,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost("import")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(ImportCategoriesResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -175,7 +175,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet("export")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(List<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -7,7 +7,7 @@ namespace UtilityService.Controllers.Admin;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "admin")]
 public class DashboardController : ControllerBase
 {
     private readonly IReportRepository _reportRepository;

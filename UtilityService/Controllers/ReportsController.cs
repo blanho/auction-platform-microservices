@@ -24,7 +24,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(PagedReportsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedReportsDto>> GetReports(
         [FromQuery] ReportQueryParams queryParams,
@@ -35,7 +35,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(ReportDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReportDto>> GetReport(Guid id, CancellationToken cancellationToken)
@@ -65,7 +65,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPut("{id:guid}/status")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateReportStatus(
@@ -86,7 +86,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteReport(Guid id, CancellationToken cancellationToken)
@@ -103,7 +103,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("stats")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(ReportStatsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<ReportStatsDto>> GetStats(CancellationToken cancellationToken)
     {

@@ -1,4 +1,4 @@
-﻿namespace Common.Caching.Keys;
+namespace Common.Caching.Keys;
 
 public static class CacheKeys
 {

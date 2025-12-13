@@ -1,4 +1,4 @@
-﻿namespace Common.Core.Interfaces;
+namespace Common.Core.Interfaces;
 
 public interface IDateTimeProvider
 {

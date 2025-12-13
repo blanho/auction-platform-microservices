@@ -1,4 +1,4 @@
-﻿using Common.Caching.Abstractions;
+using Common.Caching.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Common.Caching.Implementations;

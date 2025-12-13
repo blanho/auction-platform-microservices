@@ -1,4 +1,4 @@
-﻿namespace Common.Core.Helpers;
+namespace Common.Core.Helpers;
 
 public class Result
 {

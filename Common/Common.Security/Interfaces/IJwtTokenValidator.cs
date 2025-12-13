@@ -1,4 +1,4 @@
-﻿namespace Common.Security.Interfaces;
+namespace Common.Security.Interfaces;
 
 public interface IJwtTokenValidator
 {

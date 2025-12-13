@@ -1,4 +1,4 @@
-﻿using Common.Core.Constants;
+using Common.Core.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 

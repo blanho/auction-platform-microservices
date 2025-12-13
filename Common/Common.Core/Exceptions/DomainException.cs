@@ -1,4 +1,4 @@
-﻿namespace Common.Core.Exceptions;
+namespace Common.Core.Exceptions;
 
 public abstract class DomainException : Exception
 {

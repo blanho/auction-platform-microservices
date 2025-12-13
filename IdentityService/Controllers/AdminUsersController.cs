@@ -9,7 +9,7 @@ namespace IdentityService.Controllers;
 
 [ApiController]
 [Route("api/admin/users")]
-[Authorize(Roles = "Admin")]
+[Authorize(AuthenticationSchemes = "Bearer", Roles = "admin")]
 [Produces("application/json")]
 public class AdminUsersController : ControllerBase
 {

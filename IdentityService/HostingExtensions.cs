@@ -109,6 +109,23 @@ internal static class HostingExtensions
         // Configure external authentication providers
         var authBuilder = builder.Services.AddAuthentication();
 
+        // Add JWT Bearer for API endpoints
+        var identityAuthority = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+        authBuilder.AddJwtBearer("Bearer", options =>
+        {
+            options.Authority = identityAuthority;
+            options.RequireHttpsMetadata = false;
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = identityAuthority,
+                ValidateAudience = false,
+                NameClaimType = "name",
+                RoleClaimType = "role"
+            };
+        });
+
         // Google OAuth
         var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
         var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
