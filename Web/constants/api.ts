@@ -24,11 +24,14 @@ export const API_ENDPOINTS = {
   NOTIFICATION_MARK_READ: (id: string) => `/notifications/${id}/read`,
   NOTIFICATIONS_MARK_ALL_READ: "/notifications/read-all",
   NOTIFICATIONS_HUB: "/hubs/notifications",
+  NOTIFICATIONS_ADMIN_ALL: "/notifications/admin/all",
+  NOTIFICATIONS_ADMIN_BROADCAST: "/notifications/admin/broadcast",
+  NOTIFICATIONS_ADMIN_STATS: "/notifications/admin/stats",
 
-  AUDIT_LOGS: "/auditlogs",
-  AUDIT_LOG_BY_ID: (id: string) => `/auditlogs/${id}`,
+  AUDIT_LOGS: "/utility/api/auditlogs",
+  AUDIT_LOG_BY_ID: (id: string) => `/utility/api/auditlogs/${id}`,
   AUDIT_LOGS_BY_ENTITY: (entityType: string, entityId: string) =>
-    `/auditlogs/entity/${entityType}/${entityId}`,
+    `/utility/api/auditlogs/entity/${entityType}/${entityId}`,
 
   AUTH: {
     LOGIN: "/api/auth/login",
@@ -106,7 +109,9 @@ export const QUERY_KEYS = {
   ADMIN_REPORTS: "admin-reports",
   ADMIN_REPORT_STATS: "admin-report-stats",
   ADMIN_PAYMENTS: "admin-payments",
-  ADMIN_PAYMENT_STATS: "admin-payment-stats"
+  ADMIN_PAYMENT_STATS: "admin-payment-stats",
+  ADMIN_NOTIFICATIONS: "admin-notifications",
+  ADMIN_NOTIFICATION_STATS: "admin-notification-stats"
 } as const;
 
 export const DEFAULT_PAGE_SIZE = 12;

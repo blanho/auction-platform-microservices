@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UtilityService.DTOs;
 using UtilityService.Interfaces;
@@ -6,6 +7,7 @@ namespace UtilityService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "admin")]
 public class AuditLogsController : ControllerBase
 {
     private readonly IAuditLogService _auditLogService;

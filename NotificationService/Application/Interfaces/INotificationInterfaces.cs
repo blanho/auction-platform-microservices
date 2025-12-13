@@ -33,6 +33,9 @@ namespace NotificationService.Application.Interfaces
         Task MarkAsReadAsync(Guid notificationId, CancellationToken cancellationToken = default);
         Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default);
         Task DeleteNotificationAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<PagedNotificationsDto> GetAllNotificationsAsync(int pageNumber, int pageSize, string? userId, string? type, string? status, CancellationToken cancellationToken = default);
+        Task BroadcastNotificationAsync(BroadcastNotificationDto dto, CancellationToken cancellationToken = default);
+        Task<NotificationStatsDto> GetNotificationStatsAsync(CancellationToken cancellationToken = default);
     }
 
     public interface INotificationHubService

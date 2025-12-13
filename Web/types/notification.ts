@@ -21,7 +21,9 @@ export enum NotificationType {
   BidAccepted = "BidAccepted",
   OutBid = "OutBid",
   AuctionWon = "AuctionWon",
-  AuctionEndingSoon = "AuctionEndingSoon"
+  AuctionEndingSoon = "AuctionEndingSoon",
+  SystemNotification = "SystemNotification",
+  Broadcast = "Broadcast"
 }
 
 export enum NotificationStatus {
@@ -34,4 +36,26 @@ export interface NotificationSummary {
   unreadCount: number;
   totalCount: number;
   recentNotifications: Notification[];
+}
+
+export interface PagedNotifications {
+  items: Notification[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface BroadcastNotificationDto {
+  type: NotificationType;
+  title: string;
+  message: string;
+  targetRole?: string;
+}
+
+export interface NotificationStats {
+  totalNotifications: number;
+  unreadNotifications: number;
+  todayCount: number;
+  byType: Record<string, number>;
 }

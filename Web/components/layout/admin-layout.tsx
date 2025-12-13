@@ -15,6 +15,8 @@ import {
     Shield,
     ChevronRight,
     FolderTree,
+    Bell,
+    FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,8 @@ const adminNavItems: NavItem[] = [
     { title: "Users", href: "/admin/users", icon: Users },
     { title: "Reports", href: "/admin/reports", icon: Flag },
     { title: "Payments", href: "/admin/payments", icon: CreditCard },
+    { title: "Notifications", href: "/admin/notifications", icon: Bell },
+    { title: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
     { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

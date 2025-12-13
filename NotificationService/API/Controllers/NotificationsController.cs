@@ -84,5 +84,35 @@ namespace NotificationService.API.Controllers
             var notification = await _notificationService.CreateNotificationAsync(dto);
             return CreatedAtAction(nameof(GetMyNotifications), new { id = notification.Id }, notification);
         }
+
+        [HttpGet("admin/all")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<PagedNotificationsDto>> GetAllNotifications(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? userId = null,
+            [FromQuery] string? type = null,
+            [FromQuery] string? status = null)
+        {
+            var notifications = await _notificationService.GetAllNotificationsAsync(
+                pageNumber, pageSize, userId, type, status);
+            return Ok(notifications);
+        }
+
+        [HttpPost("admin/broadcast")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> BroadcastNotification([FromBody] BroadcastNotificationDto dto)
+        {
+            await _notificationService.BroadcastNotificationAsync(dto);
+            return Ok(new { message = "Notification broadcast successfully" });
+        }
+
+        [HttpGet("admin/stats")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<NotificationStatsDto>> GetNotificationStats()
+        {
+            var stats = await _notificationService.GetNotificationStatsAsync();
+            return Ok(stats);
+        }
     }
 }
