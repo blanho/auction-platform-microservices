@@ -21,6 +21,9 @@ import {
   Settings2,
   X,
   ListFilter,
+  Eye,
+  EyeOff,
+  Loader2,
 } from "lucide-react";
 
 import { Auction, AuctionStatus } from "@/types/auction";
@@ -55,9 +58,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 import { createAuctionColumns } from "./auction-columns";
+import { auctionService } from "@/services/auction.service";
 
 interface AuctionDataTableProps {
   data: Auction[];
@@ -82,6 +97,9 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
   });
   const [rowSelection, setRowSelection] = React.useState({});
   const [statusFilter, setStatusFilter] = React.useState<AuctionStatus[]>([]);
+  const [isBulkActionDialogOpen, setIsBulkActionDialogOpen] = React.useState(false);
+  const [bulkAction, setBulkAction] = React.useState<"activate" | "deactivate" | null>(null);
+  const [isBulkUpdating, setIsBulkUpdating] = React.useState(false);
 
   const columns = React.useMemo<ColumnDef<Auction>[]>(
     () => createAuctionColumns(onActionComplete),
@@ -113,6 +131,35 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
   });
 
   const isFiltered = statusFilter.length > 0 || columnFilters.length > 0;
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedAuctionIds = selectedRows.map((row) => row.original.id);
+
+  const handleBulkAction = (action: "activate" | "deactivate") => {
+    setBulkAction(action);
+    setIsBulkActionDialogOpen(true);
+  };
+
+  const handleConfirmBulkAction = async () => {
+    if (!bulkAction || selectedAuctionIds.length === 0) return;
+
+    setIsBulkUpdating(true);
+    try {
+      const count = await auctionService.bulkUpdateAuctions(
+        selectedAuctionIds,
+        bulkAction === "activate"
+      );
+      toast.success(`${count} auctions ${bulkAction}d successfully`);
+      setIsBulkActionDialogOpen(false);
+      setBulkAction(null);
+      setRowSelection({});
+      onActionComplete?.();
+    } catch {
+      toast.error(`Failed to ${bulkAction} auctions`);
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
 
   const toggleStatus = (status: AuctionStatus) => {
     setStatusFilter((prev) =>
@@ -255,13 +302,31 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
         </DropdownMenu>
       </div>
 
-      {/* Selected rows info */}
-      {table.getFilteredSelectedRowModel().rows.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+      {/* Selected rows info with bulk actions */}
+      {selectedRows.length > 0 && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/50 p-3">
+          <span className="text-sm text-muted-foreground">
+            {selectedRows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s) selected
           </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAction("activate")}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Activate Selected
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAction("deactivate")}
+            >
+              <EyeOff className="mr-2 h-4 w-4" />
+              Deactivate Selected
+            </Button>
+          </div>
         </div>
       )}
 
@@ -384,6 +449,36 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
           </div>
         </div>
       </div>
+
+      {/* Bulk Action Confirmation Dialog */}
+      <AlertDialog
+        open={isBulkActionDialogOpen}
+        onOpenChange={setIsBulkActionDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {bulkAction === "activate" ? "Activate" : "Deactivate"} Auctions
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {bulkAction} {selectedAuctionIds.length} selected
+              auctions?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkUpdating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBulkAction}
+              disabled={isBulkUpdating}
+            >
+              {isBulkUpdating && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {bulkAction === "activate" ? "Activate" : "Deactivate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -40,4 +40,11 @@
         public int DisplayOrder { get; set; }
         public bool IsPrimary { get; set; }
     }
+
+    public class BulkUpdateAuctionsDto
+    {
+        public List<Guid> AuctionIds { get; set; } = new();
+        public bool Activate { get; set; }
+        public string? Reason { get; set; }
+    }
 }

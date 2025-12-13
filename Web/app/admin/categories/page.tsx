@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
     Search,
     MoreHorizontal,
@@ -13,6 +13,13 @@ import {
     RefreshCw,
     FolderTree,
     Package,
+    Upload,
+    Download,
+    FileJson,
+    FileText,
+    CheckCircle2,
+    XCircle,
+    AlertCircle,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -51,6 +58,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Table,
     TableBody,
@@ -92,6 +101,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 import {
@@ -99,6 +109,7 @@ import {
     CreateCategoryDto,
     UpdateCategoryDto,
     CategoryStats,
+    ImportCategoriesResultDto,
 } from "@/services/admin-category.service";
 import { Category } from "@/types/auction";
 
@@ -155,12 +166,16 @@ function StatCard({
 function CategoryTableRow({
     category,
     allCategories,
+    isSelected,
+    onSelect,
     onEdit,
     onDelete,
     onToggleActive,
 }: {
     category: Category;
     allCategories: Category[];
+    isSelected: boolean;
+    onSelect: (id: string, selected: boolean) => void;
     onEdit: (category: Category) => void;
     onDelete: (category: Category) => void;
     onToggleActive: (category: Category) => void;
@@ -171,6 +186,12 @@ function CategoryTableRow({
 
     return (
         <TableRow>
+            <TableCell className="w-12">
+                <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => onSelect(category.id, !!checked)}
+                />
+            </TableCell>
             <TableCell>
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -258,6 +279,9 @@ function TableSkeleton() {
             {[...Array(5)].map((_, i) => (
                 <TableRow key={i}>
                     <TableCell>
+                        <Skeleton className="w-5 h-5" />
+                    </TableCell>
+                    <TableCell>
                         <div className="flex items-center gap-3">
                             <Skeleton className="w-10 h-10 rounded-lg" />
                             <div>
@@ -318,14 +342,32 @@ export default function AdminCategoriesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isBulkActionDialogOpen, setIsBulkActionDialogOpen] = useState(false);
+    const [bulkAction, setBulkAction] = useState<"activate" | "deactivate" | null>(null);
+
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState<CategoryFormData>(initialFormData);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
+    const [importJsonText, setImportJsonText] = useState("");
+    const [isImporting, setIsImporting] = useState(false);
+    const [importResult, setImportResult] = useState<ImportCategoriesResultDto | null>(null);
+    const [importError, setImportError] = useState<string | null>(null);
+
+    const [exportFormat, setExportFormat] = useState<"json" | "csv">("json");
+    const [exportActiveOnly, setExportActiveOnly] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchData = useCallback(async (showRefresh = false) => {
         if (showRefresh) {
@@ -342,6 +384,7 @@ export default function AdminCategoriesPage() {
 
             setCategories(categoriesData);
             setStats(statsData);
+            setSelectedIds(new Set());
         } catch {
             toast.error(MESSAGES.ERROR.GENERIC);
         } finally {
@@ -364,6 +407,24 @@ export default function AdminCategoriesPage() {
             category.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
             category.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(new Set(filteredCategories.map((c) => c.id)));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleSelectOne = (id: string, selected: boolean) => {
+        const newSet = new Set(selectedIds);
+        if (selected) {
+            newSet.add(id);
+        } else {
+            newSet.delete(id);
+        }
+        setSelectedIds(newSet);
+    };
 
     const handleOpenCreateDialog = () => {
         setEditingCategory(null);
@@ -411,6 +472,31 @@ export default function AdminCategoriesPage() {
             fetchData(true);
         } catch {
             toast.error("Failed to update category status");
+        }
+    };
+
+    const handleBulkAction = (action: "activate" | "deactivate") => {
+        setBulkAction(action);
+        setIsBulkActionDialogOpen(true);
+    };
+
+    const handleConfirmBulkAction = async () => {
+        if (!bulkAction || selectedIds.size === 0) return;
+
+        setIsBulkUpdating(true);
+        try {
+            const count = await adminCategoryService.bulkUpdateCategories({
+                categoryIds: Array.from(selectedIds),
+                isActive: bulkAction === "activate",
+            });
+            toast.success(`${count} categories ${bulkAction}d successfully`);
+            setIsBulkActionDialogOpen(false);
+            setBulkAction(null);
+            fetchData(true);
+        } catch {
+            toast.error(`Failed to ${bulkAction} categories`);
+        } finally {
+            setIsBulkUpdating(false);
         }
     };
 
@@ -497,6 +583,91 @@ export default function AdminCategoriesPage() {
         }
     };
 
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImportJsonText(e.target?.result as string);
+                setImportError(null);
+                setImportResult(null);
+            };
+            reader.readAsText(file);
+        }
+    };
+
+    const handleImport = async () => {
+        if (!importJsonText.trim()) {
+            setImportError("Please provide JSON data");
+            return;
+        }
+
+        setIsImporting(true);
+        setImportError(null);
+        setImportResult(null);
+
+        try {
+            const parsed = JSON.parse(importJsonText);
+            const categoriesArray = Array.isArray(parsed) ? parsed : [parsed];
+
+            const result = await adminCategoryService.importCategories({
+                categories: categoriesArray,
+            });
+
+            setImportResult(result);
+
+            if (result.successCount > 0) {
+                fetchData(true);
+            }
+        } catch (err) {
+            if (err instanceof SyntaxError) {
+                setImportError("Invalid JSON format");
+            } else {
+                setImportError("Failed to import categories");
+            }
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const blob = await adminCategoryService.exportCategories(
+                exportFormat,
+                exportActiveOnly
+            );
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `categories_export_${Date.now()}.${exportFormat}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            setIsExportDialogOpen(false);
+            toast.success("Categories exported successfully");
+        } catch {
+            toast.error("Failed to export categories");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleOpenImportDialog = () => {
+        setImportJsonText("");
+        setImportError(null);
+        setImportResult(null);
+        setIsImportDialogOpen(true);
+    };
+
+    const allSelected =
+        filteredCategories.length > 0 &&
+        filteredCategories.every((c) => selectedIds.has(c.id));
+    const someSelected = selectedIds.size > 0;
+
     return (
         <AdminLayout
             title="Category Management"
@@ -539,9 +710,10 @@ export default function AdminCategoriesPage() {
                                 </CardTitle>
                                 <CardDescription>
                                     {filteredCategories.length} categories found
+                                    {someSelected && ` • ${selectedIds.size} selected`}
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="icon"
@@ -552,6 +724,17 @@ export default function AdminCategoriesPage() {
                                         className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
                                     />
                                 </Button>
+                                <Button variant="outline" onClick={handleOpenImportDialog}>
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Import
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsExportDialogOpen(true)}
+                                >
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Export
+                                </Button>
                                 <Button onClick={handleOpenCreateDialog}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add Category
@@ -560,7 +743,7 @@ export default function AdminCategoriesPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-4 mb-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                             <div className="relative flex-1 max-w-sm">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                 <Input
@@ -570,12 +753,38 @@ export default function AdminCategoriesPage() {
                                     className="pl-10"
                                 />
                             </div>
+                            {someSelected && (
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleBulkAction("activate")}
+                                    >
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        Activate Selected
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleBulkAction("deactivate")}
+                                    >
+                                        <EyeOff className="h-4 w-4 mr-2" />
+                                        Deactivate Selected
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="rounded-lg border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-12">
+                                            <Checkbox
+                                                checked={allSelected}
+                                                onCheckedChange={handleSelectAll}
+                                            />
+                                        </TableHead>
                                         <TableHead>Category</TableHead>
                                         <TableHead>Description</TableHead>
                                         <TableHead>Parent</TableHead>
@@ -591,7 +800,7 @@ export default function AdminCategoriesPage() {
                                     ) : filteredCategories.length === 0 ? (
                                         <TableRow>
                                             <TableCell
-                                                colSpan={7}
+                                                colSpan={8}
                                                 className="text-center py-8 text-zinc-500"
                                             >
                                                 <Package className="h-12 w-12 mx-auto mb-4 text-zinc-300" />
@@ -604,6 +813,8 @@ export default function AdminCategoriesPage() {
                                                 key={category.id}
                                                 category={category}
                                                 allCategories={categories}
+                                                isSelected={selectedIds.has(category.id)}
+                                                onSelect={handleSelectOne}
                                                 onEdit={handleOpenEditDialog}
                                                 onDelete={handleOpenDeleteDialog}
                                                 onToggleActive={handleToggleActive}
@@ -822,6 +1033,207 @@ export default function AdminCategoriesPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <AlertDialog
+                open={isBulkActionDialogOpen}
+                onOpenChange={setIsBulkActionDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {bulkAction === "activate" ? "Activate" : "Deactivate"} Categories
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to {bulkAction} {selectedIds.size} selected
+                            categories?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isBulkUpdating}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmBulkAction}
+                            disabled={isBulkUpdating}
+                        >
+                            {isBulkUpdating && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            )}
+                            {bulkAction === "activate" ? "Activate" : "Deactivate"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Import Categories</DialogTitle>
+                        <DialogDescription>
+                            Import categories from a JSON file or paste JSON data directly
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Upload JSON File</Label>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".json"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                            />
+                            <Button
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full"
+                            >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Choose File
+                            </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="importJson">Or Paste JSON</Label>
+                            <Textarea
+                                id="importJson"
+                                value={importJsonText}
+                                onChange={(e) => {
+                                    setImportJsonText(e.target.value);
+                                    setImportError(null);
+                                    setImportResult(null);
+                                }}
+                                placeholder={`[
+  {
+    "name": "Electronics",
+    "slug": "electronics",
+    "icon": "fa-laptop",
+    "description": "Electronic devices",
+    "displayOrder": 1,
+    "isActive": true
+  }
+]`}
+                                rows={8}
+                                className="font-mono text-sm"
+                            />
+                        </div>
+
+                        {importError && (
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>{importError}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        {importResult && (
+                            <Alert>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-green-600">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            <span>{importResult.successCount} succeeded</span>
+                                        </div>
+                                        {importResult.failureCount > 0 && (
+                                            <div className="flex items-center gap-2 text-red-600">
+                                                <XCircle className="h-4 w-4" />
+                                                <span>{importResult.failureCount} failed</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {importResult.errors.length > 0 && (
+                                        <ScrollArea className="h-24">
+                                            <ul className="text-sm text-zinc-500 space-y-1">
+                                                {importResult.errors.map((error, i) => (
+                                                    <li key={i}>• {error}</li>
+                                                ))}
+                                            </ul>
+                                        </ScrollArea>
+                                    )}
+                                </div>
+                            </Alert>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsImportDialogOpen(false)}
+                            disabled={isImporting}
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            onClick={handleImport}
+                            disabled={isImporting || !importJsonText.trim()}
+                        >
+                            {isImporting && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            )}
+                            Import
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Export Categories</DialogTitle>
+                        <DialogDescription>
+                            Export categories to a file
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Format</Label>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant={exportFormat === "json" ? "default" : "outline"}
+                                    onClick={() => setExportFormat("json")}
+                                    className="flex-1"
+                                >
+                                    <FileJson className="h-4 w-4 mr-2" />
+                                    JSON
+                                </Button>
+                                <Button
+                                    variant={exportFormat === "csv" ? "default" : "outline"}
+                                    onClick={() => setExportFormat("csv")}
+                                    className="flex-1"
+                                >
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    CSV
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                id="exportActiveOnly"
+                                checked={exportActiveOnly}
+                                onCheckedChange={setExportActiveOnly}
+                            />
+                            <Label htmlFor="exportActiveOnly">Active categories only</Label>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsExportDialogOpen(false)}
+                            disabled={isExporting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleExport} disabled={isExporting}>
+                            {isExporting && (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            )}
+                            <Download className="h-4 w-4 mr-2" />
+                            Export
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminLayout>
     );
 }

@@ -252,6 +252,21 @@ public class AuctionsController : ControllerBase
             : NotFound(ProblemDetailsHelper.FromError(result.Error!));
     }
 
+    [HttpPost("bulk-update")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<int>> BulkUpdateAuctions(
+        [FromBody] BulkUpdateAuctionsDto dto,
+        CancellationToken cancellationToken)
+    {
+        var command = new Application.Commands.BulkUpdateAuctions.BulkUpdateAuctionsCommand(
+            dto.AuctionIds, dto.Activate, dto.Reason);
+        var result = await _mediator.Send(command, cancellationToken);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
 
     [HttpPost("{id:guid}/activate")]
     [Authorize(Policy = "AuctionOwner")]

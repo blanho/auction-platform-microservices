@@ -130,6 +130,18 @@ export const auctionService = {
     return data;
   },
 
+  bulkUpdateAuctions: async (
+    auctionIds: string[],
+    activate: boolean,
+    reason?: string
+  ): Promise<number> => {
+    const { data } = await apiClient.post<number>(
+      `${API_ENDPOINTS.AUCTIONS}/bulk-update`,
+      { auctionIds, activate, reason }
+    );
+    return data;
+  },
+
   importAuctions: async (
     auctions: ImportAuctionDto[]
   ): Promise<ImportAuctionsResultDto> => {

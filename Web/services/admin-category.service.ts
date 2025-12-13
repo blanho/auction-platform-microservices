@@ -24,6 +24,21 @@ export interface UpdateCategoryDto {
   parentCategoryId?: string | null;
 }
 
+export interface BulkUpdateCategoriesDto {
+  categoryIds: string[];
+  isActive: boolean;
+}
+
+export interface ImportCategoriesDto {
+  categories: CreateCategoryDto[];
+}
+
+export interface ImportCategoriesResultDto {
+  successCount: number;
+  failureCount: number;
+  errors: string[];
+}
+
 export interface CategoryStats {
   totalCategories: number;
   activeCategories: number;
@@ -54,6 +69,30 @@ export const adminCategoryService = {
 
   deleteCategory: async (id: string): Promise<void> => {
     await apiClient.delete(API_ENDPOINTS.CATEGORY_BY_ID(id));
+  },
+
+  bulkUpdateCategories: async (dto: BulkUpdateCategoriesDto): Promise<number> => {
+    const { data } = await apiClient.post<number>(
+      `${API_ENDPOINTS.CATEGORIES}/bulk-update`,
+      dto
+    );
+    return data;
+  },
+
+  importCategories: async (dto: ImportCategoriesDto): Promise<ImportCategoriesResultDto> => {
+    const { data } = await apiClient.post<ImportCategoriesResultDto>(
+      `${API_ENDPOINTS.CATEGORIES}/import`,
+      dto
+    );
+    return data;
+  },
+
+  exportCategories: async (format: "json" | "csv" = "json", activeOnly?: boolean): Promise<Blob> => {
+    const { data } = await apiClient.get(`${API_ENDPOINTS.CATEGORIES}/export`, {
+      params: { format, activeOnly },
+      responseType: "blob"
+    });
+    return data;
   },
 
   getStats: async (): Promise<CategoryStats> => {
