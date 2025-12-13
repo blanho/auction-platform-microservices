@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Check, CheckCheck, Trash2, ExternalLink } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -79,26 +80,33 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
     const colorClass = getNotificationColor(notification.type as NotificationType);
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+            transition={{ duration: 0.2 }}
             className={cn(
                 "p-3 border-b border-gray-100 dark:border-gray-800",
-                "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
+                "transition-colors",
                 isUnread && "bg-blue-50/50 dark:bg-blue-950/20"
             )}
         >
             <div className="flex items-start gap-3">
-                <div
+                <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
                     className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
                         colorClass
                     )}
                 >
                     <FontAwesomeIcon icon={icon} className="h-4 w-4" />
-                </div>
+                </motion.div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                         <div>
-                            <p className={cn("text-sm font-medium", isUnread && "font-semibold")}>
+                            <p className={cn("text-sm font-medium text-slate-900 dark:text-white", isUnread && "font-semibold")}>
                                 {notification.title}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
@@ -106,11 +114,15 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
                             </p>
                         </div>
                         {isUnread && (
-                            <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"
+                            />
                         )}
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                             {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </span>
                         <div className="flex items-center gap-1">
@@ -143,24 +155,42 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
 
 function LoadingState() {
     return (
-        <div className="flex items-center justify-center h-20">
-            <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-500 rounded-full" />
-        </div>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center h-20"
+        >
+            <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="h-5 w-5 border-2 border-gray-300 dark:border-gray-600 border-t-purple-500 rounded-full"
+            />
+        </motion.div>
     );
 }
 
 function EmptyState() {
     return (
-        <div className="flex flex-col items-center justify-center h-[200px] text-gray-500">
-            <Bell className="h-10 w-10 mb-2 opacity-50" />
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center h-[200px] text-gray-500 dark:text-gray-400"
+        >
+            <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1 }}
+            >
+                <Bell className="h-10 w-10 mb-2 opacity-50" />
+            </motion.div>
             <p className="text-sm">No notifications yet</p>
-        </div>
+        </motion.div>
     );
 }
 
@@ -184,19 +214,28 @@ export function NotificationBell() {
             <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                        <Badge
-                            className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs"
-                            variant="destructive"
-                        >
-                            {displayCount}
-                        </Badge>
-                    )}
+                    <AnimatePresence>
+                        {unreadCount > 0 && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                            >
+                                <Badge
+                                    className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center p-0 text-xs"
+                                    variant="destructive"
+                                >
+                                    {displayCount}
+                                </Badge>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
+            <PopoverContent className="w-80 p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="end">
                 <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-800">
-                    <h4 className="font-semibold">Notifications</h4>
+                    <h4 className="font-semibold text-slate-900 dark:text-white">Notifications</h4>
                     {unreadCount > 0 && (
                         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllAsRead}>
                             <CheckCheck className="h-3 w-3 mr-1" />
@@ -211,14 +250,23 @@ export function NotificationBell() {
                     ) : notifications.length === 0 ? (
                         <EmptyState />
                     ) : (
-                        notifications.map((notification) => (
-                            <NotificationItem
-                                key={notification.id}
-                                notification={notification}
-                                onMarkAsRead={markAsRead}
-                                onDelete={deleteNotification}
-                            />
-                        ))
+                        <AnimatePresence>
+                            {notifications.map((notification, index) => (
+                                <motion.div
+                                    key={notification.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ delay: index * 0.03 }}
+                                >
+                                    <NotificationItem
+                                        notification={notification}
+                                        onMarkAsRead={markAsRead}
+                                        onDelete={deleteNotification}
+                                    />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     )}
                 </ScrollArea>
 

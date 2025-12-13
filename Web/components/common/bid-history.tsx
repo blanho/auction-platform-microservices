@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,10 +95,20 @@ function ErrorState({ message }: ErrorStateProps) {
 
 function EmptyState() {
     return (
-        <div className="text-center py-8 text-gray-500">
-            <DollarSign className="h-10 w-10 mx-auto mb-2 opacity-50" />
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-8 text-gray-500 dark:text-gray-400"
+        >
+            <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1 }}
+            >
+                <DollarSign className="h-10 w-10 mx-auto mb-2 opacity-50" />
+            </motion.div>
             <p className="text-sm">No bids yet. Be the first to bid!</p>
-        </div>
+        </motion.div>
     );
 }
 
@@ -110,7 +121,11 @@ function BidItem({ bid, isHighest }: BidItemProps) {
     const config = getStatusConfig(bid.status as BidStatus);
 
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
             className={cn(
                 "flex items-center gap-3 p-3 rounded-lg border transition-colors",
                 isHighest && "border-green-500 bg-green-50/50 dark:bg-green-950/20"
@@ -131,7 +146,7 @@ function BidItem({ bid, isHighest }: BidItemProps) {
                         </Badge>
                     )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <Clock className="h-3 w-3" />
                     <span>
                         {formatDistanceToNow(new Date(bid.bidTime), { addSuffix: true })}
@@ -146,7 +161,7 @@ function BidItem({ bid, isHighest }: BidItemProps) {
                     {config.label}
                 </Badge>
             </div>
-        </div>
+        </motion.div>
     );
 }
 
@@ -191,15 +206,35 @@ export function BidHistory({
 
     return (
         <ScrollArea style={{ maxHeight }} className="pr-4">
-            <div className="space-y-2">
-                {bids.map((bid, index) => (
-                    <BidItem
-                        key={bid.id}
-                        bid={bid}
-                        isHighest={isHighestBid(bid, index)}
-                    />
-                ))}
-            </div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.05 }
+                    }
+                }}
+                className="space-y-2"
+            >
+                <AnimatePresence>
+                    {bids.map((bid, index) => (
+                        <motion.div
+                            key={bid.id}
+                            variants={{
+                                hidden: { opacity: 0, y: 10 },
+                                visible: { opacity: 1, y: 0 }
+                            }}
+                        >
+                            <BidItem
+                                bid={bid}
+                                isHighest={isHighestBid(bid, index)}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </motion.div>
         </ScrollArea>
     );
 }

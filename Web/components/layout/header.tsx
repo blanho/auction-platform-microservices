@@ -40,6 +40,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/common/notification-bell";
 import { cn } from "@/lib/utils";
+import { gradients, gradientText, glass, shadows, buttons } from "@/lib/styles";
 import { useCategories } from "@/hooks/use-auctions";
 
 const navLinks = [
@@ -89,10 +90,13 @@ export function Header() {
     return (
         <motion.header
             style={{ opacity: headerOpacity }}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             className={cn(
                 "sticky top-0 z-50 w-full transition-all duration-500",
                 isScrolled
-                    ? "bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-lg shadow-slate-200/20 dark:shadow-slate-900/50"
+                    ? cn(glass.default, "shadow-lg shadow-slate-200/20 dark:shadow-slate-900/50")
                     : "bg-white dark:bg-slate-950"
             )}
         >
@@ -102,9 +106,10 @@ export function Header() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="relative overflow-hidden"
                     >
-                        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-700 dark:via-indigo-700 dark:to-blue-700 text-white py-2.5">
+                        <div className={cn(gradients.primary, "text-white py-2.5")}>
                             <div className="container mx-auto px-4">
                                 <div className="flex items-center justify-center gap-3 text-sm">
                                     <motion.div
@@ -152,7 +157,7 @@ export function Header() {
                                 </div>
                             </motion.div>
                             <div className="hidden sm:flex flex-col">
-                                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                <span className={cn("text-xl font-bold", gradientText.primary)}>
                                     AuctionHub
                                 </span>
                                 <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium -mt-0.5">
@@ -168,33 +173,8 @@ export function Header() {
                                     ? "border-purple-500 dark:border-purple-400 ring-2 ring-purple-500/20 dark:ring-purple-400/20 shadow-lg shadow-purple-500/10"
                                     : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50"
                             )}>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            className="rounded-none border-r border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0 h-11 px-4 font-medium"
-                                        >
-                                            All
-                                            <ChevronDown className="ml-1.5 h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-60">
-                                        <DropdownMenuItem className="font-medium">
-                                            All categories
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        {!categoriesLoading && categories.map((cat) => (
-                                            <DropdownMenuItem key={cat.id} asChild>
-                                                <Link href={`/search?category=${cat.id}`} className="flex items-center gap-2 cursor-pointer">
-                                                    <i className={`fa-solid ${cat.icon} w-4 text-center text-purple-500`}></i>
-                                                    {cat.name}
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                <div className="relative flex-1">
+                                <div className="relative flex-1 flex items-center">
+                                    <Search className="absolute left-4 h-4 w-4 text-slate-400 dark:text-slate-500" />
                                     <Input
                                         type="text"
                                         placeholder="Search for anything..."
@@ -202,17 +182,22 @@ export function Header() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onFocus={() => setIsSearchFocused(true)}
                                         onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                                        className="flex-1 border-0 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-transparent text-base"
+                                        className="flex-1 border-0 h-11 pl-11 pr-4 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-transparent text-base"
                                     />
                                 </div>
 
-                                <Button 
-                                    type="submit"
-                                    className="rounded-none h-11 px-5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-inner"
-                                >
-                                    <Search className="h-4 w-4 mr-2" />
-                                    <span className="hidden lg:inline font-medium">Search</span>
-                                </Button>
+                                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                    <Button 
+                                        type="submit"
+                                        className={cn(
+                                            "rounded-none h-11 px-6 shadow-inner",
+                                            gradients.primary,
+                                            "hover:from-purple-700 hover:to-blue-700"
+                                        )}
+                                    >
+                                        <span className="font-medium">Search</span>
+                                    </Button>
+                                </motion.div>
                             </div>
 
                             <AnimatePresence>
@@ -258,16 +243,18 @@ export function Header() {
                             
                             <NotificationBell />
 
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
-                                asChild
-                            >
-                                <Link href="/wishlist">
-                                    <Heart className="h-5 w-5" />
-                                </Link>
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="relative hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
+                                    asChild
+                                >
+                                    <Link href="/wishlist">
+                                        <Heart className="h-5 w-5" />
+                                    </Link>
+                                </Button>
+                            </motion.div>
 
                             <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
@@ -364,16 +351,23 @@ export function Header() {
                                                 <span className="text-sm text-slate-600 dark:text-slate-400">Theme</span>
                                                 <ThemeToggle variant="expanded" />
                                             </div>
-                                            <Button
-                                                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg shadow-purple-500/25"
-                                                asChild
-                                            >
-                                                <Link href="/auctions/create">
-                                                    <Gavel className="h-4 w-4 mr-2" />
-                                                    Start Selling
-                                                    <ArrowRight className="h-4 w-4 ml-2" />
-                                                </Link>
-                                            </Button>
+                                            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                                                <Button
+                                                    className={cn(
+                                                        "w-full",
+                                                        gradients.primary,
+                                                        "hover:from-purple-700 hover:to-blue-700",
+                                                        shadows.glow.purple
+                                                    )}
+                                                    asChild
+                                                >
+                                                    <Link href="/auctions/create">
+                                                        <Gavel className="h-4 w-4 mr-2" />
+                                                        Start Selling
+                                                        <ArrowRight className="h-4 w-4 ml-2" />
+                                                    </Link>
+                                                </Button>
+                                            </motion.div>
                                         </div>
                                     </div>
                                 </SheetContent>
@@ -383,7 +377,15 @@ export function Header() {
                 </div>
             </div>
 
-            <nav className="hidden md:block border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
+            <motion.nav
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className={cn(
+                    "hidden md:block border-b border-slate-200/80 dark:border-slate-800/80",
+                    glass.subtle
+                )}
+            >
                 <div className="container mx-auto px-4">
                     <div className="flex items-center justify-between h-11">
                         <div className="flex items-center gap-1">
@@ -442,20 +444,28 @@ export function Header() {
                                 <Shield className="w-4 h-4 text-green-500" />
                                 <span>Buyer Protection</span>
                             </div>
-                            <Button
-                                size="sm"
-                                className="h-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all"
-                                asChild
-                            >
-                                <Link href="/auctions/create">
-                                    <Gavel className="h-3.5 w-3.5 mr-1.5" />
-                                    Sell Now
-                                </Link>
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                <Button
+                                    size="sm"
+                                    className={cn(
+                                        "h-8",
+                                        gradients.primary,
+                                        gradients.primaryHover.replace("bg-gradient-to-r", "hover:bg-gradient-to-r"),
+                                        shadows.glow.purple,
+                                        "hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+                                    )}
+                                    asChild
+                                >
+                                    <Link href="/auctions/create">
+                                        <Gavel className="h-3.5 w-3.5 mr-1.5" />
+                                        Sell Now
+                                    </Link>
+                                </Button>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
-            </nav>
+            </motion.nav>
         </motion.header>
     );
 }

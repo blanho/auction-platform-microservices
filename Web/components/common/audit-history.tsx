@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,10 +116,20 @@ function ErrorState({ message }: ErrorStateProps) {
 
 function EmptyState() {
     return (
-        <div className="text-center py-8 text-gray-500">
-            <History className="h-10 w-10 mx-auto mb-2 opacity-50" />
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-8 text-gray-500 dark:text-gray-400"
+        >
+            <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1 }}
+            >
+                <History className="h-10 w-10 mx-auto mb-2 opacity-50" />
+            </motion.div>
             <p className="text-sm">No audit history available</p>
-        </div>
+        </motion.div>
     );
 }
 
@@ -162,7 +173,13 @@ function AuditItem({ log, showDetails }: AuditItemProps) {
     const hasChanges = changes.length > 0;
 
     return (
-        <div className="rounded-lg border transition-colors">
+        <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-lg border border-slate-200 dark:border-slate-800 transition-colors"
+        >
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div className="flex items-start gap-3 p-3">
                     <div className={cn(
@@ -188,18 +205,18 @@ function AuditItem({ log, showDetails }: AuditItemProps) {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
                             <Clock className="h-3 w-3" />
                             <span title={format(new Date(log.timestamp), "PPpp")}>
                                 {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                             </span>
-                            <span className="text-gray-300">•</span>
-                            <span className="text-gray-400">{log.serviceName}</span>
+                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                            <span className="text-gray-400 dark:text-gray-500">{log.serviceName}</span>
                         </div>
 
                         {showDetails && hasChanges && (
                             <CollapsibleTrigger asChild>
-                                <button className="flex items-center gap-1 mt-2 text-xs text-blue-600 hover:text-blue-800 transition-colors">
+                                <button className="flex items-center gap-1 mt-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
                                     <ChevronDown className={cn(
                                         "h-4 w-4 transition-transform",
                                         isOpen && "rotate-180"
@@ -213,17 +230,21 @@ function AuditItem({ log, showDetails }: AuditItemProps) {
 
                 {showDetails && hasChanges && (
                     <CollapsibleContent>
-                        <div className="px-3 pb-3 pt-0 ml-[52px] border-t mt-2">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="px-3 pb-3 pt-0 ml-[52px] border-t border-slate-100 dark:border-slate-800 mt-2"
+                        >
                             <div className="pt-2 space-y-1">
                                 {changes.map((change, idx) => (
                                     <ChangeItem key={idx} change={change} />
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
                     </CollapsibleContent>
                 )}
             </Collapsible>
-        </div>
+        </motion.div>
     );
 }
 
@@ -271,15 +292,35 @@ export function AuditHistory({
 
     return (
         <ScrollArea style={{ maxHeight }} className="pr-4">
-            <div className="space-y-2">
-                {logs.map((log) => (
-                    <AuditItem
-                        key={log.id}
-                        log={log}
-                        showDetails={showDetails}
-                    />
-                ))}
-            </div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.05 }
+                    }
+                }}
+                className="space-y-2"
+            >
+                <AnimatePresence>
+                    {logs.map((log) => (
+                        <motion.div
+                            key={log.id}
+                            variants={{
+                                hidden: { opacity: 0, y: 10 },
+                                visible: { opacity: 1, y: 0 }
+                            }}
+                        >
+                            <AuditItem
+                                log={log}
+                                showDetails={showDetails}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </motion.div>
         </ScrollArea>
     );
 }
