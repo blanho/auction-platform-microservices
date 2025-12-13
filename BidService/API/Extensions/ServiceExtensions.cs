@@ -37,8 +37,10 @@ namespace BidService.API.Extensions
             services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
             
             services.AddScoped<IBidRepository, BidRepository>();
+            services.AddScoped<IAutoBidRepository, AutoBidRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IBidService, BidServiceImpl>();
+            services.AddScoped<IAutoBidService, AutoBidService>();
 
             return services;
         }

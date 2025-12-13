@@ -12,6 +12,7 @@ namespace BidService.Infrastructure.Data
         }
 
         public DbSet<Bid> Bids { get; set; }
+        public DbSet<AutoBid> AutoBids { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +33,20 @@ namespace BidService.Infrastructure.Data
                 entity.HasIndex(e => e.AuctionId);
                 entity.HasIndex(e => e.Bidder);
                 entity.HasIndex(e => new { e.AuctionId, e.BidTime });
+
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            modelBuilder.Entity<AutoBid>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Bidder).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.MaxAmount).IsRequired();
+                entity.Property(e => e.IsActive).IsRequired();
+
+                entity.HasIndex(e => e.AuctionId);
+                entity.HasIndex(e => e.Bidder);
+                entity.HasIndex(e => new { e.AuctionId, e.Bidder }).IsUnique();
 
                 entity.HasQueryFilter(e => !e.IsDeleted);
             });
