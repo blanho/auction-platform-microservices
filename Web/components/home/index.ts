@@ -10,3 +10,4 @@ export { TrendingSearchesSection } from "./trending-searches-section";
 export { PersonalizationSection } from "./personalization-section";
 export { TopAuctionsSection } from "./top-auctions-section";
 export { FooterSection } from "./footer-section";
+export { TableOfContents } from "./table-of-contents";
