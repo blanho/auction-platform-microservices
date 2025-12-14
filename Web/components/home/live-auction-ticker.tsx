@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Zap } from "lucide-react";
-import { INITIAL_BIDS, NEW_BIDS_POOL, LIVE_TICKER_CONTENT } from "@/constants/landing";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBolt, faUsers, faChartLine, faZap } from "@fortawesome/free-solid-svg-icons";
+import { useQuickStats } from "@/hooks/use-analytics";
 import { LiveIndicator } from "@/components/ui/animated";
 
 interface LiveBid {
@@ -15,6 +17,38 @@ interface LiveBid {
     isNew?: boolean;
 }
 
+const SAMPLE_ITEMS = [
+    "Rolex Submariner Date",
+    "1967 Ford Mustang GT",
+    "Banksy Original Print",
+    "Charizard PSA 10",
+    "Cartier Love Bracelet",
+    "MacBook Pro M4 Max",
+    "Gibson Les Paul 1959",
+    "Hermès Birkin 25",
+    "Ferrari 488 Pista",
+    "Patek Philippe Nautilus",
+    "Air Jordan 1 Chicago",
+    "Leica M6 Classic",
+];
+
+const SAMPLE_BIDDERS = ["Alex M.", "Sarah K.", "John D.", "Mike T.", "Emma L.", "Chris P.", "David R.", "Anna S."];
+
+function generateRandomBid(): LiveBid {
+    const item = SAMPLE_ITEMS[Math.floor(Math.random() * SAMPLE_ITEMS.length)];
+    const bidder = SAMPLE_BIDDERS[Math.floor(Math.random() * SAMPLE_BIDDERS.length)];
+    const amount = Math.floor(Math.random() * 50000) + 500;
+    
+    return {
+        id: Date.now().toString(),
+        item,
+        bidder,
+        amount,
+        timeAgo: "just now",
+        isNew: true,
+    };
+}
+
 function BidItem({ bid }: { bid: LiveBid }) {
     return (
         <div
@@ -24,7 +58,7 @@ function BidItem({ bid }: { bid: LiveBid }) {
                     : "bg-white/10 border border-white/10"
             }`}
         >
-            {bid.isNew && <Zap className="w-4 h-4 text-green-400" />}
+            {bid.isNew && <FontAwesomeIcon icon={faZap} className="w-4 h-4 text-green-400" />}
             <span className="text-sm font-medium text-white truncate max-w-[160px]">
                 {bid.item}
             </span>
@@ -37,26 +71,24 @@ function BidItem({ bid }: { bid: LiveBid }) {
 }
 
 export function LiveAuctionTicker() {
-    const [bids, setBids] = useState<LiveBid[]>(INITIAL_BIDS);
-    const [stats, setStats] = useState(LIVE_TICKER_CONTENT.INITIAL_STATS);
+    const { data: stats, isLoading } = useQuickStats();
+    const [bids, setBids] = useState<LiveBid[]>([]);
+
+    useEffect(() => {
+        const initialBids: LiveBid[] = Array.from({ length: 8 }, (_, i) => ({
+            ...generateRandomBid(),
+            id: `initial-${i}`,
+            isNew: false,
+            timeAgo: `${(i + 1) * 3}s ago`,
+        }));
+        setBids(initialBids);
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const randomBid = NEW_BIDS_POOL[Math.floor(Math.random() * NEW_BIDS_POOL.length)];
-            const newBid: LiveBid = {
-                ...randomBid,
-                id: Date.now().toString(),
-                timeAgo: "just now",
-                isNew: true,
-                amount: randomBid.amount + Math.floor(Math.random() * 500),
-            };
-
+            const newBid = generateRandomBid();
             setBids((prev) => [newBid, ...prev.slice(0, 7)].map((bid, idx) => ({ ...bid, isNew: idx === 0 })));
-            setStats((prev) => ({
-                totalBids: prev.totalBids + 1,
-                activeBidders: prev.activeBidders + (Math.random() > 0.7 ? 1 : 0),
-            }));
-        }, LIVE_TICKER_CONTENT.UPDATE_INTERVAL);
+        }, 4000);
 
         return () => clearInterval(interval);
     }, []);
@@ -68,24 +100,33 @@ export function LiveAuctionTicker() {
                     <div className="shrink-0 hidden md:flex items-center gap-6">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/30">
                             <LiveIndicator />
-                            <span className="text-sm font-bold text-white uppercase tracking-wider">{LIVE_TICKER_CONTENT.BADGE}</span>
+                            <span className="text-sm font-bold text-white uppercase tracking-wider">Live Feed</span>
                         </div>
 
                         <div className="flex items-center gap-6 text-white/80">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-green-400" />
-                                <span className="text-sm">
-                                    <span className="font-bold text-green-400">{stats.totalBids.toLocaleString()}</span>
-                                    <span className="text-white/60 ml-1">bids today</span>
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-blue-400" />
-                                <span className="text-sm">
-                                    <span className="font-bold text-blue-400">{stats.activeBidders.toLocaleString()}</span>
-                                    <span className="text-white/60 ml-1">online</span>
-                                </span>
-                            </div>
+                            {isLoading ? (
+                                <>
+                                    <Skeleton className="w-24 h-5 bg-white/10" />
+                                    <Skeleton className="w-24 h-5 bg-white/10" />
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faChartLine} className="w-4 h-4 text-green-400" />
+                                        <span className="text-sm">
+                                            <span className="font-bold text-green-400">{(stats?.liveAuctions || 0).toLocaleString()}</span>
+                                            <span className="text-white/60 ml-1">live auctions</span>
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faUsers} className="w-4 h-4 text-blue-400" />
+                                        <span className="text-sm">
+                                            <span className="font-bold text-blue-400">{(stats?.activeUsers || 0).toLocaleString()}</span>
+                                            <span className="text-white/60 ml-1">online</span>
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 

@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Clock, Eye, ArrowRight, Heart } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWandSparkles, faClock, faEye, faArrowRight, faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { CTA_CONTENT } from "@/constants/landing";
@@ -97,7 +98,7 @@ function SmallAuctionCard({
                     </span>
                     {item.timeLeft && (
                         <span className="text-xs text-slate-500 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                            <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
                             {item.timeLeft}
                         </span>
                     )}
@@ -121,7 +122,7 @@ export function PersonalizationSection() {
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
-                            <Sparkles className="w-4 h-4 text-purple-400" />
+                            <FontAwesomeIcon icon={faWandSparkles} className="w-4 h-4 text-purple-400" />
                             <span className="text-sm font-medium text-purple-300">{CTA_CONTENT.BADGE}</span>
                         </div>
                         
@@ -143,7 +144,7 @@ export function PersonalizationSection() {
                             >
                                 <Link href="/auth/register">
                                     {CTA_CONTENT.BUTTON}
-                                    <ArrowRight className="ml-2 w-5 h-5" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-5 h-5" />
                                 </Link>
                             </Button>
                             <Button
@@ -184,7 +185,7 @@ export function PersonalizationSection() {
                     >
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <Sparkles className="w-6 h-6 text-purple-500" />
+                                <FontAwesomeIcon icon={faWandSparkles} className="w-6 h-6 text-purple-500" />
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                                     Recommended for You
                                 </h3>
@@ -192,7 +193,7 @@ export function PersonalizationSection() {
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/auctions?recommended=true">
                                     View All
-                                    <ArrowRight className="ml-2 w-4 h-4" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                                 </Link>
                             </Button>
                         </div>
@@ -201,7 +202,7 @@ export function PersonalizationSection() {
                                 <SmallAuctionCard key={item.id} item={item} showBadge="For You" />
                             ))}
                             <Card className="flex flex-col items-center justify-center p-6 border-dashed border-2 hover:border-purple-500 transition-colors cursor-pointer">
-                                <Sparkles className="w-8 h-8 text-slate-400 mb-2" />
+                                <FontAwesomeIcon icon={faWandSparkles} className="w-8 h-8 text-slate-400 mb-2" />
                                 <span className="text-sm text-slate-500 text-center">
                                     Explore more recommendations
                                 </span>
@@ -218,7 +219,7 @@ export function PersonalizationSection() {
                     >
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <Eye className="w-6 h-6 text-blue-500" />
+                                <FontAwesomeIcon icon={faEye} className="w-6 h-6 text-blue-500" />
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                                     Recently Viewed
                                 </h3>
@@ -226,7 +227,7 @@ export function PersonalizationSection() {
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/auctions?viewed=true">
                                     View History
-                                    <ArrowRight className="ml-2 w-4 h-4" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                                 </Link>
                             </Button>
                         </div>
@@ -246,7 +247,7 @@ export function PersonalizationSection() {
                     >
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <Heart className="w-6 h-6 text-red-500" />
+                                <FontAwesomeIcon icon={faHeart} className="w-6 h-6 text-red-500" />
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                                     Your Watchlist
                                 </h3>
@@ -259,7 +260,7 @@ export function PersonalizationSection() {
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/auctions?watchlist=true">
                                     Manage Watchlist
-                                    <ArrowRight className="ml-2 w-4 h-4" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                                 </Link>
                             </Button>
                         </div>
@@ -272,7 +273,7 @@ export function PersonalizationSection() {
                             </div>
                         ) : (
                             <Card className="p-8 text-center border-dashed border-2">
-                                <Heart className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                                <FontAwesomeIcon icon={faHeart} className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                                 <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                                     Your watchlist is empty
                                 </h4>

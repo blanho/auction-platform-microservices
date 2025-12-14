@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Clock, Flame } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock, faFire } from "@fortawesome/free-solid-svg-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Auction } from "@/types/auction";
@@ -51,7 +52,7 @@ function Countdown({ endTime }: CountdownProps) {
                 isUrgent ? "text-red-500" : "text-slate-900 dark:text-white"
             }`}
         >
-            <Clock className={`w-4 h-4 ${isUrgent ? "animate-pulse" : ""}`} />
+            <FontAwesomeIcon icon={faClock} className={`w-4 h-4 ${isUrgent ? "animate-pulse" : ""}`} />
             <span>
                 {formatTime(timeLeft.hours)}:{formatTime(timeLeft.minutes)}:
                 {formatTime(timeLeft.seconds)}
@@ -86,7 +87,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                     {/* Urgent Badge */}
                     <div className="absolute top-3 left-3 z-10">
                         <Badge className="bg-red-500 text-white px-2 py-0.5 text-xs animate-pulse">
-                            <Flame className="w-3 h-3 mr-1" />
+                            <FontAwesomeIcon icon={faFire} className="w-3 h-3 mr-1" />
                             Ending Soon
                         </Badge>
                     </div>
@@ -186,7 +187,7 @@ export function EndingSoonSection() {
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                            <Flame className="w-5 h-5 text-red-500" />
+                            <FontAwesomeIcon icon={faFire} className="w-5 h-5 text-red-500" />
                         </div>
                         <div>
                             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">

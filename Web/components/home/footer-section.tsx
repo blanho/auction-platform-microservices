@@ -10,21 +10,24 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    Shield,
-    CreditCard,
-    HelpCircle,
-    Mail,
-    Phone,
-    MapPin,
-    Facebook,
-    Twitter,
-    Instagram,
-    Youtube,
-    Lock,
-    CheckCircle,
-    ArrowRight,
-} from "lucide-react";
+    faShieldHalved,
+    faCreditCard,
+    faCircleQuestion,
+    faEnvelope,
+    faPhone,
+    faLocationDot,
+    faLock,
+    faCircleCheck,
+    faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+    faFacebook,
+    faTwitter,
+    faInstagram,
+    faYoutube,
+} from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
 
 const feeStructure = [
@@ -123,7 +126,7 @@ export function FooterSection() {
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 rounded-lg bg-purple-500/20">
-                                    <CreditCard className="w-6 h-6 text-purple-400" />
+                                    <FontAwesomeIcon icon={faCreditCard} className="w-6 h-6 text-purple-400" />
                                 </div>
                                 <h3 className="text-xl font-bold">Fee Structure</h3>
                             </div>
@@ -155,14 +158,14 @@ export function FooterSection() {
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 rounded-lg bg-green-500/20">
-                                    <Shield className="w-6 h-6 text-green-400" />
+                                    <FontAwesomeIcon icon={faShieldHalved} className="w-6 h-6 text-green-400" />
                                 </div>
                                 <h3 className="text-xl font-bold">Buyer Protection</h3>
                             </div>
                             <ul className="space-y-3">
                                 {buyerProtection.map((item, index) => (
                                     <li key={index} className="flex items-start gap-3">
-                                        <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+                                        <FontAwesomeIcon icon={faCircleCheck} className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
                                         <span className="text-slate-300">{item}</span>
                                     </li>
                                 ))}
@@ -179,7 +182,7 @@ export function FooterSection() {
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 rounded-lg bg-blue-500/20">
-                                    <HelpCircle className="w-6 h-6 text-blue-400" />
+                                    <FontAwesomeIcon icon={faCircleQuestion} className="w-6 h-6 text-blue-400" />
                                 </div>
                                 <h3 className="text-xl font-bold">Common Questions</h3>
                             </div>
@@ -206,7 +209,7 @@ export function FooterSection() {
                             >
                                 <Link href="/faq">
                                     View all FAQs
-                                    <ArrowRight className="ml-2 w-4 h-4" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                                 </Link>
                             </Button>
                         </motion.div>
@@ -254,16 +257,16 @@ export function FooterSection() {
                         </p>
                         <div className="flex gap-3">
                             <Button variant="ghost" size="icon" className="hover:text-purple-400">
-                                <Facebook className="w-5 h-5" />
+                                <FontAwesomeIcon icon={faFacebook} className="w-5 h-5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="hover:text-purple-400">
-                                <Twitter className="w-5 h-5" />
+                                <FontAwesomeIcon icon={faTwitter} className="w-5 h-5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="hover:text-purple-400">
-                                <Instagram className="w-5 h-5" />
+                                <FontAwesomeIcon icon={faInstagram} className="w-5 h-5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="hover:text-purple-400">
-                                <Youtube className="w-5 h-5" />
+                                <FontAwesomeIcon icon={faYoutube} className="w-5 h-5" />
                             </Button>
                         </div>
                     </div>
@@ -324,15 +327,15 @@ export function FooterSection() {
                         <h4 className="font-semibold mb-4">Contact</h4>
                         <ul className="space-y-3">
                             <li className="flex items-center gap-2 text-slate-400 text-sm">
-                                <Mail className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faEnvelope} className="w-4 h-4" />
                                 support@auctionhub.com
                             </li>
                             <li className="flex items-center gap-2 text-slate-400 text-sm">
-                                <Phone className="w-4 h-4" />
+                                <FontAwesomeIcon icon={faPhone} className="w-4 h-4" />
                                 1-800-AUCTION
                             </li>
                             <li className="flex items-start gap-2 text-slate-400 text-sm">
-                                <MapPin className="w-4 h-4 mt-0.5" />
+                                <FontAwesomeIcon icon={faLocationDot} className="w-4 h-4 mt-0.5" />
                                 123 Auction Lane
                                 <br />
                                 New York, NY 10001
@@ -347,7 +350,7 @@ export function FooterSection() {
                 <div className="container mx-auto px-4 py-6">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-slate-400 text-sm">
-                            <Lock className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faLock} className="w-4 h-4" />
                             <span>256-bit SSL Encryption</span>
                             <span className="mx-2">•</span>
                             <span>PCI DSS Compliant</span>

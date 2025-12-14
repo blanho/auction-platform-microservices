@@ -1,36 +1,51 @@
 "use client";
 
-import { Shield, Truck, Award, Clock, BadgeCheck, Headphones } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+    faShieldHalved, 
+    faTruck, 
+    faAward, 
+    faClock, 
+    faCircleCheck, 
+    faHeadset 
+} from "@fortawesome/free-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { AnimatedSection } from "@/components/ui/animated";
 
-const VALUE_PROPS = [
+interface ValueProp {
+    icon: IconDefinition;
+    title: string;
+    description: string;
+}
+
+const VALUE_PROPS: ValueProp[] = [
     {
-        icon: Shield,
+        icon: faShieldHalved,
         title: "Buyer Protection",
         description: "100% money-back guarantee",
     },
     {
-        icon: BadgeCheck,
+        icon: faCircleCheck,
         title: "Verified Sellers",
         description: "Every seller is vetted",
     },
     {
-        icon: Truck,
+        icon: faTruck,
         title: "Secure Shipping",
         description: "Tracked & insured delivery",
     },
     {
-        icon: Clock,
+        icon: faClock,
         title: "24/7 Auctions",
         description: "Bid anytime, anywhere",
     },
     {
-        icon: Award,
+        icon: faAward,
         title: "Authenticity",
         description: "Expert item verification",
     },
     {
-        icon: Headphones,
+        icon: faHeadset,
         title: "Support",
         description: "Help when you need it",
     },
@@ -47,7 +62,7 @@ export function ValuePropsBanner() {
                             className="flex items-center gap-3 p-3 lg:p-0"
                         >
                             <div className="shrink-0 w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                                <prop.icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                <FontAwesomeIcon icon={prop.icon} className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div className="min-w-0">
                                 <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">

@@ -5,7 +5,8 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Flame, ArrowRight, Heart, Loader2, Eye, Users } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClock, faFire, faArrowRight, faHeart, faSpinner, faEye, faUsers } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useFeaturedAuctions } from "@/hooks/use-auctions";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
@@ -49,13 +50,13 @@ function AuctionCard({ auction, featured = false }: { auction: Auction; featured
                 <div className="absolute top-3 left-3 flex flex-wrap gap-2">
                     {auction.isFeatured && (
                         <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-                            <Flame className="w-3 h-3 mr-1" />
+                            <FontAwesomeIcon icon={faFire} className="w-3 h-3 mr-1" />
                             Featured
                         </Badge>
                     )}
                     {isEndingSoon && (
                         <Badge className="bg-red-500 text-white border-0 shadow-lg">
-                            <Clock className="w-3 h-3 mr-1" />
+                            <FontAwesomeIcon icon={faClock} className="w-3 h-3 mr-1" />
                             Ending Soon
                         </Badge>
                     )}
@@ -65,17 +66,17 @@ function AuctionCard({ auction, featured = false }: { auction: Auction; featured
                     onClick={(e) => { e.preventDefault(); setIsLiked(!isLiked); }}
                     className="absolute top-3 right-3 p-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg hover:scale-110 transition-transform"
                 >
-                    <Heart className={`w-5 h-5 transition-colors ${isLiked ? "fill-red-500 text-red-500" : "text-slate-600 dark:text-slate-400"}`} />
+                    <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 transition-colors ${isLiked ? "text-red-500" : "text-slate-600 dark:text-slate-400"}`} />
                 </button>
 
                 <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="flex items-center gap-3 text-white/90">
                         <div className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faEye} className="w-4 h-4" />
                             <span className="text-sm">{"bidCount" in auction ? String(auction.bidCount) : "12"}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faUsers} className="w-4 h-4" />
                             <span className="text-sm">{"bidCount" in auction ? String(auction.bidCount) : "5"} bids</span>
                         </div>
                     </div>
@@ -113,7 +114,7 @@ function AuctionCard({ auction, featured = false }: { auction: Auction; featured
                 >
                     <Link href={`/auctions/${auction.id}`}>
                         Place Bid
-                        <ArrowRight className="ml-2 w-4 h-4" />
+                        <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                     </Link>
                 </Button>
             </CardContent>
@@ -129,7 +130,7 @@ export function FeaturedAuctionsSection() {
             <section className="py-20 bg-white dark:bg-slate-950">
                 <div className="container mx-auto px-4">
                     <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                        <FontAwesomeIcon icon={faSpinner} className="w-8 h-8 animate-spin text-purple-600" />
                     </div>
                 </div>
             </section>
@@ -158,7 +159,7 @@ export function FeaturedAuctionsSection() {
                     <Button variant="outline" className="self-start md:self-auto h-12 px-6 border-2 rounded-full hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all" asChild>
                         <Link href="/auctions">
                             View All Auctions
-                            <ArrowRight className="ml-2 w-4 h-4" />
+                            <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
                         </Link>
                     </Button>
                 </div>

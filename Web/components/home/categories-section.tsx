@@ -2,32 +2,34 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    Car,
-    Watch,
-    Gem,
-    Paintbrush,
-    Home,
-    Smartphone,
-    ShoppingBag,
-    Sparkles,
-    ChevronLeft,
-    ChevronRight,
-    ArrowRight,
-} from "lucide-react";
+    faCar,
+    faClock,
+    faGem,
+    faPaintBrush,
+    faHome,
+    faMobileScreen,
+    faBagShopping,
+    faWandSparkles,
+    faChevronLeft,
+    faChevronRight,
+    faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Button } from "@/components/ui/button";
 import { Category } from "@/types/auction";
 import { auctionService } from "@/services/auction.service";
 
-const iconMap: Record<string, React.ElementType> = {
-    car: Car,
-    watch: Watch,
-    gem: Gem,
-    art: Paintbrush,
-    home: Home,
-    electronics: Smartphone,
-    fashion: ShoppingBag,
-    default: Sparkles,
+const iconMap: Record<string, IconDefinition> = {
+    car: faCar,
+    watch: faClock,
+    gem: faGem,
+    art: faPaintBrush,
+    home: faHome,
+    electronics: faMobileScreen,
+    fashion: faBagShopping,
+    default: faWandSparkles,
 };
 
 const colorMap: Record<string, { bg: string; text: string; border: string }> = {
@@ -104,10 +106,10 @@ export function CategoriesSection() {
                     </div>
                     <div className="hidden sm:flex gap-2">
                         <Button variant="outline" size="icon" onClick={() => scroll("left")} className="rounded-full h-12 w-12">
-                            <ChevronLeft className="h-5 w-5" />
+                            <FontAwesomeIcon icon={faChevronLeft} className="h-5 w-5" />
                         </Button>
                         <Button variant="outline" size="icon" onClick={() => scroll("right")} className="rounded-full h-12 w-12">
-                            <ChevronRight className="h-5 w-5" />
+                            <FontAwesomeIcon icon={faChevronRight} className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
@@ -118,7 +120,7 @@ export function CategoriesSection() {
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
                     {categories.map((category) => {
-                        const Icon = getIcon(category.icon);
+                        const icon = getIcon(category.icon);
                         const colors = getColors(category.icon);
 
                         return (
@@ -130,7 +132,7 @@ export function CategoriesSection() {
                                 <div className={`relative w-48 h-56 rounded-2xl overflow-hidden ${colors.bg} border ${colors.border} transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
                                         <div className={`w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center mb-5`}>
-                                            <Icon className={`w-8 h-8 ${colors.text}`} />
+                                            <FontAwesomeIcon icon={icon} className={`w-8 h-8 ${colors.text}`} />
                                         </div>
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-white text-center">
                                             {category.name}
@@ -140,7 +142,7 @@ export function CategoriesSection() {
                                         </p>
                                         <div className={`mt-4 flex items-center gap-1 ${colors.text} text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity`}>
                                             <span>Explore</span>
-                                            <ArrowRight className="w-4 h-4" />
+                                            <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
                                         </div>
                                     </div>
                                 </div>
@@ -152,7 +154,7 @@ export function CategoriesSection() {
                         <div className="relative w-48 h-56 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border-2 border-dashed border-slate-300 dark:border-slate-700 transition-all duration-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1">
                             <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
                                 <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center mb-5">
-                                    <ArrowRight className="w-8 h-8 text-slate-400 group-hover:text-purple-500 transition-colors" />
+                                    <FontAwesomeIcon icon={faArrowRight} className="w-8 h-8 text-slate-400 group-hover:text-purple-500 transition-colors" />
                                 </div>
                                 <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 text-center transition-colors">
                                     View All
