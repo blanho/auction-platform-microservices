@@ -184,8 +184,14 @@ export default function AdminSettingsPage() {
 
     if (isLoading) {
         return (
-            <AdminLayout title="Settings" description="Configure platform settings">
-                <div className="space-y-6">
+            <AdminLayout>
+                <div className="p-6 lg:p-8 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+                            <p className="text-muted-foreground">Configure platform settings</p>
+                        </div>
+                    </div>
                     <SettingsSkeleton />
                     <SettingsSkeleton />
                     <SettingsSkeleton />
@@ -195,12 +201,13 @@ export default function AdminSettingsPage() {
     }
 
     return (
-        <AdminLayout
-            title="Settings"
-            description="Configure platform settings"
-        >
-            <div className="space-y-6">
-                <div className="flex justify-end">
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+                        <p className="text-muted-foreground">Configure platform settings</p>
+                    </div>
                     <Button
                         variant="outline"
                         size="sm"

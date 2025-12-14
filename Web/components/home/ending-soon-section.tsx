@@ -48,7 +48,7 @@ function Countdown({ endTime }: CountdownProps) {
     return (
         <div
             className={`flex items-center gap-1.5 font-mono text-sm font-bold ${
-                isUrgent ? "text-red-500" : "text-zinc-900 dark:text-white"
+                isUrgent ? "text-red-500" : "text-slate-900 dark:text-white"
             }`}
         >
             <Clock className={`w-4 h-4 ${isUrgent ? "animate-pulse" : ""}`} />
@@ -82,7 +82,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
             transition={{ delay: index * 0.1 }}
         >
             <Link href={`/auctions/${auction.id}`} className="group block">
-                <div className="relative bg-white dark:bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-400 transition-all duration-300 hover:shadow-xl">
+                <div className="relative bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-400 transition-all duration-300 hover:shadow-xl">
                     {/* Urgent Badge */}
                     <div className="absolute top-3 left-3 z-10">
                         <Badge className="bg-red-500 text-white px-2 py-0.5 text-xs animate-pulse">
@@ -110,12 +110,12 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
 
                     {/* Content */}
                     <div className="p-4">
-                        <h3 className="font-semibold text-zinc-900 dark:text-white truncate group-hover:text-amber-500 transition-colors">
+                        <h3 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-amber-500 transition-colors">
                             {auction.year} {auction.make} {auction.model}
                         </h3>
                         <div className="mt-2 flex items-center justify-between">
                             <div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <div className="text-xs text-slate-500 dark:text-slate-400">
                                     Current Bid
                                 </div>
                                 <div className="text-lg font-bold text-amber-500">
@@ -124,7 +124,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                             </div>
                             <Button
                                 size="sm"
-                                className="bg-amber-400 hover:bg-amber-500 text-zinc-900 font-semibold"
+                                className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-semibold"
                             >
                                 Bid Now
                             </Button>
@@ -161,13 +161,13 @@ export function EndingSoonSection() {
 
     if (isLoading) {
         return (
-            <section className="py-16 bg-white dark:bg-zinc-950">
+            <section className="py-16 bg-white dark:bg-slate-950">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[...Array(4)].map((_, i) => (
                             <div
                                 key={i}
-                                className="h-64 bg-zinc-200 dark:bg-zinc-800 rounded-2xl animate-pulse"
+                                className="h-64 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"
                             />
                         ))}
                     </div>
@@ -181,7 +181,7 @@ export function EndingSoonSection() {
     }
 
     return (
-        <section className="py-16 bg-white dark:bg-zinc-950">
+        <section className="py-16 bg-white dark:bg-slate-950">
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
@@ -189,10 +189,10 @@ export function EndingSoonSection() {
                             <Flame className="w-5 h-5 text-red-500" />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">
+                            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                                 Ending Soon
                             </h2>
-                            <p className="text-zinc-600 dark:text-zinc-400">
+                            <p className="text-slate-600 dark:text-slate-400">
                                 Don&apos;t miss these auctions!
                             </p>
                         </div>

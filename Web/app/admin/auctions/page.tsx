@@ -7,8 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MainLayout } from '@/components/layout/main-layout';
-import { RequireAdmin } from '@/components/auth/require-admin';
+import { AdminLayout } from '@/components/layout/admin-layout';
 import { AuctionDataTable } from '@/features/auction/auction-data-table';
 import { ImportAuctionsDialog } from '@/features/auction/import-auctions-dialog';
 import { ExportAuctionsDialog } from '@/features/auction/export-auctions-dialog';
@@ -26,7 +25,7 @@ import { Auction } from '@/types/auction';
 import { PaginatedResponse } from '@/types';
 import { API_ENDPOINTS } from '@/constants/api';
 
-function AdminAuctionsContent() {
+export default function AdminAuctionsPage() {
     const [auctions, setAuctions] = useState<Auction[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<unknown>(null);
@@ -51,16 +50,10 @@ function AdminAuctionsContent() {
     }, [fetchAuctions]);
 
     return (
-        <MainLayout>
-            <div className="container py-8">
-                <Breadcrumb className="mb-6">
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <Breadcrumb>
                     <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href="/">Home</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
                                 <Link href="/admin">Admin</Link>
@@ -73,9 +66,9 @@ function AdminAuctionsContent() {
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <div className="mb-8 flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Auctions Management</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Auctions Management</h1>
                         <p className="text-muted-foreground">
                             Manage all auctions in the system
                         </p>
@@ -159,14 +152,6 @@ function AdminAuctionsContent() {
                     </>
                 )}
             </div>
-        </MainLayout>
-    );
-}
-
-export default function AdminAuctionsPage() {
-    return (
-        <RequireAdmin>
-            <AdminAuctionsContent />
-        </RequireAdmin>
+        </AdminLayout>
     );
 }

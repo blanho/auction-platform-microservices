@@ -1,273 +1,548 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-    Flame,
-    ArrowRight,
-    TrendingUp,
-    Users,
-    Star,
-} from "lucide-react";
 import Link from "next/link";
-import { useFeaturedAuctions } from "@/hooks/use-auctions";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faGavel,
+  faFire,
+  faBolt,
+  faSearch,
+  faArrowRight,
+  faUsers,
+  faClock,
+  faChartLine,
+  faShieldHalved,
+  faCircleCheck,
+  faStar,
+  faTag,
+  faChevronLeft,
+  faChevronRight
+} from "@fortawesome/free-solid-svg-icons";
+import { useFeaturedAuctions, useCategories } from "@/hooks/use-auctions";
+import { useQuickStats, useTrendingSearches } from "@/hooks/use-analytics";
 import { useCountdown } from "@/hooks/use-countdown";
-import { VALUE_PROPS, TRUST_LOGOS, HERO_CONTENT } from "@/constants/landing";
+import { Auction, Category } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
 
-interface AuctionData {
-    id?: string;
-    make?: string;
-    model?: string;
-    currentHighBid?: number;
-    reservePrice?: number;
-    auctionEnd?: string;
-    isFeatured?: boolean;
-    categoryName?: string;
+interface AuctionCardProps {
+  auction: Auction;
+  isActive: boolean;
 }
 
-function AuctionShowcase({ auction, imageUrl }: { auction: AuctionData | null | undefined; imageUrl: string }) {
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-    const rotateX = useSpring(useTransform(mouseY, [-300, 300], [5, -5]), { stiffness: 150, damping: 20 });
-    const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-5, 5]), { stiffness: 150, damping: 20 });
+function AuctionCard({ auction, isActive }: AuctionCardProps) {
+  const timeLeft = useCountdown(auction.auctionEnd);
 
-    const handleMouse = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            mouseX.set(e.clientX - rect.left - rect.width / 2);
-            mouseY.set(e.clientY - rect.top - rect.height / 2);
-        },
-        [mouseX, mouseY]
-    );
+  const imageUrl = useMemo(() => {
+    const primaryFile = auction.files?.find((f) => f.isPrimary);
+    return primaryFile?.url || auction.files?.[0]?.url || "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800";
+  }, [auction.files]);
 
-    const handleMouseLeave = useCallback(() => {
-        mouseX.set(0);
-        mouseY.set(0);
-    }, [mouseX, mouseY]);
+  const formatTime = (value: number) => value.toString().padStart(2, "0");
 
-    const timeLeft = useCountdown(auction?.auctionEnd || null);
+  const isUrgent = timeLeft && (timeLeft.days === 0 && timeLeft.hours < 2);
 
-    const formatTime = (value: number) => value.toString().padStart(2, "0");
-    const currentBid = auction?.currentHighBid || auction?.reservePrice || 0;
-    const title = auction ? `${auction.make} ${auction.model}` : "Luxury Timepiece Collection";
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: isActive ? 1 : 0.7, scale: isActive ? 1 : 0.9 }}
+      transition={{ duration: 0.4 }}
+      className={`relative bg-white rounded-2xl shadow-2xl overflow-hidden transition-all ${isActive ? 'ring-2 ring-purple-500/50' : ''}`}
+    >
+      <div className="absolute top-3 left-3 z-20 flex gap-2">
+        <Badge className="bg-emerald-500 text-white shadow-lg border-0 text-xs">
+          <PulsingDot className="mr-1.5" />
+          Live
+        </Badge>
+        {auction.isFeatured && (
+          <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-0 text-xs">
+            <FontAwesomeIcon icon={faFire} className="w-3 h-3 mr-1" />
+            Hot
+          </Badge>
+        )}
+      </div>
 
-    return (
-        <motion.div
-            onMouseMove={handleMouse}
-            onMouseLeave={handleMouseLeave}
-            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-            className="relative perspective-1000"
-        >
-            <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="absolute top-4 left-4 z-20 flex gap-2">
-                    <Badge className="bg-red-500 text-white shadow-lg border-0">
-                        <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse" />
-                        LIVE NOW
-                    </Badge>
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg border-0">
-                        <Flame className="w-3 h-3 mr-1" />
-                        Hot
-                    </Badge>
-                </div>
+      <div className="relative h-48 sm:h-56 overflow-hidden">
+        <Image
+          src={imageUrl}
+          alt={`${auction.make} ${auction.model}`}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          unoptimized={imageUrl.includes("unsplash")}
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="text-[10px] text-white/70 uppercase tracking-wider mb-0.5">{auction.categoryName}</p>
+          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-1">{auction.make} {auction.model}</h3>
+        </div>
+      </div>
 
-                <div className="relative h-64 lg:h-80 overflow-hidden">
-                    <Image
-                        src={imageUrl}
-                        alt={title}
-                        fill
-                        className="object-cover"
-                        unoptimized={imageUrl.includes("unsplash")}
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-xs text-white/70 uppercase tracking-wider mb-1">{auction?.categoryName || "Luxury Watches"}</p>
-                        <h3 className="text-xl lg:text-2xl font-bold text-white line-clamp-2">{title}</h3>
-                    </div>
-                </div>
-
-                <div className="p-5 space-y-4 bg-gradient-to-b from-white to-slate-50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs text-slate-500 uppercase tracking-wider">Current Bid</p>
-                            <p className="text-3xl font-bold text-slate-900">
-                                ${currentBid.toLocaleString()}
-                            </p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider">Time Left</p>
-                            <div className="flex gap-1 mt-1">
-                                {[
-                                    { value: timeLeft?.hours ?? 0, label: "h" },
-                                    { value: timeLeft?.minutes ?? 0, label: "m" },
-                                    { value: timeLeft?.seconds ?? 0, label: "s" },
-                                ].map((item, idx) => (
-                                    <span key={idx} className="text-lg font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
-                                        {formatTime(item.value)}{item.label}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1 text-slate-600">
-                                <Users className="w-4 h-4" />
-                                <span className="font-medium">23 bidders</span>
-                            </span>
-                            <span className="flex items-center gap-1 text-green-600">
-                                <TrendingUp className="w-4 h-4" />
-                                <span className="font-medium">+$2,400</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <Button
-                        className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white transition-all"
-                        asChild
-                    >
-                        <Link href={auction?.id ? `/auctions/${auction.id}` : "/auctions"}>
-                            Place Bid Now
-                            <ArrowRight className="ml-2 w-4 h-4" />
-                        </Link>
-                    </Button>
-                </div>
+      <div className="p-4 space-y-3 bg-gradient-to-b from-white to-slate-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Current Bid</p>
+            <p className="text-xl sm:text-2xl font-bold text-slate-900">
+              ${(auction.currentHighBid || auction.reservePrice || 0).toLocaleString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Time Left</p>
+            <div className={`flex gap-0.5 mt-0.5 ${isUrgent ? 'text-red-600' : 'text-slate-900'}`}>
+              {timeLeft && timeLeft.days > 0 && (
+                <span className="text-sm font-mono font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                  {timeLeft.days}d
+                </span>
+              )}
+              <span className="text-sm font-mono font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                {formatTime(timeLeft?.hours ?? 0)}h
+              </span>
+              <span className="text-sm font-mono font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                {formatTime(timeLeft?.minutes ?? 0)}m
+              </span>
             </div>
-        </motion.div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span className="flex items-center gap-1">
+            <FontAwesomeIcon icon={faUsers} className="w-3 h-3" />
+            Active bidders
+          </span>
+          <span className="flex items-center gap-1 text-emerald-600">
+            <FontAwesomeIcon icon={faChartLine} className="w-3 h-3" />
+            <span className="font-medium">+${Math.max(0, (auction.currentHighBid || 0) - (auction.reservePrice || 0)).toLocaleString()}</span>
+          </span>
+        </div>
+
+        <Button
+          className="w-full h-10 text-sm font-semibold bg-slate-900 hover:bg-slate-800 text-white"
+          asChild
+        >
+          <Link href={`/auctions/${auction.id}`}>
+            Place Bid
+            <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-3 h-3" />
+          </Link>
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+function AuctionCarousel({ auctions, isLoading }: { auctions: Auction[]; isLoading: boolean }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  
+  const auctionList = Array.isArray(auctions) ? auctions : [];
+
+  useEffect(() => {
+    if (auctionList.length === 0) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % Math.min(auctionList.length, 5));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [auctionList.length]);
+
+  const handlePrev = () => {
+    setActiveIndex((prev) => (prev - 1 + Math.min(auctionList.length, 5)) % Math.min(auctionList.length, 5));
+  };
+
+  const handleNext = () => {
+    setActiveIndex((prev) => (prev + 1) % Math.min(auctionList.length, 5));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="relative w-full max-w-sm mx-auto">
+        <Skeleton className="h-80 w-full rounded-2xl bg-white/10" />
+      </div>
     );
+  }
+
+  if (auctionList.length === 0) {
+    return (
+      <div className="relative w-full max-w-sm mx-auto bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
+        <FontAwesomeIcon icon={faGavel} className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+        <p className="text-slate-400">No featured auctions available</p>
+      </div>
+    );
+  }
+
+  const displayAuctions = auctionList.slice(0, 5);
+
+  return (
+    <div className="relative w-full max-w-sm mx-auto">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeIndex}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          <AuctionCard auction={displayAuctions[activeIndex]} isActive={true} />
+        </motion.div>
+      </AnimatePresence>
+
+      {displayAuctions.length > 1 && (
+        <>
+          <button
+            onClick={handlePrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+          >
+            <FontAwesomeIcon icon={faChevronLeft} className="w-3 h-3 text-slate-700" />
+          </button>
+          <button
+            onClick={handleNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+          >
+            <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3 text-slate-700" />
+          </button>
+
+          <div className="flex justify-center gap-1.5 mt-4">
+            {displayAuctions.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveIndex(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  idx === activeIndex ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SearchBar() {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: trendingSearches, isLoading: trendingLoading } = useTrendingSearches(5);
+  const { data: categories } = useCategories();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/auctions?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleTrendingClick = (term: string) => {
+    router.push(`/auctions?search=${encodeURIComponent(term)}`);
+  };
+
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/auctions?category=${categoryId}`);
+  };
+
+  const topCategories = categories?.slice(0, 4) || [];
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={handleSearch} className="relative">
+        <div className="flex">
+          <div className="relative flex-1">
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            />
+            <Input
+              type="text"
+              placeholder="Search for watches, collectibles, electronics..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-12 sm:h-14 pl-11 pr-4 text-base rounded-l-xl rounded-r-none border-r-0 bg-white/95 backdrop-blur border-white/20 focus:border-purple-400 focus:ring-purple-400/20"
+            />
+          </div>
+          <Button
+            type="submit"
+            className="h-12 sm:h-14 px-6 sm:px-8 rounded-l-none rounded-r-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
+          >
+            <span className="hidden sm:inline">Search</span>
+            <FontAwesomeIcon icon={faSearch} className="sm:hidden w-4 h-4" />
+          </Button>
+        </div>
+      </form>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {!trendingLoading && trendingSearches.length > 0 && (
+          <>
+            <span className="text-xs text-slate-400 flex items-center gap-1">
+              <FontAwesomeIcon icon={faFire} className="w-3 h-3 text-orange-400" />
+              Trending:
+            </span>
+            {trendingSearches.slice(0, 4).map((search, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleTrendingClick(search.searchTerm)}
+                className="px-2.5 py-1 text-xs rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+              >
+                {search.searchTerm}
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+
+      {topCategories.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-slate-400 flex items-center gap-1">
+            <FontAwesomeIcon icon={faTag} className="w-3 h-3" />
+            Categories:
+          </span>
+          {topCategories.map((category: Category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryClick(category.id)}
+              className="px-2.5 py-1 text-xs rounded-full border border-white/20 hover:border-white/40 text-white/70 hover:text-white transition-colors"
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LiveStats() {
+  const { data: stats, isLoading } = useQuickStats();
+
+  const statItems = [
+    {
+      icon: faBolt,
+      value: stats?.liveAuctions ?? 0,
+      label: "Live Auctions",
+      change: stats?.liveAuctionsChange,
+      color: "text-emerald-400"
+    },
+    {
+      icon: faUsers,
+      value: stats?.activeUsers ?? 0,
+      label: "Active Bidders",
+      change: stats?.activeUsersChange,
+      color: "text-blue-400"
+    },
+    {
+      icon: faClock,
+      value: stats?.endingSoon ?? 0,
+      label: "Ending Soon",
+      change: stats?.endingSoonChange,
+      color: "text-orange-400"
+    }
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white/5 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/10">
+            <Skeleton className="w-6 h-6 rounded-lg bg-white/10 mb-2" />
+            <Skeleton className="w-12 h-6 bg-white/10 mb-1" />
+            <Skeleton className="w-16 h-3 bg-white/10" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      {statItems.map((stat, idx) => (
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.1 }}
+          className="bg-white/5 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/10 hover:border-white/20 transition-colors"
+        >
+          <FontAwesomeIcon icon={stat.icon} className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color} mb-2`} />
+          <p className="text-xl sm:text-2xl font-bold text-white">{stat.value.toLocaleString()}</p>
+          <p className="text-[10px] sm:text-xs text-slate-400">{stat.label}</p>
+          {stat.change && (
+            <p className="text-[10px] text-emerald-400 mt-0.5">{stat.change}</p>
+          )}
+        </motion.div>
+      ))}
+    </div>
+  );
 }
 
 export function HeroSection() {
-    const { data: featuredAuctions } = useFeaturedAuctions(1);
-    const heroAuction = featuredAuctions?.[0] as AuctionData | undefined;
+  const { data: featuredAuctions, isLoading: auctionsLoading } = useFeaturedAuctions(5);
 
-    const imageUrl = useMemo(() => {
-        if (!heroAuction) return "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800";
-        const auctionData = heroAuction as { files?: Array<{ isPrimary?: boolean; url: string }> };
-        const primaryFile = auctionData.files?.find((f) => f.isPrimary);
-        return primaryFile?.url || auctionData.files?.[0]?.url || "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800";
-    }, [heroAuction]);
+  return (
+    <section className="relative min-h-[90vh] overflow-hidden bg-slate-950">
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/30 via-slate-950 to-slate-950" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]" />
+      </div>
 
-    return (
-        <section className="relative min-h-screen overflow-hidden bg-slate-950">
-            <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/40 via-slate-950 to-slate-950" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-purple-600/20 rounded-full blur-[120px]" />
-                <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-[120px]" />
+      <div className="container relative mx-auto px-4 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="space-y-8 text-center lg:text-left">
+            <div className="space-y-5">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30"
+              >
+                <PulsingDot />
+                <span className="text-xs sm:text-sm font-medium text-emerald-400">Live Bidding Active</span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight"
+              >
+                <span className="block text-white">
+                  Discover Unique
+                </span>
+                <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
+                  Treasures & Deals
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm sm:text-base lg:text-lg text-slate-400 max-w-lg mx-auto lg:mx-0 leading-relaxed"
+              >
+                Join thousands of collectors and savvy shoppers. Bid on exclusive items, sell your valuables, and save up to <span className="text-emerald-400 font-semibold">50% off retail prices</span>.
+              </motion.p>
             </div>
 
-            <div className="container relative mx-auto px-4 pt-20 pb-16 lg:pt-32 lg:pb-24">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-                    <div className="space-y-10 text-center lg:text-left">
-                        <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                                <PulsingDot />
-                                <span className="text-sm font-medium text-green-400">{HERO_CONTENT.BADGE_TEXT}</span>
-                            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <SearchBar />
+            </motion.div>
 
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
-                                <span className="block text-white">
-                                    {HERO_CONTENT.HEADLINE.LINE_1}
-                                </span>
-                                <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
-                                    {HERO_CONTENT.HEADLINE.LINE_2}
-                                </span>
-                            </h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <LiveStats />
+            </motion.div>
 
-                            <p className="text-lg sm:text-xl text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                                {HERO_CONTENT.SUBHEADLINE.TEXT} <span className="text-white font-semibold">{HERO_CONTENT.SUBHEADLINE.MEMBERS}</span> {HERO_CONTENT.SUBHEADLINE.SAVINGS_TEXT}{" "}
-                                <span className="text-green-400 font-semibold">{HERO_CONTENT.SUBHEADLINE.SAVINGS_AMOUNT}</span>. 
-                                {HERO_CONTENT.SUBHEADLINE.ENDING}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                            <Button
-                                size="lg"
-                                className="h-14 px-8 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100 shadow-xl shadow-white/10 transition-all duration-300"
-                                asChild
-                            >
-                                <Link href="/auctions">
-                                    {HERO_CONTENT.CTA.PRIMARY}
-                                    <ArrowRight className="ml-2 w-5 h-5" />
-                                </Link>
-                            </Button>
-
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className="h-14 px-8 text-base font-semibold border-white/20 text-white hover:bg-white/10 backdrop-blur-sm transition-colors"
-                                asChild
-                            >
-                                <Link href="/auth/register">
-                                    {HERO_CONTENT.CTA.SECONDARY}
-                                </Link>
-                            </Button>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-2">
-                            {VALUE_PROPS.map((prop, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-slate-400">
-                                    <prop.icon className="w-4 h-4 text-green-400" />
-                                    <span className="text-sm">{prop.text}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="pt-6 border-t border-white/10">
-                            <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Featured in</p>
-                            <div className="flex items-center justify-center lg:justify-start gap-8">
-                                {TRUST_LOGOS.map((logo, idx) => (
-                                    <span key={idx} className="text-slate-600 font-bold text-sm tracking-wide">
-                                        {logo.text}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="relative">
-                        <AuctionShowcase auction={heroAuction} imageUrl={imageUrl} />
-                        
-                        <div className="absolute -bottom-6 -left-6 hidden lg:block">
-                            <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white shadow-2xl">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                                    <TrendingUp className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-slate-900">$2.4M+</p>
-                                    <p className="text-sm text-slate-500">Saved by members this month</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="absolute -top-4 -right-4 hidden lg:block">
-                            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white shadow-2xl">
-                                <div className="flex -space-x-2">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white flex items-center justify-center text-xs font-bold text-white">
-                                            {String.fromCharCode(64 + i)}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="pl-2">
-                                    <div className="flex items-center gap-1">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                        ))}
-                                    </div>
-                                    <p className="text-xs text-slate-600 font-medium">12,847 reviews</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-2"
+            >
+              {[
+                { icon: faShieldHalved, text: "Buyer Protection" },
+                { icon: faCircleCheck, text: "Verified Sellers" },
+                { icon: faStar, text: "Trusted Platform" }
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-1.5 text-slate-400">
+                  <FontAwesomeIcon icon={item.icon} className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-xs sm:text-sm">{item.text}</span>
                 </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2"
+            >
+              <Button
+                size="lg"
+                className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/25"
+                asChild
+              >
+                <Link href="/auctions">
+                  Explore Auctions
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                size="lg"
+                className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-semibold border border-white/30 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+                asChild
+              >
+                <Link href="/dashboard/listings/new">
+                  <FontAwesomeIcon icon={faGavel} className="mr-2 w-4 h-4" />
+                  Start Selling
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="relative"
+          >
+            <AuctionCarousel auctions={featuredAuctions || []} isLoading={auctionsLoading} />
+
+            <div className="hidden lg:block absolute -bottom-4 -left-8 z-10">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white shadow-xl"
+              >
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <FontAwesomeIcon icon={faChartLine} className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-slate-900">$2.4M+</p>
+                  <p className="text-xs text-slate-500">Saved this month</p>
+                </div>
+              </motion.div>
             </div>
-        </section>
-    );
+
+            <div className="hidden lg:block absolute -top-2 -right-6 z-10">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-xl"
+              >
+                <div className="flex -space-x-1.5">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white flex items-center justify-center text-[8px] font-bold text-white">
+                      {String.fromCharCode(64 + i)}
+                    </div>
+                  ))}
+                </div>
+                <div className="pl-1">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <FontAwesomeIcon key={i} icon={faStar} className="w-2.5 h-2.5 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-600">12.8k reviews</p>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
 }

@@ -225,23 +225,25 @@ export default function AdminPage() {
         : [];
 
     return (
-        <AdminLayout
-            title="Admin Dashboard"
-            description="Overview of platform activity and management"
-        >
-            <div className="flex justify-end mb-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fetchData(true)}
-                    disabled={isRefreshing}
-                >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
-                </Button>
-            </div>
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Admin Dashboard</h1>
+                        <p className="text-zinc-500 mt-1">Overview of platform activity and management</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchData(true)}
+                        disabled={isRefreshing}
+                    >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
+                </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {isLoading ? (
                     <>
                         <StatCardSkeleton />
@@ -422,6 +424,7 @@ export default function AdminPage() {
                     )}
                 </CardContent>
             </Card>
+            </div>
         </AdminLayout>
     );
 }

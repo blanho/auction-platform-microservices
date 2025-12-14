@@ -54,11 +54,11 @@ export const auctionService = {
   },
 
   getFeaturedAuctions: async (limit: number = 8): Promise<Auction[]> => {
-    const { data } = await apiClient.get<Auction[]>(
+    const { data } = await apiClient.get<AuctionPagedResult>(
       API_ENDPOINTS.AUCTIONS_FEATURED,
-      { params: { limit } }
+      { params: { pageSize: limit } }
     );
-    return data;
+    return data.items || [];
   },
 
   getAuctions: async (

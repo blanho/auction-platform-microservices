@@ -243,107 +243,113 @@ export default function AdminPaymentsPage() {
     const isStatsLoading = statistics === null;
 
     return (
-        <AdminLayout
-            title="Payments"
-            description="Manage withdrawal requests and payments"
-        >
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
-                <StatCard
-                    icon={Clock}
-                    iconColor="text-yellow-500"
-                    label="Pending Withdrawals"
-                    value={formatCurrency(statistics?.pendingWithdrawalsTotal || 0)}
-                    subtext={`${formatNumber(statistics?.pendingWithdrawalsCount || 0)} requests`}
-                    isLoading={isStatsLoading}
-                />
-                <StatCard
-                    icon={ArrowUpRight}
-                    iconColor="text-green-500"
-                    label="Pending Count"
-                    value={formatNumber(statistics?.pendingWithdrawalsCount || 0)}
-                    subtext="Awaiting approval"
-                    isLoading={isStatsLoading}
-                />
-                <StatCard
-                    icon={DollarSign}
-                    iconColor="text-amber-500"
-                    label="Pending Amount"
-                    value={formatCurrency(statistics?.pendingWithdrawalsTotal || 0)}
-                    subtext="Total pending"
-                    isLoading={isStatsLoading}
-                />
-            </div>
-
-            {/* Filters */}
-            <Card className="mb-6">
-                <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                            <Input
-                                placeholder="Search by username..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => fetchWithdrawals()}
-                            disabled={isLoading}
-                        >
-                            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-                        </Button>
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
+                        <p className="text-muted-foreground">Manage withdrawal requests and payments</p>
                     </div>
-                </CardContent>
-            </Card>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fetchWithdrawals()}
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
 
-            {/* Withdrawals Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Pending Withdrawals</CardTitle>
-                    <CardDescription>
-                        {formatNumber(filteredWithdrawals.length)} pending requests
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="flex justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                {/* Stats */}
+                <div className="grid gap-4 md:grid-cols-3">
+                    <StatCard
+                        icon={Clock}
+                        iconColor="text-yellow-500"
+                        label="Pending Withdrawals"
+                        value={formatCurrency(statistics?.pendingWithdrawalsTotal || 0)}
+                        subtext={`${formatNumber(statistics?.pendingWithdrawalsCount || 0)} requests`}
+                        isLoading={isStatsLoading}
+                    />
+                    <StatCard
+                        icon={ArrowUpRight}
+                        iconColor="text-green-500"
+                        label="Pending Count"
+                        value={formatNumber(statistics?.pendingWithdrawalsCount || 0)}
+                        subtext="Awaiting approval"
+                        isLoading={isStatsLoading}
+                    />
+                    <StatCard
+                        icon={DollarSign}
+                        iconColor="text-amber-500"
+                        label="Pending Amount"
+                        value={formatCurrency(statistics?.pendingWithdrawalsTotal || 0)}
+                        subtext="Total pending"
+                        isLoading={isStatsLoading}
+                    />
+                </div>
+
+                {/* Filters */}
+                <Card>
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                <Input
+                                    placeholder="Search by username..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9"
+                                />
+                            </div>
                         </div>
-                    ) : filteredWithdrawals.length === 0 ? (
-                        <div className="text-center py-8 text-zinc-500">
-                            No pending withdrawals
-                        </div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>User</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Method</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Requested</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredWithdrawals.map((withdrawal) => (
-                                    <WithdrawalTableRow
-                                        key={withdrawal.id}
-                                        withdrawal={withdrawal}
-                                        onApprove={handleApprove}
-                                        onReject={handleReject}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+
+                {/* Withdrawals Table */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Pending Withdrawals</CardTitle>
+                        <CardDescription>
+                            {formatNumber(filteredWithdrawals.length)} pending requests
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                            </div>
+                        ) : filteredWithdrawals.length === 0 ? (
+                            <div className="text-center py-8 text-zinc-500">
+                                No pending withdrawals
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>User</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Method</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Requested</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredWithdrawals.map((withdrawal) => (
+                                        <WithdrawalTableRow
+                                            key={withdrawal.id}
+                                            withdrawal={withdrawal}
+                                            onApprove={handleApprove}
+                                            onReject={handleReject}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </AdminLayout>
     );
 }

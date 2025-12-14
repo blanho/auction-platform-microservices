@@ -1,6 +1,6 @@
 export { HeroSection } from "./hero-section";
 export { LiveAuctionTicker } from "./live-auction-ticker";
-export { TrustSection } from "./trust-section";
+export { ValuePropsBanner } from "./value-props-banner";
 export { CategoriesSection } from "./categories-section";
 export { FeaturedAuctionsSection } from "./featured-auctions-section";
 export { EndingSoonSection } from "./ending-soon-section";

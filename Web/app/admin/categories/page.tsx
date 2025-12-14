@@ -669,11 +669,23 @@ export default function AdminCategoriesPage() {
     const someSelected = selectedIds.size > 0;
 
     return (
-        <AdminLayout
-            title="Category Management"
-            description="Create, edit, and manage auction categories"
-        >
-            <div className="space-y-6">
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Category Management</h1>
+                        <p className="text-muted-foreground">Create, edit, and manage auction categories</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard
                         title="Total Categories"
@@ -714,16 +726,6 @@ export default function AdminCategoriesPage() {
                                 </CardDescription>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={handleRefresh}
-                                    disabled={isRefreshing}
-                                >
-                                    <RefreshCw
-                                        className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-                                    />
-                                </Button>
                                 <Button variant="outline" onClick={handleOpenImportDialog}>
                                     <Upload className="h-4 w-4 mr-2" />
                                     Import

@@ -134,15 +134,9 @@ export default function AdminAuditLogsPage() {
 
     return (
         <AdminLayout>
-            <div className="container py-8">
-                <Breadcrumb className="mb-6">
+            <div className="p-6 lg:p-8 space-y-6">
+                <Breadcrumb>
                     <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href="/">Home</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
                                 <Link href="/admin">Admin</Link>
@@ -155,9 +149,9 @@ export default function AdminAuditLogsPage() {
                     </BreadcrumbList>
                 </Breadcrumb>
 
-                <div className="mb-8 flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Audit Logs</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
                         <p className="text-muted-foreground">
                             Track all system changes and activities
                         </p>
@@ -173,7 +167,7 @@ export default function AdminAuditLogsPage() {
                     </Button>
                 </div>
 
-                <Card className="mb-6">
+                <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">Filters</CardTitle>
                     </CardHeader>

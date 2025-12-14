@@ -308,126 +308,132 @@ export default function AdminReportsPage() {
     const isStatsLoading = stats.total === 0 && isLoading;
 
     return (
-        <AdminLayout
-            title="Reports"
-            description="Review and manage fraud reports"
-        >
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-4 mb-6">
-                <StatCard
-                    title="Total Reports"
-                    value={stats.total}
-                    isActive={activeTab === "all"}
-                    onClick={() => setActiveTab("all")}
-                    isLoading={isStatsLoading}
-                />
-                <StatCard
-                    title="Pending Review"
-                    value={stats.pending}
-                    colorClass="text-yellow-500"
-                    isActive={activeTab === "pending"}
-                    onClick={() => setActiveTab("pending")}
-                    isLoading={isStatsLoading}
-                />
-                <StatCard
-                    title="Under Review"
-                    value={stats.review}
-                    colorClass="text-blue-500"
-                    isActive={activeTab === "review"}
-                    onClick={() => setActiveTab("review")}
-                    isLoading={isStatsLoading}
-                />
-                <StatCard
-                    title="Resolved"
-                    value={stats.resolved}
-                    colorClass="text-green-500"
-                    isActive={activeTab === "resolved"}
-                    onClick={() => setActiveTab("resolved")}
-                    isLoading={isStatsLoading}
-                />
-            </div>
-
-            {/* Filters */}
-            <Card className="mb-6">
-                <CardContent className="pt-6">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                            <Input
-                                placeholder="Search by reported user..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="UnderReview">Under Review</SelectItem>
-                                <SelectItem value="Resolved">Resolved</SelectItem>
-                                <SelectItem value="Dismissed">Dismissed</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => fetchReports()}
-                            disabled={isLoading}
-                        >
-                            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-                        </Button>
+        <AdminLayout>
+            <div className="p-6 lg:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+                        <p className="text-muted-foreground">Review and manage fraud reports</p>
                     </div>
-                </CardContent>
-            </Card>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fetchReports()}
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                </div>
 
-            {/* Reports Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Fraud Reports</CardTitle>
-                    <CardDescription>
-                        {formatNumber(totalCount)} reports found
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="flex justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                {/* Stats */}
+                <div className="grid gap-4 md:grid-cols-4">
+                    <StatCard
+                        title="Total Reports"
+                        value={stats.total}
+                        isActive={activeTab === "all"}
+                        onClick={() => setActiveTab("all")}
+                        isLoading={isStatsLoading}
+                    />
+                    <StatCard
+                        title="Pending Review"
+                        value={stats.pending}
+                        colorClass="text-yellow-500"
+                        isActive={activeTab === "pending"}
+                        onClick={() => setActiveTab("pending")}
+                        isLoading={isStatsLoading}
+                    />
+                    <StatCard
+                        title="Under Review"
+                        value={stats.review}
+                        colorClass="text-blue-500"
+                        isActive={activeTab === "review"}
+                        onClick={() => setActiveTab("review")}
+                        isLoading={isStatsLoading}
+                    />
+                    <StatCard
+                        title="Resolved"
+                        value={stats.resolved}
+                        colorClass="text-green-500"
+                        isActive={activeTab === "resolved"}
+                        onClick={() => setActiveTab("resolved")}
+                        isLoading={isStatsLoading}
+                    />
+                </div>
+
+                {/* Filters */}
+                <Card>
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                <Input
+                                    placeholder="Search by reported user..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="Pending">Pending</SelectItem>
+                                    <SelectItem value="UnderReview">Under Review</SelectItem>
+                                    <SelectItem value="Resolved">Resolved</SelectItem>
+                                    <SelectItem value="Dismissed">Dismissed</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                    ) : reports.length === 0 ? (
-                        <div className="text-center py-8 text-zinc-500">
-                            {MESSAGES.EMPTY.REPORTS}
-                        </div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Reason</TableHead>
-                                    <TableHead>Reported User</TableHead>
-                                    <TableHead>Priority</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {reports.map((report) => (
-                                    <ReportTableRow
-                                        key={report.id}
-                                        report={report}
-                                        onResolve={handleResolve}
-                                        onDismiss={handleDismiss}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+
+                {/* Reports Table */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fraud Reports</CardTitle>
+                        <CardDescription>
+                            {formatNumber(totalCount)} reports found
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+                            </div>
+                        ) : reports.length === 0 ? (
+                            <div className="text-center py-8 text-zinc-500">
+                                {MESSAGES.EMPTY.REPORTS}
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Reason</TableHead>
+                                        <TableHead>Reported User</TableHead>
+                                        <TableHead>Priority</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {reports.map((report) => (
+                                        <ReportTableRow
+                                            key={report.id}
+                                            report={report}
+                                            onResolve={handleResolve}
+                                            onDismiss={handleDismiss}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </AdminLayout>
     );
 }
