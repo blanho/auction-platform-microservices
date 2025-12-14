@@ -171,6 +171,20 @@ export interface UpdateAuctionDto {
   year?: number;
   color?: string;
   mileage?: number;
+  reservePrice?: number;
+  buyNowPrice?: number;
+  auctionEnd?: string;
+  categoryId?: string;
+  condition?: string;
+  isFeatured?: boolean;
+  imageUrl?: string;
+  shippingType?: ShippingType;
+  shippingCost?: number;
+  handlingTime?: number;
+  shipsFrom?: string;
+  localPickupAvailable?: boolean;
+  localPickupAddress?: string;
+  files?: FileInfoDto[];
 }
 
 export interface ImportAuctionDto {

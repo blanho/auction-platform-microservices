@@ -14,16 +14,16 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { MainLayout } from '@/components/layout/main-layout';
+import { RequireAuth } from '@/components/auth/require-auth';
 import { EditAuctionForm } from '@/features/auction/edit-auction-form';
-import apiClient from '@/lib/api/axios';
-import { Auction } from '@/types/auction';
-import { ApiResponse } from '@/types';
-import { API_ENDPOINTS } from '@/constants/api';
+import { auctionService } from '@/services/auction.service';
+import { Auction, Category } from '@/types/auction';
 
 export default function EditAuctionPage() {
     const params = useParams();
     const auctionId = params?.id as string;
     const [auction, setAuction] = useState<Auction | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<unknown>(null);
 
@@ -35,13 +35,15 @@ export default function EditAuctionPage() {
 
         let isMounted = true;
 
-        const fetchAuction = async () => {
+        const fetchData = async () => {
             try {
-                const { data } = await apiClient.get<ApiResponse<Auction>>(
-                    API_ENDPOINTS.AUCTION_BY_ID(auctionId)
-                );
+                const [auctionResult, categoriesResult] = await Promise.all([
+                    auctionService.getAuctionById(auctionId),
+                    auctionService.getCategories(),
+                ]);
                 if (isMounted) {
-                    setAuction(data.data);
+                    setAuction(auctionResult);
+                    setCategories(categoriesResult);
                     setError(null);
                 }
             } catch (err) {
@@ -55,7 +57,7 @@ export default function EditAuctionPage() {
             }
         };
 
-        fetchAuction();
+        fetchData();
 
         return () => {
             isMounted = false;
@@ -64,58 +66,64 @@ export default function EditAuctionPage() {
 
     if (isLoading) {
         return (
-            <MainLayout>
-                <div className="container py-8 flex justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                </div>
-            </MainLayout>
+            <RequireAuth>
+                <MainLayout>
+                    <div className="container py-8 flex justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                </MainLayout>
+            </RequireAuth>
         );
     }
 
     if (error || !auction) {
         return (
-            <MainLayout>
-                <div className="container py-8 max-w-4xl mx-auto">
-                    <Alert variant="destructive">
-                        <AlertDescription>
-                            Failed to load auction. Please try again.
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            </MainLayout>
+            <RequireAuth>
+                <MainLayout>
+                    <div className="container py-8 max-w-4xl mx-auto">
+                        <Alert variant="destructive">
+                            <AlertDescription>
+                                Failed to load auction. Please try again.
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                </MainLayout>
+            </RequireAuth>
         );
     }
 
     return (
-        <MainLayout>
-            <div className="container py-8 max-w-4xl mx-auto">
-                <Breadcrumb className="mb-6">
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href="/">Home</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href="/auctions">Auctions</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href={`/auctions/${auctionId}`}>{auction.make} {auction.model}</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Edit</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-                <EditAuctionForm auction={auction} />
-            </div>
-        </MainLayout>
+        <RequireAuth>
+            <MainLayout>
+                <div className="container py-8 max-w-4xl mx-auto">
+                    <Breadcrumb className="mb-6">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link href="/">Home</Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link href="/auctions">Auctions</Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link href={`/auctions/${auctionId}`}>{auction.make} {auction.model}</Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Edit</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                    <EditAuctionForm auction={auction} categories={categories} />
+                </div>
+            </MainLayout>
+        </RequireAuth>
     );
 }
