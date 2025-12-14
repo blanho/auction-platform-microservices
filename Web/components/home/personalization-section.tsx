@@ -1,111 +1,208 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWandSparkles, faClock, faEye, faArrowRight, faHeart } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
+import {
+  faWandSparkles,
+  faClock,
+  faEye,
+  faArrowRight,
+  faHeart,
+  faGavel,
+  faFire,
+  faBolt,
+} from "@fortawesome/free-solid-svg-icons";
 import { useSession } from "next-auth/react";
 import { CTA_CONTENT } from "@/constants/landing";
 import { AnimatedSection } from "@/components/ui/animated";
+import { auctionService } from "@/services/auction.service";
+import { Auction } from "@/types/auction";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ROUTES } from "@/constants";
 
-const recommendedAuctions = [
-    {
-        id: "r1",
-        title: "Similar to your recent view",
-        imageUrl: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300",
-        currentBid: 450,
-    },
-    {
-        id: "r2",
-        title: "Based on your interests",
-        imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300",
-        currentBid: 890,
-    },
-    {
-        id: "r3",
-        title: "You might like this",
-        imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300",
-        currentBid: 320,
-    },
-];
+function getTimeRemaining(endDate: string) {
+  const total = new Date(endDate).getTime() - Date.now();
+  if (total <= 0) return { text: "Ended", urgent: true };
 
-const recentlyViewed = [
-    {
-        id: "v1",
-        title: "Vintage Camera",
-        imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300",
-        currentBid: 280,
-        timeLeft: "2h 15m",
-    },
-    {
-        id: "v2",
-        title: "Designer Watch",
-        imageUrl: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300",
-        currentBid: 1200,
-        timeLeft: "5h 30m",
-    },
-];
+  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((total / (1000 * 60)) % 60);
 
-const watchlistItems = [
-    {
-        id: "w1",
-        title: "Art Deco Lamp",
-        imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
-        currentBid: 650,
-        hasNewBid: true,
-    },
-];
+  if (days > 0) return { text: `${days}d ${hours}h`, urgent: false };
+  if (hours > 0) return { text: `${hours}h ${minutes}m`, urgent: hours < 2 };
+  return { text: `${minutes}m`, urgent: true };
+}
 
-function SmallAuctionCard({
-    item,
-    showBadge
+function PremiumAuctionCard({
+  auction,
+  badge,
+  badgeColor = "purple",
+  index = 0,
 }: {
-    item: { id: string; title: string; imageUrl: string; currentBid: number; timeLeft?: string; hasNewBid?: boolean };
-    showBadge?: string;
+  auction: Auction;
+  badge?: string;
+  badgeColor?: "purple" | "blue" | "orange" | "emerald";
+  index?: number;
 }) {
-    return (
-        <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <div className="relative h-32 overflow-hidden">
-                <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, 33vw"
+  const timeLeft = getTimeRemaining(auction.auctionEnd);
+  const imageUrl =
+    auction.files?.find((f) => f.isPrimary)?.url ||
+    auction.files?.[0]?.url ||
+    "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400";
+
+  const badgeColors = {
+    purple:
+      "bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30",
+    blue: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30",
+    orange:
+      "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30",
+    emerald:
+      "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+    >
+      <Link href={`${ROUTES.AUCTIONS.LIST}/${auction.id}`}>
+        <motion.div
+          whileHover={{ y: -6, scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5 transition-all duration-300"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <Image
+              src={imageUrl}
+              alt={auction.title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            {badge && (
+              <div
+                className={`absolute top-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold ${badgeColors[badgeColor]}`}
+              >
+                <FontAwesomeIcon
+                  icon={
+                    badgeColor === "purple"
+                      ? faWandSparkles
+                      : badgeColor === "blue"
+                        ? faEye
+                        : badgeColor === "orange"
+                          ? faFire
+                          : faBolt
+                  }
+                  className="w-3 h-3 mr-1.5"
                 />
-                {showBadge && (
-                    <Badge className="absolute top-2 left-2 bg-purple-500 text-white text-xs">
-                        {showBadge}
-                    </Badge>
-                )}
-                {item.hasNewBid && (
-                    <Badge className="absolute top-2 right-2 bg-orange-500 text-white text-xs animate-pulse">
-                        New Bid!
-                    </Badge>
-                )}
+                {badge}
+              </div>
+            )}
+
+            {timeLeft.urgent && (
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-red-500 text-white text-xs font-bold animate-pulse flex items-center gap-1">
+                <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
+                {timeLeft.text}
+              </div>
+            )}
+
+            <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="flex items-center justify-between text-white text-sm">
+                <span className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                  <FontAwesomeIcon icon={faGavel} className="w-3 h-3" />
+                  {auction.categoryName || "Auction"}
+                </span>
+              </div>
             </div>
-            <CardContent className="p-3">
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                    {item.title}
-                </h4>
-                <div className="flex items-center justify-between mt-1">
-                    <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                        ${item.currentBid.toLocaleString()}
-                    </span>
-                    {item.timeLeft && (
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                            <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
-                            {item.timeLeft}
-                        </span>
-                    )}
+          </div>
+
+          <div className="p-4">
+            <h4 className="font-semibold text-slate-900 dark:text-white line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+              {auction.title}
+            </h4>
+
+            <div className="mt-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
+                  Current Bid
+                </p>
+                <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  ${(auction.currentHighBid || auction.reservePrice || 0).toLocaleString()}
+                </p>
+              </div>
+
+              {!timeLeft.urgent && (
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
+                    Ends in
+                  </p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <FontAwesomeIcon
+                      icon={faClock}
+                      className="w-3 h-3 text-slate-400"
+                    />
+                    {timeLeft.text}
+                  </p>
                 </div>
-            </CardContent>
-        </Card>
-    );
+              )}
+            </div>
+          </div>
+
+          <div className="absolute inset-0 rounded-2xl ring-2 ring-purple-500/0 group-hover:ring-purple-500/50 transition-all duration-300 pointer-events-none" />
+        </motion.div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80">
+      <Skeleton className="aspect-[4/3]" />
+      <div className="p-4 space-y-3">
+        <Skeleton className="h-5 w-3/4" />
+        <div className="flex justify-between">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-6 w-16" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExploreMoreCard({ href, icon, text }: { href: string; icon: typeof faWandSparkles; text: string }) {
+  return (
+    <Link href={href}>
+      <motion.div
+        whileHover={{ y: -6, scale: 1.02 }}
+        className="h-full min-h-[280px] flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-purple-400 dark:hover:border-purple-500 bg-slate-50/50 dark:bg-slate-900/50 transition-all duration-300 cursor-pointer group"
+      >
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <FontAwesomeIcon
+            icon={icon}
+            className="w-6 h-6 text-purple-500 dark:text-purple-400"
+          />
+        </div>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400 text-center group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+          {text}
+        </span>
+        <FontAwesomeIcon
+          icon={faArrowRight}
+          className="w-4 h-4 mt-2 text-slate-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all"
+        />
+      </motion.div>
+    </Link>
+  );
 }
 
 export function PersonalizationSection() {
@@ -173,123 +270,238 @@ export function PersonalizationSection() {
         );
     }
 
-    return (
-        <section className="py-20 bg-white dark:bg-slate-950">
-            <div className="container mx-auto px-4">
-                <div className="space-y-12">
-                    {/* Recommended for you */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <FontAwesomeIcon icon={faWandSparkles} className="w-6 h-6 text-purple-500" />
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                                    Recommended for You
-                                </h3>
-                            </div>
-                            <Button variant="ghost" size="sm" asChild>
-                                <Link href="/auctions?recommended=true">
-                                    View All
-                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {recommendedAuctions.map((item) => (
-                                <SmallAuctionCard key={item.id} item={item} showBadge="For You" />
-                            ))}
-                            <Card className="flex flex-col items-center justify-center p-6 border-dashed border-2 hover:border-purple-500 transition-colors cursor-pointer">
-                                <FontAwesomeIcon icon={faWandSparkles} className="w-8 h-8 text-slate-400 mb-2" />
-                                <span className="text-sm text-slate-500 text-center">
-                                    Explore more recommendations
-                                </span>
-                            </Card>
-                        </div>
-                    </motion.div>
+    return <LoggedInPersonalization />;
+}
 
-                    {/* Recently Viewed */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <FontAwesomeIcon icon={faEye} className="w-6 h-6 text-blue-500" />
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                                    Recently Viewed
-                                </h3>
-                            </div>
-                            <Button variant="ghost" size="sm" asChild>
-                                <Link href="/auctions?viewed=true">
-                                    View History
-                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {recentlyViewed.map((item) => (
-                                <SmallAuctionCard key={item.id} item={item} />
-                            ))}
-                        </div>
-                    </motion.div>
+const RECENTLY_VIEWED_KEY = "auction_recently_viewed";
 
-                    {/* Watchlist */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <FontAwesomeIcon icon={faHeart} className="w-6 h-6 text-red-500" />
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                                    Your Watchlist
-                                </h3>
-                                {watchlistItems.length > 0 && (
-                                    <Badge variant="secondary">
-                                        {watchlistItems.length} items
-                                    </Badge>
-                                )}
-                            </div>
-                            <Button variant="ghost" size="sm" asChild>
-                                <Link href="/auctions?watchlist=true">
-                                    Manage Watchlist
-                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
-                                </Link>
-                            </Button>
-                        </div>
+function LoggedInPersonalization() {
+  const [recommendedAuctions, setRecommendedAuctions] = useState<Auction[]>([]);
+  const [recentlyViewedAuctions, setRecentlyViewedAuctions] = useState<Auction[]>([]);
+  const [isLoadingRecommended, setIsLoadingRecommended] = useState(true);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
 
-                        {watchlistItems.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {watchlistItems.map((item) => (
-                                    <SmallAuctionCard key={item.id} item={item} />
-                                ))}
-                            </div>
-                        ) : (
-                            <Card className="p-8 text-center border-dashed border-2">
-                                <FontAwesomeIcon icon={faHeart} className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                                <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                                    Your watchlist is empty
-                                </h4>
-                                <p className="text-slate-500 dark:text-slate-400 mb-4">
-                                    Save items you&apos;re interested in to track their progress
-                                </p>
-                                <Button variant="outline" asChild>
-                                    <Link href="/auctions">
-                                        Browse Auctions
-                                    </Link>
-                                </Button>
-                            </Card>
-                        )}
-                    </motion.div>
+  const fetchRecommendedAuctions = useCallback(async () => {
+    try {
+      setIsLoadingRecommended(true);
+      const result = await auctionService.getAuctions({
+        status: "Live",
+        isFeatured: true,
+        pageSize: 7,
+        orderBy: "currentHighBid",
+        descending: true,
+      });
+      setRecommendedAuctions(result.items || []);
+    } catch (error) {
+      console.error("Failed to fetch recommended auctions:", error);
+    } finally {
+      setIsLoadingRecommended(false);
+    }
+  }, []);
+
+  const fetchRecentlyViewed = useCallback(async () => {
+    try {
+      setIsLoadingRecent(true);
+      const storedIds = localStorage.getItem(RECENTLY_VIEWED_KEY);
+      if (!storedIds) {
+        const result = await auctionService.getAuctions({
+          status: "Live",
+          pageSize: 4,
+          orderBy: "updatedAt",
+          descending: true,
+        });
+        setRecentlyViewedAuctions(result.items || []);
+      } else {
+        const ids: string[] = JSON.parse(storedIds);
+        const auctions = await Promise.all(
+          ids.slice(0, 4).map(async (id) => {
+            try {
+              return await auctionService.getAuctionById(id);
+            } catch {
+              return null;
+            }
+          })
+        );
+        const validAuctions = auctions.filter((a): a is Auction => a !== null);
+        if (validAuctions.length === 0) {
+          const result = await auctionService.getAuctions({
+            status: "Live",
+            pageSize: 4,
+            orderBy: "updatedAt",
+            descending: true,
+          });
+          setRecentlyViewedAuctions(result.items || []);
+        } else {
+          setRecentlyViewedAuctions(validAuctions);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch recently viewed:", error);
+    } finally {
+      setIsLoadingRecent(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRecommendedAuctions();
+    fetchRecentlyViewed();
+  }, [fetchRecommendedAuctions, fetchRecentlyViewed]);
+
+  return (
+    <AnimatedSection className="py-20 md:py-28 bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden relative">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.1),transparent_50%)]" />
+
+      <div className="container mx-auto px-4 relative">
+        <div className="space-y-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                  <FontAwesomeIcon
+                    icon={faWandSparkles}
+                    className="w-5 h-5 text-white"
+                  />
                 </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    Recommended for You
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Curated picks based on your interests
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="self-start sm:self-auto rounded-full border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                asChild
+              >
+                <Link href={`${ROUTES.AUCTIONS.LIST}?featured=true`}>
+                  View All
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
             </div>
-        </section>
-    );
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {isLoadingRecommended ? (
+                Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
+              ) : (
+                <>
+                  {recommendedAuctions.slice(0, 7).map((auction, index) => (
+                    <PremiumAuctionCard
+                      key={auction.id}
+                      auction={auction}
+                      badge="For You"
+                      badgeColor="purple"
+                      index={index}
+                    />
+                  ))}
+                  <ExploreMoreCard
+                    href={`${ROUTES.AUCTIONS.LIST}?featured=true`}
+                    icon={faWandSparkles}
+                    text="Explore more recommendations"
+                  />
+                </>
+              )}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <FontAwesomeIcon
+                    icon={faEye}
+                    className="w-5 h-5 text-white"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    Recently Viewed
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Continue where you left off
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="self-start sm:self-auto rounded-full border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                asChild
+              >
+                <Link href={ROUTES.AUCTIONS.LIST}>
+                  View History
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {isLoadingRecent ? (
+                Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
+              ) : recentlyViewedAuctions.length > 0 ? (
+                <>
+                  {recentlyViewedAuctions.map((auction, index) => (
+                    <PremiumAuctionCard
+                      key={auction.id}
+                      auction={auction}
+                      badge="Viewed"
+                      badgeColor="blue"
+                      index={index}
+                    />
+                  ))}
+                  {recentlyViewedAuctions.length < 4 && (
+                    <ExploreMoreCard
+                      href={ROUTES.AUCTIONS.LIST}
+                      icon={faEye}
+                      text="Discover more auctions"
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="col-span-full">
+                  <div className="text-center py-12 px-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 flex items-center justify-center mx-auto mb-4">
+                      <FontAwesomeIcon
+                        icon={faEye}
+                        className="w-7 h-7 text-blue-500 dark:text-blue-400"
+                      />
+                    </div>
+                    <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                      Start exploring auctions
+                    </h4>
+                    <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                      Your recently viewed items will appear here so you can easily find them again
+                    </p>
+                    <Button
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-full px-6"
+                      asChild
+                    >
+                      <Link href={ROUTES.AUCTIONS.LIST}>
+                        Browse Auctions
+                        <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </AnimatedSection>
+  );
 }

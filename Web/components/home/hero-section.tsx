@@ -277,15 +277,15 @@ function SearchBar() {
       <div className="flex flex-wrap items-center gap-2">
         {!trendingLoading && trendingSearches.length > 0 && (
           <>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <FontAwesomeIcon icon={faFire} className="w-3 h-3 text-orange-400" />
+            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <FontAwesomeIcon icon={faFire} className="w-3 h-3 text-orange-500 dark:text-orange-400" />
               Trending:
             </span>
             {trendingSearches.slice(0, 4).map((search, idx) => (
               <button
                 key={idx}
                 onClick={() => handleTrendingClick(search.searchTerm)}
-                className="px-2.5 py-1 text-xs rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                className="px-2.5 py-1 text-xs rounded-full bg-slate-200/80 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 {search.searchTerm}
               </button>
@@ -296,7 +296,7 @@ function SearchBar() {
 
       {topCategories.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-400 flex items-center gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
             <FontAwesomeIcon icon={faTag} className="w-3 h-3" />
             Categories:
           </span>
@@ -304,7 +304,7 @@ function SearchBar() {
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
-              className="px-2.5 py-1 text-xs rounded-full border border-white/20 hover:border-white/40 text-white/70 hover:text-white transition-colors"
+              className="px-2.5 py-1 text-xs rounded-full border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/40 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               {category.name}
             </button>
@@ -364,13 +364,13 @@ function LiveStats() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.1 }}
-          className="bg-white/5 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/10 hover:border-white/20 transition-colors"
+          className="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-colors shadow-sm dark:shadow-none"
         >
           <FontAwesomeIcon icon={stat.icon} className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color} mb-2`} />
-          <p className="text-xl sm:text-2xl font-bold text-white">{stat.value.toLocaleString()}</p>
-          <p className="text-[10px] sm:text-xs text-slate-400">{stat.label}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stat.value.toLocaleString()}</p>
+          <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
           {stat.change && (
-            <p className="text-[10px] text-emerald-400 mt-0.5">{stat.change}</p>
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5">{stat.change}</p>
           )}
         </motion.div>
       ))}
@@ -382,12 +382,12 @@ export function HeroSection() {
   const { data: featuredAuctions, isLoading: auctionsLoading } = useFeaturedAuctions(5);
 
   return (
-    <section className="relative min-h-[90vh] overflow-hidden bg-slate-950">
+    <section className="relative min-h-[90vh] overflow-hidden bg-slate-50 dark:bg-slate-950">
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/30 via-slate-950 to-slate-950" />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-pink-600/15 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-200/50 via-slate-50 to-slate-50 dark:from-purple-900/30 dark:via-slate-950 dark:to-slate-950" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-pink-400/15 dark:bg-pink-600/15 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="container relative mx-auto px-4 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
@@ -400,7 +400,7 @@ export function HeroSection() {
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30"
               >
                 <PulsingDot />
-                <span className="text-xs sm:text-sm font-medium text-emerald-400">Live Bidding Active</span>
+                <span className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">Live Bidding Active</span>
               </motion.div>
 
               <motion.h1
@@ -409,7 +409,7 @@ export function HeroSection() {
                 transition={{ delay: 0.1 }}
                 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight"
               >
-                <span className="block text-white">
+                <span className="block text-slate-900 dark:text-white">
                   Discover Unique
                 </span>
                 <span className="block mt-1 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
@@ -421,9 +421,9 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-sm sm:text-base lg:text-lg text-slate-400 max-w-lg mx-auto lg:mx-0 leading-relaxed"
+                className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 max-w-lg mx-auto lg:mx-0 leading-relaxed"
               >
-                Join thousands of collectors and savvy shoppers. Bid on exclusive items, sell your valuables, and save up to <span className="text-emerald-400 font-semibold">50% off retail prices</span>.
+                Join thousands of collectors and savvy shoppers. Bid on exclusive items, sell your valuables, and save up to <span className="text-emerald-600 dark:text-emerald-400 font-semibold">50% off retail prices</span>.
               </motion.p>
             </div>
 
@@ -454,8 +454,8 @@ export function HeroSection() {
                 { icon: faCircleCheck, text: "Verified Sellers" },
                 { icon: faStar, text: "Trusted Platform" }
               ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 text-slate-400">
-                  <FontAwesomeIcon icon={item.icon} className="w-3.5 h-3.5 text-emerald-400" />
+                <div key={idx} className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                  <FontAwesomeIcon icon={item.icon} className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-xs sm:text-sm">{item.text}</span>
                 </div>
               ))}
@@ -480,7 +480,7 @@ export function HeroSection() {
 
               <Button
                 size="lg"
-                className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-semibold border border-white/30 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+                className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base font-semibold border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-white dark:hover:bg-white/10 backdrop-blur-sm"
                 asChild
               >
                 <Link href="/dashboard/listings/new">

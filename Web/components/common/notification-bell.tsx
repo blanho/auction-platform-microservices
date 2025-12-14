@@ -41,7 +41,9 @@ const NOTIFICATION_ICONS: Record<NotificationType, IconDefinition> = {
     [NotificationType.BidAccepted]: faCircleCheck,
     [NotificationType.OutBid]: faTriangleExclamation,
     [NotificationType.AuctionWon]: faTrophy,
-    [NotificationType.AuctionEndingSoon]: faClock
+    [NotificationType.AuctionEndingSoon]: faClock,
+    [NotificationType.SystemNotification]: faEnvelope,
+    [NotificationType.Broadcast]: faEnvelope
 };
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
@@ -53,7 +55,9 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
     [NotificationType.BidAccepted]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     [NotificationType.OutBid]: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     [NotificationType.AuctionWon]: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-    [NotificationType.AuctionEndingSoon]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+    [NotificationType.AuctionEndingSoon]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    [NotificationType.SystemNotification]: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+    [NotificationType.Broadcast]: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
 };
 
 const DEFAULT_ICON = faEnvelope;

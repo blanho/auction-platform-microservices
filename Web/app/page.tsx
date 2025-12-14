@@ -8,10 +8,11 @@ import {
   CategoriesSection,
   FeaturedAuctionsSection,
   EndingSoonSection,
-  HowItWorksSection,
+  NewArrivalsSection,
   StatsCounterSection,
-  TestimonialsSection,
+  TrendingSearchesSection,
   PersonalizationSection,
+  TopAuctionsSection,
   FooterSection,
 } from "@/components/home";
 
@@ -26,10 +27,11 @@ export default function Home() {
         <CategoriesSection />
         <FeaturedAuctionsSection />
         <EndingSoonSection />
+        <NewArrivalsSection />
         <StatsCounterSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
+        <TrendingSearchesSection />
         <PersonalizationSection />
+        <TopAuctionsSection />
       </main>
       <FooterSection />
     </div>

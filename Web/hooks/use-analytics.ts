@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { analyticsService, QuickStats, TrendingSearch } from "@/services/analytics.service";
+import { analyticsService, QuickStats, TrendingSearch, TopListing } from "@/services/analytics.service";
 
 export const useQuickStats = () => {
   const [data, setData] = useState<QuickStats | null>(null);
@@ -61,6 +61,42 @@ export const useTrendingSearches = (limit: number = 6) => {
     const fetchData = async () => {
       try {
         const result = await analyticsService.getTrendingSearches(limit);
+        if (isMounted) {
+          setData(result);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err as Error);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [limit]);
+
+  return { data, isLoading, error };
+};
+
+export const useTopListings = (limit: number = 6) => {
+  const [data, setData] = useState<TopListing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const result = await analyticsService.getTopListings(limit);
         if (isMounted) {
           setData(result);
           setError(null);

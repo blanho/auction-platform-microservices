@@ -45,7 +45,9 @@ const notificationTypeIcons: Record<NotificationType, IconDefinition> = {
     [NotificationType.BidAccepted]: faCircleCheck,
     [NotificationType.OutBid]: faTriangleExclamation,
     [NotificationType.AuctionWon]: faTrophy,
-    [NotificationType.AuctionEndingSoon]: faClock
+    [NotificationType.AuctionEndingSoon]: faClock,
+    [NotificationType.SystemNotification]: faEnvelope,
+    [NotificationType.Broadcast]: faEnvelope
 };
 
 export default function NotificationsPage() {
