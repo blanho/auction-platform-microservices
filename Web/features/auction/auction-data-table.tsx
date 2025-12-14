@@ -77,6 +77,7 @@ import { auctionService } from "@/services/auction.service";
 interface AuctionDataTableProps {
   data: Auction[];
   onActionComplete?: () => void;
+  isAdmin?: boolean;
 }
 
 const statusOptions = [
@@ -87,7 +88,7 @@ const statusOptions = [
   { value: AuctionStatus.Cancelled, label: "Cancelled" },
 ];
 
-export function AuctionDataTable({ data, onActionComplete }: AuctionDataTableProps) {
+export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: AuctionDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
@@ -102,8 +103,8 @@ export function AuctionDataTable({ data, onActionComplete }: AuctionDataTablePro
   const [isBulkUpdating, setIsBulkUpdating] = React.useState(false);
 
   const columns = React.useMemo<ColumnDef<Auction>[]>(
-    () => createAuctionColumns(onActionComplete),
-    [onActionComplete]
+    () => createAuctionColumns(onActionComplete, isAdmin),
+    [onActionComplete, isAdmin]
   );
 
   const filteredData = React.useMemo(() => {

@@ -91,6 +91,12 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("scope", "auction");
     });
     
+    options.AddPolicy("AuctionOwnerOrAdmin", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("scope", "auction");
+    });
+    
     options.AddPolicy("Admin", policy =>
     {
         policy.RequireAuthenticatedUser();

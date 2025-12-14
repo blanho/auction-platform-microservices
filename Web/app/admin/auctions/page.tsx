@@ -153,6 +153,7 @@ function AdminAuctionsContent() {
                             <AuctionDataTable
                                 data={auctions}
                                 onActionComplete={fetchAuctions}
+                                isAdmin={true}
                             />
                         )}
                     </>

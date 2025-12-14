@@ -41,7 +41,8 @@ function formatCurrency(value: number | undefined) {
 }
 
 export const createAuctionColumns = (
-  onActionComplete?: () => void
+  onActionComplete?: () => void,
+  isAdmin: boolean = false
 ): ColumnDef<Auction>[] => [
     {
       id: "select",
@@ -210,6 +211,7 @@ export const createAuctionColumns = (
             <AuctionActions
               auction={row.original}
               onActionComplete={onActionComplete}
+              isAdmin={isAdmin}
             />
           </div>
         );

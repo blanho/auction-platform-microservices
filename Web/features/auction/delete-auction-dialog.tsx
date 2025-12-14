@@ -26,6 +26,7 @@ interface DeleteAuctionDialogProps {
     redirectAfterDelete?: string;
     onSuccess?: () => void;
     trigger?: React.ReactNode;
+    isAdmin?: boolean;
 }
 
 export function DeleteAuctionDialog({
@@ -34,6 +35,7 @@ export function DeleteAuctionDialog({
     redirectAfterDelete,
     onSuccess,
     trigger,
+    isAdmin = false,
 }: DeleteAuctionDialogProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -42,7 +44,11 @@ export function DeleteAuctionDialog({
     const handleDelete = async () => {
         setIsDeleting(true);
         try {
-            await auctionService.deleteAuction(auctionId);
+            if (isAdmin) {
+                await auctionService.adminDeleteAuction(auctionId);
+            } else {
+                await auctionService.deleteAuction(auctionId);
+            }
             toast.success('Auction deleted successfully');
             setOpen(false);
             onSuccess?.();

@@ -25,9 +25,10 @@ import { DeleteAuctionDialog } from "./delete-auction-dialog";
 interface AuctionActionsProps {
   auction: Auction;
   onActionComplete?: () => void;
+  isAdmin?: boolean;
 }
 
-export function AuctionActions({ auction, onActionComplete }: AuctionActionsProps) {
+export function AuctionActions({ auction, onActionComplete, isAdmin = false }: AuctionActionsProps) {
   const isInactive = auction.status === AuctionStatus.Inactive;
   const canDeactivate = auction.status === AuctionStatus.Live;
 
@@ -96,6 +97,7 @@ export function AuctionActions({ auction, onActionComplete }: AuctionActionsProp
           auctionId={auction.id}
           auctionTitle={auction.title}
           onSuccess={onActionComplete}
+          isAdmin={isAdmin}
           trigger={
             <DropdownMenuItem
               onSelect={(e) => e.preventDefault()}

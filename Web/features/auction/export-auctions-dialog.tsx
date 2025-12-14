@@ -46,7 +46,7 @@ const FORMAT_OPTIONS: { value: ExportFormat; label: string; icon: React.ReactNod
 ];
 
 const STATUS_OPTIONS = [
-  { value: "", label: "All Statuses" },
+  { value: "all", label: "All Statuses" },
   { value: AuctionStatus.Live, label: "Live" },
   { value: AuctionStatus.Finished, label: "Finished" },
   { value: AuctionStatus.ReserveNotMet, label: "Reserve Not Met" },
@@ -62,7 +62,7 @@ export function ExportAuctionsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [format, setFormat] = useState<ExportFormat>("excel");
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("all");
   const [seller, setSeller] = useState<string>(defaultSeller || "");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -74,7 +74,7 @@ export function ExportAuctionsDialog({
     try {
       const params: ExportAuctionsRequest = {
         format,
-        status: status || undefined,
+        status: status === "all" ? undefined : status,
         seller: seller || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined

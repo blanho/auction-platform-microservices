@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   AUCTION_BY_ID: (id: string) => `/auctions/${id}`,
   AUCTION_ACTIVATE: (id: string) => `/auctions/${id}/activate`,
   AUCTION_DEACTIVATE: (id: string) => `/auctions/${id}/deactivate`,
+  AUCTION_ADMIN_DELETE: (id: string) => `/auctions/admin/${id}`,
   AUCTIONS_IMPORT: "/auctions/import",
   AUCTIONS_IMPORT_EXCEL: "/auctions/import/excel",
   AUCTIONS_IMPORT_TEMPLATE: "/auctions/import/template",

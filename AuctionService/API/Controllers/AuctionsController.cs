@@ -252,6 +252,22 @@ public class AuctionsController : ControllerBase
             : NotFound(ProblemDetailsHelper.FromError(result.Error!));
     }
 
+    [HttpDelete("admin/{id:guid}")]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AdminDeleteAuction(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeleteAuctionCommand(id);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
     [HttpPost("bulk-update")]
     [Authorize(Roles = "admin")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]

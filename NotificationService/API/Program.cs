@@ -50,6 +50,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.Authority = identityAuthority;
     options.RequireHttpsMetadata = false;
+    options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,

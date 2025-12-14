@@ -107,6 +107,10 @@ export const auctionService = {
     await apiClient.delete(API_ENDPOINTS.AUCTION_BY_ID(id));
   },
 
+  adminDeleteAuction: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.AUCTION_ADMIN_DELETE(id));
+  },
+
   activateAuction: async (id: string): Promise<Auction> => {
     const { data } = await apiClient.post<Auction>(
       API_ENDPOINTS.AUCTION_ACTIVATE(id)
