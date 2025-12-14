@@ -49,6 +49,7 @@ import {
   AutoBid,
   CreateAutoBidDto,
 } from "@/services/autobid.service";
+import { AuthDialog } from "@/features/auth";
 
 interface AutoBidDialogProps {
   auctionId: string;
@@ -189,6 +190,21 @@ export function AutoBidDialog({
 
   const isAuthenticated = sessionStatus === "authenticated";
 
+  if (!isAuthenticated) {
+    return (
+      <AuthDialog
+        trigger={
+          trigger || (
+            <Button variant="outline" className="gap-2">
+              <Bot className="h-4 w-4" />
+              Set Auto-Bid
+            </Button>
+          )
+        }
+      />
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -196,7 +212,6 @@ export function AutoBidDialog({
           <Button
             variant="outline"
             className="gap-2"
-            disabled={!isAuthenticated}
           >
             <Bot className="h-4 w-4" />
             {existingAutoBid?.isActive ? "Update Auto-Bid" : "Set Auto-Bid"}

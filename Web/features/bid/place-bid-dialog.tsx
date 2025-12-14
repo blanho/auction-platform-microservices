@@ -30,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { bidService } from "@/services/bid.service";
 import { BidStatus } from "@/types/bid";
+import { AuthDialog } from "@/features/auth";
 
 interface PlaceBidDialogProps {
   auctionId: string;
@@ -133,9 +134,13 @@ export function PlaceBidDialog({
 
   if (sessionStatus !== "authenticated" || !session) {
     return (
-      <Button asChild size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-        <a href="/auth/signin">Sign in to place a bid</a>
-      </Button>
+      <AuthDialog
+        trigger={
+          <Button size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+            Sign in to place a bid
+          </Button>
+        }
+      />
     );
   }
 

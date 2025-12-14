@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -11,9 +11,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3, Package, ShoppingBag } from "lucide-react";
+import { LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3, Package, ShoppingBag } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRightToBracket, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { AuthDialog } from "@/features/auth";
 
 export function UserMenu() {
     const { data: session, status } = useSession();
@@ -30,13 +33,24 @@ export function UserMenu() {
     if (!session) {
         return (
             <div className="flex items-center gap-2">
-                <Button onClick={() => signIn("id-server")} variant="outline" size="sm">
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                </Button>
-                <Button asChild variant="default" size="sm">
-                    <Link href="/auth/register">Register</Link>
-                </Button>
+                <AuthDialog
+                    defaultMode="signin"
+                    trigger={
+                        <Button variant="outline" size="sm" className="gap-2 border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/30">
+                            <FontAwesomeIcon icon={faRightToBracket} className="h-4 w-4" />
+                            Sign In
+                        </Button>
+                    }
+                />
+                <AuthDialog
+                    defaultMode="register"
+                    trigger={
+                        <Button size="sm" className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                            <FontAwesomeIcon icon={faUserPlus} className="h-4 w-4" />
+                            Register
+                        </Button>
+                    }
+                />
             </div>
         );
     }
