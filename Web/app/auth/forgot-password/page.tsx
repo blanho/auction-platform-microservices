@@ -1,57 +1,70 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail, ArrowLeft } from "lucide-react";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Mail, ArrowLeft } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+
+import { forgotPasswordSchema, ForgotPasswordFormValues } from '@/lib/validations/auth';
+import { showErrorToast } from '@/utils';
+
+const IDENTITY_SERVER_URL = process.env.NEXT_PUBLIC_IDENTITY_SERVER_URL || 'http://localhost:5001';
 
 export default function ForgotPasswordPage() {
-    const [email, setEmail] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [sentEmail, setSentEmail] = useState<string | null>(null);
 
-    const identityServerUrl = process.env.NEXT_PUBLIC_IDENTITY_SERVER_URL || "http://localhost:5001";
+    const form = useForm<ForgotPasswordFormValues>({
+        resolver: zodResolver(forgotPasswordSchema),
+        defaultValues: {
+            email: '',
+        },
+    });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        if (!email) {
-            setError("Email is required");
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
+    const onSubmit = async (values: ForgotPasswordFormValues) => {
+        setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${identityServerUrl}/api/account/forgot-password`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ email })
+            const response = await fetch(`${IDENTITY_SERVER_URL}/api/account/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: values.email }),
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || "Request failed");
+                throw new Error(result.message || 'Request failed');
             }
 
-            setSuccess(true);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Request failed. Please try again.");
+            setSentEmail(values.email);
+        } catch (error) {
+            showErrorToast(error);
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
-    if (success) {
+    if (sentEmail) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background p-4">
                 <Card className="w-full max-w-md">
@@ -61,21 +74,25 @@ export default function ForgotPasswordPage() {
                                 <Mail className="h-8 w-8 text-green-600" />
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold text-center">Check Your Email</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">
+                            Check Your Email
+                        </CardTitle>
                         <CardDescription className="text-center">
-                            If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
+                            If an account exists with <strong>{sentEmail}</strong>, you
+                            will receive a password reset link shortly.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground text-center">
-                            Didn&apos;t receive the email? Check your spam folder or try again with a different email address.
+                            Didn&apos;t receive the email? Check your spam folder or try
+                            again with a different email address.
                         </p>
                         <div className="flex flex-col gap-2">
                             <Button
                                 variant="outline"
                                 onClick={() => {
-                                    setSuccess(false);
-                                    setEmail("");
+                                    setSentEmail(null);
+                                    form.reset();
                                 }}
                                 className="w-full"
                             >
@@ -100,45 +117,58 @@ export default function ForgotPasswordPage() {
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold">Forgot Password</CardTitle>
                     <CardDescription>
-                        Enter your email address and we&apos;ll send you a link to reset your password.
+                        Enter your email address and we&apos;ll send you a link to reset
+                        your password.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
-                                    setError(null);
-                                }}
-                                disabled={loading}
-                                required
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="email"
+                                                placeholder="you@example.com"
+                                                disabled={isSubmitting}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? "Sending..." : "Send Reset Link"}
-                        </Button>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    'Send Reset Link'
+                                )}
+                            </Button>
 
-                        <div className="text-center text-sm">
-                            Remember your password?{" "}
-                            <Link href="/auth/signin" className="text-primary hover:underline">
-                                Sign in
-                            </Link>
-                        </div>
-                    </form>
+                            <div className="text-center text-sm">
+                                Remember your password?{' '}
+                                <Link
+                                    href="/auth/signin"
+                                    className="text-primary hover:underline"
+                                >
+                                    Sign in
+                                </Link>
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
         </div>

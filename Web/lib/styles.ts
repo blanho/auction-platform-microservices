@@ -1,5 +1,96 @@
 import { cn } from "@/lib/utils";
 
+export const conditionalStyles = {
+    loading: (isLoading: boolean) => cn(isLoading && "animate-spin"),
+    
+    disabled: (isDisabled: boolean) => cn(
+        isDisabled && "opacity-50 cursor-not-allowed pointer-events-none"
+    ),
+    
+    active: (isActive: boolean, activeClass = "border-purple-500") => cn(
+        isActive ? activeClass : "hover:border-slate-300 dark:hover:border-slate-600"
+    ),
+    
+    selected: (isSelected: boolean) => cn(
+        isSelected 
+            ? "bg-purple-100 dark:bg-purple-900/30 border-purple-500" 
+            : "bg-white dark:bg-slate-900"
+    ),
+
+    urgent: (isUrgent: boolean) => cn(
+        isUrgent ? "text-red-500" : "text-slate-900 dark:text-white"
+    ),
+
+    success: (isSuccess: boolean) => cn(
+        isSuccess ? "text-green-600 dark:text-green-400" : ""
+    ),
+
+    error: (hasError: boolean) => cn(
+        hasError ? "border-red-500 focus:ring-red-500/20" : ""
+    ),
+
+    visible: (isVisible: boolean) => cn(
+        isVisible ? "opacity-100 visible" : "opacity-0 invisible"
+    ),
+
+    expanded: (isExpanded: boolean) => cn(
+        isExpanded ? "rotate-180" : "rotate-0",
+        "transition-transform duration-200"
+    ),
+
+    favorited: (isFavorited: boolean) => cn(
+        isFavorited ? "text-red-500 fill-red-500" : "text-slate-400 hover:text-red-500"
+    ),
+} as const;
+
+export const stateStyles = {
+    price: {
+        aboveReserve: "text-green-600 dark:text-green-400 font-medium",
+        belowReserve: "text-amber-600 dark:text-amber-400",
+        default: "text-slate-900 dark:text-white",
+    },
+    
+    timer: {
+        urgent: "text-red-500 font-bold",
+        warning: "text-amber-500 font-medium", 
+        normal: "text-slate-600 dark:text-slate-400",
+    },
+
+    balance: {
+        sufficient: "text-green-500 font-medium",
+        insufficient: "text-red-500 font-medium",
+    },
+
+    bid: {
+        winning: "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
+        outbid: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+        neutral: "bg-slate-50 dark:bg-slate-800/50",
+    },
+} as const;
+
+export function getPriceStyle(currentBid: number, reservePrice: number) {
+    if (currentBid >= reservePrice) return stateStyles.price.aboveReserve;
+    if (currentBid > 0) return stateStyles.price.belowReserve;
+    return stateStyles.price.default;
+}
+
+export function getTimerStyle(secondsRemaining: number) {
+    if (secondsRemaining <= 60) return stateStyles.timer.urgent;
+    if (secondsRemaining <= 300) return stateStyles.timer.warning;
+    return stateStyles.timer.normal;
+}
+
+export function getBalanceStyle(balance: number, required: number) {
+    return balance >= required 
+        ? stateStyles.balance.sufficient 
+        : stateStyles.balance.insufficient;
+}
+
+export function getBidStyle(userBid: number, highestBid: number, isUserBid: boolean) {
+    if (!isUserBid) return stateStyles.bid.neutral;
+    return userBid >= highestBid ? stateStyles.bid.winning : stateStyles.bid.outbid;
+}
+
 export const gradients = {
     primary: "bg-gradient-to-r from-purple-600 to-blue-600",
     primaryHover: "bg-gradient-to-r from-purple-700 to-blue-700",

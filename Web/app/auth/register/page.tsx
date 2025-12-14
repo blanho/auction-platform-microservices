@@ -1,110 +1,82 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Mail } from "lucide-react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Mail } from 'lucide-react';
 
-interface RegisterFormData {
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-}
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+
+import { registerSchema, RegisterFormValues } from '@/lib/validations/auth';
+import { showErrorToast } from '@/utils';
+
+const IDENTITY_SERVER_URL = process.env.NEXT_PUBLIC_IDENTITY_SERVER_URL || 'http://localhost:5001';
 
 export default function RegisterPage() {
     const router = useRouter();
-    const [formData, setFormData] = useState<RegisterFormData>({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: ""
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+
+    const form = useForm<RegisterFormValues>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+        },
     });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
 
-    const identityServerUrl = process.env.NEXT_PUBLIC_IDENTITY_SERVER_URL || "http://localhost:5001";
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-        setError(null);
-    };
-
-    const validateForm = (): string | null => {
-        if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-            return "All fields are required";
-        }
-
-        if (formData.username.length < 3) {
-            return "Username must be at least 3 characters";
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            return "Please enter a valid email address";
-        }
-
-        if (formData.password.length < 6) {
-            return "Password must be at least 6 characters";
-        }
-
-        if (formData.password !== formData.confirmPassword) {
-            return "Passwords do not match";
-        }
-
-        return null;
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        const validationError = validateForm();
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
+    const onSubmit = async (values: RegisterFormValues) => {
+        setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${identityServerUrl}/api/account/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+            const response = await fetch(`${IDENTITY_SERVER_URL}/api/account/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password
-                })
+                    username: values.username,
+                    email: values.email,
+                    password: values.password,
+                }),
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                const errorMessage = result.message || "Registration failed";
-                const errors = result.errors ? result.errors.join(", ") : "";
+                const errorMessage = result.message || 'Registration failed';
+                const errors = result.errors ? result.errors.join(', ') : '';
                 throw new Error(errors || errorMessage);
             }
 
-            setSuccess(true);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+            setRegisteredEmail(values.email);
+        } catch (error) {
+            showErrorToast(error);
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 
-    if (success) {
+    if (registeredEmail) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background p-4">
                 <Card className="w-full max-w-md">
@@ -114,23 +86,27 @@ export default function RegisterPage() {
                                 <Mail className="h-8 w-8 text-primary" />
                             </div>
                         </div>
-                        <CardTitle className="text-2xl font-bold text-center">Check Your Email</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">
+                            Check Your Email
+                        </CardTitle>
                         <CardDescription className="text-center">
-                            We&apos;ve sent a confirmation link to <strong>{formData.email}</strong>.
-                            Please check your inbox and click the link to activate your account.
+                            We&apos;ve sent a confirmation link to{' '}
+                            <strong>{registeredEmail}</strong>. Please check your inbox
+                            and click the link to activate your account.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Alert>
                             <Mail className="h-4 w-4" />
                             <AlertDescription>
-                                Didn&apos;t receive the email? Check your spam folder or wait a few minutes.
+                                Didn&apos;t receive the email? Check your spam folder or
+                                wait a few minutes.
                             </AlertDescription>
                         </Alert>
                         <Button
                             variant="outline"
                             className="w-full"
-                            onClick={() => router.push("/auth/signin")}
+                            onClick={() => router.push('/auth/signin')}
                         >
                             Go to Sign In
                         </Button>
@@ -150,91 +126,110 @@ export default function RegisterPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
                                 name="username"
-                                type="text"
-                                placeholder="johndoe"
-                                value={formData.username}
-                                onChange={handleChange}
-                                disabled={loading}
-                                required
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Username</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="johndoe"
+                                                disabled={isSubmitting}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
+                            <FormField
+                                control={form.control}
                                 name="email"
-                                type="email"
-                                placeholder="john@example.com"
-                                value={formData.email}
-                                onChange={handleChange}
-                                disabled={loading}
-                                required
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="email"
+                                                placeholder="john@example.com"
+                                                disabled={isSubmitting}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
+                            <FormField
+                                control={form.control}
                                 name="password"
-                                type="password"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={handleChange}
-                                disabled={loading}
-                                required
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                disabled={isSubmitting}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
-                            <Input
-                                id="confirmPassword"
+                            <FormField
+                                control={form.control}
                                 name="confirmPassword"
-                                type="password"
-                                placeholder="••••••••"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                disabled={loading}
-                                required
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirm Password</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                disabled={isSubmitting}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            size="lg"
-                            disabled={loading}
-                        >
-                            {loading ? "Creating Account..." : "Create Account"}
-                        </Button>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{" "}
                             <Button
-                                type="button"
-                                variant="link"
-                                className="p-0 h-auto font-semibold"
-                                onClick={() => router.push("/auth/signin")}
+                                type="submit"
+                                className="w-full"
+                                size="lg"
+                                disabled={isSubmitting}
                             >
-                                Sign In
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating Account...
+                                    </>
+                                ) : (
+                                    'Create Account'
+                                )}
                             </Button>
-                        </div>
-                    </form>
+
+                            <div className="text-center text-sm text-muted-foreground">
+                                Already have an account?{' '}
+                                <Link
+                                    href="/auth/signin"
+                                    className="font-semibold text-primary hover:underline"
+                                >
+                                    Sign In
+                                </Link>
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
         </div>

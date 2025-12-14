@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { cn } from "@/lib/utils";
+import { conditionalStyles } from "@/lib/styles";
 import Link from "next/link";
 
 import { ROUTES, MESSAGES } from "@/constants";
@@ -199,7 +201,7 @@ export default function DashboardPage() {
                             onClick={fetchStats}
                             disabled={isLoading}
                         >
-                            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                            <RefreshCw className={cn("h-4 w-4", conditionalStyles.loading(isLoading))} />
                         </Button>
                     </CardHeader>
                     <CardContent>

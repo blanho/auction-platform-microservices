@@ -25,6 +25,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { conditionalStyles } from '@/lib/styles';
 
 import {
     adminDashboardService,
@@ -238,7 +240,7 @@ export default function AdminPage() {
                         onClick={() => fetchData(true)}
                         disabled={isRefreshing}
                     >
-                        <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={cn('h-4 w-4 mr-2', conditionalStyles.loading(isRefreshing))} />
                         Refresh
                     </Button>
                 </div>
