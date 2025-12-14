@@ -124,7 +124,7 @@ export function PlaceBidDialog({
 
   if (sessionStatus === "loading") {
     return (
-      <Button disabled size="lg" className="w-full">
+      <Button disabled size="lg" className="h-12 flex-shrink-0">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         Loading...
       </Button>
@@ -133,7 +133,7 @@ export function PlaceBidDialog({
 
   if (sessionStatus !== "authenticated" || !session) {
     return (
-      <Button asChild size="lg" className="w-full">
+      <Button asChild size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
         <a href="/auth/signin">Sign in to place a bid</a>
       </Button>
     );
@@ -143,7 +143,7 @@ export function PlaceBidDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="lg" className="w-full">
+          <Button size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
             <Gavel className="mr-2 h-4 w-4" />
             Place Bid
           </Button>

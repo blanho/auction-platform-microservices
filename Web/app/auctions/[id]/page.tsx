@@ -6,33 +6,46 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format, formatDistanceToNow } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { ROUTES, MESSAGES, TIME, AUCTION_BID } from '@/constants';
 import {
     formatCurrency,
     formatNumber,
     getTimeRemaining,
-    getStatusColor,
 } from '@/utils';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    Calendar,
-    Clock,
-    Copy,
-    DollarSign,
-    Edit,
-    Facebook,
-    Gauge,
-    Gavel,
-    Heart,
-    History,
-    Loader2,
-    MapPin,
-    PlayCircle,
-    PauseCircle,
-    Share2,
-    Star,
-    Twitter,
-} from 'lucide-react';
+    faGavel,
+    faHeart,
+    faClock,
+    faCalendarAlt,
+    faTachometerAlt,
+    faPalette,
+    faTag,
+    faStar,
+    faShare,
+    faCopy,
+    faPlay,
+    faPause,
+    faEdit,
+    faDollarSign,
+    faHistory,
+    faTrophy,
+    faCheckCircle,
+    faChevronLeft,
+    faChevronRight,
+    faExpand,
+    faUser,
+    faBolt,
+    faShieldAlt,
+    faFire,
+} from '@fortawesome/free-solid-svg-icons';
+import {
+    faFacebook,
+    faXTwitter,
+} from '@fortawesome/free-brands-svg-icons';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +100,35 @@ interface TimeLeft {
     seconds: number;
 }
 
-function CountdownTimer({ endDate }: { endDate: string }) {
+const STATUS_CONFIG = {
+    [AuctionStatus.Live]: {
+        gradient: 'from-emerald-500 to-green-600',
+        bgGlow: 'shadow-emerald-500/25',
+        pulse: true,
+    },
+    [AuctionStatus.Finished]: {
+        gradient: 'from-slate-500 to-slate-600',
+        bgGlow: '',
+        pulse: false,
+    },
+    [AuctionStatus.ReserveNotMet]: {
+        gradient: 'from-amber-500 to-orange-600',
+        bgGlow: 'shadow-amber-500/25',
+        pulse: false,
+    },
+    [AuctionStatus.Cancelled]: {
+        gradient: 'from-red-500 to-rose-600',
+        bgGlow: '',
+        pulse: false,
+    },
+    [AuctionStatus.Inactive]: {
+        gradient: 'from-slate-400 to-slate-500',
+        bgGlow: '',
+        pulse: false,
+    },
+};
+
+function CountdownTimer({ endDate, isUrgent }: { endDate: string; isUrgent?: boolean }) {
     const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeRemaining(endDate));
 
     useEffect(() => {
@@ -98,31 +139,51 @@ function CountdownTimer({ endDate }: { endDate: string }) {
     }, [endDate]);
 
     if (!timeLeft) {
-        return <span className="text-red-500 font-semibold">{MESSAGES.LABELS.AUCTION_ENDED}</span>;
+        return (
+            <div className="flex items-center gap-2 text-red-500 font-semibold">
+                <FontAwesomeIcon icon={faGavel} className="w-5 h-5" />
+                <span>{MESSAGES.LABELS.AUCTION_ENDED}</span>
+            </div>
+        );
     }
 
     const showDays = timeLeft.days > 0;
     const formatUnit = (value: number) => String(value).padStart(2, '0');
+    const urgentClass = isUrgent ? 'animate-pulse' : '';
 
     return (
-        <div className="flex gap-1 text-lg font-mono font-bold">
-            {showDays && (
-                <>
-                    <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">{timeLeft.days}d</span>
-                    <span className="text-zinc-400">:</span>
-                </>
-            )}
-            <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-                {formatUnit(timeLeft.hours)}
-            </span>
-            <span className="text-zinc-400">:</span>
-            <span className="bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-                {formatUnit(timeLeft.minutes)}
-            </span>
-            <span className="text-zinc-400">:</span>
-            <span className="bg-amber-500 text-white px-2 py-1 rounded">
-                {formatUnit(timeLeft.seconds)}
-            </span>
+        <div className="flex items-center gap-3">
+            <div className={`flex gap-2 font-mono ${urgentClass}`}>
+                {showDays && (
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                            {timeLeft.days}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-slate-500">Days</span>
+                    </div>
+                )}
+                {showDays && <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>}
+                <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                        {formatUnit(timeLeft.hours)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Hours</span>
+                </div>
+                <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
+                <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                        {formatUnit(timeLeft.minutes)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Mins</span>
+                </div>
+                <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
+                <div className="flex flex-col items-center">
+                    <span className={`text-3xl font-bold ${isUrgent ? 'text-red-500' : 'bg-gradient-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent'}`}>
+                        {formatUnit(timeLeft.seconds)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Secs</span>
+                </div>
+            </div>
         </div>
     );
 }
@@ -140,6 +201,7 @@ export default function AuctionDetailPage() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isInWatchlist, setIsInWatchlist] = useState(false);
     const [bidAmount, setBidAmount] = useState('');
+    const [isImageExpanded, setIsImageExpanded] = useState(false);
 
     const handleBidPlaced = () => {
         setBidRefreshTrigger(prev => prev + 1);
@@ -245,8 +307,15 @@ export default function AuctionDetailPage() {
     if (isLoading) {
         return (
             <MainLayout>
-                <div className="container py-8 flex justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+                <div className="container py-16 flex flex-col items-center justify-center min-h-[60vh]">
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25"
+                    >
+                        <FontAwesomeIcon icon={faGavel} className="w-8 h-8 text-white" />
+                    </motion.div>
+                    <p className="mt-4 text-slate-500 animate-pulse">Loading auction details...</p>
                 </div>
             </MainLayout>
         );
@@ -261,18 +330,27 @@ export default function AuctionDetailPage() {
         return (
             <MainLayout>
                 <div className="container py-8 max-w-6xl mx-auto">
-                    <Alert variant="destructive">
-                        <AlertDescription>
-                            {isNotFound
-                                ? 'Auction not found. It may have been deleted or does not exist.'
-                                : 'Failed to load auction. Please try again.'}
-                        </AlertDescription>
-                    </Alert>
-                    <div className="mt-4">
-                        <Button asChild>
-                            <Link href={ROUTES.AUCTIONS.LIST}>Back to Auctions</Link>
-                        </Button>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <Alert variant="destructive" className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50">
+                            <AlertDescription className="flex items-center gap-2">
+                                <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
+                                {isNotFound
+                                    ? 'Auction not found. It may have been deleted or does not exist.'
+                                    : 'Failed to load auction. Please try again.'}
+                            </AlertDescription>
+                        </Alert>
+                        <div className="mt-4">
+                            <Button asChild className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                                <Link href={ROUTES.AUCTIONS.LIST}>
+                                    <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 mr-2" />
+                                    Back to Auctions
+                                </Link>
+                            </Button>
+                        </div>
+                    </motion.div>
                 </div>
             </MainLayout>
         );
@@ -281,50 +359,82 @@ export default function AuctionDetailPage() {
     const isOwner = session?.user?.name === auction.seller;
     const images = getAuctionImages();
     const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
+    const statusConfig = STATUS_CONFIG[auction.status] || STATUS_CONFIG[AuctionStatus.Inactive];
+    const timeRemaining = getTimeRemaining(auction.auctionEnd);
+    const isUrgent = timeRemaining && timeRemaining.days === 0 && timeRemaining.hours < 1;
 
-    const statusBgColor = getStatusColor(auction.status);
+    const navigateImage = (direction: 'prev' | 'next') => {
+        if (direction === 'prev') {
+            setSelectedImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+        } else {
+            setSelectedImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
+        }
+    };
 
     return (
         <MainLayout>
             <div className="container py-8 max-w-7xl mx-auto">
-                <Breadcrumb className="mb-6">
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href={ROUTES.HOME}>Home</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                                <Link href={ROUTES.AUCTIONS.LIST}>Auctions</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        {auction.categoryName && (
-                            <>
-                                <BreadcrumbSeparator />
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink asChild>
-                                        <Link href={`${ROUTES.AUCTIONS.LIST}?category=${auction.categorySlug}`}>
-                                            {auction.categoryName}
-                                        </Link>
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
-                            </>
-                        )}
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>{auction.make} {auction.model}</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <Breadcrumb className="mb-6">
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link href={ROUTES.HOME} className="text-slate-500 hover:text-purple-600 transition-colors">
+                                        Home
+                                    </Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link href={ROUTES.AUCTIONS.LIST} className="text-slate-500 hover:text-purple-600 transition-colors">
+                                        Auctions
+                                    </Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            {auction.categoryName && (
+                                <>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink asChild>
+                                            <Link 
+                                                href={`${ROUTES.AUCTIONS.LIST}?category=${auction.categorySlug}`}
+                                                className="text-slate-500 hover:text-purple-600 transition-colors"
+                                            >
+                                                {auction.categoryName}
+                                            </Link>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                </>
+                            )}
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage className="font-medium text-slate-900 dark:text-white">
+                                    {auction.make} {auction.model}
+                                </BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </motion.div>
 
-                {/* Owner Actions Bar */}
                 {isOwner && (
-                    <div className="mb-6 flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                            You are the owner of this auction
-                        </span>
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6 flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-800/50"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                                <FontAwesomeIcon icon={faUser} className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                                You are the owner of this auction
+                            </span>
+                        </div>
                         <div className="flex gap-2">
                             {auction.status === AuctionStatus.Inactive && (
                                 <ActivateAuctionDialog
@@ -332,8 +442,8 @@ export default function AuctionDetailPage() {
                                     auctionTitle={auction.title}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
-                                        <Button variant="outline" size="sm" className="text-green-600">
-                                            <PlayCircle className="mr-2 h-4 w-4" />
+                                        <Button variant="outline" size="sm" className="border-green-300 text-green-600 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950">
+                                            <FontAwesomeIcon icon={faPlay} className="mr-2 w-3 h-3" />
                                             Activate
                                         </Button>
                                     }
@@ -345,8 +455,8 @@ export default function AuctionDetailPage() {
                                     auctionTitle={auction.title}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
-                                        <Button variant="outline" size="sm" className="text-orange-600">
-                                            <PauseCircle className="mr-2 h-4 w-4" />
+                                        <Button variant="outline" size="sm" className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:hover:bg-orange-950">
+                                            <FontAwesomeIcon icon={faPause} className="mr-2 w-3 h-3" />
                                             Deactivate
                                         </Button>
                                     }
@@ -356,8 +466,9 @@ export default function AuctionDetailPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => router.push(`/auctions/${auction.id}/edit`)}
+                                className="border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
                             >
-                                <Edit className="mr-2 h-4 w-4" />
+                                <FontAwesomeIcon icon={faEdit} className="mr-2 w-3 h-3" />
                                 Edit
                             </Button>
                             <DeleteAuctionDialog
@@ -366,42 +477,82 @@ export default function AuctionDetailPage() {
                                 redirectAfterDelete="/auctions"
                             />
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
-                {/* Main Content Grid - Image Gallery + Bidding Panel */}
                 <div className="grid gap-8 lg:grid-cols-5">
-                    {/* Image Gallery - Left Side (3 cols) */}
-                    <div className="lg:col-span-3 space-y-4">
-                        {/* Main Image */}
-                        <Card className="overflow-hidden">
-                            <CardContent className="p-0">
-                                <div className="relative aspect-[4/3] w-full">
-                                    <Image
-                                        src={currentImage}
-                                        alt={auction.title}
-                                        fill
-                                        className="object-cover"
-                                        priority
-                                    />
-                                    <Badge className={`absolute top-4 left-4 ${statusBgColor} text-white`}>
-                                        {auction.status}
-                                    </Badge>
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="lg:col-span-3 space-y-4"
+                    >
+                        <div className="relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl">
+                            <div className="relative aspect-[4/3] w-full group">
+                                <Image
+                                    src={currentImage}
+                                    alt={auction.title}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                    priority
+                                />
+                                
+                                <div className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
+                                    {statusConfig.pulse && (
+                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                    )}
+                                    {auction.status}
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Thumbnails */}
+                                {auction.status === AuctionStatus.Live && isUrgent && (
+                                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+                                        <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
+                                        Ending Soon
+                                    </div>
+                                )}
+
+                                {images.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={() => navigateImage('prev')}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                                        >
+                                            <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 text-slate-700 dark:text-white" />
+                                        </button>
+                                        <button
+                                            onClick={() => navigateImage('next')}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                                        >
+                                            <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4 text-slate-700 dark:text-white" />
+                                        </button>
+                                    </>
+                                )}
+
+                                <button
+                                    onClick={() => setIsImageExpanded(!isImageExpanded)}
+                                    className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                                >
+                                    <FontAwesomeIcon icon={faExpand} className="w-4 h-4 text-slate-700 dark:text-white" />
+                                </button>
+
+                                <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
+                                    {selectedImageIndex + 1} / {images.length || 1}
+                                </div>
+                            </div>
+                        </div>
+
                         {images.length > 1 && (
-                            <div className="flex gap-2 overflow-x-auto pb-2">
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
                                 {images.map((img, idx) => (
-                                    <button
+                                    <motion.button
                                         key={idx}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => setSelectedImageIndex(idx)}
-                                        className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                                        className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden transition-all ${
                                             selectedImageIndex === idx
-                                                ? 'border-amber-500 ring-2 ring-amber-500/50'
-                                                : 'border-transparent hover:border-zinc-300'
+                                                ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
+                                                : 'opacity-60 hover:opacity-100'
                                         }`}
                                     >
                                         <Image
@@ -410,93 +561,119 @@ export default function AuctionDetailPage() {
                                             fill
                                             className="object-cover"
                                         />
-                                    </button>
+                                    </motion.button>
                                 ))}
                             </div>
                         )}
-
-                        {/* Item Details */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-2xl">{auction.title}</CardTitle>
-                                <CardDescription>
-                                    {auction.year} {auction.make} {auction.model}
-                                </CardDescription>
+                        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                                            {auction.title}
+                                        </CardTitle>
+                                        <CardDescription className="text-base mt-1">
+                                            {auction.year} {auction.make} {auction.model}
+                                        </CardDescription>
+                                    </div>
+                                    {auction.isFeatured && (
+                                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                                            <FontAwesomeIcon icon={faFire} className="w-3 h-3 mr-1" />
+                                            Featured
+                                        </Badge>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <Gauge className="h-4 w-4 text-zinc-400" />
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                            <FontAwesomeIcon icon={faTachometerAlt} className="w-4 h-4 text-white" />
+                                        </div>
                                         <div>
-                                            <p className="text-xs text-zinc-500">Mileage</p>
-                                            <p className="font-medium">{formatNumber(auction.mileage)} mi</p>
+                                            <p className="text-xs text-slate-500">Mileage</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{formatNumber(auction.mileage)} mi</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="h-4 w-4 text-zinc-400" />
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                            <FontAwesomeIcon icon={faPalette} className="w-4 h-4 text-white" />
+                                        </div>
                                         <div>
-                                            <p className="text-xs text-zinc-500">Color</p>
-                                            <p className="font-medium">{auction.color}</p>
+                                            <p className="text-xs text-slate-500">Color</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{auction.color}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="h-4 w-4 text-zinc-400" />
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                                            <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 text-white" />
+                                        </div>
                                         <div>
-                                            <p className="text-xs text-zinc-500">Year</p>
-                                            <p className="font-medium">{auction.year}</p>
+                                            <p className="text-xs text-slate-500">Year</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{auction.year}</p>
                                         </div>
                                     </div>
                                     {auction.categoryName && (
-                                        <div className="flex items-center gap-2">
-                                            <Star className="h-4 w-4 text-zinc-400" />
+                                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={faTag} className="w-4 h-4 text-white" />
+                                            </div>
                                             <div>
-                                                <p className="text-xs text-zinc-500">Category</p>
-                                                <p className="font-medium">{auction.categoryName}</p>
+                                                <p className="text-xs text-slate-500">Category</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{auction.categoryName}</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
+                    </motion.div>
 
-                    {/* Bidding Panel - Right Side (2 cols) */}
-                    <div className="lg:col-span-2 space-y-4">
-                        {/* Current Bid & Timer */}
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="space-y-4">
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="lg:col-span-2 space-y-4"
+                    >
+                        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl overflow-hidden">
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600" />
+                            <CardContent className="pt-8">
+                                <div className="space-y-6">
                                     <div>
-                                        <p className="text-sm text-zinc-500">Current Price</p>
-                                        <p className="text-4xl font-bold text-amber-500">
+                                        <p className="text-sm text-slate-500 flex items-center gap-2">
+                                            <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
+                                            Current Price
+                                        </p>
+                                        <p className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
                                             {formatCurrency(auction.currentHighBid || 0)}
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="h-4 w-4 text-zinc-400" />
-                                        <span className="text-sm text-zinc-500">Time Left:</span>
+                                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <FontAwesomeIcon icon={faClock} className="w-4 h-4 text-slate-400" />
+                                            <span className="text-sm text-slate-500">Time Remaining</span>
+                                        </div>
+                                        <CountdownTimer endDate={auction.auctionEnd} isUrgent={isUrgent} />
                                     </div>
-                                    <CountdownTimer endDate={auction.auctionEnd} />
 
-                                    <div className="flex items-center gap-2 text-sm text-zinc-500">
-                                        <Gavel className="h-4 w-4" />
+                                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                                        <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
                                         <span>Multiple bids placed</span>
                                     </div>
 
-                                    <Separator />
+                                    <Separator className="bg-slate-200 dark:bg-slate-700" />
 
-                                    {/* Bid Input */}
                                     {auction.status === AuctionStatus.Live && !isOwner && (
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             <div className="flex gap-2">
                                                 <div className="relative flex-1">
-                                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                                    <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                                     <Input
                                                         type="number"
                                                         value={bidAmount}
                                                         onChange={(e) => setBidAmount(e.target.value)}
-                                                        className="pl-9"
+                                                        className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                                         placeholder="Enter bid amount"
                                                     />
                                                 </div>
@@ -508,7 +685,7 @@ export default function AuctionDetailPage() {
                                                 />
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <p className="text-xs text-zinc-500">
+                                                <p className="text-xs text-slate-500">
                                                     Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
                                                 </p>
                                                 <AutoBidDialog
@@ -520,58 +697,67 @@ export default function AuctionDetailPage() {
                                         </div>
                                     )}
 
-                                    {/* Buy Now Option */}
                                     {auction.isBuyNowAvailable && auction.buyNowPrice && auction.status === AuctionStatus.Live && !isOwner && (
                                         <div className="space-y-3">
-                                            <Separator />
-                                            <div className="rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 border border-amber-200 dark:border-amber-800">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div>
-                                                        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Buy Now Available!</p>
-                                                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-500">
-                                                            {formatCurrency(auction.buyNowPrice)}
-                                                        </p>
-                                                    </div>
+                                            <Separator className="bg-slate-200 dark:bg-slate-700" />
+                                            <motion.div 
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50"
+                                            >
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
+                                                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Buy Now Available!</p>
                                                 </div>
+                                                <p className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-4">
+                                                    {formatCurrency(auction.buyNowPrice)}
+                                                </p>
                                                 <BuyNowButton
                                                     auctionId={auction.id}
                                                     buyNowPrice={auction.buyNowPrice}
                                                     auctionTitle={auction.title}
                                                     onSuccess={() => window.location.reload()}
                                                 />
-                                            </div>
+                                            </motion.div>
                                         </div>
                                     )}
 
-                                    {/* Winner display */}
                                     {auction.winner && (
-                                        <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800">
-                                            <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-                                                🏆 Winner: {auction.winner}
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
+                                        >
+                                            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                                                <FontAwesomeIcon icon={faTrophy} className="w-5 h-5 text-amber-500" />
+                                                Winner: {auction.winner}
                                             </p>
                                             {auction.soldAmount && (
-                                                <p className="text-sm text-green-600 dark:text-green-500">
+                                                <p className="text-sm text-emerald-600 dark:text-emerald-500 mt-1">
                                                     Sold for: {formatCurrency(auction.soldAmount)}
                                                 </p>
                                             )}
-                                        </div>
+                                        </motion.div>
                                     )}
 
-                                    <Separator />
+                                    <Separator className="bg-slate-200 dark:bg-slate-700" />
 
-                                    {/* Actions */}
                                     <div className="flex gap-2">
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
                                                         onClick={toggleWatchlist}
-                                                        className={isInWatchlist ? 'text-red-500' : ''}
+                                                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                                                            isInWatchlist 
+                                                                ? 'bg-red-100 dark:bg-red-950/50 text-red-500' 
+                                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
+                                                        }`}
                                                     >
-                                                        <Heart className={`h-4 w-4 ${isInWatchlist ? 'fill-current' : ''}`} />
-                                                    </Button>
+                                                        <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${isInWatchlist ? 'text-red-500' : ''}`} />
+                                                    </motion.button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     {isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
@@ -581,21 +767,25 @@ export default function AuctionDetailPage() {
 
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="icon">
-                                                    <Share2 className="h-4 w-4" />
-                                                </Button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all"
+                                                >
+                                                    <FontAwesomeIcon icon={faShare} className="w-5 h-5" />
+                                                </motion.button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={shareToFacebook}>
-                                                    <Facebook className="h-4 w-4 mr-2" />
+                                            <DropdownMenuContent className="rounded-xl">
+                                                <DropdownMenuItem onClick={shareToFacebook} className="cursor-pointer">
+                                                    <FontAwesomeIcon icon={faFacebook} className="w-4 h-4 mr-2 text-blue-600" />
                                                     Facebook
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={shareToTwitter}>
-                                                    <Twitter className="h-4 w-4 mr-2" />
+                                                <DropdownMenuItem onClick={shareToTwitter} className="cursor-pointer">
+                                                    <FontAwesomeIcon icon={faXTwitter} className="w-4 h-4 mr-2" />
                                                     X (Twitter)
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={copyLink}>
-                                                    <Copy className="h-4 w-4 mr-2" />
+                                                <DropdownMenuItem onClick={copyLink} className="cursor-pointer">
+                                                    <FontAwesomeIcon icon={faCopy} className="w-4 h-4 mr-2 text-slate-500" />
                                                     Copy Link
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -605,141 +795,203 @@ export default function AuctionDetailPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Seller Profile */}
-                        <Card>
+                        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-medium">Seller</CardTitle>
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                    <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-purple-500" />
+                                    Seller
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-lg">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
                                         {auction.seller.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-medium">{auction.seller}</p>
-                                        <div className="flex items-center gap-1 text-sm text-zinc-500">
-                                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                            <span>4.8</span>
-                                            <span className="text-zinc-300">•</span>
-                                            <span>Verified Seller</span>
+                                        <p className="font-semibold text-slate-900 dark:text-white">{auction.seller}</p>
+                                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                                            <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-amber-400" />
+                                            <span className="font-medium">4.8</span>
+                                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                                <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
+                                                Verified
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {/* Reserve Price Info */}
-                        <Card>
+                        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                             <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-zinc-500">Reserve Price</span>
-                                    <span className="font-medium">
-                                        {auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
-                                            ? MESSAGES.LABELS.RESERVE_MET
-                                            : formatCurrency(auction.reservePrice)}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between mt-2">
-                                    <span className="text-sm text-zinc-500">Auction Ends</span>
-                                    <span className="font-medium text-sm">
-                                        {format(new Date(auction.auctionEnd), 'PPP p')}
-                                    </span>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <span className="text-sm text-slate-500 flex items-center gap-2">
+                                            <FontAwesomeIcon icon={faShieldAlt} className="w-4 h-4" />
+                                            Reserve Price
+                                        </span>
+                                        <span className={`font-semibold ${
+                                            auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
+                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                : 'text-slate-900 dark:text-white'
+                                        }`}>
+                                            {auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
+                                                ? MESSAGES.LABELS.RESERVE_MET
+                                                : formatCurrency(auction.reservePrice)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                        <span className="text-sm text-slate-500 flex items-center gap-2">
+                                            <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
+                                            Auction Ends
+                                        </span>
+                                        <span className="font-medium text-sm text-slate-900 dark:text-white">
+                                            {format(new Date(auction.auctionEnd), 'PPP p')}
+                                        </span>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* Description Section */}
-                <Card className="mt-8">
-                    <CardHeader>
-                        <CardTitle>Description</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-zinc-600 dark:text-zinc-300">
-                            {auction.description}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* Bid History */}
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <History className="h-5 w-5" />
-                            Bid History
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <BidHistory
-                            auctionId={auction.id}
-                            refreshTrigger={bidRefreshTrigger}
-                            maxHeight="300px"
-                        />
-                    </CardContent>
-                </Card>
-
-                {/* Related Items */}
-                {relatedAuctions.length > 0 && (
-                    <div className="mt-8">
-                        <h2 className="text-2xl font-bold mb-4">Related Items</h2>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            {relatedAuctions.map((related) => {
-                                const relatedImage = related.files?.find(f => f.isPrimary && f.url)?.url || '/placeholder-car.jpg';
-                                return (
-                                    <Link key={related.id} href={`/auctions/${related.id}`}>
-                                        <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                                            <div className="relative aspect-[4/3]">
-                                                <Image
-                                                    src={relatedImage}
-                                                    alt={related.title}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            <CardContent className="p-4">
-                                                <h3 className="font-medium truncate">{related.title}</h3>
-                                                <p className="text-sm text-zinc-500">
-                                                    {related.year} {related.make} {related.model}
-                                                </p>
-                                                <div className="flex items-center justify-between mt-2">
-                                                    <span className="font-bold text-amber-500">
-                                                        {formatCurrency(related.currentHighBid || related.reservePrice)}
-                                                    </span>
-                                                    <span className="text-xs text-zinc-400">
-                                                        {formatDistanceToNow(new Date(related.auctionEnd), { addSuffix: true })}
-                                                    </span>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                {/* Audit History (Owner Only) */}
-                {isOwner && (
-                    <Card className="mt-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                    <Card className="mt-8 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <History className="h-5 w-5" />
-                                Activity History
+                            <CardTitle className="flex items-center gap-2 text-xl">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                                    <FontAwesomeIcon icon={faTag} className="w-4 h-4 text-white" />
+                                </div>
+                                Description
                             </CardTitle>
-                            <CardDescription>
-                                Track all changes made to this auction
-                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AuditHistory
-                                entityType="Auction"
-                                entityId={auction.id}
-                                maxHeight="400px"
-                                showDetails={true}
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
+                                {auction.description}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                    <Card className="mt-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-xl">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                                    <FontAwesomeIcon icon={faHistory} className="w-4 h-4 text-white" />
+                                </div>
+                                Bid History
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <BidHistory
+                                auctionId={auction.id}
+                                refreshTrigger={bidRefreshTrigger}
+                                maxHeight="300px"
                             />
                         </CardContent>
                     </Card>
+                </motion.div>
+
+                {relatedAuctions.length > 0 && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                        className="mt-8"
+                    >
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                                <FontAwesomeIcon icon={faGavel} className="w-5 h-5 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                                Related Items
+                            </h2>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {relatedAuctions.map((related, index) => {
+                                const relatedImage = related.files?.find(f => f.isPrimary && f.url)?.url || '/placeholder-car.jpg';
+                                return (
+                                    <motion.div
+                                        key={related.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.1 * index }}
+                                    >
+                                        <Link href={`/auctions/${related.id}`}>
+                                            <Card className="overflow-hidden border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                                <div className="relative aspect-[4/3]">
+                                                    <Image
+                                                        src={relatedImage}
+                                                        alt={related.title}
+                                                        fill
+                                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                                <CardContent className="p-4">
+                                                    <h3 className="font-semibold truncate text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                                        {related.title}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-500 mt-0.5">
+                                                        {related.year} {related.make} {related.model}
+                                                    </p>
+                                                    <div className="flex items-center justify-between mt-3">
+                                                        <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                                            {formatCurrency(related.currentHighBid || related.reservePrice)}
+                                                        </span>
+                                                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                            <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
+                                                            {formatDistanceToNow(new Date(related.auctionEnd), { addSuffix: true })}
+                                                        </span>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+
+                {isOwner && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.5 }}
+                    >
+                        <Card className="mt-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-xl">
+                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                                        <FontAwesomeIcon icon={faHistory} className="w-4 h-4 text-white" />
+                                    </div>
+                                    Activity History
+                                </CardTitle>
+                                <CardDescription>
+                                    Track all changes made to this auction
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <AuditHistory
+                                    entityType="Auction"
+                                    entityId={auction.id}
+                                    maxHeight="400px"
+                                    showDetails={true}
+                                />
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 )}
             </div>
         </MainLayout>
