@@ -150,6 +150,17 @@ export interface CreateAuctionDto {
   shipsTo?: string[];
   localPickupAvailable?: boolean;
   localPickupAddress?: string;
+  files?: FileInfoDto[];
+}
+
+export interface FileInfoDto {
+  url: string;
+  publicId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  displayOrder: number;
+  isPrimary: boolean;
 }
 
 export interface UpdateAuctionDto {

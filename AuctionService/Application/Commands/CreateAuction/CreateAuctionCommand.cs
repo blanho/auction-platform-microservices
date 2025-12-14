@@ -15,5 +15,18 @@ public record CreateAuctionCommand(
     int? BuyNowPrice,
     DateTimeOffset AuctionEnd,
     string Seller,
-    List<Guid>? FileIds = null
+    List<Guid>? FileIds = null,
+    List<FileInfoDto>? Files = null,
+    Guid? CategoryId = null,
+    bool IsFeatured = false
 ) : ICommand<AuctionDto>;
+
+public record FileInfoDto(
+    string Url,
+    string PublicId,
+    string FileName,
+    string ContentType,
+    long Size,
+    int DisplayOrder,
+    bool IsPrimary
+);

@@ -186,6 +186,16 @@ public class AuctionsController : ControllerBase
     {
         var seller = UserHelper.GetUsername(User);
 
+        var commandFiles = dto.Files?.Select(f => new Application.Commands.CreateAuction.FileInfoDto(
+            f.Url,
+            f.PublicId,
+            f.FileName,
+            f.ContentType,
+            f.Size,
+            f.DisplayOrder,
+            f.IsPrimary
+        )).ToList();
+
         var command = new CreateAuctionCommand(
             dto.Title,
             dto.Description,
@@ -198,7 +208,10 @@ public class AuctionsController : ControllerBase
             dto.BuyNowPrice,
             dto.AuctionEnd,
             seller,
-            dto.FileIds);
+            dto.FileIds,
+            commandFiles,
+            dto.CategoryId,
+            dto.IsFeatured);
 
         var result = await _mediator.Send(command, cancellationToken);
 

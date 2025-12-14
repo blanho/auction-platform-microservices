@@ -101,14 +101,16 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
     private Auction CreateAuctionEntity(CreateAuctionCommand request)
     {
-        return new Auction
+        var auctionId = Guid.NewGuid();
+        var auction = new Auction
         {
-            Id = Guid.NewGuid(),
+            Id = auctionId,
             Seller = request.Seller,
             ReversePrice = request.ReservePrice,
             BuyNowPrice = request.BuyNowPrice,
             AuctionEnd = request.AuctionEnd,
             Status = Status.Live,
+            IsFeatured = request.IsFeatured,
             Item = new Item
             {
                 Title = request.Title,
@@ -117,8 +119,31 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
                 Model = request.Model,
                 Year = request.Year,
                 Color = request.Color,
-                Mileage = request.Mileage
+                Mileage = request.Mileage,
+                CategoryId = request.CategoryId,
+                Files = new List<ItemFileInfo>()
             }
         };
+
+        if (request.Files != null && request.Files.Count > 0)
+        {
+            foreach (var file in request.Files)
+            {
+                auction.Item.Files.Add(new ItemFileInfo
+                {
+                    StorageFileId = Guid.NewGuid(),
+                    FileName = file.FileName,
+                    ContentType = file.ContentType,
+                    Size = file.Size,
+                    Url = file.Url,
+                    FileType = "image",
+                    DisplayOrder = file.DisplayOrder,
+                    IsPrimary = file.IsPrimary,
+                    UploadedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        return auction;
     }
 }

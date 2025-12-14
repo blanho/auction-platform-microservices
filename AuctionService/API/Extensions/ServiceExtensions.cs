@@ -8,6 +8,7 @@ using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
 using AutoMapper;
 using Serilog;
+using System.Text.Json.Serialization;
 
 namespace AuctionService.API.Extensions
 {
@@ -29,7 +30,12 @@ namespace AuctionService.API.Extensions
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                });
             services.AddDbContext<AuctionDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -29,6 +29,8 @@ public class CreateAuctionWithFileIdsDto
 
     public List<Guid>? FileIds { get; set; }
 
+    public List<FileInfoDto>? Files { get; set; }
+
     [Required]
     [Range(0, int.MaxValue)]
     public int ReservePrice { get; set; }
@@ -38,4 +40,19 @@ public class CreateAuctionWithFileIdsDto
 
     [Required]
     public DateTimeOffset AuctionEnd { get; set; }
+
+    public Guid? CategoryId { get; set; }
+
+    public bool IsFeatured { get; set; } = false;
+}
+
+public class FileInfoDto
+{
+    public required string Url { get; set; }
+    public required string PublicId { get; set; }
+    public required string FileName { get; set; }
+    public string ContentType { get; set; } = "image/jpeg";
+    public long Size { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsPrimary { get; set; }
 }

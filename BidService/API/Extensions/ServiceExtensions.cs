@@ -8,6 +8,7 @@ using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
+using System.Text.Json.Serialization;
 
 namespace BidService.API.Extensions
 {
@@ -29,7 +30,12 @@ namespace BidService.API.Extensions
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                });
             services.AddDbContext<BidDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

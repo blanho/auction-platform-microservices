@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,13 +9,11 @@ import { toast } from 'sonner';
 import {
     Calendar,
     DollarSign,
-    ImagePlus,
     Loader2,
     Package,
-    Upload,
-    X,
 } from 'lucide-react';
-import Image from 'next/image';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -47,9 +45,15 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { CloudinaryUpload, UploadedImage } from '@/components/ui/cloudinary-upload';
 
 import { auctionService } from '@/services/auction.service';
 import { CreateAuctionDto, Category, ShippingType, SHIPPING_TYPE_LABELS } from '@/types/auction';
+import { showErrorToast } from '@/utils';
+
+function RequiredIndicator() {
+    return <span className="text-red-500 ml-0.5">*</span>;
+}
 
 const createAuctionSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -88,18 +92,11 @@ const createAuctionSchema = z.object({
 
 type CreateAuctionFormValues = z.infer<typeof createAuctionSchema>;
 
-interface UploadedImage {
-    id: string;
-    url: string;
-    name: string;
-}
-
 export function CreateAuctionForm() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         auctionService.getCategories().then(setCategories).catch(() => {});
@@ -132,52 +129,25 @@ export function CreateAuctionForm() {
         },
     });
 
-    const handleDrop = useCallback((e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-
-        const files = Array.from(e.dataTransfer.files).filter(file =>
-            file.type.startsWith('image/')
-        );
-
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const url = e.target?.result as string;
-                setUploadedImages(prev => [...prev, {
-                    id: Math.random().toString(36).substring(7),
-                    url,
-                    name: file.name
-                }]);
-            };
-            reader.readAsDataURL(file);
-        });
-    }, []);
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []).filter(file =>
-            file.type.startsWith('image/')
-        );
-
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const url = event.target?.result as string;
-                setUploadedImages(prev => [...prev, {
-                    id: Math.random().toString(36).substring(7),
-                    url,
-                    name: file.name
-                }]);
-            };
-            reader.readAsDataURL(file);
-        });
-    };
-
-    const removeImage = (id: string) => {
-        setUploadedImages(prev => prev.filter(img => img.id !== id));
-    };
-
     const onSubmit = async (values: CreateAuctionFormValues) => {
+        if (uploadedImages.some(img => img.status === 'uploading')) {
+            toast.error('Please wait for images to finish uploading');
+            return;
+        }
+
+        const successfulImages = uploadedImages.filter(img => img.status === 'success');
+        const primaryImage = successfulImages.find(img => img.isPrimary) || successfulImages[0];
+
+        const files = successfulImages.map((img, index) => ({
+            url: img.url,
+            publicId: img.publicId,
+            fileName: img.name,
+            contentType: 'image/jpeg',
+            size: 0,
+            displayOrder: index,
+            isPrimary: img.isPrimary || (index === 0 && !successfulImages.some(i => i.isPrimary)),
+        }));
+
         setIsSubmitting(true);
         const data: CreateAuctionDto = {
             title: values.title,
@@ -192,22 +162,25 @@ export function CreateAuctionForm() {
             auctionEnd: values.auctionEnd,
             categoryId: values.categoryId || undefined,
             isFeatured: values.isFeatured,
-            imageUrl: uploadedImages[0]?.url || values.imageUrl || undefined,
+            imageUrl: primaryImage?.url || values.imageUrl || undefined,
             shippingType: values.shippingType,
             shippingCost: values.shippingType === ShippingType.Flat ? values.shippingCost : undefined,
             handlingTime: values.handlingTime,
             shipsFrom: values.shipsFrom || undefined,
             localPickupAvailable: values.localPickupAvailable,
             localPickupAddress: values.localPickupAvailable ? values.localPickupAddress : undefined,
+            files: files.length > 0 ? files : undefined,
         };
         
         try {
             await auctionService.createAuction(data);
             toast.success('Auction created successfully!');
             router.push('/auctions');
-        } catch (error) {
-            const err = error as { response?: { data?: { message?: string } } };
-            toast.error(err?.response?.data?.message || 'Failed to create auction');
+        } catch (error: unknown) {
+            console.error('Create auction error:', error);
+            showErrorToast(error, {
+                description: 'Please check your input and try again',
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -220,6 +193,9 @@ export function CreateAuctionForm() {
                 <CardDescription>
                     Fill in the details to create a new auction listing
                 </CardDescription>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                    Fields marked with <span className="text-red-500">*</span> are required
+                </p>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -227,82 +203,37 @@ export function CreateAuctionForm() {
                         {/* Photos Upload Section */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <ImagePlus className="h-5 w-5" />
+                                <FontAwesomeIcon icon={faImage} className="h-5 w-5 text-purple-500" />
                                 Photos
                             </h3>
-                            <div
-                                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                                    isDragging
-                                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/10'
-                                        : 'border-zinc-300 dark:border-zinc-700'
-                                }`}
-                                onDragOver={(e) => {
-                                    e.preventDefault();
-                                    setIsDragging(true);
-                                }}
-                                onDragLeave={() => setIsDragging(false)}
-                                onDrop={handleDrop}
-                            >
-                                <Upload className="h-10 w-10 mx-auto text-zinc-400 mb-4" />
-                                <p className="text-zinc-600 dark:text-zinc-400 mb-2">
-                                    Drag and drop images here, or click to browse
-                                </p>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    className="hidden"
-                                    id="image-upload"
-                                    onChange={handleFileSelect}
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => document.getElementById('image-upload')?.click()}
-                                >
-                                    <ImagePlus className="h-4 w-4 mr-2" />
-                                    Add Images
-                                </Button>
-                            </div>
-
-                            {uploadedImages.length > 0 && (
-                                <div className="flex gap-2 flex-wrap">
-                                    {uploadedImages.map((img) => (
-                                        <div
-                                            key={img.id}
-                                            className="relative w-24 h-24 rounded-lg overflow-hidden border group"
-                                        >
-                                            <Image
-                                                src={img.url}
-                                                alt={img.name}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeImage(img.id)}
-                                                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            
+                            <CloudinaryUpload
+                                value={uploadedImages}
+                                onChange={setUploadedImages}
+                                maxImages={10}
+                                maxSizeMB={10}
+                                folder="auction"
+                            />
 
                             <FormField
                                 control={form.control}
                                 name="imageUrl"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Or enter image URL</FormLabel>
+                                        <FormLabel>Or enter image URL directly</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="url"
                                                 placeholder="https://example.com/image.jpg"
                                                 {...field}
+                                                disabled={uploadedImages.length > 0}
                                             />
                                         </FormControl>
+                                        <FormDescription>
+                                            {uploadedImages.length > 0 
+                                                ? 'URL input disabled when images are uploaded' 
+                                                : 'Use this if you have an existing image URL'}
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -320,7 +251,7 @@ export function CreateAuctionForm() {
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem className="md:col-span-2">
-                                            <FormLabel>Title</FormLabel>
+                                            <FormLabel>Title<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input placeholder="2020 Toyota Camry XSE V6" {...field} />
                                             </FormControl>
@@ -334,7 +265,7 @@ export function CreateAuctionForm() {
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem className="md:col-span-2">
-                                            <FormLabel>Description</FormLabel>
+                                            <FormLabel>Description<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Describe your item in detail. Include condition, features, history, etc."
@@ -377,7 +308,7 @@ export function CreateAuctionForm() {
                                     name="condition"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Condition</FormLabel>
+                                            <FormLabel>Condition<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <RadioGroup
                                                     onValueChange={field.onChange}
@@ -412,7 +343,7 @@ export function CreateAuctionForm() {
                                     name="make"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Make</FormLabel>
+                                            <FormLabel>Make<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Toyota" {...field} />
                                             </FormControl>
@@ -426,7 +357,7 @@ export function CreateAuctionForm() {
                                     name="model"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Model</FormLabel>
+                                            <FormLabel>Model<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Camry" {...field} />
                                             </FormControl>
@@ -440,7 +371,7 @@ export function CreateAuctionForm() {
                                     name="year"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Year</FormLabel>
+                                            <FormLabel>Year<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -459,7 +390,7 @@ export function CreateAuctionForm() {
                                     name="color"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Color</FormLabel>
+                                            <FormLabel>Color<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Silver" {...field} />
                                             </FormControl>
@@ -473,7 +404,7 @@ export function CreateAuctionForm() {
                                     name="mileage"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Mileage</FormLabel>
+                                            <FormLabel>Mileage<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -503,7 +434,7 @@ export function CreateAuctionForm() {
                                     name="reservePrice"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Reserve Price ($)</FormLabel>
+                                            <FormLabel>Reserve Price ($)<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -558,7 +489,7 @@ export function CreateAuctionForm() {
                                     name="auctionEnd"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>End Date & Time</FormLabel>
+                                            <FormLabel>End Date & Time<RequiredIndicator /></FormLabel>
                                             <FormControl>
                                                 <Input type="datetime-local" {...field} />
                                             </FormControl>
@@ -609,7 +540,7 @@ export function CreateAuctionForm() {
                                     name="shippingType"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Shipping Method</FormLabel>
+                                            <FormLabel>Shipping Method<RequiredIndicator /></FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
