@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { useFeaturedAuctions } from "@/hooks/use-auctions";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { Auction } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
+import { UI, FEATURED } from "@/constants/config";
 
 function AuctionCard({
     auction,
@@ -46,6 +47,11 @@ function AuctionCard({
         );
     }, [auction.files]);
 
+    const handleLikeClick = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsLiked(prev => !prev);
+    }, []);
+
     const formatTimeDisplay = () => {
         if (!timeLeft || timeLeft.isExpired) return "Ended";
         if (timeLeft.days > 0) return `${timeLeft.days}d ${timeLeft.hours}h`;
@@ -60,7 +66,7 @@ function AuctionCard({
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: UI.ANIMATION.SLIDE_DURATION, delay: index * UI.ANIMATION.STAGGER_DELAY }}
         >
             <Link href={`/auctions/${auction.id}`} className="group block">
                 <div className="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-purple-400/50 dark:hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 hover:-translate-y-2">
@@ -80,10 +86,7 @@ function AuctionCard({
                             )}
                         </div>
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setIsLiked(!isLiked);
-                            }}
+                            onClick={handleLikeClick}
                             className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
                         >
                             <FontAwesomeIcon
@@ -125,12 +128,7 @@ function AuctionCard({
                             </div>
                             <div className="flex items-center gap-3 text-white/80 text-xs">
                                 <div className="flex items-center gap-1">
-                                    <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 50) + 20}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
                                     <FontAwesomeIcon icon={faGavel} className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 20) + 5}</span>
                                 </div>
                             </div>
                         </div>
@@ -192,14 +190,14 @@ function CardSkeleton() {
 }
 
 export function FeaturedAuctionsSection() {
-    const { data: featuredAuctions, isLoading, error } = useFeaturedAuctions(6);
+    const { data: featuredAuctions, isLoading, error } = useFeaturedAuctions(FEATURED.DEFAULT_LIMIT);
 
     if (isLoading) {
         return (
             <section className="relative py-24 bg-slate-50 dark:bg-slate-950 overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[...Array(6)].map((_, i) => (
+                        {[...Array(FEATURED.DEFAULT_LIMIT)].map((_, i) => (
                             <CardSkeleton key={i} />
                         ))}
                     </div>
@@ -255,7 +253,7 @@ export function FeaturedAuctionsSection() {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
+                        transition={{ delay: UI.ANIMATION.STAGGER_DELAY * 2 }}
                     >
                         <Button
                             className="h-12 px-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium shadow-lg shadow-purple-500/25"
@@ -279,7 +277,7 @@ export function FeaturedAuctionsSection() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.4 }}
+                    transition={{ delay: UI.ANIMATION.STAGGER_DELAY * 4 }}
                     className="mt-12 flex flex-wrap justify-center gap-6 text-center"
                 >
                     <div className="px-6 py-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-sm">

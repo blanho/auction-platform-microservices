@@ -23,6 +23,7 @@ import { conditionalStyles } from "@/lib/styles";
 import Link from "next/link";
 
 import { ROUTES, MESSAGES } from "@/constants";
+import { UI } from "@/constants/config";
 import { formatCurrency, formatRelativeTime } from "@/utils";
 import { dashboardService, UserDashboardStats, RecentActivity } from "@/services/dashboard.service";
 import { toast } from "sonner";
@@ -60,7 +61,7 @@ export default function DashboardPage() {
         return (
             <DashboardLayout title="Dashboard" description="Welcome back!">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
+                    {[...Array(UI.SKELETON.DASHBOARD_CARDS)].map((_, i) => (
                         <Card key={i}>
                             <CardHeader className="pb-2">
                                 <Skeleton className="h-4 w-24" />

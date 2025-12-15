@@ -19,7 +19,8 @@ import { Auction, AuctionStatus, ITEM_CONDITION_LABELS, ItemCondition, ShippingT
 import { SearchItem } from '@/types/search';
 import { formatDistanceToNow, differenceInHours, differenceInMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { URGENCY } from '@/constants/config';
 
 interface AuctionCardProps {
     auction: Auction | SearchItem;
@@ -93,7 +94,7 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
         }
 
         if (hoursRemaining < 24) {
-            return { text: `${hoursRemaining}h left`, urgent: hoursRemaining < 6 };
+            return { text: `${hoursRemaining}h left`, urgent: hoursRemaining < URGENCY.WARNING_HOURS / 4 };
         }
 
         return {
@@ -122,11 +123,11 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
     const condition = 'condition' in auction && auction.condition ? auction.condition : null;
     const shippingType = 'shippingType' in auction ? auction.shippingType : null;
 
-    const handleWishlistToggle = (e: React.MouseEvent) => {
+    const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setIsWishlisted(!isWishlisted);
-    };
+        setIsWishlisted(prev => !prev);
+    }, []);
 
     if (variant === 'compact') {
         return (

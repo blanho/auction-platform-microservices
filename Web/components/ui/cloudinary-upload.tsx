@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -33,6 +33,14 @@ export interface UploadedImage {
     file?: File;
 }
 
+export interface CloudinaryUploadRef {
+    clearAll: () => void;
+    retryFailed: () => void;
+    getImages: () => UploadedImage[];
+    hasErrors: () => boolean;
+    isUploading: () => boolean;
+}
+
 interface CloudinaryUploadProps {
     value: UploadedImage[];
     onChange: (images: UploadedImage[]) => void;
@@ -47,15 +55,16 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 const generateId = () => `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-export function CloudinaryUpload({
-    value,
-    onChange,
-    maxImages = 10,
-    maxSizeMB = 10,
-    folder = 'auction',
-    className,
-    disabled = false,
-}: CloudinaryUploadProps) {
+export const CloudinaryUpload = forwardRef<CloudinaryUploadRef, CloudinaryUploadProps>(
+    function CloudinaryUpload({
+        value,
+        onChange,
+        maxImages = 10,
+        maxSizeMB = 10,
+        folder = 'auction',
+        className,
+        disabled = false,
+    }, ref) {
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const objectUrlsRef = useRef<Set<string>>(new Set());
@@ -261,6 +270,39 @@ export function CloudinaryUpload({
         },
         [value, onChange]
     );
+
+    const clearAll = useCallback(() => {
+        value.forEach((image) => {
+            if (image.url.startsWith('blob:')) {
+                URL.revokeObjectURL(image.url);
+                objectUrlsRef.current.delete(image.url);
+            }
+            if (image.publicId && image.status === 'success') {
+                cloudinaryService.delete(image.publicId).catch(() => { });
+            }
+        });
+        onChange([]);
+    }, [value, onChange]);
+
+    const retryAllFailed = useCallback(() => {
+        const failedImages = value.filter((img) => img.status === 'error' && img.file);
+        failedImages.forEach((image) => {
+            onChange(value.map((img) => 
+                img.id === image.id 
+                    ? { ...img, status: 'uploading' as const, progress: 0, error: undefined } 
+                    : img
+            ));
+            uploadSingleFile({ ...image, status: 'uploading', progress: 0, error: undefined });
+        });
+    }, [value, onChange, uploadSingleFile]);
+
+    useImperativeHandle(ref, () => ({
+        clearAll,
+        retryFailed: retryAllFailed,
+        getImages: () => value,
+        hasErrors: () => value.some((img) => img.status === 'error'),
+        isUploading: () => value.some((img) => img.status === 'uploading'),
+    }), [clearAll, retryAllFailed, value]);
 
     const canUploadMore = value.length < maxImages;
 
@@ -494,6 +536,8 @@ export function CloudinaryUpload({
             </p>
         </div>
     );
-}
+});
+
+CloudinaryUpload.displayName = 'CloudinaryUpload';
 
 export default CloudinaryUpload;

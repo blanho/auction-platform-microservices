@@ -13,12 +13,22 @@ export const TIME = {
   DAY: 24 * 60 * 60 * 1000,
   WEEK: 7 * 24 * 60 * 60 * 1000,
   COUNTDOWN_INTERVAL: 1000,
+  CAROUSEL_INTERVAL: 5000,
+  REFRESH_INTERVAL: 60000,
+  DEBOUNCE_DELAY: 300,
+  TOAST_DURATION: 5000,
 } as const;
 
 export const AUCTION_BID = {
   MIN_INCREMENT: 100,
   DEFAULT_RESERVE_PRICE: 0,
   AUTO_EXTEND_MINUTES: 5,
+} as const;
+
+export const URGENCY = {
+  CRITICAL_HOURS: 1,
+  WARNING_HOURS: 24,
+  CRITICAL_MINUTES: 60,
 } as const;
 
 export const CACHE = {
@@ -33,7 +43,7 @@ export const SIGNALR = {
 } as const;
 
 export const FILE_UPLOAD = {
-  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_FILE_SIZE: 10 * 1024 * 1024,
   MAX_FILES: 10,
   ACCEPTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
   ACCEPTED_DOCUMENT_TYPES: ['application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
@@ -66,4 +76,36 @@ export const SORT_OPTIONS = {
     PRICE_HIGH: 'priceHigh',
     BIDS: 'bids',
   },
+} as const;
+
+export const UI = {
+  CAROUSEL: {
+    MAX_ITEMS: 5,
+    AUTO_PLAY_INTERVAL: TIME.CAROUSEL_INTERVAL,
+    INTERVAL: TIME.CAROUSEL_INTERVAL,
+  },
+  SKELETON: {
+    CARD_COUNT: 6,
+    LIST_COUNT: 4,
+    DASHBOARD_CARDS: 6,
+  },
+  SCROLL_AMOUNT: 340,
+  ANIMATION: {
+    FADE_DURATION: 0.3,
+    SLIDE_DURATION: 0.5,
+    STAGGER_DELAY: 0.1,
+    DURATION_FAST: 0.3,
+    DURATION_DEFAULT: 0.5,
+  },
+} as const;
+
+export const FEATURED = {
+  DEFAULT_LIMIT: 6,
+  MAX_LIMIT: 8,
+  HOME_DISPLAY_COUNT: 4,
+} as const;
+
+export const ACTIVITY = {
+  DEFAULT_LIMIT: 5,
+  MAX_RECENT: 10,
 } as const;

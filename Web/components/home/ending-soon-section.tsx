@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -21,6 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Auction } from "@/types/auction";
 import { auctionService } from "@/services/auction.service";
 import { PulsingDot } from "@/components/ui/animated";
+import { FEATURED, UI, URGENCY } from "@/constants/config";
+import { useInterval } from "@/hooks/use-interval";
 
 interface CountdownProps {
     endTime: Date;
@@ -35,26 +37,26 @@ function Countdown({ endTime, variant = "overlay" }: CountdownProps) {
     });
     const [isUrgent, setIsUrgent] = useState(false);
 
-    useEffect(() => {
-        const calculateTimeLeft = () => {
-            const difference = endTime.getTime() - Date.now();
+    const calculateTimeLeft = useCallback(() => {
+        const difference = endTime.getTime() - Date.now();
 
-            if (difference > 0) {
-                const hours = Math.floor(difference / (1000 * 60 * 60));
-                const minutes = Math.floor(
-                    (difference % (1000 * 60 * 60)) / (1000 * 60)
-                );
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        if (difference > 0) {
+            const hours = Math.floor(difference / (1000 * 60 * 60));
+            const minutes = Math.floor(
+                (difference % (1000 * 60 * 60)) / (1000 * 60)
+            );
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-                setTimeLeft({ hours, minutes, seconds });
-                setIsUrgent(hours < 1);
-            }
-        };
-
-        calculateTimeLeft();
-        const timer = setInterval(calculateTimeLeft, 1000);
-        return () => clearInterval(timer);
+            setTimeLeft({ hours, minutes, seconds });
+            setIsUrgent(hours < URGENCY.CRITICAL_HOURS);
+        }
     }, [endTime]);
+
+    useEffect(() => {
+        calculateTimeLeft();
+    }, [calculateTimeLeft]);
+
+    useInterval(calculateTimeLeft, 1000);
 
     const formatTime = (value: number) => value.toString().padStart(2, "0");
 
@@ -119,11 +121,16 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
     const currentBid = auction.currentHighBid || auction.reservePrice || 0;
     const endTime = new Date(auction.auctionEnd);
 
+    const handleLikeToggle = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsLiked(prev => !prev);
+    }, []);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: UI.ANIMATION.SLIDE_DURATION, delay: index * UI.ANIMATION.STAGGER_DELAY }}
             className="shrink-0 w-80 snap-start"
         >
             <Link href={`/auctions/${auction.id}`} className="group block">
@@ -134,10 +141,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                             Ending Soon
                         </Badge>
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setIsLiked(!isLiked);
-                            }}
+                            onClick={handleLikeToggle}
                             className="w-9 h-9 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
                         >
                             <FontAwesomeIcon
@@ -168,9 +172,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                                 </div>
                                 <div className="flex items-center gap-2 text-white/80 text-xs">
                                     <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 50) + 10}</span>
                                     <FontAwesomeIcon icon={faGavel} className="w-3 h-3 ml-2" />
-                                    <span>{Math.floor(Math.random() * 20) + 5}</span>
                                 </div>
                             </div>
                         </div>
@@ -232,35 +234,45 @@ export function EndingSoonSection() {
     const [auctions, setAuctions] = useState<Auction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isMountedRef = useRef(true);
 
     useEffect(() => {
+        isMountedRef.current = true;
+        
         const fetchAuctions = async () => {
             try {
                 const result = await auctionService.getAuctions({
                     status: "Live",
                     orderBy: "auctionEnd",
                     descending: false,
-                    pageSize: 6,
+                    pageSize: FEATURED.DEFAULT_LIMIT,
                 });
-                setAuctions(result.items);
+                if (isMountedRef.current) {
+                    setAuctions(result.items);
+                }
             } catch (error) {
                 console.error("Failed to fetch ending soon auctions:", error);
             } finally {
-                setIsLoading(false);
+                if (isMountedRef.current) {
+                    setIsLoading(false);
+                }
             }
         };
         fetchAuctions();
+        
+        return () => {
+            isMountedRef.current = false;
+        };
     }, []);
 
-    const scroll = (direction: "left" | "right") => {
+    const scroll = useCallback((direction: "left" | "right") => {
         if (scrollRef.current) {
-            const scrollAmount = 340;
             scrollRef.current.scrollBy({
-                left: direction === "left" ? -scrollAmount : scrollAmount,
+                left: direction === "left" ? -UI.SCROLL_AMOUNT : UI.SCROLL_AMOUNT,
                 behavior: "smooth",
             });
         }
-    };
+    }, []);
 
     if (!isLoading && auctions.length === 0) {
         return null;
@@ -347,7 +359,7 @@ export function EndingSoonSection() {
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
                     {isLoading
-                        ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
+                        ? Array.from({ length: UI.SKELETON.LIST_COUNT }).map((_, i) => <CardSkeleton key={i} />)
                         : auctions.map((auction, index) => (
                               <EndingSoonCard
                                   key={auction.id}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,8 +29,10 @@ import {
 import { useFeaturedAuctions, useCategories } from "@/hooks/use-auctions";
 import { useQuickStats, useTrendingSearches } from "@/hooks/use-analytics";
 import { useCountdown } from "@/hooks/use-countdown";
+import { useCarouselInterval } from "@/hooks/use-interval";
 import { Auction, Category } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
+import { UI, URGENCY } from "@/constants/config";
 
 interface AuctionCardProps {
   auction: Auction;
@@ -47,7 +49,7 @@ function AuctionCard({ auction, isActive }: AuctionCardProps) {
 
   const formatTime = (value: number) => value.toString().padStart(2, "0");
 
-  const isUrgent = timeLeft && (timeLeft.days === 0 && timeLeft.hours < 2);
+  const isUrgent = timeLeft && (timeLeft.days === 0 && timeLeft.hours < URGENCY.CRITICAL_HOURS);
 
   return (
     <motion.div
@@ -137,27 +139,25 @@ function AuctionCard({ auction, isActive }: AuctionCardProps) {
 }
 
 function AuctionCarousel({ auctions, isLoading }: { auctions: Auction[]; isLoading: boolean }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  
   const auctionList = Array.isArray(auctions) ? auctions : [];
+  const displayCount = Math.min(auctionList.length, UI.CAROUSEL.MAX_ITEMS);
+  
+  const { activeIndex, setActiveIndex, prev, next } = useCarouselInterval(
+    displayCount,
+    UI.CAROUSEL.INTERVAL
+  );
 
-  useEffect(() => {
-    if (auctionList.length === 0) return;
+  const handlePrev = useCallback(() => {
+    prev();
+  }, [prev]);
 
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % Math.min(auctionList.length, 5));
-    }, 5000);
+  const handleNext = useCallback(() => {
+    next();
+  }, [next]);
 
-    return () => clearInterval(interval);
-  }, [auctionList.length]);
-
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev - 1 + Math.min(auctionList.length, 5)) % Math.min(auctionList.length, 5));
-  };
-
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev + 1) % Math.min(auctionList.length, 5));
-  };
+  const handleDotClick = useCallback((idx: number) => {
+    setActiveIndex(idx);
+  }, [setActiveIndex]);
 
   if (isLoading) {
     return (
@@ -176,7 +176,7 @@ function AuctionCarousel({ auctions, isLoading }: { auctions: Auction[]; isLoadi
     );
   }
 
-  const displayAuctions = auctionList.slice(0, 5);
+  const displayAuctions = auctionList.slice(0, displayCount);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -186,7 +186,7 @@ function AuctionCarousel({ auctions, isLoading }: { auctions: Auction[]; isLoadi
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: UI.ANIMATION.FADE_DURATION }}
         >
           <AuctionCard auction={displayAuctions[activeIndex]} isActive={true} />
         </motion.div>
@@ -211,7 +211,7 @@ function AuctionCarousel({ auctions, isLoading }: { auctions: Auction[]; isLoadi
             {displayAuctions.map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => setActiveIndex(idx)}
+                onClick={() => handleDotClick(idx)}
                 className={`w-2 h-2 rounded-full transition-all ${
                   idx === activeIndex ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/60'
                 }`}
