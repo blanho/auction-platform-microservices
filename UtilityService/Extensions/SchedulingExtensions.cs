@@ -10,12 +10,6 @@ public static class SchedulingExtensions
     {
         services.AddScheduling(configuration, q =>
         {
-            q.AddIntervalJob<PendingTransactionTimeoutJob>(
-                interval: TimeSpan.FromMinutes(15),
-                jobId: PendingTransactionTimeoutJob.JobId,
-                description: PendingTransactionTimeoutJob.Description
-            );
-
             q.AddCronJob<AuditLogArchiveJob>(
                 cronExpression: "0 0 2 * * ?",
                 jobId: AuditLogArchiveJob.JobId,

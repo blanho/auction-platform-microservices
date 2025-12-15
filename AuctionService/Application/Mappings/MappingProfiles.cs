@@ -46,6 +46,8 @@ namespace AuctionService.Application.Mappings
                 .ForMember(d => d.AuctionCount, o => o.MapFrom(s => s.Items.Count));
             CreateMap<CreateCategoryDto, Category>();
             CreateMap<UpdateCategoryDto, Category>();
+
+            CreateMap<Review, ReviewDto>();
         }
     }
 }

@@ -16,6 +16,7 @@ namespace AuctionService.Infrastructure.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<WatchlistItem> WatchlistItems { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

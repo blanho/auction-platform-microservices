@@ -11,48 +11,27 @@ namespace UtilityService.Controllers.Admin;
 public class DashboardController : ControllerBase
 {
     private readonly IReportRepository _reportRepository;
-    private readonly IWalletRepository _walletRepository;
     private readonly IAuditLogRepository _auditLogRepository;
 
     public DashboardController(
         IReportRepository reportRepository,
-        IWalletRepository walletRepository,
         IAuditLogRepository auditLogRepository)
     {
         _reportRepository = reportRepository;
-        _walletRepository = walletRepository;
         _auditLogRepository = auditLogRepository;
     }
 
     [HttpGet("stats")]
     public async Task<ActionResult<AdminDashboardStatsDto>> GetStats(CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
-        var startOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
-        var startOfPreviousMonth = startOfCurrentMonth.AddMonths(-1);
-        var endOfPreviousMonth = startOfCurrentMonth.AddDays(-1);
-
-        var currentMonthRevenue = await _walletRepository.GetTotalRevenueAsync(startOfCurrentMonth, now, cancellationToken);
-        var previousMonthRevenue = await _walletRepository.GetTotalRevenueAsync(startOfPreviousMonth, endOfPreviousMonth, cancellationToken);
-        var revenueChange = previousMonthRevenue > 0 
-            ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
-            : 0;
-
-        var activeUsers = await _walletRepository.GetActiveUsersCountAsync(30, cancellationToken);
-        var previousPeriodActiveUsers = await _walletRepository.GetActiveUsersCountAsync(60, cancellationToken);
-        var previousActiveUsers = previousPeriodActiveUsers - activeUsers;
-        var activeUsersChange = previousActiveUsers > 0 
-            ? ((decimal)(activeUsers - previousActiveUsers) / previousActiveUsers) * 100 
-            : 0;
-
         var pendingReportsCount = await _reportRepository.GetPendingCountAsync(cancellationToken);
         
         var stats = new AdminDashboardStatsDto
         {
-            TotalRevenue = currentMonthRevenue,
-            RevenueChange = Math.Round(revenueChange, 1),
-            ActiveUsers = activeUsers,
-            ActiveUsersChange = Math.Round(activeUsersChange, 1),
+            TotalRevenue = 0,
+            RevenueChange = 0,
+            ActiveUsers = 0,
+            ActiveUsersChange = 0,
             LiveAuctions = 0,
             LiveAuctionsChange = 0,
             PendingReports = pendingReportsCount,

@@ -245,6 +245,7 @@ services:
       - auction-api
       - bid-api
       - notification-api
+      - payment-api
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -321,6 +322,44 @@ services:
     networks:
       - microservices
 
+  payment-api:
+    build:
+      context: .
+      dockerfile: PaymentService/API/Dockerfile
+      target: final
+    container_name: payment-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=payment_db;Username=postgres;Password=postgres123
+      ConnectionStrings__Redis: redis:6379
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Identity__Authority: http://identity-service:5001
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5007:8080"
+    volumes:
+      - payment_api_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
 volumes:
   postgres_data:
     driver: local
@@ -343,6 +382,8 @@ volumes:
   utility_api_logs:
     driver: local
   utility_uploads:
+    driver: local
+  payment_api_logs:
     driver: local
 
 networks:
