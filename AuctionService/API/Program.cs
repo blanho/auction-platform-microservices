@@ -52,6 +52,9 @@ builder.Services.AddAuctionScheduling(builder.Configuration);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
+
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>
 {
@@ -128,6 +131,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<AuctionService.API.Services.AuctionGrpcService>();
+app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Auction Service");

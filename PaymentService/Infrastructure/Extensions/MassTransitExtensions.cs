@@ -1,4 +1,5 @@
 using PaymentService.Infrastructure.Data;
+using PaymentService.Infrastructure.Messaging.Consumers;
 using Common.Messaging.Abstractions;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,9 @@ public static class MassTransitExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<AuctionFinishedConsumer>();
+            x.AddConsumer<BuyNowExecutedConsumer>();
+
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
             {
                 o.UsePostgres();
@@ -33,6 +37,18 @@ public static class MassTransitExtensions
                     h.Password(password);
                     h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
                     h.ContinuationTimeout(TimeSpan.FromSeconds(20));
+                });
+
+                cfg.ReceiveEndpoint("payment-auction-finished", e =>
+                {
+                    e.ConfigureConsumer<AuctionFinishedConsumer>(context);
+                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                });
+
+                cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
+                {
+                    e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
+                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
                 });
 
                 cfg.UseMessageRetry(r => r.Immediate(5));

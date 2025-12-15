@@ -1,13 +1,17 @@
+using Asp.Versioning;
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BidService.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/bids")]
+    [EnableRateLimiting("api")]
     public class BidsController : ControllerBase
     {
         private readonly IBidService _bidService;
@@ -21,10 +25,17 @@ namespace BidService.API.Controllers
 
         [HttpPost]
         [Authorize]
+        [EnableRateLimiting("bid")]
         public async Task<ActionResult<BidDto>> PlaceBid([FromBody] PlaceBidDto dto, CancellationToken cancellationToken)
         {
             var bidder = User.Identity?.Name ?? "Anonymous";
             var bid = await _bidService.PlaceBidAsync(dto, bidder, cancellationToken);
+            
+            if (!string.IsNullOrEmpty(bid.ErrorMessage))
+            {
+                return BadRequest(new { error = bid.ErrorMessage, bid });
+            }
+            
             return CreatedAtAction(nameof(GetBidsForAuction), new { auctionId = bid.AuctionId }, bid);
         }
 

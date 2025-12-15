@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option csharp_namespace = "AuctionService.API.Grpc";
+
+package auctions;
+
+service AuctionGrpc {
+  rpc ValidateAuctionForBid (ValidateAuctionRequest) returns (ValidateAuctionResponse);
+  rpc GetAuctionDetails (GetAuctionDetailsRequest) returns (AuctionDetailsResponse);
+  rpc ExtendAuction (ExtendAuctionRequest) returns (ExtendAuctionResponse);
+}
+
+message ValidateAuctionRequest {
+  string auction_id = 1;
+  string bidder = 2;
+  int32 bid_amount = 3;
+}
+
+message ValidateAuctionResponse {
+  bool is_valid = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int32 current_high_bid = 4;
+  int32 reserve_price = 5;
+  string auction_end = 6;
+  string seller = 7;
+  string status = 8;
+}
+
+message GetAuctionDetailsRequest {
+  string auction_id = 1;
+}
+
+message AuctionDetailsResponse {
+  string id = 1;
+  string title = 2;
+  string seller = 3;
+  string winner = 4;
+  int32 current_high_bid = 5;
+  int32 reserve_price = 6;
+  int32 buy_now_price = 7;
+  string auction_end = 8;
+  string status = 9;
+  bool is_buy_now_available = 10;
+}
+
+message ExtendAuctionRequest {
+  string auction_id = 1;
+  int32 extend_minutes = 2;
+  string reason = 3;
+}
+
+message ExtendAuctionResponse {
+  bool success = 1;
+  string new_end_time = 2;
+  string error_message = 3;
+}

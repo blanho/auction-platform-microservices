@@ -6,6 +6,7 @@
     <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging\Common.Messaging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Locking\Common.Locking.csproj" />
   </ItemGroup>
 
   <ItemGroup>
