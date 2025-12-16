@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Category } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useCategoriesQuery } from "@/hooks/queries";
 import { PulsingDot } from "@/components/ui/animated";
 
 const iconMap: Record<string, IconDefinition> = {
@@ -145,23 +145,9 @@ function CategorySkeleton() {
 }
 
 export function CategoriesSection() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: categories = [], isLoading } = useCategoriesQuery();
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await auctionService.getCategories();
-                setCategories(data);
-            } catch {
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     const scroll = (direction: "left" | "right") => {
         if (scrollRef.current) {

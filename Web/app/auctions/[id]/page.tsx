@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
@@ -19,6 +18,7 @@ import {
     getAuctionSellerUsername,
     getAuctionWinnerUsername,
 } from '@/utils';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -94,7 +94,7 @@ import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-d
 import { BuyNowButton } from '@/features/auction/buy-now-button';
 import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
 import { ReviewsSection } from '@/features/review';
-import { auctionService } from '@/services/auction.service';
+import { useAuctionQuery, useRelatedAuctionsQuery } from '@/hooks/queries';
 import { bookmarkService } from '@/services/bookmark.service';
 import { AuditHistory } from '@/components/common/audit-history';
 import { BidHistory } from '@/components/common/bid-history';
@@ -197,22 +197,25 @@ function CountdownTimer({ endDate, isUrgent }: { endDate: string; isUrgent?: boo
 export default function AuctionDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const { data: session } = useSession();
+    const { user } = useAuthSession();
     const auctionId = params?.id as string;
-    const [auction, setAuction] = useState<Auction | null>(null);
-    const [relatedAuctions, setRelatedAuctions] = useState<Auction[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<unknown>(null);
+    const { data: auction, isLoading, error, refetch: refetchAuction } = useAuctionQuery(auctionId);
+    const { data: relatedAuctions = [] } = useRelatedAuctionsQuery(auction?.categoryId, auctionId, !!auction);
     const [bidRefreshTrigger, setBidRefreshTrigger] = useState(0);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isInWatchlist, setIsInWatchlist] = useState(false);
     const [bidAmount, setBidAmount] = useState('');
 
+    useEffect(() => {
+        if (auction) {
+            const minBid = (auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT;
+            setBidAmount(minBid.toString());
+        }
+    }, [auction]);
+
     const handleBidPlaced = () => {
         setBidRefreshTrigger(prev => prev + 1);
-        if (auctionId) {
-            auctionService.getAuctionById(auctionId).then(setAuction);
-        }
+        refetchAuction();
     };
 
     const images = useMemo(() => {
@@ -256,56 +259,6 @@ export default function AuctionDetailPage() {
     const shareToFacebook = () => {
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
     };
-
-    useEffect(() => {
-        if (!auctionId) {
-            setIsLoading(false);
-            return;
-        }
-
-        let isMounted = true;
-
-        const fetchAuction = async () => {
-            try {
-                const result = await auctionService.getAuctionById(auctionId);
-                if (!isMounted) return;
-
-                setAuction(result);
-                setError(null);
-
-                const minBid = (result.currentHighBid || result.reservePrice) + AUCTION_BID.MIN_INCREMENT;
-                setBidAmount(minBid.toString());
-
-                if (result.categoryId) {
-                    auctionService.getAuctions({
-                        category: result.categoryId,
-                        pageSize: 5,
-                        status: AuctionStatus.Live
-                    })
-                        .then(related => {
-                            if (isMounted) {
-                                setRelatedAuctions(related.items.filter(a => a.id !== result.id).slice(0, 4));
-                            }
-                        })
-                        .catch(() => { });
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setError(err);
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchAuction();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [auctionId]);
 
     useEffect(() => {
         if (!auction?.id || !session) {

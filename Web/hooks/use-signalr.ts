@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import { useSession } from "next-auth/react";
 import { Notification } from "@/types/notification";
 import { API_ENDPOINTS } from "@/constants/api";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 const GATEWAY_URL =
   process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:6001";
@@ -28,7 +28,7 @@ interface UseSignalRReturn {
 }
 
 export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
-  const { data: session, status } = useSession();
+  const { accessToken, isAuthenticated, isLoading } = useAuthSession();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const [connectionState, setConnectionState] =
     useState<signalR.HubConnectionState>(
@@ -42,9 +42,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
   }, [options]);
 
   useEffect(() => {
-    const accessToken = session?.accessToken;
-
-    if (status !== "authenticated" || !accessToken) {
+    if (isLoading || !isAuthenticated || !accessToken) {
       if (connectionRef.current) {
         connectionRef.current.stop().then(() => {
           connectionRef.current = null;
@@ -131,7 +129,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
         connectionRef.current = null;
       }
     };
-  }, [status, session?.accessToken]);
+  }, [isLoading, isAuthenticated, accessToken]);
 
   return {
     connectionState,

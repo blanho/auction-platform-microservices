@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -12,16 +12,16 @@ interface RequireAuthProps {
 }
 
 export function RequireAuth({ children, redirectTo = "/auth/signin" }: RequireAuthProps) {
-  const { status } = useSession();
+  const { isAuthenticated, isLoading } = useAuthSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isLoading && !isAuthenticated) {
       router.push(`${redirectTo}?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
     }
-  }, [status, router, redirectTo]);
+  }, [isLoading, isAuthenticated, router, redirectTo]);
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -29,7 +29,7 @@ export function RequireAuth({ children, redirectTo = "/auth/signin" }: RequireAu
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!isAuthenticated) {
     return null;
   }
 

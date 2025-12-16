@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Auction } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useAuctionsQuery } from "@/hooks/queries";
 import { useCountdown } from "@/hooks/use-countdown";
 import { cn } from "@/lib/utils";
 import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
@@ -196,25 +196,12 @@ interface TopDealsCarouselProps {
 export function TopDealsCarousel({ 
   title = "TOP DEAL • SUPER DEALS"
 }: TopDealsCarouselProps) {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useAuctionsQuery({
+    pageSize: 12,
+    pageNumber: 1,
+  });
+  const auctions = data?.items ?? [];
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        const result = await auctionService.getAuctions({
-          pageSize: 12,
-          pageNumber: 1,
-        });
-        setAuctions(result.items);
-      } catch {
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAuctions();
-  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {

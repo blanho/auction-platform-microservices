@@ -20,7 +20,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useFeaturedAuctions } from "@/hooks/use-auctions";
+import { useFeaturedAuctionsQuery } from "@/hooks/queries";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { Auction } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
@@ -193,7 +193,7 @@ function CardSkeleton() {
 }
 
 export function FeaturedAuctionsSection() {
-    const { data: featuredAuctions, isLoading, error } = useFeaturedAuctions(FEATURED.DEFAULT_LIMIT);
+    const { data: featuredAuctions, isLoading, error } = useFeaturedAuctionsQuery(FEATURED.DEFAULT_LIMIT);
 
     if (isLoading) {
         return (

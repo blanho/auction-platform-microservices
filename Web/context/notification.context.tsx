@@ -1,11 +1,11 @@
 "use client";
 
 import { createContext, useContext, useEffect, useCallback, useState, ReactNode } from "react";
-import { useSession } from "next-auth/react";
 import { useSignalR } from "@/hooks/use-signalr";
 import { notificationService } from "@/services/notification.service";
 import { Notification, NotificationStatus } from "@/types/notification";
 import { toast } from "sonner";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 
 interface NotificationContextValue {
@@ -46,7 +46,7 @@ export function useNotifications(): NotificationContextValue {
 }
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
-    const { status } = useSession();
+    const { isAuthenticated } = useAuthSession();
 
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -54,7 +54,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     const [error, setError] = useState<string | null>(null);
 
     const fetchNotifications = useCallback(async () => {
-        if (status !== "authenticated") return;
+        if (!isAuthenticated) return;
 
         setIsLoading(true);
         setError(null);
@@ -68,10 +68,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [status]);
+    }, [isAuthenticated]);
 
     const fetchSummary = useCallback(async () => {
-        if (status !== "authenticated") return;
+        if (!isAuthenticated) return;
 
         try {
             const summary = await notificationService.getSummary();
@@ -81,7 +81,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to fetch summary";
             setError(message);
         }
-    }, [status]);
+    }, [isAuthenticated]);
 
     const addNotification = useCallback((notification: Notification) => {
         setNotifications((prev) => [notification, ...prev]);
@@ -91,7 +91,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }, []);
 
     const markAsRead = useCallback(async (id: string) => {
-        if (status !== "authenticated") return;
+        if (!isAuthenticated) return;
 
         try {
             await notificationService.markAsRead(id);
@@ -107,10 +107,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to mark as read";
             setError(message);
         }
-    }, [status]);
+    }, [isAuthenticated]);
 
     const markAllAsRead = useCallback(async () => {
-        if (status !== "authenticated") return;
+        if (!isAuthenticated) return;
 
         try {
             await notificationService.markAllAsRead();
@@ -126,10 +126,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to mark all as read";
             setError(message);
         }
-    }, [status]);
+    }, [isAuthenticated]);
 
     const deleteNotification = useCallback(async (id: string) => {
-        if (status !== "authenticated") return;
+        if (!isAuthenticated) return;
 
         try {
             await notificationService.deleteNotification(id);
@@ -144,7 +144,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const message = err instanceof Error ? err.message : "Failed to delete notification";
             setError(message);
         }
-    }, [status]);
+    }, [isAuthenticated]);
 
     const handleNotification = useCallback((notification: Notification) => {
         addNotification(notification);
@@ -174,10 +174,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     });
 
     useEffect(() => {
-        if (status === "authenticated") {
+        if (isAuthenticated) {
             fetchSummary();
         }
-    }, [status, fetchSummary]);
+    }, [isAuthenticated, fetchSummary]);
 
     const value: NotificationContextValue = {
         isConnected,

@@ -34,7 +34,7 @@ import { gradients, gradientText, glass, shadows } from "@/lib/styles";
 import { useCategories } from "@/hooks/use-auctions";
 import { wishlistService } from "@/services/wishlist.service";
 import { analyticsService } from "@/services/analytics.service";
-import { useSession } from "next-auth/react";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 const navLinks = [
     { 
@@ -68,8 +68,7 @@ const navLinks = [
 ];
 
 export function Header() {
-    const { data: session } = useSession();
-    const user = session?.user;
+    const { user } = useAuthSession();
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);

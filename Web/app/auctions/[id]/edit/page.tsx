@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     Breadcrumb,
@@ -14,7 +15,7 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { MainLayout } from '@/components/layout/main-layout';
-import { RequireAuth } from '@/components/auth/require-auth';
+import { RequireAuth } from '@/features/auth';
 import { EditAuctionForm } from '@/features/auction/edit-auction-form';
 import { auctionService } from '@/services/auction.service';
 import { Auction, Category } from '@/types/auction';
@@ -70,7 +71,7 @@ export default function EditAuctionPage() {
             <RequireAuth>
                 <MainLayout>
                     <div className="container py-8 flex justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin" />
                     </div>
                 </MainLayout>
             </RequireAuth>

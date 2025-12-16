@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { bidService } from "@/services/bid.service";
 import { BidStatus } from "@/types/bid";
 import { AuthDialog } from "@/features/auth";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 interface PlaceBidDialogProps {
   auctionId: string;
@@ -58,7 +58,7 @@ export function PlaceBidDialog({
   onBidPlaced,
   trigger,
 }: PlaceBidDialogProps) {
-  const { data: session, status: sessionStatus } = useSession();
+  const { isAuthenticated, isLoading: sessionLoading } = useAuthSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,7 +124,7 @@ export function PlaceBidDialog({
     }
   };
 
-  if (sessionStatus === "loading") {
+  if (sessionLoading) {
     return (
       <Button disabled size="lg" className="h-12 flex-shrink-0">
         <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
@@ -133,7 +133,7 @@ export function PlaceBidDialog({
     );
   }
 
-  if (sessionStatus !== "authenticated" || !session) {
+  if (!isAuthenticated) {
     return (
       <AuthDialog
         trigger={

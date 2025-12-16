@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { CreateAuctionForm } from '@/features/auction/create-auction-form';
-import { RequireAuth } from '@/components/auth/require-auth';
+import { RequireAuth } from '@/features/auth';
 import {
     Breadcrumb,
     BreadcrumbItem,

@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -11,18 +11,32 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, Settings, Gavel, Shield, LayoutDashboard, Eye, Heart, Wallet, BarChart3, Package, ShoppingBag } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightToBracket, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+    faRightToBracket,
+    faUserPlus,
+    faRightFromBracket,
+    faUser,
+    faGear,
+    faGavel,
+    faShieldHalved,
+    faTableColumns,
+    faEye,
+    faHeart,
+    faWallet,
+    faChartLine,
+    faBox,
+    faBagShopping,
+} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AuthDialog } from "@/features/auth";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 export function UserMenu() {
-    const { data: session, status } = useSession();
-    const isAdmin = session?.user?.role === "admin";
+    const { user, isAuthenticated, isLoading, isAdmin } = useAuthSession();
 
-    if (status === "loading") {
+    if (isLoading) {
         return (
             <div className="flex items-center gap-2">
                 <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
@@ -30,7 +44,7 @@ export function UserMenu() {
         );
     }
 
-    if (!session) {
+    if (!isAuthenticated) {
         return (
             <div className="flex items-center gap-2">
                 <AuthDialog
@@ -55,7 +69,7 @@ export function UserMenu() {
         );
     }
 
-    const initials = session.user?.name
+    const initials = user?.name
         ?.split(" ")
         .map((n) => n[0])
         .join("")
@@ -66,7 +80,7 @@ export function UserMenu() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
-                        <AvatarImage src={session.user?.image || undefined} alt={session.user?.name || "User"} />
+                        <AvatarImage src={user?.image || undefined} alt={user?.name || "User"} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                 </Button>
@@ -75,7 +89,7 @@ export function UserMenu() {
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                            <p className="text-sm font-medium leading-none">{user?.name}</p>
                             {isAdmin && (
                                 <Badge variant="secondary" className="text-xs px-1.5 py-0">
                                     Admin
@@ -83,7 +97,7 @@ export function UserMenu() {
                             )}
                         </div>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {session.user?.email}
+                            {user?.email}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -92,7 +106,7 @@ export function UserMenu() {
                     <>
                         <DropdownMenuItem asChild>
                             <Link href="/admin">
-                                <Shield className="mr-2 h-4 w-4" />
+                                <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
                                 Admin Dashboard
                             </Link>
                         </DropdownMenuItem>
@@ -101,62 +115,62 @@ export function UserMenu() {
                 )}
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faTableColumns} className="mr-2 h-4 w-4" />
                         Dashboard
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/auctions/my-auctions">
-                        <Gavel className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faGavel} className="mr-2 h-4 w-4" />
                         My Auctions
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/listings">
-                        <Package className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faBox} className="mr-2 h-4 w-4" />
                         My Listings
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/orders">
-                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faBagShopping} className="mr-2 h-4 w-4" />
                         Orders
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/bids">
-                        <User className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faUser} className="mr-2 h-4 w-4" />
                         My Bids
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/watchlist">
-                        <Eye className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faEye} className="mr-2 h-4 w-4" />
                         Watchlist
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/wishlist">
-                        <Heart className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faHeart} className="mr-2 h-4 w-4" />
                         Wishlist
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/wallet">
-                        <Wallet className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faWallet} className="mr-2 h-4 w-4" />
                         Wallet
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/analytics">
-                        <BarChart3 className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faChartLine} className="mr-2 h-4 w-4" />
                         Analytics
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link href="/dashboard/settings">
-                        <Settings className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faGear} className="mr-2 h-4 w-4" />
                         Settings
                     </Link>
                 </DropdownMenuItem>
@@ -165,7 +179,7 @@ export function UserMenu() {
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="text-destructive focus:text-destructive"
                 >
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <FontAwesomeIcon icon={faRightFromBracket} className="mr-2 h-4 w-4" />
                     Sign Out
                 </DropdownMenuItem>
             </DropdownMenuContent>

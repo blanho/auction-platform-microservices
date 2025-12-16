@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,7 +19,7 @@ import {
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Category } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useCategoriesQuery } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, IconDefinition> = {
@@ -81,22 +81,8 @@ interface CategorySidebarProps {
 }
 
 export function CategorySidebar({ onCategoryHover }: CategorySidebarProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: categories = [], isLoading } = useCategoriesQuery();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await auctionService.getCategories();
-        setCategories(data);
-      } catch {
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   const handleMouseEnter = (categoryId: string) => {
     setHoveredCategory(categoryId);

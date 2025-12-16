@@ -1,11 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 interface RequireAdminProps {
   children: React.ReactNode;
@@ -13,28 +14,26 @@ interface RequireAdminProps {
 }
 
 export function RequireAdmin({ children, fallback }: RequireAdminProps) {
-  const { data: session, status } = useSession();
+  const { isAuthenticated, isLoading, isAdmin } = useAuthSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isLoading && !isAuthenticated) {
       router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
     }
-  }, [status, router]);
+  }, [isLoading, isAuthenticated, router]);
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!isAuthenticated) {
     return null;
   }
-
-  const isAdmin = session?.user?.role === "admin";
 
   if (!isAdmin) {
     if (fallback) {
@@ -44,7 +43,7 @@ export function RequireAdmin({ children, fallback }: RequireAdminProps) {
     return (
       <div className="container py-8">
         <Alert variant="destructive">
-          <ShieldAlert className="h-4 w-4" />
+          <FontAwesomeIcon icon={faShieldHalved} className="h-4 w-4" />
           <AlertTitle>Access Denied</AlertTitle>
           <AlertDescription className="mt-2">
             <p>You do not have permission to access this page.</p>
@@ -66,6 +65,6 @@ export function RequireAdmin({ children, fallback }: RequireAdminProps) {
 }
 
 export function useIsAdmin() {
-  const { data: session } = useSession();
-  return session?.user?.role === "admin";
+  const { isAdmin } = useAuthSession();
+  return isAdmin;
 }

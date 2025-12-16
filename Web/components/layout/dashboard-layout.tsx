@@ -3,21 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    User,
-    Gavel,
-    Heart,
-    Eye,
-    Package,
-    PlusCircle,
-    Wallet,
-    Settings,
-    BarChart3,
-    Menu,
-    ChevronRight,
-    ShoppingBag,
-} from "lucide-react";
+    faUser,
+    faGavel,
+    faHeart,
+    faEye,
+    faBox,
+    faCirclePlus,
+    faWallet,
+    faGear,
+    faChartLine,
+    faBars,
+    faChevronRight,
+    faBagShopping,
+} from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,28 +25,30 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MainLayout } from "@/components/layout/main-layout";
+import { useAuthSession } from "@/hooks/use-auth-session";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface NavItem {
     title: string;
     href: string;
-    icon: React.ElementType;
+    icon: IconDefinition;
     badge?: number;
 }
 
 const buyerNavItems: NavItem[] = [
-    { title: "Profile", href: "/dashboard", icon: User },
-    { title: "My Bids", href: "/dashboard/bids", icon: Gavel },
-    { title: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
-    { title: "Watchlist", href: "/dashboard/watchlist", icon: Eye },
-    { title: "Wishlist", href: "/wishlist", icon: Heart },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
+    { title: "Profile", href: "/dashboard", icon: faUser },
+    { title: "My Bids", href: "/dashboard/bids", icon: faGavel },
+    { title: "Orders", href: "/dashboard/orders", icon: faBagShopping },
+    { title: "Watchlist", href: "/dashboard/watchlist", icon: faEye },
+    { title: "Wishlist", href: "/wishlist", icon: faHeart },
+    { title: "Settings", href: "/dashboard/settings", icon: faGear },
 ];
 
 const sellerNavItems: NavItem[] = [
-    { title: "My Listings", href: "/dashboard/listings", icon: Package },
-    { title: "Create Listing", href: "/auctions/create", icon: PlusCircle },
-    { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-    { title: "Wallet", href: "/dashboard/wallet", icon: Wallet },
+    { title: "My Listings", href: "/dashboard/listings", icon: faBox },
+    { title: "Create Listing", href: "/auctions/create", icon: faCirclePlus },
+    { title: "Analytics", href: "/dashboard/analytics", icon: faChartLine },
+    { title: "Wallet", href: "/dashboard/wallet", icon: faWallet },
 ];
 
 interface SidebarContentProps {
@@ -94,7 +96,7 @@ function SidebarContent({ pathname, username }: SidebarContentProps) {
                                         : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
                                 )}
                             >
-                                <item.icon className="h-5 w-5" />
+                                <FontAwesomeIcon icon={item.icon} className="h-5 w-5" />
                                 {item.title}
                                 {item.badge !== undefined && item.badge > 0 && (
                                     <span className="ml-auto bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -102,7 +104,7 @@ function SidebarContent({ pathname, username }: SidebarContentProps) {
                                     </span>
                                 )}
                                 {pathname === item.href && (
-                                    <ChevronRight className="ml-auto h-4 w-4" />
+                                    <FontAwesomeIcon icon={faChevronRight} className="ml-auto h-4 w-4" />
                                 )}
                             </Link>
                         ))}
@@ -128,10 +130,10 @@ function SidebarContent({ pathname, username }: SidebarContentProps) {
                                         : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
                                 )}
                             >
-                                <item.icon className="h-5 w-5" />
+                                <FontAwesomeIcon icon={item.icon} className="h-5 w-5" />
                                 {item.title}
                                 {pathname === item.href && (
-                                    <ChevronRight className="ml-auto h-4 w-4" />
+                                    <FontAwesomeIcon icon={faChevronRight} className="ml-auto h-4 w-4" />
                                 )}
                             </Link>
                         ))}
@@ -146,7 +148,7 @@ function SidebarContent({ pathname, username }: SidebarContentProps) {
                     className="w-full bg-amber-500 hover:bg-amber-600 text-white"
                 >
                     <Link href="/auctions/create">
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faCirclePlus} className="mr-2 h-4 w-4" />
                         Create Auction
                     </Link>
                 </Button>
@@ -167,7 +169,7 @@ export function DashboardLayout({
     description,
 }: DashboardLayoutProps) {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { user } = useAuthSession();
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
@@ -177,7 +179,7 @@ export function DashboardLayout({
                 <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
                     <SidebarContent
                         pathname={pathname}
-                        username={session?.user?.name ?? undefined}
+                        username={user?.name ?? undefined}
                     />
                 </aside>
 
@@ -189,13 +191,13 @@ export function DashboardLayout({
                             size="icon"
                             className="lg:hidden fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full bg-amber-500 hover:bg-amber-600 text-white shadow-lg"
                         >
-                            <Menu className="h-6 w-6" />
+                            <FontAwesomeIcon icon={faBars} className="h-6 w-6" />
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-64 p-0">
                         <SidebarContent
                             pathname={pathname}
-                            username={session?.user?.name ?? undefined}
+                            username={user?.name ?? undefined}
                         />
                     </SheetContent>
                 </Sheet>

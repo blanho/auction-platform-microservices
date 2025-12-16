@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Auction } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useAuctionsQuery } from "@/hooks/queries";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { PulsingDot } from "@/components/ui/animated";
 import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
@@ -204,27 +204,14 @@ function CardSkeleton() {
 }
 
 export function NewArrivalsSection() {
-    const [auctions, setAuctions] = useState<Auction[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data, isLoading } = useAuctionsQuery({
+        status: "Live",
+        orderBy: "createdAt",
+        descending: true,
+        pageSize: 8,
+    });
+    const auctions = data?.items ?? [];
     const scrollRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const fetchAuctions = async () => {
-            try {
-                const result = await auctionService.getAuctions({
-                    status: "Live",
-                    orderBy: "createdAt",
-                    descending: true,
-                    pageSize: 8,
-                });
-                setAuctions(result.items);
-            } catch {
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchAuctions();
-    }, []);
 
     const scroll = (direction: "left" | "right") => {
         if (scrollRef.current) {

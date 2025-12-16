@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faBagShopping } from '@fortawesome/free-solid-svg-icons';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ import { toast } from 'sonner';
 import { auctionService } from '@/services/auction.service';
 import { formatCurrency } from '@/utils';
 import { ROUTES } from '@/constants';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 interface BuyNowButtonProps {
     auctionId: string;
@@ -37,13 +37,13 @@ export function BuyNowButton({
     auctionTitle,
     onSuccess,
 }: BuyNowButtonProps) {
-    const { data: session } = useSession();
+    const { isAuthenticated } = useAuthSession();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
     const handleBuyNow = async () => {
-        if (!session) {
+        if (!isAuthenticated) {
             toast.error('Please sign in to use Buy Now');
             router.push(ROUTES.AUTH.LOGIN);
             return;

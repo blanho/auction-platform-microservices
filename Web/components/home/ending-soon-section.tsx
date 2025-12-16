@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Auction } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useAuctionsQuery } from "@/hooks/queries";
 import { PulsingDot } from "@/components/ui/animated";
 import { FEATURED, UI, URGENCY } from "@/constants/config";
 import { useInterval } from "@/hooks/use-interval";
@@ -233,38 +233,14 @@ function CardSkeleton() {
 }
 
 export function EndingSoonSection() {
-    const [auctions, setAuctions] = useState<Auction[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data, isLoading } = useAuctionsQuery({
+        status: "Live",
+        orderBy: "auctionEnd",
+        descending: false,
+        pageSize: FEATURED.DEFAULT_LIMIT,
+    });
+    const auctions = data?.items ?? [];
     const scrollRef = useRef<HTMLDivElement>(null);
-    const isMountedRef = useRef(true);
-
-    useEffect(() => {
-        isMountedRef.current = true;
-        
-        const fetchAuctions = async () => {
-            try {
-                const result = await auctionService.getAuctions({
-                    status: "Live",
-                    orderBy: "auctionEnd",
-                    descending: false,
-                    pageSize: FEATURED.DEFAULT_LIMIT,
-                });
-                if (isMountedRef.current) {
-                    setAuctions(result.items);
-                }
-            } catch {
-            } finally {
-                if (isMountedRef.current) {
-                    setIsLoading(false);
-                }
-            }
-        };
-        fetchAuctions();
-        
-        return () => {
-            isMountedRef.current = false;
-        };
-    }, []);
 
     const scroll = useCallback((direction: "left" | "right") => {
         if (scrollRef.current) {

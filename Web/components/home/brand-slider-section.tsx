@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -20,7 +19,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { Brand } from "@/types/auction";
-import { auctionService } from "@/services/auction.service";
+import { useBrandsQuery } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 
 interface BrandCardProps {
@@ -130,22 +129,8 @@ const FALLBACK_BRANDS: Brand[] = [
 ];
 
 export function BrandSliderSection() {
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const data = await auctionService.getBrands();
-        setBrands(data.length > 0 ? data : FALLBACK_BRANDS);
-      } catch {
-        setBrands(FALLBACK_BRANDS);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchBrands();
-  }, []);
+  const { data: fetchedBrands, isLoading } = useBrandsQuery();
+  const brands = fetchedBrands && fetchedBrands.length > 0 ? fetchedBrands : FALLBACK_BRANDS;
 
   return (
     <section className="py-8 bg-slate-50 dark:bg-slate-950">
