@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMagnifyingGlass, faSliders, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -97,7 +98,7 @@ export function SearchBar({ onSearch, categories = [], showFilters = true }: Sea
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         type="text"
                         placeholder="Search auctions by title, make, model..."
@@ -111,7 +112,7 @@ export function SearchBar({ onSearch, categories = [], showFilters = true }: Sea
                             onClick={() => setQuery('')}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         >
-                            <X className="h-4 w-4" />
+                            <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                         </button>
                     )}
                 </div>
@@ -121,7 +122,7 @@ export function SearchBar({ onSearch, categories = [], showFilters = true }: Sea
                     <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
                         <SheetTrigger asChild>
                             <Button variant="outline" className="relative">
-                                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                                <FontAwesomeIcon icon={faSliders} className="h-4 w-4 mr-2" />
                                 Filters
                                 {activeFiltersCount > 0 && (
                                     <Badge 

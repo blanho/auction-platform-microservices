@@ -208,8 +208,7 @@ export function TopDealsCarousel({
           pageNumber: 1,
         });
         setAuctions(result.items);
-      } catch (error) {
-        console.error("Failed to fetch auctions:", error);
+      } catch {
       } finally {
         setIsLoading(false);
       }

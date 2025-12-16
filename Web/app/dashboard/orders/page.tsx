@@ -95,7 +95,6 @@ function OrdersPageContent() {
             setPurchases(purchasesData);
             setSales(salesData);
         } catch (error) {
-            console.error("Failed to fetch orders:", error);
             toast.error("Failed to load orders");
         } finally {
             setIsLoading(false);
@@ -126,7 +125,6 @@ function OrdersPageContent() {
             setCarrier("");
             fetchOrders();
         } catch (error) {
-            console.error("Failed to update shipping:", error);
             toast.error("Failed to update shipping");
         }
     };
@@ -137,7 +135,6 @@ function OrdersPageContent() {
             toast.success("Order confirmed as delivered");
             fetchOrders();
         } catch (error) {
-            console.error("Failed to confirm delivery:", error);
             toast.error("Failed to confirm delivery");
         }
     };

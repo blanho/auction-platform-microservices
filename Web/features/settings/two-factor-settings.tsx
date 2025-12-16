@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Shield, ShieldCheck, ShieldOff, Copy, Check, Smartphone, Key } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faShield, faShieldHalved, faShieldXmark, faCopy, faCheck, faMobile, faKey } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'sonner';
 import {
     Card,
@@ -188,7 +189,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
         return (
             <Card>
                 <CardContent className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <FontAwesomeIcon icon={faSpinner} className="h-6 w-6 animate-spin" />
                 </CardContent>
             </Card>
         );
@@ -201,7 +202,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                     <div className="flex items-center justify-between">
                         <div>
                             <CardTitle className="flex items-center gap-2">
-                                <Shield className="h-5 w-5" />
+                                <FontAwesomeIcon icon={faShield} className="h-5 w-5" />
                                 Two-Factor Authentication
                             </CardTitle>
                             <CardDescription>
@@ -219,7 +220,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                     {status?.isEnabled ? (
                         <>
                             <Alert>
-                                <ShieldCheck className="h-4 w-4" />
+                                <FontAwesomeIcon icon={faShieldHalved} className="h-4 w-4" />
                                 <AlertTitle>2FA is Active</AlertTitle>
                                 <AlertDescription>
                                     Your account is protected with two-factor authentication.
@@ -236,14 +237,14 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                                     variant="outline"
                                     onClick={generateNewRecoveryCodes}
                                 >
-                                    <Key className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faKey} className="h-4 w-4 mr-2" />
                                     Generate New Codes
                                 </Button>
                                 <Button
                                     variant="destructive"
                                     onClick={() => setIsDisableDialogOpen(true)}
                                 >
-                                    <ShieldOff className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faShieldXmark} className="h-4 w-4 mr-2" />
                                     Disable 2FA
                                 </Button>
                             </div>
@@ -251,7 +252,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                     ) : (
                         <>
                             <Alert>
-                                <ShieldOff className="h-4 w-4" />
+                                <FontAwesomeIcon icon={faShieldXmark} className="h-4 w-4" />
                                 <AlertTitle>2FA is Not Enabled</AlertTitle>
                                 <AlertDescription>
                                     Protect your account by enabling two-factor authentication using an authenticator app.
@@ -259,7 +260,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                             </Alert>
 
                             <Button onClick={initiateSetup} className="bg-amber-500 hover:bg-amber-600">
-                                <Smartphone className="h-4 w-4 mr-2" />
+                                <FontAwesomeIcon icon={faMobile} className="h-4 w-4 mr-2" />
                                 Set Up Two-Factor Authentication
                             </Button>
                         </>
@@ -306,9 +307,9 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                                             onClick={() => copyToClipboard(setupData.sharedKey, 'key')}
                                         >
                                             {copiedCode === 'key' ? (
-                                                <Check className="h-4 w-4" />
+                                                <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
                                             ) : (
-                                                <Copy className="h-4 w-4" />
+                                                <FontAwesomeIcon icon={faCopy} className="h-4 w-4" />
                                             )}
                                         </Button>
                                     </div>
@@ -337,7 +338,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                             disabled={isVerifying || verificationCode.length !== 6}
                             className="bg-amber-500 hover:bg-amber-600"
                         >
-                            {isVerifying && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {isVerifying && <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />}
                             Verify & Enable
                         </Button>
                     </DialogFooter>
@@ -373,7 +374,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                             onClick={disableTwoFactor}
                             disabled={isVerifying || !disablePassword}
                         >
-                            {isVerifying && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {isVerifying && <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 mr-2 animate-spin" />}
                             Disable 2FA
                         </Button>
                     </DialogFooter>
@@ -409,9 +410,9 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                             onClick={() => copyToClipboard(recoveryCodes.join('\n'), 'codes')}
                         >
                             {copiedCode === 'codes' ? (
-                                <Check className="h-4 w-4 mr-2" />
+                                <FontAwesomeIcon icon={faCheck} className="h-4 w-4 mr-2" />
                             ) : (
-                                <Copy className="h-4 w-4 mr-2" />
+                                <FontAwesomeIcon icon={faCopy} className="h-4 w-4 mr-2" />
                             )}
                             Copy All
                         </Button>

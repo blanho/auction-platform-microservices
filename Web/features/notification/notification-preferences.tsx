@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Bell, BellOff, Check } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner, faBell, faBellSlash, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "sonner";
 
 import { Switch } from "@/components/ui/switch";
@@ -270,7 +271,7 @@ export function NotificationPreferences() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-amber-500" />
       </div>
     );
   }
@@ -294,12 +295,12 @@ export function NotificationPreferences() {
           >
             {isSaving ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin mr-2" />
                 Saving...
               </>
             ) : (
               <>
-                <Check className="h-4 w-4 mr-2" />
+                <FontAwesomeIcon icon={faCheck} className="h-4 w-4 mr-2" />
                 Save Changes
               </>
             )}
@@ -321,7 +322,7 @@ export function NotificationPreferences() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-amber-600" />
+                  <FontAwesomeIcon icon={faBell} className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
                   <CardTitle className="text-lg">{category.name}</CardTitle>
@@ -380,7 +381,7 @@ export function NotificationPreferences() {
       <Card className="border-dashed">
         <CardContent className="flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <BellOff className="h-5 w-5 text-zinc-400" />
+            <FontAwesomeIcon icon={faBellSlash} className="h-5 w-5 text-zinc-400" />
             <div>
               <p className="font-medium text-zinc-900 dark:text-white">
                 Disable All Notifications

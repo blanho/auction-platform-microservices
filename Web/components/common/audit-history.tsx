@@ -264,8 +264,7 @@ export function AuditHistory({
         try {
             const data = await auditService.getEntityAuditHistory(entityType, entityId);
             setLogs(data);
-        } catch (err) {
-            console.error("Failed to fetch audit history:", err);
+        } catch {
             setError("Failed to load audit history");
         } finally {
             setIsLoading(false);

@@ -69,7 +69,6 @@ export default function WalletPage() {
             const data = await walletService.getBalance();
             setBalance(data);
         } catch (error) {
-            console.error("Failed to fetch balance:", error);
             toast.error(MESSAGES.ERROR.GENERIC);
         } finally {
             setIsLoading(false);
@@ -85,7 +84,6 @@ export default function WalletPage() {
             });
             setTransactions(data.transactions);
         } catch (error) {
-            console.error("Failed to fetch transactions:", error);
         } finally {
             setIsTransactionsLoading(false);
         }
@@ -112,7 +110,6 @@ export default function WalletPage() {
             fetchBalance();
             fetchTransactions();
         } catch (error) {
-            console.error("Failed to create deposit:", error);
             toast.error("Failed to create deposit");
         } finally {
             setIsSubmitting(false);
@@ -139,7 +136,6 @@ export default function WalletPage() {
             fetchBalance();
             fetchTransactions();
         } catch (error) {
-            console.error("Failed to create withdrawal:", error);
             toast.error("Failed to create withdrawal");
         } finally {
             setIsSubmitting(false);

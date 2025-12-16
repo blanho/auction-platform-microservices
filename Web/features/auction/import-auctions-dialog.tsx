@@ -1,6 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUpload,
+  faFileExcel,
+  faDownload,
+  faSpinner,
+  faCircleCheck,
+  faCircleXmark,
+  faCircleExclamation
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Dialog,
   DialogContent,
@@ -14,15 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Upload,
-  FileSpreadsheet,
-  Download,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  AlertCircle
-} from "lucide-react";
 import { auctionService } from "@/services/auction.service";
 import { ImportAuctionsResultDto } from "@/types/auction";
 import { cn } from "@/lib/utils";
@@ -117,7 +118,7 @@ export function ImportAuctionsDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faUpload} className="mr-2 h-4 w-4" />
             Import Auctions
           </Button>
         )}
@@ -125,7 +126,7 @@ export function ImportAuctionsDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
+            <FontAwesomeIcon icon={faFileExcel} className="h-5 w-5" />
             Import Auctions
           </DialogTitle>
           <DialogDescription>
@@ -137,7 +138,7 @@ export function ImportAuctionsDialog({
           {/* Template Download */}
           <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/50">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <FontAwesomeIcon icon={faFileExcel} className="h-4 w-4 text-green-600" />
               <span className="text-sm">Download import template</span>
             </div>
             <Button
@@ -147,10 +148,10 @@ export function ImportAuctionsDialog({
               disabled={isDownloading}
             >
               {isDownloading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <Download className="mr-2 h-4 w-4" />
+                  <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
                   Template
                 </>
               )}
@@ -176,7 +177,7 @@ export function ImportAuctionsDialog({
             />
             {selectedFile ? (
               <div className="flex flex-col items-center gap-2">
-                <FileSpreadsheet className="h-10 w-10 text-green-600" />
+                <FontAwesomeIcon icon={faFileExcel} className="h-10 w-10 text-green-600" />
                 <p className="font-medium">{selectedFile.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {(selectedFile.size / 1024).toFixed(1)} KB
@@ -184,7 +185,7 @@ export function ImportAuctionsDialog({
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                <Upload className="h-10 w-10 text-muted-foreground" />
+                <FontAwesomeIcon icon={faUpload} className="h-10 w-10 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
                   Click to select or drag an Excel file
                 </p>
@@ -195,7 +196,7 @@ export function ImportAuctionsDialog({
           {/* Error */}
           {error && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <FontAwesomeIcon icon={faCircleExclamation} className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -208,12 +209,12 @@ export function ImportAuctionsDialog({
                   Total: {result.totalRows}
                 </Badge>
                 <Badge className="bg-green-500 text-sm">
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  <FontAwesomeIcon icon={faCircleCheck} className="mr-1 h-3 w-3" />
                   Success: {result.successCount}
                 </Badge>
                 {result.failureCount > 0 && (
                   <Badge variant="destructive" className="text-sm">
-                    <XCircle className="mr-1 h-3 w-3" />
+                    <FontAwesomeIcon icon={faCircleXmark} className="mr-1 h-3 w-3" />
                     Failed: {result.failureCount}
                   </Badge>
                 )}
@@ -248,12 +249,12 @@ export function ImportAuctionsDialog({
             <Button onClick={handleImport} disabled={!selectedFile || isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                   Importing...
                 </>
               ) : (
                 <>
-                  <Upload className="mr-2 h-4 w-4" />
+                  <FontAwesomeIcon icon={faUpload} className="mr-2 h-4 w-4" />
                   Import
                 </>
               )}

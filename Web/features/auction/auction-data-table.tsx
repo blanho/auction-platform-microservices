@@ -13,18 +13,19 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Settings2,
-  X,
-  ListFilter,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+  faChevronLeft,
+  faChevronRight,
+  faAnglesLeft,
+  faAnglesRight,
+  faGear,
+  faXmark,
+  faFilter,
+  faEye,
+  faEyeSlash,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Auction, AuctionStatus } from "@/types/auction";
 import { Badge } from "@/components/ui/badge";
@@ -193,7 +194,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-9 border-dashed">
-                <ListFilter className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faFilter} className="mr-2 h-4 w-4" />
                 Status
                 {statusFilter.length > 0 && (
                   <>
@@ -255,7 +256,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               className="h-9 px-2 lg:px-3"
             >
               Reset
-              <X className="ml-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faXmark} className="ml-2 h-4 w-4" />
             </Button>
           )}
         </div>
@@ -264,7 +265,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="ml-auto h-9">
-              <Settings2 className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faGear} className="mr-2 h-4 w-4" />
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -316,7 +317,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               size="sm"
               onClick={() => handleBulkAction("activate")}
             >
-              <Eye className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faEye} className="mr-2 h-4 w-4" />
               Activate Selected
             </Button>
             <Button
@@ -324,7 +325,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               size="sm"
               onClick={() => handleBulkAction("deactivate")}
             >
-              <EyeOff className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faEyeSlash} className="mr-2 h-4 w-4" />
               Deactivate Selected
             </Button>
           </div>
@@ -418,7 +419,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">Go to first page</span>
-              <ChevronsLeft className="h-4 w-4" />
+              <FontAwesomeIcon icon={faAnglesLeft} className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -427,7 +428,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">Go to previous page</span>
-              <ChevronLeft className="h-4 w-4" />
+              <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -436,7 +437,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Go to next page</span>
-              <ChevronRight className="h-4 w-4" />
+              <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -445,7 +446,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">Go to last page</span>
-              <ChevronsRight className="h-4 w-4" />
+              <FontAwesomeIcon icon={faAnglesRight} className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -473,7 +474,7 @@ export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: Au
               disabled={isBulkUpdating}
             >
               {isBulkUpdating && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
               )}
               {bulkAction === "activate" ? "Activate" : "Deactivate"}
             </AlertDialogAction>

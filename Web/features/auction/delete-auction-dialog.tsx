@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Loader2, Trash2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 import {
     AlertDialog,
@@ -68,7 +69,7 @@ export function DeleteAuctionDialog({
             <AlertDialogTrigger asChild>
                 {trigger || (
                     <Button variant="destructive" size="sm">
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faTrash} className="mr-2 h-4 w-4" />
                         Delete
                     </Button>
                 )}
@@ -95,7 +96,7 @@ export function DeleteAuctionDialog({
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                         {isDeleting && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                         )}
                         Delete Auction
                     </AlertDialogAction>

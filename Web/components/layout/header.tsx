@@ -8,19 +8,6 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import {
-    Search,
-    Heart,
-    Menu,
-    Gavel,
-    X,
-    Sparkles,
-    TrendingUp,
-    Zap,
-    Clock,
-    ArrowRight,
-    Users,
-} from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faFire,
@@ -29,6 +16,16 @@ import {
     faCrown,
     faTag,
     faShieldHalved,
+    faMagnifyingGlass,
+    faHeart,
+    faBars,
+    faGavel,
+    faXmark,
+    faWandMagicSparkles,
+    faArrowTrendUp,
+    faClock,
+    faArrowRight,
+    faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/common/notification-bell";
@@ -115,14 +112,14 @@ export function Header() {
         { 
             label: "Live Now", 
             value: quickStatsData.liveAuctions?.toString() || "0", 
-            icon: Zap, 
+            icon: faBolt, 
             color: "text-green-500", 
             change: quickStatsData.liveAuctionsChange || "" 
         },
         { 
             label: "Ending Soon", 
             value: quickStatsData.endingSoon?.toString() || "0", 
-            icon: Clock, 
+            icon: faClock, 
             color: "text-orange-500", 
             change: quickStatsData.endingSoonChange || "" 
         },
@@ -131,7 +128,7 @@ export function Header() {
             value: quickStatsData.activeUsers >= 1000 
                 ? `${(quickStatsData.activeUsers / 1000).toFixed(1)}K` 
                 : quickStatsData.activeUsers?.toString() || "0", 
-            icon: Users, 
+            icon: faUsers, 
             color: "text-purple-500", 
             change: quickStatsData.activeUsersChange || "" 
         },
@@ -191,7 +188,7 @@ export function Header() {
                                         onClick={() => setShowAnnouncement(false)}
                                         className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
                                     >
-                                        <X className="w-3.5 h-3.5" />
+                                        <FontAwesomeIcon icon={faXmark} className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>
@@ -212,7 +209,7 @@ export function Header() {
                                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 shadow-xl shadow-purple-500/30 dark:shadow-purple-500/20" />
                                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Gavel className="h-6 w-6 text-white drop-shadow-lg" />
+                                    <FontAwesomeIcon icon={faGavel} className="h-6 w-6 text-white drop-shadow-lg" />
                                 </div>
                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
                             </motion.div>
@@ -243,7 +240,7 @@ export function Header() {
                                         animate={isSearchFocused ? { scale: 1.1, color: "#9333ea" } : { scale: 1 }}
                                         className="absolute left-5"
                                     >
-                                        <Search className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                        <FontAwesomeIcon icon={faMagnifyingGlass} className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                                     </motion.div>
                                     <Input
                                         type="text"
@@ -263,7 +260,7 @@ export function Header() {
                                             onClick={() => setSearchQuery("")}
                                             className="absolute right-4 p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
                                         >
-                                            <X className="h-4 w-4 text-slate-400" />
+                                            <FontAwesomeIcon icon={faXmark} className="h-4 w-4 text-slate-400" />
                                         </motion.button>
                                     )}
                                 </div>
@@ -279,7 +276,7 @@ export function Header() {
                                         )}
                                     >
                                         Search
-                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                        <FontAwesomeIcon icon={faArrowRight} className="ml-2 h-4 w-4" />
                                     </Button>
                                 </motion.div>
                             </motion.div>
@@ -299,7 +296,7 @@ export function Header() {
                                         <div className="p-6">
                                             <div className="flex items-center gap-2 mb-4">
                                                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                                                    <TrendingUp className="w-4 h-4 text-purple-500" />
+                                                    <FontAwesomeIcon icon={faArrowTrendUp} className="w-4 h-4 text-purple-500" />
                                                     Trending Searches
                                                 </div>
                                                 <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700" />
@@ -322,7 +319,7 @@ export function Header() {
                                                             </div>
                                                             {item.trending && (
                                                                 <div className="flex items-center gap-1 text-xs text-orange-500">
-                                                                    <TrendingUp className="w-3 h-3" />
+                                                                    <FontAwesomeIcon icon={faArrowTrendUp} className="w-3 h-3" />
                                                                     <span>Trending</span>
                                                                 </div>
                                                             )}
@@ -334,12 +331,12 @@ export function Header() {
                                                             )}
                                                             {item.new && (
                                                                 <div className="flex items-center gap-1 text-xs text-green-500">
-                                                                    <Sparkles className="w-3 h-3" />
+                                                                    <FontAwesomeIcon icon={faWandMagicSparkles} className="w-3 h-3" />
                                                                     <span>New</span>
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all" />
+                                                        <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4 text-slate-400 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all" />
                                                     </motion.button>
                                                 ))}
                                             </div>
@@ -353,7 +350,7 @@ export function Header() {
                                                         transition={{ delay: index * 0.05 }}
                                                         className="text-center p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700"
                                                     >
-                                                        <stat.icon className={cn("w-5 h-5 mx-auto mb-2", stat.color)} />
+                                                        <FontAwesomeIcon icon={stat.icon} className={cn("w-5 h-5 mx-auto mb-2", stat.color)} />
                                                         <div className="flex items-center justify-center gap-1.5 mb-1">
                                                             <div className="text-2xl font-bold text-slate-900 dark:text-white">
                                                                 {stat.value}
@@ -389,7 +386,7 @@ export function Header() {
                                     asChild
                                 >
                                     <Link href="/wishlist">
-                                        <Heart className="h-5 w-5" />
+                                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5" />
                                         {wishlistCount > 0 && (
                                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                                                 {wishlistCount > 99 ? '99+' : wishlistCount}
@@ -406,7 +403,7 @@ export function Header() {
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon" className="lg:hidden">
-                                        <Menu className="h-5 w-5" />
+                                        <FontAwesomeIcon icon={faBars} className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="left" className="w-80 p-0">
@@ -415,7 +412,7 @@ export function Header() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                                        <Gavel className="h-5 w-5 text-white" />
+                                                        <FontAwesomeIcon icon={faGavel} className="h-5 w-5 text-white" />
                                                     </div>
                                                     <div>
                                                         <span className="text-lg font-bold text-white">AuctionHub</span>
@@ -424,7 +421,7 @@ export function Header() {
                                                 </div>
                                                 <SheetClose asChild>
                                                     <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                                                        <X className="h-5 w-5" />
+                                                        <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                                                     </Button>
                                                 </SheetClose>
                                             </div>
@@ -432,7 +429,7 @@ export function Header() {
 
                                         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
                                             <form onSubmit={handleSearchSubmit} className="relative">
-                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                                <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                                 <Input
                                                     placeholder="Search for anything..."
                                                     value={searchQuery}

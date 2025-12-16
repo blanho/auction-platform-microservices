@@ -180,8 +180,7 @@ export function BidHistory({
         try {
             const data = await bidService.getBidsForAuction(auctionId);
             setBids(sortBidsByTime(data));
-        } catch (err) {
-            console.error("Failed to fetch bids:", err);
+        } catch {
             setError("Failed to load bid history");
         } finally {
             setIsLoading(false);

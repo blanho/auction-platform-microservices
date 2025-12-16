@@ -1,6 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faDownload,
+  faFileCode,
+  faFileExcel,
+  faFileCsv,
+  faSpinner,
+  faCircleExclamation
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Download,
-  FileJson,
-  FileSpreadsheet,
-  FileText,
-  Loader2,
-  AlertCircle
-} from "lucide-react";
 import { auctionService } from "@/services/auction.service";
 import { ExportAuctionsRequest, AuctionStatus } from "@/types/auction";
 
@@ -40,9 +41,9 @@ interface ExportAuctionsDialogProps {
 type ExportFormat = "json" | "csv" | "excel";
 
 const FORMAT_OPTIONS: { value: ExportFormat; label: string; icon: React.ReactNode }[] = [
-  { value: "json", label: "JSON", icon: <FileJson className="h-4 w-4" /> },
-  { value: "csv", label: "CSV", icon: <FileText className="h-4 w-4" /> },
-  { value: "excel", label: "Excel", icon: <FileSpreadsheet className="h-4 w-4" /> }
+  { value: "json", label: "JSON", icon: <FontAwesomeIcon icon={faFileCode} className="h-4 w-4" /> },
+  { value: "csv", label: "CSV", icon: <FontAwesomeIcon icon={faFileCsv} className="h-4 w-4" /> },
+  { value: "excel", label: "Excel", icon: <FontAwesomeIcon icon={faFileExcel} className="h-4 w-4" /> }
 ];
 
 const STATUS_OPTIONS = [
@@ -123,7 +124,7 @@ export function ExportAuctionsDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
             Export Auctions
           </Button>
         )}
@@ -131,7 +132,7 @@ export function ExportAuctionsDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
+            <FontAwesomeIcon icon={faDownload} className="h-5 w-5" />
             Export Auctions
           </DialogTitle>
           <DialogDescription>
@@ -212,7 +213,7 @@ export function ExportAuctionsDialog({
           {/* Error */}
           {error && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <FontAwesomeIcon icon={faCircleExclamation} className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -225,12 +226,12 @@ export function ExportAuctionsDialog({
           <Button onClick={handleExport} disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                 Exporting...
               </>
             ) : (
               <>
-                <Download className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
                 Export
               </>
             )}

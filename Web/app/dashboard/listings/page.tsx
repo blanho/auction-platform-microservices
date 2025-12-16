@@ -128,9 +128,7 @@ export default function MyListingsPage() {
         try {
             const response = await auctionService.getMyAuctions();
             setAuctions(response.items);
-        } catch (error) {
-            console.error("Failed to fetch auctions:", error);
-        } finally {
+        } catch (error) {\n        } finally {
             setIsLoading(false);
         }
     }, []);

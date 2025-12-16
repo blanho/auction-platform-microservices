@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, DollarSign, Gavel } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner, faDollarSign, faGavel } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -126,7 +127,7 @@ export function PlaceBidDialog({
   if (sessionStatus === "loading") {
     return (
       <Button disabled size="lg" className="h-12 flex-shrink-0">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
         Loading...
       </Button>
     );
@@ -149,7 +150,7 @@ export function PlaceBidDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-            <Gavel className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faGavel} className="mr-2 h-4 w-4" />
             Place Bid
           </Button>
         )}
@@ -157,7 +158,7 @@ export function PlaceBidDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Gavel className="h-5 w-5" />
+            <FontAwesomeIcon icon={faGavel} className="h-5 w-5" />
             Place Your Bid
           </DialogTitle>
           <DialogDescription>
@@ -190,7 +191,7 @@ export function PlaceBidDialog({
                     <FormLabel>Your Bid</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           type="number"
                           placeholder={minBid.toString()}
@@ -221,12 +222,12 @@ export function PlaceBidDialog({
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                     Placing Bid...
                   </>
                 ) : (
                   <>
-                    <Gavel className="mr-2 h-4 w-4" />
+                    <FontAwesomeIcon icon={faGavel} className="mr-2 h-4 w-4" />
                     Place Bid
                   </>
                 )}

@@ -13,7 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PauseCircle, Loader2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCirclePause, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { auctionService } from "@/services/auction.service";
 import { toast } from "sonner";
 
@@ -61,7 +62,7 @@ export function DeactivateAuctionDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm" className="text-orange-600 hover:text-orange-700">
-            <PauseCircle className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faCirclePause} className="mr-2 h-4 w-4" />
             Deactivate
           </Button>
         )}
@@ -69,7 +70,7 @@ export function DeactivateAuctionDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-orange-600">
-            <PauseCircle className="h-5 w-5" />
+            <FontAwesomeIcon icon={faCirclePause} className="h-5 w-5" />
             Deactivate Auction
           </DialogTitle>
           <DialogDescription>
@@ -105,12 +106,12 @@ export function DeactivateAuctionDialog({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                 Deactivating...
               </>
             ) : (
               <>
-                <PauseCircle className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faCirclePause} className="mr-2 h-4 w-4" />
                 Deactivate
               </>
             )}

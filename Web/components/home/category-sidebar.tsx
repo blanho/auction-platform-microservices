@@ -90,8 +90,7 @@ export function CategorySidebar({ onCategoryHover }: CategorySidebarProps) {
       try {
         const data = await auctionService.getCategories();
         setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
+      } catch {
       } finally {
         setIsLoading(false);
       }

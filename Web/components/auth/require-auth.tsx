@@ -3,7 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export function RequireAuth({ children, redirectTo = "/auth/signin" }: RequireAu
   if (status === "loading") {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }

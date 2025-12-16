@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, ShoppingBag } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faBagShopping } from '@fortawesome/free-solid-svg-icons';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -73,7 +74,7 @@ export function BuyNowButton({
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
                     size="lg"
                 >
-                    <ShoppingBag className="mr-2 h-5 w-5" />
+                    <FontAwesomeIcon icon={faBagShopping} className="mr-2 h-5 w-5" />
                     Buy Now
                 </Button>
             </AlertDialogTrigger>
@@ -102,12 +103,12 @@ export function BuyNowButton({
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                                 Processing...
                             </>
                         ) : (
                             <>
-                                <ShoppingBag className="mr-2 h-4 w-4" />
+                                <FontAwesomeIcon icon={faBagShopping} className="mr-2 h-4 w-4" />
                                 Confirm Purchase
                             </>
                         )}

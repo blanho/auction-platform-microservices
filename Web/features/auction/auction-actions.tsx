@@ -1,5 +1,14 @@
 "use client";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEllipsisVertical,
+  faPenToSquare,
+  faCirclePlay,
+  faCirclePause,
+  faTrash,
+  faEye
+} from "@fortawesome/free-solid-svg-icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,14 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import {
-  MoreVertical,
-  Edit,
-  PlayCircle,
-  PauseCircle,
-  Trash2,
-  Eye
-} from "lucide-react";
 import Link from "next/link";
 import { Auction, AuctionStatus } from "@/types/auction";
 import { ActivateAuctionDialog } from "./activate-auction-dialog";
@@ -38,21 +39,21 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreVertical className="h-4 w-4" />
+          <FontAwesomeIcon icon={faEllipsisVertical} className="h-4 w-4" />
           <span className="sr-only">Actions</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem asChild>
           <Link href={`/auctions/${auction.id}`} className="flex items-center">
-            <Eye className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faEye} className="mr-2 h-4 w-4" />
             View Details
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
           <Link href={`/auctions/${auction.id}/edit`} className="flex items-center">
-            <Edit className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faPenToSquare} className="mr-2 h-4 w-4" />
             Edit
           </Link>
         </DropdownMenuItem>
@@ -69,7 +70,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
                 onSelect={(e) => e.preventDefault()}
                 className="text-green-600 focus:text-green-600"
               >
-                <PlayCircle className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faCirclePlay} className="mr-2 h-4 w-4" />
                 Activate
               </DropdownMenuItem>
             }
@@ -86,7 +87,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
                 onSelect={(e) => e.preventDefault()}
                 className="text-orange-600 focus:text-orange-600"
               >
-                <PauseCircle className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faCirclePause} className="mr-2 h-4 w-4" />
                 Deactivate
               </DropdownMenuItem>
             }
@@ -105,7 +106,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
               onSelect={(e) => e.preventDefault()}
               className="text-red-600 focus:text-red-600"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faTrash} className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
           }

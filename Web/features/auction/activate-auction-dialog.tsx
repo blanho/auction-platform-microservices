@@ -13,7 +13,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, Loader2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCirclePlay, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { auctionService } from "@/services/auction.service";
 import { toast } from "sonner";
 
@@ -54,7 +55,7 @@ export function ActivateAuctionDialog({
       <AlertDialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
-            <PlayCircle className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faCirclePlay} className="mr-2 h-4 w-4" />
             Activate
           </Button>
         )}
@@ -78,12 +79,12 @@ export function ActivateAuctionDialog({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                 Activating...
               </>
             ) : (
               <>
-                <PlayCircle className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faCirclePlay} className="mr-2 h-4 w-4" />
                 Activate
               </>
             )}

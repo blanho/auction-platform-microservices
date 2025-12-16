@@ -44,7 +44,6 @@ export default function WishlistPage() {
             const data = await wishlistService.getWishlist();
             setWishlist(data);
         } catch (error) {
-            console.error("Failed to fetch wishlist:", error);
             toast.error("Failed to load wishlist");
         } finally {
             setIsLoading(false);
@@ -68,7 +67,6 @@ export default function WishlistPage() {
             setWishlist((prev) => prev.filter((item) => item.auctionId !== auctionId));
             toast.success(MESSAGES.SUCCESS.WISHLIST_REMOVED);
         } catch (error) {
-            console.error("Failed to remove from wishlist:", error);
             toast.error("Failed to remove from wishlist");
         }
     };

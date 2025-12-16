@@ -5,14 +5,15 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  Loader2,
-  DollarSign,
-  Bot,
-  CheckCircle2,
-  Info,
-  Trash2,
-} from "lucide-react";
+  faSpinner,
+  faDollarSign,
+  faRobot,
+  faCircleCheck,
+  faCircleInfo,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -196,7 +197,7 @@ export function AutoBidDialog({
         trigger={
           trigger || (
             <Button variant="outline" className="gap-2">
-              <Bot className="h-4 w-4" />
+              <FontAwesomeIcon icon={faRobot} className="h-4 w-4" />
               Set Auto-Bid
             </Button>
           )
@@ -213,7 +214,7 @@ export function AutoBidDialog({
             variant="outline"
             className="gap-2"
           >
-            <Bot className="h-4 w-4" />
+            <FontAwesomeIcon icon={faRobot} className="h-4 w-4" />
             {existingAutoBid?.isActive ? "Update Auto-Bid" : "Set Auto-Bid"}
           </Button>
         )}
@@ -222,7 +223,7 @@ export function AutoBidDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <Bot className="h-5 w-5 text-amber-600" />
+              <FontAwesomeIcon icon={faRobot} className="h-5 w-5 text-amber-600" />
             </div>
             <div>
               <DialogTitle>
@@ -237,12 +238,12 @@ export function AutoBidDialog({
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+            <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-amber-500" />
           </div>
         ) : (
           <>
             <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/30">
-              <Info className="h-4 w-4 text-amber-600" />
+              <FontAwesomeIcon icon={faCircleInfo} className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-800 dark:text-amber-200">
                 How Auto-Bid Works
               </AlertTitle>
@@ -325,7 +326,7 @@ export function AutoBidDialog({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger type="button">
-                              <Info className="h-4 w-4 text-zinc-400" />
+                              <FontAwesomeIcon icon={faCircleInfo} className="h-4 w-4 text-zinc-400" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-[200px]">
                               <p>
@@ -338,7 +339,7 @@ export function AutoBidDialog({
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                          <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                           <Input
                             type="number"
                             placeholder={minAmount.toString()}
@@ -372,9 +373,9 @@ export function AutoBidDialog({
                       className="w-full sm:w-auto"
                     >
                       {isCancelling ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin mr-2" />
                       ) : (
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <FontAwesomeIcon icon={faTrash} className="h-4 w-4 mr-2" />
                       )}
                       Cancel Auto-Bid
                     </Button>
@@ -385,9 +386,9 @@ export function AutoBidDialog({
                     className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      <FontAwesomeIcon icon={faCircleCheck} className="h-4 w-4 mr-2" />
                     )}
                     {existingAutoBid ? "Update Auto-Bid" : "Activate Auto-Bid"}
                   </Button>

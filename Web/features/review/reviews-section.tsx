@@ -311,7 +311,6 @@ export function ReviewsSection({
       setReviews(reviewsData);
       setSummary(summaryData);
     } catch (error) {
-      console.error("Failed to fetch reviews:", error);
     } finally {
       setIsLoading(false);
     }

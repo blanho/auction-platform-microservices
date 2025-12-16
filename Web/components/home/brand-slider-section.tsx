@@ -138,8 +138,7 @@ export function BrandSliderSection() {
       try {
         const data = await auctionService.getBrands();
         setBrands(data.length > 0 ? data : FALLBACK_BRANDS);
-      } catch (error) {
-        console.error("Failed to fetch brands:", error);
+      } catch {
         setBrands(FALLBACK_BRANDS);
       } finally {
         setIsLoading(false);

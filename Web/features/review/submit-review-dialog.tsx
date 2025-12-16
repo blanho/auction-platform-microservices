@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Star, Loader2, MessageSquare, ThumbsUp } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar, faSpinner, faComment, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,7 @@ export function SubmitReviewDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" className="gap-2">
-            <Star className="h-4 w-4" />
+            <FontAwesomeIcon icon={faStar} className="h-4 w-4" />
             Leave Review
           </Button>
         )}
@@ -129,7 +130,7 @@ export function SubmitReviewDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <MessageSquare className="h-6 w-6 text-amber-600" />
+              <FontAwesomeIcon icon={faComment} className="h-6 w-6 text-amber-600" />
             </div>
             <div>
               <DialogTitle>Leave a Review</DialogTitle>
@@ -249,12 +250,12 @@ export function SubmitReviewDialog({
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin mr-2" />
                       Submitting...
                     </>
                   ) : (
                     <>
-                      <ThumbsUp className="h-4 w-4 mr-2" />
+                      <FontAwesomeIcon icon={faThumbsUp} className="h-4 w-4 mr-2" />
                       Submit Review
                     </>
                   )}

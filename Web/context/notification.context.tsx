@@ -167,10 +167,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     const { isConnected, isConnecting } = useSignalR({
         onNotification: handleNotification,
         onConnected: () => {
-            console.log("[NotificationProvider] SignalR connected");
         },
         onDisconnected: () => {
-            console.log("[NotificationProvider] SignalR disconnected");
         },
         onReconnected: handleReconnected
     });

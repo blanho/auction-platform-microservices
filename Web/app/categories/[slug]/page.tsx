@@ -109,8 +109,7 @@ export default function CategoryDetailPage() {
         const categories = await auctionService.getCategories();
         const found = categories.find((c) => c.slug === slug);
         setCategory(found || null);
-      } catch (error) {
-        console.error("Failed to fetch category:", error);
+      } catch {
       }
     };
     fetchCategory();
@@ -135,8 +134,7 @@ export default function CategoryDetailPage() {
         setAuctions(result.items);
         setTotalCount(result.totalCount);
         setTotalPages(result.totalPages);
-      } catch (error) {
-        console.error("Failed to fetch auctions:", error);
+      } catch {
       } finally {
         setIsLoading(false);
       }

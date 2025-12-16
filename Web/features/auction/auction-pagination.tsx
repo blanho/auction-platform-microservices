@@ -1,5 +1,12 @@
 "use client";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faAnglesLeft,
+    faAnglesRight,
+    faChevronLeft,
+    faChevronRight
+} from "@fortawesome/free-solid-svg-icons";
 import { useAuction, useAuctionPagination } from "@/context/auction.context";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,12 +16,6 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {
-    ChevronFirst,
-    ChevronLast,
-    ChevronLeft,
-    ChevronRight
-} from "lucide-react";
 
 const PAGE_SIZE_OPTIONS = [
     { value: "4", label: "4 per page" },
@@ -85,7 +86,7 @@ export function AuctionPagination() {
                     onClick={() => goToPage("first")}
                     disabled={!pagination.hasPreviousPage}
                 >
-                    <ChevronFirst className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faAnglesLeft} className="h-4 w-4" />
                     <span className="sr-only">First page</span>
                 </Button>
 
@@ -95,7 +96,7 @@ export function AuctionPagination() {
                     onClick={() => goToPage("prev")}
                     disabled={!pagination.hasPreviousPage}
                 >
-                    <ChevronLeft className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faChevronLeft} className="h-4 w-4" />
                     <span className="sr-only">Previous page</span>
                 </Button>
 
@@ -128,7 +129,7 @@ export function AuctionPagination() {
                     onClick={() => goToPage("next")}
                     disabled={!pagination.hasNextPage}
                 >
-                    <ChevronRight className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faChevronRight} className="h-4 w-4" />
                     <span className="sr-only">Next page</span>
                 </Button>
 
@@ -138,7 +139,7 @@ export function AuctionPagination() {
                     onClick={() => goToPage("last")}
                     disabled={!pagination.hasNextPage}
                 >
-                    <ChevronLast className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faAnglesRight} className="h-4 w-4" />
                     <span className="sr-only">Last page</span>
                 </Button>
             </div>

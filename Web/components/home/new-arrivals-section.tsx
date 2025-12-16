@@ -218,8 +218,7 @@ export function NewArrivalsSection() {
                     pageSize: 8,
                 });
                 setAuctions(result.items);
-            } catch (error) {
-                console.error("Failed to fetch new arrivals:", error);
+            } catch {
             } finally {
                 setIsLoading(false);
             }

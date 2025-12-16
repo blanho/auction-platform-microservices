@@ -6,14 +6,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import {
-    Calendar,
-    DollarSign,
-    Loader2,
-    Package,
-} from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faImage } from '@fortawesome/free-solid-svg-icons';
+import {
+    faImage,
+    faCalendar,
+    faDollarSign,
+    faSpinner,
+    faBox,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -220,7 +220,6 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
             toast.success('Auction updated successfully!');
             router.push(`/auctions/${auction.id}`);
         } catch (error: unknown) {
-            console.error('Update auction error:', error);
             showErrorToast(error, {
                 description: 'Please check your input and try again',
             });
@@ -434,7 +433,7 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <DollarSign className="h-5 w-5" />
+                                <FontAwesomeIcon icon={faDollarSign} className="h-5 w-5" />
                                 Pricing
                             </h3>
                             <div className="grid gap-6 md:grid-cols-2">
@@ -494,7 +493,7 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <Calendar className="h-5 w-5" />
+                                <FontAwesomeIcon icon={faCalendar} className="h-5 w-5" />
                                 Auction Timing
                             </h3>
                             <div className="grid gap-6 md:grid-cols-2">
@@ -549,7 +548,7 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                <Package className="h-5 w-5" />
+                                <FontAwesomeIcon icon={faBox} className="h-5 w-5" />
                                 Shipping Options
                             </h3>
                             <div className="grid gap-6 md:grid-cols-2">
@@ -715,7 +714,7 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isSubmitting || isEnded}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
                                 Update Auction
                             </Button>
                         </div>

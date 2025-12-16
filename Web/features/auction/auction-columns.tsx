@@ -4,7 +4,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 import { Auction, AuctionStatus } from "@/types/auction";
 import { Badge } from "@/components/ui/badge";
@@ -204,7 +205,7 @@ export const createAuctionColumns = (
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild className="h-8 w-8">
               <Link href={`/auctions/${row.original.id}`}>
-                <ExternalLink className="h-4 w-4" />
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
                 <span className="sr-only">View</span>
               </Link>
             </Button>

@@ -197,8 +197,7 @@ export function FlashSaleSection() {
           }));
           setFallbackItems(mapped);
         }
-      } catch (error) {
-        console.error("Failed to fetch flash sale:", error);
+      } catch {
       } finally {
         setIsLoading(false);
       }

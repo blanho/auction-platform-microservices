@@ -8,7 +8,8 @@ import {
 } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner, faCircleExclamation, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface StripePaymentFormProps {
   onSuccess: (paymentIntentId: string) => void;
@@ -75,9 +76,9 @@ export function StripePaymentForm({
       {message && (
         <Alert variant={isSuccess ? "default" : "destructive"}>
           {isSuccess ? (
-            <CheckCircle2 className="h-4 w-4" />
+            <FontAwesomeIcon icon={faCircleCheck} className="h-4 w-4" />
           ) : (
-            <AlertCircle className="h-4 w-4" />
+            <FontAwesomeIcon icon={faCircleExclamation} className="h-4 w-4" />
           )}
           <AlertDescription>{message}</AlertDescription>
         </Alert>
@@ -91,7 +92,7 @@ export function StripePaymentForm({
       >
         {isLoading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
             Processing...
           </>
         ) : (

@@ -8,7 +8,8 @@ import { StripePaymentForm } from "./stripe-payment-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CreditCard } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleExclamation, faCreditCard } from "@fortawesome/free-solid-svg-icons";
 
 interface StripeCheckoutProps {
   clientSecret: string;
@@ -40,7 +41,7 @@ export function StripeCheckout({
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
+        <FontAwesomeIcon icon={faCircleExclamation} className="h-4 w-4" />
         <AlertTitle>Payment Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
@@ -50,7 +51,7 @@ export function StripeCheckout({
   if (!stripePromise) {
     return (
       <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
+        <FontAwesomeIcon icon={faCircleExclamation} className="h-4 w-4" />
         <AlertTitle>Configuration Error</AlertTitle>
         <AlertDescription>
           Stripe is not configured. Please contact support.
@@ -96,7 +97,7 @@ export function StripeCheckout({
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
+          <FontAwesomeIcon icon={faCreditCard} className="h-5 w-5" />
           <CardTitle>Pay with Card</CardTitle>
         </div>
         <CardDescription>

@@ -89,7 +89,6 @@ export function AuthDialog({
                     setExternalProviders(result.data || []);
                 }
             } catch {
-                console.error("Failed to fetch external providers");
             }
         };
         fetchProviders();

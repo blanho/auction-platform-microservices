@@ -82,7 +82,6 @@ export default function MyBidsPage() {
 
                 setBids(bidsWithAuctions);
             } catch (error) {
-                console.error("Failed to fetch bids:", error);
             } finally {
                 setIsLoading(false);
             }

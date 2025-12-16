@@ -1,6 +1,7 @@
 "use client";
 
-import { Star, Quote, Calendar, CheckCircle2 } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar, faQuoteLeft, faCalendar, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -40,20 +41,21 @@ export function ReviewCard({ review }: ReviewCardProps) {
                 {review.reviewerUsername}
               </CardTitle>
               <div className="flex items-center gap-2 text-sm text-zinc-500">
-                <Calendar className="h-3 w-3" />
+                <FontAwesomeIcon icon={faCalendar} className="h-3 w-3" />
                 {format(new Date(review.createdAt), "MMM d, yyyy")}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
+            {[1, 2, 3, 4, 5].map((starNum) => (
+              <FontAwesomeIcon
+                key={starNum}
+                icon={faStar}
                 className={cn(
                   "h-4 w-4",
-                  star <= review.rating
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-zinc-200 text-zinc-200 dark:fill-zinc-700 dark:text-zinc-700"
+                  starNum <= review.rating
+                    ? "text-amber-400"
+                    : "text-zinc-200 dark:text-zinc-700"
                 )}
               />
             ))}
@@ -74,7 +76,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
             variant="secondary"
             className="gap-1 text-green-600 bg-green-50 dark:bg-green-950/30"
           >
-            <CheckCircle2 className="h-3 w-3" />
+            <FontAwesomeIcon icon={faCircleCheck} className="h-3 w-3" />
             Verified Purchase
           </Badge>
         )}
@@ -84,7 +86,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
             <Separator className="my-3" />
             <div className="pl-4 border-l-2 border-amber-400">
               <div className="flex items-center gap-2 mb-2">
-                <Quote className="h-4 w-4 text-amber-500" />
+                <FontAwesomeIcon icon={faQuoteLeft} className="h-4 w-4 text-amber-500" />
                 <span className="text-sm font-medium text-amber-600">
                   Seller Response
                 </span>
@@ -133,14 +135,15 @@ export function RatingSummaryCard({ summary }: RatingSummaryCardProps) {
               {summary.averageRating.toFixed(1)}
             </div>
             <div className="flex items-center justify-center gap-0.5 mt-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
+              {[1, 2, 3, 4, 5].map((starNum) => (
+                <FontAwesomeIcon
+                  key={starNum}
+                  icon={faStar}
                   className={cn(
                     "h-4 w-4",
-                    star <= Math.round(summary.averageRating)
-                      ? "fill-amber-400 text-amber-400"
-                      : "fill-zinc-200 text-zinc-200"
+                    starNum <= Math.round(summary.averageRating)
+                      ? "text-amber-400"
+                      : "text-zinc-200"
                   )}
                 />
               ))}
@@ -159,7 +162,7 @@ export function RatingSummaryCard({ summary }: RatingSummaryCardProps) {
               return (
                 <div key={bar.stars} className="flex items-center gap-2">
                   <span className="text-sm text-zinc-500 w-3">{bar.stars}</span>
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <FontAwesomeIcon icon={faStar} className="h-3 w-3 text-amber-400" />
                   <div className="flex-1 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-amber-400 rounded-full transition-all"
@@ -176,7 +179,7 @@ export function RatingSummaryCard({ summary }: RatingSummaryCardProps) {
         </div>
 
         <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-          <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+          <FontAwesomeIcon icon={faCircleCheck} className="h-5 w-5 text-green-500 mr-2" />
           <span className="text-green-700 dark:text-green-300 font-medium">
             {summary.positivePercentage.toFixed(0)}% Positive Reviews
           </span>

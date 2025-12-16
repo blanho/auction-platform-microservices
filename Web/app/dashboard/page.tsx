@@ -38,10 +38,7 @@ export default function DashboardPage() {
         try {
             const data = await dashboardService.getStats();
             setStats(data);
-        } catch (error) {
-            console.error("Failed to fetch dashboard stats:", error);
-            toast.error(MESSAGES.ERROR.GENERIC);
-        } finally {
+        } catch (error) {\n            toast.error(MESSAGES.ERROR.GENERIC);\n        } finally {
             setIsLoading(false);
         }
     }, []);

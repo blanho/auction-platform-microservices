@@ -47,9 +47,7 @@ export default function UserProfilePage() {
             setRatingSummary(summaryData);
             setReviews(reviewsData);
             setAuctions(auctionsData.items);
-        } catch (error) {
-            console.error("Failed to fetch user profile:", error);
-        } finally {
+        } catch (error) {\n        } finally {
             setIsLoading(false);
         }
     }, [username]);

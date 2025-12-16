@@ -252,8 +252,7 @@ export function EndingSoonSection() {
                 if (isMountedRef.current) {
                     setAuctions(result.items);
                 }
-            } catch (error) {
-                console.error("Failed to fetch ending soon auctions:", error);
+            } catch {
             } finally {
                 if (isMountedRef.current) {
                     setIsLoading(false);

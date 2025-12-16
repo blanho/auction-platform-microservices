@@ -294,8 +294,7 @@ function LoggedInPersonalization() {
         descending: true,
       });
       setRecommendedAuctions(result.items || []);
-    } catch (error) {
-      console.error("Failed to fetch recommended auctions:", error);
+    } catch {
     } finally {
       setIsLoadingRecommended(false);
     }
@@ -328,8 +327,7 @@ function LoggedInPersonalization() {
           setRecentlyViewedAuctions(validAuctions);
         }
       }
-    } catch (error) {
-      console.error("Failed to fetch recently viewed:", error);
+    } catch {
     } finally {
       setIsLoadingRecent(false);
     }
