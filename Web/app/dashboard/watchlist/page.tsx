@@ -44,6 +44,7 @@ import {
     watchlistStorage,
     getStatusColorSafe,
     getAuctionImageUrl,
+    getAuctionTitle,
 } from "@/utils";
 
 type ViewMode = "grid" | "list";
@@ -139,13 +140,14 @@ interface AuctionCardProps {
 function AuctionGridCard({ auction, onRemove }: AuctionCardProps) {
     const imageUrl = getAuctionImageUrl(auction.files, PLACEHOLDER_IMAGE);
     const isLive = auction.status === AuctionStatus.Live;
+    const title = getAuctionTitle(auction);
 
     return (
         <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
             <div className="relative h-48">
                 <Image
                     src={imageUrl}
-                    alt={auction.title}
+                    alt={title}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -172,7 +174,7 @@ function AuctionGridCard({ auction, onRemove }: AuctionCardProps) {
             </div>
             <CardContent className="p-4">
                 <h3 className="font-semibold truncate mb-2">
-                    {auction.year} {auction.make} {auction.model}
+                    {title}
                 </h3>
                 <div className="flex items-center justify-between mb-3">
                     <div>
@@ -199,6 +201,7 @@ function AuctionGridCard({ auction, onRemove }: AuctionCardProps) {
 
 function AuctionListCard({ auction, onRemove }: AuctionCardProps) {
     const imageUrl = getAuctionImageUrl(auction.files, PLACEHOLDER_IMAGE);
+    const title = getAuctionTitle(auction);
 
     return (
         <Card className="overflow-hidden">
@@ -206,7 +209,7 @@ function AuctionListCard({ auction, onRemove }: AuctionCardProps) {
                 <div className="relative w-full sm:w-48 h-32">
                     <Image
                         src={imageUrl}
-                        alt={auction.title}
+                        alt={title}
                         fill
                         className="object-cover"
                         sizes="(max-width: 640px) 100vw, 192px"
@@ -215,7 +218,7 @@ function AuctionListCard({ auction, onRemove }: AuctionCardProps) {
                 <CardContent className="flex-1 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h3 className="font-semibold">
-                            {auction.year} {auction.make} {auction.model}
+                            {title}
                         </h3>
                         <p className="text-sm text-zinc-500">{auction.categoryName}</p>
                         <div className="flex items-center gap-4 mt-2">
@@ -281,11 +284,7 @@ export default function WatchlistPage() {
         }
 
         try {
-            const auctionPromises = watchlistIds.map(id =>
-                auctionService.getAuctionById(id).catch(() => null)
-            );
-            const results = await Promise.all(auctionPromises);
-            const validAuctions = results.filter((auction): auction is Auction => auction !== null);
+            const validAuctions = await auctionService.getAuctionsByIds(watchlistIds);
             setWatchlist(validAuctions);
         } catch (error) {
             console.error("Failed to fetch watchlist auctions:", error);

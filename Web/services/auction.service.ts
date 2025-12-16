@@ -8,6 +8,8 @@ import {
   ExportAuctionsRequest,
   ExportAuctionDto,
   Category,
+  Brand,
+  Tag,
   BuyNowResult
 } from "@/types/auction";
 import { API_ENDPOINTS } from "@/constants/api";
@@ -15,10 +17,14 @@ import { PaginatedResponse } from "@/types";
 
 export interface GetAuctionsParams {
   status?: string;
-  seller?: string;
-  winner?: string;
+  sellerUsername?: string;
+  winnerUsername?: string;
   searchTerm?: string;
   category?: string;
+  brandId?: string;
+  condition?: string;
+  minPrice?: number;
+  maxPrice?: number;
   isFeatured?: boolean;
   pageNumber?: number;
   pageSize?: number;
@@ -74,6 +80,15 @@ export const auctionService = {
   getAuctionById: async (id: string): Promise<Auction> => {
     const { data } = await apiClient.get<Auction>(
       API_ENDPOINTS.AUCTION_BY_ID(id)
+    );
+    return data;
+  },
+
+  getAuctionsByIds: async (ids: string[]): Promise<Auction[]> => {
+    if (ids.length === 0) return [];
+    const { data } = await apiClient.post<Auction[]>(
+      API_ENDPOINTS.AUCTIONS_BATCH,
+      ids
     );
     return data;
   },
@@ -199,5 +214,25 @@ export const auctionService = {
       responseType: "blob"
     });
     return data;
-  }
+  },
+
+  getBrands: async (): Promise<Brand[]> => {
+    const { data } = await apiClient.get<Brand[]>("/auctions/brands");
+    return data;
+  },
+
+  getBrandBySlug: async (slug: string): Promise<Brand> => {
+    const { data } = await apiClient.get<Brand>(`/auctions/brands/slug/${slug}`);
+    return data;
+  },
+
+  getTags: async (): Promise<Tag[]> => {
+    const { data } = await apiClient.get<Tag[]>("/auctions/tags");
+    return data;
+  },
+
+  getTagBySlug: async (slug: string): Promise<Tag> => {
+    const { data } = await apiClient.get<Tag>(`/auctions/tags/slug/${slug}`);
+    return data;
+  },
 } as const;

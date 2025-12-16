@@ -141,3 +141,58 @@ export function getAuctionImageUrl(
   
   return fallback;
 }
+
+export interface AuctionLike {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  condition?: string | null;
+  yearManufactured?: number | null;
+  attributes?: Record<string, string> | null;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  categorySlug?: string | null;
+  seller?: string | null;
+  winner?: string | null;
+  currency?: string | null;
+}
+
+export function getAuctionTitle(auction: AuctionLike): string {
+  return auction.title || 'Untitled';
+}
+
+export function getAuctionDescription(auction: AuctionLike): string {
+  return auction.description || '';
+}
+
+export function getAuctionCondition(auction: AuctionLike): string | undefined {
+  return auction.condition || undefined;
+}
+
+export function getAuctionYearManufactured(auction: AuctionLike): number | undefined {
+  return auction.yearManufactured || undefined;
+}
+
+export function getAuctionCategoryName(auction: AuctionLike): string | undefined {
+  return auction.categoryName || undefined;
+}
+
+export function getAuctionCategorySlug(auction: AuctionLike): string | undefined {
+  return auction.categorySlug || undefined;
+}
+
+export function getAuctionAttributes(auction: AuctionLike): Record<string, string> {
+  return auction.attributes || {};
+}
+
+export function getAuctionSellerUsername(auction: AuctionLike): string {
+  return auction.seller || '';
+}
+
+export function getAuctionWinnerUsername(auction: AuctionLike): string | undefined {
+  return auction.winner || undefined;
+}
+
+export function getAuctionCurrency(auction: AuctionLike): string {
+  return auction.currency || 'USD';
+}

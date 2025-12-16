@@ -21,8 +21,10 @@ export const useAuctions = () => {
       pageNumber: params.page,
       pageSize: params.pageSize,
       status: params.status || undefined,
-      seller: params.seller || undefined,
-      winner: params.winner || undefined,
+      sellerUsername: params.sellerUsername || undefined,
+      winnerUsername: params.winnerUsername || undefined,
+      brandId: params.brandId || undefined,
+      condition: params.condition || undefined,
       orderBy: params.sortBy || undefined,
       descending: params.sortOrder === "desc"
     }),
@@ -31,8 +33,10 @@ export const useAuctions = () => {
       params.page,
       params.pageSize,
       params.status,
-      params.seller,
-      params.winner,
+      params.sellerUsername,
+      params.winnerUsername,
+      params.brandId,
+      params.condition,
       params.sortBy,
       params.sortOrder
     ]

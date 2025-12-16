@@ -21,6 +21,7 @@ import { Auction, AuctionStatus } from "@/types/auction";
 import { ActivateAuctionDialog } from "./activate-auction-dialog";
 import { DeactivateAuctionDialog } from "./deactivate-auction-dialog";
 import { DeleteAuctionDialog } from "./delete-auction-dialog";
+import { getAuctionTitle } from "@/utils/auction";
 
 interface AuctionActionsProps {
   auction: Auction;
@@ -31,6 +32,7 @@ interface AuctionActionsProps {
 export function AuctionActions({ auction, onActionComplete, isAdmin = false }: AuctionActionsProps) {
   const isInactive = auction.status === AuctionStatus.Inactive;
   const canDeactivate = auction.status === AuctionStatus.Live;
+  const title = getAuctionTitle(auction);
 
   return (
     <DropdownMenu>
@@ -60,7 +62,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
         {isInactive && (
           <ActivateAuctionDialog
             auctionId={auction.id}
-            auctionTitle={auction.title}
+            auctionTitle={title}
             onSuccess={onActionComplete}
             trigger={
               <DropdownMenuItem
@@ -77,7 +79,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
         {canDeactivate && (
           <DeactivateAuctionDialog
             auctionId={auction.id}
-            auctionTitle={auction.title}
+            auctionTitle={title}
             onSuccess={onActionComplete}
             trigger={
               <DropdownMenuItem
@@ -95,7 +97,7 @@ export function AuctionActions({ auction, onActionComplete, isAdmin = false }: A
 
         <DeleteAuctionDialog
           auctionId={auction.id}
-          auctionTitle={auction.title}
+          auctionTitle={title}
           onSuccess={onActionComplete}
           isAdmin={isAdmin}
           trigger={

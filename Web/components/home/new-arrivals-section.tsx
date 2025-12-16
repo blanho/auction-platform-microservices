@@ -24,12 +24,14 @@ import { Auction } from "@/types/auction";
 import { auctionService } from "@/services/auction.service";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { PulsingDot } from "@/components/ui/animated";
+import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
 
 function AuctionCard({ auction, index }: { auction: Auction; index: number }) {
     const [isLiked, setIsLiked] = useState(false);
     const timeLeft = useCountdown(auction.auctionEnd);
     const urgency = getUrgencyLevel(timeLeft);
     const isEndingSoon = urgency === "critical" || urgency === "warning";
+    const title = getAuctionTitle(auction);
 
     const imageUrl = useMemo(() => {
         const primaryFile = auction.files?.find((f) => f.isPrimary);
@@ -104,7 +106,7 @@ function AuctionCard({ auction, index }: { auction: Auction; index: number }) {
                     <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                             src={imageUrl}
-                            alt={`${auction.make} ${auction.model}`}
+                            alt={title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
@@ -152,13 +154,8 @@ function AuctionCard({ auction, index }: { auction: Auction; index: number }) {
                                 {auction.categoryName || "Uncategorized"}
                             </p>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                {auction.make} {auction.model}
+                                {title}
                             </h3>
-                            {auction.year && (
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                                    {auction.year}
-                                </p>
-                            )}
                         </div>
 
                         <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-800">

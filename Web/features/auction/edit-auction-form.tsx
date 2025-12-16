@@ -57,6 +57,13 @@ import {
     AuctionStatus,
 } from '@/types/auction';
 import { showErrorToast } from '@/utils';
+import {
+    getAuctionTitle,
+    getAuctionDescription,
+    getAuctionCondition,
+    getAuctionYearManufactured,
+    getAuctionAttributes,
+} from '@/utils/auction';
 
 function RequiredIndicator() {
     return <span className="text-red-500 ml-0.5">*</span>;
@@ -65,11 +72,7 @@ function RequiredIndicator() {
 const updateAuctionSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    make: z.string().min(2, 'Make is required'),
-    model: z.string().min(1, 'Model is required'),
-    year: z.number().min(1900).max(new Date().getFullYear() + 1),
-    color: z.string().min(2, 'Color is required'),
-    mileage: z.number().min(0, 'Mileage must be positive'),
+    yearManufactured: z.number().min(1900).max(new Date().getFullYear() + 1).optional(),
     reservePrice: z.number().min(1, 'Reserve price must be at least 1'),
     buyNowPrice: z.number().min(1, 'Buy Now price must be at least 1').optional(),
     auctionEnd: z.string().refine((date) => new Date(date) > new Date(), {
@@ -136,18 +139,14 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
     const form = useForm<UpdateAuctionFormValues>({
         resolver: zodResolver(updateAuctionSchema),
         defaultValues: {
-            title: auction.title,
-            description: auction.description,
-            make: auction.make,
-            model: auction.model,
-            year: auction.year,
-            color: auction.color,
-            mileage: auction.mileage,
+            title: getAuctionTitle(auction),
+            description: getAuctionDescription(auction),
+            yearManufactured: getAuctionYearManufactured(auction),
             reservePrice: auction.reservePrice,
             buyNowPrice: auction.buyNowPrice || undefined,
             auctionEnd: formatDateForInput(auction.auctionEnd),
             categoryId: auction.categoryId || '',
-            condition: auction.condition || 'Used',
+            condition: getAuctionCondition(auction) || 'Used',
             isFeatured: auction.isFeatured,
             shippingType: auction.shippingType || ShippingType.Flat,
             shippingCost: auction.shippingCost || 0,
@@ -180,14 +179,15 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
         setIsSubmitting(true);
 
         const changedFields: UpdateAuctionDto = {};
+        const currentTitle = getAuctionTitle(auction);
+        const currentDescription = getAuctionDescription(auction);
+        const currentYearManufactured = getAuctionYearManufactured(auction);
+        const currentCondition = getAuctionCondition(auction);
 
-        if (values.title !== auction.title) changedFields.title = values.title;
-        if (values.description !== auction.description) changedFields.description = values.description;
-        if (values.make !== auction.make) changedFields.make = values.make;
-        if (values.model !== auction.model) changedFields.model = values.model;
-        if (values.year !== auction.year) changedFields.year = values.year;
-        if (values.color !== auction.color) changedFields.color = values.color;
-        if (values.mileage !== auction.mileage) changedFields.mileage = values.mileage;
+        if (values.title !== currentTitle) changedFields.title = values.title;
+        if (values.description !== currentDescription) changedFields.description = values.description;
+        if (values.yearManufactured !== currentYearManufactured) changedFields.yearManufactured = values.yearManufactured;
+        if (values.condition !== currentCondition) changedFields.condition = values.condition;
 
         if (!isLive) {
             if (values.reservePrice !== auction.reservePrice) changedFields.reservePrice = values.reservePrice;
@@ -196,7 +196,6 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
         if (values.auctionEnd !== formatDateForInput(auction.auctionEnd)) changedFields.auctionEnd = values.auctionEnd;
         if (values.categoryId !== auction.categoryId) changedFields.categoryId = values.categoryId || undefined;
-        if (values.condition !== auction.condition) changedFields.condition = values.condition;
         if (values.isFeatured !== auction.isFeatured) changedFields.isFeatured = values.isFeatured;
 
         if (values.shippingType !== auction.shippingType) changedFields.shippingType = values.shippingType;
@@ -208,7 +207,6 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
         if (files.length > 0) {
             changedFields.files = files;
-            changedFields.imageUrl = primaryImage?.url;
         }
 
         if (Object.keys(changedFields).length === 0) {
@@ -375,21 +373,33 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
                         <Separator />
 
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Vehicle Details</h3>
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <h3 className="text-lg font-semibold">Item Details</h3>
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="make"
+                                    name="condition"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Make<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Toyota"
-                                                    {...field}
-                                                    disabled={isEnded}
-                                                />
-                                            </FormControl>
+                                            <FormLabel>Condition<RequiredIndicator /></FormLabel>
+                                            <Select
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                disabled={isEnded}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select condition" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="New">New</SelectItem>
+                                                    <SelectItem value="Like New">Like New</SelectItem>
+                                                    <SelectItem value="Excellent">Excellent</SelectItem>
+                                                    <SelectItem value="Good">Good</SelectItem>
+                                                    <SelectItem value="Fair">Fair</SelectItem>
+                                                    <SelectItem value="Poor">Poor</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -397,75 +407,22 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
 
                                 <FormField
                                     control={form.control}
-                                    name="model"
+                                    name="yearManufactured"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Model<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Camry"
-                                                    {...field}
-                                                    disabled={isEnded}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="year"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Year<RequiredIndicator /></FormLabel>
+                                            <FormLabel>Year Manufactured</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
                                                     placeholder="2020"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                                    value={field.value || ''}
+                                                    onChange={(e) => field.onChange(e.target.valueAsNumber || undefined)}
                                                     disabled={isEnded}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="color"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Color<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Silver"
-                                                    {...field}
-                                                    disabled={isEnded}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="mileage"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Mileage<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="50000"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                                    disabled={isEnded}
-                                                />
-                                            </FormControl>
+                                            <FormDescription>
+                                                Optional: Year the item was manufactured
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}

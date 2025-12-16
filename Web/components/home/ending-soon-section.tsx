@@ -23,6 +23,7 @@ import { auctionService } from "@/services/auction.service";
 import { PulsingDot } from "@/components/ui/animated";
 import { FEATURED, UI, URGENCY } from "@/constants/config";
 import { useInterval } from "@/hooks/use-interval";
+import { getAuctionTitle } from "@/utils/auction";
 
 interface CountdownProps {
     endTime: Date;
@@ -112,6 +113,7 @@ interface AuctionCardProps {
 
 function EndingSoonCard({ auction, index }: AuctionCardProps) {
     const [isLiked, setIsLiked] = useState(false);
+    const title = getAuctionTitle(auction);
     const primaryFile = auction.files?.find((f) => f.isPrimary);
     const imageUrl =
         primaryFile?.url ||
@@ -158,7 +160,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                     <div className="relative h-52 overflow-hidden">
                         <Image
                             src={imageUrl}
-                            alt={auction.title}
+                            alt={title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
@@ -184,7 +186,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                                 {auction.categoryName || "Auction"}
                             </p>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors">
-                                {auction.year} {auction.make} {auction.model}
+                                {title}
                             </h3>
                         </div>
 

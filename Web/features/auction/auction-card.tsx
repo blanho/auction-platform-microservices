@@ -21,6 +21,7 @@ import { formatDistanceToNow, differenceInHours, differenceInMinutes } from 'dat
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { URGENCY } from '@/constants/config';
+import { getAuctionTitle, getAuctionAttributes, getAuctionCondition, getAuctionYearManufactured } from '@/utils/auction';
 
 interface AuctionCardProps {
     auction: Auction | SearchItem;
@@ -120,8 +121,11 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
     const currentBid = 'currentHighBid' in auction ? auction.currentHighBid : ('price' in auction ? auction.price : 0);
     const hasReserve = 'reservePrice' in auction && auction.reservePrice && auction.reservePrice > 0;
     const hasBuyNow = 'buyNowPrice' in auction && auction.buyNowPrice && auction.buyNowPrice > 0;
-    const condition = 'condition' in auction && auction.condition ? auction.condition : null;
+    const condition = getAuctionCondition(auction);
     const shippingType = 'shippingType' in auction ? auction.shippingType : null;
+    const title = getAuctionTitle(auction);
+    const attributes = getAuctionAttributes(auction);
+    const yearManufactured = getAuctionYearManufactured(auction);
 
     const handleWishlistToggle = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
@@ -138,7 +142,7 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
                 >
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                         {imageUrl ? (
-                            <Image src={imageUrl} alt={auction.title || 'Auction'} fill className="object-cover" />
+                            <Image src={imageUrl} alt={title} fill className="object-cover" />
                         ) : (
                             <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                                 <FontAwesomeIcon icon={faGavel} className="w-6 h-6 text-slate-400" />
@@ -147,7 +151,7 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-sm line-clamp-1 text-slate-900 dark:text-white">
-                            {auction.title || 'Untitled'}
+                            {title}
                         </h3>
                         <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
                             ${(currentBid || 0).toLocaleString()}
@@ -177,7 +181,7 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
-                            alt={auction.title || 'Auction item'}
+                            alt={title}
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
@@ -249,11 +253,12 @@ export function AuctionCard({ auction, variant = 'default' }: AuctionCardProps) 
                 <div className="p-4 space-y-3">
                     <div>
                         <h3 className="font-semibold text-slate-900 dark:text-white line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                            {auction.title || 'Untitled'}
+                            {title}
                         </h3>
-                        {'make' in auction && auction.make && (
+                        {Object.keys(attributes).length > 0 && (
                             <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">
-                                {auction.year} {auction.make} {auction.model}
+                                {yearManufactured && `${yearManufactured} `}
+                                {Object.values(attributes).join(' ')}
                             </p>
                         )}
                     </div>

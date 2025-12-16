@@ -118,6 +118,9 @@ public class CachedAuctionRepository : IAuctionRepository
     public Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
         => _inner.GetTrendingItemsAsync(limit, cancellationToken);
 
+    public Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        => _inner.GetByIdsAsync(ids, cancellationToken);
+
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {
         await _cache.RemoveAsync(CacheKeys.Auction(id), cancellationToken);

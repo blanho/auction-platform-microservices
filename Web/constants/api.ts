@@ -1,6 +1,7 @@
 export const API_ENDPOINTS = {
   AUCTIONS: "/auctions",
   MY_AUCTIONS: "/auctions/my",
+  AUCTIONS_BATCH: "/auctions/batch",
   CATEGORIES: "/categories",
   CATEGORY_BY_ID: (id: string) => `/categories/${id}`,
   AUCTIONS_FEATURED: "/auctions/featured",

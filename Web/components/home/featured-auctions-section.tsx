@@ -25,6 +25,7 @@ import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
 import { Auction } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
 import { UI, FEATURED } from "@/constants/config";
+import { getAuctionTitle, getAuctionYearManufactured } from "@/utils/auction";
 
 function AuctionCard({
     auction,
@@ -37,6 +38,8 @@ function AuctionCard({
     const timeLeft = useCountdown(auction.auctionEnd);
     const urgency = getUrgencyLevel(timeLeft);
     const isEndingSoon = urgency === "critical" || urgency === "warning";
+    const title = getAuctionTitle(auction);
+    const yearManufactured = getAuctionYearManufactured(auction);
 
     const imageUrl = useMemo(() => {
         const primaryFile = auction.files?.find((f) => f.isPrimary);
@@ -103,7 +106,7 @@ function AuctionCard({
                     <div className="relative h-56 overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                             src={imageUrl}
-                            alt={`${auction.make} ${auction.model}`}
+                            alt={title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
@@ -140,11 +143,11 @@ function AuctionCard({
                                 {auction.categoryName || "Uncategorized"}
                             </p>
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                {auction.make} {auction.model}
+                                {title}
                             </h3>
-                            {auction.year && (
+                            {yearManufactured && (
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                                    {auction.year}
+                                    {yearManufactured}
                                 </p>
                             )}
                         </div>

@@ -24,6 +24,7 @@ import { auctionService } from "@/services/auction.service";
 import { Auction } from "@/types/auction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/constants";
+import { getAuctionTitle } from "@/utils/auction";
 
 function getTimeRemaining(endDate: string) {
   const total = new Date(endDate).getTime() - Date.now();
@@ -50,6 +51,7 @@ function PremiumAuctionCard({
   index?: number;
 }) {
   const timeLeft = getTimeRemaining(auction.auctionEnd);
+  const title = getAuctionTitle(auction);
   const imageUrl =
     auction.files?.find((f) => f.isPrimary)?.url ||
     auction.files?.[0]?.url ||
@@ -81,7 +83,7 @@ function PremiumAuctionCard({
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image
               src={imageUrl}
-              alt={auction.title}
+              alt={title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
               sizes="(max-width: 768px) 50vw, 25vw"
@@ -128,7 +130,7 @@ function PremiumAuctionCard({
 
           <div className="p-4">
             <h4 className="font-semibold text-slate-900 dark:text-white line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-              {auction.title}
+              {title}
             </h4>
 
             <div className="mt-3 flex items-center justify-between">
@@ -313,16 +315,7 @@ function LoggedInPersonalization() {
         setRecentlyViewedAuctions(result.items || []);
       } else {
         const ids: string[] = JSON.parse(storedIds);
-        const auctions = await Promise.all(
-          ids.slice(0, 4).map(async (id) => {
-            try {
-              return await auctionService.getAuctionById(id);
-            } catch {
-              return null;
-            }
-          })
-        );
-        const validAuctions = auctions.filter((a): a is Auction => a !== null);
+        const validAuctions = await auctionService.getAuctionsByIds(ids.slice(0, 4));
         if (validAuctions.length === 0) {
           const result = await auctionService.getAuctions({
             status: "Live",

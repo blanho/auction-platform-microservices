@@ -41,7 +41,7 @@ export default function UserProfilePage() {
             const [summaryData, reviewsData, auctionsData] = await Promise.all([
                 reviewService.getUserRatingSummary(username),
                 reviewService.getReviewsForUser(username),
-                auctionService.getAuctions({ seller: username, pageSize: 8 }),
+                auctionService.getAuctions({ sellerUsername: username, pageSize: 8 }),
             ]);
 
             setRatingSummary(summaryData);

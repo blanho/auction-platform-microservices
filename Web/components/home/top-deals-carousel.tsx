@@ -22,6 +22,7 @@ import { Auction } from "@/types/auction";
 import { auctionService } from "@/services/auction.service";
 import { useCountdown } from "@/hooks/use-countdown";
 import { cn } from "@/lib/utils";
+import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
 
 interface DealCardProps {
   auction: Auction;
@@ -31,6 +32,8 @@ interface DealCardProps {
 function DealCard({ auction, index }: DealCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const timeLeft = useCountdown(auction.auctionEnd);
+  const title = getAuctionTitle(auction);
+  const yearManufactured = getAuctionYearManufactured(auction);
 
   const imageUrl = useMemo(() => {
     const primaryFile = auction.files?.find((f) => f.isPrimary);
@@ -70,7 +73,7 @@ function DealCard({ auction, index }: DealCardProps) {
           <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800">
             <Image
               src={imageUrl}
-              alt={`${auction.make} ${auction.model}`}
+              alt={title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               unoptimized={imageUrl.includes("unsplash")}
@@ -119,7 +122,7 @@ function DealCard({ auction, index }: DealCardProps) {
 
           <div className="p-3 space-y-2">
             <h4 className="text-sm font-medium text-slate-900 dark:text-white line-clamp-2 min-h-10 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-              {auction.make} {auction.model} {auction.year}
+              {title}{yearManufactured ? ` ${yearManufactured}` : ''}
             </h4>
 
             <div className="flex items-center gap-1">

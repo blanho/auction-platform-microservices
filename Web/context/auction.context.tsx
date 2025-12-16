@@ -10,8 +10,10 @@ export interface AuctionParams {
     searchTerm: string;
     status: string;
     category: string;
-    seller: string;
-    winner: string;
+    sellerUsername: string;
+    winnerUsername: string;
+    brandId: string;
+    condition: string;
     minPrice: number | undefined;
     maxPrice: number | undefined;
     sortBy: string;
@@ -22,8 +24,10 @@ export interface FilterParams {
     searchTerm: string;
     status: string;
     category: string;
-    seller: string;
-    winner: string;
+    sellerUsername: string;
+    winnerUsername: string;
+    brandId: string;
+    condition: string;
     minPrice: number | undefined;
     maxPrice: number | undefined;
 }
@@ -59,8 +63,10 @@ interface AuctionContextType {
     setSearchTerm: (searchTerm: string) => void;
     setStatus: (status: string) => void;
     setCategory: (category: string) => void;
-    setSeller: (seller: string) => void;
-    setWinner: (winner: string) => void;
+    setSellerUsername: (sellerUsername: string) => void;
+    setWinnerUsername: (winnerUsername: string) => void;
+    setBrandId: (brandId: string) => void;
+    setCondition: (condition: string) => void;
     setPriceRange: (minPrice: number | undefined, maxPrice: number | undefined) => void;
     clearFilters: () => void;
     setSortBy: (sortBy: string) => void;
@@ -80,8 +86,10 @@ function parseParams(searchParams: URLSearchParams): AuctionParams {
     const searchTerm = searchParams.get("searchTerm") || "";
     const status = searchParams.get("status") || "";
     const category = searchParams.get("category") || "";
-    const seller = searchParams.get("seller") || "";
-    const winner = searchParams.get("winner") || "";
+    const sellerUsername = searchParams.get("sellerUsername") || "";
+    const winnerUsername = searchParams.get("winnerUsername") || "";
+    const brandId = searchParams.get("brandId") || "";
+    const condition = searchParams.get("condition") || "";
     const minPriceStr = searchParams.get("minPrice");
     const maxPriceStr = searchParams.get("maxPrice");
     const sortBy = searchParams.get("sortBy") || DEFAULT_SORT_BY;
@@ -93,8 +101,10 @@ function parseParams(searchParams: URLSearchParams): AuctionParams {
         searchTerm,
         status,
         category,
-        seller,
-        winner,
+        sellerUsername,
+        winnerUsername,
+        brandId,
+        condition,
         minPrice: minPriceStr ? Number(minPriceStr) : undefined,
         maxPrice: maxPriceStr ? Number(maxPriceStr) : undefined,
         sortBy,
@@ -110,8 +120,10 @@ function paramsToQueryString(params: AuctionParams): string {
     if (params.searchTerm) query.set("searchTerm", params.searchTerm);
     if (params.status) query.set("status", params.status);
     if (params.category) query.set("category", params.category);
-    if (params.seller) query.set("seller", params.seller);
-    if (params.winner) query.set("winner", params.winner);
+    if (params.sellerUsername) query.set("sellerUsername", params.sellerUsername);
+    if (params.winnerUsername) query.set("winnerUsername", params.winnerUsername);
+    if (params.brandId) query.set("brandId", params.brandId);
+    if (params.condition) query.set("condition", params.condition);
     if (params.minPrice !== undefined) query.set("minPrice", String(params.minPrice));
     if (params.maxPrice !== undefined) query.set("maxPrice", String(params.maxPrice));
     if (params.sortBy !== DEFAULT_SORT_BY) query.set("sortBy", params.sortBy);
@@ -148,8 +160,10 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
             searchTerm: params.searchTerm,
             status: params.status,
             category: params.category,
-            seller: params.seller,
-            winner: params.winner,
+            sellerUsername: params.sellerUsername,
+            winnerUsername: params.winnerUsername,
+            brandId: params.brandId,
+            condition: params.condition,
             minPrice: params.minPrice,
             maxPrice: params.maxPrice
         }),
@@ -209,8 +223,10 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
         setSearchTerm: (searchTerm) => updateParams({ searchTerm, page: 1 }),
         setStatus: (status) => updateParams({ status, page: 1 }),
         setCategory: (category) => updateParams({ category, page: 1 }),
-        setSeller: (seller) => updateParams({ seller, page: 1 }),
-        setWinner: (winner) => updateParams({ winner, page: 1 }),
+        setSellerUsername: (sellerUsername) => updateParams({ sellerUsername, page: 1 }),
+        setWinnerUsername: (winnerUsername) => updateParams({ winnerUsername, page: 1 }),
+        setBrandId: (brandId) => updateParams({ brandId, page: 1 }),
+        setCondition: (condition) => updateParams({ condition, page: 1 }),
         setPriceRange: (minPrice, maxPrice) =>
             updateParams({ minPrice, maxPrice, page: 1 }),
         clearFilters: () =>
@@ -218,8 +234,10 @@ export function AuctionProvider({ children }: { children: React.ReactNode }) {
                 searchTerm: "",
                 status: "",
                 category: "",
-                seller: "",
-                winner: "",
+                sellerUsername: "",
+                winnerUsername: "",
+                brandId: "",
+                condition: "",
                 minPrice: undefined,
                 maxPrice: undefined,
                 page: 1

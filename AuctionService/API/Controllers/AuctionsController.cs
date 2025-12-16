@@ -11,6 +11,7 @@ using AuctionService.Application.DTOs;
 using AuctionService.Application.DTOs.Requests;
 using AuctionService.Application.Queries.ExportAuctions;
 using AuctionService.Application.Queries.GetAuctionById;
+using AuctionService.Application.Queries.GetAuctionsByIds;
 using AuctionService.Application.Queries.GetAuctions;
 using AuctionService.Application.Queries.GetMyAuctions;
 using AuctionService.Application.Queries.GetSellerAnalytics;
@@ -174,6 +175,20 @@ public class AuctionsController : ControllerBase
         return result.IsSuccess
             ? Ok(result.Value)
             : NotFound(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    [HttpPost("batch")]
+    [ProducesResponseType(typeof(List<AuctionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<AuctionDto>>> GetAuctionsByIds(
+        [FromBody] List<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetAuctionsByIdsQuery(ids);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     [HttpPost]

@@ -13,6 +13,12 @@ import {
     formatCurrency,
     formatNumber,
     getTimeRemaining,
+    getAuctionTitle,
+    getAuctionDescription,
+    getAuctionAttributes,
+    getAuctionYearManufactured,
+    getAuctionSellerUsername,
+    getAuctionWinnerUsername,
 } from '@/utils';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -356,7 +362,7 @@ export default function AuctionDetailPage() {
         );
     }
 
-    const isOwner = session?.user?.name === auction.seller;
+    const isOwner = session?.user?.name === getAuctionSellerUsername(auction);
     const images = getAuctionImages();
     const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
     const statusConfig = STATUS_CONFIG[auction.status] || STATUS_CONFIG[AuctionStatus.Inactive];
@@ -414,7 +420,7 @@ export default function AuctionDetailPage() {
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
                                 <BreadcrumbPage className="font-medium text-slate-900 dark:text-white">
-                                    {auction.make} {auction.model}
+                                    {getAuctionTitle(auction)}
                                 </BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
@@ -439,7 +445,7 @@ export default function AuctionDetailPage() {
                             {auction.status === AuctionStatus.Inactive && (
                                 <ActivateAuctionDialog
                                     auctionId={auction.id}
-                                    auctionTitle={auction.title}
+                                    auctionTitle={getAuctionTitle(auction)}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
                                         <Button variant="outline" size="sm" className="border-green-300 text-green-600 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950">
@@ -452,7 +458,7 @@ export default function AuctionDetailPage() {
                             {auction.status === AuctionStatus.Live && (
                                 <DeactivateAuctionDialog
                                     auctionId={auction.id}
-                                    auctionTitle={auction.title}
+                                    auctionTitle={getAuctionTitle(auction)}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
                                         <Button variant="outline" size="sm" className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:hover:bg-orange-950">
@@ -473,7 +479,7 @@ export default function AuctionDetailPage() {
                             </Button>
                             <DeleteAuctionDialog
                                 auctionId={auction.id}
-                                auctionTitle={auction.title}
+                                auctionTitle={getAuctionTitle(auction)}
                                 redirectAfterDelete="/auctions"
                             />
                         </div>
@@ -491,7 +497,7 @@ export default function AuctionDetailPage() {
                             <div className="relative aspect-[4/3] w-full group">
                                 <Image
                                     src={currentImage}
-                                    alt={auction.title}
+                                    alt={getAuctionTitle(auction)}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                     priority
@@ -557,7 +563,7 @@ export default function AuctionDetailPage() {
                                     >
                                         <Image
                                             src={img}
-                                            alt={`${auction.title} - Image ${idx + 1}`}
+                                            alt={`${getAuctionTitle(auction)} - Image ${idx + 1}`}
                                             fill
                                             className="object-cover"
                                         />
@@ -570,10 +576,11 @@ export default function AuctionDetailPage() {
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                                            {auction.title}
+                                            {getAuctionTitle(auction)}
                                         </CardTitle>
                                         <CardDescription className="text-base mt-1">
-                                            {auction.year} {auction.make} {auction.model}
+                                            {getAuctionYearManufactured(auction) && `${getAuctionYearManufactured(auction)} `}
+                                            {Object.values(getAuctionAttributes(auction)).join(' ')}
                                         </CardDescription>
                                     </div>
                                     {auction.isFeatured && (
@@ -586,31 +593,35 @@ export default function AuctionDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                                            <FontAwesomeIcon icon={faTachometerAlt} className="w-4 h-4 text-white" />
+                                    {getAuctionAttributes(auction).mileage && (
+                                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={faTachometerAlt} className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-500">Mileage</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{getAuctionAttributes(auction).mileage}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-slate-500">Mileage</p>
-                                            <p className="font-semibold text-slate-900 dark:text-white">{formatNumber(auction.mileage)} mi</p>
+                                    )}
+                                    {getAuctionAttributes(auction).color && (
+                                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={faPalette} className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-500">Color</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{getAuctionAttributes(auction).color}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                                            <FontAwesomeIcon icon={faPalette} className="w-4 h-4 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-slate-500">Color</p>
-                                            <p className="font-semibold text-slate-900 dark:text-white">{auction.color}</p>
-                                        </div>
-                                    </div>
+                                    )}
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
                                             <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 text-white" />
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500">Year</p>
-                                            <p className="font-semibold text-slate-900 dark:text-white">{auction.year}</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{getAuctionYearManufactured(auction) || 'N/A'}</p>
                                         </div>
                                     </div>
                                     {auction.categoryName && (
@@ -715,14 +726,14 @@ export default function AuctionDetailPage() {
                                                 <BuyNowButton
                                                     auctionId={auction.id}
                                                     buyNowPrice={auction.buyNowPrice}
-                                                    auctionTitle={auction.title}
+                                                    auctionTitle={getAuctionTitle(auction)}
                                                     onSuccess={() => window.location.reload()}
                                                 />
                                             </motion.div>
                                         </div>
                                     )}
 
-                                    {auction.winner && (
+                                    {getAuctionWinnerUsername(auction) && (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -730,7 +741,7 @@ export default function AuctionDetailPage() {
                                         >
                                             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                                                 <FontAwesomeIcon icon={faTrophy} className="w-5 h-5 text-amber-500" />
-                                                Winner: {auction.winner}
+                                                Winner: {getAuctionWinnerUsername(auction)}
                                             </p>
                                             {auction.soldAmount && (
                                                 <p className="text-sm text-emerald-600 dark:text-emerald-500 mt-1">
@@ -805,10 +816,10 @@ export default function AuctionDetailPage() {
                             <CardContent>
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
-                                        {auction.seller.charAt(0).toUpperCase()}
+                                        {getAuctionSellerUsername(auction).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-slate-900 dark:text-white">{auction.seller}</p>
+                                        <p className="font-semibold text-slate-900 dark:text-white">{getAuctionSellerUsername(auction)}</p>
                                         <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                                             <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-amber-400" />
                                             <span className="font-medium">4.8</span>
@@ -872,7 +883,7 @@ export default function AuctionDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
-                                {auction.description}
+                                {getAuctionDescription(auction)}
                             </p>
                         </CardContent>
                     </Card>
@@ -943,7 +954,7 @@ export default function AuctionDetailPage() {
                                                         {related.title}
                                                     </h3>
                                                     <p className="text-sm text-slate-500 mt-0.5">
-                                                        {related.year} {related.make} {related.model}
+                                                        {related.categoryName || 'Uncategorized'}
                                                     </p>
                                                     <div className="flex items-center justify-between mt-3">
                                                         <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">

@@ -106,7 +106,7 @@ export const createAuctionColumns = (
               {row.getValue("title")}
             </Link>
             <span className="text-xs text-muted-foreground">
-              {row.original.make} {row.original.model} ({row.original.year})
+              {row.original.categoryName || 'Uncategorized'}
             </span>
           </div>
         );

@@ -33,6 +33,7 @@ import { useCarouselInterval } from "@/hooks/use-interval";
 import { Auction, Category } from "@/types/auction";
 import { PulsingDot } from "@/components/ui/animated";
 import { UI, URGENCY } from "@/constants/config";
+import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
 
 interface AuctionCardProps {
   auction: Auction;
@@ -41,6 +42,9 @@ interface AuctionCardProps {
 
 function AuctionCard({ auction, isActive }: AuctionCardProps) {
   const timeLeft = useCountdown(auction.auctionEnd);
+  const title = getAuctionTitle(auction);
+  const attributes = getAuctionAttributes(auction);
+  const yearManufactured = getAuctionYearManufactured(auction);
 
   const imageUrl = useMemo(() => {
     const primaryFile = auction.files?.find((f) => f.isPrimary);
@@ -74,7 +78,7 @@ function AuctionCard({ auction, isActive }: AuctionCardProps) {
       <div className="relative h-48 sm:h-56 overflow-hidden">
         <Image
           src={imageUrl}
-          alt={`${auction.make} ${auction.model}`}
+          alt={title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           unoptimized={imageUrl.includes("unsplash")}
@@ -83,7 +87,7 @@ function AuctionCard({ auction, isActive }: AuctionCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3">
           <p className="text-[10px] text-white/70 uppercase tracking-wider mb-0.5">{auction.categoryName}</p>
-          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-1">{auction.make} {auction.model}</h3>
+          <h3 className="text-base sm:text-lg font-bold text-white line-clamp-1">{title}</h3>
         </div>
       </div>
 

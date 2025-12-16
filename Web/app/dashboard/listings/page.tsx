@@ -17,7 +17,7 @@ import {
     MoreHorizontal,
 } from "lucide-react";
 
-import { formatCurrency } from "@/utils";
+import { formatCurrency, getAuctionTitle } from "@/utils";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -285,7 +285,7 @@ export default function MyListingsPage() {
                                                                 auction.files[0]
                                                                     .url
                                                             }
-                                                            alt={auction.title}
+                                                            alt={getAuctionTitle(auction)}
                                                             fill
                                                             className="object-cover"
                                                         />
@@ -293,9 +293,7 @@ export default function MyListingsPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-medium">
-                                                        {auction.year}{" "}
-                                                        {auction.make}{" "}
-                                                        {auction.model}
+                                                        {getAuctionTitle(auction)}
                                                     </p>
                                                     <p className="text-xs text-zinc-500">
                                                         {auction.categoryName}
@@ -390,7 +388,7 @@ export default function MyListingsPage() {
                                 {auction.files?.[0]?.url ? (
                                     <Image
                                         src={auction.files[0].url}
-                                        alt={auction.title}
+                                        alt={getAuctionTitle(auction)}
                                         fill
                                         className="object-cover"
                                     />
@@ -411,8 +409,7 @@ export default function MyListingsPage() {
                             </div>
                             <CardContent className="p-4">
                                 <h3 className="font-semibold truncate mb-2">
-                                    {auction.year} {auction.make}{" "}
-                                    {auction.model}
+                                    {getAuctionTitle(auction)}
                                 </h3>
                                 <div className="flex items-center justify-between mb-3">
                                     <div>

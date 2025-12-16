@@ -58,19 +58,14 @@ function RequiredIndicator() {
 const createAuctionSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    make: z.string().min(2, 'Make is required'),
-    model: z.string().min(1, 'Model is required'),
-    year: z.number().min(1900).max(new Date().getFullYear() + 1),
-    color: z.string().min(2, 'Color is required'),
-    mileage: z.number().min(0, 'Mileage must be positive'),
+    yearManufactured: z.number().min(1900).max(new Date().getFullYear() + 1).optional(),
+    condition: z.string().optional(),
     reservePrice: z.number().min(1, 'Reserve price must be at least 1'),
     buyNowPrice: z.number().min(1, 'Buy Now price must be at least 1').optional(),
     auctionEnd: z.string().refine((date) => new Date(date) > new Date(), {
         message: 'Auction end date must be in the future',
     }),
     categoryId: z.string().optional(),
-    condition: z.string(),
-    autoExtend: z.boolean(),
     isFeatured: z.boolean(),
     imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
     shippingType: z.nativeEnum(ShippingType),
@@ -107,17 +102,12 @@ export function CreateAuctionForm() {
         defaultValues: {
             title: '',
             description: '',
-            make: '',
-            model: '',
-            year: new Date().getFullYear(),
-            color: '',
-            mileage: 0,
+            yearManufactured: new Date().getFullYear(),
+            condition: 'Used',
             reservePrice: 0,
             buyNowPrice: undefined,
             auctionEnd: '',
             categoryId: '',
-            condition: 'Used',
-            autoExtend: true,
             isFeatured: false,
             imageUrl: '',
             shippingType: ShippingType.Flat,
@@ -152,17 +142,13 @@ export function CreateAuctionForm() {
         const data: CreateAuctionDto = {
             title: values.title,
             description: values.description,
-            make: values.make,
-            model: values.model,
-            year: values.year,
-            color: values.color,
-            mileage: values.mileage,
+            condition: values.condition || undefined,
+            yearManufactured: values.yearManufactured || undefined,
             reservePrice: values.reservePrice,
             buyNowPrice: values.buyNowPrice || undefined,
             auctionEnd: values.auctionEnd,
             categoryId: values.categoryId || undefined,
             isFeatured: values.isFeatured,
-            imageUrl: primaryImage?.url || values.imageUrl || undefined,
             shippingType: values.shippingType,
             shippingCost: values.shippingType === ShippingType.Flat ? values.shippingCost : undefined,
             handlingTime: values.handlingTime,
@@ -334,85 +320,27 @@ export function CreateAuctionForm() {
 
                         <Separator />
 
-                        {/* Vehicle Details */}
+                        {/* Item Details */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Vehicle Details</h3>
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                            <h3 className="text-lg font-semibold">Item Details</h3>
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <FormField
                                     control={form.control}
-                                    name="make"
+                                    name="yearManufactured"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Make<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Toyota" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="model"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Model<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Camry" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="year"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Year<RequiredIndicator /></FormLabel>
+                                            <FormLabel>Year Manufactured</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
                                                     placeholder="2020"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                                    value={field.value || ''}
+                                                    onChange={(e) => field.onChange(e.target.valueAsNumber || undefined)}
                                                 />
                                             </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="color"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Color<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Silver" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="mileage"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Mileage<RequiredIndicator /></FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="50000"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                                />
-                                            </FormControl>
+                                            <FormDescription>
+                                                Year the item was manufactured (optional)
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -503,15 +431,15 @@ export function CreateAuctionForm() {
 
                                 <FormField
                                     control={form.control}
-                                    name="autoExtend"
+                                    name="isFeatured"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-base">
-                                                    Auto-extend last minute?
+                                                    Feature this auction?
                                                 </FormLabel>
                                                 <FormDescription>
-                                                    Extend auction by 5 minutes if bid placed in final minute
+                                                    Featured auctions get more visibility
                                                 </FormDescription>
                                             </div>
                                             <FormControl>

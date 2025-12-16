@@ -29,4 +29,6 @@ public interface IAuctionRepository : IRepository<Auction>
     Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default);
+    
+    Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 }

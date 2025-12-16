@@ -18,6 +18,7 @@ import { RequireAuth } from '@/components/auth/require-auth';
 import { EditAuctionForm } from '@/features/auction/edit-auction-form';
 import { auctionService } from '@/services/auction.service';
 import { Auction, Category } from '@/types/auction';
+import { getAuctionTitle } from '@/utils/auction';
 
 export default function EditAuctionPage() {
     const params = useParams();
@@ -112,7 +113,7 @@ export default function EditAuctionPage() {
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
                                 <BreadcrumbLink asChild>
-                                    <Link href={`/auctions/${auctionId}`}>{auction.make} {auction.model}</Link>
+                                    <Link href={`/auctions/${auctionId}`}>{getAuctionTitle(auction)}</Link>
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />

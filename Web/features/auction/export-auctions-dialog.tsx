@@ -75,7 +75,7 @@ export function ExportAuctionsDialog({
       const params: ExportAuctionsRequest = {
         format,
         status: status === "all" ? undefined : status,
-        seller: seller || undefined,
+        sellerUsername: seller || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined
       };

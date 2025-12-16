@@ -55,7 +55,7 @@ import { StripeCheckout } from "@/features/payment";
 import { formatAmountForStripe } from "@/lib/stripe";
 import { Auction, AuctionStatus } from "@/types/auction";
 import { ROUTES } from "@/constants/routes";
-import { formatCurrency } from "@/utils";
+import { formatCurrency, getAuctionTitle, getAuctionYearManufactured, getAuctionAttributes } from "@/utils";
 
 const PLATFORM_FEE_PERCENTAGE = 5;
 const PAYMENT_METHODS = [
@@ -522,7 +522,7 @@ export default function CheckoutPage() {
                     {primaryImage ? (
                       <Image
                         src={primaryImage}
-                        alt={auction.title}
+                        alt={getAuctionTitle(auction)}
                         fill
                         className="object-cover"
                       />
@@ -534,10 +534,11 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-zinc-900 dark:text-white line-clamp-2">
-                      {auction.title}
+                      {getAuctionTitle(auction)}
                     </h3>
                     <p className="text-sm text-zinc-500 mt-1">
-                      {auction.year} {auction.make} {auction.model}
+                      {getAuctionYearManufactured(auction) && `${getAuctionYearManufactured(auction)} `}
+                      {Object.values(getAuctionAttributes(auction)).join(' ')}
                     </p>
                   </div>
                 </div>

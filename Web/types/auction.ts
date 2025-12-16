@@ -70,12 +70,85 @@ export interface PackageDimensions {
   unit: "in" | "cm";
 }
 
-export interface Auction {
+export interface AuctionItem {
   id: string;
   title: string;
   description: string;
+  condition?: string;
+  yearManufactured?: number;
+  attributes: Record<string, string>;
+  categoryId?: string;
+  categoryName?: string;
+  categorySlug?: string;
+  categoryIcon?: string;
+  brandId?: string;
+  brandName?: string;
+  tags?: Tag[];
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  color?: string;
+  isActive: boolean;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl?: string;
+  description?: string;
+  isActive: boolean;
+  auctionCount: number;
+}
+
+export enum BookmarkType {
+  Watchlist = 0,
+  Wishlist = 1,
+}
+
+export interface UserAuctionBookmark {
+  id: string;
+  userId: string;
+  username: string;
+  auctionId: string;
+  type: BookmarkType;
+  notifyOnBid: boolean;
+  notifyOnEnd: boolean;
+  addedAt: string;
+  auction?: Auction;
+}
+
+export interface SavedSearch {
+  id: string;
+  userId: string;
+  username: string;
+  name: string;
+  searchCriteria: string;
+  notifyOnNewMatch: boolean;
+  lastNotifiedAt?: string;
+  createdAt: string;
+}
+
+export interface AuctionQuestion {
+  id: string;
+  auctionId: string;
+  askerId: string;
+  askerUsername: string;
+  question: string;
+  answer?: string;
+  answeredAt?: string;
+  isPublic: boolean;
+  createdAt: string;
+}
+
+export interface Auction {
+  id: string;
   reservePrice: number;
   buyNowPrice?: number;
+  currency: string;
   isBuyNowAvailable: boolean;
   soldAmount?: number;
   currentHighBid?: number;
@@ -83,19 +156,22 @@ export interface Auction {
   updatedAt: string;
   auctionEnd: string;
   status: AuctionStatus;
+  sellerId: string;
   seller: string;
+  winnerId?: string;
   winner?: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  mileage: number;
-  condition?: ItemCondition;
+  isFeatured: boolean;
+
+  title: string;
+  description: string;
+  condition?: string;
+  yearManufactured?: number;
+  attributes?: Record<string, string>;
   categoryId?: string;
   categoryName?: string;
   categorySlug?: string;
   categoryIcon?: string;
-  isFeatured: boolean;
+
   files: AuctionFile[];
   shippingType?: ShippingType;
   shippingCost?: number;
@@ -129,20 +205,21 @@ export enum AuctionStatus {
 }
 
 export interface CreateAuctionDto {
-  title: string;
-  description: string;
   reservePrice: number;
   buyNowPrice?: number;
+  currency?: string;
   auctionEnd: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  mileage: number;
-  categoryId?: string;
   isFeatured?: boolean;
-  imageUrl?: string;
-  condition?: ItemCondition;
+
+  title: string;
+  description: string;
+  condition?: string;
+  yearManufactured?: number;
+  attributes?: Record<string, string>;
+  categoryId?: string;
+  brandId?: string;
+  tagIds?: string[];
+
   shippingType?: ShippingType;
   shippingCost?: number;
   handlingTime?: number;
@@ -164,20 +241,20 @@ export interface FileInfoDto {
 }
 
 export interface UpdateAuctionDto {
-  title?: string;
-  description?: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  color?: string;
-  mileage?: number;
   reservePrice?: number;
   buyNowPrice?: number;
   auctionEnd?: string;
-  categoryId?: string;
-  condition?: string;
   isFeatured?: boolean;
-  imageUrl?: string;
+
+  title?: string;
+  description?: string;
+  condition?: string;
+  yearManufactured?: number;
+  attributes?: Record<string, string>;
+  categoryId?: string;
+  brandId?: string;
+  tagIds?: string[];
+
   shippingType?: ShippingType;
   shippingCost?: number;
   handlingTime?: number;
@@ -190,13 +267,11 @@ export interface UpdateAuctionDto {
 export interface ImportAuctionDto {
   title: string;
   description: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  mileage: number;
+  condition?: string;
+  yearManufactured?: number;
   reservePrice: number;
   auctionEnd: string;
+  categoryId?: string;
 }
 
 export interface ImportAuctionResultDto {
@@ -215,7 +290,7 @@ export interface ImportAuctionsResultDto {
 
 export interface ExportAuctionsRequest {
   status?: string;
-  seller?: string;
+  sellerUsername?: string;
   startDate?: string;
   endDate?: string;
   format?: "json" | "csv" | "excel";
@@ -225,14 +300,14 @@ export interface ExportAuctionDto {
   id: string;
   title: string;
   description: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  mileage: number;
+  condition?: string;
+  yearManufactured?: number;
   reservePrice: number;
-  seller: string;
-  winner?: string;
+  currency: string;
+  sellerId: string;
+  sellerUsername: string;
+  winnerId?: string;
+  winnerUsername?: string;
   soldAmount?: number;
   currentHighBid?: number;
   createdAt: string;
@@ -244,6 +319,7 @@ export interface BuyNowResult {
   isSuccess: boolean;
   auctionId: string;
   buyNowPrice: number;
-  buyer: string;
+  buyerId: string;
+  buyerUsername: string;
   message: string;
 }

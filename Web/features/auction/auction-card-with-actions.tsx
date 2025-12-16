@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Auction } from "@/types/auction";
 import { formatDistance } from "date-fns";
 import { AuctionActions } from "./auction-actions";
+import { getAuctionTitle, getAuctionDescription, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
 
 interface AuctionCardWithActionsProps {
   auction: Auction;
@@ -51,6 +52,10 @@ export function AuctionCardWithActions({
 
   const imageUrl = getImageUrl();
   const timeRemaining = getTimeRemaining();
+  const title = getAuctionTitle(auction);
+  const description = getAuctionDescription(auction);
+  const attributes = getAuctionAttributes(auction);
+  const yearManufactured = getAuctionYearManufactured(auction);
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg">
@@ -59,7 +64,7 @@ export function AuctionCardWithActions({
           {imageUrl ? (
             <Image
               src={imageUrl}
-              alt={auction.title || "Auction item"}
+              alt={title}
               fill
               className="object-cover"
             />
@@ -80,17 +85,18 @@ export function AuctionCardWithActions({
       </CardHeader>
       <CardContent className="p-4">
         <h3 className="mb-2 text-lg font-semibold line-clamp-1">
-          {auction.title || "Untitled"}
+          {title}
         </h3>
         <div className="space-y-1 text-sm">
-          {auction.make && (
+          {Object.keys(attributes).length > 0 && (
             <p className="text-muted-foreground">
-              {auction.year} {auction.make} {auction.model}
+              {yearManufactured && `${yearManufactured} `}
+              {Object.values(attributes).join(' ')}
             </p>
           )}
-          {auction.description && (
+          {description && (
             <p className="text-muted-foreground text-xs line-clamp-2">
-              {auction.description}
+              {description}
             </p>
           )}
           <p className="font-semibold">

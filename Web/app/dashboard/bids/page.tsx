@@ -15,7 +15,7 @@ import {
     Filter,
 } from "lucide-react";
 
-import { formatCurrency } from "@/utils";
+import { formatCurrency, getAuctionTitle } from "@/utils";
 import {
     Table,
     TableBody,
@@ -71,18 +71,14 @@ export default function MyBidsPage() {
             try {
                 const bidData = await bidService.getMyBids();
 
-                const bidsWithAuctions = await Promise.all(
-                    bidData.map(async (bid) => {
-                        try {
-                            const auction = await auctionService.getAuctionById(
-                                bid.auctionId
-                            );
-                            return { ...bid, auction };
-                        } catch {
-                            return bid;
-                        }
-                    })
-                );
+                const uniqueAuctionIds = [...new Set(bidData.map(bid => bid.auctionId))];
+                const auctions = await auctionService.getAuctionsByIds(uniqueAuctionIds);
+                const auctionMap = new Map(auctions.map(a => [a.id, a]));
+
+                const bidsWithAuctions = bidData.map(bid => ({
+                    ...bid,
+                    auction: auctionMap.get(bid.auctionId)
+                }));
 
                 setBids(bidsWithAuctions);
             } catch (error) {
@@ -247,8 +243,8 @@ export default function MyBidsPage() {
                                                                 }
                                                                 alt={
                                                                     bid.auction
-                                                                        ?.title ||
-                                                                    "Auction"
+                                                                        ? getAuctionTitle(bid.auction)
+                                                                        : "Auction"
                                                                 }
                                                                 fill
                                                                 className="object-cover"
@@ -258,7 +254,7 @@ export default function MyBidsPage() {
                                                     <div>
                                                         <p className="font-medium">
                                                             {bid.auction
-                                                                ? `${bid.auction.year} ${bid.auction.make} ${bid.auction.model}`
+                                                                ? getAuctionTitle(bid.auction)
                                                                 : "Unknown Item"}
                                                         </p>
                                                         <p className="text-xs text-zinc-500">

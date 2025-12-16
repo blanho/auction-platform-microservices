@@ -209,5 +209,20 @@ namespace AuctionService.Infrastructure.Repositories
                 .Take(limit)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var idList = ids.ToList();
+            if (idList.Count == 0)
+                return new List<Auction>();
+
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && idList.Contains(x.Id))
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
