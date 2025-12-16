@@ -6,6 +6,8 @@ import {
   QuickAccessBar,
   TopDealsCarousel,
   LiveAuctionTicker,
+  FlashSaleSection,
+  BrandSliderSection,
   FeaturedAuctionsSection,
   EndingSoonSection,
   NewArrivalsSection,
@@ -22,8 +24,14 @@ export default function Home() {
         <HeroSectionNew />
         <QuickAccessBar />
         <LiveAuctionTicker />
+        <section id="flash-sale">
+          <FlashSaleSection />
+        </section>
         <section id="top-deals">
           <TopDealsCarousel />
+        </section>
+        <section id="brands">
+          <BrandSliderSection />
         </section>
         <section id="featured">
           <FeaturedAuctionsSection />

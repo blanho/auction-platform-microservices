@@ -1,4 +1,3 @@
-export { HeroSection } from "./hero-section";
 export { HeroSectionNew } from "./hero-section-new";
 export { LiveAuctionTicker } from "./live-auction-ticker";
 export { ValuePropsBanner } from "./value-props-banner";
@@ -16,3 +15,5 @@ export { PersonalizationSection } from "./personalization-section";
 export { TopAuctionsSection } from "./top-auctions-section";
 export { FooterSection } from "./footer-section";
 export { TableOfContents } from "./table-of-contents";
+export { FlashSaleSection } from "./flash-sale-section";
+export { BrandSliderSection } from "./brand-slider-section";
