@@ -22,8 +22,8 @@ public class AuctionExcelService : IAuctionExcelService
 
     private static readonly string[] ExportHeaders =
     {
-        "Id", "Title", "Description", "Make", "Model", "Year", "Color", "Mileage",
-        "ReservePrice", "Seller", "Winner", "SoldAmount", "CurrentHighBid",
+        "Id", "Title", "Description", "Condition", "YearManufactured",
+        "ReservePrice", "Currency", "Seller", "Winner", "SoldAmount", "CurrentHighBid",
         "CreatedAt", "AuctionEnd", "Status"
     };
 
@@ -40,16 +40,19 @@ public class AuctionExcelService : IAuctionExcelService
             if (reader.IsEmpty)
                 return null;
 
+            var yearManufacturedStr = reader.GetString("YearManufactured");
+            int? yearManufactured = string.IsNullOrWhiteSpace(yearManufacturedStr) 
+                ? null 
+                : int.TryParse(yearManufacturedStr, out var year) ? year : null;
+
             return new ImportAuctionDto
             {
                 Title = reader.GetString("Title"),
                 Description = reader.GetString("Description"),
-                Make = reader.GetString("Make"),
-                Model = reader.GetString("Model"),
-                Year = reader.GetInt("Year"),
-                Color = reader.GetString("Color"),
-                Mileage = reader.GetInt("Mileage"),
-                ReservePrice = reader.GetInt("ReservePrice"),
+                Condition = reader.GetString("Condition"),
+                YearManufactured = yearManufactured,
+                ReservePrice = reader.GetDecimal("ReservePrice"),
+                Currency = reader.GetString("Currency") ?? "USD",
                 AuctionEnd = reader.GetDateTimeOffset("AuctionEnd") ?? DateTimeOffset.UtcNow.AddDays(7)
             };
         });
@@ -77,12 +80,10 @@ public class AuctionExcelService : IAuctionExcelService
                 auction.Id.ToString(),
                 auction.Title,
                 auction.Description,
-                auction.Make,
-                auction.Model,
-                auction.Year,
-                auction.Color,
-                auction.Mileage,
+                auction.Condition,
+                auction.YearManufactured,
                 auction.ReservePrice,
+                auction.Currency,
                 auction.Seller,
                 auction.Winner,
                 auction.SoldAmount,

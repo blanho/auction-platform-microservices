@@ -8,14 +8,14 @@ public static class AuctionSortingExtensions
     private static readonly Dictionary<string, Expression<Func<Auction, object>>> SortExpressions = new()
     {
         ["title"] = a => a.Item.Title,
-        ["make"] = a => a.Item.Make,
-        ["model"] = a => a.Item.Model,
-        ["year"] = a => a.Item.Year,
+        ["condition"] = a => a.Item.Condition ?? string.Empty,
+        ["yearmanufactured"] = a => a.Item.YearManufactured ?? 0,
         ["auctionend"] = a => a.AuctionEnd,
         ["createdat"] = a => a.CreatedAt,
-        ["currenthighbid"] = a => a.CurrentHighBid ?? 0,
-        ["reserveprice"] = a => a.ReversePrice,
-        ["status"] = a => a.Status
+        ["currenthighbid"] = a => a.CurrentHighBid ?? 0m,
+        ["reserveprice"] = a => a.ReservePrice,
+        ["status"] = a => a.Status,
+        ["seller"] = a => a.SellerUsername
     };
 
     public static IQueryable<Auction> ApplySorting(this IQueryable<Auction> query, string? orderBy, bool descending)

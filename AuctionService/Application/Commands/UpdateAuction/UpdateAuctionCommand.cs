@@ -6,9 +6,7 @@ public record UpdateAuctionCommand(
     Guid Id,
     string? Title,
     string? Description,
-    string? Make,
-    string? Model,
-    int? Year,
-    string? Color,
-    int? Mileage
+    string? Condition,
+    int? YearManufactured,
+    Dictionary<string, string>? Attributes
 ) : ICommand<bool>;

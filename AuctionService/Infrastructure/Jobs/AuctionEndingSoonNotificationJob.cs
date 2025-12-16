@@ -32,7 +32,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
         CancellationToken cancellationToken)
     {
         var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
-        var watchlistRepository = scopedProvider.GetRequiredService<IWatchlistRepository>();
+        var bookmarkRepository = scopedProvider.GetRequiredService<IUserAuctionBookmarkRepository>();
         var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 
         var utcNow = DateTime.UtcNow;
@@ -55,7 +55,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
 
                 try
                 {
-                    var watchers = await watchlistRepository.GetWatchersForAuctionAsync(
+                    var watchers = await bookmarkRepository.GetUsersWatchingAuctionAsync(
                         auction.Id, notifyOnEnd: true, cancellationToken);
 
                     if (watchers.Count == 0)
@@ -63,9 +63,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
                         continue;
                     }
 
-                    var itemTitle = auction.Item != null 
-                        ? $"{auction.Item.Year} {auction.Item.Make} {auction.Item.Model}" 
-                        : "Auction";
+                    var itemTitle = auction.Item?.Title ?? "Auction";
 
                     var timeRemaining = GetTimeRemainingText(threshold);
                     var endingSoonEvent = new AuctionEndingSoonEvent
@@ -75,7 +73,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
                         CurrentHighBid = auction.CurrentHighBid ?? 0,
                         EndTime = auction.AuctionEnd.DateTime,
                         TimeRemaining = timeRemaining,
-                        WatcherUsernames = watchers.Select(w => w.Username).ToList()
+                        WatcherUsernames = watchers
                     };
 
                     await eventPublisher.PublishAsync(endingSoonEvent, cancellationToken);

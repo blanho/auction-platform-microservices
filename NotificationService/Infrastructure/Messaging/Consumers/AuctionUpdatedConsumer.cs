@@ -27,7 +27,7 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
             {
                 var notification = new CreateNotificationDto
                 {
-                    UserId = context.Message.Seller,
+                    UserId = context.Message.SellerUsername,
                     Type = NotificationType.AuctionUpdated,
                     Title = "Auction Updated",
                     Message = $"Your auction has been updated successfully.",
@@ -36,11 +36,8 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
                     {
                         context.Message.Title,
                         context.Message.Description,
-                        context.Message.Make,
-                        context.Message.Model,
-                        context.Message.Year,
-                        context.Message.Color,
-                        context.Message.Mileage
+                        context.Message.Condition,
+                        context.Message.YearManufactured
                     })
                 };
                 await _notificationService.CreateNotificationAsync(notification);

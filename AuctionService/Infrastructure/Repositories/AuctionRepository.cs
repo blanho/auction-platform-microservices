@@ -25,7 +25,9 @@ namespace AuctionService.Infrastructure.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
-                    .ThenInclude(i => i.Category)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
@@ -35,7 +37,9 @@ namespace AuctionService.Infrastructure.Repositories
             var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
-                    .ThenInclude(i => i.Category)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             
             return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
@@ -131,7 +135,7 @@ namespace AuctionService.Infrastructure.Repositories
 
             if (!string.IsNullOrEmpty(seller))
             {
-                query = query.Where(x => x.Seller == seller);
+                query = query.Where(x => x.SellerUsername == seller);
             }
 
             if (startDate.HasValue)
@@ -198,6 +202,8 @@ namespace AuctionService.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted && x.Status == Status.Live)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)

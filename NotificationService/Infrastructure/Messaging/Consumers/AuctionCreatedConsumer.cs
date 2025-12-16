@@ -27,16 +27,16 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
             {
                 var notification = new CreateNotificationDto
                 {
-                    UserId = context.Message.Seller,
+                    UserId = context.Message.SellerUsername,
                     Type = NotificationType.AuctionCreated,
                     Title = "Auction Created",
-                    Message = $"Your auction '{context.Message.Make} {context.Message.Model}' has been created successfully.",
+                    Message = $"Your auction '{context.Message.Title}' has been created successfully.",
                     AuctionId = context.Message.Id,
                     Data = JsonSerializer.Serialize(new
                     {
-                        context.Message.Make,
-                        context.Message.Model,
-                        context.Message.Year,
+                        context.Message.Title,
+                        context.Message.Condition,
+                        context.Message.YearManufactured,
                         context.Message.ReservePrice,
                         context.Message.AuctionEnd
                     })

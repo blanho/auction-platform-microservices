@@ -34,9 +34,10 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
         if (existingReview != null)
             return Result.Failure<ReviewDto>(Error.Create("Review.AlreadyExists", "Review already exists for this auction"));
 
+        Auction auction;
         try
         {
-            await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
+            auction = await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
         }
         catch (KeyNotFoundException)
         {
@@ -50,8 +51,11 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
         {
             Id = Guid.NewGuid(),
             AuctionId = request.AuctionId,
+            Auction = auction,
             OrderId = request.OrderId,
+            ReviewerId = request.ReviewerId,
             ReviewerUsername = request.ReviewerUsername,
+            ReviewedUserId = request.ReviewedUserId,
             ReviewedUsername = request.ReviewedUsername,
             Rating = request.Rating,
             Title = request.Title,

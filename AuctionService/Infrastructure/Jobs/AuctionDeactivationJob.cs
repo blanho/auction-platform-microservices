@@ -55,9 +55,11 @@ public class AuctionDeactivationJob : BaseJob
                     var auctionFinishedEvent = new AuctionFinishedEvent
                     {
                         AuctionId = auction.Id,
-                        ItemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReversePrice,
-                        Winner = auction.Winner,
-                        Seller = auction.Seller,
+                        ItemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice,
+                        WinnerId = auction.WinnerId,
+                        WinnerUsername = auction.WinnerUsername,
+                        SellerId = auction.SellerId,
+                        SellerUsername = auction.SellerUsername,
                         SoldAmount = auction.CurrentHighBid
                     };
                     await eventPublisher.PublishAsync(auctionFinishedEvent, cancellationToken);
@@ -86,7 +88,7 @@ public class AuctionDeactivationJob : BaseJob
             return Status.Inactive;
         }
 
-        return auction.CurrentHighBid >= auction.ReversePrice
+        return auction.CurrentHighBid >= auction.ReservePrice
             ? Status.Finished
             : Status.ReservedNotMet;
     }

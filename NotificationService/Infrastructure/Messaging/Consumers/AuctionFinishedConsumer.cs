@@ -32,30 +32,30 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
             {
                 var sellerNotification = new CreateNotificationDto
                 {
-                    UserId = context.Message.Seller,
+                    UserId = context.Message.SellerUsername,
                     Type = NotificationType.AuctionFinished,
                     Title = "Auction Ended",
                     Message = context.Message.ItemSold
-                        ? $"Your auction has ended! Final bid: ${context.Message.SoldAmount} by {context.Message.Winner}"
+                        ? $"Your auction has ended! Final bid: ${context.Message.SoldAmount:N2} by {context.Message.WinnerUsername}"
                         : "Your auction has ended with no bids or reserve price not met.",
                     AuctionId = context.Message.AuctionId,
                     Data = JsonSerializer.Serialize(new
                     {
                         context.Message.ItemSold,
                         context.Message.SoldAmount,
-                        context.Message.Winner
+                        context.Message.WinnerUsername
                     })
                 };
                 await _notificationService.CreateNotificationAsync(sellerNotification);
 
-                if (context.Message.ItemSold && !string.IsNullOrEmpty(context.Message.Winner))
+                if (context.Message.ItemSold && !string.IsNullOrEmpty(context.Message.WinnerUsername))
                 {
                     var winnerNotification = new CreateNotificationDto
                     {
-                        UserId = context.Message.Winner,
+                        UserId = context.Message.WinnerUsername,
                         Type = NotificationType.AuctionWon,
                         Title = "Congratulations! You Won!",
-                        Message = $"You won the auction with a bid of ${context.Message.SoldAmount}",
+                        Message = $"You won the auction with a bid of ${context.Message.SoldAmount:N2}",
                         AuctionId = context.Message.AuctionId,
                         Data = JsonSerializer.Serialize(new
                         {
@@ -66,7 +66,7 @@ namespace NotificationService.Infrastructure.Messaging.Consumers
                     await _notificationService.CreateNotificationAsync(winnerNotification);
 
                     await _emailService.SendAuctionWonEmailAsync(
-                        context.Message.Winner,
+                        context.Message.WinnerUsername,
                         "Auction Item",
                         context.Message.SoldAmount ?? 0,
                         context.Message.AuctionId);

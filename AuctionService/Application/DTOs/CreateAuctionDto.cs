@@ -10,29 +10,21 @@ namespace AuctionService.Application.DTOs
         [Required]
         public required string Description { get; set; }
 
-        [Required]
-        public required string Make { get; set; }
+        public string? Condition { get; set; }
 
-        [Required]
-        public required string Model { get; set; }
-
-        [Required]
         [Range(1900, 2100)]
-        public int Year { get; set; }
+        public int? YearManufactured { get; set; }
+
+        public Dictionary<string, string>? Attributes { get; set; }
 
         [Required]
-        public required string Color { get; set; }
+        [Range(0, double.MaxValue)]
+        public decimal ReservePrice { get; set; }
 
-        [Required]
-        [Range(0, int.MaxValue)]
-        public int Mileage { get; set; }
+        [Range(0, double.MaxValue)]
+        public decimal? BuyNowPrice { get; set; }
 
-        [Required]
-        [Range(0, int.MaxValue)]
-        public int ReservePrice { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int? BuyNowPrice { get; set; }
+        public string Currency { get; set; } = "USD";
 
         [Required]
         public DateTimeOffset AuctionEnd { get; set; }

@@ -49,52 +49,49 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
             }
 
-            // Capture old values for audit (using a copy of the auction)
             var oldAuction = new Auction
             {
                 Id = auction.Id,
-                Seller = auction.Seller,
-                ReversePrice = auction.ReversePrice,
+                SellerId = auction.SellerId,
+                SellerUsername = auction.SellerUsername,
+                ReservePrice = auction.ReservePrice,
                 AuctionEnd = auction.AuctionEnd,
                 Status = auction.Status,
                 Item = new Item
                 {
                     Title = auction.Item.Title,
                     Description = auction.Item.Description,
-                    Make = auction.Item.Make,
-                    Model = auction.Item.Model,
-                    Color = auction.Item.Color,
-                    Mileage = auction.Item.Mileage,
-                    Year = auction.Item.Year
+                    Condition = auction.Item.Condition,
+                    YearManufactured = auction.Item.YearManufactured
                 }
             };
 
-            // Apply partial updates
             auction.Item.Title = request.Title ?? auction.Item.Title;
             auction.Item.Description = request.Description ?? auction.Item.Description;
-            auction.Item.Make = request.Make ?? auction.Item.Make;
-            auction.Item.Model = request.Model ?? auction.Item.Model;
-            auction.Item.Color = request.Color ?? auction.Item.Color;
-            auction.Item.Mileage = request.Mileage ?? auction.Item.Mileage;
-            auction.Item.Year = request.Year ?? auction.Item.Year;
+            auction.Item.Condition = request.Condition ?? auction.Item.Condition;
+            auction.Item.YearManufactured = request.YearManufactured ?? auction.Item.YearManufactured;
+            
+            if (request.Attributes != null)
+            {
+                foreach (var attr in request.Attributes)
+                {
+                    auction.Item.Attributes[attr.Key] = attr.Value;
+                }
+            }
 
             await _repository.UpdateAsync(auction, cancellationToken);
 
-            // Publish event
             await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
             {
                 Id = request.Id,
-                Seller = auction.Seller,
+                SellerId = auction.SellerId,
+                SellerUsername = auction.SellerUsername,
                 Title = request.Title,
                 Description = request.Description,
-                Make = request.Make,
-                Model = request.Model,
-                Year = request.Year,
-                Color = request.Color,
-                Mileage = request.Mileage
+                Condition = request.Condition,
+                YearManufactured = request.YearManufactured
             }, cancellationToken);
 
-            // Publish audit event with old and new values
             await _auditPublisher.PublishAsync(
                 auction.Id,
                 auction,

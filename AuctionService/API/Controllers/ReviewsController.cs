@@ -103,12 +103,15 @@ public class ReviewsController : ControllerBase
         [FromBody] CreateReviewDto dto,
         CancellationToken cancellationToken = default)
     {
-        var username = UserHelper.GetUsername(User);
+        var reviewerId = UserHelper.GetRequiredUserId(User);
+        var reviewerUsername = UserHelper.GetUsername(User);
 
         var command = new CreateReviewCommand(
             dto.AuctionId,
             dto.OrderId,
-            username,
+            reviewerId,
+            reviewerUsername,
+            dto.ReviewedUserId,
             dto.ReviewedUsername,
             dto.Rating,
             dto.Title,

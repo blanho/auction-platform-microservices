@@ -14,9 +14,15 @@ namespace AuctionService.Infrastructure.Data
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<WatchlistItem> WatchlistItems { get; set; }
-        public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<Brand> Brands { get; set; }
+        public DbSet<FlashSale> FlashSales { get; set; }
+        public DbSet<FlashSaleItem> FlashSaleItems { get; set; }
+        public DbSet<UserAuctionBookmark> UserAuctionBookmarks { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<ItemTag> ItemTags { get; set; }
+        public DbSet<SavedSearch> SavedSearches { get; set; }
+        public DbSet<AuctionQuestion> AuctionQuestions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

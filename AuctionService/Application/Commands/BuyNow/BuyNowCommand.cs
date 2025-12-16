@@ -5,5 +5,6 @@ namespace AuctionService.Application.Commands.BuyNow;
 
 public record BuyNowCommand(
     Guid AuctionId,
-    string Buyer
+    Guid BuyerId,
+    string BuyerUsername
 ) : ICommand<BuyNowResultDto>;

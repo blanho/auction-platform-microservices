@@ -11,5 +11,5 @@ public class ItemFileInfo
     public string FileType { get; set; } = "image";
     public int DisplayOrder { get; set; }
     public bool IsPrimary { get; set; }
-    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
 }

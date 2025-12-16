@@ -1,7 +1,12 @@
 export { HeroSection } from "./hero-section";
+export { HeroSectionNew } from "./hero-section-new";
 export { LiveAuctionTicker } from "./live-auction-ticker";
 export { ValuePropsBanner } from "./value-props-banner";
 export { CategoriesSection } from "./categories-section";
+export { CategorySidebar } from "./category-sidebar";
+export { BannerSlider, PromoBanner } from "./banner-slider";
+export { QuickAccessBar } from "./quick-access-bar";
+export { TopDealsCarousel } from "./top-deals-carousel";
 export { FeaturedAuctionsSection } from "./featured-auctions-section";
 export { EndingSoonSection } from "./ending-soon-section";
 export { NewArrivalsSection } from "./new-arrivals-section";

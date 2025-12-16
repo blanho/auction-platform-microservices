@@ -43,9 +43,11 @@ public class CheckAuctionFinishedJob : BaseJob
                 var auctionFinishedEvent = new AuctionFinishedEvent
                 {
                     AuctionId = auction.Id,
-                    ItemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReversePrice,
-                    Winner = auction.Winner,
-                    Seller = auction.Seller,
+                    ItemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice,
+                    WinnerId = auction.WinnerId,
+                    WinnerUsername = auction.WinnerUsername,
+                    SellerId = auction.SellerId,
+                    SellerUsername = auction.SellerUsername,
                     SoldAmount = auction.CurrentHighBid
                 };
 

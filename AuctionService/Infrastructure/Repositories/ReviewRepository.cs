@@ -31,6 +31,8 @@ public class ReviewRepository : IReviewRepository
     {
         var review = await _context.Reviews
             .Where(x => !x.IsDeleted)
+            .Include(x => x.Auction)
+                .ThenInclude(a => a!.Item)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         
         return review ?? throw new KeyNotFoundException($"Review with ID {id} not found");
@@ -47,6 +49,8 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Reviews
             .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
+            .Include(x => x.Auction)
+                .ThenInclude(a => a!.Item)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -55,6 +59,8 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Reviews
             .Where(x => !x.IsDeleted && x.ReviewedUsername == username)
+            .Include(x => x.Auction)
+                .ThenInclude(a => a!.Item)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -63,6 +69,8 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Reviews
             .Where(x => !x.IsDeleted && x.ReviewerUsername == username)
+            .Include(x => x.Auction)
+                .ThenInclude(a => a!.Item)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }

@@ -24,20 +24,18 @@ public class AuctionFilterSpecification : BaseSpecification<Auction>
 
         if (!string.IsNullOrWhiteSpace(seller))
         {
-            predicates.Add(a => a.Seller.Contains(seller));
+            predicates.Add(a => a.SellerUsername.Contains(seller));
         }
 
         if (!string.IsNullOrWhiteSpace(winner))
         {
-            predicates.Add(a => a.Winner != null && a.Winner.Contains(winner));
+            predicates.Add(a => a.WinnerUsername != null && a.WinnerUsername.Contains(winner));
         }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             predicates.Add(a =>
                 a.Item.Title.Contains(searchTerm) ||
-                a.Item.Make.Contains(searchTerm) ||
-                a.Item.Model.Contains(searchTerm) ||
                 a.Item.Description.Contains(searchTerm));
         }
 

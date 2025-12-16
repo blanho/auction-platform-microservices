@@ -9,16 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
     Search,
     Heart,
     Menu,
-    ChevronDown,
     Gavel,
     X,
     Sparkles,
@@ -539,41 +532,6 @@ export function Header() {
                 <div className="container mx-auto px-4">
                     <div className="flex items-center justify-between h-10">
                         <div className="flex items-center gap-1">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="gap-1.5 font-medium h-8 px-3 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg"
-                                    >
-                                        <Menu className="h-4 w-4" />
-                                        <span>All Categories</span>
-                                        <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-64 p-2">
-                                    {!categoriesLoading && categories.map((cat) => (
-                                        <DropdownMenuItem key={cat.id} asChild>
-                                            <Link
-                                                href={`/search?category=${cat.slug}`}
-                                                className="flex items-center gap-3 cursor-pointer p-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors group"
-                                            >
-                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center">
-                                                    <i className={`fa-solid ${cat.icon} text-sm text-purple-600 dark:text-purple-400`}></i>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="font-medium text-slate-900 dark:text-white text-sm">
-                                                        {cat.name}
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
-
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}

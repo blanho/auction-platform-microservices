@@ -184,7 +184,8 @@ public class AuctionsController : ControllerBase
         [FromBody] CreateAuctionWithFileIdsDto dto,
         CancellationToken cancellationToken)
     {
-        var seller = UserHelper.GetUsername(User);
+        var sellerId = UserHelper.GetRequiredUserId(User);
+        var sellerUsername = UserHelper.GetUsername(User);
 
         var commandFiles = dto.Files?.Select(f => new Application.Commands.CreateAuction.FileInfoDto(
             f.Url,
@@ -199,15 +200,15 @@ public class AuctionsController : ControllerBase
         var command = new CreateAuctionCommand(
             dto.Title,
             dto.Description,
-            dto.Make,
-            dto.Model,
-            dto.Year,
-            dto.Color,
-            dto.Mileage,
+            dto.Condition,
+            dto.YearManufactured,
+            dto.Attributes,
             dto.ReservePrice,
             dto.BuyNowPrice,
             dto.AuctionEnd,
-            seller,
+            sellerId,
+            sellerUsername,
+            dto.Currency,
             dto.FileIds,
             commandFiles,
             dto.CategoryId,
@@ -235,11 +236,9 @@ public class AuctionsController : ControllerBase
             id,
             updateAuctionDto.Title,
             updateAuctionDto.Description,
-            updateAuctionDto.Make,
-            updateAuctionDto.Model,
-            updateAuctionDto.Year,
-            updateAuctionDto.Color,
-            updateAuctionDto.Mileage);
+            updateAuctionDto.Condition,
+            updateAuctionDto.YearManufactured,
+            updateAuctionDto.Attributes);
 
         var result = await _mediator.Send(command, cancellationToken);
 
@@ -348,8 +347,9 @@ public class AuctionsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken)
     {
-        var buyer = UserHelper.GetUsername(User);
-        var command = new Application.Commands.BuyNow.BuyNowCommand(id, buyer);
+        var buyerId = UserHelper.GetRequiredUserId(User);
+        var buyerUsername = UserHelper.GetUsername(User);
+        var command = new Application.Commands.BuyNow.BuyNowCommand(id, buyerId, buyerUsername);
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsSuccess)
@@ -497,18 +497,16 @@ public class AuctionsController : ControllerBase
 
     private FileContentResult ExportAsCsv(List<ExportAuctionDto> auctions)
     {
-        var headers = new[] { "Id", "Title", "Description", "Make", "Model", "Year", "Color", "Mileage", "ReservePrice", "Seller", "Winner", "SoldAmount", "CurrentHighBid", "CreatedAt", "AuctionEnd", "Status" };
+        var headers = new[] { "Id", "Title", "Description", "Condition", "YearManufactured", "ReservePrice", "Currency", "Seller", "Winner", "SoldAmount", "CurrentHighBid", "CreatedAt", "AuctionEnd", "Status" };
         var rows = auctions.Select(a => new[]
         {
             a.Id.ToString(),
             a.Title,
             a.Description,
-            a.Make,
-            a.Model,
-            a.Year.ToString(),
-            a.Color,
-            a.Mileage.ToString(),
+            a.Condition ?? "",
+            a.YearManufactured?.ToString() ?? "",
             a.ReservePrice.ToString(),
+            a.Currency,
             a.Seller,
             a.Winner ?? "",
             a.SoldAmount?.ToString() ?? "",

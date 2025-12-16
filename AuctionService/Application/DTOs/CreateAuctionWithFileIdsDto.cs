@@ -10,33 +10,23 @@ public class CreateAuctionWithFileIdsDto
     [Required]
     public required string Description { get; set; }
 
-    [Required]
-    public required string Make { get; set; }
+    public string? Condition { get; set; }
 
-    [Required]
-    public required string Model { get; set; }
-
-    [Required]
     [Range(1900, 2100)]
-    public int Year { get; set; }
+    public int? YearManufactured { get; set; }
 
-    [Required]
-    public required string Color { get; set; }
-
-    [Required]
-    [Range(0, int.MaxValue)]
-    public int Mileage { get; set; }
+    public Dictionary<string, string>? Attributes { get; set; }
 
     public List<Guid>? FileIds { get; set; }
 
     public List<FileInfoDto>? Files { get; set; }
 
     [Required]
-    [Range(0, int.MaxValue)]
-    public int ReservePrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal ReservePrice { get; set; }
 
-    [Range(0, int.MaxValue)]
-    public int? BuyNowPrice { get; set; }
+    [Range(0, double.MaxValue)]
+    public decimal? BuyNowPrice { get; set; }
 
     [Required]
     public DateTimeOffset AuctionEnd { get; set; }
@@ -44,6 +34,8 @@ public class CreateAuctionWithFileIdsDto
     public Guid? CategoryId { get; set; }
 
     public bool IsFeatured { get; set; } = false;
+
+    public string Currency { get; set; } = "USD";
 }
 
 public class FileInfoDto

@@ -130,14 +130,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         if (string.IsNullOrWhiteSpace(dto.Title))
             return $"Row {rowNumber}: Title is required";
         
-        if (string.IsNullOrWhiteSpace(dto.Make))
-            return $"Row {rowNumber}: Make is required";
-        
-        if (string.IsNullOrWhiteSpace(dto.Model))
-            return $"Row {rowNumber}: Model is required";
-        
-        if (dto.Year < 1900 || dto.Year > _dateTime.UtcNow.Year + 2)
-            return $"Row {rowNumber}: Year must be between 1900 and {_dateTime.UtcNow.Year + 2}";
+        if (dto.YearManufactured.HasValue && (dto.YearManufactured < 1900 || dto.YearManufactured > _dateTime.UtcNow.Year + 2))
+            return $"Row {rowNumber}: Year manufactured must be between 1900 and {_dateTime.UtcNow.Year + 2}";
         
         if (dto.ReservePrice < 0)
             return $"Row {rowNumber}: Reserve price cannot be negative";
@@ -153,8 +147,9 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         return new Auction
         {
             Id = Guid.NewGuid(),
-            ReversePrice = dto.ReservePrice,
-            Seller = seller,
+            ReservePrice = dto.ReservePrice,
+            Currency = dto.Currency,
+            SellerUsername = seller,
             AuctionEnd = dto.AuctionEnd,
             Status = Status.Scheduled,
             Item = new Item
@@ -162,11 +157,9 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 Id = Guid.NewGuid(),
                 Title = dto.Title,
                 Description = dto.Description ?? string.Empty,
-                Make = dto.Make,
-                Model = dto.Model,
-                Year = dto.Year,
-                Color = dto.Color ?? string.Empty,
-                Mileage = dto.Mileage
+                Condition = dto.Condition,
+                YearManufactured = dto.YearManufactured,
+                Attributes = dto.Attributes ?? new Dictionary<string, string>()
             }
         };
     }

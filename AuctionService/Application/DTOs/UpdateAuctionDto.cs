@@ -4,20 +4,15 @@ namespace AuctionService.Application.DTOs
 {
     public class UpdateAuctionDto
     {
-        public required string Title { get; set; }
+        public string? Title { get; set; }
 
-        public required string Description { get; set; }
+        public string? Description { get; set; }
 
-        public required string Make { get; set; }
-
-        public required string Model { get; set; }
+        public string? Condition { get; set; }
 
         [Range(1900, 2100)]
-        public int? Year { get; set; }
+        public int? YearManufactured { get; set; }
 
-        public required string Color { get; set; }
-
-        [Range(0, int.MaxValue)]
-        public int? Mileage { get; set; }
+        public Dictionary<string, string>? Attributes { get; set; }
     }
 }

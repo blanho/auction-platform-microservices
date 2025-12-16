@@ -6,7 +6,9 @@ namespace AuctionService.Application.Commands.CreateReview;
 public record CreateReviewCommand(
     Guid AuctionId,
     Guid? OrderId,
+    Guid ReviewerId,
     string ReviewerUsername,
+    Guid ReviewedUserId,
     string ReviewedUsername,
     int Rating,
     string? Title,

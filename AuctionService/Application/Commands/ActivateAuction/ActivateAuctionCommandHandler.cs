@@ -71,12 +71,12 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
             var auctionActivatedEvent = new AuctionUpdatedEvent
             {
                 Id = auction.Id,
+                SellerId = auction.SellerId,
+                SellerUsername = auction.SellerUsername,
                 Title = auction.Item.Title,
-                Make = auction.Item.Make,
-                Model = auction.Item.Model,
-                Year = auction.Item.Year,
-                Color = auction.Item.Color,
-                Mileage = auction.Item.Mileage
+                Description = auction.Item.Description,
+                Condition = auction.Item.Condition,
+                YearManufactured = auction.Item.YearManufactured
             };
             await _eventPublisher.PublishAsync(auctionActivatedEvent, cancellationToken);
 

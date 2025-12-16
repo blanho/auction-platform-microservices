@@ -46,18 +46,16 @@ public class AuctionActivationJob : BaseJob
                 auction.Status = Status.Live;
                 await repository.UpdateAsync(auction, cancellationToken);
 
-                var itemTitle = auction.Item != null 
-                    ? $"{auction.Item.Year} {auction.Item.Make} {auction.Item.Model}" 
-                    : "Auction";
+                var itemTitle = auction.Item?.Title ?? "Auction";
 
                 var auctionStartedEvent = new AuctionStartedEvent
                 {
                     AuctionId = auction.Id,
-                    Seller = auction.Seller,
+                    Seller = auction.SellerUsername,
                     Title = itemTitle,
                     StartTime = DateTime.UtcNow,
                     EndTime = auction.AuctionEnd.DateTime,
-                    ReservePrice = auction.ReversePrice
+                    ReservePrice = auction.ReservePrice
                 };
 
                 await eventPublisher.PublishAsync(auctionStartedEvent, cancellationToken);

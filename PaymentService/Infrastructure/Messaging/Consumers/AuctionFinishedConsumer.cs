@@ -40,7 +40,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             return;
         }
         
-        if (!message.ItemSold || string.IsNullOrEmpty(message.Winner))
+        if (!message.ItemSold || string.IsNullOrEmpty(message.WinnerUsername))
         {
             _logger.LogInformation("Auction {AuctionId} ended without sale, skipping order creation", 
                 message.AuctionId);
@@ -60,8 +60,8 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
         {
             Id = Guid.NewGuid(),
             AuctionId = message.AuctionId,
-            BuyerUsername = message.Winner,
-            SellerUsername = message.Seller,
+            BuyerUsername = message.WinnerUsername,
+            SellerUsername = message.SellerUsername,
             WinningBid = message.SoldAmount ?? 0,
             TotalAmount = message.SoldAmount ?? 0,
             Status = OrderStatus.PendingPayment,
@@ -76,6 +76,6 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 
         _logger.LogInformation(
             "Created order {OrderId} for auction {AuctionId}, buyer: {Buyer}, amount: {Amount}",
-            order.Id, message.AuctionId, message.Winner, message.SoldAmount);
+            order.Id, message.AuctionId, message.WinnerUsername, message.SoldAmount);
     }
 }

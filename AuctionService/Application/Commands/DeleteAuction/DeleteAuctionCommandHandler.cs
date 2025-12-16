@@ -58,7 +58,7 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
             await _eventPublisher.PublishAsync(new AuctionDeletedEvent
             {
                 Id = request.Id,
-                Seller = auction!.Seller
+                Seller = auction!.SellerUsername
             }, cancellationToken);
 
             // Publish audit event

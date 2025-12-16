@@ -70,14 +70,14 @@ public class AuctionGrpcService : AuctionGrpc.AuctionGrpcBase
             };
         }
 
-        if (auction.Seller.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase))
+        if (auction.SellerUsername.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase))
         {
             return new ValidateAuctionResponse
             {
                 IsValid = false,
                 ErrorCode = "SELLER_CANNOT_BID",
                 ErrorMessage = "You cannot bid on your own auction",
-                Seller = auction.Seller
+                Seller = auction.SellerUsername
             };
         }
 
@@ -94,10 +94,10 @@ public class AuctionGrpcService : AuctionGrpc.AuctionGrpcBase
         return new ValidateAuctionResponse
         {
             IsValid = true,
-            CurrentHighBid = auction.CurrentHighBid ?? 0,
-            ReservePrice = auction.ReversePrice,
+            CurrentHighBid = (int)(auction.CurrentHighBid ?? 0),
+            ReservePrice = (int)auction.ReservePrice,
             AuctionEnd = auction.AuctionEnd.ToString("O"),
-            Seller = auction.Seller,
+            Seller = auction.SellerUsername,
             Status = auction.Status.ToString()
         };
     }
@@ -122,11 +122,11 @@ public class AuctionGrpcService : AuctionGrpc.AuctionGrpcBase
         {
             Id = auction.Id.ToString(),
             Title = auction.Item?.Title ?? string.Empty,
-            Seller = auction.Seller,
-            Winner = auction.Winner ?? string.Empty,
-            CurrentHighBid = auction.CurrentHighBid ?? 0,
-            ReservePrice = auction.ReversePrice,
-            BuyNowPrice = auction.BuyNowPrice ?? 0,
+            Seller = auction.SellerUsername,
+            Winner = auction.WinnerUsername ?? string.Empty,
+            CurrentHighBid = (int)(auction.CurrentHighBid ?? 0),
+            ReservePrice = (int)auction.ReservePrice,
+            BuyNowPrice = (int)(auction.BuyNowPrice ?? 0),
             AuctionEnd = auction.AuctionEnd.ToString("O"),
             Status = auction.Status.ToString(),
             IsBuyNowAvailable = auction.IsBuyNowAvailable

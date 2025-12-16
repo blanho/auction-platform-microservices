@@ -32,16 +32,17 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 
         if (message.ItemSold)
         {
-            auction.Winner = message.Winner;
+            auction.WinnerId = message.WinnerId;
+            auction.WinnerUsername = message.WinnerUsername;
             auction.SoldAmount = message.SoldAmount;
         }
         
-        auction.Status = message.SoldAmount > auction.ReversePrice
+        auction.Status = message.SoldAmount > auction.ReservePrice
             ? Status.Finished
             : Status.ReservedNotMet;
 
         _logger.LogInformation("Auction {AuctionId} finished - sold to {Winner} for {Amount}",
-            message.AuctionId, message.Winner, message.SoldAmount);
+            message.AuctionId, message.WinnerUsername, message.SoldAmount);
 
         await _repository.UpdateAsync(auction);
         

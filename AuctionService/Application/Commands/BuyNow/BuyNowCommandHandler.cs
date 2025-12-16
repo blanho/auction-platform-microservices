@@ -44,7 +44,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     public async Task<Result<BuyNowResultDto>> Handle(BuyNowCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Processing Buy Now for auction {AuctionId} by buyer {Buyer}", 
-            request.AuctionId, request.Buyer);
+            request.AuctionId, request.BuyerUsername);
 
         try
         {
@@ -62,7 +62,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                     Error.Create("BuyNow.NotAvailable", "Buy Now is not available for this auction"));
             }
 
-            if (auction.Seller == request.Buyer)
+            if (auction.SellerUsername == request.BuyerUsername)
             {
                 return Result.Failure<BuyNowResultDto>(
                     Error.Create("BuyNow.OwnAuction", "You cannot buy your own auction"));
@@ -74,7 +74,8 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                     Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active"));
             }
 
-            auction.Winner = request.Buyer;
+            auction.WinnerId = request.BuyerId;
+            auction.WinnerUsername = request.BuyerUsername;
             auction.SoldAmount = auction.BuyNowPrice;
             auction.Status = Status.Finished;
 
@@ -83,11 +84,11 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
             var buyNowEvent = new BuyNowExecutedEvent
             {
                 AuctionId = auction.Id,
-                Buyer = request.Buyer,
-                Seller = auction.Seller,
-                BuyNowPrice = auction.BuyNowPrice!.Value,
+                Buyer = request.BuyerUsername,
+                Seller = auction.SellerUsername,
+                BuyNowPrice = (int)auction.BuyNowPrice!.Value,
                 ItemTitle = auction.Item.Title,
-                ExecutedAt = _dateTime.UtcNow
+                ExecutedAt = DateTime.UtcNow
             };
             await _eventPublisher.PublishAsync(buyNowEvent, cancellationToken);
 
@@ -95,8 +96,10 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
             {
                 ItemSold = true,
                 AuctionId = auction.Id,
-                Winner = request.Buyer,
-                Seller = auction.Seller,
+                WinnerId = request.BuyerId,
+                WinnerUsername = request.BuyerUsername,
+                SellerId = auction.SellerId,
+                SellerUsername = auction.SellerUsername,
                 SoldAmount = auction.BuyNowPrice
             };
             await _eventPublisher.PublishAsync(auctionFinishedEvent, cancellationToken);
@@ -110,14 +113,14 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Buy Now completed for auction {AuctionId}. Buyer: {Buyer}, Price: {Price}", 
-                auction.Id, request.Buyer, auction.BuyNowPrice);
+                auction.Id, request.BuyerUsername, auction.BuyNowPrice);
 
             return Result<BuyNowResultDto>.Success(new BuyNowResultDto
             {
                 AuctionId = auction.Id,
-                Buyer = request.Buyer,
-                Seller = auction.Seller,
-                BuyNowPrice = auction.BuyNowPrice!.Value,
+                Buyer = request.BuyerUsername,
+                Seller = auction.SellerUsername,
+                BuyNowPrice = (int)auction.BuyNowPrice!.Value,
                 ItemTitle = auction.Item.Title,
                 Success = true
             });

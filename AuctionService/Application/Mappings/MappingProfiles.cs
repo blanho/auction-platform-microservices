@@ -11,6 +11,8 @@ namespace AuctionService.Application.Mappings
         {
             CreateMap<Auction, AuctionDto>()
                 .IncludeMembers(x => x.Item)
+                .ForMember(d => d.Seller, o => o.MapFrom(s => s.SellerUsername))
+                .ForMember(d => d.Winner, o => o.MapFrom(s => s.WinnerUsername))
                 .ForMember(d => d.Files, o => o.MapFrom(s => s.Item.Files))
                 .ForMember(d => d.IsBuyNowAvailable, o => o.MapFrom(s => s.IsBuyNowAvailable));
             CreateMap<Item, AuctionDto>()
@@ -27,18 +29,20 @@ namespace AuctionService.Application.Mappings
             CreateMap<AuctionDto, Item>();
 
             CreateMap<Auction, AuctionCreatedEvent>()
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt.DateTime))
-                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt.HasValue ? s.UpdatedAt.Value.DateTime : (DateTime?)null))
-                .ForMember(d => d.AuctionEnd, o => o.MapFrom(s => s.AuctionEnd.DateTime))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreatedAt))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt))
+                .ForMember(d => d.AuctionEnd, o => o.MapFrom(s => s.AuctionEnd))
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()))
-                .ForMember(d => d.ReservePrice, o => o.MapFrom(s => s.ReversePrice))
+                .ForMember(d => d.ReservePrice, o => o.MapFrom(s => s.ReservePrice))
+                .ForMember(d => d.Currency, o => o.MapFrom(s => s.Currency))
+                .ForMember(d => d.SellerId, o => o.MapFrom(s => s.SellerId))
+                .ForMember(d => d.SellerUsername, o => o.MapFrom(s => s.SellerUsername))
+                .ForMember(d => d.WinnerId, o => o.MapFrom(s => s.WinnerId))
+                .ForMember(d => d.WinnerUsername, o => o.MapFrom(s => s.WinnerUsername))
                 .ForMember(d => d.Title, o => o.MapFrom(s => s.Item.Title))
                 .ForMember(d => d.Description, o => o.MapFrom(s => s.Item.Description))
-                .ForMember(d => d.Make, o => o.MapFrom(s => s.Item.Make))
-                .ForMember(d => d.Model, o => o.MapFrom(s => s.Item.Model))
-                .ForMember(d => d.Year, o => o.MapFrom(s => s.Item.Year))
-                .ForMember(d => d.Color, o => o.MapFrom(s => s.Item.Color))
-                .ForMember(d => d.Mileage, o => o.MapFrom(s => s.Item.Mileage));
+                .ForMember(d => d.Condition, o => o.MapFrom(s => s.Item.Condition))
+                .ForMember(d => d.YearManufactured, o => o.MapFrom(s => s.Item.YearManufactured));
 
             CreateMap<ItemFileInfo, AuctionFileDto>();
 
@@ -48,6 +52,15 @@ namespace AuctionService.Application.Mappings
             CreateMap<UpdateCategoryDto, Category>();
 
             CreateMap<Review, ReviewDto>();
+
+            CreateMap<Brand, BrandDto>();
+            CreateMap<CreateBrandDto, Brand>();
+            CreateMap<UpdateBrandDto, Brand>();
+
+            CreateMap<FlashSale, FlashSaleDto>();
+            CreateMap<FlashSaleItem, FlashSaleItemDto>();
+            CreateMap<CreateFlashSaleDto, FlashSale>();
+            CreateMap<UpdateFlashSaleDto, FlashSale>();
         }
     }
 }

@@ -1,3 +1,4 @@
+#nullable enable
 using AuctionService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,50 +11,54 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Make)
-               .IsRequired()
-               .HasMaxLength(100);
+        builder.Property(x => x.Title)
+            .IsRequired()
+            .HasMaxLength(200);
 
-        builder.Property(x => x.Model)
-               .IsRequired()
-               .HasMaxLength(100);
+        builder.Property(x => x.Description)
+            .HasMaxLength(4000);
 
-        builder.Property(x => x.Year)
-               .IsRequired();
+        builder.Property(x => x.Condition)
+            .HasMaxLength(50);
 
-        builder.Property(x => x.Color)
-               .IsRequired()
-               .HasMaxLength(50);
-
-        builder.Property(x => x.Mileage)
-               .IsRequired();
+        builder.Property(x => x.YearManufactured);
 
         builder.Property(x => x.AuctionId)
-               .IsRequired();
+            .IsRequired();
 
         builder.Property(x => x.CreatedAt)
-               .IsRequired();
-
-        builder.Property(x => x.UpdatedAt);
+            .IsRequired();
 
         builder.Property(x => x.IsDeleted)
-               .IsRequired()
-               .HasDefaultValue(false);
+            .IsRequired()
+            .HasDefaultValue(false);
 
         builder.HasIndex(x => x.AuctionId)
-               .IsUnique();
+            .IsUnique();
 
         builder.OwnsMany(x => x.Files, filesBuilder =>
         {
             filesBuilder.ToJson();
         });
 
+        builder.Property(x => x.Attributes)
+            .HasColumnType("jsonb");
+
         builder.HasOne(x => x.Category)
-               .WithMany(x => x.Items)
-               .HasForeignKey(x => x.CategoryId)
-               .OnDelete(DeleteBehavior.SetNull)
-               .IsRequired(false);
+            .WithMany(x => x.Items)
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
+        builder.HasOne(x => x.Brand)
+            .WithMany(x => x.Items)
+            .HasForeignKey(x => x.BrandId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
 
         builder.HasIndex(x => x.CategoryId);
+        builder.HasIndex(x => x.BrandId);
+        builder.HasIndex(x => x.Title);
+        builder.HasIndex(x => x.Condition);
     }
 }

@@ -16,24 +16,18 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
             .MaximumLength(2000).WithMessage("Description must not exceed 2000 characters")
             .MinimumLength(10).WithMessage("Description must be at least 10 characters");
 
-        RuleFor(x => x.Make)
-            .NotEmpty().WithMessage("Make is required")
-            .MaximumLength(100).WithMessage("Make must not exceed 100 characters");
+        When(x => x.Condition != null, () =>
+        {
+            RuleFor(x => x.Condition)
+                .MaximumLength(50).WithMessage("Condition must not exceed 50 characters");
+        });
 
-        RuleFor(x => x.Model)
-            .NotEmpty().WithMessage("Model is required")
-            .MaximumLength(100).WithMessage("Model must not exceed 100 characters");
-
-        RuleFor(x => x.Year)
-            .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
-            .WithMessage($"Year must be between 1900 and {DateTime.UtcNow.Year + 1}");
-
-        RuleFor(x => x.Color)
-            .NotEmpty().WithMessage("Color is required")
-            .MaximumLength(50).WithMessage("Color must not exceed 50 characters");
-
-        RuleFor(x => x.Mileage)
-            .GreaterThanOrEqualTo(0).WithMessage("Mileage must be non-negative");
+        When(x => x.YearManufactured != null, () =>
+        {
+            RuleFor(x => x.YearManufactured)
+                .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
+                .WithMessage($"Year must be between 1900 and {DateTime.UtcNow.Year + 1}");
+        });
 
         RuleFor(x => x.ReservePrice)
             .GreaterThanOrEqualTo(0).WithMessage("Reserve price must be non-negative");
@@ -42,7 +36,14 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
             .GreaterThan(DateTimeOffset.UtcNow.AddHours(1))
             .WithMessage("Auction end date must be at least 1 hour in the future");
 
-        RuleFor(x => x.Seller)
+        RuleFor(x => x.SellerUsername)
             .NotEmpty().WithMessage("Seller is required");
+
+        RuleFor(x => x.SellerId)
+            .NotEmpty().WithMessage("Seller ID is required");
+
+        RuleFor(x => x.Currency)
+            .NotEmpty().WithMessage("Currency is required")
+            .MaximumLength(3).WithMessage("Currency must be a valid 3-letter code");
     }
 }

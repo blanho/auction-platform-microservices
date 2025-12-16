@@ -26,7 +26,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             _logger.LogInformation(
                 "Auction {AuctionId} finished - sold to {Winner} for {Amount}",
                 message.AuctionId,
-                message.Winner,
+                message.WinnerUsername,
                 message.SoldAmount);
         }
         else

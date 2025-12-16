@@ -17,6 +17,7 @@ public record ReviewDto(
 public record CreateReviewDto(
     Guid AuctionId,
     Guid? OrderId,
+    Guid ReviewedUserId,
     string ReviewedUsername,
     int Rating,
     string? Title,

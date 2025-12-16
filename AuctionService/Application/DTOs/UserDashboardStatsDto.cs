@@ -10,7 +10,7 @@ public class UserDashboardStatsDto
     public decimal TotalSpent { get; set; }
     public decimal TotalEarnings { get; set; }
     public decimal Balance { get; set; }
-    public double SellerRating { get; set; }
+    public decimal SellerRating { get; set; }
     public int ReviewCount { get; set; }
     public List<RecentActivityDto> RecentActivity { get; set; } = new();
 }

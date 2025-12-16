@@ -34,7 +34,7 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Paged
             var allAuctions = await _repository.GetAllAsync(cancellationToken);
 
             var query = allAuctions.AsQueryable()
-                .Where(a => a.Seller.Equals(request.Username, StringComparison.OrdinalIgnoreCase));
+                .Where(a => a.SellerUsername.Equals(request.Username, StringComparison.OrdinalIgnoreCase));
 
             var filterSpec = new AuctionFilterSpecification(
                 status: request.Status,

@@ -28,16 +28,16 @@ public class GetUserDashboardStatsQueryHandler : IRequestHandler<GetUserDashboar
         {
             var allAuctions = await _auctionRepository.GetAllAsync(cancellationToken);
             
-            var userAuctions = allAuctions.Where(a => a.Seller == request.Username).ToList();
-            var wonAuctions = allAuctions.Where(a => a.Winner == request.Username).ToList();
+            var userAuctions = allAuctions.Where(a => a.SellerUsername == request.Username).ToList();
+            var wonAuctions = allAuctions.Where(a => a.WinnerUsername == request.Username).ToList();
 
             var activeListings = userAuctions.Count(a => a.Status == Status.Live);
             var totalListings = userAuctions.Count;
             var itemsWon = wonAuctions.Count;
-            var totalSpent = wonAuctions.Sum(a => a.SoldAmount ?? 0);
+            var totalSpent = wonAuctions.Sum(a => a.SoldAmount ?? 0m);
             var totalEarnings = userAuctions
                 .Where(a => a.Status == Status.Finished && a.SoldAmount.HasValue)
-                .Sum(a => a.SoldAmount ?? 0);
+                .Sum(a => a.SoldAmount ?? 0m);
 
             var recentActivity = new List<RecentActivityDto>();
 
@@ -75,7 +75,7 @@ public class GetUserDashboardStatsQueryHandler : IRequestHandler<GetUserDashboar
                 TotalSpent = totalSpent,
                 TotalEarnings = totalEarnings,
                 Balance = totalEarnings - totalSpent,
-                SellerRating = 4.5,
+                SellerRating = 4.5m,
                 ReviewCount = totalListings > 0 ? totalListings * 2 : 0,
                 RecentActivity = recentActivity
                     .OrderByDescending(r => r.Timestamp)

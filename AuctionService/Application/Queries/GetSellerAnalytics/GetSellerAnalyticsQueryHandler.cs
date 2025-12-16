@@ -41,7 +41,7 @@ public class GetSellerAnalyticsQueryHandler : IRequestHandler<GetSellerAnalytics
             var allAuctions = await _auctionRepository.GetAllAsync(cancellationToken);
             
             var userAuctions = allAuctions
-                .Where(a => a.Seller == request.Username)
+                .Where(a => a.SellerUsername == request.Username)
                 .ToList();
 
             var currentPeriodSales = userAuctions

@@ -23,35 +23,17 @@ public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionComm
                 .MinimumLength(10).WithMessage("Description must be at least 10 characters");
         });
 
-        When(x => x.Make != null, () =>
+        When(x => x.Condition != null, () =>
         {
-            RuleFor(x => x.Make)
-                .MaximumLength(100).WithMessage("Make must not exceed 100 characters");
+            RuleFor(x => x.Condition)
+                .MaximumLength(50).WithMessage("Condition must not exceed 50 characters");
         });
 
-        When(x => x.Model != null, () =>
+        When(x => x.YearManufactured != null, () =>
         {
-            RuleFor(x => x.Model)
-                .MaximumLength(100).WithMessage("Model must not exceed 100 characters");
-        });
-
-        When(x => x.Year != null, () =>
-        {
-            RuleFor(x => x.Year)
+            RuleFor(x => x.YearManufactured)
                 .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
                 .WithMessage($"Year must be between 1900 and {DateTime.UtcNow.Year + 1}");
-        });
-
-        When(x => x.Color != null, () =>
-        {
-            RuleFor(x => x.Color)
-                .MaximumLength(50).WithMessage("Color must not exceed 50 characters");
-        });
-
-        When(x => x.Mileage != null, () =>
-        {
-            RuleFor(x => x.Mileage)
-                .GreaterThanOrEqualTo(0).WithMessage("Mileage must be non-negative");
         });
     }
 }

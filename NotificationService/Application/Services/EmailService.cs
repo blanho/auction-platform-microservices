@@ -107,14 +107,14 @@ namespace NotificationService.Application.Services
         public async Task SendAuctionWonEmailAsync(
             string to, 
             string auctionTitle, 
-            int winningBid, 
+            decimal winningBid, 
             Guid auctionId, 
             CancellationToken cancellationToken = default)
         {
             var data = new Dictionary<string, string>
             {
                 { "AuctionTitle", auctionTitle },
-                { "WinningBid", $"${winningBid:N0}" },
+                { "WinningBid", $"${winningBid:N2}" },
                 { "AuctionId", auctionId.ToString() },
                 { "AuctionUrl", $"/auctions/{auctionId}" }
             };
@@ -125,14 +125,14 @@ namespace NotificationService.Application.Services
         public async Task SendOutbidEmailAsync(
             string to, 
             string auctionTitle, 
-            int newBid, 
+            decimal newBid, 
             Guid auctionId, 
             CancellationToken cancellationToken = default)
         {
             var data = new Dictionary<string, string>
             {
                 { "AuctionTitle", auctionTitle },
-                { "NewBid", $"${newBid:N0}" },
+                { "NewBid", $"${newBid:N2}" },
                 { "AuctionId", auctionId.ToString() },
                 { "AuctionUrl", $"/auctions/{auctionId}" }
             };
@@ -143,14 +143,14 @@ namespace NotificationService.Application.Services
         public async Task SendBuyNowConfirmationEmailAsync(
             string to, 
             string auctionTitle, 
-            int price, 
+            decimal price, 
             Guid auctionId, 
             CancellationToken cancellationToken = default)
         {
             var data = new Dictionary<string, string>
             {
                 { "AuctionTitle", auctionTitle },
-                { "Price", $"${price:N0}" },
+                { "Price", $"${price:N2}" },
                 { "AuctionId", auctionId.ToString() },
                 { "AuctionUrl", $"/auctions/{auctionId}" }
             };

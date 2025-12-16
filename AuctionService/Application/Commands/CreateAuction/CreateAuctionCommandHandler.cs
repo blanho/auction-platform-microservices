@@ -47,17 +47,14 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
     public async Task<Result<AuctionDto>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.Seller, _dateTime.UtcNow);
+        _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.SellerUsername, _dateTime.UtcNow);
 
         try
         {
-            // Create the auction entity
             var auction = CreateAuctionEntity(request);
 
-            // Persist the auction
             var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
-            // Confirm pre-uploaded files (Status 1 → 2)
             if (request.FileIds != null && request.FileIds.Count > 0)
             {
                 _logger.LogInformation("Confirming {FileCount} temp files for auction {AuctionId}", 
@@ -73,28 +70,25 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
                     request.FileIds.Count, createdAuction.Id);
             }
 
-            // Publish the event
             var auctionCreatedEvent = _mapper.Map<AuctionCreatedEvent>(createdAuction);
             await _eventPublisher.PublishAsync(auctionCreatedEvent, cancellationToken);
 
-            // Publish audit event
             await _auditPublisher.PublishAsync(
                 createdAuction.Id,
                 createdAuction,
                 AuditAction.Created,
                 cancellationToken: cancellationToken);
 
-            // Save changes (including outbox)
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.Seller);
+            _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.SellerUsername);
 
             var dto = _mapper.Map<AuctionDto>(createdAuction);
             return Result<AuctionDto>.Success(dto);
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to create auction for seller {Seller}: {Error}", request.Seller, ex.Message);
+            _logger.LogError("Failed to create auction for seller {Seller}: {Error}", request.SellerUsername, ex.Message);
             return Result.Failure<AuctionDto>(Error.Create("Auction.CreateFailed", $"Failed to create auction: {ex.Message}"));
         }
     }
@@ -105,9 +99,11 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         var auction = new Auction
         {
             Id = auctionId,
-            Seller = request.Seller,
-            ReversePrice = request.ReservePrice,
+            SellerId = request.SellerId,
+            SellerUsername = request.SellerUsername,
+            ReservePrice = request.ReservePrice,
             BuyNowPrice = request.BuyNowPrice,
+            Currency = request.Currency,
             AuctionEnd = request.AuctionEnd,
             Status = Status.Live,
             IsFeatured = request.IsFeatured,
@@ -115,11 +111,9 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             {
                 Title = request.Title,
                 Description = request.Description,
-                Make = request.Make,
-                Model = request.Model,
-                Year = request.Year,
-                Color = request.Color,
-                Mileage = request.Mileage,
+                Condition = request.Condition,
+                YearManufactured = request.YearManufactured,
+                Attributes = request.Attributes ?? new Dictionary<string, string>(),
                 CategoryId = request.CategoryId,
                 Files = new List<ItemFileInfo>()
             }
@@ -139,7 +133,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
                     FileType = "image",
                     DisplayOrder = file.DisplayOrder,
                     IsPrimary = file.IsPrimary,
-                    UploadedAt = DateTime.UtcNow
+                    UploadedAt = DateTimeOffset.UtcNow
                 });
             }
         }
