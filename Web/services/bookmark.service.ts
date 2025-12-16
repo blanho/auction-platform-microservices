@@ -4,126 +4,114 @@ import { BookmarkType } from "@/types/auction";
 export interface BookmarkItem {
   id: string;
   auctionId: string;
-  type: BookmarkType;
+  bookmarkType: string;
+  auctionTitle: string;
+  imageUrl?: string;
+  currentBid: number;
+  reservePrice: number;
+  auctionEnd: string;
+  status: string;
+  addedAt: string;
   notifyOnBid: boolean;
   notifyOnEnd: boolean;
-  addedAt: string;
-  auction?: {
-    id: string;
-    title: string;
-    imageUrl?: string;
-    currentHighBid?: number;
-    reservePrice: number;
-    currency: string;
-    auctionEnd: string;
-    status: string;
-  };
 }
 
 export interface BookmarkToggleResponse {
   isBookmarked: boolean;
-  bookmarkId?: string;
   message: string;
 }
 
-export interface AddBookmarkRequest {
+export interface AddWatchlistRequest {
   auctionId: string;
-  type: BookmarkType;
   notifyOnBid?: boolean;
   notifyOnEnd?: boolean;
 }
 
-export interface UpdateBookmarkRequest {
-  notifyOnBid?: boolean;
-  notifyOnEnd?: boolean;
+export interface UpdateNotificationsRequest {
+  notifyOnBid: boolean;
+  notifyOnEnd: boolean;
 }
+
+const BASE_URL = "/auction/api/v1/bookmarks";
 
 export const bookmarkService = {
-  async getBookmarks(type?: BookmarkType): Promise<BookmarkItem[]> {
-    const params = type !== undefined ? { type } : {};
-    const response = await apiClient.get<BookmarkItem[]>("/auctions/bookmarks", { params });
-    return response.data;
-  },
-
   async getWatchlist(): Promise<BookmarkItem[]> {
-    return this.getBookmarks(BookmarkType.Watchlist);
+    const response = await apiClient.get<BookmarkItem[]>(`${BASE_URL}/watchlist`);
+    return response.data;
   },
 
   async getWishlist(): Promise<BookmarkItem[]> {
-    return this.getBookmarks(BookmarkType.Wishlist);
-  },
-
-  async getBookmarkIds(type?: BookmarkType): Promise<string[]> {
-    const params = type !== undefined ? { type } : {};
-    const response = await apiClient.get<string[]>("/auctions/bookmarks/ids", { params });
+    const response = await apiClient.get<BookmarkItem[]>(`${BASE_URL}/wishlist`);
     return response.data;
   },
 
-  async getBookmarkCount(type?: BookmarkType): Promise<number> {
-    const params = type !== undefined ? { type } : {};
-    const response = await apiClient.get<number>("/auctions/bookmarks/count", { params });
+  async getWatchlistCount(): Promise<number> {
+    const response = await apiClient.get<number>(`${BASE_URL}/watchlist/count`);
     return response.data;
   },
 
-  async checkBookmark(auctionId: string, type: BookmarkType): Promise<boolean> {
-    const response = await apiClient.get<boolean>(
-      `/auctions/bookmarks/${auctionId}/check`,
-      { params: { type } }
-    );
+  async getWishlistCount(): Promise<number> {
+    const response = await apiClient.get<number>(`${BASE_URL}/wishlist/count`);
     return response.data;
   },
 
-  async addBookmark(request: AddBookmarkRequest): Promise<BookmarkItem> {
-    const response = await apiClient.post<BookmarkItem>("/auctions/bookmarks", request);
+  async isInWatchlist(auctionId: string): Promise<boolean> {
+    const response = await apiClient.get<boolean>(`${BASE_URL}/watchlist/check/${auctionId}`);
     return response.data;
   },
 
-  async addToWatchlist(auctionId: string): Promise<BookmarkItem> {
-    return this.addBookmark({ auctionId, type: BookmarkType.Watchlist });
+  async isInWishlist(auctionId: string): Promise<boolean> {
+    const response = await apiClient.get<boolean>(`${BASE_URL}/wishlist/check/${auctionId}`);
+    return response.data;
+  },
+
+  async addToWatchlist(request: AddWatchlistRequest): Promise<BookmarkItem> {
+    const response = await apiClient.post<BookmarkItem>(`${BASE_URL}/watchlist`, request);
+    return response.data;
   },
 
   async addToWishlist(auctionId: string): Promise<BookmarkItem> {
-    return this.addBookmark({ auctionId, type: BookmarkType.Wishlist });
-  },
-
-  async removeBookmark(auctionId: string, type: BookmarkType): Promise<void> {
-    await apiClient.delete(`/auctions/bookmarks/${auctionId}`, { params: { type } });
-  },
-
-  async removeFromWatchlist(auctionId: string): Promise<void> {
-    return this.removeBookmark(auctionId, BookmarkType.Watchlist);
-  },
-
-  async removeFromWishlist(auctionId: string): Promise<void> {
-    return this.removeBookmark(auctionId, BookmarkType.Wishlist);
-  },
-
-  async toggleBookmark(auctionId: string, type: BookmarkType): Promise<BookmarkToggleResponse> {
-    const response = await apiClient.post<BookmarkToggleResponse>(
-      `/auctions/bookmarks/${auctionId}/toggle`,
-      null,
-      { params: { type } }
-    );
+    const response = await apiClient.post<BookmarkItem>(`${BASE_URL}/wishlist/${auctionId}`);
     return response.data;
   },
 
-  async toggleWatchlist(auctionId: string): Promise<BookmarkToggleResponse> {
-    return this.toggleBookmark(auctionId, BookmarkType.Watchlist);
+  async removeFromWatchlist(auctionId: string): Promise<void> {
+    await apiClient.delete(`${BASE_URL}/watchlist/${auctionId}`);
+  },
+
+  async removeFromWishlist(auctionId: string): Promise<void> {
+    await apiClient.delete(`${BASE_URL}/wishlist/${auctionId}`);
   },
 
   async toggleWishlist(auctionId: string): Promise<BookmarkToggleResponse> {
-    return this.toggleBookmark(auctionId, BookmarkType.Wishlist);
+    const response = await apiClient.post<BookmarkToggleResponse>(`${BASE_URL}/wishlist/${auctionId}/toggle`);
+    return response.data;
   },
 
-  async updateBookmark(
+  async updateWatchlistNotifications(
     auctionId: string,
-    type: BookmarkType,
-    request: UpdateBookmarkRequest
+    request: UpdateNotificationsRequest
   ): Promise<void> {
-    await apiClient.put(
-      `/auctions/bookmarks/${auctionId}`,
-      request,
-      { params: { type } }
-    );
+    await apiClient.put(`${BASE_URL}/watchlist/${auctionId}/notifications`, request);
+  },
+
+  async checkBookmark(auctionId: string, type: BookmarkType): Promise<boolean> {
+    if (type === BookmarkType.Watchlist) {
+      return this.isInWatchlist(auctionId);
+    }
+    return this.isInWishlist(auctionId);
+  },
+
+  async toggleBookmark(auctionId: string, type: BookmarkType): Promise<BookmarkToggleResponse> {
+    if (type === BookmarkType.Wishlist) {
+      return this.toggleWishlist(auctionId);
+    }
+    const isWatched = await this.isInWatchlist(auctionId);
+    if (isWatched) {
+      await this.removeFromWatchlist(auctionId);
+      return { isBookmarked: false, message: "Removed from watchlist" };
+    }
+    await this.addToWatchlist({ auctionId });
+    return { isBookmarked: true, message: "Added to watchlist" };
   },
 };

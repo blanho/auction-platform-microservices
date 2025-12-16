@@ -323,3 +323,48 @@ export interface BuyNowResult {
   buyerUsername: string;
   message: string;
 }
+
+export interface FlashSale {
+  id: string;
+  title: string;
+  description?: string;
+  bannerUrl?: string;
+  startTime: string;
+  endTime: string;
+  discountPercentage: number;
+  isActive: boolean;
+  displayOrder: number;
+  items: FlashSaleItem[];
+}
+
+export interface FlashSaleItem {
+  id: string;
+  flashSaleId: string;
+  auctionId: string;
+  specialPrice?: number;
+  discountPercentage?: number;
+  displayOrder: number;
+  auction?: Auction;
+}
+
+export interface ActiveFlashSale {
+  id: string;
+  title: string;
+  description?: string;
+  bannerUrl?: string;
+  endTime: string;
+  discountPercentage: number;
+  remainingSeconds: number;
+  auctions: FlashSaleAuction[];
+}
+
+export interface FlashSaleAuction {
+  id: string;
+  title: string;
+  imageUrl?: string;
+  originalPrice: number;
+  salePrice: number;
+  discountPercentage: number;
+  soldCount: number;
+  totalCount: number;
+}

@@ -2,22 +2,23 @@ import apiClient from '@/lib/api/axios';
 
 export interface Review {
     id: string;
-    orderId: string;
+    orderId?: string;
     auctionId: string;
     reviewerUsername: string;
     reviewedUsername: string;
-    type: 'BuyerToSeller' | 'SellerToBuyer';
     rating: number;
     title?: string;
     comment?: string;
-    isVerifiedPurchase: boolean;
     sellerResponse?: string;
     sellerResponseAt?: string;
     createdAt: string;
 }
 
 export interface CreateReviewDto {
-    orderId: string;
+    auctionId: string;
+    orderId?: string;
+    reviewedUserId: string;
+    reviewedUsername: string;
     rating: number;
     title?: string;
     comment?: string;
@@ -27,37 +28,43 @@ export interface UserRatingSummary {
     username: string;
     averageRating: number;
     totalReviews: number;
-    fiveStarCount: number;
-    fourStarCount: number;
-    threeStarCount: number;
-    twoStarCount: number;
-    oneStarCount: number;
-    positivePercentage: number;
 }
+
+const BASE_URL = '/auction/api/v1/reviews';
 
 export const reviewService = {
     async createReview(dto: CreateReviewDto): Promise<Review> {
-        const response = await apiClient.post<Review>('/utility/api/v1/reviews', dto);
+        const response = await apiClient.post<Review>(BASE_URL, dto);
         return response.data;
     },
 
     async getReview(id: string): Promise<Review> {
-        const response = await apiClient.get<Review>(`/utility/api/v1/reviews/${id}`);
+        const response = await apiClient.get<Review>(`${BASE_URL}/${id}`);
+        return response.data;
+    },
+
+    async getReviewsForAuction(auctionId: string): Promise<Review[]> {
+        const response = await apiClient.get<Review[]>(`${BASE_URL}/auction/${auctionId}`);
         return response.data;
     },
 
     async getReviewsForUser(username: string): Promise<Review[]> {
-        const response = await apiClient.get<Review[]>(`/utility/api/v1/reviews/user/${username}`);
+        const response = await apiClient.get<Review[]>(`${BASE_URL}/user/${username}`);
+        return response.data;
+    },
+
+    async getReviewsByUser(username: string): Promise<Review[]> {
+        const response = await apiClient.get<Review[]>(`${BASE_URL}/by/${username}`);
         return response.data;
     },
 
     async getUserRatingSummary(username: string): Promise<UserRatingSummary> {
-        const response = await apiClient.get<UserRatingSummary>(`/utility/api/v1/reviews/user/${username}/summary`);
+        const response = await apiClient.get<UserRatingSummary>(`${BASE_URL}/user/${username}/summary`);
         return response.data;
     },
 
     async addSellerResponse(reviewId: string, response: string): Promise<Review> {
-        const res = await apiClient.post<Review>(`/utility/api/v1/reviews/${reviewId}/response`, {
+        const res = await apiClient.post<Review>(`${BASE_URL}/${reviewId}/response`, {
             response,
         });
         return res.data;

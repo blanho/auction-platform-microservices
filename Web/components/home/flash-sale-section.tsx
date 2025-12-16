@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -24,7 +24,8 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { Auction } from "@/types/auction";
+import { ActiveFlashSale, FlashSaleAuction } from "@/types/auction";
+import { flashSaleService } from "@/services/flashsale.service";
 import { auctionService } from "@/services/auction.service";
 import { getAuctionTitle } from "@/utils/auction";
 
@@ -73,24 +74,14 @@ function FlashSaleCountdown({ endTime }: FlashSaleCountdownProps) {
 }
 
 interface FlashSaleItemProps {
-  auction: Auction;
+  item: FlashSaleAuction;
   index: number;
 }
 
-function FlashSaleItem({ auction, index }: FlashSaleItemProps) {
-  const title = getAuctionTitle(auction);
-  const originalPrice = auction.buyNowPrice || auction.reservePrice * 1.5;
-  const salePrice = auction.currentHighBid || auction.reservePrice;
-  const discount = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
-  const soldPercentage = useMemo(() => {
-    const hash = auction.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return Math.min((hash % 60) + 30, 95);
-  }, [auction.id]);
-
-  const imageUrl =
-    auction.files?.find((f) => f.isPrimary)?.url ||
-    auction.files?.[0]?.url ||
-    "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400";
+function FlashSaleItem({ item, index }: FlashSaleItemProps) {
+  const soldPercentage = item.totalCount > 0 
+    ? Math.round((item.soldCount / item.totalCount) * 100) 
+    : Math.min((item.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 60) + 30, 95);
 
   return (
     <motion.div
@@ -98,37 +89,37 @@ function FlashSaleItem({ auction, index }: FlashSaleItemProps) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
     >
-      <Link href={`/auctions/${auction.id}`} className="group block">
+      <Link href={`/auctions/${item.id}`} className="group block">
         <Card className="overflow-hidden border-slate-200 dark:border-slate-800 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 p-0 gap-0">
           <div className="absolute top-2 left-2 z-10">
             <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 border-0 shadow-lg">
               <FontAwesomeIcon icon={faPercentage} className="w-2.5 h-2.5 mr-1" />
-              -{discount}%
+              -{item.discountPercentage}%
             </Badge>
           </div>
 
           <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800">
             <Image
-              src={imageUrl}
-              alt={title}
+              src={item.imageUrl || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400"}
+              alt={item.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
-              unoptimized={imageUrl.includes("unsplash")}
+              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
 
           <CardContent className="p-3 space-y-2">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-              {title}
+              {item.title}
             </h3>
 
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                ${salePrice.toLocaleString()}
+                ${item.salePrice.toLocaleString()}
               </span>
               <span className="text-xs text-slate-400 line-through">
-                ${originalPrice.toLocaleString()}
+                ${item.originalPrice.toLocaleString()}
               </span>
             </div>
 
@@ -166,32 +157,56 @@ function FlashSaleItemSkeleton() {
 }
 
 export function FlashSaleSection() {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [flashSale, setFlashSale] = useState<ActiveFlashSale | null>(null);
+  const [fallbackItems, setFallbackItems] = useState<FlashSaleAuction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const saleEndTime = new Date();
-  saleEndTime.setHours(saleEndTime.getHours() + 8);
+  const saleEndTime = flashSale 
+    ? new Date(flashSale.endTime) 
+    : new Date(Date.now() + 8 * 60 * 60 * 1000);
+
+  const items = flashSale?.auctions ?? fallbackItems;
+  const saleTitle = flashSale?.title ?? "Flash Sale";
+  const saleDescription = flashSale?.description ?? "Limited time deals";
 
   useEffect(() => {
-    const fetchAuctions = async () => {
+    const fetchData = async () => {
       try {
-        const result = await auctionService.getAuctions({
-          status: "Live",
-          pageSize: 10,
-          orderBy: "currentHighBid",
-          descending: false,
-        });
-        setAuctions(result.items);
+        const activeFlashSale = await flashSaleService.getActiveFlashSale();
+        if (activeFlashSale && activeFlashSale.auctions.length > 0) {
+          setFlashSale(activeFlashSale);
+        } else {
+          const result = await auctionService.getAuctions({
+            status: "Live",
+            pageSize: 10,
+            orderBy: "currentHighBid",
+            descending: false,
+          });
+          const mapped: FlashSaleAuction[] = result.items.map(auction => ({
+            id: auction.id,
+            title: getAuctionTitle(auction),
+            imageUrl: auction.files?.find(f => f.isPrimary)?.url || auction.files?.[0]?.url,
+            originalPrice: auction.buyNowPrice || auction.reservePrice * 1.5,
+            salePrice: auction.currentHighBid || auction.reservePrice,
+            discountPercentage: Math.round(
+              (((auction.buyNowPrice || auction.reservePrice * 1.5) - (auction.currentHighBid || auction.reservePrice)) / 
+               (auction.buyNowPrice || auction.reservePrice * 1.5)) * 100
+            ),
+            soldCount: 0,
+            totalCount: 100,
+          }));
+          setFallbackItems(mapped);
+        }
       } catch (error) {
-        console.error("Failed to fetch flash sale auctions:", error);
+        console.error("Failed to fetch flash sale:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchAuctions();
+    fetchData();
   }, []);
 
-  if (!isLoading && auctions.length === 0) return null;
+  if (!isLoading && items.length === 0) return null;
 
   return (
     <section className="py-6 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500">
@@ -203,8 +218,8 @@ export function FlashSaleSection() {
                 <FontAwesomeIcon icon={faBolt} className="w-5 h-5 text-yellow-300 animate-pulse" />
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-white">Flash Sale</h2>
-                <p className="text-white/70 text-xs">Limited time deals</p>
+                <h2 className="text-xl md:text-2xl font-bold text-white">{saleTitle}</h2>
+                <p className="text-white/70 text-xs">{saleDescription}</p>
               </div>
             </div>
 
@@ -246,9 +261,9 @@ export function FlashSaleSection() {
                     <FlashSaleItemSkeleton />
                   </CarouselItem>
                 ))
-              : auctions.map((auction, index) => (
-                  <CarouselItem key={auction.id} className="pl-3 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
-                    <FlashSaleItem auction={auction} index={index} />
+              : items.map((item, index) => (
+                  <CarouselItem key={item.id} className="pl-3 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
+                    <FlashSaleItem item={item} index={index} />
                   </CarouselItem>
                 ))}
           </CarouselContent>

@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { format, formatDistanceToNow } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import { ROUTES, MESSAGES, TIME, AUCTION_BID } from '@/constants';
 import {
     formatCurrency,
-    formatNumber,
     getTimeRemaining,
     getAuctionTitle,
     getAuctionDescription,
@@ -42,7 +41,6 @@ import {
     faCheckCircle,
     faChevronLeft,
     faChevronRight,
-    faExpand,
     faUser,
     faBolt,
     faShieldAlt,
@@ -95,7 +93,9 @@ import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialo
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { BuyNowButton } from '@/features/auction/buy-now-button';
 import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
+import { ReviewsSection } from '@/features/review';
 import { auctionService } from '@/services/auction.service';
+import { bookmarkService } from '@/services/bookmark.service';
 import { AuditHistory } from '@/components/common/audit-history';
 import { BidHistory } from '@/components/common/bid-history';
 
@@ -207,7 +207,6 @@ export default function AuctionDetailPage() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isInWatchlist, setIsInWatchlist] = useState(false);
     const [bidAmount, setBidAmount] = useState('');
-    const [isImageExpanded, setIsImageExpanded] = useState(false);
 
     const handleBidPlaced = () => {
         setBidRefreshTrigger(prev => prev + 1);
@@ -216,30 +215,31 @@ export default function AuctionDetailPage() {
         }
     };
 
-    const getAuctionImages = useCallback(() => {
-        if (!auction) return [];
-        if (auction.files && auction.files.length > 0) {
-            return auction.files
-                .filter(f => f.fileType === 'Image' && f.url)
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map(f => f.url!);
-        }
-        return [];
-    }, [auction]);
+    const images = useMemo(() => {
+        if (!auction?.files?.length) return [];
+        return auction.files
+            .filter(f => f.fileType === 'Image' && f.url)
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(f => f.url!);
+    }, [auction?.files]);
 
-    const toggleWatchlist = () => {
+    const attributes = useMemo(() => 
+        auction ? getAuctionAttributes(auction) : {}, 
+        [auction]
+    );
+
+    const toggleWatchlist = async () => {
         if (!auction) return;
-        const watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
-        if (isInWatchlist) {
-            const newWatchlist = watchlist.filter((id: string) => id !== auction.id);
-            localStorage.setItem('watchlist', JSON.stringify(newWatchlist));
-            setIsInWatchlist(false);
-            toast.success('Removed from watchlist');
-        } else {
-            watchlist.push(auction.id);
-            localStorage.setItem('watchlist', JSON.stringify(watchlist));
-            setIsInWatchlist(true);
-            toast.success('Added to watchlist');
+        if (!session) {
+            toast.error('Please sign in to add to watchlist');
+            return;
+        }
+        try {
+            const result = await bookmarkService.toggleBookmark(auction.id, 0);
+            setIsInWatchlist(result.isBookmarked);
+            toast.success(result.message);
+        } catch {
+            toast.error('Failed to update watchlist');
         }
     };
 
@@ -265,32 +265,29 @@ export default function AuctionDetailPage() {
 
         let isMounted = true;
 
-        const fetchData = async () => {
+        const fetchAuction = async () => {
             try {
                 const result = await auctionService.getAuctionById(auctionId);
-                if (isMounted) {
-                    setAuction(result);
-                    setError(null);
+                if (!isMounted) return;
 
-                    const minBid = (result.currentHighBid || result.reservePrice) + AUCTION_BID.MIN_INCREMENT;
-                    setBidAmount(minBid.toString());
+                setAuction(result);
+                setError(null);
 
-                    const watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
-                    setIsInWatchlist(watchlist.includes(result.id));
+                const minBid = (result.currentHighBid || result.reservePrice) + AUCTION_BID.MIN_INCREMENT;
+                setBidAmount(minBid.toString());
 
-                    if (result.categoryId) {
-                        try {
-                            const related = await auctionService.getAuctions({
-                                category: result.categoryId,
-                                pageSize: 4,
-                                status: AuctionStatus.Live
-                            });
+                if (result.categoryId) {
+                    auctionService.getAuctions({
+                        category: result.categoryId,
+                        pageSize: 5,
+                        status: AuctionStatus.Live
+                    })
+                        .then(related => {
                             if (isMounted) {
                                 setRelatedAuctions(related.items.filter(a => a.id !== result.id).slice(0, 4));
                             }
-                        } catch {
-                        }
-                    }
+                        })
+                        .catch(() => { });
                 }
             } catch (err) {
                 if (isMounted) {
@@ -303,12 +300,30 @@ export default function AuctionDetailPage() {
             }
         };
 
-        fetchData();
+        fetchAuction();
 
         return () => {
             isMounted = false;
         };
     }, [auctionId]);
+
+    useEffect(() => {
+        if (!auction?.id || !session) {
+            setIsInWatchlist(false);
+            return;
+        }
+
+        let isMounted = true;
+        bookmarkService.isInWatchlist(auction.id)
+            .then(inWatchlist => {
+                if (isMounted) setIsInWatchlist(inWatchlist);
+            })
+            .catch(() => { });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [auction?.id, session]);
 
     if (isLoading) {
         return (
@@ -362,12 +377,14 @@ export default function AuctionDetailPage() {
         );
     }
 
-    const isOwner = session?.user?.name === getAuctionSellerUsername(auction);
-    const images = getAuctionImages();
+    const sellerUsername = getAuctionSellerUsername(auction);
+    const isOwner = session?.user?.name === sellerUsername;
     const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
     const statusConfig = STATUS_CONFIG[auction.status] || STATUS_CONFIG[AuctionStatus.Inactive];
     const timeRemaining = getTimeRemaining(auction.auctionEnd);
     const isUrgent = timeRemaining && timeRemaining.days === 0 && timeRemaining.hours < 1;
+    const auctionTitle = getAuctionTitle(auction);
+    const yearManufactured = getAuctionYearManufactured(auction);
 
     const navigateImage = (direction: 'prev' | 'next') => {
         if (direction === 'prev') {
@@ -407,7 +424,7 @@ export default function AuctionDetailPage() {
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbLink asChild>
-                                            <Link 
+                                            <Link
                                                 href={`${ROUTES.AUCTIONS.LIST}?category=${auction.categorySlug}`}
                                                 className="text-slate-500 hover:text-purple-600 transition-colors"
                                             >
@@ -420,7 +437,7 @@ export default function AuctionDetailPage() {
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
                                 <BreadcrumbPage className="font-medium text-slate-900 dark:text-white">
-                                    {getAuctionTitle(auction)}
+                                    {auctionTitle}
                                 </BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
@@ -445,7 +462,7 @@ export default function AuctionDetailPage() {
                             {auction.status === AuctionStatus.Inactive && (
                                 <ActivateAuctionDialog
                                     auctionId={auction.id}
-                                    auctionTitle={getAuctionTitle(auction)}
+                                    auctionTitle={auctionTitle}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
                                         <Button variant="outline" size="sm" className="border-green-300 text-green-600 hover:bg-green-50 dark:border-green-700 dark:hover:bg-green-950">
@@ -458,7 +475,7 @@ export default function AuctionDetailPage() {
                             {auction.status === AuctionStatus.Live && (
                                 <DeactivateAuctionDialog
                                     auctionId={auction.id}
-                                    auctionTitle={getAuctionTitle(auction)}
+                                    auctionTitle={auctionTitle}
                                     onSuccess={() => window.location.reload()}
                                     trigger={
                                         <Button variant="outline" size="sm" className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-700 dark:hover:bg-orange-950">
@@ -479,7 +496,7 @@ export default function AuctionDetailPage() {
                             </Button>
                             <DeleteAuctionDialog
                                 auctionId={auction.id}
-                                auctionTitle={getAuctionTitle(auction)}
+                                auctionTitle={auctionTitle}
                                 redirectAfterDelete="/auctions"
                             />
                         </div>
@@ -487,7 +504,7 @@ export default function AuctionDetailPage() {
                 )}
 
                 <div className="grid gap-8 lg:grid-cols-5">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4 }}
@@ -497,12 +514,12 @@ export default function AuctionDetailPage() {
                             <div className="relative aspect-[4/3] w-full group">
                                 <Image
                                     src={currentImage}
-                                    alt={getAuctionTitle(auction)}
+                                    alt={auctionTitle}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                     priority
                                 />
-                                
+
                                 <div className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
                                     {statusConfig.pulse && (
                                         <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -534,13 +551,6 @@ export default function AuctionDetailPage() {
                                     </>
                                 )}
 
-                                <button
-                                    onClick={() => setIsImageExpanded(!isImageExpanded)}
-                                    className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                                >
-                                    <FontAwesomeIcon icon={faExpand} className="w-4 h-4 text-slate-700 dark:text-white" />
-                                </button>
-
                                 <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
                                     {selectedImageIndex + 1} / {images.length || 1}
                                 </div>
@@ -555,15 +565,14 @@ export default function AuctionDetailPage() {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => setSelectedImageIndex(idx)}
-                                        className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden transition-all ${
-                                            selectedImageIndex === idx
+                                        className={`relative w-20 h-20 shrink-0 rounded-xl overflow-hidden transition-all ${selectedImageIndex === idx
                                                 ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
                                                 : 'opacity-60 hover:opacity-100'
-                                        }`}
+                                            }`}
                                     >
                                         <Image
                                             src={img}
-                                            alt={`${getAuctionTitle(auction)} - Image ${idx + 1}`}
+                                            alt={`${auctionTitle} - Image ${idx + 1}`}
                                             fill
                                             className="object-cover"
                                         />
@@ -576,11 +585,11 @@ export default function AuctionDetailPage() {
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                                            {getAuctionTitle(auction)}
+                                            {auctionTitle}
                                         </CardTitle>
                                         <CardDescription className="text-base mt-1">
-                                            {getAuctionYearManufactured(auction) && `${getAuctionYearManufactured(auction)} `}
-                                            {Object.values(getAuctionAttributes(auction)).join(' ')}
+                                            {yearManufactured && `${yearManufactured} `}
+                                            {Object.values(attributes).join(' ')}
                                         </CardDescription>
                                     </div>
                                     {auction.isFeatured && (
@@ -593,25 +602,25 @@ export default function AuctionDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {getAuctionAttributes(auction).mileage && (
+                                    {attributes.mileage && (
                                         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={faTachometerAlt} className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
                                                 <p className="text-xs text-slate-500">Mileage</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white">{getAuctionAttributes(auction).mileage}</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{attributes.mileage}</p>
                                             </div>
                                         </div>
                                     )}
-                                    {getAuctionAttributes(auction).color && (
+                                    {attributes.color && (
                                         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={faPalette} className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
                                                 <p className="text-xs text-slate-500">Color</p>
-                                                <p className="font-semibold text-slate-900 dark:text-white">{getAuctionAttributes(auction).color}</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{attributes.color}</p>
                                             </div>
                                         </div>
                                     )}
@@ -621,7 +630,7 @@ export default function AuctionDetailPage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500">Year</p>
-                                            <p className="font-semibold text-slate-900 dark:text-white">{getAuctionYearManufactured(auction) || 'N/A'}</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{yearManufactured || 'N/A'}</p>
                                         </div>
                                     </div>
                                     {auction.categoryName && (
@@ -640,7 +649,7 @@ export default function AuctionDetailPage() {
                         </Card>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
@@ -711,7 +720,7 @@ export default function AuctionDetailPage() {
                                     {auction.isBuyNowAvailable && auction.buyNowPrice && auction.status === AuctionStatus.Live && !isOwner && (
                                         <div className="space-y-3">
                                             <Separator className="bg-slate-200 dark:bg-slate-700" />
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50"
@@ -726,7 +735,7 @@ export default function AuctionDetailPage() {
                                                 <BuyNowButton
                                                     auctionId={auction.id}
                                                     buyNowPrice={auction.buyNowPrice}
-                                                    auctionTitle={getAuctionTitle(auction)}
+                                                    auctionTitle={auctionTitle}
                                                     onSuccess={() => window.location.reload()}
                                                 />
                                             </motion.div>
@@ -734,7 +743,7 @@ export default function AuctionDetailPage() {
                                     )}
 
                                     {getAuctionWinnerUsername(auction) && (
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
@@ -761,11 +770,10 @@ export default function AuctionDetailPage() {
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={toggleWatchlist}
-                                                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-                                                            isInWatchlist 
-                                                                ? 'bg-red-100 dark:bg-red-950/50 text-red-500' 
+                                                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isInWatchlist
+                                                                ? 'bg-red-100 dark:bg-red-950/50 text-red-500'
                                                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${isInWatchlist ? 'text-red-500' : ''}`} />
                                                     </motion.button>
@@ -842,11 +850,10 @@ export default function AuctionDetailPage() {
                                             <FontAwesomeIcon icon={faShieldAlt} className="w-4 h-4" />
                                             Reserve Price
                                         </span>
-                                        <span className={`font-semibold ${
-                                            auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
+                                        <span className={`font-semibold ${auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
                                                 ? 'text-emerald-600 dark:text-emerald-400'
                                                 : 'text-slate-900 dark:text-white'
-                                        }`}>
+                                            }`}>
                                             {auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
                                                 ? MESSAGES.LABELS.RESERVE_MET
                                                 : formatCurrency(auction.reservePrice)}
@@ -913,8 +920,22 @@ export default function AuctionDetailPage() {
                     </Card>
                 </motion.div>
 
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
+                >
+                    <ReviewsSection
+                        auctionId={auction.id}
+                        sellerId={auction.sellerId}
+                        sellerUsername={sellerUsername}
+                        auctionStatus={auction.status}
+                        winnerId={auction.winnerId}
+                    />
+                </motion.div>
+
                 {relatedAuctions.length > 0 && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.4 }}
