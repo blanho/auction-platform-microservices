@@ -1,4 +1,5 @@
 using AuctionService.Domain.Entities;
+using Common.Core.Helpers;
 using Common.Domain.Enums;
 using Common.Repository.Interfaces;
 
@@ -6,6 +7,19 @@ namespace AuctionService.Application.Interfaces;
 
 public interface IAuctionRepository : IRepository<Auction>
 {
+    Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
+        string? status = null,
+        string? seller = null,
+        string? winner = null,
+        string? searchTerm = null,
+        string? category = null,
+        bool? isFeatured = null,
+        string? orderBy = null,
+        bool descending = true,
+        int pageNumber = 1,
+        int pageSize = 12,
+        CancellationToken cancellationToken = default);
+    
     Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default);
@@ -27,6 +41,12 @@ public interface IAuctionRepository : IRepository<Auction>
     Task<int> CountLiveAuctionsAsync(CancellationToken cancellationToken = default);
     
     Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default);
+    
+    Task<int> GetCountByStatusAsync(Status status, CancellationToken cancellationToken = default);
+    
+    Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
+    
+    Task<decimal> GetTotalRevenueAsync(CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default);
     

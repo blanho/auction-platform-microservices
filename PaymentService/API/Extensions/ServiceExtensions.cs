@@ -1,6 +1,8 @@
 using PaymentService.Application.Interfaces;
+using PaymentService.Application.Services;
 using PaymentService.Infrastructure.Data;
 using PaymentService.Infrastructure.Repositories;
+using PaymentService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
@@ -46,6 +48,10 @@ public static class ServiceExtensions
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
 
         services.AddScoped<Application.Interfaces.IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IStripePaymentService, StripePaymentService>();
+        
+        services.AddScoped<IWalletService, WalletService>();
+        services.AddScoped<IOrderService, OrderService>();
 
         return services;
     }

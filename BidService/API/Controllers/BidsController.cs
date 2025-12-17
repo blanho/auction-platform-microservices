@@ -5,6 +5,7 @@ using BidService.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace BidService.API.Controllers
 {
@@ -28,8 +29,15 @@ namespace BidService.API.Controllers
         [EnableRateLimiting("bid")]
         public async Task<ActionResult<BidDto>> PlaceBid([FromBody] PlaceBidDto dto, CancellationToken cancellationToken)
         {
-            var bidder = User.Identity?.Name ?? "Anonymous";
-            var bid = await _bidService.PlaceBidAsync(dto, bidder, cancellationToken);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            var username = User.Identity?.Name ?? "Anonymous";
+            
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var bidderId))
+            {
+                return Unauthorized(new { error = "User identity not found" });
+            }
+            
+            var bid = await _bidService.PlaceBidAsync(dto, bidderId, username, cancellationToken);
             
             if (!string.IsNullOrEmpty(bid.ErrorMessage))
             {
@@ -74,8 +82,8 @@ namespace BidService.API.Controllers
             return Ok(bids);
         }
 
-        [HttpGet("increment/{currentBid:int}")]
-        public ActionResult<BidIncrementInfoDto> GetBidIncrementInfo(int currentBid)
+        [HttpGet("increment/{currentBid:decimal}")]
+        public ActionResult<BidIncrementInfoDto> GetBidIncrementInfo(decimal currentBid)
         {
             var minimumIncrement = BidIncrement.GetMinimumIncrement(currentBid);
             var minimumNextBid = BidIncrement.GetMinimumNextBid(currentBid);
@@ -91,8 +99,8 @@ namespace BidService.API.Controllers
 
     public class BidIncrementInfoDto
     {
-        public int CurrentBid { get; set; }
-        public int MinimumIncrement { get; set; }
-        public int MinimumNextBid { get; set; }
+        public decimal CurrentBid { get; set; }
+        public decimal MinimumIncrement { get; set; }
+        public decimal MinimumNextBid { get; set; }
     }
 }

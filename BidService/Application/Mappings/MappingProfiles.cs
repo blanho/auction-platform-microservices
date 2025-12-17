@@ -13,13 +13,15 @@ namespace BidService.Application.Mappings
                 .ForMember(d => d.Status, o => o.MapFrom(s => s.Status.ToString()));
 
             CreateMap<PlaceBidDto, Bid>()
-                .ForMember(d => d.BidTime, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.BidTime, o => o.MapFrom(s => DateTimeOffset.UtcNow))
                 .ForMember(d => d.Status, o => o.Ignore());
 
             CreateMap<Bid, BidPlacedEvent>()
                 .ForMember(d => d.BidAmount, o => o.MapFrom(s => s.Amount))
                 .ForMember(d => d.BidStatus, o => o.MapFrom(s => s.Status.ToString()))
                 .ForMember(d => d.BidTime, o => o.MapFrom(s => s.BidTime));
+
+            CreateMap<AutoBid, AutoBidDto>();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace BidService.Application.Interfaces
     public interface IBidRepository : IRepository<Bid>
     {
         Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default);
-        Task<List<Bid>> GetBidsByBidderAsync(string bidder, CancellationToken cancellationToken = default);
+        Task<List<Bid>> GetBidsByBidderUsernameAsync(string bidderUsername, CancellationToken cancellationToken = default);
         Task<Bid?> GetHighestBidForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default);
     }
 }

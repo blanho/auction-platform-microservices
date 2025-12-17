@@ -3,21 +3,22 @@ namespace BidService.Application.DTOs
     public record AutoBidDto(
         Guid Id,
         Guid AuctionId,
-        string Bidder,
-        int MaxAmount,
-        int CurrentBidAmount,
+        Guid UserId,
+        string Username,
+        decimal MaxAmount,
+        decimal CurrentBidAmount,
         bool IsActive,
-        DateTime CreatedAt,
-        DateTime? LastBidAt
+        DateTimeOffset CreatedAt,
+        DateTimeOffset? LastBidAt
     );
 
     public record CreateAutoBidDto(
         Guid AuctionId,
-        int MaxAmount
+        decimal MaxAmount
     );
 
     public record UpdateAutoBidDto(
-        int MaxAmount,
+        decimal MaxAmount,
         bool? IsActive
     );
 }

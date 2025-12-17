@@ -44,12 +44,12 @@ namespace BidService.Application.Services
             _distributedLock = distributedLock;
         }
 
-        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, string bidder, CancellationToken cancellationToken)
+        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder}", dto.AuctionId, bidder);
+            _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder}", dto.AuctionId, bidderUsername);
 
             var validationResult = await _auctionValidation.ValidateAuctionForBidAsync(
-                dto.AuctionId, bidder, dto.Amount, cancellationToken);
+                dto.AuctionId, bidderUsername, dto.Amount, cancellationToken);
 
             if (!validationResult.IsValid)
             {
@@ -60,7 +60,8 @@ namespace BidService.Application.Services
                 return new BidDto
                 {
                     AuctionId = dto.AuctionId,
-                    Bidder = bidder,
+                    BidderId = bidderId,
+                    BidderUsername = bidderUsername,
                     Amount = dto.Amount,
                     BidTime = _dateTime.UtcNow,
                     Status = BidStatus.Rejected.ToString(),
@@ -80,7 +81,8 @@ namespace BidService.Application.Services
                 return new BidDto
                 {
                     AuctionId = dto.AuctionId,
-                    Bidder = bidder,
+                    BidderId = bidderId,
+                    BidderUsername = bidderUsername,
                     Amount = dto.Amount,
                     BidTime = _dateTime.UtcNow,
                     Status = BidStatus.Rejected.ToString(),
@@ -101,7 +103,8 @@ namespace BidService.Application.Services
                 return new BidDto
                 {
                     AuctionId = dto.AuctionId,
-                    Bidder = bidder,
+                    BidderId = bidderId,
+                    BidderUsername = bidderUsername,
                     Amount = dto.Amount,
                     BidTime = _dateTime.UtcNow,
                     Status = BidStatus.TooLow.ToString(),
@@ -110,7 +113,8 @@ namespace BidService.Application.Services
             }
 
             var bid = _mapper.Map<Bid>(dto);
-            bid.Bidder = bidder;
+            bid.BidderId = bidderId;
+            bid.BidderUsername = bidderUsername;
             bid.BidTime = _dateTime.UtcNow;
 
             if (highestBid == null)
@@ -163,10 +167,10 @@ namespace BidService.Application.Services
             return _mapper.Map<List<BidDto>>(bids);
         }
 
-        public async Task<List<BidDto>> GetBidsForBidderAsync(string bidder, CancellationToken cancellationToken)
+        public async Task<List<BidDto>> GetBidsForBidderAsync(string bidderUsername, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Getting bids for bidder {Bidder}", bidder);
-            var bids = await _repository.GetBidsByBidderAsync(bidder, cancellationToken);
+            _logger.LogInformation("Getting bids for bidder {Bidder}", bidderUsername);
+            var bids = await _repository.GetBidsByBidderUsernameAsync(bidderUsername, cancellationToken);
             return _mapper.Map<List<BidDto>>(bids);
         }
     }

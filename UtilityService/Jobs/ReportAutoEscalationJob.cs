@@ -49,10 +49,11 @@ public class ReportAutoEscalationJob : BaseJob
                 var newPriority = EscalatePriority(report.Priority);
                 if (newPriority != report.Priority)
                 {
+                    var oldPriority = report.Priority;
                     report.Priority = newPriority;
                     report.EscalatedAt = DateTimeOffset.UtcNow;
                     report.AdminNotes = AppendNote(report.AdminNotes, 
-                        $"[Auto-escalated from {report.Priority} to {newPriority} due to no review after {EscalationThreshold.TotalDays} days]");
+                        $"[Auto-escalated from {oldPriority} to {newPriority} due to no review after {EscalationThreshold.TotalDays} days]");
 
                     escalatedCount++;
                     Logger.LogDebug(

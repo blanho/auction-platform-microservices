@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
-using PaymentService.Domain.Entities;
 
 namespace PaymentService.API.Controllers;
 
@@ -12,150 +11,114 @@ namespace PaymentService.API.Controllers;
 [Authorize]
 public class WalletsController : ControllerBase
 {
-    private readonly IWalletRepository _walletRepository;
-    private readonly IWalletTransactionRepository _transactionRepository;
+    private readonly IWalletService _walletService;
     private readonly IMapper _mapper;
     private readonly ILogger<WalletsController> _logger;
 
     public WalletsController(
-        IWalletRepository walletRepository,
-        IWalletTransactionRepository transactionRepository,
+        IWalletService walletService,
         IMapper mapper,
         ILogger<WalletsController> logger)
     {
-        _walletRepository = walletRepository;
-        _transactionRepository = transactionRepository;
+        _walletService = walletService;
         _mapper = mapper;
         _logger = logger;
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<WalletDto>> GetWallet(string username)
+    public async Task<ActionResult<WalletDto>> GetWallet(string username, CancellationToken cancellationToken)
     {
-        var wallet = await _walletRepository.GetByUsernameAsync(username);
+        var wallet = await _walletService.GetWalletAsync(username, cancellationToken);
         if (wallet == null)
             return NotFound();
 
-        return Ok(_mapper.Map<WalletDto>(wallet));
+        return Ok(wallet);
     }
 
     [HttpPost("{username}/create")]
-    public async Task<ActionResult<WalletDto>> CreateWallet(string username)
+    public async Task<ActionResult<WalletDto>> CreateWallet(string username, CancellationToken cancellationToken)
     {
-        var exists = await _walletRepository.ExistsAsync(username);
-        if (exists)
-            return Conflict("Wallet already exists for this user");
-
-        var wallet = new Wallet
+        try
         {
-            Id = Guid.NewGuid(),
-            Username = username,
-            Balance = 0,
-            HeldAmount = 0,
-            Currency = "USD",
-            IsActive = true,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-
-        var created = await _walletRepository.AddAsync(wallet);
-
-        _logger.LogInformation("Wallet created for user: {Username}", username);
-
-        return CreatedAtAction(nameof(GetWallet), new { username }, _mapper.Map<WalletDto>(created));
+            var userId = GetUserIdFromClaims();
+            var wallet = await _walletService.CreateWalletAsync(userId, username, cancellationToken);
+            return CreatedAtAction(nameof(GetWallet), new { username }, wallet);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpPost("{username}/deposit")]
-    public async Task<ActionResult<WalletTransactionDto>> Deposit(string username, [FromBody] DepositDto dto)
+    public async Task<ActionResult<WalletTransactionDto>> Deposit(string username, [FromBody] DepositDto dto, CancellationToken cancellationToken)
     {
-        var wallet = await _walletRepository.GetByUsernameAsync(username);
-        if (wallet == null)
-            return NotFound("Wallet not found");
-
-        if (dto.Amount <= 0)
-            return BadRequest("Amount must be positive");
-
-        var transaction = new WalletTransaction
+        try
         {
-            Id = Guid.NewGuid(),
-            Username = username,
-            Type = TransactionType.Deposit,
-            Amount = dto.Amount,
-            Balance = wallet.Balance + dto.Amount,
-            Status = TransactionStatus.Completed,
-            Description = dto.Description ?? "Deposit",
-            PaymentMethod = dto.PaymentMethod,
-            CreatedAt = DateTimeOffset.UtcNow,
-            ProcessedAt = DateTimeOffset.UtcNow
-        };
-
-        wallet.Balance += dto.Amount;
-        await _walletRepository.UpdateAsync(wallet);
-        await _transactionRepository.AddAsync(transaction);
-
-        _logger.LogInformation("Deposit of {Amount} completed for user: {Username}", dto.Amount, username);
-
-        return Ok(_mapper.Map<WalletTransactionDto>(transaction));
+            var transaction = await _walletService.DepositAsync(username, dto.Amount, dto.PaymentMethod, dto.Description, cancellationToken);
+            return Ok(transaction);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound("Wallet not found");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("{username}/withdraw")]
-    public async Task<ActionResult<WalletTransactionDto>> Withdraw(string username, [FromBody] WithdrawDto dto)
+    public async Task<ActionResult<WalletTransactionDto>> Withdraw(string username, [FromBody] WithdrawDto dto, CancellationToken cancellationToken)
     {
-        var wallet = await _walletRepository.GetByUsernameAsync(username);
-        if (wallet == null)
-            return NotFound("Wallet not found");
-
-        if (dto.Amount <= 0)
-            return BadRequest("Amount must be positive");
-
-        if (wallet.AvailableBalance < dto.Amount)
-            return BadRequest("Insufficient balance");
-
-        var transaction = new WalletTransaction
+        try
         {
-            Id = Guid.NewGuid(),
-            Username = username,
-            Type = TransactionType.Withdrawal,
-            Amount = dto.Amount,
-            Balance = wallet.Balance - dto.Amount,
-            Status = TransactionStatus.Pending,
-            Description = dto.Description ?? "Withdrawal",
-            PaymentMethod = dto.PaymentMethod,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-
-        wallet.Balance -= dto.Amount;
-        await _walletRepository.UpdateAsync(wallet);
-        await _transactionRepository.AddAsync(transaction);
-
-        _logger.LogInformation("Withdrawal of {Amount} initiated for user: {Username}", dto.Amount, username);
-
-        return Ok(_mapper.Map<WalletTransactionDto>(transaction));
+            var transaction = await _walletService.WithdrawAsync(username, dto.Amount, dto.PaymentMethod, dto.Description, cancellationToken);
+            return Ok(transaction);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound("Wallet not found");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet("{username}/transactions")]
     public async Task<ActionResult<IEnumerable<WalletTransactionDto>>> GetTransactions(
         string username,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
-        var transactions = await _transactionRepository.GetByUsernameAsync(username, page, pageSize);
-        var totalCount = await _transactionRepository.GetCountByUsernameAsync(username);
+        var (transactions, totalCount) = await _walletService.GetTransactionsAsync(username, page, pageSize, cancellationToken);
 
         Response.Headers.Append("X-Total-Count", totalCount.ToString());
         Response.Headers.Append("X-Page", page.ToString());
         Response.Headers.Append("X-Page-Size", pageSize.ToString());
 
-        return Ok(_mapper.Map<IEnumerable<WalletTransactionDto>>(transactions));
+        return Ok(transactions);
     }
 
     [HttpGet("transactions/{id:guid}")]
-    public async Task<ActionResult<WalletTransactionDto>> GetTransaction(Guid id)
+    public async Task<ActionResult<WalletTransactionDto>> GetTransaction(Guid id, CancellationToken cancellationToken)
     {
-        var transaction = await _transactionRepository.GetByIdAsync(id);
+        var transaction = await _walletService.GetTransactionByIdAsync(id, cancellationToken);
         if (transaction == null)
             return NotFound();
 
-        return Ok(_mapper.Map<WalletTransactionDto>(transaction));
+        return Ok(transaction);
+    }
+
+    private Guid GetUserIdFromClaims()
+    {
+        var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
     }
 }

@@ -8,7 +8,7 @@ namespace BidService.Application.DTOs
         public Guid AuctionId { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Bid amount must be greater than 0")]
-        public int Amount { get; set; }
+        [Range(0.01, double.MaxValue, ErrorMessage = "Bid amount must be greater than 0")]
+        public decimal Amount { get; set; }
     }
 }

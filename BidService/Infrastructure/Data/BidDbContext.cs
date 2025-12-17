@@ -25,13 +25,15 @@ namespace BidService.Infrastructure.Data
             modelBuilder.Entity<Bid>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Bidder).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Amount).IsRequired();
+                entity.Property(e => e.BidderId).IsRequired();
+                entity.Property(e => e.BidderUsername).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
                 entity.Property(e => e.BidTime).IsRequired();
                 entity.Property(e => e.Status).IsRequired();
                 
                 entity.HasIndex(e => e.AuctionId);
-                entity.HasIndex(e => e.Bidder);
+                entity.HasIndex(e => e.BidderId);
+                entity.HasIndex(e => e.BidderUsername);
                 entity.HasIndex(e => new { e.AuctionId, e.BidTime });
 
                 entity.HasQueryFilter(e => !e.IsDeleted);
@@ -40,13 +42,16 @@ namespace BidService.Infrastructure.Data
             modelBuilder.Entity<AutoBid>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Bidder).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.MaxAmount).IsRequired();
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.MaxAmount).HasPrecision(18, 2).IsRequired();
+                entity.Property(e => e.CurrentBidAmount).HasPrecision(18, 2).IsRequired();
                 entity.Property(e => e.IsActive).IsRequired();
 
                 entity.HasIndex(e => e.AuctionId);
-                entity.HasIndex(e => e.Bidder);
-                entity.HasIndex(e => new { e.AuctionId, e.Bidder }).IsUnique();
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.Username);
+                entity.HasIndex(e => new { e.AuctionId, e.UserId }).IsUnique();
 
                 entity.HasQueryFilter(e => !e.IsDeleted);
             });

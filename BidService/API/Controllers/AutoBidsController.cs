@@ -2,6 +2,7 @@ using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BidService.API.Controllers;
 
@@ -17,14 +18,25 @@ public class AutoBidsController : ControllerBase
         _autoBidService = autoBidService;
     }
 
+    private (Guid UserId, string Username)? GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        var username = User.Identity?.Name;
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId) || string.IsNullOrEmpty(username))
+            return null;
+            
+        return (userId, username);
+    }
+
     [HttpPost]
     public async Task<ActionResult<AutoBidDto>> CreateAutoBid([FromBody] CreateAutoBidDto dto)
     {
-        var username = User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
+        var user = GetCurrentUser();
+        if (user == null)
             return Unauthorized();
 
-        var result = await _autoBidService.CreateAutoBidAsync(dto, username);
+        var result = await _autoBidService.CreateAutoBidAsync(dto, user.Value.UserId, user.Value.Username);
         if (result == null)
             return BadRequest("Failed to create auto-bid");
 
@@ -44,22 +56,22 @@ public class AutoBidsController : ControllerBase
     [HttpGet("my")]
     public async Task<ActionResult<List<AutoBidDto>>> GetMyAutoBids()
     {
-        var username = User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
+        var user = GetCurrentUser();
+        if (user == null)
             return Unauthorized();
 
-        var autoBids = await _autoBidService.GetAutoBidsByBidderAsync(username);
+        var autoBids = await _autoBidService.GetAutoBidsByUserAsync(user.Value.UserId);
         return Ok(autoBids);
     }
 
     [HttpGet("auction/{auctionId}")]
     public async Task<ActionResult<AutoBidDto>> GetMyAutoBidForAuction(Guid auctionId)
     {
-        var username = User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
+        var user = GetCurrentUser();
+        if (user == null)
             return Unauthorized();
 
-        var autoBid = await _autoBidService.GetActiveAutoBidAsync(auctionId, username);
+        var autoBid = await _autoBidService.GetActiveAutoBidAsync(auctionId, user.Value.UserId);
         if (autoBid == null)
             return NotFound();
 
@@ -69,11 +81,11 @@ public class AutoBidsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<AutoBidDto>> UpdateAutoBid(Guid id, [FromBody] UpdateAutoBidDto dto)
     {
-        var username = User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
+        var user = GetCurrentUser();
+        if (user == null)
             return Unauthorized();
 
-        var result = await _autoBidService.UpdateAutoBidAsync(id, dto, username);
+        var result = await _autoBidService.UpdateAutoBidAsync(id, dto, user.Value.UserId);
         if (result == null)
             return NotFound();
 
@@ -83,11 +95,11 @@ public class AutoBidsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> CancelAutoBid(Guid id)
     {
-        var username = User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
+        var user = GetCurrentUser();
+        if (user == null)
             return Unauthorized();
 
-        var success = await _autoBidService.CancelAutoBidAsync(id, username);
+        var success = await _autoBidService.CancelAutoBidAsync(id, user.Value.UserId);
         if (!success)
             return NotFound();
 

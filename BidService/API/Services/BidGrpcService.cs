@@ -37,8 +37,8 @@ namespace BidService.API.Services
             {
                 Id = bid.Id.ToString(),
                 AuctionId = bid.AuctionId.ToString(),
-                Bidder = bid.Bidder,
-                Amount = bid.Amount,
+                Bidder = bid.BidderUsername,
+                Amount = (int)bid.Amount,
                 BidTime = bid.BidTime.ToString("O"),
                 Status = bid.Status.ToString()
             };
@@ -66,8 +66,8 @@ namespace BidService.API.Services
                 {
                     Id = bid.Id.ToString(),
                     AuctionId = bid.AuctionId.ToString(),
-                    Bidder = bid.Bidder,
-                    Amount = bid.Amount,
+                    Bidder = bid.BidderUsername,
+                    Amount = (int)bid.Amount,
                     BidTime = bid.BidTime.ToString("O"),
                     Status = bid.Status.ToString()
                 });
@@ -87,7 +87,7 @@ namespace BidService.API.Services
             }
 
             var bids = await _bidRepository.GetBidsByAuctionIdAsync(auctionId, context.CancellationToken);
-            var userBid = bids.FirstOrDefault(b => b.Bidder.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase));
+            var userBid = bids.FirstOrDefault(b => b.BidderUsername.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase));
 
             var response = new HasUserBidResponse
             {
@@ -100,8 +100,8 @@ namespace BidService.API.Services
                 {
                     Id = userBid.Id.ToString(),
                     AuctionId = userBid.AuctionId.ToString(),
-                    Bidder = userBid.Bidder,
-                    Amount = userBid.Amount,
+                    Bidder = userBid.BidderUsername,
+                    Amount = (int)userBid.Amount,
                     BidTime = userBid.BidTime.ToString("O"),
                     Status = userBid.Status.ToString()
                 };

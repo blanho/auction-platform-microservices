@@ -1,12 +1,14 @@
 using Common.Storage.Abstractions;
 using Common.Storage.Enums;
 using Common.Storage.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace UtilityService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FilesController : ControllerBase
 {
     private readonly IFileStorageService _fileStorageService;

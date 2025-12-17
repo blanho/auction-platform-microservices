@@ -86,9 +86,9 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 AuctionId = auction.Id,
                 Buyer = request.BuyerUsername,
                 Seller = auction.SellerUsername,
-                BuyNowPrice = (int)auction.BuyNowPrice!.Value,
+                BuyNowPrice = auction.BuyNowPrice!.Value,
                 ItemTitle = auction.Item.Title,
-                ExecutedAt = DateTime.UtcNow
+                ExecutedAt = DateTimeOffset.UtcNow
             };
             await _eventPublisher.PublishAsync(buyNowEvent, cancellationToken);
 
@@ -120,7 +120,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 AuctionId = auction.Id,
                 Buyer = request.BuyerUsername,
                 Seller = auction.SellerUsername,
-                BuyNowPrice = (int)auction.BuyNowPrice!.Value,
+                BuyNowPrice = auction.BuyNowPrice!.Value,
                 ItemTitle = auction.Item.Title,
                 Success = true
             });

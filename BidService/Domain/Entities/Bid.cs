@@ -6,9 +6,10 @@ namespace BidService.Domain.Entities
     public class Bid : BaseEntity
     {
         public Guid AuctionId { get; set; }
-        public string Bidder { get; set; } = string.Empty;
-        public int Amount { get; set; }
-        public DateTime BidTime { get; set; }
+        public Guid BidderId { get; set; }
+        public string BidderUsername { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public DateTimeOffset BidTime { get; set; }
         public BidStatus Status { get; set; }
     }
 

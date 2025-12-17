@@ -19,11 +19,11 @@ public class AutoBidRepository : IAutoBidRepository
         return await _context.AutoBids.FindAsync(id);
     }
 
-    public async Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, string bidder)
+    public async Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, Guid userId)
     {
         return await _context.AutoBids
             .FirstOrDefaultAsync(ab => ab.AuctionId == auctionId 
-                && ab.Bidder == bidder 
+                && ab.UserId == userId 
                 && ab.IsActive);
     }
 
@@ -35,10 +35,10 @@ public class AutoBidRepository : IAutoBidRepository
             .ToListAsync();
     }
 
-    public async Task<List<AutoBid>> GetAutoBidsByBidderAsync(string bidder)
+    public async Task<List<AutoBid>> GetAutoBidsByUserAsync(Guid userId)
     {
         return await _context.AutoBids
-            .Where(ab => ab.Bidder == bidder)
+            .Where(ab => ab.UserId == userId)
             .OrderByDescending(ab => ab.CreatedAt)
             .ToListAsync();
     }

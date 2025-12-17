@@ -183,4 +183,22 @@ public class AuctionGrpcService : AuctionGrpc.AuctionGrpcBase
             NewEndTime = auction.AuctionEnd.ToString("O")
         };
     }
+
+    public override async Task<AuctionStatsResponse> GetAuctionStats(
+        GetAuctionStatsRequest request,
+        ServerCallContext context)
+    {
+        var liveCount = await _auctionRepository.GetCountByStatusAsync(AuctionStatus.Live, context.CancellationToken);
+        var finishedCount = await _auctionRepository.GetCountByStatusAsync(AuctionStatus.Finished, context.CancellationToken);
+        var totalRevenue = await _auctionRepository.GetTotalRevenueAsync(context.CancellationToken);
+        var totalCount = await _auctionRepository.GetTotalCountAsync(context.CancellationToken);
+
+        return new AuctionStatsResponse
+        {
+            LiveAuctions = liveCount,
+            TotalAuctions = totalCount,
+            CompletedAuctions = finishedCount,
+            TotalRevenue = (double)totalRevenue
+        };
+    }
 }

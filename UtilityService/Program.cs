@@ -11,6 +11,7 @@ using Serilog;
 using UtilityService.Consumers;
 using UtilityService.Data;
 using UtilityService.Extensions;
+using UtilityService.Grpc;
 using UtilityService.GrpcServices;
 using UtilityService.Interfaces;
 using UtilityService.Repositories;
@@ -35,6 +36,12 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 builder.Services.AddDbContext<UtilityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var auctionServiceGrpcUrl = builder.Configuration["GrpcServices:AuctionService"] ?? "http://localhost:7002";
+builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
+{
+    options.Address = new Uri(auctionServiceGrpcUrl);
+});
+
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IStoredFileRepository, StoredFileRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
@@ -44,7 +51,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
-builder.Services.AddScoped<IStripePaymentService, StripePaymentService>();
+builder.Services.AddScoped<IDashboardStatsService, DashboardStatsService>();
 
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();

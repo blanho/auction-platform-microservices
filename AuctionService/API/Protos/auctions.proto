@@ -8,6 +8,17 @@ service AuctionGrpc {
   rpc ValidateAuctionForBid (ValidateAuctionRequest) returns (ValidateAuctionResponse);
   rpc GetAuctionDetails (GetAuctionDetailsRequest) returns (AuctionDetailsResponse);
   rpc ExtendAuction (ExtendAuctionRequest) returns (ExtendAuctionResponse);
+  rpc GetAuctionStats (GetAuctionStatsRequest) returns (AuctionStatsResponse);
+}
+
+message GetAuctionStatsRequest {
+}
+
+message AuctionStatsResponse {
+  int32 live_auctions = 1;
+  int32 total_auctions = 2;
+  int32 completed_auctions = 3;
+  double total_revenue = 4;
 }
 
 message ValidateAuctionRequest {

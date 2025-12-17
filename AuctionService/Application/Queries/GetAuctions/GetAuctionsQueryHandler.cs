@@ -1,6 +1,5 @@
 using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
-using AuctionService.Application.Specifications;
 using AutoMapper;
 using Common.Core.Helpers;
 using Common.Repository.Interfaces;
@@ -31,28 +30,18 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, PagedResu
 
         try
         {
-            var allAuctions = await _repository.GetAllAsync(cancellationToken);
-
-            var query = allAuctions.AsQueryable();
-
-            var filterSpec = new AuctionFilterSpecification(
-                request.Status,
-                request.Seller,
-                request.Winner,
-                request.SearchTerm,
-                request.Category,
-                request.IsFeatured);
-
-            query = query.Where(filterSpec.Criteria);
-
-            query = query.ApplySorting(request.OrderBy, request.Descending);
-
-            var totalCount = query.Count();
-
-            var items = query
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToList();
+            var (items, totalCount) = await _repository.GetPagedAsync(
+                status: request.Status,
+                seller: request.Seller,
+                winner: request.Winner,
+                searchTerm: request.SearchTerm,
+                category: request.Category,
+                isFeatured: request.IsFeatured,
+                orderBy: request.OrderBy,
+                descending: request.Descending,
+                pageNumber: request.PageNumber,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken);
 
             var dtos = _mapper.Map<List<AuctionDto>>(items);
 

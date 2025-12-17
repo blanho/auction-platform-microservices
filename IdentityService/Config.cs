@@ -1,4 +1,5 @@
 using Duende.IdentityServer.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace IdentityService;
 
@@ -18,30 +19,35 @@ public static class Config
             new ApiScope("auction", "Full Scope", new[] { "role" }),
         };
 
-    public static IEnumerable<Client> Clients =>
-        new Client[]
+    public static IEnumerable<Client> GetClients(IConfiguration configuration)
+    {
+        var postmanSecret = configuration["Clients:Postman:Secret"] ?? "development-postman-secret";
+        var nextAppSecret = configuration["Clients:NextApp:Secret"] ?? "development-nextapp-secret";
+
+        return new Client[]
         {
             new Client
             {
                 ClientId = "postman",
                 ClientName = "Postman",
                 AllowedScopes = { "openid", "profile", "auction", "roles" },
-                RedirectUris = {"https://www.getpostman.com/oauth2/callback"},
-                ClientSecrets = new [] { new Secret("NotASecret".Sha256()) },
+                RedirectUris = { "https://www.getpostman.com/oauth2/callback" },
+                ClientSecrets = new[] { new Secret(postmanSecret.Sha256()) },
                 AllowedGrantTypes = { GrantType.ResourceOwnerPassword }
             },
             new Client
             {
                 ClientId = "nextApp",
                 ClientName = "nextApp",
-                ClientSecrets = { new Secret("secret".Sha256()) },
+                ClientSecrets = { new Secret(nextAppSecret.Sha256()) },
                 AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                 AllowOfflineAccess = true,
                 AllowedScopes = { "openid", "profile", "auction", "roles" },
-                AccessTokenLifetime = 3600 * 24 * 30, // 30 days
+                AccessTokenLifetime = 3600,
                 RefreshTokenUsage = TokenUsage.ReUse,
                 RefreshTokenExpiration = TokenExpiration.Sliding,
-                SlidingRefreshTokenLifetime = 3600 * 24 * 90 // 90 days
+                SlidingRefreshTokenLifetime = 3600 * 24 * 7
             }
         };
+    }
 }

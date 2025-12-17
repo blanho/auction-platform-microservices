@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "UtilityService.Grpc";
+
+package auctions;
+
+service AuctionGrpc {
+  rpc GetAuctionStats (GetAuctionStatsRequest) returns (AuctionStatsResponse);
+}
+
+message GetAuctionStatsRequest {
+}
+
+message AuctionStatsResponse {
+  int32 live_auctions = 1;
+  int32 total_auctions = 2;
+  int32 completed_auctions = 3;
+  double total_revenue = 4;
+}

@@ -4,13 +4,14 @@ namespace BidService.Application.DTOs
     {
         public Guid Id { get; set; }
         public Guid AuctionId { get; set; }
-        public string Bidder { get; set; } = string.Empty;
-        public int Amount { get; set; }
-        public DateTime BidTime { get; set; }
+        public Guid BidderId { get; set; }
+        public string BidderUsername { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public DateTimeOffset BidTime { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? ErrorMessage { get; set; }
-        public int MinimumNextBid { get; set; }
-        public int MinimumIncrement { get; set; }
+        public decimal MinimumNextBid { get; set; }
+        public decimal MinimumIncrement { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
     }

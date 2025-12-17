@@ -115,11 +115,34 @@ public class CachedAuctionRepository : IAuctionRepository
     public Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default)
         => _inner.CountEndingSoonAsync(cancellationToken);
 
+    public Task<int> GetCountByStatusAsync(Status status, CancellationToken cancellationToken = default)
+        => _inner.GetCountByStatusAsync(status, cancellationToken);
+
+    public Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+        => _inner.GetTotalCountAsync(cancellationToken);
+
+    public Task<decimal> GetTotalRevenueAsync(CancellationToken cancellationToken = default)
+        => _inner.GetTotalRevenueAsync(cancellationToken);
+
     public Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
         => _inner.GetTrendingItemsAsync(limit, cancellationToken);
 
     public Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         => _inner.GetByIdsAsync(ids, cancellationToken);
+
+    public Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
+        string? status = null,
+        string? seller = null,
+        string? winner = null,
+        string? searchTerm = null,
+        string? category = null,
+        bool? isFeatured = null,
+        string? orderBy = null,
+        bool descending = true,
+        int pageNumber = 1,
+        int pageSize = 12,
+        CancellationToken cancellationToken = default)
+        => _inner.GetPagedAsync(status, seller, winner, searchTerm, category, isFeatured, orderBy, descending, pageNumber, pageSize, cancellationToken);
 
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {

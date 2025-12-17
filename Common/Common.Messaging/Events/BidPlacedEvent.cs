@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace Common.Messaging.Events;
 
-namespace Common.Messaging.Events
+public class BidPlacedEvent
 {
-    public class BidPlacedEvent
-    {
-        public Guid Id { get; set; }
-        public Guid AuctionId { get; set; }
-        public string Bidder { get; set; }
-        public DateTime BidTime { get; set; }
-        public int BidAmount { get; set; }
-        public string BidStatus { get; set; }
-    }
+    public Guid Id { get; set; }
+    public Guid AuctionId { get; set; }
+    public Guid BidderId { get; set; }
+    public string Bidder { get; set; } = string.Empty;
+    public DateTimeOffset BidTime { get; set; }
+    public decimal BidAmount { get; set; }
+    public string BidStatus { get; set; } = string.Empty;
 }

@@ -10,37 +10,37 @@ namespace UtilityService.Controllers.Admin;
 [Authorize(Roles = "admin")]
 public class DashboardController : ControllerBase
 {
-    private readonly IReportRepository _reportRepository;
+    private readonly IDashboardStatsService _dashboardStatsService;
     private readonly IAuditLogRepository _auditLogRepository;
 
     public DashboardController(
-        IReportRepository reportRepository,
+        IDashboardStatsService dashboardStatsService,
         IAuditLogRepository auditLogRepository)
     {
-        _reportRepository = reportRepository;
+        _dashboardStatsService = dashboardStatsService;
         _auditLogRepository = auditLogRepository;
     }
 
     [HttpGet("stats")]
     public async Task<ActionResult<AdminDashboardStatsDto>> GetStats(CancellationToken cancellationToken)
     {
-        var pendingReportsCount = await _reportRepository.GetPendingCountAsync(cancellationToken);
+        var stats = await _dashboardStatsService.GetStatsAsync(cancellationToken);
         
-        var stats = new AdminDashboardStatsDto
+        var dto = new AdminDashboardStatsDto
         {
-            TotalRevenue = 0,
-            RevenueChange = 0,
-            ActiveUsers = 0,
-            ActiveUsersChange = 0,
-            LiveAuctions = 0,
-            LiveAuctionsChange = 0,
-            PendingReports = pendingReportsCount,
-            PendingReportsChange = 0,
-            TotalOrders = 0,
-            CompletedOrders = 0
+            TotalRevenue = stats.TotalRevenue,
+            RevenueChange = stats.RevenueChange,
+            ActiveUsers = stats.ActiveUsers,
+            ActiveUsersChange = stats.ActiveUsersChange,
+            LiveAuctions = stats.LiveAuctions,
+            LiveAuctionsChange = stats.LiveAuctionsChange,
+            PendingReports = stats.PendingReports,
+            PendingReportsChange = stats.PendingReportsChange,
+            TotalOrders = stats.TotalOrders,
+            CompletedOrders = stats.CompletedOrders
         };
 
-        return Ok(stats);
+        return Ok(dto);
     }
 
     [HttpGet("activity")]
@@ -65,18 +65,20 @@ public class DashboardController : ControllerBase
 
     [HttpGet("health")]
     [AllowAnonymous]
-    public ActionResult<PlatformHealthDto> GetPlatformHealth()
+    public async Task<ActionResult<PlatformHealthDto>> GetPlatformHealth(CancellationToken cancellationToken)
     {
-        var health = new PlatformHealthDto
+        var healthStatus = await _dashboardStatsService.GetHealthStatusAsync(cancellationToken);
+        
+        var dto = new PlatformHealthDto
         {
-            ApiStatus = "healthy",
-            DatabaseStatus = "connected",
-            CacheStatus = "active",
-            QueueJobCount = 0,
-            QueueStatus = "healthy"
+            ApiStatus = healthStatus.ApiStatus,
+            DatabaseStatus = healthStatus.DatabaseStatus,
+            CacheStatus = healthStatus.CacheStatus,
+            QueueStatus = healthStatus.QueueStatus,
+            QueueJobCount = healthStatus.QueueJobCount
         };
 
-        return Ok(health);
+        return Ok(dto);
     }
 
     private static string MapAuditActionToType(AuditAction action)

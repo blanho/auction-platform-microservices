@@ -21,7 +21,7 @@ public class AuctionValidationService : IAuctionValidationService
     public async Task<AuctionValidationResult> ValidateAuctionForBidAsync(
         Guid auctionId,
         string bidder,
-        int bidAmount,
+        decimal bidAmount,
         CancellationToken cancellationToken = default)
     {
         try
@@ -30,7 +30,7 @@ public class AuctionValidationService : IAuctionValidationService
             {
                 AuctionId = auctionId.ToString(),
                 Bidder = bidder,
-                BidAmount = bidAmount
+                BidAmount = (int)bidAmount
             };
 
             var response = await _auctionClient.ValidateAuctionForBidAsync(

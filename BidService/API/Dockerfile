@@ -13,7 +13,6 @@ COPY ["Common/Common.Logging/Common.Logging.csproj", "Common/Common.Logging/"]
 COPY ["Common/Common.Messaging/Common.Messaging.csproj", "Common/Common.Messaging/"]
 COPY ["Common/Common.Repository/Common.Repository.csproj", "Common/Common.Repository/"]
 COPY ["Common/Common.OpenApi/Common.OpenApi.csproj", "Common/Common.OpenApi/"]
-COPY ["Common/Common.Security/Common.Security.csproj", "Common/Common.Security/"]
 
 RUN dotnet restore "BidService/API/BidService.API.csproj"
 

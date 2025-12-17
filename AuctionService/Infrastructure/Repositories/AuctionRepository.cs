@@ -90,6 +90,92 @@ namespace AuctionService.Infrastructure.Repositories
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
         }
 
+        public async Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
+            string? status = null,
+            string? seller = null,
+            string? winner = null,
+            string? searchTerm = null,
+            string? category = null,
+            bool? isFeatured = null,
+            string? orderBy = null,
+            bool descending = true,
+            int pageNumber = 1,
+            int pageSize = 12,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .AsSplitQuery()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Status>(status, true, out var statusEnum))
+            {
+                query = query.Where(x => x.Status == statusEnum);
+            }
+
+            if (!string.IsNullOrEmpty(seller))
+            {
+                query = query.Where(x => x.SellerUsername == seller);
+            }
+
+            if (!string.IsNullOrEmpty(winner))
+            {
+                query = query.Where(x => x.WinnerUsername == winner);
+            }
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(x => 
+                    x.Item != null && (
+                        x.Item.Title.ToLower().Contains(term) ||
+                        (x.Item.Description != null && x.Item.Description.ToLower().Contains(term))
+                    ));
+            }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == category);
+            }
+
+            if (isFeatured.HasValue)
+            {
+                query = query.Where(x => x.IsFeatured == isFeatured.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            query = orderBy?.ToLower() switch
+            {
+                "price" => descending 
+                    ? query.OrderByDescending(x => x.CurrentHighBid ?? x.ReservePrice)
+                    : query.OrderBy(x => x.CurrentHighBid ?? x.ReservePrice),
+                "enddate" => descending 
+                    ? query.OrderByDescending(x => x.AuctionEnd)
+                    : query.OrderBy(x => x.AuctionEnd),
+                "createdat" => descending 
+                    ? query.OrderByDescending(x => x.CreatedAt)
+                    : query.OrderBy(x => x.CreatedAt),
+                "title" => descending 
+                    ? query.OrderByDescending(x => x.Item != null ? x.Item.Title : string.Empty)
+                    : query.OrderBy(x => x.Item != null ? x.Item.Title : string.Empty),
+                _ => descending 
+                    ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
+                    : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt)
+            };
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
+        }
+
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         {
             var now = _dateTime.UtcNow;
@@ -194,6 +280,27 @@ namespace AuctionService.Infrastructure.Repositories
                     && x.AuctionEnd >= now 
                     && x.AuctionEnd <= endingSoonThreshold)
                 .CountAsync(cancellationToken);
+        }
+
+        public async Task<int> GetCountByStatusAsync(Status status, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == status)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<decimal> GetTotalRevenueAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
+                .SumAsync(x => x.SoldAmount ?? 0, cancellationToken);
         }
 
         public async Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)

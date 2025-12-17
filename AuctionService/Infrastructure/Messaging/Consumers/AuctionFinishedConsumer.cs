@@ -2,7 +2,6 @@ using Common.Messaging.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using AuctionService.Application.Interfaces;
-using AuctionService.Domain.Entities;
 using Common.Domain.Enums;
 
 namespace AuctionService.Infrastructure.Messaging.Consumers;
@@ -10,11 +9,16 @@ namespace AuctionService.Infrastructure.Messaging.Consumers;
 public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 {
     private readonly IAuctionRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuctionFinishedConsumer> _logger;
 
-    public AuctionFinishedConsumer(IAuctionRepository repository, ILogger<AuctionFinishedConsumer> logger)
+    public AuctionFinishedConsumer(
+        IAuctionRepository repository,
+        IUnitOfWork unitOfWork,
+        ILogger<AuctionFinishedConsumer> logger)
     {
         _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -45,6 +49,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             message.AuctionId, message.WinnerUsername, message.SoldAmount);
 
         await _repository.UpdateAsync(auction);
+        await _unitOfWork.SaveChangesAsync();
         
         _logger.LogInformation("Successfully updated auction {AuctionId} status to {Status}", 
             message.AuctionId, auction.Status);

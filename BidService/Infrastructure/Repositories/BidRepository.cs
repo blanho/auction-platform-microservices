@@ -124,10 +124,10 @@ namespace BidService.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<Bid>> GetBidsByBidderAsync(string bidder, CancellationToken cancellationToken = default)
+        public async Task<List<Bid>> GetBidsByBidderUsernameAsync(string bidderUsername, CancellationToken cancellationToken = default)
         {
             return await _context.Bids
-                .Where(x => !x.IsDeleted && x.Bidder == bidder)
+                .Where(x => !x.IsDeleted && x.BidderUsername == bidderUsername)
                 .OrderByDescending(x => x.BidTime)
                 .ToListAsync(cancellationToken);
         }

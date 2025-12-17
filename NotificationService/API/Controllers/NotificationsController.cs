@@ -31,49 +31,67 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<NotificationDto>>> GetMyNotifications()
+        public async Task<ActionResult<List<NotificationDto>>> GetMyNotifications(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
-            var notifications = await _notificationService.GetUserNotificationsAsync(userId);
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, cancellationToken);
             return Ok(notifications);
         }
 
         [HttpGet("summary")]
-        public async Task<ActionResult<NotificationSummaryDto>> GetSummary()
+        public async Task<ActionResult<NotificationSummaryDto>> GetSummary(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
-            var summary = await _notificationService.GetNotificationSummaryAsync(userId);
+            var summary = await _notificationService.GetNotificationSummaryAsync(userId, cancellationToken);
             return Ok(summary);
         }
 
         [HttpGet("unread")]
-        public async Task<ActionResult<List<NotificationDto>>> GetUnreadNotifications()
+        public async Task<ActionResult<List<NotificationDto>>> GetUnreadNotifications(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
-            var notifications = await _notificationService.GetUserNotificationsAsync(userId);
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, cancellationToken);
             var unread = notifications.Where(n => n.Status == "Unread").ToList();
             return Ok(unread);
         }
 
         [HttpPut("{id}/read")]
-        public async Task<ActionResult> MarkAsRead(Guid id)
+        public async Task<ActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
         {
-            await _notificationService.MarkAsReadAsync(id);
+            var userId = GetUserId();
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, cancellationToken);
+            var notification = notifications.FirstOrDefault(n => n.Id == id);
+            
+            if (notification == null)
+            {
+                return NotFound(new { error = "Notification not found or access denied" });
+            }
+
+            await _notificationService.MarkAsReadAsync(id, cancellationToken);
             return NoContent();
         }
 
         [HttpPut("read-all")]
-        public async Task<ActionResult> MarkAllAsRead()
+        public async Task<ActionResult> MarkAllAsRead(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
-            await _notificationService.MarkAllAsReadAsync(userId);
+            await _notificationService.MarkAllAsReadAsync(userId, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            await _notificationService.DeleteNotificationAsync(id);
+            var userId = GetUserId();
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, cancellationToken);
+            var notification = notifications.FirstOrDefault(n => n.Id == id);
+            
+            if (notification == null)
+            {
+                return NotFound(new { error = "Notification not found or access denied" });
+            }
+
+            await _notificationService.DeleteNotificationAsync(id, cancellationToken);
             return NoContent();
         }
 

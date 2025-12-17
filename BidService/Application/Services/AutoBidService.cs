@@ -1,6 +1,7 @@
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.Entities;
+using BidService.Domain.ValueObjects;
 using Common.Repository.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -25,9 +26,9 @@ namespace BidService.Application.Services
             _logger = logger;
         }
 
-        public async Task<AutoBidDto?> CreateAutoBidAsync(CreateAutoBidDto dto, string bidder, CancellationToken cancellationToken = default)
+        public async Task<AutoBidDto?> CreateAutoBidAsync(CreateAutoBidDto dto, Guid userId, string username, CancellationToken cancellationToken = default)
         {
-            var existingAutoBid = await _autoBidRepository.GetActiveAutoBidAsync(dto.AuctionId, bidder);
+            var existingAutoBid = await _autoBidRepository.GetActiveAutoBidAsync(dto.AuctionId, userId);
 
             if (existingAutoBid != null)
             {
@@ -42,18 +43,18 @@ namespace BidService.Application.Services
             {
                 Id = Guid.NewGuid(),
                 AuctionId = dto.AuctionId,
-                Bidder = bidder,
+                UserId = userId,
+                Username = username,
                 MaxAmount = dto.MaxAmount,
                 CurrentBidAmount = 0,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                IsActive = true
             };
 
             await _autoBidRepository.AddAsync(autoBid);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Auto-bid created for auction {AuctionId} by {Bidder} with max amount {MaxAmount}",
-                dto.AuctionId, bidder, dto.MaxAmount);
+            _logger.LogInformation("Auto-bid created for auction {AuctionId} by {Username} with max amount {MaxAmount}",
+                dto.AuctionId, username, dto.MaxAmount);
 
             return MapToDto(autoBid);
         }
@@ -64,23 +65,23 @@ namespace BidService.Application.Services
             return autoBid != null ? MapToDto(autoBid) : null;
         }
 
-        public async Task<AutoBidDto?> GetActiveAutoBidAsync(Guid auctionId, string bidder, CancellationToken cancellationToken = default)
+        public async Task<AutoBidDto?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default)
         {
-            var autoBid = await _autoBidRepository.GetActiveAutoBidAsync(auctionId, bidder);
+            var autoBid = await _autoBidRepository.GetActiveAutoBidAsync(auctionId, userId);
             return autoBid != null ? MapToDto(autoBid) : null;
         }
 
-        public async Task<List<AutoBidDto>> GetAutoBidsByBidderAsync(string bidder, CancellationToken cancellationToken = default)
+        public async Task<List<AutoBidDto>> GetAutoBidsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var autoBids = await _autoBidRepository.GetAutoBidsByBidderAsync(bidder);
+            var autoBids = await _autoBidRepository.GetAutoBidsByUserAsync(userId);
             return autoBids.Select(MapToDto).ToList();
         }
 
-        public async Task<AutoBidDto?> UpdateAutoBidAsync(Guid id, UpdateAutoBidDto dto, string bidder, CancellationToken cancellationToken = default)
+        public async Task<AutoBidDto?> UpdateAutoBidAsync(Guid id, UpdateAutoBidDto dto, Guid userId, CancellationToken cancellationToken = default)
         {
             var autoBid = await _autoBidRepository.GetByIdAsync(id);
 
-            if (autoBid == null || autoBid.Bidder != bidder)
+            if (autoBid == null || autoBid.UserId != userId)
                 return null;
 
             autoBid.MaxAmount = dto.MaxAmount;
@@ -94,21 +95,21 @@ namespace BidService.Application.Services
             return MapToDto(autoBid);
         }
 
-        public async Task<bool> CancelAutoBidAsync(Guid id, string bidder, CancellationToken cancellationToken = default)
+        public async Task<bool> CancelAutoBidAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
             var autoBid = await _autoBidRepository.GetByIdAsync(id);
 
-            if (autoBid == null || autoBid.Bidder != bidder)
+            if (autoBid == null || autoBid.UserId != userId)
                 return false;
 
             autoBid.IsActive = false;
             await _autoBidRepository.UpdateAsync(autoBid);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Auto-bid {Id} cancelled by {Bidder}", id, bidder);
+            _logger.LogInformation("Auto-bid {Id} cancelled by user {UserId}", id, userId);
             return true;
         }
 
-        public async Task ProcessAutoBidsForAuctionAsync(Guid auctionId, int currentHighBid, CancellationToken cancellationToken = default)
+        public async Task ProcessAutoBidsForAuctionAsync(Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken = default)
         {
             var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(auctionId);
             var eligibleAutoBids = activeAutoBids
@@ -127,12 +128,12 @@ namespace BidService.Application.Services
 
             var newBidAmount = Math.Min(
                 highestAutoBid.MaxAmount,
-                secondHighestMax + GetBidIncrement(secondHighestMax)
+                secondHighestMax + BidIncrement.GetIncrement(secondHighestMax)
             );
 
             if (newBidAmount <= currentHighBid)
             {
-                newBidAmount = currentHighBid + GetBidIncrement(currentHighBid);
+                newBidAmount = currentHighBid + BidIncrement.GetIncrement(currentHighBid);
             }
 
             if (newBidAmount <= highestAutoBid.MaxAmount)
@@ -140,15 +141,15 @@ namespace BidService.Application.Services
                 try
                 {
                     var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = newBidAmount };
-                    await _bidService.PlaceBidAsync(bidDto, highestAutoBid.Bidder, cancellationToken);
+                    await _bidService.PlaceBidAsync(bidDto, highestAutoBid.UserId, highestAutoBid.Username, cancellationToken);
 
                     highestAutoBid.CurrentBidAmount = newBidAmount;
-                    highestAutoBid.LastBidAt = DateTime.UtcNow;
+                    highestAutoBid.LastBidAt = DateTimeOffset.UtcNow;
                     await _autoBidRepository.UpdateAsync(highestAutoBid);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                    _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Bidder} for {Amount}",
-                        auctionId, highestAutoBid.Bidder, newBidAmount);
+                    _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
+                        auctionId, highestAutoBid.Username, newBidAmount);
                 }
                 catch (Exception ex)
                 {
@@ -157,26 +158,13 @@ namespace BidService.Application.Services
             }
         }
 
-        private static int GetBidIncrement(int currentBid)
-        {
-            return currentBid switch
-            {
-                < 100 => 10,
-                < 500 => 25,
-                < 1000 => 50,
-                < 5000 => 100,
-                < 10000 => 250,
-                < 50000 => 500,
-                _ => 1000
-            };
-        }
-
         private static AutoBidDto MapToDto(AutoBid autoBid)
         {
             return new AutoBidDto(
                 autoBid.Id,
                 autoBid.AuctionId,
-                autoBid.Bidder,
+                autoBid.UserId,
+                autoBid.Username,
                 autoBid.MaxAmount,
                 autoBid.CurrentBidAmount,
                 autoBid.IsActive,

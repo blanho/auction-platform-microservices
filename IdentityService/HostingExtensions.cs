@@ -58,8 +58,8 @@ internal static class HostingExtensions
                 options.SignIn.RequireConfirmedEmail = true;
                 options.User.RequireUniqueEmail = true;
                 options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 12;
+                options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
@@ -96,7 +96,7 @@ internal static class HostingExtensions
             })
             .AddInMemoryIdentityResources(Config.IdentityResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
-            .AddInMemoryClients(Config.Clients)
+            .AddInMemoryClients(Config.GetClients(builder.Configuration))
             .AddAspNetIdentity<ApplicationUser>()
             .AddProfileService<CustomProfileService>()
             .AddLicenseSummary();
@@ -114,7 +114,7 @@ internal static class HostingExtensions
         authBuilder.AddJwtBearer("Bearer", options =>
         {
             options.Authority = identityAuthority;
-            options.RequireHttpsMetadata = false;
+            options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {

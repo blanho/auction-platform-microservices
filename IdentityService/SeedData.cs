@@ -28,7 +28,7 @@ public class SeedData
                     Email = "admin@example.com",
                     EmailConfirmed = true,
                 };
-                var result = userMgr.CreateAsync(admin, "Admin123$").Result;
+                var result = userMgr.CreateAsync(admin, "Admin@Secure123!").Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
@@ -60,7 +60,7 @@ public class SeedData
                     Email = "AliceSmith@example.com",
                     EmailConfirmed = true,
                 };
-                var result = userMgr.CreateAsync(alice, "Pass123$").Result;
+                var result = userMgr.CreateAsync(alice, "Alice@Secure123!").Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
@@ -93,7 +93,7 @@ public class SeedData
                     Email = "BobSmith@example.com",
                     EmailConfirmed = true
                 };
-                var result = userMgr.CreateAsync(bob, "Pass123$").Result;
+                var result = userMgr.CreateAsync(bob, "Bob@Secure123!").Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);

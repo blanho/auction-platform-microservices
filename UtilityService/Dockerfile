@@ -14,7 +14,6 @@ COPY ["Common/Common.Messaging/Common.Messaging.csproj", "Common/Common.Messagin
 COPY ["Common/Common.Audit/Common.Audit.csproj", "Common/Common.Audit/"]
 COPY ["Common/Common.Storage/Common.Storage.csproj", "Common/Common.Storage/"]
 COPY ["Common/Common.Scheduling/Common.Scheduling.csproj", "Common/Common.Scheduling/"]
-COPY ["Common/Common.Security/Common.Security.csproj", "Common/Common.Security/"]
 
 # Restore packages
 RUN dotnet restore "UtilityService/UtilityService.csproj"

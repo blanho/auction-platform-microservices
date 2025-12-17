@@ -14,21 +14,26 @@ public static class BidIncrement
         new BidIncrementRule(50000, 99999, 1000),
         new BidIncrementRule(100000, 249999, 2500),
         new BidIncrementRule(250000, 499999, 5000),
-        new BidIncrementRule(500000, int.MaxValue, 10000)
+        new BidIncrementRule(500000, decimal.MaxValue, 10000)
     };
 
-    public static int GetMinimumIncrement(int currentBid)
+    public static decimal GetIncrement(decimal currentBid)
     {
         var rule = IncrementRules.FirstOrDefault(r => currentBid >= r.MinBid && currentBid <= r.MaxBid);
         return rule?.Increment ?? 10;
     }
 
-    public static int GetMinimumNextBid(int currentBid)
+    public static decimal GetMinimumIncrement(decimal currentBid)
     {
-        return currentBid + GetMinimumIncrement(currentBid);
+        return GetIncrement(currentBid);
     }
 
-    public static bool IsValidBidAmount(int bidAmount, int currentHighBid)
+    public static decimal GetMinimumNextBid(decimal currentBid)
+    {
+        return currentBid + GetIncrement(currentBid);
+    }
+
+    public static bool IsValidBidAmount(decimal bidAmount, decimal currentHighBid)
     {
         if (currentHighBid == 0)
         {
@@ -39,12 +44,12 @@ public static class BidIncrement
         return bidAmount >= minimumNextBid;
     }
 
-    public static string GetIncrementErrorMessage(int bidAmount, int currentHighBid)
+    public static string GetIncrementErrorMessage(decimal bidAmount, decimal currentHighBid)
     {
-        var minimumIncrement = GetMinimumIncrement(currentHighBid);
+        var minimumIncrement = GetIncrement(currentHighBid);
         var minimumNextBid = GetMinimumNextBid(currentHighBid);
-        return $"Bid must be at least ${minimumNextBid:N0}. Minimum increment is ${minimumIncrement:N0} for bids at this level.";
+        return $"Bid must be at least ${minimumNextBid:N2}. Minimum increment is ${minimumIncrement:N2} for bids at this level.";
     }
 }
 
-public record BidIncrementRule(int MinBid, int MaxBid, int Increment);
+public record BidIncrementRule(decimal MinBid, decimal MaxBid, decimal Increment);
