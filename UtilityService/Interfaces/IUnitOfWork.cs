@@ -3,7 +3,6 @@ namespace UtilityService.Interfaces;
 public interface IUnitOfWork : IDisposable
 {
     IAuditLogRepository AuditLogs { get; }
-    IStoredFileRepository StoredFiles { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

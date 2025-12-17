@@ -1,11 +1,10 @@
-using Common.Storage.Enums;
-using UtilityService.Domain.Entities;
+using StorageService.Domain.Entities;
 
-namespace UtilityService.Interfaces;
+namespace StorageService.Application.Interfaces;
 
 public interface IStoredFileRepository
 {
-    Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<StoredFile> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
     Task<IEnumerable<StoredFile>> GetByIdsAsync(
         IEnumerable<Guid> ids,
@@ -16,8 +15,8 @@ public interface IStoredFileRepository
         string entityId,
         CancellationToken cancellationToken = default);
     
-    Task<IEnumerable<StoredFile>> GetTemporaryFilesAsync(
-        DateTime olderThan,
+    Task<IEnumerable<StoredFile>> GetTemporaryFilesOlderThanAsync(
+        DateTimeOffset olderThan,
         CancellationToken cancellationToken = default);
     
     Task<IEnumerable<StoredFile>> GetByStatusAsync(
@@ -26,7 +25,7 @@ public interface IStoredFileRepository
     
     Task AddAsync(StoredFile file, CancellationToken cancellationToken = default);
     
-    Task UpdateAsync(StoredFile file, CancellationToken cancellationToken = default);
+    void Update(StoredFile file);
     
-    Task DeleteAsync(StoredFile file, CancellationToken cancellationToken = default);
+    void Delete(StoredFile file);
 }

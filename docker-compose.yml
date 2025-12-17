@@ -300,14 +300,13 @@ services:
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
       Identity__Authority: http://identity-service:5001
-      Kestrel__EndpointDefaults__Protocols: Http1AndHttp2
+      GrpcServices__AuctionService: http://auction-api:8080
       Logging__LogLevel__Default: Information
       Logging__LogLevel__Microsoft.AspNetCore: Warning
     ports:
       - "5005:8080"
     volumes:
       - utility_api_logs:/app/logs
-      - utility_uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -360,6 +359,40 @@ services:
     networks:
       - microservices
 
+  storage-api:
+    build:
+      context: .
+      dockerfile: StorageService/API/Dockerfile
+      target: final
+    container_name: storage-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=storage_db;Username=postgres;Password=postgres123
+      Identity__Authority: http://identity-service:5001
+      Storage__Type: Local
+      Storage__LocalBasePath: /app/uploads
+      Kestrel__EndpointDefaults__Protocols: Http1AndHttp2
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    ports:
+      - "5011:8080"
+    volumes:
+      - storage_api_logs:/app/logs
+      - storage_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - microservices
+
 volumes:
   postgres_data:
     driver: local
@@ -381,9 +414,11 @@ volumes:
     driver: local
   utility_api_logs:
     driver: local
-  utility_uploads:
-    driver: local
   payment_api_logs:
+    driver: local
+  storage_api_logs:
+    driver: local
+  storage_uploads:
     driver: local
 
 networks:

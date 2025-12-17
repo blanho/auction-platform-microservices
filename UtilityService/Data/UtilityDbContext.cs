@@ -10,7 +10,6 @@ public class UtilityDbContext : DbContext
     }
 
     public DbSet<AuditLog> AuditLogs { get; set; }
-    public DbSet<StoredFile> StoredFiles { get; set; }
     public DbSet<Report> Reports { get; set; }
     public DbSet<PlatformSetting> PlatformSettings { get; set; }
 

@@ -21,12 +21,6 @@ public static class SchedulingExtensions
                 jobId: ReportAutoEscalationJob.JobId,
                 description: ReportAutoEscalationJob.Description
             );
-
-            q.AddIntervalJob<TempFileCleanupJob>(
-                interval: TimeSpan.FromHours(1),
-                jobId: TempFileCleanupJob.JobId,
-                description: TempFileCleanupJob.Description
-            );
         });
 
         return services;

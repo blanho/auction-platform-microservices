@@ -9,7 +9,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly UtilityDbContext _context;
     private IDbContextTransaction? _transaction;
     private IAuditLogRepository? _auditLogs;
-    private IStoredFileRepository? _storedFiles;
 
     public UnitOfWork(UtilityDbContext context)
     {
@@ -19,11 +18,6 @@ public class UnitOfWork : IUnitOfWork
     public IAuditLogRepository AuditLogs
     {
         get { return _auditLogs ??= new AuditLogRepository(_context); }
-    }
-
-    public IStoredFileRepository StoredFiles
-    {
-        get { return _storedFiles ??= new StoredFileRepository(_context); }
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

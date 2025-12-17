@@ -1,7 +1,5 @@
 using Common.Messaging.Abstractions;
 using Common.Messaging.Implementations;
-using Common.Storage.Abstractions;
-using Common.Storage.Extensions;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -12,7 +10,6 @@ using UtilityService.Consumers;
 using UtilityService.Data;
 using UtilityService.Extensions;
 using UtilityService.Grpc;
-using UtilityService.GrpcServices;
 using UtilityService.Interfaces;
 using UtilityService.Repositories;
 using UtilityService.Services;
@@ -43,7 +40,6 @@ builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
 });
 
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-builder.Services.AddScoped<IStoredFileRepository, StoredFileRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -53,8 +49,6 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
 builder.Services.AddScoped<IDashboardStatsService, DashboardStatsService>();
 
-builder.Services.AddStorageServices(builder.Configuration);
-builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddUtilityScheduling(builder.Configuration);
 builder.Services.AddGrpc();
 builder.Services.AddMassTransit(x =>
@@ -117,9 +111,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UtilityDbContext>();
     db.Database.Migrate();
-    var uploadPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
-    Directory.CreateDirectory(Path.Combine(uploadPath, "temp"));
-    Directory.CreateDirectory(Path.Combine(uploadPath, "files"));
 }
 
 if (app.Environment.IsDevelopment())
@@ -127,18 +118,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(app.Environment.ContentRootPath, "uploads")),
-    RequestPath = "/files"
-});
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-app.MapGrpcService<FileStorageGrpcService>();
 
 app.MapControllers();
 

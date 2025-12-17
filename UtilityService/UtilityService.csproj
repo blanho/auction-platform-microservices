@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\file_storage.proto" GrpcServices="Server" />
     <Protobuf Include="Protos\auction_stats.proto" GrpcServices="Client" />
   </ItemGroup>
 
@@ -36,7 +35,6 @@
     <ProjectReference Include="..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\Common\Common.Messaging\Common.Messaging.csproj" />
     <ProjectReference Include="..\Common\Common.Scheduling\Common.Scheduling.csproj" />
-    <ProjectReference Include="..\Common\Common.Storage\Common.Storage.csproj" />
   </ItemGroup>
 
 </Project>
