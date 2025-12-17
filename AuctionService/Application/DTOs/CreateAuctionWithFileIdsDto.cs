@@ -17,9 +17,7 @@ public class CreateAuctionWithFileIdsDto
 
     public Dictionary<string, string>? Attributes { get; set; }
 
-    public List<Guid>? FileIds { get; set; }
-
-    public List<FileInfoDto>? Files { get; set; }
+    public List<CreateAuctionFileInputDto>? Files { get; set; }
 
     [Required]
     [Range(0, double.MaxValue)]
@@ -38,13 +36,11 @@ public class CreateAuctionWithFileIdsDto
     public string Currency { get; set; } = "USD";
 }
 
-public class FileInfoDto
+public class CreateAuctionFileInputDto
 {
-    public required string Url { get; set; }
-    public required string PublicId { get; set; }
-    public required string FileName { get; set; }
-    public string ContentType { get; set; } = "image/jpeg";
-    public long Size { get; set; }
+    [Required]
+    public Guid FileId { get; set; }
+    public string FileType { get; set; } = "image";
     public int DisplayOrder { get; set; }
     public bool IsPrimary { get; set; }
 }

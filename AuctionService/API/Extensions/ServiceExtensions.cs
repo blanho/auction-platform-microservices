@@ -57,7 +57,6 @@ namespace AuctionService.API.Extensions
             services.AddScoped<IUserAuctionBookmarkRepository, UserAuctionBookmarkRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
-            services.AddScoped<IFlashSaleRepository, FlashSaleRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IFileConfirmationService, FileConfirmationService>();

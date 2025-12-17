@@ -39,6 +39,18 @@ builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
     options.Address = new Uri(auctionServiceGrpcUrl);
 });
 
+var bidServiceGrpcUrl = builder.Configuration["GrpcServices:BidService"] ?? "http://localhost:7004";
+builder.Services.AddGrpcClient<BidStatsGrpc.BidStatsGrpcClient>(options =>
+{
+    options.Address = new Uri(bidServiceGrpcUrl);
+});
+
+var paymentServiceGrpcUrl = builder.Configuration["GrpcServices:PaymentService"] ?? "http://localhost:7008";
+builder.Services.AddGrpcClient<PaymentAnalyticsGrpc.PaymentAnalyticsGrpcClient>(options =>
+{
+    options.Address = new Uri(paymentServiceGrpcUrl);
+});
+
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
@@ -48,6 +60,7 @@ builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
 builder.Services.AddScoped<IDashboardStatsService, DashboardStatsService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 builder.Services.AddUtilityScheduling(builder.Configuration);
 builder.Services.AddGrpc();

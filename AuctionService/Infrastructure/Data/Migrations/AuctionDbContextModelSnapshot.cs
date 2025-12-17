@@ -124,74 +124,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.ToTable("Auctions");
                 });
 
-            modelBuilder.Entity("AuctionService.Domain.Entities.AuctionQuestion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Answer")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<DateTimeOffset?>("AnsweredAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("AskerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AskerUsername")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid>("AuctionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsPublic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AskerId");
-
-                    b.HasIndex("AuctionId");
-
-                    b.HasIndex("AuctionId", "IsPublic");
-
-                    b.ToTable("AuctionQuestions");
-                });
-
             modelBuilder.Entity("AuctionService.Domain.Entities.Brand", b =>
                 {
                     b.Property<Guid>("Id")
@@ -345,115 +277,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("AuctionService.Domain.Entities.FlashSale", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BannerUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("DiscountPercentage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTimeOffset>("EndTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTimeOffset>("StartTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive", "DisplayOrder");
-
-                    b.HasIndex("IsActive", "StartTime", "EndTime");
-
-                    b.ToTable("FlashSales");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.FlashSaleItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("AddedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("AuctionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("DiscountPercentage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid>("FlashSaleId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("SpecialPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuctionId");
-
-                    b.HasIndex("FlashSaleId");
-
-                    b.HasIndex("FlashSaleId", "AuctionId")
-                        .IsUnique();
-
-                    b.ToTable("FlashSaleItems");
-                });
-
             modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -527,26 +350,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.HasIndex("Title");
 
                     b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.ItemTag", b =>
-                {
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TagId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("AddedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("ItemId", "TagId");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("ItemTags");
                 });
 
             modelBuilder.Entity("AuctionService.Domain.Entities.Review", b =>
@@ -638,159 +441,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.SavedSearch", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("BrandId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Condition")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTimeOffset?>("LastNotifiedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("MaxPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal?>("MinPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("NotificationFrequency")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("NotifyOnNewMatch")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("SearchQuery")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Username");
-
-                    b.HasIndex("UserId", "NotifyOnNewMatch");
-
-                    b.ToTable("SavedSearches");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.Tag", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DeletedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("UsageCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("AuctionService.Domain.Entities.UserAuctionBookmark", b =>
@@ -1033,17 +683,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.ToTable("OutboxState");
                 });
 
-            modelBuilder.Entity("AuctionService.Domain.Entities.AuctionQuestion", b =>
-                {
-                    b.HasOne("AuctionService.Domain.Entities.Auction", "Auction")
-                        .WithMany("Questions")
-                        .HasForeignKey("AuctionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Auction");
-                });
-
             modelBuilder.Entity("AuctionService.Domain.Entities.Category", b =>
                 {
                     b.HasOne("AuctionService.Domain.Entities.Category", "ParentCategory")
@@ -1052,25 +691,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentCategory");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.FlashSaleItem", b =>
-                {
-                    b.HasOne("AuctionService.Domain.Entities.Auction", "Auction")
-                        .WithMany("FlashSaleItems")
-                        .HasForeignKey("AuctionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuctionService.Domain.Entities.FlashSale", "FlashSale")
-                        .WithMany("Items")
-                        .HasForeignKey("FlashSaleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Auction");
-
-                    b.Navigation("FlashSale");
                 });
 
             modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>
@@ -1100,16 +720,11 @@ namespace AuctionService.Infrastructure.Data.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("integer");
 
-                            b1.Property<string>("ContentType")
-                                .IsRequired()
-                                .HasColumnType("text");
-
                             b1.Property<int>("DisplayOrder")
                                 .HasColumnType("integer");
 
-                            b1.Property<string>("FileName")
-                                .IsRequired()
-                                .HasColumnType("text");
+                            b1.Property<Guid>("FileId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("FileType")
                                 .IsRequired()
@@ -1117,18 +732,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
 
                             b1.Property<bool>("IsPrimary")
                                 .HasColumnType("boolean");
-
-                            b1.Property<long>("Size")
-                                .HasColumnType("bigint");
-
-                            b1.Property<Guid>("StorageFileId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTimeOffset>("UploadedAt")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<string>("Url")
-                                .HasColumnType("text");
 
                             b1.HasKey("ItemId", "__synthesizedOrdinal");
 
@@ -1147,25 +750,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Files");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.ItemTag", b =>
-                {
-                    b.HasOne("AuctionService.Domain.Entities.Item", "Item")
-                        .WithMany("ItemTags")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuctionService.Domain.Entities.Tag", "Tag")
-                        .WithMany("ItemTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("AuctionService.Domain.Entities.Review", b =>
@@ -1206,12 +790,8 @@ namespace AuctionService.Infrastructure.Data.Migrations
                 {
                     b.Navigation("Bookmarks");
 
-                    b.Navigation("FlashSaleItems");
-
                     b.Navigation("Item")
                         .IsRequired();
-
-                    b.Navigation("Questions");
 
                     b.Navigation("Reviews");
                 });
@@ -1226,21 +806,6 @@ namespace AuctionService.Infrastructure.Data.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("SubCategories");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.FlashSale", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.Item", b =>
-                {
-                    b.Navigation("ItemTags");
-                });
-
-            modelBuilder.Entity("AuctionService.Domain.Entities.Tag", b =>
-                {
-                    b.Navigation("ItemTags");
                 });
 #pragma warning restore 612, 618
         }

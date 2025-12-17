@@ -1,4 +1,6 @@
+#nullable enable
 using Common.Domain.Entities;
+using StorageService.Domain.Enums;
 
 namespace StorageService.Domain.Entities;
 
@@ -8,12 +10,20 @@ public class StoredFile : BaseEntity
     public string OriginalFileName { get; set; } = string.Empty;
     public string ContentType { get; set; } = string.Empty;
     public long Size { get; set; }
-    public string Path { get; set; } = string.Empty;
-    public string Url { get; set; }
-    public FileStatus Status { get; set; } = FileStatus.Temporary;
-    public string EntityId { get; set; }
-    public string EntityType { get; set; }
-    public string UploadedBy { get; set; }
-    public DateTimeOffset ConfirmedAt { get; set; }
-    public string Tags { get; set; }
+    
+    public StorageProvider Provider { get; set; } = StorageProvider.Local;
+    public string StoragePath { get; set; } = string.Empty;
+    public string? BucketName { get; set; }
+    public string? Checksum { get; set; }
+    
+    public string OwnerService { get; set; } = string.Empty;
+    public string? OwnerId { get; set; }
+    public string? UploadedBy { get; set; }
+    
+    public FileStatus Status { get; set; } = FileStatus.Pending;
+    public DateTimeOffset? ConfirmedAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
+    public string? FailureReason { get; set; }
+    
+    public Dictionary<string, string>? Metadata { get; set; }
 }

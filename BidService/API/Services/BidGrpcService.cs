@@ -109,5 +109,59 @@ namespace BidService.API.Services
 
             return response;
         }
+
+        public override async Task<BidStatsResponse> GetBidStats(GetBidStatsRequest request, ServerCallContext context)
+        {
+            _logger.LogInformation("GetBidStats called");
+
+            var stats = await _bidRepository.GetBidStatsAsync(context.CancellationToken);
+            var dailyStats = await _bidRepository.GetDailyBidStatsAsync(30, context.CancellationToken);
+
+            var response = new BidStatsResponse
+            {
+                TotalBids = stats.TotalBids,
+                UniqueBidders = stats.UniqueBidders,
+                TotalBidAmount = (double)stats.TotalBidAmount,
+                AverageBidAmount = (double)stats.AverageBidAmount,
+                BidsToday = stats.BidsToday,
+                BidsThisWeek = stats.BidsThisWeek,
+                BidsThisMonth = stats.BidsThisMonth
+            };
+
+            foreach (var daily in dailyStats)
+            {
+                response.DailyStats.Add(new DailyBidStat
+                {
+                    Date = daily.Date.ToString("yyyy-MM-dd"),
+                    BidCount = daily.BidCount,
+                    TotalAmount = (double)daily.TotalAmount
+                });
+            }
+
+            return response;
+        }
+
+        public override async Task<TopBiddersResponse> GetTopBidders(GetTopBiddersRequest request, ServerCallContext context)
+        {
+            _logger.LogInformation("GetTopBidders called with limit {Limit}", request.Limit);
+
+            var limit = request.Limit > 0 ? request.Limit : 10;
+            var topBidders = await _bidRepository.GetTopBiddersAsync(limit, context.CancellationToken);
+
+            var response = new TopBiddersResponse();
+            foreach (var bidder in topBidders)
+            {
+                response.Bidders.Add(new TopBidder
+                {
+                    BidderId = bidder.BidderId.ToString(),
+                    Username = bidder.Username,
+                    BidCount = bidder.BidCount,
+                    TotalAmount = (double)bidder.TotalAmount,
+                    AuctionsWon = bidder.AuctionsWon
+                });
+            }
+
+            return response;
+        }
     }
 }

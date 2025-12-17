@@ -1,26 +1,31 @@
 using StorageService.Domain.Entities;
+using StorageService.Domain.Enums;
 
 namespace StorageService.Application.Interfaces;
 
 public interface IStoredFileRepository
 {
-    Task<StoredFile> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
     Task<IEnumerable<StoredFile>> GetByIdsAsync(
         IEnumerable<Guid> ids,
         CancellationToken cancellationToken = default);
     
-    Task<IEnumerable<StoredFile>> GetByEntityAsync(
-        string entityType,
-        string entityId,
+    Task<IEnumerable<StoredFile>> GetByOwnerAsync(
+        string ownerService,
+        string ownerId,
         CancellationToken cancellationToken = default);
     
-    Task<IEnumerable<StoredFile>> GetTemporaryFilesOlderThanAsync(
-        DateTimeOffset olderThan,
+    Task<IEnumerable<StoredFile>> GetExpiredFilesAsync(
+        DateTimeOffset expiredBefore,
         CancellationToken cancellationToken = default);
     
     Task<IEnumerable<StoredFile>> GetByStatusAsync(
         FileStatus status,
+        CancellationToken cancellationToken = default);
+    
+    Task<IEnumerable<StoredFile>> GetDeletedFilesAsync(
+        int batchSize = 100,
         CancellationToken cancellationToken = default);
     
     Task AddAsync(StoredFile file, CancellationToken cancellationToken = default);

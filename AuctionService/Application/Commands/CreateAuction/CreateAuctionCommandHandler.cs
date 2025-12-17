@@ -55,19 +55,21 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
             var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
-            if (request.FileIds != null && request.FileIds.Count > 0)
+            if (request.Files != null && request.Files.Count > 0)
             {
-                _logger.LogInformation("Confirming {FileCount} temp files for auction {AuctionId}", 
-                    request.FileIds.Count, createdAuction.Id);
+                var fileIds = request.Files.Select(f => f.FileId).ToList();
+                
+                _logger.LogInformation("Confirming {FileCount} files for auction {AuctionId}", 
+                    fileIds.Count, createdAuction.Id);
 
                 await _fileConfirmationService.ConfirmFilesAsync(
-                    request.FileIds, 
+                    fileIds, 
                     "Auction", 
                     createdAuction.Id.ToString(), 
                     cancellationToken);
 
                 _logger.LogInformation("Confirmed {FileCount} files for auction {AuctionId}", 
-                    request.FileIds.Count, createdAuction.Id);
+                    fileIds.Count, createdAuction.Id);
             }
 
             var auctionCreatedEvent = _mapper.Map<AuctionCreatedEvent>(createdAuction);
@@ -125,15 +127,10 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             {
                 auction.Item.Files.Add(new ItemFileInfo
                 {
-                    StorageFileId = Guid.NewGuid(),
-                    FileName = file.FileName,
-                    ContentType = file.ContentType,
-                    Size = file.Size,
-                    Url = file.Url,
-                    FileType = "image",
+                    FileId = file.FileId,
+                    FileType = file.FileType,
                     DisplayOrder = file.DisplayOrder,
-                    IsPrimary = file.IsPrimary,
-                    UploadedAt = DateTimeOffset.UtcNow
+                    IsPrimary = file.IsPrimary
                 });
             }
         }

@@ -44,7 +44,8 @@ namespace AuctionService.Application.Mappings
                 .ForMember(d => d.Condition, o => o.MapFrom(s => s.Item.Condition))
                 .ForMember(d => d.YearManufactured, o => o.MapFrom(s => s.Item.YearManufactured));
 
-            CreateMap<ItemFileInfo, AuctionFileDto>();
+            CreateMap<ItemFileInfo, AuctionFileDto>()
+                .ForMember(d => d.FileId, o => o.MapFrom(s => s.FileId));
 
             CreateMap<Category, CategoryDto>()
                 .ForMember(d => d.AuctionCount, o => o.MapFrom(s => s.Items.Count));
@@ -56,11 +57,6 @@ namespace AuctionService.Application.Mappings
             CreateMap<Brand, BrandDto>();
             CreateMap<CreateBrandDto, Brand>();
             CreateMap<UpdateBrandDto, Brand>();
-
-            CreateMap<FlashSale, FlashSaleDto>();
-            CreateMap<FlashSaleItem, FlashSaleItemDto>();
-            CreateMap<CreateFlashSaleDto, FlashSale>();
-            CreateMap<UpdateFlashSaleDto, FlashSale>();
         }
     }
 }

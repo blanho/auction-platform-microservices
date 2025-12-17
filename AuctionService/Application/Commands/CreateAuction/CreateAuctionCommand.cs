@@ -15,18 +15,14 @@ public record CreateAuctionCommand(
     Guid SellerId,
     string SellerUsername,
     string Currency = "USD",
-    List<Guid>? FileIds = null,
-    List<FileInfoDto>? Files = null,
+    List<CreateAuctionFileDto>? Files = null,
     Guid? CategoryId = null,
     bool IsFeatured = false
 ) : ICommand<AuctionDto>;
 
-public record FileInfoDto(
-    string Url,
-    string PublicId,
-    string FileName,
-    string ContentType,
-    long Size,
+public record CreateAuctionFileDto(
+    Guid FileId,
+    string FileType,
     int DisplayOrder,
     bool IsPrimary
 );

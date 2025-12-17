@@ -228,7 +228,7 @@ public class BookmarkController : ControllerBase
             AuctionId = bookmark.AuctionId,
             BookmarkType = bookmark.Type.ToString(),
             AuctionTitle = auction.Item?.Title ?? string.Empty,
-            ImageUrl = auction.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.Url,
+            PrimaryImageFileId = auction.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.FileId,
             CurrentBid = auction.CurrentHighBid ?? 0,
             ReservePrice = auction.ReservePrice,
             AuctionEnd = auction.AuctionEnd,
@@ -269,7 +269,7 @@ public class BookmarkController : ControllerBase
             AuctionId = item.AuctionId,
             BookmarkType = item.Type.ToString(),
             AuctionTitle = item.Auction?.Item?.Title ?? string.Empty,
-            ImageUrl = item.Auction?.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.Url,
+            PrimaryImageFileId = item.Auction?.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.FileId,
             CurrentBid = item.Auction?.CurrentHighBid ?? 0,
             ReservePrice = item.Auction?.ReservePrice ?? 0,
             AuctionEnd = item.Auction?.AuctionEnd ?? DateTimeOffset.MinValue,
@@ -306,7 +306,7 @@ public class BookmarkItemDto
     public Guid AuctionId { get; set; }
     public string BookmarkType { get; set; } = string.Empty;
     public string AuctionTitle { get; set; } = string.Empty;
-    public string? ImageUrl { get; set; }
+    public Guid? PrimaryImageFileId { get; set; }
     public decimal CurrentBid { get; set; }
     public decimal ReservePrice { get; set; }
     public DateTimeOffset AuctionEnd { get; set; }

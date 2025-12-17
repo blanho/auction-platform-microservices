@@ -1,4 +1,5 @@
 using PaymentService.API.Extensions;
+using PaymentService.API.Services;
 using PaymentService.Infrastructure.Data;
 using PaymentService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
@@ -12,9 +13,16 @@ using Common.Audit.Extensions;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(7007, o => o.Protocols = HttpProtocols.Http1);
+    options.ListenLocalhost(7008, o => o.Protocols = HttpProtocols.Http2);
+});
 
 builder.AddApplicationLogging();
 
@@ -24,6 +32,7 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddCommonUtilities();
+builder.Services.AddGrpc();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -99,6 +108,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGrpcService<PaymentAnalyticsGrpcService>();
 app.MapControllers();
 
 app.UseCommonOpenApi();

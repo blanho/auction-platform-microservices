@@ -20,7 +20,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         IAsyncStreamReader<UploadRequest> requestStream,
         ServerCallContext context)
     {
-        Protos.FileInfo fileInfo = null;
+        Protos.FileInfo? fileInfo = null;
         var memoryStream = new MemoryStream();
 
         await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
@@ -41,16 +41,18 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         }
 
         memoryStream.Position = 0;
-        var result = await _fileStorageService.UploadToTempAsync(
+
+        var result = await _fileStorageService.DirectUploadAsync(
             memoryStream,
             fileInfo.FileName,
             fileInfo.ContentType,
+            "grpc",
             fileInfo.UploadedBy,
             context.CancellationToken);
 
-        if (!result.Success)
+        if (!result.Success || result.Metadata == null)
         {
-            return new UploadResponse { Success = false, Error = result.Error };
+            return new UploadResponse { Success = false, Error = result.Error ?? "Upload failed" };
         }
 
         return new UploadResponse
@@ -58,7 +60,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
             Success = true,
             FileId = result.Metadata.Id.ToString(),
             FileName = result.Metadata.FileName,
-            Url = result.Metadata.Url ?? string.Empty
+            Url = string.Empty
         };
     }
 
@@ -74,16 +76,15 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         var confirmRequest = new FileConfirmRequest
         {
             FileId = fileId,
-            EntityId = request.EntityId,
-            EntityType = request.EntityType,
-            Tags = request.Tags?.ToDictionary(x => x.Key, x => x.Value)
+            OwnerService = request.EntityType,
+            OwnerId = request.EntityId
         };
 
         var result = await _fileStorageService.ConfirmFileAsync(confirmRequest, context.CancellationToken);
 
-        if (!result.Success)
+        if (!result.Success || result.Metadata == null)
         {
-            return new ConfirmFileResponse { Success = false, Error = result.Error };
+            return new ConfirmFileResponse { Success = false, Error = result.Error ?? "Confirmation failed" };
         }
 
         return new ConfirmFileResponse
@@ -113,7 +114,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
             }
         }
 
-        if (errors.Any())
+        if (errors.Count > 0)
         {
             response.Errors.AddRange(errors);
             response.Success = errors.Count < request.Files.Count;
@@ -145,7 +146,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         GetFilesByEntityRequest request,
         ServerCallContext context)
     {
-        var files = await _fileStorageService.GetByEntityAsync(
+        var files = await _fileStorageService.GetByOwnerAsync(
             request.EntityType,
             request.EntityId,
             context.CancellationToken);
@@ -173,15 +174,15 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         return new FileMetadataResponse
         {
             Id = metadata.Id.ToString(),
-            FileName = metadata.FileName ?? string.Empty,
-            OriginalFileName = metadata.OriginalFileName ?? string.Empty,
-            ContentType = metadata.ContentType ?? string.Empty,
+            FileName = metadata.FileName,
+            OriginalFileName = metadata.OriginalFileName,
+            ContentType = metadata.ContentType,
             Size = metadata.Size,
-            Path = metadata.Path ?? string.Empty,
-            Url = metadata.Url ?? string.Empty,
+            Path = string.Empty,
+            Url = string.Empty,
             Status = metadata.Status.ToString(),
-            EntityId = metadata.EntityId ?? string.Empty,
-            EntityType = metadata.EntityType ?? string.Empty,
+            EntityId = metadata.OwnerId ?? string.Empty,
+            EntityType = metadata.OwnerService,
             UploadedBy = metadata.UploadedBy ?? string.Empty,
             CreatedAt = metadata.CreatedAt.ToString("O"),
             ConfirmedAt = metadata.ConfirmedAt?.ToString("O") ?? string.Empty

@@ -19,21 +19,71 @@ public class FilesController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("upload")]
-    public async Task<IActionResult> Upload(IFormFile file, CancellationToken cancellationToken)
+    [HttpPost("request-upload")]
+    public async Task<IActionResult> RequestUpload([FromBody] RequestUploadDto request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var uploadedBy = User.Identity?.Name;
+            var response = await _fileStorageService.RequestUploadAsync(request, uploadedBy, cancellationToken);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("confirm-upload")]
+    public async Task<IActionResult> ConfirmUpload([FromBody] ConfirmUploadRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _fileStorageService.ConfirmUploadAsync(request, cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Metadata);
+    }
+
+    [HttpGet("{fileId:guid}/download-url")]
+    public async Task<IActionResult> GetDownloadUrl(Guid fileId, CancellationToken cancellationToken)
+    {
+        var response = await _fileStorageService.GetDownloadUrlAsync(fileId, cancellationToken);
+
+        if (response == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(response);
+    }
+
+    [HttpPost("direct-upload")]
+    public async Task<IActionResult> DirectUpload(
+        IFormFile file, 
+        [FromQuery] string ownerService,
+        CancellationToken cancellationToken)
     {
         if (file == null || file.Length == 0)
         {
             return BadRequest("No file provided");
         }
 
+        if (string.IsNullOrEmpty(ownerService))
+        {
+            return BadRequest("Owner service is required");
+        }
+
         var uploadedBy = User.Identity?.Name;
 
         await using var stream = file.OpenReadStream();
-        var result = await _fileStorageService.UploadToTempAsync(
+        var result = await _fileStorageService.DirectUploadAsync(
             stream,
             file.FileName,
             file.ContentType,
+            ownerService,
             uploadedBy,
             cancellationToken);
 
@@ -45,12 +95,20 @@ public class FilesController : ControllerBase
         return Ok(result.Metadata);
     }
 
-    [HttpPost("upload/batch")]
-    public async Task<IActionResult> UploadBatch(List<IFormFile> files, CancellationToken cancellationToken)
+    [HttpPost("direct-upload/batch")]
+    public async Task<IActionResult> DirectUploadBatch(
+        List<IFormFile> files, 
+        [FromQuery] string ownerService,
+        CancellationToken cancellationToken)
     {
         if (files == null || files.Count == 0)
         {
             return BadRequest("No files provided");
+        }
+
+        if (string.IsNullOrEmpty(ownerService))
+        {
+            return BadRequest("Owner service is required");
         }
 
         var uploadedBy = User.Identity?.Name;
@@ -60,14 +118,15 @@ public class FilesController : ControllerBase
         foreach (var file in files)
         {
             await using var stream = file.OpenReadStream();
-            var result = await _fileStorageService.UploadToTempAsync(
+            var result = await _fileStorageService.DirectUploadAsync(
                 stream,
                 file.FileName,
                 file.ContentType,
+                ownerService,
                 uploadedBy,
                 cancellationToken);
 
-            if (result.Success)
+            if (result.Success && result.Metadata != null)
             {
                 results.Add(result.Metadata);
             }
@@ -101,9 +160,15 @@ public class FilesController : ControllerBase
 
         foreach (var fileRequest in request.Files)
         {
-            var result = await _fileStorageService.ConfirmFileAsync(fileRequest, cancellationToken);
+            var confirmRequest = new FileConfirmRequest
+            {
+                FileId = fileRequest.FileId,
+                OwnerId = fileRequest.OwnerId
+            };
+            
+            var result = await _fileStorageService.ConfirmUploadAsync(fileRequest, cancellationToken);
 
-            if (result.Success)
+            if (result.Success && result.Metadata != null)
             {
                 results.Add(result.Metadata);
             }
@@ -129,24 +194,10 @@ public class FilesController : ControllerBase
         return Ok(metadata);
     }
 
-    [HttpGet("{fileId:guid}/download")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Download(Guid fileId, CancellationToken cancellationToken)
+    [HttpGet("owner/{ownerService}/{ownerId}")]
+    public async Task<IActionResult> GetByOwner(string ownerService, string ownerId, CancellationToken cancellationToken)
     {
-        var (stream, metadata) = await _fileStorageService.DownloadAsync(fileId, cancellationToken);
-
-        if (stream == null || metadata == null)
-        {
-            return NotFound();
-        }
-
-        return File(stream, metadata.ContentType, metadata.OriginalFileName);
-    }
-
-    [HttpGet("entity/{entityType}/{entityId}")]
-    public async Task<IActionResult> GetByEntity(string entityType, string entityId, CancellationToken cancellationToken)
-    {
-        var files = await _fileStorageService.GetByEntityAsync(entityType, entityId, cancellationToken);
+        var files = await _fileStorageService.GetByOwnerAsync(ownerService, ownerId, cancellationToken);
         return Ok(files);
     }
 
@@ -163,3 +214,4 @@ public class FilesController : ControllerBase
         return NoContent();
     }
 }
+

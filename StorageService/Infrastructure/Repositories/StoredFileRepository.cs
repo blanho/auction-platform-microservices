@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StorageService.Application.Interfaces;
 using StorageService.Domain.Entities;
+using StorageService.Domain.Enums;
 using StorageService.Infrastructure.Data;
 
 namespace StorageService.Infrastructure.Repositories;
@@ -14,7 +15,7 @@ public class StoredFileRepository : IStoredFileRepository
         _context = context;
     }
 
-    public async Task<StoredFile> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
             .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
@@ -29,22 +30,22 @@ public class StoredFileRepository : IStoredFileRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<StoredFile>> GetByEntityAsync(
-        string entityType,
-        string entityId,
+    public async Task<IEnumerable<StoredFile>> GetByOwnerAsync(
+        string ownerService,
+        string ownerId,
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
-            .Where(f => f.EntityType == entityType && f.EntityId == entityId)
+            .Where(f => f.OwnerService == ownerService && f.OwnerId == ownerId)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<StoredFile>> GetTemporaryFilesOlderThanAsync(
-        DateTimeOffset olderThan,
+    public async Task<IEnumerable<StoredFile>> GetExpiredFilesAsync(
+        DateTimeOffset expiredBefore,
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
-            .Where(f => f.Status == FileStatus.Temporary && f.CreatedAt < olderThan)
+            .Where(f => f.ExpiresAt != null && f.ExpiresAt < expiredBefore && f.Status != FileStatus.Deleted)
             .ToListAsync(cancellationToken);
     }
 
@@ -54,6 +55,17 @@ public class StoredFileRepository : IStoredFileRepository
     {
         return await _context.StoredFiles
             .Where(f => f.Status == status)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<StoredFile>> GetDeletedFilesAsync(
+        int batchSize = 100,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.StoredFiles
+            .Where(f => f.Status == FileStatus.Deleted)
+            .OrderBy(f => f.DeletedAt)
+            .Take(batchSize)
             .ToListAsync(cancellationToken);
     }
 
@@ -72,3 +84,4 @@ public class StoredFileRepository : IStoredFileRepository
         _context.StoredFiles.Remove(file);
     }
 }
+

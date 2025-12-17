@@ -201,4 +201,84 @@ public class AuctionGrpcService : AuctionGrpc.AuctionGrpcBase
             TotalRevenue = (double)totalRevenue
         };
     }
+
+    public override async Task<AuctionAnalyticsResponse> GetAuctionAnalytics(
+        GetAuctionAnalyticsRequest request,
+        ServerCallContext context)
+    {
+        var liveCount = await _auctionRepository.GetCountByStatusAsync(AuctionStatus.Live, context.CancellationToken);
+        var finishedCount = await _auctionRepository.GetCountByStatusAsync(AuctionStatus.Finished, context.CancellationToken);
+        var totalRevenue = await _auctionRepository.GetTotalRevenueAsync(context.CancellationToken);
+        var totalCount = await _auctionRepository.GetTotalCountAsync(context.CancellationToken);
+
+        var today = DateTimeOffset.UtcNow.Date;
+        var endOfWeek = today.AddDays(7);
+
+        var endingToday = await _auctionRepository.GetCountEndingBetweenAsync(
+            today, today.AddDays(1), context.CancellationToken);
+        var endingThisWeek = await _auctionRepository.GetCountEndingBetweenAsync(
+            today, endOfWeek, context.CancellationToken);
+
+        var successRate = totalCount > 0 ? (double)finishedCount / totalCount * 100 : 0;
+        var averagePrice = finishedCount > 0 ? (double)totalRevenue / finishedCount : 0;
+
+        return new AuctionAnalyticsResponse
+        {
+            LiveAuctions = liveCount,
+            CompletedAuctions = finishedCount,
+            CancelledAuctions = 0,
+            PendingAuctions = 0,
+            TotalRevenue = (double)totalRevenue,
+            AverageFinalPrice = averagePrice,
+            SuccessRate = successRate,
+            AuctionsEndingToday = endingToday,
+            AuctionsEndingThisWeek = endingThisWeek
+        };
+    }
+
+    public override async Task<TopAuctionsResponse> GetTopAuctions(
+        GetTopAuctionsRequest request,
+        ServerCallContext context)
+    {
+        var limit = request.Limit > 0 ? request.Limit : 10;
+        var topAuctions = await _auctionRepository.GetTopByRevenueAsync(limit, context.CancellationToken);
+
+        var response = new TopAuctionsResponse();
+        foreach (var auction in topAuctions)
+        {
+            response.Auctions.Add(new TopAuction
+            {
+                AuctionId = auction.Id.ToString(),
+                Title = auction.Item?.Title ?? string.Empty,
+                SellerUsername = auction.SellerUsername,
+                FinalPrice = (double)(auction.SoldAmount ?? auction.CurrentHighBid ?? 0),
+                BidCount = 0
+            });
+        }
+
+        return response;
+    }
+
+    public override async Task<CategoryStatsResponse> GetCategoryStats(
+        GetCategoryStatsRequest request,
+        ServerCallContext context)
+    {
+        var categoryStats = await _auctionRepository.GetCategoryStatsAsync(context.CancellationToken);
+        var totalRevenue = categoryStats.Sum(c => c.Revenue);
+
+        var response = new CategoryStatsResponse();
+        foreach (var stat in categoryStats)
+        {
+            response.Categories.Add(new CategoryStat
+            {
+                CategoryId = stat.CategoryId.ToString(),
+                CategoryName = stat.CategoryName,
+                AuctionCount = stat.AuctionCount,
+                Revenue = (double)stat.Revenue,
+                Percentage = totalRevenue > 0 ? (double)(stat.Revenue / totalRevenue * 100) : 0
+            });
+        }
+
+        return response;
+    }
 }

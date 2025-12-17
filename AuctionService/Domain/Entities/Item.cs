@@ -21,7 +21,5 @@ namespace AuctionService.Domain.Entities
         
         public List<ItemFileInfo> Files { get; set; } = new();
         public Dictionary<string, string> Attributes { get; set; } = new();
-        
-        public ICollection<ItemTag> ItemTags { get; set; } = new List<ItemTag>();
     }
 }

@@ -331,5 +331,42 @@ namespace AuctionService.Infrastructure.Repositories
                     .ThenInclude(i => i!.Brand)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted 
+                    && x.Status == Status.Live
+                    && x.AuctionEnd >= start 
+                    && x.AuctionEnd < end)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<List<Auction>> GetTopByRevenueAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
+                .Include(x => x.Item)
+                .OrderByDescending(x => x.SoldAmount)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<CategoryStatDto>> GetCategoryStatsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Item != null && x.Item.CategoryId.HasValue)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .GroupBy(x => new { x.Item!.CategoryId, CategoryName = x.Item.Category!.Name })
+                .Select(g => new CategoryStatDto(
+                    g.Key.CategoryId!.Value,
+                    g.Key.CategoryName,
+                    g.Count(),
+                    g.Sum(x => x.SoldAmount ?? 0)
+                ))
+                .OrderByDescending(c => c.Revenue)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

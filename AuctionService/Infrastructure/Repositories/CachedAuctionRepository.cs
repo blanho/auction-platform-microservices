@@ -144,6 +144,15 @@ public class CachedAuctionRepository : IAuctionRepository
         CancellationToken cancellationToken = default)
         => _inner.GetPagedAsync(status, seller, winner, searchTerm, category, isFeatured, orderBy, descending, pageNumber, pageSize, cancellationToken);
 
+    public Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
+        => _inner.GetCountEndingBetweenAsync(start, end, cancellationToken);
+
+    public Task<List<Auction>> GetTopByRevenueAsync(int limit, CancellationToken cancellationToken = default)
+        => _inner.GetTopByRevenueAsync(limit, cancellationToken);
+
+    public Task<List<CategoryStatDto>> GetCategoryStatsAsync(CancellationToken cancellationToken = default)
+        => _inner.GetCategoryStatsAsync(cancellationToken);
+
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {
         await _cache.RemoveAsync(CacheKeys.Auction(id), cancellationToken);

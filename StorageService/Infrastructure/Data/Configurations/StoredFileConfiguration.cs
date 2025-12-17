@@ -27,33 +27,48 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
         builder.Property(f => f.Size)
             .IsRequired();
 
-        builder.Property(f => f.Path)
+        builder.Property(f => f.Provider)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.Property(f => f.StoragePath)
             .HasMaxLength(1000)
             .IsRequired();
 
-        builder.Property(f => f.Url)
-            .HasMaxLength(2000);
+        builder.Property(f => f.BucketName)
+            .HasMaxLength(200);
+
+        builder.Property(f => f.Checksum)
+            .HasMaxLength(100);
+
+        builder.Property(f => f.OwnerService)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(f => f.OwnerId)
+            .HasMaxLength(100);
+
+        builder.Property(f => f.UploadedBy)
+            .HasMaxLength(256);
 
         builder.Property(f => f.Status)
             .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(f => f.EntityId)
-            .HasMaxLength(100);
+        builder.Property(f => f.FailureReason)
+            .HasMaxLength(1000);
 
-        builder.Property(f => f.EntityType)
-            .HasMaxLength(100);
-
-        builder.Property(f => f.UploadedBy)
-            .HasMaxLength(256);
-
-        builder.Property(f => f.Tags)
+        builder.Property(f => f.Metadata)
             .HasColumnType("jsonb");
 
         builder.HasIndex(f => f.Status);
-        builder.HasIndex(f => new { f.EntityType, f.EntityId });
+        builder.HasIndex(f => new { f.OwnerService, f.OwnerId });
         builder.HasIndex(f => f.CreatedAt);
+        builder.HasIndex(f => f.ExpiresAt);
         builder.HasIndex(f => f.UploadedBy);
+        builder.HasIndex(f => f.Checksum);
     }
 }
+

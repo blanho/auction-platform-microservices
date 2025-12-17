@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using StorageService.Application.Configuration;
 using StorageService.Application.Interfaces;
@@ -43,19 +44,25 @@ public class LocalStorageProvider : IStorageProvider
                 Directory.CreateDirectory(directory);
             }
 
-            await using var fileStream = new FileStream(fullPath, FileMode.Create);
             stream.Position = 0;
-            await stream.CopyToAsync(fileStream, cancellationToken);
+            string checksum;
+            
+            await using (var fileStream = new FileStream(fullPath, FileMode.Create))
+            {
+                await stream.CopyToAsync(fileStream, cancellationToken);
+            }
+            
+            checksum = await ComputeChecksumAsync(relativePath, cancellationToken) ?? string.Empty;
 
-            return new StorageUploadResult(true, relativePath, GetUrl(relativePath));
+            return new StorageUploadResult(true, relativePath, GetStoragePath(folder, fileName), checksum);
         }
         catch (Exception ex)
         {
-            return new StorageUploadResult(false, null, null, $"Failed to upload file: {ex.Message}");
+            return new StorageUploadResult(false, null, null, null, $"Failed to upload file: {ex.Message}");
         }
     }
 
-    public async Task<Stream> DownloadAsync(string path, CancellationToken cancellationToken = default)
+    public async Task<Stream?> DownloadAsync(string path, CancellationToken cancellationToken = default)
     {
         var fullPath = Path.Combine(_basePath, path);
         
@@ -81,12 +88,12 @@ public class LocalStorageProvider : IStorageProvider
         return Task.FromResult(true);
     }
 
-    public Task<string> MoveAsync(string sourcePath, string destinationFolder, CancellationToken cancellationToken = default)
+    public Task<string?> MoveAsync(string sourcePath, string destinationFolder, CancellationToken cancellationToken = default)
     {
         var sourceFullPath = Path.Combine(_basePath, sourcePath);
         
         if (!File.Exists(sourceFullPath))
-            return Task.FromResult<string>(null);
+            return Task.FromResult<string?>(null);
 
         var fileName = Path.GetFileName(sourcePath);
         var destinationRelativePath = Path.Combine(destinationFolder, fileName);
@@ -100,7 +107,7 @@ public class LocalStorageProvider : IStorageProvider
 
         File.Move(sourceFullPath, destinationFullPath, overwrite: true);
         
-        return Task.FromResult(destinationRelativePath);
+        return Task.FromResult<string?>(destinationRelativePath);
     }
 
     public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
@@ -109,8 +116,62 @@ public class LocalStorageProvider : IStorageProvider
         return Task.FromResult(File.Exists(fullPath));
     }
 
-    public string GetUrl(string path)
+    public Task<PreSignedUrlResult> GenerateUploadUrlAsync(
+        string fileName,
+        string contentType,
+        string folder,
+        int expirationMinutes = 15,
+        CancellationToken cancellationToken = default)
     {
-        return $"/files/{path.Replace("\\", "/")}";
+        var baseUrl = _options.BaseUrl ?? "http://localhost:5011";
+        var url = $"{baseUrl}/api/files/direct-upload?folder={folder}&fileName={fileName}";
+        var expiresAt = DateTimeOffset.UtcNow.AddMinutes(expirationMinutes);
+        
+        return Task.FromResult(new PreSignedUrlResult(
+            true,
+            url,
+            expiresAt,
+            new Dictionary<string, string> { ["Content-Type"] = contentType }
+        ));
+    }
+
+    public Task<PreSignedUrlResult> GenerateDownloadUrlAsync(
+        string path,
+        int expirationMinutes = 15,
+        CancellationToken cancellationToken = default)
+    {
+        var baseUrl = _options.BaseUrl ?? "http://localhost:5011";
+        var token = GenerateDownloadToken(path, expirationMinutes);
+        var url = $"{baseUrl}/api/files/download?path={Uri.EscapeDataString(path)}&token={token}";
+        var expiresAt = DateTimeOffset.UtcNow.AddMinutes(expirationMinutes);
+        
+        return Task.FromResult(new PreSignedUrlResult(true, url, expiresAt));
+    }
+
+    public async Task<string?> ComputeChecksumAsync(string path, CancellationToken cancellationToken = default)
+    {
+        var fullPath = Path.Combine(_basePath, path);
+        
+        if (!File.Exists(fullPath))
+            return null;
+
+        await using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+        using var sha256 = SHA256.Create();
+        var hash = await sha256.ComputeHashAsync(stream, cancellationToken);
+        return Convert.ToBase64String(hash);
+    }
+
+    public string GetStoragePath(string folder, string fileName)
+    {
+        return Path.Combine(folder, fileName);
+    }
+
+    private static string GenerateDownloadToken(string path, int expirationMinutes)
+    {
+        var expiry = DateTimeOffset.UtcNow.AddMinutes(expirationMinutes).ToUnixTimeSeconds();
+        var data = $"{path}:{expiry}";
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(data));
+        return $"{expiry}.{Convert.ToBase64String(hash).Replace("+", "-").Replace("/", "_").TrimEnd('=')}";
     }
 }

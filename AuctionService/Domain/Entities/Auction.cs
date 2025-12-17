@@ -26,7 +26,5 @@ namespace AuctionService.Domain.Entities
         
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
         public ICollection<UserAuctionBookmark> Bookmarks { get; set; } = new List<UserAuctionBookmark>();
-        public ICollection<FlashSaleItem> FlashSaleItems { get; set; } = new List<FlashSaleItem>();
-        public ICollection<AuctionQuestion> Questions { get; set; } = new List<AuctionQuestion>();
     }
 }

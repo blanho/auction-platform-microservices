@@ -5,6 +5,8 @@ using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Interfaces;
 
+public record CategoryStatDto(Guid CategoryId, string CategoryName, int AuctionCount, decimal Revenue);
+
 public interface IAuctionRepository : IRepository<Auction>
 {
     Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
@@ -51,4 +53,10 @@ public interface IAuctionRepository : IRepository<Auction>
     Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+    
+    Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default);
+    
+    Task<List<Auction>> GetTopByRevenueAsync(int limit, CancellationToken cancellationToken = default);
+    
+    Task<List<CategoryStatDto>> GetCategoryStatsAsync(CancellationToken cancellationToken = default);
 }

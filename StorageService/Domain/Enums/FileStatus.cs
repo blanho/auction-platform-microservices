@@ -1,8 +1,10 @@
-namespace StorageService.Domain.Entities;
+namespace StorageService.Domain.Enums;
 
 public enum FileStatus
 {
-    Temporary = 0,
-    Permanent = 1,
-    Deleted = 2
+    Pending = 0,
+    Uploaded = 1,
+    Confirmed = 2,
+    Failed = 3,
+    Deleted = 4
 }

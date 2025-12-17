@@ -140,5 +140,72 @@ namespace BidService.Infrastructure.Repositories
                 .ThenByDescending(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+        public async Task<BidStatsDto> GetBidStatsAsync(CancellationToken cancellationToken = default)
+        {
+            var now = _dateTime.UtcNow;
+            var today = now.Date;
+            var weekStart = today.AddDays(-(int)today.DayOfWeek);
+            var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
+
+            var allBids = await _context.Bids
+                .Where(x => !x.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            var totalBids = allBids.Count;
+            var uniqueBidders = allBids.Select(b => b.BidderId).Distinct().Count();
+            var totalBidAmount = allBids.Sum(b => b.Amount);
+            var averageBidAmount = totalBids > 0 ? totalBidAmount / totalBids : 0;
+            var bidsToday = allBids.Count(b => b.BidTime.Date == today);
+            var bidsThisWeek = allBids.Count(b => b.BidTime >= weekStart);
+            var bidsThisMonth = allBids.Count(b => b.BidTime >= monthStart);
+
+            return new BidStatsDto(
+                totalBids,
+                uniqueBidders,
+                totalBidAmount,
+                averageBidAmount,
+                bidsToday,
+                bidsThisWeek,
+                bidsThisMonth
+            );
+        }
+
+        public async Task<List<DailyBidStatDto>> GetDailyBidStatsAsync(int days, CancellationToken cancellationToken = default)
+        {
+            var startDate = _dateTime.UtcNow.Date.AddDays(-days);
+
+            var dailyStats = await _context.Bids
+                .Where(x => !x.IsDeleted && x.BidTime >= startDate)
+                .GroupBy(x => x.BidTime.Date)
+                .Select(g => new DailyBidStatDto(
+                    DateOnly.FromDateTime(g.Key),
+                    g.Count(),
+                    g.Sum(b => b.Amount)
+                ))
+                .OrderBy(s => s.Date)
+                .ToListAsync(cancellationToken);
+
+            return dailyStats;
+        }
+
+        public async Task<List<TopBidderDto>> GetTopBiddersAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            var topBidders = await _context.Bids
+                .Where(x => !x.IsDeleted)
+                .GroupBy(x => new { x.BidderId, x.BidderUsername })
+                .Select(g => new TopBidderDto(
+                    g.Key.BidderId,
+                    g.Key.BidderUsername,
+                    g.Count(),
+                    g.Sum(b => b.Amount),
+                    0
+                ))
+                .OrderByDescending(t => t.TotalAmount)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+
+            return topBidders;
+        }
     }
 }

@@ -202,12 +202,9 @@ public class AuctionsController : ControllerBase
         var sellerId = UserHelper.GetRequiredUserId(User);
         var sellerUsername = UserHelper.GetUsername(User);
 
-        var commandFiles = dto.Files?.Select(f => new Application.Commands.CreateAuction.FileInfoDto(
-            f.Url,
-            f.PublicId,
-            f.FileName,
-            f.ContentType,
-            f.Size,
+        var commandFiles = dto.Files?.Select(f => new CreateAuctionFileDto(
+            f.FileId,
+            f.FileType,
             f.DisplayOrder,
             f.IsPrimary
         )).ToList();
@@ -224,7 +221,6 @@ public class AuctionsController : ControllerBase
             sellerId,
             sellerUsername,
             dto.Currency,
-            dto.FileIds,
             commandFiles,
             dto.CategoryId,
             dto.IsFeatured);
