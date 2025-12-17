@@ -213,28 +213,43 @@ public class FileStorageService : IFileStorageService
             return 0;
         }
 
-        var deletedCount = 0;
+        var deletedFiles = new List<StoredFile>();
+        var events = new List<FileDeletedEvent>();
+        var deleteTime = DateTime.UtcNow;
+
+        // First, delete from storage and collect successful deletions
         foreach (var file in filesList)
         {
-            await _storageProvider.DeleteAsync(file.Path, cancellationToken);
+            var storageDeleted = await _storageProvider.DeleteAsync(file.Path, cancellationToken);
             
-            file.Status = FileStatus.Deleted;
-            file.DeletedAt = DateTime.UtcNow;
-            
-            await _eventPublisher.PublishAsync(new FileDeletedEvent
+            // Only mark as deleted if storage deletion succeeds (or file doesn't exist)
+            if (storageDeleted)
             {
-                FileId = file.Id,
-                FileName = file.FileName,
-                EntityId = file.EntityId,
-                EntityType = file.EntityType,
-                DeletedAt = file.DeletedAt.Value
-            }, cancellationToken);
-            
-            deletedCount++;
+                file.Status = FileStatus.Deleted;
+                file.DeletedAt = deleteTime;
+                deletedFiles.Add(file);
+                
+                events.Add(new FileDeletedEvent
+                {
+                    FileId = file.Id,
+                    FileName = file.FileName,
+                    EntityId = file.EntityId,
+                    EntityType = file.EntityType,
+                    DeletedAt = deleteTime
+                });
+            }
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return deletedCount;
+        // Save all changes in a single database call
+        if (deletedFiles.Count > 0)
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            
+            // Publish events in batch after successful commit
+            await _eventPublisher.PublishBatchAsync(events, cancellationToken);
+        }
+
+        return deletedFiles.Count;
     }
 
     public async Task<FileMetadata?> GetMetadataAsync(Guid fileId, CancellationToken cancellationToken = default)
