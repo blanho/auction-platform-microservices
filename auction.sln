@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageService.Infrastructu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageService.API", "StorageService\API\StorageService.API.csproj", "{81D973E1-747A-4A2D-B7C7-907DD7345FA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Locking", "Common\Common.Locking\Common.Locking.csproj", "{D8169E43-3015-4307-AFF6-85536D45FAF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -527,6 +529,18 @@ Global
 		{81D973E1-747A-4A2D-B7C7-907DD7345FA2}.Release|x64.Build.0 = Release|Any CPU
 		{81D973E1-747A-4A2D-B7C7-907DD7345FA2}.Release|x86.ActiveCfg = Release|Any CPU
 		{81D973E1-747A-4A2D-B7C7-907DD7345FA2}.Release|x86.Build.0 = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|x64.Build.0 = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8169E43-3015-4307-AFF6-85536D45FAF6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -570,6 +584,7 @@ Global
 		{C6A4C3A7-125E-4051-B11A-0933074A343A} = {4AB1CD78-730F-AB77-5485-AEFD7D0A8730}
 		{AC438616-DBB9-448B-A249-577C47A4F744} = {4AB1CD78-730F-AB77-5485-AEFD7D0A8730}
 		{81D973E1-747A-4A2D-B7C7-907DD7345FA2} = {4AB1CD78-730F-AB77-5485-AEFD7D0A8730}
+		{D8169E43-3015-4307-AFF6-85536D45FAF6} = {881589EE-639B-0A35-DBCE-5D94E4FC90C0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F76C662E-E93B-457C-81A3-48C3F045416A}

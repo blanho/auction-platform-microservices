@@ -1,4 +1,5 @@
 #nullable enable
+
 namespace StorageService.Domain.Events;
 
 public record FileUploadedEvent

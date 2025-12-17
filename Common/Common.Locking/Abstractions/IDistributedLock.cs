@@ -2,23 +2,16 @@ namespace Common.Locking.Abstractions;
 
 public interface IDistributedLock
 {
-    Task<IDistributedLockHandle?> TryAcquireAsync(
-        string resourceKey,
-        TimeSpan expiry,
+    Task<IAsyncDisposable?> AcquireAsync(
+        string resourceKey, 
+        TimeSpan? expiry = null, 
+        TimeSpan? wait = null, 
         CancellationToken cancellationToken = default);
-
-    Task<IDistributedLockHandle> AcquireAsync(
-        string resourceKey,
-        TimeSpan expiry,
-        TimeSpan waitTime,
-        TimeSpan retryInterval,
+    
+    Task<IAsyncDisposable?> TryAcquireAsync(
+        string resourceKey, 
+        TimeSpan? expiry = null, 
         CancellationToken cancellationToken = default);
-}
-
-public interface IDistributedLockHandle : IAsyncDisposable
-{
-    string ResourceKey { get; }
-    bool IsAcquired { get; }
-    Task<bool> ExtendAsync(TimeSpan extension);
-    Task ReleaseAsync();
+    
+    Task ReleaseAsync(string resourceKey, CancellationToken cancellationToken = default);
 }

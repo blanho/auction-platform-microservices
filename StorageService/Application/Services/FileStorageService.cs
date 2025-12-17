@@ -1,3 +1,4 @@
+using Common.Storage.Events;
 using MassTransit;
 using Microsoft.Extensions.Options;
 using StorageService.Application.Configuration;
@@ -5,7 +6,6 @@ using StorageService.Application.DTOs;
 using StorageService.Application.Interfaces;
 using StorageService.Domain.Entities;
 using StorageService.Domain.Enums;
-using StorageService.Domain.Events;
 
 namespace StorageService.Application.Services;
 

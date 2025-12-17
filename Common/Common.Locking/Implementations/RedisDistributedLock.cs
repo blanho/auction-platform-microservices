@@ -1,5 +1,4 @@
 using Common.Locking.Abstractions;
-using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace Common.Locking.Implementations;
@@ -7,113 +6,101 @@ namespace Common.Locking.Implementations;
 public class RedisDistributedLock : IDistributedLock
 {
     private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<RedisDistributedLock> _logger;
+    private readonly string _prefix;
+    private static readonly TimeSpan DefaultExpiry = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultWait = TimeSpan.FromSeconds(10);
 
-    public RedisDistributedLock(
-        IConnectionMultiplexer redis,
-        ILogger<RedisDistributedLock> logger)
+    public RedisDistributedLock(IConnectionMultiplexer redis, string prefix = "lock:")
     {
         _redis = redis;
-        _logger = logger;
+        _prefix = prefix;
     }
 
-    public async Task<IDistributedLockHandle?> TryAcquireAsync(
+    public async Task<IAsyncDisposable?> AcquireAsync(
         string resourceKey,
-        TimeSpan expiry,
+        TimeSpan? expiry = null,
+        TimeSpan? wait = null,
         CancellationToken cancellationToken = default)
     {
-        var lockKey = $"lock:{resourceKey}";
+        var lockKey = $"{_prefix}{resourceKey}";
         var lockValue = Guid.NewGuid().ToString();
+        var lockExpiry = expiry ?? DefaultExpiry;
+        var waitTime = wait ?? DefaultWait;
+        var endTime = DateTime.UtcNow.Add(waitTime);
+
+        var db = _redis.GetDatabase();
+
+        while (DateTime.UtcNow < endTime)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var acquired = await db.StringSetAsync(
+                lockKey,
+                lockValue,
+                lockExpiry,
+                When.NotExists);
+
+            if (acquired)
+            {
+                return new LockHandle(db, lockKey, lockValue);
+            }
+
+            await Task.Delay(50, cancellationToken);
+        }
+
+        return null;
+    }
+
+    public async Task<IAsyncDisposable?> TryAcquireAsync(
+        string resourceKey,
+        TimeSpan? expiry = null,
+        CancellationToken cancellationToken = default)
+    {
+        var lockKey = $"{_prefix}{resourceKey}";
+        var lockValue = Guid.NewGuid().ToString();
+        var lockExpiry = expiry ?? DefaultExpiry;
+
         var db = _redis.GetDatabase();
 
         var acquired = await db.StringSetAsync(
             lockKey,
             lockValue,
-            expiry,
+            lockExpiry,
             When.NotExists);
 
         if (acquired)
         {
-            _logger.LogDebug("Acquired lock for {ResourceKey}", resourceKey);
-            return new RedisLockHandle(db, lockKey, lockValue, _logger);
+            return new LockHandle(db, lockKey, lockValue);
         }
 
-        _logger.LogDebug("Failed to acquire lock for {ResourceKey}", resourceKey);
         return null;
     }
 
-    public async Task<IDistributedLockHandle> AcquireAsync(
-        string resourceKey,
-        TimeSpan expiry,
-        TimeSpan waitTime,
-        TimeSpan retryInterval,
-        CancellationToken cancellationToken = default)
+    public async Task ReleaseAsync(string resourceKey, CancellationToken cancellationToken = default)
     {
-        var startTime = DateTime.UtcNow;
-
-        while (DateTime.UtcNow - startTime < waitTime)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var handle = await TryAcquireAsync(resourceKey, expiry, cancellationToken);
-            if (handle != null)
-            {
-                return handle;
-            }
-
-            await Task.Delay(retryInterval, cancellationToken);
-        }
-
-        throw new TimeoutException($"Failed to acquire lock for {resourceKey} within {waitTime}");
+        var lockKey = $"{_prefix}{resourceKey}";
+        var db = _redis.GetDatabase();
+        await db.KeyDeleteAsync(lockKey);
     }
 
-    private class RedisLockHandle : IDistributedLockHandle
+    private class LockHandle : IAsyncDisposable
     {
         private readonly IDatabase _db;
         private readonly string _lockKey;
         private readonly string _lockValue;
-        private readonly ILogger _logger;
-        private bool _released;
+        private bool _disposed;
 
-        public RedisLockHandle(
-            IDatabase db,
-            string lockKey,
-            string lockValue,
-            ILogger logger)
+        public LockHandle(IDatabase db, string lockKey, string lockValue)
         {
             _db = db;
             _lockKey = lockKey;
             _lockValue = lockValue;
-            _logger = logger;
-            ResourceKey = lockKey.Replace("lock:", "");
-            IsAcquired = true;
         }
 
-        public string ResourceKey { get; }
-        public bool IsAcquired { get; private set; }
-
-        public async Task<bool> ExtendAsync(TimeSpan extension)
+        public async ValueTask DisposeAsync()
         {
-            if (_released) return false;
-
-            var script = @"
-                if redis.call('get', KEYS[1]) == ARGV[1] then
-                    return redis.call('pexpire', KEYS[1], ARGV[2])
-                else
-                    return 0
-                end";
-
-            var result = await _db.ScriptEvaluateAsync(
-                script,
-                new RedisKey[] { _lockKey },
-                new RedisValue[] { _lockValue, (long)extension.TotalMilliseconds });
-
-            return (long)result! == 1;
-        }
-
-        public async Task ReleaseAsync()
-        {
-            if (_released) return;
+            if (_disposed) return;
+            _disposed = true;
 
             var script = @"
                 if redis.call('get', KEYS[1]) == ARGV[1] then
@@ -126,15 +113,6 @@ public class RedisDistributedLock : IDistributedLock
                 script,
                 new RedisKey[] { _lockKey },
                 new RedisValue[] { _lockValue });
-
-            _released = true;
-            IsAcquired = false;
-            _logger.LogDebug("Released lock for {ResourceKey}", ResourceKey);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await ReleaseAsync();
         }
     }
 }

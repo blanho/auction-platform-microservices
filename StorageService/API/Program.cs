@@ -1,3 +1,4 @@
+using StorageService.API.Consumers;
 using StorageService.API.Services;
 using StorageService.API.Jobs;
 using StorageService.Infrastructure.Data;
@@ -6,6 +7,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Messaging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +19,11 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddMassTransitWithRabbitMq(builder.Configuration, x =>
+{
+    x.AddConsumer<AuctionDeletedConsumer>();
+});
 
 builder.Services.AddQuartz(q =>
 {

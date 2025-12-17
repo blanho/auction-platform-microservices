@@ -20,9 +20,23 @@ public static class ServiceCollectionExtensions
     }
 
     public static IServiceCollection AddDistributedLocking(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        IConnectionMultiplexer connectionMultiplexer)
     {
+        services.AddSingleton(connectionMultiplexer);
         services.AddSingleton<IDistributedLock, RedisDistributedLock>();
+        
+        return services;
+    }
+
+    public static IServiceCollection AddDistributedLocking(this IServiceCollection services)
+    {
+        services.AddSingleton<IDistributedLock>(sp =>
+        {
+            var redis = sp.GetRequiredService<IConnectionMultiplexer>();
+            return new RedisDistributedLock(redis);
+        });
+        
         return services;
     }
 }
