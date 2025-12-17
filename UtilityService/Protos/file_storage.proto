@@ -41,6 +41,7 @@ message FileMetadataRequest {
   string entity_id = 4;
   string uploaded_by = 5;
   bool auto_confirm = 6;  // If true, immediately move to permanent storage
+  string owner_service = 7;  // e.g., "auction", "product", "category"
 }
 
 // Response after file upload
@@ -58,6 +59,7 @@ message ConfirmFileRequest {
   string file_id = 1;
   string entity_type = 2;
   string entity_id = 3;
+  string owner_service = 4;  // e.g., "auction", "product", "category"
 }
 
 // Response after confirming file
@@ -89,6 +91,7 @@ message FileMetadataResponse {
   string entity_type = 9;
   string entity_id = 10;
   string error = 11;
+  string owner_service = 12;  // e.g., "auction", "product", "category"
 }
 
 // Request to delete a file

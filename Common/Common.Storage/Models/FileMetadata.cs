@@ -12,6 +12,7 @@ public record FileMetadata
     public string Path { get; init; } = string.Empty;
     public string? Url { get; init; }
     public FileStatus Status { get; init; } = FileStatus.Temporary;
+    public string? OwnerService { get; init; }  // e.g., "auction", "product", "category"
     public string? EntityId { get; init; }
     public string? EntityType { get; init; }
     public string? UploadedBy { get; init; }
@@ -33,6 +34,7 @@ public record FileUploadResult
 public record FileConfirmRequest
 {
     public Guid FileId { get; init; }
+    public string? OwnerService { get; init; }  // e.g., "auction", "product", "category"
     public string? EntityId { get; init; }
     public string? EntityType { get; init; }
     public Dictionary<string, string>? Tags { get; init; }

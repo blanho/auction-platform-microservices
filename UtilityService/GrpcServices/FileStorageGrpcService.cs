@@ -111,6 +111,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         var confirmRequest = new FileConfirmRequest
         {
             FileId = fileId,
+            OwnerService = request.OwnerService,
             EntityType = request.EntityType,
             EntityId = request.EntityId
         };
@@ -127,8 +128,8 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
             };
         }
 
-        _logger.LogInformation("File confirmed: {FileId} -> {EntityType}/{EntityId}", 
-            fileId, request.EntityType, request.EntityId);
+        _logger.LogInformation("File confirmed: {FileId} -> {OwnerService}/{EntityType}/{EntityId}", 
+            fileId, request.OwnerService, request.EntityType, request.EntityId);
 
         return new ConfirmFileResponse
         {
@@ -163,6 +164,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
             var confirmRequest = new FileConfirmRequest
             {
                 FileId = fileId,
+                OwnerService = fileRequest.OwnerService,
                 EntityType = fileRequest.EntityType,
                 EntityId = fileRequest.EntityId
             };
@@ -222,6 +224,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
         var confirmRequest = new FileConfirmRequest
         {
             FileId = uploadResponse.FileId,
+            OwnerService = uploadResponse.OwnerService ?? "",
             EntityType = uploadResponse.EntityType ?? "",
             EntityId = uploadResponse.EntityId ?? ""
         };
@@ -283,6 +286,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
             Url = metadata.Url ?? "",
             Path = metadata.Path,
             Status = (int)metadata.Status,
+            OwnerService = metadata.OwnerService ?? "",
             EntityType = metadata.EntityType ?? "",
             EntityId = metadata.EntityId ?? ""
         };
@@ -311,7 +315,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
     }
 
     // Internal helper for upload with metadata extraction
-    private record UploadResult(bool Success, Guid FileId, string? Error, FileMetadata? Metadata, string? EntityType, string? EntityId);
+    private record UploadResult(bool Success, Guid FileId, string? Error, FileMetadata? Metadata, string? OwnerService, string? EntityType, string? EntityId);
 
     private async Task<UploadResult> UploadFileInternal(
         IAsyncStreamReader<FileChunk> requestStream,
@@ -338,7 +342,7 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
 
             if (metadata == null)
             {
-                return new UploadResult(false, Guid.Empty, "No metadata received", null, null, null);
+                return new UploadResult(false, Guid.Empty, "No metadata received", null, null, null, null);
             }
 
             await using var uploadStream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
@@ -351,10 +355,10 @@ public class FileStorageGrpcService : FileStorageGrpc.FileStorageGrpcBase
 
             if (!result.Success || result.Metadata == null)
             {
-                return new UploadResult(false, Guid.Empty, result.Error, null, null, null);
+                return new UploadResult(false, Guid.Empty, result.Error, null, null, null, null);
             }
 
-            return new UploadResult(true, result.Metadata.Id, null, result.Metadata, metadata.EntityType, metadata.EntityId);
+            return new UploadResult(true, result.Metadata.Id, null, result.Metadata, metadata.OwnerService, metadata.EntityType, metadata.EntityId);
         }
         finally
         {

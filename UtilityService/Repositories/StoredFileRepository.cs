@@ -41,6 +41,17 @@ public class StoredFileRepository : IStoredFileRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<StoredFile>> GetByOwnerEntityAsync(
+        string ownerService,
+        string entityId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.StoredFiles
+            .Where(x => x.OwnerService == ownerService && x.EntityId == entityId && x.Status != FileStatus.Deleted)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<StoredFile>> GetTemporaryFilesAsync(
         DateTime olderThan,
         CancellationToken cancellationToken = default)

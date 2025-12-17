@@ -12,6 +12,7 @@ public class StoredFile
     public string Path { get; set; } = string.Empty;
     public string? Url { get; set; }
     public FileStatus Status { get; set; } = FileStatus.Temporary;
+    public string? OwnerService { get; set; }  // e.g., "auction", "product", "category"
     public string? EntityId { get; set; }
     public string? EntityType { get; set; }
     public string? UploadedBy { get; set; }

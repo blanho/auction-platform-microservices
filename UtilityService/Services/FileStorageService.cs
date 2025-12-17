@@ -122,6 +122,7 @@ public class FileStorageService : IFileStorageService
         storedFile.Path = newPath;
         storedFile.Url = _storageProvider.GetUrl(newPath);
         storedFile.Status = FileStatus.Permanent;
+        storedFile.OwnerService = request.OwnerService;
         storedFile.EntityId = request.EntityId;
         storedFile.EntityType = request.EntityType;
         storedFile.ConfirmedAt = DateTime.UtcNow;
@@ -199,6 +200,43 @@ public class FileStorageService : IFileStorageService
         return true;
     }
 
+    public async Task<int> DeleteByOwnerEntityAsync(
+        string ownerService,
+        string entityId,
+        CancellationToken cancellationToken = default)
+    {
+        var files = await _unitOfWork.StoredFiles.GetByOwnerEntityAsync(ownerService, entityId, cancellationToken);
+        var filesList = files.ToList();
+
+        if (filesList.Count == 0)
+        {
+            return 0;
+        }
+
+        var deletedCount = 0;
+        foreach (var file in filesList)
+        {
+            await _storageProvider.DeleteAsync(file.Path, cancellationToken);
+            
+            file.Status = FileStatus.Deleted;
+            file.DeletedAt = DateTime.UtcNow;
+            
+            await _eventPublisher.PublishAsync(new FileDeletedEvent
+            {
+                FileId = file.Id,
+                FileName = file.FileName,
+                EntityId = file.EntityId,
+                EntityType = file.EntityType,
+                DeletedAt = file.DeletedAt.Value
+            }, cancellationToken);
+            
+            deletedCount++;
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return deletedCount;
+    }
+
     public async Task<FileMetadata?> GetMetadataAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
         var storedFile = await _unitOfWork.StoredFiles.GetByIdAsync(fileId, cancellationToken);
@@ -234,6 +272,7 @@ public class FileStorageService : IFileStorageService
             Path = file.Path,
             Url = file.Url,
             Status = file.Status,
+            OwnerService = file.OwnerService,
             EntityId = file.EntityId,
             EntityType = file.EntityType,
             UploadedBy = file.UploadedBy,

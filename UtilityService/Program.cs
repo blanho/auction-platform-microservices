@@ -53,6 +53,7 @@ builder.Services.AddGrpc();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<AuditEventConsumer>();
+    x.AddConsumer<AuctionDeletedEventConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -66,6 +67,12 @@ builder.Services.AddMassTransit(x =>
         {
             e.ConfigureConsumer<AuditEventConsumer>(context);
             e.UseMessageRetry(r => r.Intervals(100, 500, 1000));
+        });
+
+        cfg.ReceiveEndpoint("utility-auction-deleted-queue", e =>
+        {
+            e.ConfigureConsumer<AuctionDeletedEventConsumer>(context);
+            e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
         });
 
         cfg.ConfigureEndpoints(context);

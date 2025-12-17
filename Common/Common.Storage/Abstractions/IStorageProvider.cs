@@ -41,6 +41,19 @@ public interface IFileStorageService
     
     Task<bool> DeleteAsync(Guid fileId, CancellationToken cancellationToken = default);
     
+    /// <summary>
+    /// Deletes all files associated with an entity from a specific owner service.
+    /// Used for event-driven cleanup when entities are deleted.
+    /// </summary>
+    /// <param name="ownerService">The service that owns the files (e.g., "auction", "product", "category")</param>
+    /// <param name="entityId">The ID of the entity whose files should be deleted</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of files deleted</returns>
+    Task<int> DeleteByOwnerEntityAsync(
+        string ownerService,
+        string entityId,
+        CancellationToken cancellationToken = default);
+    
     Task<FileMetadata?> GetMetadataAsync(Guid fileId, CancellationToken cancellationToken = default);
     
     Task<IEnumerable<FileMetadata>> GetByEntityAsync(

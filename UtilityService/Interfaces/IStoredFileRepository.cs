@@ -16,6 +16,11 @@ public interface IStoredFileRepository
         string entityId,
         CancellationToken cancellationToken = default);
     
+    Task<IEnumerable<StoredFile>> GetByOwnerEntityAsync(
+        string ownerService,
+        string entityId,
+        CancellationToken cancellationToken = default);
+    
     Task<IEnumerable<StoredFile>> GetTemporaryFilesAsync(
         DateTime olderThan,
         CancellationToken cancellationToken = default);
