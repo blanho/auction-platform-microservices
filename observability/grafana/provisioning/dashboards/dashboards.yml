@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'Auction Platform'
+    orgId: 1
+    folder: 'Auction Platform'
+    folderUid: 'auction'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
