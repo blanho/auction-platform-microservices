@@ -315,3 +315,25 @@ export function isServerError(error: unknown): boolean {
   }
   return false;
 }
+
+export { showUndoToast } from '@/components/ui/undo-toast';
+
+export interface ShowDeleteWithUndoOptions {
+  message: string;
+  onDelete: () => void | Promise<void>;
+  onUndo?: () => void | Promise<void>;
+  variant?: 'delete' | 'remove' | 'archive';
+}
+
+export function showDeleteWithUndo(options: ShowDeleteWithUndoOptions): void {
+  const { message, onDelete, onUndo, variant = 'delete' } = options;
+
+  const { showUndoToast } = require('@/components/ui/undo-toast');
+
+  showUndoToast({
+    message,
+    variant,
+    onConfirm: onDelete,
+    onUndo: onUndo || (() => {}),
+  });
+}

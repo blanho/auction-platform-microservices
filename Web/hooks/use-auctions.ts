@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { auctionService, AuctionPagedResult } from "@/services/auction.service";
 import { CreateAuctionDto, UpdateAuctionDto, Auction } from "@/types/auction";
-import { toast } from "sonner";
+import { showSuccessToast, showErrorToast } from "@/utils";
 import { AxiosError } from "axios";
 import {
   useAuctionParams,
@@ -178,11 +178,11 @@ export const useCreateAuction = () => {
       setIsPending(true);
       try {
         const result = await auctionService.createAuction(data);
-        toast.success("Auction created successfully");
+        showSuccessToast("Auction created successfully");
         options?.onSuccess?.(result);
       } catch (error) {
         const err = error as AxiosError<{ message?: string }>;
-        toast.error(err.response?.data?.message || "Failed to create auction");
+        showErrorToast(err);
         options?.onError?.(err);
       } finally {
         setIsPending(false);
@@ -208,11 +208,11 @@ export const useUpdateAuction = () => {
       setIsPending(true);
       try {
         await auctionService.updateAuction(id, data);
-        toast.success("Auction updated successfully");
+        showSuccessToast("Auction updated successfully");
         options?.onSuccess?.();
       } catch (error) {
         const err = error as AxiosError<{ message?: string }>;
-        toast.error(err.response?.data?.message || "Failed to update auction");
+        showErrorToast(err);
         options?.onError?.(err);
       } finally {
         setIsPending(false);
@@ -238,11 +238,11 @@ export const useDeleteAuction = () => {
       setIsPending(true);
       try {
         await auctionService.deleteAuction(id);
-        toast.success("Auction deleted successfully");
+        showSuccessToast("Auction deleted successfully");
         options?.onSuccess?.();
       } catch (error) {
         const err = error as AxiosError<{ message?: string }>;
-        toast.error(err.response?.data?.message || "Failed to delete auction");
+        showErrorToast(err);
         options?.onError?.(err);
       } finally {
         setIsPending(false);

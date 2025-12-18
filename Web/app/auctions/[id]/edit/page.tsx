@@ -16,9 +16,10 @@ import {
 } from '@/components/ui/breadcrumb';
 import { MainLayout } from '@/components/layout/main-layout';
 import { RequireAuth } from '@/features/auth';
-import { EditAuctionForm } from '@/features/auction/edit-auction-form';
+import { AuctionForm, AuctionFormValues } from '@/features/auction/auction-form';
 import { auctionService } from '@/services/auction.service';
-import { Auction, Category } from '@/types/auction';
+import { Auction, Category, UpdateAuctionDto, ShippingType } from '@/types/auction';
+import { UploadedImage } from '@/components/ui/cloudinary-upload';
 import { getAuctionTitle } from '@/utils/auction';
 
 export default function EditAuctionPage() {
@@ -65,6 +66,40 @@ export default function EditAuctionPage() {
             isMounted = false;
         };
     }, [auctionId]);
+
+    const handleSubmit = async (values: AuctionFormValues, images: UploadedImage[]) => {
+        const successfulImages = images.filter(img => img.status === 'success');
+        const files = successfulImages.map((img, index) => ({
+            url: img.url,
+            publicId: img.publicId,
+            fileName: img.name,
+            contentType: 'image/jpeg',
+            size: 0,
+            displayOrder: index,
+            isPrimary: img.isPrimary || (index === 0 && !successfulImages.some(i => i.isPrimary)),
+        }));
+
+        const data: UpdateAuctionDto = {
+            title: values.title,
+            description: values.description,
+            condition: values.condition || undefined,
+            yearManufactured: values.yearManufactured || undefined,
+            reservePrice: values.reservePrice,
+            buyNowPrice: values.buyNowPrice || undefined,
+            auctionEnd: values.auctionEnd,
+            categoryId: values.categoryId || undefined,
+            isFeatured: values.isFeatured,
+            shippingType: values.shippingType,
+            shippingCost: values.shippingType === ShippingType.Flat ? values.shippingCost : undefined,
+            handlingTime: values.handlingTime,
+            shipsFrom: values.shipsFrom || undefined,
+            localPickupAvailable: values.localPickupAvailable,
+            localPickupAddress: values.localPickupAvailable ? values.localPickupAddress : undefined,
+            files: files.length > 0 ? files : undefined,
+        };
+
+        await auctionService.updateAuction(auctionId, data);
+    };
 
     if (isLoading) {
         return (
@@ -123,7 +158,12 @@ export default function EditAuctionPage() {
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <EditAuctionForm auction={auction} categories={categories} />
+                    <AuctionForm
+                        mode="edit"
+                        initialData={auction}
+                        categories={categories}
+                        onSubmit={handleSubmit}
+                    />
                 </div>
             </MainLayout>
         </RequireAuth>

@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { MainLayout } from '@/components/layout/main-layout';
-import { CreateAuctionForm } from '@/features/auction/create-auction-form';
+import { AuctionForm, AuctionFormValues } from '@/features/auction/auction-form';
 import { RequireAuth } from '@/features/auth';
 import {
     Breadcrumb,
@@ -12,8 +15,68 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { auctionService } from '@/services/auction.service';
+import { Category, CreateAuctionDto, ShippingType } from '@/types/auction';
+import { UploadedImage } from '@/components/ui/cloudinary-upload';
 
 export default function CreateAuctionPage() {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        auctionService
+            .getCategories()
+            .then(setCategories)
+            .catch(() => {})
+            .finally(() => setIsLoading(false));
+    }, []);
+
+    const handleSubmit = async (values: AuctionFormValues, images: UploadedImage[]) => {
+        const successfulImages = images.filter(img => img.status === 'success');
+        const files = successfulImages.map((img, index) => ({
+            url: img.url,
+            publicId: img.publicId,
+            fileName: img.name,
+            contentType: 'image/jpeg',
+            size: 0,
+            displayOrder: index,
+            isPrimary: img.isPrimary || (index === 0 && !successfulImages.some(i => i.isPrimary)),
+        }));
+
+        const data: CreateAuctionDto = {
+            title: values.title,
+            description: values.description,
+            condition: values.condition || undefined,
+            yearManufactured: values.yearManufactured || undefined,
+            reservePrice: values.reservePrice,
+            buyNowPrice: values.buyNowPrice || undefined,
+            auctionEnd: values.auctionEnd,
+            categoryId: values.categoryId || undefined,
+            isFeatured: values.isFeatured,
+            shippingType: values.shippingType,
+            shippingCost: values.shippingType === ShippingType.Flat ? values.shippingCost : undefined,
+            handlingTime: values.handlingTime,
+            shipsFrom: values.shipsFrom || undefined,
+            localPickupAvailable: values.localPickupAvailable,
+            localPickupAddress: values.localPickupAvailable ? values.localPickupAddress : undefined,
+            files: files.length > 0 ? files : undefined,
+        };
+
+        await auctionService.createAuction(data);
+    };
+
+    if (isLoading) {
+        return (
+            <RequireAuth>
+                <MainLayout>
+                    <div className="container py-8 flex justify-center">
+                        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin" />
+                    </div>
+                </MainLayout>
+            </RequireAuth>
+        );
+    }
+
     return (
         <RequireAuth>
             <MainLayout>
@@ -37,7 +100,11 @@ export default function CreateAuctionPage() {
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <CreateAuctionForm />
+                    <AuctionForm
+                        mode="create"
+                        categories={categories}
+                        onSubmit={handleSubmit}
+                    />
                 </div>
             </MainLayout>
         </RequireAuth>

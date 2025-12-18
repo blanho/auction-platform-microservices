@@ -384,7 +384,7 @@ export function Header() {
                                     className="relative hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
                                     asChild
                                 >
-                                    <Link href="/wishlist">
+                                    <Link href="/saved">
                                         <FontAwesomeIcon icon={faHeart} className="h-5 w-5" />
                                         {wishlistCount > 0 && (
                                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">

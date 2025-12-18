@@ -4,7 +4,9 @@ import { ReactNode } from "react";
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { UndoToastContainer } from "@/components/ui/undo-toast";
 import { NotificationProvider } from "@/context/notification.context";
+import { WishlistProvider } from "@/context/wishlist.context";
 import { QueryProvider } from "./query-provider";
 
 interface ProvidersProps {
@@ -25,9 +27,12 @@ export function Providers({ children }: ProvidersProps) {
                     disableTransitionOnChange
                 >
                     <NotificationProvider>
-                        {children}
+                        <WishlistProvider>
+                            {children}
+                        </WishlistProvider>
                     </NotificationProvider>
                     <Toaster />
+                    <UndoToastContainer />
                 </ThemeProvider>
             </QueryProvider>
         </NextAuthSessionProvider>

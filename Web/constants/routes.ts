@@ -50,7 +50,9 @@ export const ROUTES = {
   DEALS: '/deals',
   LIVE: '/live',
   GIFTS: '/gifts',
-  WISHLIST: '/wishlist',
+  SAVED: '/saved',
+  WISHLIST: '/saved?tab=wishlist',
+  WATCHLIST: '/saved?tab=watchlist',
   HELP: '/help',
   
   NOTIFICATIONS: '/notifications',

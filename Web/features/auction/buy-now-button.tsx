@@ -23,11 +23,13 @@ import { auctionService } from '@/services/auction.service';
 import { formatCurrency } from '@/utils';
 import { ROUTES } from '@/constants';
 import { useAuthSession } from '@/hooks/use-auth-session';
+import { cn } from '@/lib/utils';
 
 interface BuyNowButtonProps {
     auctionId: string;
     buyNowPrice: number;
     auctionTitle: string;
+    variant?: 'primary' | 'secondary';
     onSuccess?: () => void;
 }
 
@@ -35,6 +37,7 @@ export function BuyNowButton({
     auctionId,
     buyNowPrice,
     auctionTitle,
+    variant = 'primary',
     onSuccess,
 }: BuyNowButtonProps) {
     const { isAuthenticated } = useAuthSession();
@@ -71,11 +74,16 @@ export function BuyNowButton({
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
             <AlertDialogTrigger asChild>
                 <Button
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
-                    size="lg"
+                    className={cn(
+                        "font-semibold",
+                        variant === 'primary' && "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white",
+                        variant === 'secondary' && "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
+                    )}
+                    size={variant === 'primary' ? 'lg' : 'default'}
                 >
-                    <FontAwesomeIcon icon={faBagShopping} className="mr-2 h-5 w-5" />
-                    Buy Now
+                    <FontAwesomeIcon icon={faBagShopping} className={cn("h-4 w-4", variant === 'primary' && "mr-2 h-5 w-5")} />
+                    {variant === 'primary' && "Buy Now"}
+                    {variant === 'secondary' && "Buy Now"}
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

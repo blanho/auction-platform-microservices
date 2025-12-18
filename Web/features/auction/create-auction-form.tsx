@@ -13,6 +13,7 @@ import {
     faDollarSign,
     faSpinner,
     faBox,
+    faFloppyDisk,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
@@ -46,10 +47,12 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CloudinaryUpload, UploadedImage } from '@/components/ui/cloudinary-upload';
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt';
 
 import { auctionService } from '@/services/auction.service';
 import { CreateAuctionDto, Category, ShippingType, SHIPPING_TYPE_LABELS } from '@/types/auction';
-import { showErrorToast } from '@/utils';
+import { showErrorToast, showSuccessToast } from '@/utils';
+import { useFormDraft } from '@/hooks/use-form-draft';
 
 function RequiredIndicator() {
     return <span className="text-red-500 ml-0.5">*</span>;
@@ -119,6 +122,22 @@ export function CreateAuctionForm() {
         },
     });
 
+    const {
+        hasDraft,
+        draftDate,
+        restoreDraft,
+        discardDraft,
+        clearDraft,
+        isRestorePromptOpen,
+    } = useFormDraft({
+        form,
+        key: 'create-auction',
+        exclude: ['imageUrl'],
+        onDraftRestored: () => {
+            showSuccessToast('Draft restored successfully');
+        },
+    });
+
     const onSubmit = async (values: CreateAuctionFormValues) => {
         if (uploadedImages.some(img => img.status === 'uploading')) {
             toast.error('Please wait for images to finish uploading');
@@ -160,6 +179,7 @@ export function CreateAuctionForm() {
         
         try {
             await auctionService.createAuction(data);
+            clearDraft();
             toast.success('Auction created successfully!');
             router.push('/auctions');
         } catch (error: unknown) {
@@ -178,11 +198,26 @@ export function CreateAuctionForm() {
                 <CardDescription>
                     Fill in the details to create a new auction listing
                 </CardDescription>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                    Fields marked with <span className="text-red-500">*</span> are required
-                </p>
+                <div className="flex items-center justify-between mt-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Fields marked with <span className="text-red-500">*</span> are required
+                    </p>
+                    {hasDraft && !isRestorePromptOpen && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <FontAwesomeIcon icon={faFloppyDisk} className="h-3 w-3" />
+                            <span>Draft auto-saved</span>
+                        </div>
+                    )}
+                </div>
             </CardHeader>
             <CardContent>
+                <DraftRestorePrompt
+                    isOpen={isRestorePromptOpen}
+                    draftDate={draftDate}
+                    onRestore={restoreDraft}
+                    onDiscard={discardDraft}
+                />
+                
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         {/* Photos Upload Section */}

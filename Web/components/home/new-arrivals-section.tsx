@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,198 +9,10 @@ import {
     faArrowRight,
     faChevronLeft,
     faChevronRight,
-    faClock,
-    faHeart,
-    faEye,
-    faGavel,
-    faStar,
-    faWandSparkles,
 } from "@fortawesome/free-solid-svg-icons";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Auction } from "@/types/auction";
 import { useAuctionsQuery } from "@/hooks/queries";
-import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
-import { PulsingDot } from "@/components/ui/animated";
-import { getAuctionTitle, getAuctionAttributes, getAuctionYearManufactured } from "@/utils/auction";
-
-function AuctionCard({ auction, index }: { auction: Auction; index: number }) {
-    const [isLiked, setIsLiked] = useState(false);
-    const timeLeft = useCountdown(auction.auctionEnd);
-    const urgency = getUrgencyLevel(timeLeft);
-    const isEndingSoon = urgency === "critical" || urgency === "warning";
-    const title = getAuctionTitle(auction);
-
-    const imageUrl = useMemo(() => {
-        const primaryFile = auction.files?.find((f) => f.isPrimary);
-        return (
-            primaryFile?.url ||
-            auction.files?.[0]?.url ||
-            "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400"
-        );
-    }, [auction.files]);
-
-    const formatTimeDisplay = () => {
-        if (!timeLeft || timeLeft.isExpired) return "Ended";
-        if (timeLeft.days > 0) return `${timeLeft.days}d ${timeLeft.hours}h`;
-        if (timeLeft.hours > 0) return `${timeLeft.hours}h ${timeLeft.minutes}m`;
-        return `${timeLeft.minutes}m ${timeLeft.seconds}s`;
-    };
-
-    const currentBid = auction.currentHighBid || auction.reservePrice || 0;
-
-    const isNew =
-        new Date(auction.createdAt).getTime() >
-        Date.now() - 24 * 60 * 60 * 1000;
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="shrink-0 w-80 snap-start"
-        >
-            <Link href={`/auctions/${auction.id}`} className="group block">
-                <div className="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-emerald-400/50 dark:hover:border-emerald-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 hover:-translate-y-2">
-                    <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
-                        <div className="flex gap-2">
-                            {isNew && (
-                                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <FontAwesomeIcon
-                                        icon={faRocket}
-                                        className="w-3 h-3 mr-1"
-                                    />
-                                    New
-                                </Badge>
-                            )}
-                            {auction.isFeatured && (
-                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <FontAwesomeIcon
-                                        icon={faStar}
-                                        className="w-3 h-3 mr-1"
-                                    />
-                                    Featured
-                                </Badge>
-                            )}
-                        </div>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setIsLiked(!isLiked);
-                            }}
-                            className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-                        >
-                            <FontAwesomeIcon
-                                icon={faHeart}
-                                className={`w-4 h-4 transition-colors ${
-                                    isLiked
-                                        ? "text-red-500"
-                                        : "text-slate-400 dark:text-slate-500"
-                                }`}
-                            />
-                        </button>
-                    </div>
-
-                    <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <Image
-                            src={imageUrl}
-                            alt={title}
-                            fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            unoptimized={imageUrl.includes("unsplash")}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                            <div
-                                className={`bg-black/60 backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2 ${
-                                    isEndingSoon ? "ring-1 ring-red-500/50" : ""
-                                }`}
-                            >
-                                <FontAwesomeIcon
-                                    icon={faClock}
-                                    className={`w-3.5 h-3.5 ${
-                                        isEndingSoon
-                                            ? "text-red-400 animate-pulse"
-                                            : "text-white"
-                                    }`}
-                                />
-                                <span
-                                    className={`font-mono text-sm font-bold ${
-                                        isEndingSoon ? "text-red-400" : "text-white"
-                                    }`}
-                                >
-                                    {formatTimeDisplay()}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-white/80 text-xs">
-                                <div className="flex items-center gap-1">
-                                    <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 30) + 5}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <FontAwesomeIcon icon={faGavel} className="w-3 h-3" />
-                                    <span>{Math.floor(Math.random() * 10) + 1}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-5 space-y-4">
-                        <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                {auction.categoryName || "Uncategorized"}
-                            </p>
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                {title}
-                            </h3>
-                        </div>
-
-                        <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
-                                    Starting Bid
-                                </p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                    ${currentBid.toLocaleString()}
-                                </p>
-                            </div>
-                            <Button
-                                size="sm"
-                                className="h-10 px-5 bg-slate-900 dark:bg-white hover:bg-emerald-600 dark:hover:bg-emerald-500 text-white dark:text-slate-900 dark:hover:text-white font-semibold rounded-xl transition-colors"
-                            >
-                                View
-                                <FontAwesomeIcon
-                                    icon={faArrowRight}
-                                    className="ml-2 w-3 h-3"
-                                />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </Link>
-        </motion.div>
-    );
-}
-
-function CardSkeleton() {
-    return (
-        <div className="shrink-0 w-80 snap-start">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                <Skeleton className="h-52 w-full bg-slate-200 dark:bg-slate-800" />
-                <div className="p-5 space-y-4">
-                    <Skeleton className="h-4 w-20 bg-slate-200 dark:bg-slate-800" />
-                    <Skeleton className="h-6 w-full bg-slate-200 dark:bg-slate-800" />
-                    <div className="flex justify-between pt-4">
-                        <Skeleton className="h-10 w-24 bg-slate-200 dark:bg-slate-800" />
-                        <Skeleton className="h-10 w-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+import { AuctionCard, AuctionCardSkeleton } from "@/features/auction";
 
 export function NewArrivalsSection() {
     const { data, isLoading } = useAuctionsQuery({
@@ -311,11 +122,13 @@ export function NewArrivalsSection() {
                     style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
                     {isLoading
-                        ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
+                        ? [...Array(4)].map((_, i) => <AuctionCardSkeleton key={i} variant="carousel" />)
                         : auctions.map((auction, index) => (
                               <AuctionCard
                                   key={auction.id}
                                   auction={auction}
+                                  variant="carousel"
+                                  colorScheme="emerald"
                                   index={index}
                               />
                           ))}
