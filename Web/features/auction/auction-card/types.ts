@@ -22,10 +22,3 @@ export interface TimeDisplayProps {
     isUrgent: boolean;
     variant: AuctionCardVariant;
 }
-
-export interface StatusConfig {
-    bg: string;
-    text: string;
-    icon: typeof import("@fortawesome/free-solid-svg-icons").faBolt | null;
-    pulse: boolean;
-}

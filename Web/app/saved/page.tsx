@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -286,7 +286,7 @@ function AuctionCard({
   );
 }
 
-export default function SavedItemsPage() {
+function SavedItemsContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -518,5 +518,23 @@ export default function SavedItemsPage() {
         </Tabs>
       </div>
     </MainLayout>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[400px]">
+        <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    </MainLayout>
+  );
+}
+
+export default function SavedItemsPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SavedItemsContent />
+    </Suspense>
   );
 }

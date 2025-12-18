@@ -259,7 +259,7 @@ export function SearchBar({ onSearch, categories = [], showFilters = true }: Sea
                         onClick={clearFilters}
                         className="text-muted-foreground"
                     >
-                        <X className="h-4 w-4 mr-1" />
+                        <FontAwesomeIcon icon={faXmark} className="h-4 w-4 mr-1" />
                         Clear filters
                     </Button>
                 )}

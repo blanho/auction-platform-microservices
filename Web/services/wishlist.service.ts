@@ -16,38 +16,35 @@ export interface WishlistToggleResponse {
     message: string;
 }
 
+const BASE_URL = "/bookmarks";
+
 export const wishlistService = {
     async getWishlist(): Promise<WishlistItem[]> {
-        const response = await apiClient.get<WishlistItem[]>("/auctions/wishlist");
-        return response.data;
-    },
-
-    async getWishlistIds(): Promise<string[]> {
-        const response = await apiClient.get<string[]>("/auctions/wishlist/ids");
+        const response = await apiClient.get<WishlistItem[]>(`${BASE_URL}/wishlist`);
         return response.data;
     },
 
     async getWishlistCount(): Promise<number> {
-        const response = await apiClient.get<number>("/auctions/wishlist/count");
+        const response = await apiClient.get<number>(`${BASE_URL}/wishlist/count`);
         return response.data;
     },
 
     async checkWishlist(auctionId: string): Promise<boolean> {
-        const response = await apiClient.get<boolean>(`/auctions/wishlist/${auctionId}/check`);
+        const response = await apiClient.get<boolean>(`${BASE_URL}/wishlist/check/${auctionId}`);
         return response.data;
     },
 
     async addToWishlist(auctionId: string): Promise<WishlistItem> {
-        const response = await apiClient.post<WishlistItem>(`/auctions/wishlist/${auctionId}`);
+        const response = await apiClient.post<WishlistItem>(`${BASE_URL}/wishlist/${auctionId}`);
         return response.data;
     },
 
     async removeFromWishlist(auctionId: string): Promise<void> {
-        await apiClient.delete(`/auctions/wishlist/${auctionId}`);
+        await apiClient.delete(`${BASE_URL}/wishlist/${auctionId}`);
     },
 
     async toggleWishlist(auctionId: string): Promise<WishlistToggleResponse> {
-        const response = await apiClient.post<WishlistToggleResponse>(`/auctions/wishlist/${auctionId}/toggle`);
+        const response = await apiClient.post<WishlistToggleResponse>(`${BASE_URL}/wishlist/${auctionId}/toggle`);
         return response.data;
     },
 };

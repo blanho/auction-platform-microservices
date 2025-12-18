@@ -33,8 +33,10 @@ import { cn } from "@/lib/utils";
 import { reviewService, CreateReviewDto } from "@/services/review.service";
 
 interface SubmitReviewDialogProps {
-  orderId: string;
-  sellerUsername: string;
+  auctionId: string;
+  orderId?: string;
+  reviewedUserId: string;
+  reviewedUsername: string;
   itemTitle: string;
   onReviewSubmitted?: () => void;
   trigger?: React.ReactNode;
@@ -57,8 +59,10 @@ const RATING_LABELS = [
 ];
 
 export function SubmitReviewDialog({
+  auctionId,
   orderId,
-  sellerUsername,
+  reviewedUserId,
+  reviewedUsername,
   itemTitle,
   onReviewSubmitted,
   trigger,
@@ -92,7 +96,10 @@ export function SubmitReviewDialog({
     setIsSubmitting(true);
     try {
       const dto: CreateReviewDto = {
+        auctionId,
         orderId,
+        reviewedUserId,
+        reviewedUsername,
         rating: values.rating,
         title: values.title || undefined,
         comment: values.comment || undefined,
@@ -135,7 +142,7 @@ export function SubmitReviewDialog({
             <div>
               <DialogTitle>Leave a Review</DialogTitle>
               <DialogDescription>
-                Share your experience with {sellerUsername}
+                Share your experience with {reviewedUsername}
               </DialogDescription>
             </div>
           </div>
@@ -169,12 +176,13 @@ export function SubmitReviewDialog({
                               onMouseLeave={() => setHoveredRating(0)}
                               className="p-1 transition-transform hover:scale-110 focus:outline-none"
                             >
-                              <Star
+                              <FontAwesomeIcon
+                                icon={faStar}
                                 className={cn(
                                   "h-10 w-10 transition-colors",
                                   value <= displayRating
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "fill-zinc-200 text-zinc-200 dark:fill-zinc-700 dark:text-zinc-700"
+                                    ? "text-amber-400"
+                                    : "text-zinc-200 dark:text-zinc-700"
                                 )}
                               />
                             </button>

@@ -149,7 +149,9 @@ export default function AdminNotificationsPage() {
         try {
             const data = await notificationService.getNotificationStats();
             setStats(data);
-        } catch {\n        }
+        } catch {
+            // Silent fail for stats
+        }
     }, []);
 
     useEffect(() => {

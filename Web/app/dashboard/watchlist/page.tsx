@@ -286,7 +286,9 @@ export default function WatchlistPage() {
         try {
             const validAuctions = await auctionService.getAuctionsByIds(watchlistIds);
             setWatchlist(validAuctions);
-        } catch (error) {\n            toast.error(MESSAGES.ERROR.GENERIC);\n        } finally {
+        } catch {
+            toast.error(MESSAGES.ERROR.GENERIC);
+        } finally {
             setIsLoading(false);
         }
     }, []);

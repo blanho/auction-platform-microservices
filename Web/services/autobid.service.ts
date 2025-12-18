@@ -22,7 +22,7 @@ export interface UpdateAutoBidDto {
     isActive?: boolean;
 }
 
-const BASE_URL = "/bidsvc/api/autobids";
+const BASE_URL = "/autobids";
 
 export const autoBidService = {
     createAutoBid: async (dto: CreateAutoBidDto): Promise<AutoBid> => {

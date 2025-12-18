@@ -2,6 +2,12 @@ import apiClient from "@/lib/api/axios";
 import { Bid, PlaceBidDto } from "@/types/bid";
 import { API_ENDPOINTS } from "@/constants/api";
 
+export interface BidIncrementInfo {
+  currentBid: number;
+  minimumIncrement: number;
+  minimumBidAmount: number;
+}
+
 export const bidService = {
   placeBid: async (dto: PlaceBidDto): Promise<Bid> => {
     const { data } = await apiClient.post<Bid>(API_ENDPOINTS.BIDS, dto);
@@ -24,6 +30,13 @@ export const bidService = {
 
   getMyBids: async (): Promise<Bid[]> => {
     const { data } = await apiClient.get<Bid[]>(API_ENDPOINTS.MY_BIDS);
+    return data;
+  },
+
+  getBidIncrementInfo: async (currentBid: number): Promise<BidIncrementInfo> => {
+    const { data } = await apiClient.get<BidIncrementInfo>(
+      `${API_ENDPOINTS.BIDS}/increment/${currentBid}`
+    );
     return data;
   }
 } as const;

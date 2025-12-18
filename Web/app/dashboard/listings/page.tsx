@@ -128,7 +128,9 @@ export default function MyListingsPage() {
         try {
             const response = await auctionService.getMyAuctions();
             setAuctions(response.items);
-        } catch (error) {\n        } finally {
+        } catch {
+            // Silent fail for listings
+        } finally {
             setIsLoading(false);
         }
     }, []);

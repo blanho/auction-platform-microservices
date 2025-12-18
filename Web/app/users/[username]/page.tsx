@@ -47,7 +47,9 @@ export default function UserProfilePage() {
             setRatingSummary(summaryData);
             setReviews(reviewsData);
             setAuctions(auctionsData.items);
-        } catch (error) {\n        } finally {
+        } catch {
+            // Silent fail for user data
+        } finally {
             setIsLoading(false);
         }
     }, [username]);
@@ -112,9 +114,6 @@ export default function UserProfilePage() {
                                         </div>
                                         <p className="text-sm text-muted-foreground">
                                             {getRatingLabel(ratingSummary.averageRating)} · {ratingSummary.totalReviews} reviews
-                                        </p>
-                                        <p className="text-sm text-green-600">
-                                            {ratingSummary.positivePercentage}% positive feedback
                                         </p>
                                     </div>
                                 )}
@@ -237,12 +236,6 @@ export default function UserProfilePage() {
                                                     )}
                                                     {review.comment && (
                                                         <p className="mt-2 text-muted-foreground">{review.comment}</p>
-                                                    )}
-                                                    {review.isVerifiedPurchase && (
-                                                        <Badge variant="outline" className="mt-3">
-                                                            <CheckCircle className="h-3 w-3 mr-1" />
-                                                            Verified Purchase
-                                                        </Badge>
                                                     )}
                                                     {review.sellerResponse && (
                                                         <div className="mt-4 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg">

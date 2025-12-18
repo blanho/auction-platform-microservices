@@ -94,7 +94,8 @@ export default function AnalyticsPage() {
             setError(null);
             const data: SellerAnalyticsData = await analyticsService.getSellerAnalytics(timeRange);
             setAnalytics(data);
-        } catch (err) {\n            setError("Failed to load analytics data");
+        } catch {
+            setError("Failed to load analytics data");
             setAnalytics({
                 totalRevenue: 0,
                 revenueChange: 0,

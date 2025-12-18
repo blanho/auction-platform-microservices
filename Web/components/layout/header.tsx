@@ -501,9 +501,9 @@ export function Header() {
                                                     asChild
                                                 >
                                                     <Link href="/auctions/create">
-                                                        <Gavel className="h-4 w-4 mr-2" />
+                                                        <FontAwesomeIcon icon={faGavel} className="h-4 w-4 mr-2" />
                                                         Start Selling
-                                                        <ArrowRight className="h-4 w-4 ml-2" />
+                                                        <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 ml-2" />
                                                     </Link>
                                                 </Button>
                                             </motion.div>

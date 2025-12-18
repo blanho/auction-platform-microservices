@@ -15,5 +15,4 @@ export { PersonalizationSection } from "@/components/home/personalization-sectio
 export { TopAuctionsSection } from "@/components/home/top-auctions-section";
 export { FooterSection } from "@/components/home/footer-section";
 export { TableOfContents } from "@/components/home/table-of-contents";
-export { FlashSaleSection } from "@/components/home/flash-sale-section";
 export { BrandSliderSection } from "@/components/home/brand-slider-section";

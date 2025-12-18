@@ -64,7 +64,7 @@ function UndoToastItem({
   const [progress, setProgress] = useState(100);
   const [isProcessing, setIsProcessing] = useState(false);
   const startTimeRef = useRef<number>(Date.now());
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     startTimeRef.current = Date.now();

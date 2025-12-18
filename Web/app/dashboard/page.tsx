@@ -3,17 +3,18 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    Gavel,
-    Trophy,
-    Heart,
-    Wallet,
-    Star,
-    TrendingUp,
-    Package,
-    Clock,
-    RefreshCw,
-} from "lucide-react";
+    faGavel,
+    faTrophy,
+    faHeart,
+    faWallet,
+    faStar,
+    faArrowTrendUp,
+    faBox,
+    faClock,
+    faRotate,
+} from "@fortawesome/free-solid-svg-icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,7 +39,9 @@ export default function DashboardPage() {
         try {
             const data = await dashboardService.getStats();
             setStats(data);
-        } catch (error) {\n            toast.error(MESSAGES.ERROR.GENERIC);\n        } finally {
+        } catch {
+            toast.error(MESSAGES.ERROR.GENERIC);
+        } finally {
             setIsLoading(false);
         }
     }, []);
@@ -85,14 +88,14 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Total Bids
                         </CardTitle>
-                        <Gavel className="h-5 w-5 text-blue-500" />
+                        <FontAwesomeIcon icon={faGavel} className="h-5 w-5 text-blue-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
                             {stats?.totalBids || 0}
                         </div>
                         <p className="text-xs text-zinc-500 mt-1">
-                            <TrendingUp className="inline h-3 w-3 mr-1 text-green-500" />
+                            <FontAwesomeIcon icon={faArrowTrendUp} className="inline h-3 w-3 mr-1 text-green-500" />
                             +12% from last month
                         </p>
                     </CardContent>
@@ -103,7 +106,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Items Won
                         </CardTitle>
-                        <Trophy className="h-5 w-5 text-green-500" />
+                        <FontAwesomeIcon icon={faTrophy} className="h-5 w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
@@ -120,7 +123,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Watchlist
                         </CardTitle>
-                        <Heart className="h-5 w-5 text-red-500" />
+                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 text-red-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
@@ -137,7 +140,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Balance
                         </CardTitle>
-                        <Wallet className="h-5 w-5 text-amber-500" />
+                        <FontAwesomeIcon icon={faWallet} className="h-5 w-5 text-amber-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
@@ -154,7 +157,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Rating
                         </CardTitle>
-                        <Star className="h-5 w-5 text-purple-500" />
+                        <FontAwesomeIcon icon={faStar} className="h-5 w-5 text-purple-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
@@ -172,7 +175,7 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                             Active Listings
                         </CardTitle>
-                        <Package className="h-5 w-5 text-cyan-500" />
+                        <FontAwesomeIcon icon={faBox} className="h-5 w-5 text-cyan-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-zinc-900 dark:text-white">
@@ -190,7 +193,7 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-amber-500" />
+                            <FontAwesomeIcon icon={faClock} className="h-5 w-5 text-amber-500" />
                             Recent Activity
                         </CardTitle>
                         <Button 
@@ -199,7 +202,7 @@ export default function DashboardPage() {
                             onClick={fetchStats}
                             disabled={isLoading}
                         >
-                            <RefreshCw className={cn("h-4 w-4", conditionalStyles.loading(isLoading))} />
+                            <FontAwesomeIcon icon={faRotate} className={cn("h-4 w-4", conditionalStyles.loading(isLoading))} />
                         </Button>
                     </CardHeader>
                     <CardContent>
@@ -211,7 +214,7 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <div className="text-center py-8 text-zinc-500">
-                                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <FontAwesomeIcon icon={faClock} className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                 <p>No recent activity</p>
                             </div>
                         )}
@@ -224,7 +227,7 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Gavel className="h-5 w-5 text-amber-500" />
+                            <FontAwesomeIcon icon={faGavel} className="h-5 w-5 text-amber-500" />
                             Quick Actions
                         </CardTitle>
                     </CardHeader>
@@ -232,31 +235,31 @@ export default function DashboardPage() {
                         <div className="space-y-3">
                             <Button className="w-full justify-start" variant="outline" asChild>
                                 <Link href={ROUTES.AUCTIONS.CREATE}>
-                                    <Package className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faBox} className="h-4 w-4 mr-2" />
                                     Create New Listing
                                 </Link>
                             </Button>
                             <Button className="w-full justify-start" variant="outline" asChild>
                                 <Link href={ROUTES.DASHBOARD.BIDS}>
-                                    <Gavel className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faGavel} className="h-4 w-4 mr-2" />
                                     View My Bids
                                 </Link>
                             </Button>
                             <Button className="w-full justify-start" variant="outline" asChild>
                                 <Link href={ROUTES.DASHBOARD.LISTINGS}>
-                                    <TrendingUp className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faArrowTrendUp} className="h-4 w-4 mr-2" />
                                     My Listings
                                 </Link>
                             </Button>
                             <Button className="w-full justify-start" variant="outline" asChild>
                                 <Link href={ROUTES.DASHBOARD.WALLET}>
-                                    <Wallet className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faWallet} className="h-4 w-4 mr-2" />
                                     Manage Wallet
                                 </Link>
                             </Button>
                             <Button className="w-full justify-start" variant="outline" asChild>
                                 <Link href={ROUTES.DASHBOARD.WATCHLIST}>
-                                    <Heart className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faHeart} className="h-4 w-4 mr-2" />
                                     My Watchlist
                                 </Link>
                             </Button>

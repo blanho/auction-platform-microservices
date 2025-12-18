@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -45,6 +45,9 @@ import {
     faBolt,
     faShieldAlt,
     faFire,
+    faFileAlt,
+    faComments,
+    faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
 import {
     faFacebook,
@@ -84,6 +87,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 import { Auction, AuctionStatus } from '@/types/auction';
@@ -233,7 +242,7 @@ export default function AuctionDetailPage() {
 
     const toggleWatchlist = async () => {
         if (!auction) return;
-        if (!session) {
+        if (!user) {
             toast.error('Please sign in to add to watchlist');
             return;
         }
@@ -261,7 +270,7 @@ export default function AuctionDetailPage() {
     };
 
     useEffect(() => {
-        if (!auction?.id || !session) {
+        if (!auction?.id || !user) {
             setIsInWatchlist(false);
             return;
         }
@@ -276,7 +285,7 @@ export default function AuctionDetailPage() {
         return () => {
             isMounted = false;
         };
-    }, [auction?.id, session]);
+    }, [auction?.id, user]);
 
     if (isLoading) {
         return (
@@ -331,7 +340,7 @@ export default function AuctionDetailPage() {
     }
 
     const sellerUsername = getAuctionSellerUsername(auction);
-    const isOwner = session?.user?.name === sellerUsername;
+    const isOwner = user?.name === sellerUsername;
     const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
     const statusConfig = STATUS_CONFIG[auction.status] || STATUS_CONFIG[AuctionStatus.Inactive];
     const timeRemaining = getTimeRemaining(auction.auctionEnd);
@@ -456,7 +465,35 @@ export default function AuctionDetailPage() {
                     </motion.div>
                 )}
 
-                <div className="grid gap-8 lg:grid-cols-5">
+                <div className="sticky top-16 z-40 -mx-4 px-4 py-3 mb-6 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-800/50">
+                    <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+                        {[
+                            { id: 'overview', label: 'Overview', icon: faLayerGroup },
+                            { id: 'description', label: 'Description', icon: faFileAlt },
+                            { id: 'bid-history', label: 'Bid History', icon: faHistory },
+                            { id: 'reviews', label: 'Reviews', icon: faComments },
+                        ].map((section) => (
+                            <button
+                                key={section.id}
+                                onClick={() => {
+                                    const element = document.getElementById(section.id);
+                                    if (element) {
+                                        const offset = 120;
+                                        const elementPosition = element.getBoundingClientRect().top;
+                                        const offsetPosition = elementPosition + window.pageYOffset - offset;
+                                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                                    }
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors whitespace-nowrap"
+                            >
+                                <FontAwesomeIcon icon={section.icon} className="w-3.5 h-3.5" />
+                                {section.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+
+                <div id="overview" className="grid gap-8 lg:grid-cols-5">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -630,69 +667,152 @@ export default function AuctionDetailPage() {
                                         <CountdownTimer endDate={auction.auctionEnd} isUrgent={isUrgent} />
                                     </div>
 
-                                    <div className="flex items-center gap-2 text-sm text-slate-500">
-                                        <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
-                                        <span>Multiple bids placed</span>
-                                    </div>
-
-                                    <Separator className="bg-slate-200 dark:bg-slate-700" />
-
                                     {auction.status === AuctionStatus.Live && !isOwner && (
-                                        <div className="space-y-4">
-                                            <div className="flex gap-2">
-                                                <div className="relative flex-1">
-                                                    <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                    <Input
-                                                        type="number"
-                                                        value={bidAmount}
-                                                        onChange={(e) => setBidAmount(e.target.value)}
-                                                        className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                        placeholder="Enter bid amount"
-                                                    />
-                                                </div>
-                                                <PlaceBidDialog
-                                                    auctionId={auction.id}
-                                                    currentHighBid={auction.currentHighBid || 0}
-                                                    reservePrice={auction.reservePrice}
-                                                    onBidPlaced={handleBidPlaced}
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-slate-500">
-                                                    Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
-                                                </p>
-                                                <AutoBidDialog
-                                                    auctionId={auction.id}
-                                                    currentHighBid={auction.currentHighBid || 0}
-                                                    reservePrice={auction.reservePrice}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {auction.isBuyNowAvailable && auction.buyNowPrice && auction.status === AuctionStatus.Live && !isOwner && (
-                                        <div className="space-y-3">
+                                        <>
                                             <Separator className="bg-slate-200 dark:bg-slate-700" />
-                                            <motion.div
-                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50"
-                                            >
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
-                                                    <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Buy Now Available!</p>
+                                            
+                                            {auction.isBuyNowAvailable && auction.buyNowPrice ? (
+                                                <Tabs defaultValue="bid" className="w-full">
+                                                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                                                        <TabsTrigger value="bid" className="gap-2">
+                                                            <FontAwesomeIcon icon={faGavel} className="w-3.5 h-3.5" />
+                                                            Place Bid
+                                                        </TabsTrigger>
+                                                        <TabsTrigger value="buynow" className="gap-2">
+                                                            <FontAwesomeIcon icon={faBolt} className="w-3.5 h-3.5" />
+                                                            Buy Now
+                                                        </TabsTrigger>
+                                                    </TabsList>
+                                                    
+                                                    <TabsContent value="bid" className="space-y-4 mt-0">
+                                                        <div className="flex gap-2">
+                                                            <div className="relative flex-1">
+                                                                <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                                <Input
+                                                                    type="number"
+                                                                    value={bidAmount}
+                                                                    onChange={(e) => setBidAmount(e.target.value)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') {
+                                                                            e.preventDefault();
+                                                                        }
+                                                                    }}
+                                                                    className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                    placeholder="Enter bid amount"
+                                                                />
+                                                            </div>
+                                                            <PlaceBidDialog
+                                                                auctionId={auction.id}
+                                                                currentHighBid={auction.currentHighBid || 0}
+                                                                reservePrice={auction.reservePrice}
+                                                                onBidPlaced={handleBidPlaced}
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {[10, 50, 100, 500].map((increment) => (
+                                                                <Button
+                                                                    key={increment}
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => setBidAmount((prev) => {
+                                                                        const current = parseFloat(prev) || (auction.currentHighBid || auction.reservePrice);
+                                                                        return (current + increment).toString();
+                                                                    })}
+                                                                    className="h-8 px-3 text-xs font-medium rounded-lg border-slate-200 dark:border-slate-700 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:border-purple-700 transition-colors"
+                                                                >
+                                                                    +${increment}
+                                                                </Button>
+                                                            ))}
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <p className="text-xs text-slate-500">
+                                                                Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
+                                                            </p>
+                                                            <AutoBidDialog
+                                                                auctionId={auction.id}
+                                                                currentHighBid={auction.currentHighBid || 0}
+                                                                reservePrice={auction.reservePrice}
+                                                            />
+                                                        </div>
+                                                    </TabsContent>
+                                                    
+                                                    <TabsContent value="buynow" className="mt-0">
+                                                        <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
+                                                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Skip the bidding!</p>
+                                                            </div>
+                                                            <p className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-4">
+                                                                {formatCurrency(auction.buyNowPrice)}
+                                                            </p>
+                                                            <BuyNowButton
+                                                                auctionId={auction.id}
+                                                                buyNowPrice={auction.buyNowPrice}
+                                                                auctionTitle={auctionTitle}
+                                                                onSuccess={() => window.location.reload()}
+                                                            />
+                                                            <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-3">
+                                                                Buy now and get this item immediately
+                                                            </p>
+                                                        </div>
+                                                    </TabsContent>
+                                                </Tabs>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className="flex gap-2">
+                                                        <div className="relative flex-1">
+                                                            <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                            <Input
+                                                                type="number"
+                                                                value={bidAmount}
+                                                                onChange={(e) => setBidAmount(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') {
+                                                                        e.preventDefault();
+                                                                    }
+                                                                }}
+                                                                className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                                placeholder="Enter bid amount"
+                                                            />
+                                                        </div>
+                                                        <PlaceBidDialog
+                                                            auctionId={auction.id}
+                                                            currentHighBid={auction.currentHighBid || 0}
+                                                            reservePrice={auction.reservePrice}
+                                                            onBidPlaced={handleBidPlaced}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[10, 50, 100, 500].map((increment) => (
+                                                            <Button
+                                                                key={increment}
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setBidAmount((prev) => {
+                                                                    const current = parseFloat(prev) || (auction.currentHighBid || auction.reservePrice);
+                                                                    return (current + increment).toString();
+                                                                })}
+                                                                className="h-8 px-3 text-xs font-medium rounded-lg border-slate-200 dark:border-slate-700 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:border-purple-700 transition-colors"
+                                                            >
+                                                                +${increment}
+                                                            </Button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-xs text-slate-500">
+                                                            Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
+                                                        </p>
+                                                        <AutoBidDialog
+                                                            auctionId={auction.id}
+                                                            currentHighBid={auction.currentHighBid || 0}
+                                                            reservePrice={auction.reservePrice}
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <p className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-4">
-                                                    {formatCurrency(auction.buyNowPrice)}
-                                                </p>
-                                                <BuyNowButton
-                                                    auctionId={auction.id}
-                                                    buyNowPrice={auction.buyNowPrice}
-                                                    auctionTitle={auctionTitle}
-                                                    onSuccess={() => window.location.reload()}
-                                                />
-                                            </motion.div>
-                                        </div>
+                                            )}
+                                        </>
                                     )}
 
                                     {getAuctionWinnerUsername(auction) && (
@@ -828,6 +948,7 @@ export default function AuctionDetailPage() {
                 </div>
 
                 <motion.div
+                    id="description"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
@@ -850,6 +971,7 @@ export default function AuctionDetailPage() {
                 </motion.div>
 
                 <motion.div
+                    id="bid-history"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.3 }}
@@ -874,6 +996,7 @@ export default function AuctionDetailPage() {
                 </motion.div>
 
                 <motion.div
+                    id="reviews"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.35 }}

@@ -71,15 +71,6 @@ export function ReviewCard({ review }: ReviewCardProps) {
         {review.comment && (
           <p className="text-zinc-600 dark:text-zinc-400">{review.comment}</p>
         )}
-        {review.isVerifiedPurchase && (
-          <Badge
-            variant="secondary"
-            className="gap-1 text-green-600 bg-green-50 dark:bg-green-950/30"
-          >
-            <FontAwesomeIcon icon={faCircleCheck} className="h-3 w-3" />
-            Verified Purchase
-          </Badge>
-        )}
 
         {review.sellerResponse && (
           <>
@@ -112,14 +103,6 @@ interface RatingSummaryCardProps {
 }
 
 export function RatingSummaryCard({ summary }: RatingSummaryCardProps) {
-  const ratingBars = [
-    { stars: 5, count: summary.fiveStarCount },
-    { stars: 4, count: summary.fourStarCount },
-    { stars: 3, count: summary.threeStarCount },
-    { stars: 2, count: summary.twoStarCount },
-    { stars: 1, count: summary.oneStarCount },
-  ];
-
   return (
     <Card>
       <CardHeader>
@@ -152,37 +135,6 @@ export function RatingSummaryCard({ summary }: RatingSummaryCardProps) {
               {getRatingLabel(summary.averageRating)}
             </p>
           </div>
-
-          <div className="flex-1 space-y-2">
-            {ratingBars.map((bar) => {
-              const percentage =
-                summary.totalReviews > 0
-                  ? (bar.count / summary.totalReviews) * 100
-                  : 0;
-              return (
-                <div key={bar.stars} className="flex items-center gap-2">
-                  <span className="text-sm text-zinc-500 w-3">{bar.stars}</span>
-                  <FontAwesomeIcon icon={faStar} className="h-3 w-3 text-amber-400" />
-                  <div className="flex-1 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-amber-400 rounded-full transition-all"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-sm text-zinc-500 w-8 text-right">
-                    {bar.count}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-          <FontAwesomeIcon icon={faCircleCheck} className="h-5 w-5 text-green-500 mr-2" />
-          <span className="text-green-700 dark:text-green-300 font-medium">
-            {summary.positivePercentage.toFixed(0)}% Positive Reviews
-          </span>
         </div>
       </CardContent>
     </Card>

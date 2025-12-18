@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faShield, faShieldHalved, faShieldXmark, faCopy, faCheck, faMobile, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faShield, faShieldHalved, faBan, faCopy, faCheck, faMobile, faKey } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'sonner';
 import {
     Card,
@@ -244,7 +244,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                                     variant="destructive"
                                     onClick={() => setIsDisableDialogOpen(true)}
                                 >
-                                    <FontAwesomeIcon icon={faShieldXmark} className="h-4 w-4 mr-2" />
+                                    <FontAwesomeIcon icon={faBan} className="h-4 w-4 mr-2" />
                                     Disable 2FA
                                 </Button>
                             </div>
@@ -252,7 +252,7 @@ export function TwoFactorSettings({ onStatusChange }: TwoFactorSettingsProps) {
                     ) : (
                         <>
                             <Alert>
-                                <FontAwesomeIcon icon={faShieldXmark} className="h-4 w-4" />
+                                <FontAwesomeIcon icon={faBan} className="h-4 w-4" />
                                 <AlertTitle>2FA is Not Enabled</AlertTitle>
                                 <AlertDescription>
                                     Protect your account by enabling two-factor authentication using an authenticator app.

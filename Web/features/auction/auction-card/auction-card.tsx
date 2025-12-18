@@ -6,22 +6,20 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faHeart,
-    faClock,
     faGavel,
-    faFire,
-    faTag,
-    faBolt,
-    faEye,
-    faCircleCheck,
     faTruck,
-    faStar,
-    faRocket,
     faArrowRight,
+    faEye,
 } from "@fortawesome/free-solid-svg-icons";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Auction, AuctionStatus, ITEM_CONDITION_LABELS, ItemCondition, ShippingType } from "@/types/auction";
+import {
+    CountdownBadge,
+    StatusBadge,
+    WishlistIconButton,
+    PriceDisplay,
+    getStatusConfig,
+} from "@/components/common";
+import { Auction, ITEM_CONDITION_LABELS, ItemCondition, ShippingType } from "@/types/auction";
 import { SearchItem } from "@/types/search";
 import { cn } from "@/lib/utils";
 import { useCountdown, getUrgencyLevel } from "@/hooks/use-countdown";
@@ -32,7 +30,7 @@ import {
     getAuctionCondition,
     getAuctionYearManufactured,
 } from "@/utils/auction";
-import type { AuctionCardProps, AuctionCardColorScheme, StatusConfig } from "./types";
+import type { AuctionCardProps, AuctionCardColorScheme } from "./types";
 
 const COLOR_SCHEMES: Record<AuctionCardColorScheme, { hover: string; gradient: string; shadow: string }> = {
     purple: {
@@ -46,52 +44,6 @@ const COLOR_SCHEMES: Record<AuctionCardColorScheme, { hover: string; gradient: s
         shadow: "hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20",
     },
 };
-
-function getStatusConfig(status: string): StatusConfig {
-    const statusUpper = status.toUpperCase();
-    switch (statusUpper) {
-        case "LIVE":
-        case AuctionStatus.Live.toUpperCase():
-            return {
-                bg: "bg-gradient-to-r from-green-500 to-emerald-500",
-                text: "Live",
-                icon: faBolt,
-                pulse: true,
-            };
-        case "FINISHED":
-        case AuctionStatus.Finished.toUpperCase():
-            return {
-                bg: "bg-slate-500",
-                text: "Ended",
-                icon: faCircleCheck,
-                pulse: false,
-            };
-        case "RESERVENOTMET":
-        case "RESERVE_NOT_MET":
-        case AuctionStatus.ReserveNotMet.toUpperCase():
-            return {
-                bg: "bg-gradient-to-r from-amber-500 to-yellow-500",
-                text: "Reserve Not Met",
-                icon: faTag,
-                pulse: false,
-            };
-        case "CANCELLED":
-        case AuctionStatus.Cancelled.toUpperCase():
-            return {
-                bg: "bg-red-500",
-                text: "Cancelled",
-                icon: null,
-                pulse: false,
-            };
-        default:
-            return {
-                bg: "bg-slate-500",
-                text: status,
-                icon: null,
-                pulse: false,
-            };
-    }
-}
 
 function getImageUrl(auction: Auction | SearchItem): string | undefined {
     if ("imageUrl" in auction && auction.imageUrl) {
@@ -146,13 +98,17 @@ function CompactCard({
                     <h3 className="font-medium text-sm line-clamp-1 text-slate-900 dark:text-white">
                         {title}
                     </h3>
-                    <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                        ${(currentBid || 0).toLocaleString()}
-                    </p>
+                    <PriceDisplay
+                        amount={currentBid}
+                        variant="default"
+                        className="[&_p]:text-lg [&_p]:text-purple-600 [&_p]:dark:text-purple-400"
+                    />
                     {timeLeft && (
-                        <p className={cn("text-xs", isUrgent ? "text-red-500 font-medium" : "text-slate-500")}>
-                            {formatTimeDisplay(timeLeft)}
-                        </p>
+                        <CountdownBadge
+                            timeText={formatTimeDisplay(timeLeft)}
+                            isUrgent={isUrgent}
+                            variant="minimal"
+                        />
                     )}
                 </div>
             </motion.div>
@@ -207,32 +163,15 @@ function CarouselCard({
                 >
                     <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
                         <div className="flex gap-2">
-                            {isNew && (
-                                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <FontAwesomeIcon icon={faRocket} className="w-3 h-3 mr-1" />
-                                    New
-                                </Badge>
-                            )}
-                            {auction.isFeatured && (
-                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <FontAwesomeIcon icon={faStar} className="w-3 h-3 mr-1" />
-                                    Featured
-                                </Badge>
-                            )}
+                            {isNew && <StatusBadge type="new" />}
+                            {auction.isFeatured && <StatusBadge type="featured" />}
                         </div>
                         {showWishlistButton && (
-                            <button
+                            <WishlistIconButton
+                                isWishlisted={isWishlisted}
                                 onClick={onWishlistClick}
-                                className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faHeart}
-                                    className={cn(
-                                        "w-4 h-4 transition-colors",
-                                        isWishlisted ? "text-red-500" : "text-slate-400 dark:text-slate-500"
-                                    )}
-                                />
-                            </button>
+                                variant="circle"
+                            />
                         )}
                     </div>
 
@@ -247,20 +186,11 @@ function CarouselCard({
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                            <div
-                                className={cn(
-                                    "bg-black/60 backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2",
-                                    isUrgent && "ring-1 ring-red-500/50"
-                                )}
-                            >
-                                <FontAwesomeIcon
-                                    icon={faClock}
-                                    className={cn("w-3.5 h-3.5", isUrgent ? "text-red-400 animate-pulse" : "text-white")}
-                                />
-                                <span className={cn("font-mono text-sm font-bold", isUrgent ? "text-red-400" : "text-white")}>
-                                    {formatTimeDisplay(timeLeft)}
-                                </span>
-                            </div>
+                            <CountdownBadge
+                                timeText={formatTimeDisplay(timeLeft)}
+                                isUrgent={isUrgent}
+                                variant="inline"
+                            />
                             <div className="flex items-center gap-3 text-white/80 text-xs">
                                 <div className="flex items-center gap-1">
                                     <FontAwesomeIcon icon={faGavel} className="w-3 h-3" />
@@ -287,12 +217,12 @@ function CarouselCard({
                         </div>
 
                         <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Current Bid</p>
-                                <p className={cn("text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r", colors.gradient)}>
-                                    ${currentBid.toLocaleString()}
-                                </p>
-                            </div>
+                            <PriceDisplay
+                                amount={currentBid}
+                                label="Current Bid"
+                                variant="gradient"
+                                gradientColors={cn("bg-gradient-to-r", colors.gradient)}
+                            />
                             <Button
                                 size="sm"
                                 className={cn(
@@ -350,32 +280,15 @@ function FeaturedCard({
                 <div className="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-purple-400/50 dark:hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/20 hover:-translate-y-2">
                     <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
                         <div className="flex gap-2">
-                            {auction.isFeatured && (
-                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <FontAwesomeIcon icon={faStar} className="w-3 h-3 mr-1" />
-                                    Featured
-                                </Badge>
-                            )}
-                            {isUrgent && (
-                                <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
-                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse mr-1.5" />
-                                    Ending Soon
-                                </Badge>
-                            )}
+                            {auction.isFeatured && <StatusBadge type="featured" />}
+                            {isUrgent && <StatusBadge type="ending-soon" />}
                         </div>
                         {showWishlistButton && (
-                            <button
+                            <WishlistIconButton
+                                isWishlisted={isWishlisted}
                                 onClick={onWishlistClick}
-                                className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faHeart}
-                                    className={cn(
-                                        "w-4 h-4 transition-colors",
-                                        isWishlisted ? "text-red-500" : "text-slate-400 dark:text-slate-500"
-                                    )}
-                                />
-                            </button>
+                                variant="circle"
+                            />
                         )}
                     </div>
 
@@ -390,15 +303,11 @@ function FeaturedCard({
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                            <div className="bg-black/60 backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2">
-                                <FontAwesomeIcon
-                                    icon={faClock}
-                                    className={cn("w-3.5 h-3.5", isUrgent ? "text-red-400 animate-pulse" : "text-white")}
-                                />
-                                <span className={cn("font-mono text-sm font-bold", isUrgent ? "text-red-400" : "text-white")}>
-                                    {formatTimeDisplay(timeLeft)}
-                                </span>
-                            </div>
+                            <CountdownBadge
+                                timeText={formatTimeDisplay(timeLeft)}
+                                isUrgent={isUrgent}
+                                variant="inline"
+                            />
                         </div>
                     </div>
 
@@ -416,12 +325,12 @@ function FeaturedCard({
                         </div>
 
                         <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Current Bid</p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    ${currentBid.toLocaleString()}
-                                </p>
-                            </div>
+                            <PriceDisplay
+                                amount={currentBid}
+                                label="Current Bid"
+                                variant="gradient"
+                                gradientColors="bg-gradient-to-r from-purple-600 to-pink-600"
+                            />
                             <Button
                                 size="sm"
                                 className="h-10 px-5 bg-slate-900 dark:bg-white hover:bg-purple-600 dark:hover:bg-purple-500 text-white dark:text-slate-900 dark:hover:text-white font-semibold rounded-xl transition-colors"
@@ -448,7 +357,7 @@ function DefaultCard({
     shippingType,
     hasReserve,
     hasBuyNow,
-    statusConfig,
+    status,
     timeLeft,
     isUrgent,
     showWishlistButton,
@@ -465,7 +374,7 @@ function DefaultCard({
     shippingType: string | null;
     hasReserve: boolean;
     hasBuyNow: boolean;
-    statusConfig: StatusConfig;
+    status: string;
     timeLeft: ReturnType<typeof useCountdown>;
     isUrgent: boolean;
     showWishlistButton: boolean;
@@ -473,6 +382,7 @@ function DefaultCard({
     onWishlistClick: (e: React.MouseEvent) => void;
 }) {
     const timeText = timeLeft ? formatTimeDisplay(timeLeft) : null;
+    const statusConfig = getStatusConfig(status);
 
     return (
         <Link href={`/auctions/${auction.id}`} className="block">
@@ -481,7 +391,7 @@ function DefaultCard({
                 transition={{ duration: 0.2 }}
                 className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
             >
-                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                <div className="relative aspect-4/3 overflow-hidden bg-slate-100 dark:bg-slate-800">
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
@@ -498,53 +408,28 @@ function DefaultCard({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                        <span
-                            className={cn(
-                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg",
-                                statusConfig.bg,
-                                statusConfig.pulse && "animate-pulse"
-                            )}
-                        >
-                            {statusConfig.icon && <FontAwesomeIcon icon={statusConfig.icon} className="w-3 h-3" />}
-                            {statusConfig.text}
-                        </span>
-
+                        <StatusBadge type="status" status={status} />
                         {"isFeatured" in auction && auction.isFeatured && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg">
-                                <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
-                                Hot
-                            </span>
+                            <StatusBadge type="hot" />
                         )}
                     </div>
 
                     {showWishlistButton && (
-                        <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                        <WishlistIconButton
+                            isWishlisted={isWishlisted}
                             onClick={onWishlistClick}
-                            className={cn(
-                                "absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg",
-                                isWishlisted
-                                    ? "bg-red-500 text-white"
-                                    : "bg-white/90 dark:bg-slate-800/90 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-white dark:hover:bg-slate-800"
-                            )}
-                        >
-                            <FontAwesomeIcon icon={faHeart} className={cn("w-4 h-4", isWishlisted && "animate-pulse")} />
-                        </motion.button>
+                            variant="square"
+                            className="absolute top-3 right-3"
+                        />
                     )}
 
                     {timeText && (
-                        <div
-                            className={cn(
-                                "absolute bottom-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold backdrop-blur-md shadow-lg",
-                                isUrgent
-                                    ? "bg-red-500/90 text-white"
-                                    : "bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200"
-                            )}
-                        >
-                            <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
-                            {timeText}
-                        </div>
+                        <CountdownBadge
+                            timeText={timeText}
+                            isUrgent={isUrgent}
+                            variant="overlay"
+                            className="absolute bottom-3 left-3"
+                        />
                     )}
 
                     <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -569,14 +454,11 @@ function DefaultCard({
                     </div>
 
                     <div className="flex items-end justify-between gap-2">
-                        <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
-                                {statusConfig.text === "Ended" ? "Final Price" : "Current Bid"}
-                            </p>
-                            <p className="text-xl font-bold text-slate-900 dark:text-white">
-                                ${(currentBid || 0).toLocaleString()}
-                            </p>
-                        </div>
+                        <PriceDisplay
+                            amount={currentBid}
+                            label={statusConfig.text === "Ended" ? "Final Price" : "Current Bid"}
+                            variant="default"
+                        />
 
                         {hasBuyNow && statusConfig.text !== "Ended" && (
                             <div className="text-right">
@@ -620,7 +502,6 @@ export function AuctionCard({
     colorScheme = "purple",
     index = 0,
     showWishlistButton = true,
-    showBidButton = true,
     isWishlisted: externalIsWishlisted,
     onWishlistToggle,
 }: AuctionCardProps) {
@@ -639,17 +520,20 @@ export function AuctionCard({
 
     const title = getAuctionTitle(auction);
     const attributes = getAuctionAttributes(auction);
-    const yearManufactured = getAuctionYearManufactured(auction);
-    const condition = getAuctionCondition(auction);
-    const statusConfig = getStatusConfig(auction.status);
+    const yearManufactured = getAuctionYearManufactured(auction) ?? null;
+    const condition = getAuctionCondition(auction) ?? null;
 
     const currentBid =
         "currentHighBid" in auction ? auction.currentHighBid : "price" in auction ? (auction as SearchItem).price : 0;
-    const hasReserve = "reservePrice" in auction && auction.reservePrice && auction.reservePrice > 0;
-    const hasBuyNow = "buyNowPrice" in auction && auction.buyNowPrice && auction.buyNowPrice > 0;
-    const shippingType = "shippingType" in auction ? auction.shippingType : null;
-    const isNew =
-        "createdAt" in auction && new Date(auction.createdAt).getTime() > Date.now() - 24 * 60 * 60 * 1000;
+    const hasReserve = Boolean("reservePrice" in auction && auction.reservePrice && auction.reservePrice > 0);
+    const hasBuyNow = Boolean("buyNowPrice" in auction && auction.buyNowPrice && auction.buyNowPrice > 0);
+    const shippingType = ("shippingType" in auction ? auction.shippingType : null) ?? null;
+    const isNew = useMemo(() => {
+        if (!("createdAt" in auction)) return false;
+        const createdTime = new Date(auction.createdAt).getTime();
+        const now = typeof window !== "undefined" ? window.performance.timeOrigin + window.performance.now() : 0;
+        return createdTime > now - 24 * 60 * 60 * 1000;
+    }, [auction]);
 
     const handleWishlistClick = useCallback(
         (e: React.MouseEvent) => {
@@ -726,7 +610,7 @@ export function AuctionCard({
             shippingType={shippingType}
             hasReserve={hasReserve}
             hasBuyNow={hasBuyNow}
-            statusConfig={statusConfig}
+            status={auction.status}
             timeLeft={timeLeft}
             isUrgent={isUrgent}
             showWishlistButton={showWishlistButton}
