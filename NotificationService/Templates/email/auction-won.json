@@ -1,0 +1,8 @@
+{
+  "name": "auction-won-email",
+  "version": "1.0",
+  "type": "AuctionWon",
+  "subject": "🎉 Congratulations! You Won the Auction!",
+  "variables": ["auctionTitle", "winningBid", "auctionId", "paymentLink"],
+  "content": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>You Won!</title></head><body style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;\"><div style=\"max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\"><div style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;\"><h1 style=\"margin: 0;\">🎉 You Won!</h1></div><div style=\"padding: 30px;\"><p style=\"font-size: 18px;\">Congratulations!</p><p>You've successfully won the auction for:</p><div style=\"background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;\"><h2 style=\"margin: 0 0 10px 0; color: #333;\">{{auctionTitle}}</h2><p style=\"font-size: 24px; font-weight: bold; color: #667eea; margin: 0;\">Winning Bid: {{winningBid}}</p></div><p>Please complete your payment to secure your item.</p>{{#if paymentLink}}<div style=\"text-align: center; margin: 30px 0;\"><a href=\"{{paymentLink}}\" style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-weight: bold;\">Complete Payment</a></div>{{/if}}</div><div style=\"background: #f8f9fa; padding: 20px; text-align: center; color: #666;\"><p style=\"margin: 0;\">Thank you for using our platform!</p></div></div></body></html>"
+}

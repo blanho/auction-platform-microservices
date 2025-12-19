@@ -1,0 +1,8 @@
+{
+  "name": "outbid-email",
+  "version": "1.0",
+  "type": "Outbid",
+  "subject": "⚠️ You've Been Outbid!",
+  "variables": ["auctionTitle", "previousBid", "newHighBid", "auctionLink"],
+  "content": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Outbid Alert</title></head><body style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;\"><div style=\"max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\"><div style=\"background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center;\"><h1 style=\"margin: 0;\">⚠️ You've Been Outbid!</h1></div><div style=\"padding: 30px;\"><p>Someone has placed a higher bid on:</p><div style=\"background: #fff3cd; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107;\"><h2 style=\"margin: 0 0 10px 0; color: #333;\">{{auctionTitle}}</h2><p style=\"margin: 5px 0;\">Your bid: <span style=\"text-decoration: line-through; color: #999;\">{{previousBid}}</span></p><p style=\"margin: 5px 0; font-size: 18px;\">New high bid: <strong style=\"color: #f5576c;\">{{newHighBid}}</strong></p></div><p>Don't miss out! Place a new bid to stay in the running.</p>{{#if auctionLink}}<div style=\"text-align: center; margin: 30px 0;\"><a href=\"{{auctionLink}}\" style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-weight: bold;\">Place New Bid</a></div>{{/if}}</div><div style=\"background: #f8f9fa; padding: 20px; text-align: center; color: #666;\"><p style=\"margin: 0;\">Good luck!</p></div></div></body></html>"
+}

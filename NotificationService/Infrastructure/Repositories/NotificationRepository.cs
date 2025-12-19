@@ -1,14 +1,15 @@
 using Common.Core.Interfaces;
 using Common.Core.Constants;
 using Microsoft.EntityFrameworkCore;
-using NotificationService.Application.Interfaces;
+using LegacyRepo = NotificationService.Application.Interfaces;
+using PortRepo = NotificationService.Application.Ports;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enums;
 using NotificationService.Infrastructure.Data;
 
 namespace NotificationService.Infrastructure.Repositories
 {
-    public class NotificationRepository : INotificationRepository
+    public class NotificationRepository : LegacyRepo.INotificationRepository, PortRepo.INotificationRepository
     {
         private readonly NotificationDbContext _context;
         private readonly IDateTimeProvider _dateTime;
@@ -140,6 +141,94 @@ namespace NotificationService.Infrastructure.Repositories
             }
             
             _context.Notifications.UpdateRange(notifications);
+        }
+
+        public async Task<Notification?> GetByIdempotencyKeyAsync(string key, CancellationToken cancellationToken = default)
+        {
+            return await _context.Notifications
+                .Where(x => !x.IsDeleted && x.IdempotencyKey == key)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<(List<Notification> Items, int TotalCount)> GetPagedAsync(
+            string userId,
+            NotificationStatus? status,
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.Notifications
+                .Where(n => !n.IsDeleted && n.UserId == userId && n.Status != NotificationStatus.Dismissed);
+
+            if (status.HasValue)
+            {
+                query = query.Where(n => n.Status == status.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(n => n.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return (items, totalCount);
+        }
+
+        public async Task<List<Notification>> GetPendingAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return await _context.Notifications
+                .Where(n => !n.IsDeleted && n.Status == NotificationStatus.Pending)
+                .OrderBy(n => n.CreatedAt)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> GetUnreadCountAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Notifications
+                .CountAsync(n => !n.IsDeleted && n.UserId == userId && n.Status == NotificationStatus.Unread, cancellationToken);
+        }
+
+        async Task Application.Ports.INotificationRepository.CreateAsync(Notification notification, CancellationToken cancellationToken)
+        {
+            notification.CreatedAt = _dateTime.UtcNow;
+            notification.CreatedBy = SystemGuids.System;
+            notification.IsDeleted = false;
+            await _context.Notifications.AddAsync(notification, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        async Task Application.Ports.INotificationRepository.UpdateAsync(Notification notification, CancellationToken cancellationToken)
+        {
+            notification.UpdatedAt = _dateTime.UtcNow;
+            notification.UpdatedBy = SystemGuids.System;
+            _context.Notifications.Update(notification);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        async Task Application.Ports.INotificationRepository.DeleteAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var notification = await GetByIdAsync(id, cancellationToken);
+            if (notification != null)
+            {
+                notification.IsDeleted = true;
+                notification.DeletedAt = _dateTime.UtcNow;
+                notification.DeletedBy = SystemGuids.System;
+                _context.Notifications.Update(notification);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        async Task<int> Application.Ports.INotificationRepository.MarkAllAsReadAsync(string userId, CancellationToken cancellationToken)
+        {
+            return await _context.Notifications
+                .Where(n => !n.IsDeleted && n.UserId == userId && n.Status == NotificationStatus.Unread)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(n => n.Status, NotificationStatus.Read)
+                          .SetProperty(n => n.ReadAt, _dateTime.UtcNow),
+                    cancellationToken);
         }
     }
 }

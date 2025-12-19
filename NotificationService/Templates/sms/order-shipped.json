@@ -1,0 +1,8 @@
+{
+  "name": "order-shipped-sms",
+  "version": "1.0",
+  "type": "OrderShipped",
+  "subject": "",
+  "variables": ["auctionTitle", "trackingNumber"],
+  "content": "📦 Your order \"{{auctionTitle}}\" has shipped! {{#if trackingNumber}}Tracking: {{trackingNumber}}{{/if}}"
+}

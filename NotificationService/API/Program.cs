@@ -3,6 +3,7 @@ using NotificationService.API.Hubs;
 using NotificationService.API.Services;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
+using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
@@ -21,6 +22,7 @@ builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+builder.Services.AddNotificationInfrastructure(builder.Configuration);
 
 builder.Services.AddDomainEvents(typeof(NotificationService.Infrastructure.Data.UnitOfWork).Assembly);
 

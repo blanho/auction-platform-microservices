@@ -1,0 +1,8 @@
+{
+  "name": "outbid-sms",
+  "version": "1.0",
+  "type": "Outbid",
+  "subject": "",
+  "variables": ["auctionTitle", "newHighBid"],
+  "content": "⚠️ You've been outbid on \"{{auctionTitle}}\"! New high bid: {{newHighBid}}. Place a new bid now to stay in the running!"
+}

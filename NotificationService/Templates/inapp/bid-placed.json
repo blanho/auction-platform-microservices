@@ -1,0 +1,8 @@
+{
+  "name": "bid-placed-inapp",
+  "version": "1.0",
+  "type": "BidPlaced",
+  "subject": "Bid Placed Successfully",
+  "variables": ["auctionTitle", "bidAmount"],
+  "content": "Your bid of {{bidAmount}} on \"{{auctionTitle}}\" has been placed. You're currently the highest bidder!"
+}

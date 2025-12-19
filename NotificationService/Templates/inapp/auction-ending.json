@@ -1,0 +1,8 @@
+{
+  "name": "auction-ending-inapp",
+  "version": "1.0",
+  "type": "AuctionEnding",
+  "subject": "⏰ Auction Ending Soon!",
+  "variables": ["auctionTitle", "timeRemaining", "currentHighBid"],
+  "content": "The auction for \"{{auctionTitle}}\" is ending in {{timeRemaining}}! Current high bid: {{currentHighBid}}. Don't miss out!"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "auction-won-inapp",
+  "version": "1.0",
+  "type": "AuctionWon",
+  "subject": "🎉 You Won the Auction!",
+  "variables": ["auctionTitle", "winningBid"],
+  "content": "Congratulations! You won \"{{auctionTitle}}\" with a bid of {{winningBid}}. Complete your payment to secure your item."
+}

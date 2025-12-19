@@ -1,0 +1,8 @@
+{
+  "name": "bid-placed-email",
+  "version": "1.0",
+  "type": "BidPlaced",
+  "subject": "✅ Bid Placed Successfully",
+  "variables": ["auctionTitle", "bidAmount", "auctionLink"],
+  "content": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Bid Confirmed</title></head><body style=\"font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;\"><div style=\"max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\"><div style=\"background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 30px; text-align: center;\"><h1 style=\"margin: 0;\">✅ Bid Confirmed</h1></div><div style=\"padding: 30px;\"><p>Great news! Your bid has been placed successfully.</p><div style=\"background: #d4edda; border-radius: 8px; padding: 20px; margin: 20px 0;\"><h2 style=\"margin: 0 0 10px 0; color: #333;\">{{auctionTitle}}</h2><p style=\"font-size: 24px; font-weight: bold; color: #11998e; margin: 0;\">Your Bid: {{bidAmount}}</p></div><p>You're currently the highest bidder! We'll notify you if someone outbids you.</p>{{#if auctionLink}}<div style=\"text-align: center; margin: 30px 0;\"><a href=\"{{auctionLink}}\" style=\"background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-weight: bold;\">View Auction</a></div>{{/if}}</div><div style=\"background: #f8f9fa; padding: 20px; text-align: center; color: #666;\"><p style=\"margin: 0;\">Good luck!</p></div></div></body></html>"
+}

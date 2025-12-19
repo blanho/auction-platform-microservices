@@ -1,0 +1,8 @@
+{
+  "name": "outbid-inapp",
+  "version": "1.0",
+  "type": "Outbid",
+  "subject": "You've Been Outbid!",
+  "variables": ["auctionTitle", "previousBid", "newHighBid"],
+  "content": "Someone placed a higher bid of {{newHighBid}} on \"{{auctionTitle}}\". Your bid was {{previousBid}}. Place a new bid to stay in the running!"
+}

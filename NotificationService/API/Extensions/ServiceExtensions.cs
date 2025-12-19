@@ -3,6 +3,7 @@ using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Repositories;
+using PortInterfaces = NotificationService.Application.Ports;
 
 namespace NotificationService.API.Extensions
 {
@@ -13,7 +14,9 @@ namespace NotificationService.API.Extensions
             services.AddDbContext<NotificationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<NotificationRepository>();
+            services.AddScoped<INotificationRepository>(sp => sp.GetRequiredService<NotificationRepository>());
+            services.AddScoped<PortInterfaces.INotificationRepository>(sp => sp.GetRequiredService<NotificationRepository>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<INotificationService, NotificationServiceImpl>();

@@ -1,0 +1,8 @@
+{
+  "name": "auction-won-sms",
+  "version": "1.0",
+  "type": "AuctionWon",
+  "subject": "",
+  "variables": ["auctionTitle", "winningBid"],
+  "content": "🎉 Congratulations! You won \"{{auctionTitle}}\" for {{winningBid}}! Complete your payment to secure your item."
+}
