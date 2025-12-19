@@ -33,21 +33,49 @@ import {
     faTrophy,
     faClock,
     faEnvelope,
+    faPlay,
+    faHourglass,
+    faHeartCrack,
+    faBan,
+    faCartShopping,
+    faTruckFast,
+    faBoxOpen,
+    faCreditCard,
+    faWallet,
+    faStar,
+    faUserPlus,
+    faKey,
+    faShieldCheck,
+    faGear,
     IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
 
-const notificationTypeIcons: Record<NotificationType, IconDefinition> = {
+const notificationTypeIcons: Record<string, IconDefinition> = {
     [NotificationType.AuctionCreated]: faGift,
     [NotificationType.AuctionUpdated]: faPenToSquare,
     [NotificationType.AuctionDeleted]: faTrashCan,
     [NotificationType.AuctionFinished]: faFlagCheckered,
+    [NotificationType.AuctionStarted]: faPlay,
+    [NotificationType.AuctionEnding]: faHourglass,
+    [NotificationType.AuctionEndingSoon]: faClock,
+    [NotificationType.AuctionLost]: faHeartCrack,
     [NotificationType.BidPlaced]: faMoneyBillWave,
     [NotificationType.BidAccepted]: faCircleCheck,
+    [NotificationType.BidRejected]: faBan,
+    [NotificationType.Outbid]: faTriangleExclamation,
     [NotificationType.OutBid]: faTriangleExclamation,
     [NotificationType.AuctionWon]: faTrophy,
-    [NotificationType.AuctionEndingSoon]: faClock,
-    [NotificationType.SystemNotification]: faEnvelope,
-    [NotificationType.Broadcast]: faEnvelope
+    [NotificationType.BuyNowExecuted]: faCartShopping,
+    [NotificationType.OrderCreated]: faCartShopping,
+    [NotificationType.OrderShipped]: faTruckFast,
+    [NotificationType.OrderDelivered]: faBoxOpen,
+    [NotificationType.PaymentReceived]: faCreditCard,
+    [NotificationType.PaymentCompleted]: faWallet,
+    [NotificationType.ReviewReceived]: faStar,
+    [NotificationType.WelcomeEmail]: faUserPlus,
+    [NotificationType.PasswordReset]: faKey,
+    [NotificationType.AccountVerification]: faShieldCheck,
+    [NotificationType.System]: faGear
 };
 
 export default function NotificationsPage() {

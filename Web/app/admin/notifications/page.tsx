@@ -122,7 +122,7 @@ export default function AdminNotificationsPage() {
     const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [broadcastForm, setBroadcastForm] = useState<BroadcastNotificationDto>({
-        type: NotificationType.Broadcast,
+        type: NotificationType.System,
         title: '',
         message: '',
         targetRole: undefined
@@ -171,7 +171,7 @@ export default function AdminNotificationsPage() {
             toast.success('Notification broadcast successfully');
             setIsBroadcastOpen(false);
             setBroadcastForm({
-                type: NotificationType.Broadcast,
+                type: NotificationType.System,
                 title: '',
                 message: '',
                 targetRole: undefined
@@ -414,8 +414,7 @@ export default function AdminNotificationsPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value={NotificationType.Broadcast}>Broadcast</SelectItem>
-                                        <SelectItem value={NotificationType.SystemNotification}>System Notification</SelectItem>
+                                        <SelectItem value={NotificationType.System}>System Notification</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
