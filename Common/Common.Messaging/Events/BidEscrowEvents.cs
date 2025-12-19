@@ -32,9 +32,11 @@ public class BidEscrowReleasedEvent
 public class OutbidEvent
 {
     public Guid AuctionId { get; set; }
-    public string OutbidBidder { get; set; } = string.Empty;
-    public string NewHighBidder { get; set; } = string.Empty;
-    public int NewHighBid { get; set; }
-    public int PreviousBid { get; set; }
-    public DateTime OutbidAt { get; set; }
+    public Guid OutbidBidderId { get; set; }
+    public string OutbidBidderUsername { get; set; } = string.Empty;
+    public Guid NewHighBidderId { get; set; }
+    public string NewHighBidderUsername { get; set; } = string.Empty;
+    public decimal NewHighBidAmount { get; set; }
+    public decimal PreviousBidAmount { get; set; }
+    public DateTimeOffset OutbidAt { get; set; }
 }

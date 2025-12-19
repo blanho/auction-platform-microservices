@@ -47,7 +47,7 @@ public class Bid : BaseEntity
         return bid;
     }
 
-    public void Accept(decimal? previousHighestAmount = null)
+    public void Accept(decimal? previousHighestAmount = null, Guid? previousBidderId = null, string? previousBidderUsername = null)
     {
         Status = BidStatus.Accepted;
         AddDomainEvent(new BidAcceptedDomainEvent
@@ -65,7 +65,9 @@ public class Bid : BaseEntity
             BidderId = BidderId,
             BidderUsername = BidderUsername,
             NewHighestAmount = Amount,
-            PreviousHighestAmount = previousHighestAmount
+            PreviousHighestAmount = previousHighestAmount,
+            PreviousBidderId = previousBidderId,
+            PreviousBidderUsername = previousBidderUsername
         });
     }
 
@@ -82,6 +84,7 @@ public class Bid : BaseEntity
             BidId = Id,
             AuctionId = AuctionId,
             BidderId = BidderId,
+            BidderUsername = BidderUsername,
             Amount = Amount,
             Reason = reason
         });

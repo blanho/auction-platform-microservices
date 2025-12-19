@@ -21,7 +21,11 @@ namespace NotificationService.Infrastructure.Extensions
 
                 x.AddConsumer<AuctionCreatedConsumer>();
                 x.AddConsumer<AuctionFinishedConsumer>();
+                x.AddConsumer<AuctionStartedConsumer>();
+                x.AddConsumer<AuctionEndingSoonConsumer>();
                 x.AddConsumer<BidPlacedConsumer>();
+                x.AddConsumer<BidRejectedConsumer>();
+                x.AddConsumer<OutbidConsumer>();
                 x.AddConsumer<AuctionUpdatedConsumer>();
                 x.AddConsumer<AuctionDeletedConsumer>();
                 x.AddConsumer<BuyNowExecutedConsumer>();

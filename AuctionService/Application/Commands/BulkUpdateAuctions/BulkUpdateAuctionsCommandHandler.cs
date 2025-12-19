@@ -45,7 +45,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                     {
                         if (auction.AuctionEnd > _dateTime.UtcNow)
                         {
-                            auction.Status = Status.Live;
+                            auction.ChangeStatus(Status.Live);
                             await _repository.UpdateAsync(auction, cancellationToken);
                             updatedCount++;
                         }
@@ -55,7 +55,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                 {
                     if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
                     {
-                        auction.Status = Status.Inactive;
+                        auction.ChangeStatus(Status.Inactive);
                         await _repository.UpdateAsync(auction, cancellationToken);
                         updatedCount++;
                     }

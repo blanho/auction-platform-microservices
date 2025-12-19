@@ -37,5 +37,27 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
             BidTime = DateTimeOffset.UtcNow,
             BidStatus = "Accepted"
         }, cancellationToken);
+
+        if (notification.PreviousBidderId.HasValue && 
+            !string.IsNullOrEmpty(notification.PreviousBidderUsername) &&
+            notification.PreviousBidderId != notification.BidderId)
+        {
+            _logger.LogInformation(
+                "Publishing OutbidEvent for previous bidder {PreviousBidder} on auction {AuctionId}",
+                notification.PreviousBidderUsername,
+                notification.AuctionId);
+
+            await _eventPublisher.PublishAsync(new OutbidEvent
+            {
+                AuctionId = notification.AuctionId,
+                OutbidBidderId = notification.PreviousBidderId.Value,
+                OutbidBidderUsername = notification.PreviousBidderUsername,
+                NewHighBidderId = notification.BidderId,
+                NewHighBidderUsername = notification.BidderUsername,
+                NewHighBidAmount = notification.NewHighestAmount,
+                PreviousBidAmount = notification.PreviousHighestAmount ?? 0,
+                OutbidAt = DateTimeOffset.UtcNow
+            }, cancellationToken);
+        }
     }
 }

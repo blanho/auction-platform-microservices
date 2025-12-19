@@ -122,7 +122,10 @@ namespace BidService.Application.Services
 
             if (highestBid == null || dto.Amount > highestBid.Amount)
             {
-                bid.Accept(highestBid?.Amount);
+                bid.Accept(
+                    highestBid?.Amount, 
+                    highestBid?.BidderId, 
+                    highestBid?.BidderUsername);
             }
             else
             {
