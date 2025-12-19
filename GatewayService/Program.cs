@@ -25,7 +25,7 @@ builder.Services.AddRateLimiter(options =>
             _ => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 100,
+                PermitLimit = 200,
                 Window = TimeSpan.FromMinutes(1)
             }));
 
@@ -36,19 +36,74 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.Window = TimeSpan.FromMinutes(1);
     });
 
-    options.AddFixedWindowLimiter("bid", limiterOptions =>
+    options.AddTokenBucketLimiter("bid", limiterOptions =>
+    {
+        limiterOptions.TokenLimit = 20;
+        limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+        limiterOptions.TokensPerPeriod = 5;
+        limiterOptions.AutoReplenishment = true;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 10;
+    });
+
+    options.AddSlidingWindowLimiter("buy-now", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.SegmentsPerWindow = 6;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 2;
+    });
+
+    options.AddFixedWindowLimiter("search", limiterOptions =>
     {
         limiterOptions.AutoReplenishment = true;
-        limiterOptions.PermitLimit = 30;
+        limiterOptions.PermitLimit = 60;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+    });
+
+    options.AddFixedWindowLimiter("create", limiterOptions =>
+    {
+        limiterOptions.AutoReplenishment = true;
+        limiterOptions.PermitLimit = 20;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+    });
+
+    options.AddConcurrencyLimiter("upload", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 10;
+    });
+
+    options.AddFixedWindowLimiter("notification", limiterOptions =>
+    {
+        limiterOptions.AutoReplenishment = true;
+        limiterOptions.PermitLimit = 100;
         limiterOptions.Window = TimeSpan.FromMinutes(1);
     });
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.OnRejected = async (context, token) =>
     {
-        context.HttpContext.Response.Headers.Add("Retry-After", "60");
-        await context.HttpContext.Response.WriteAsync(
-            "Too many requests. Please try again later.", cancellationToken: token);
+        var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfterValue)
+            ? retryAfterValue.TotalSeconds.ToString("0")
+            : "60";
+        
+        context.HttpContext.Response.Headers.Append("Retry-After", retryAfter);
+        context.HttpContext.Response.Headers.Append("X-RateLimit-Limit", "See rate limit policy");
+        
+        Log.Warning(
+            "Rate limit exceeded for {RemoteIp} on {Path}",
+            context.HttpContext.Connection.RemoteIpAddress,
+            context.HttpContext.Request.Path);
+        
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            error = "Too many requests",
+            message = "Rate limit exceeded. Please try again later.",
+            retryAfterSeconds = int.Parse(retryAfter)
+        }, cancellationToken: token);
     };
 });
 

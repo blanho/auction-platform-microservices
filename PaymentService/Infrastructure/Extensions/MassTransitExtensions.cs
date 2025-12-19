@@ -18,6 +18,7 @@ public static class MassTransitExtensions
         {
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
+            x.AddConsumer<CreateBuyNowOrderConsumer>();
 
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
             {
@@ -49,6 +50,12 @@ public static class MassTransitExtensions
                 cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
                 {
                     e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
+                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                });
+                
+                cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
+                {
+                    e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
                     e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
                 });
 

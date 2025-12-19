@@ -10,6 +10,8 @@ namespace Common.Domain.Enums
         
         Inactive,
         
-        Scheduled
+        Scheduled,
+        
+        ReservedForBuyNow
     }
 }
