@@ -35,7 +35,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.Audit\Common.Audit.csproj" />
     <ProjectReference Include="..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\Common\Common.CQRS\Common.CQRS.csproj" />
+    <ProjectReference Include="..\Common\Common.Domain\Common.Domain.csproj" />
     <ProjectReference Include="..\Common\Common.Messaging\Common.Messaging.csproj" />
+    <ProjectReference Include="..\Common\Common.Repository\Common.Repository.csproj" />
     <ProjectReference Include="..\Common\Common.Resilience\Common.Resilience.csproj" />
     <ProjectReference Include="..\Common\Common.Scheduling\Common.Scheduling.csproj" />
   </ItemGroup>

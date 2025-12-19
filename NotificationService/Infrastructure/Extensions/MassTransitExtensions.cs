@@ -25,6 +25,10 @@ namespace NotificationService.Infrastructure.Extensions
                 x.AddConsumer<AuctionUpdatedConsumer>();
                 x.AddConsumer<AuctionDeletedConsumer>();
                 x.AddConsumer<BuyNowExecutedConsumer>();
+                x.AddConsumer<OrderCreatedConsumer>();
+                x.AddConsumer<PaymentCompletedConsumer>();
+                x.AddConsumer<OrderShippedConsumer>();
+                x.AddConsumer<OrderDeliveredConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {

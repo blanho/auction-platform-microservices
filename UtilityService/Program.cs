@@ -1,5 +1,6 @@
 using Common.Messaging.Abstractions;
 using Common.Messaging.Implementations;
+using Common.CQRS.Extensions;
 using Common.Resilience;
 using Common.Resilience.Extensions;
 using MassTransit;
@@ -60,6 +61,8 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddDomainEvents(typeof(UnitOfWork).Assembly);
 
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IReportService, ReportService>();

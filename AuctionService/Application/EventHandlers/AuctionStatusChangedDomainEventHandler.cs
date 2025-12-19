@@ -1,4 +1,7 @@
 using AuctionService.Domain.Events;
+using Common.Domain.Enums;
+using Common.Messaging.Abstractions;
+using Common.Messaging.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -6,14 +9,18 @@ namespace AuctionService.Application.EventHandlers;
 
 public class AuctionStatusChangedDomainEventHandler : INotificationHandler<AuctionStatusChangedDomainEvent>
 {
+    private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<AuctionStatusChangedDomainEventHandler> _logger;
 
-    public AuctionStatusChangedDomainEventHandler(ILogger<AuctionStatusChangedDomainEventHandler> logger)
+    public AuctionStatusChangedDomainEventHandler(
+        IEventPublisher eventPublisher,
+        ILogger<AuctionStatusChangedDomainEventHandler> logger)
     {
+        _eventPublisher = eventPublisher;
         _logger = logger;
     }
 
-    public Task Handle(AuctionStatusChangedDomainEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(AuctionStatusChangedDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Auction {AuctionId} status changed from {OldStatus} to {NewStatus}",
@@ -21,6 +28,19 @@ public class AuctionStatusChangedDomainEventHandler : INotificationHandler<Aucti
             notification.OldStatus,
             notification.NewStatus);
 
-        return Task.CompletedTask;
+        if (notification.NewStatus == Status.Live && notification.OldStatus != Status.Live)
+        {
+            await _eventPublisher.PublishAsync(new AuctionStartedEvent
+            {
+                AuctionId = notification.AuctionId,
+                Seller = notification.SellerUsername,
+                Title = notification.Title,
+                StartTime = DateTime.UtcNow,
+                EndTime = notification.AuctionEnd.DateTime,
+                ReservePrice = notification.ReservePrice
+            }, cancellationToken);
+
+            _logger.LogInformation("Published AuctionStartedEvent for auction {AuctionId}", notification.AuctionId);
+        }
     }
 }

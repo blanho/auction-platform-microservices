@@ -1,7 +1,5 @@
 using AuctionService.Application.Interfaces;
 using Common.Domain.Enums;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 using Common.Scheduling.Jobs;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +25,6 @@ public class AuctionActivationJob : BaseJob
     {
         var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
-        var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 
         var scheduledAuctions = await repository.GetScheduledAuctionsToActivateAsync(cancellationToken);
 
@@ -43,27 +40,13 @@ public class AuctionActivationJob : BaseJob
         {
             try
             {
-                auction.Status = Status.Live;
+                auction.ChangeStatus(Status.Live);
                 await repository.UpdateAsync(auction, cancellationToken);
-
-                var itemTitle = auction.Item?.Title ?? "Auction";
-
-                var auctionStartedEvent = new AuctionStartedEvent
-                {
-                    AuctionId = auction.Id,
-                    Seller = auction.SellerUsername,
-                    Title = itemTitle,
-                    StartTime = DateTime.UtcNow,
-                    EndTime = auction.AuctionEnd.DateTime,
-                    ReservePrice = auction.ReservePrice
-                };
-
-                await eventPublisher.PublishAsync(auctionStartedEvent, cancellationToken);
 
                 activatedCount++;
                 Logger.LogInformation(
                     "Activated scheduled auction {AuctionId}: {Title}",
-                    auction.Id, auctionStartedEvent.Title);
+                    auction.Id, auction.Item?.Title ?? "Unknown");
             }
             catch (Exception ex)
             {

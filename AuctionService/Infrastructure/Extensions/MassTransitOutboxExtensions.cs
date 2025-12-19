@@ -18,7 +18,7 @@ public static class MassTransitOutboxExtensions
         services.AddMassTransit(x =>
         {
             x.AddConsumer<BidPlacedConsumer>();
-            x.AddConsumer<AuctionFinishedConsumer>();
+            x.AddConsumer<FileUploadedConsumer>();
 
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {

@@ -1,8 +1,4 @@
 using AuctionService.Application.Interfaces;
-using Common.Core.Interfaces;
-using Common.Domain.Enums;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 using Common.Scheduling.Jobs;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +24,6 @@ public class AuctionDeactivationJob : BaseJob
     {
         var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
-        var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 
         var expiredAuctions = await repository.GetAuctionsToAutoDeactivateAsync(cancellationToken);
 
@@ -44,31 +39,15 @@ public class AuctionDeactivationJob : BaseJob
         {
             try
             {
-                var finalStatus = DetermineFinalStatus(auction);
-                var previousStatus = auction.Status;
-                auction.Status = finalStatus;
+                var itemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice;
+                auction.Finish(auction.WinnerId, auction.WinnerUsername, auction.CurrentHighBid, itemSold);
 
                 await repository.UpdateAsync(auction, cancellationToken);
 
-                if (finalStatus == Status.Finished || finalStatus == Status.ReservedNotMet)
-                {
-                    var auctionFinishedEvent = new AuctionFinishedEvent
-                    {
-                        AuctionId = auction.Id,
-                        ItemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice,
-                        WinnerId = auction.WinnerId,
-                        WinnerUsername = auction.WinnerUsername,
-                        SellerId = auction.SellerId,
-                        SellerUsername = auction.SellerUsername,
-                        SoldAmount = auction.CurrentHighBid
-                    };
-                    await eventPublisher.PublishAsync(auctionFinishedEvent, cancellationToken);
-                }
-
                 processedCount++;
                 Logger.LogDebug(
-                    "Deactivated auction {AuctionId} from {PreviousStatus} to {FinalStatus}",
-                    auction.Id, previousStatus, finalStatus);
+                    "Deactivated auction {AuctionId} to {FinalStatus}",
+                    auction.Id, auction.Status);
             }
             catch (Exception ex)
             {
@@ -79,17 +58,5 @@ public class AuctionDeactivationJob : BaseJob
         await unitOfWork.SaveChangesAsync(cancellationToken);
         Logger.LogInformation("Completed deactivation of {ProcessedCount}/{TotalCount} auctions",
             processedCount, expiredAuctions.Count);
-    }
-
-    private static Status DetermineFinalStatus(Domain.Entities.Auction auction)
-    {
-        if (auction.CurrentHighBid == null)
-        {
-            return Status.Inactive;
-        }
-
-        return auction.CurrentHighBid >= auction.ReservePrice
-            ? Status.Finished
-            : Status.ReservedNotMet;
     }
 }

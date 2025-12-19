@@ -77,6 +77,8 @@ public class OrderService : IOrderService
             PaymentStatus = PaymentStatus.Pending
         };
 
+        order.RaiseCreatedEvent();
+
         var created = await _orderRepository.AddAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -92,7 +94,7 @@ public class OrderService : IOrderService
             throw new KeyNotFoundException("Order not found");
 
         var oldStatus = order.Status;
-        order.Status = newStatus;
+        order.ChangeStatus(newStatus);
         order.UpdatedAt = DateTimeOffset.UtcNow;
 
         if (!string.IsNullOrEmpty(notes))
@@ -115,10 +117,7 @@ public class OrderService : IOrderService
         if (order == null)
             throw new KeyNotFoundException("Order not found");
 
-        order.TrackingNumber = dto.TrackingNumber;
-        order.ShippingCarrier = dto.ShippingCarrier;
-        order.ShippedAt = DateTimeOffset.UtcNow;
-        order.Status = OrderStatus.Shipped;
+        order.MarkAsShipped(dto.TrackingNumber, dto.ShippingCarrier);
         order.UpdatedAt = DateTimeOffset.UtcNow;
 
         if (!string.IsNullOrEmpty(dto.SellerNotes))
@@ -144,15 +143,8 @@ public class OrderService : IOrderService
         if (order.PaymentStatus == PaymentStatus.Completed)
             throw new InvalidOperationException("Order is already paid");
 
-        order.PaymentStatus = PaymentStatus.Completed;
-        order.Status = OrderStatus.PaymentReceived;
-        order.PaidAt = DateTimeOffset.UtcNow;
+        order.CompletePayment(dto.ExternalTransactionId);
         order.UpdatedAt = DateTimeOffset.UtcNow;
-
-        if (!string.IsNullOrEmpty(dto.ExternalTransactionId))
-        {
-            order.PaymentTransactionId = dto.ExternalTransactionId;
-        }
 
         await _orderRepository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -174,8 +166,7 @@ public class OrderService : IOrderService
         if (order.Status != OrderStatus.Shipped)
             throw new InvalidOperationException("Order must be shipped before confirming delivery");
 
-        order.Status = OrderStatus.Delivered;
-        order.DeliveredAt = DateTimeOffset.UtcNow;
+        order.MarkAsDelivered();
         order.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _orderRepository.UpdateAsync(order);

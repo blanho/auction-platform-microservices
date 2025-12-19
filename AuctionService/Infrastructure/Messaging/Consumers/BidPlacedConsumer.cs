@@ -36,7 +36,7 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
         if (auction.CurrentHighBid == null || message.BidStatus.Contains("Accepted")
             && message.BidAmount > auction.CurrentHighBid)
         {
-            auction.CurrentHighBid = message.BidAmount;
+            auction.UpdateHighBid(message.BidAmount, message.BidderId, message.Bidder);
             await _repository.UpdateAsync(auction);
             await _unitOfWork.SaveChangesAsync();
         }

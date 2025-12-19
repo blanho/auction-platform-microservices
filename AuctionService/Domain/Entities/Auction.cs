@@ -49,7 +49,12 @@ public class Auction : BaseEntity
         {
             AuctionId = Id,
             OldStatus = oldStatus,
-            NewStatus = newStatus
+            NewStatus = newStatus,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername,
+            Title = Item?.Title ?? string.Empty,
+            ReservePrice = ReservePrice,
+            AuctionEnd = AuctionEnd
         });
     }
 
@@ -119,5 +124,15 @@ public class Auction : BaseEntity
             AuctionId = Id,
             SellerId = SellerId
         });
+    }
+
+    public void UpdateHighBid(decimal bidAmount, Guid? bidderId = null, string? bidderUsername = null)
+    {
+        CurrentHighBid = bidAmount;
+        if (bidderId.HasValue)
+        {
+            WinnerId = bidderId;
+            WinnerUsername = bidderUsername;
+        }
     }
 }
