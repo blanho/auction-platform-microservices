@@ -1,4 +1,5 @@
 using PaymentService.Infrastructure.Data;
+using PaymentService.Infrastructure.Messaging;
 using PaymentService.Infrastructure.Messaging.Consumers;
 using Common.Messaging.Abstractions;
 using MassTransit;
@@ -56,6 +57,7 @@ public static class MassTransitExtensions
             });
         });
 
+        services.AddScoped<IEventPublisher, OutboxEventPublisher>();
         return services;
     }
 }

@@ -16,3 +16,4 @@ export { TopAuctionsSection } from "./top-auctions-section";
 export { FooterSection } from "./footer-section";
 export { TableOfContents } from "./table-of-contents";
 export { BrandSliderSection } from "./brand-slider-section";
+export { CTASection } from "./cta-section";

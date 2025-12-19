@@ -85,7 +85,7 @@ function SidebarContent({ pathname, username, collapsed = false, onToggleCollaps
             )}>
                 {!collapsed && (
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-sm">
+                        <div className="w-9 h-9 rounded-lg bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center shadow-sm">
                             <Shield className="h-5 w-5 text-white" />
                         </div>
                         <div>
@@ -99,7 +99,7 @@ function SidebarContent({ pathname, username, collapsed = false, onToggleCollaps
                     </div>
                 )}
                 {collapsed && (
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-sm">
+                    <div className="w-9 h-9 rounded-lg bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center shadow-sm">
                         <Shield className="h-5 w-5 text-white" />
                     </div>
                 )}

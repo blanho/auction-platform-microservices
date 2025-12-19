@@ -29,7 +29,7 @@ export function SellerCard({
             </CardHeader>
             <CardContent>
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
+                    <div className="w-14 h-14 rounded-full bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
                         {sellerUsername.charAt(0).toUpperCase()}
                     </div>
                     <div>

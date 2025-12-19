@@ -75,7 +75,7 @@ export function ValuePropsBanner() {
   if (!mounted) return null;
 
   return (
-    <section className="py-4 md:py-6 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-y border-slate-200/80 dark:border-slate-800/80 overflow-hidden">
+    <section className="py-4 md:py-6 bg-linear-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-y border-slate-200/80 dark:border-slate-800/80 overflow-hidden">
       <div className="container mx-auto px-4">
         <motion.div
           variants={container}
@@ -87,7 +87,7 @@ export function ValuePropsBanner() {
           {!isLoading && stats && (
             <>
               <motion.div variants={item} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm shadow-green-500/30">
+                <div className="w-9 h-9 rounded-lg bg-linear-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm shadow-green-500/30">
                   <FontAwesomeIcon
                     icon={faGavel}
                     className="w-4 h-4 text-white"
@@ -104,7 +104,7 @@ export function ValuePropsBanner() {
               </motion.div>
 
               <motion.div variants={item} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-500/30">
+                <div className="w-9 h-9 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-500/30">
                   <FontAwesomeIcon
                     icon={faUsers}
                     className="w-4 h-4 text-white"
@@ -121,7 +121,7 @@ export function ValuePropsBanner() {
               </motion.div>
 
               <motion.div variants={item} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-sm shadow-orange-500/30">
+                <div className="w-9 h-9 rounded-lg bg-linear-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-sm shadow-orange-500/30">
                   <FontAwesomeIcon
                     icon={faBolt}
                     className="w-4 h-4 text-white"
@@ -148,7 +148,7 @@ export function ValuePropsBanner() {
               className="flex items-center gap-2.5 group"
             >
               <div
-                className={`w-9 h-9 rounded-lg bg-gradient-to-br ${prop.gradient} flex items-center justify-center shadow-sm transition-transform group-hover:scale-110`}
+                className={`w-9 h-9 rounded-lg bg-linear-to-br ${prop.gradient} flex items-center justify-center shadow-sm transition-transform group-hover:scale-110`}
               >
                 <FontAwesomeIcon
                   icon={prop.icon}

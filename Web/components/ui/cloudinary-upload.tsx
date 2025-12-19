@@ -339,7 +339,7 @@ export const CloudinaryUpload = forwardRef<CloudinaryUploadRef, CloudinaryUpload
                     }}
                     className="space-y-4"
                 >
-                    <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                         <FontAwesomeIcon
                             icon={faCloudArrowUp}
                             className="w-8 h-8 text-white"

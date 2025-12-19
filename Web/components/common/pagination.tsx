@@ -112,7 +112,7 @@ export function Pagination({
                         aria-current={currentPage === page ? "page" : undefined}
                         className={
                             currentPage === page
-                                ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25"
+                                ? "bg-linear-to-r from-purple-600 to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25"
                                 : "border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700"
                         }
                     >

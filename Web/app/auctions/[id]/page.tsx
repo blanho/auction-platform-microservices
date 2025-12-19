@@ -171,7 +171,7 @@ function CountdownTimer({ endDate, isUrgent }: { endDate: string; isUrgent?: boo
             <div className={`flex gap-2 font-mono ${urgentClass}`}>
                 {showDays && (
                     <div className="flex flex-col items-center">
-                        <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                        <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                             {timeLeft.days}
                         </span>
                         <span className="text-[10px] uppercase tracking-wider text-slate-500">Days</span>
@@ -179,21 +179,21 @@ function CountdownTimer({ endDate, isUrgent }: { endDate: string; isUrgent?: boo
                 )}
                 {showDays && <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>}
                 <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                         {formatUnit(timeLeft.hours)}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Hours</span>
                 </div>
                 <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
                 <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                         {formatUnit(timeLeft.minutes)}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Mins</span>
                 </div>
                 <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
                 <div className="flex flex-col items-center">
-                    <span className={`text-3xl font-bold ${isUrgent ? 'text-red-500' : 'bg-gradient-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent'}`}>
+                    <span className={`text-3xl font-bold ${isUrgent ? 'text-red-500' : 'bg-linear-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent'}`}>
                         {formatUnit(timeLeft.seconds)}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Secs</span>
@@ -294,7 +294,7 @@ export default function AuctionDetailPage() {
                     <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25"
+                        className="w-16 h-16 rounded-full bg-linear-to-r from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25"
                     >
                         <FontAwesomeIcon icon={faGavel} className="w-8 h-8 text-white" />
                     </motion.div>
@@ -326,7 +326,7 @@ export default function AuctionDetailPage() {
                             </AlertDescription>
                         </Alert>
                         <div className="mt-4">
-                            <Button asChild className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                            <Button asChild className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                                 <Link href={ROUTES.AUCTIONS.LIST}>
                                     <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 mr-2" />
                                     Back to Auctions
@@ -410,10 +410,10 @@ export default function AuctionDetailPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-800/50"
+                        className="mb-6 flex items-center justify-between p-4 rounded-xl bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-800/50"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-linear-to-r from-purple-600 to-blue-600 flex items-center justify-center">
                                 <FontAwesomeIcon icon={faUser} className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
@@ -510,7 +510,7 @@ export default function AuctionDetailPage() {
                                     priority
                                 />
 
-                                <div className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
+                                <div className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-linear-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
                                     {statusConfig.pulse && (
                                         <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                                     )}
@@ -518,7 +518,7 @@ export default function AuctionDetailPage() {
                                 </div>
 
                                 {auction.status === AuctionStatus.Live && isUrgent && (
-                                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+                                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-linear-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
                                         <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
                                         Ending Soon
                                     </div>
@@ -574,7 +574,7 @@ export default function AuctionDetailPage() {
                             <CardHeader className="pb-2">
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                                        <CardTitle className="text-2xl font-bold bg-linear-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                                             {auctionTitle}
                                         </CardTitle>
                                         <CardDescription className="text-base mt-1">
@@ -583,7 +583,7 @@ export default function AuctionDetailPage() {
                                         </CardDescription>
                                     </div>
                                     {auction.isFeatured && (
-                                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                                        <Badge className="bg-linear-to-r from-amber-500 to-orange-500 text-white border-0">
                                             <FontAwesomeIcon icon={faFire} className="w-3 h-3 mr-1" />
                                             Featured
                                         </Badge>
@@ -594,7 +594,7 @@ export default function AuctionDetailPage() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {attributes.mileage && (
                                         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={faTachometerAlt} className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
@@ -605,7 +605,7 @@ export default function AuctionDetailPage() {
                                     )}
                                     {attributes.color && (
                                         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={faPalette} className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
@@ -615,7 +615,7 @@ export default function AuctionDetailPage() {
                                         </div>
                                     )}
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-full bg-linear-to-br from-emerald-500 to-green-500 flex items-center justify-center">
                                             <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 text-white" />
                                         </div>
                                         <div>
@@ -625,7 +625,7 @@ export default function AuctionDetailPage() {
                                     </div>
                                     {auction.categoryName && (
                                         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-amber-500 to-orange-500 flex items-center justify-center">
                                                 <FontAwesomeIcon icon={faTag} className="w-4 h-4 text-white" />
                                             </div>
                                             <div>
@@ -646,7 +646,7 @@ export default function AuctionDetailPage() {
                         className="lg:col-span-2 space-y-4"
                     >
                         <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl overflow-hidden">
-                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600" />
+                            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-purple-600 to-blue-600" />
                             <CardContent className="pt-8">
                                 <div className="space-y-6">
                                     <div>
@@ -654,7 +654,7 @@ export default function AuctionDetailPage() {
                                             <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
                                             Current Price
                                         </p>
-                                        <p className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
+                                        <p className="text-4xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
                                             {formatCurrency(auction.currentHighBid || 0)}
                                         </p>
                                     </div>
@@ -738,7 +738,7 @@ export default function AuctionDetailPage() {
                                                     </TabsContent>
                                                     
                                                     <TabsContent value="buynow" className="mt-0">
-                                                        <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50">
+                                                        <div className="rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50">
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
                                                                 <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Skip the bidding!</p>
@@ -819,7 +819,7 @@ export default function AuctionDetailPage() {
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
+                                            className="rounded-xl bg-linear-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
                                         >
                                             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                                                 <FontAwesomeIcon icon={faTrophy} className="w-5 h-5 text-amber-500" />
@@ -896,7 +896,7 @@ export default function AuctionDetailPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
+                                    <div className="w-14 h-14 rounded-full bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
                                         {getAuctionSellerUsername(auction).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -956,7 +956,7 @@ export default function AuctionDetailPage() {
                     <Card className="mt-8 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-xl">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center">
                                     <FontAwesomeIcon icon={faTag} className="w-4 h-4 text-white" />
                                 </div>
                                 Description
@@ -979,7 +979,7 @@ export default function AuctionDetailPage() {
                     <Card className="mt-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-xl">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center">
                                     <FontAwesomeIcon icon={faHistory} className="w-4 h-4 text-white" />
                                 </div>
                                 Bid History
@@ -1018,10 +1018,10 @@ export default function AuctionDetailPage() {
                         className="mt-8"
                     >
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
                                 <FontAwesomeIcon icon={faGavel} className="w-5 h-5 text-white" />
                             </div>
-                            <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                            <h2 className="text-2xl font-bold bg-linear-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                                 Related Items
                             </h2>
                         </div>
@@ -1044,7 +1044,7 @@ export default function AuctionDetailPage() {
                                                         fill
                                                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                                 <CardContent className="p-4">
                                                     <h3 className="font-semibold truncate text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
@@ -1054,7 +1054,7 @@ export default function AuctionDetailPage() {
                                                         {related.categoryName || 'Uncategorized'}
                                                     </p>
                                                     <div className="flex items-center justify-between mt-3">
-                                                        <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                                        <span className="font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                                             {formatCurrency(related.currentHighBid || related.reservePrice)}
                                                         </span>
                                                         <span className="text-xs text-slate-400 flex items-center gap-1">
@@ -1081,7 +1081,7 @@ export default function AuctionDetailPage() {
                         <Card className="mt-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-xl">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-lg bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center">
                                         <FontAwesomeIcon icon={faHistory} className="w-4 h-4 text-white" />
                                     </div>
                                     Activity History

@@ -31,7 +31,7 @@ export function PriceDisplay({
     amount,
     label,
     variant = "default",
-    gradientColors = "bg-gradient-to-r from-purple-600 to-pink-600",
+    gradientColors = "bg-linear-to-r from-purple-600 to-pink-600",
     className,
 }: PriceDisplayProps) {
     const styles = variantStyles[variant];

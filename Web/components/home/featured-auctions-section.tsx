@@ -37,7 +37,7 @@ export function FeaturedAuctionsSection() {
 
     return (
         <section className="relative py-24 bg-slate-50 dark:bg-slate-950 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-purple-200/30 via-transparent to-transparent dark:from-purple-900/10" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,var(--tw-gradient-stops))] from-purple-200/30 via-transparent to-transparent dark:from-purple-900/10" />
             <div className="absolute top-40 left-1/4 w-96 h-96 bg-purple-400/10 dark:bg-purple-600/10 rounded-full blur-3xl" />
             <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-pink-400/10 dark:bg-pink-600/10 rounded-full blur-3xl" />
 
@@ -58,7 +58,7 @@ export function FeaturedAuctionsSection() {
 
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                             Featured
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
+                            <span className="block text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
                                 Auctions
                             </span>
                         </h2>
@@ -76,7 +76,7 @@ export function FeaturedAuctionsSection() {
                         transition={{ delay: UI.ANIMATION.STAGGER_DELAY * 2 }}
                     >
                         <Button
-                            className="h-12 px-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium shadow-lg shadow-purple-500/25"
+                            className="h-12 px-6 rounded-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium shadow-lg shadow-purple-500/25"
                             asChild
                         >
                             <Link href="/auctions">

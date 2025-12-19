@@ -80,7 +80,7 @@ export function FooterSection() {
                     {/* Brand Column */}
                     <div className="col-span-2 md:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-linear-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold">A</span>
                             </div>
                             <span className="text-xl font-bold">AuctionHub</span>

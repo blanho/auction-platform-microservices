@@ -362,7 +362,7 @@
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300;
+    @apply bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300;
   }
 
   .btn-secondary {
@@ -435,11 +435,11 @@
   }
 
   .divider {
-    @apply h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent;
+    @apply h-px bg-linear-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent;
   }
 
   .divider-vertical {
-    @apply w-px h-full bg-gradient-to-b from-transparent via-slate-300 dark:via-slate-700 to-transparent;
+    @apply w-px h-full bg-linear-to-b from-transparent via-slate-300 dark:via-slate-700 to-transparent;
   }
 
   .status-dot {

@@ -77,7 +77,7 @@ export function TopAuctionsSection() {
   const hasData = topListings && topListings.length > 0;
 
   return (
-    <AnimatedSection className="py-16 md:py-20 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 overflow-hidden relative">
+    <AnimatedSection className="py-16 md:py-20 bg-linear-to-b from-slate-900 via-slate-950 to-slate-900 overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(234,179,8,0.08),transparent_50%)]" />
 
@@ -91,7 +91,7 @@ export function TopAuctionsSection() {
               transition={{ duration: 0.5 }}
               className="sticky top-24"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 mb-6">
                 <FontAwesomeIcon
                   icon={faCrown}
                   className="w-4 h-4 text-amber-400"
@@ -103,7 +103,7 @@ export function TopAuctionsSection() {
 
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Top{" "}
-                <span className="bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
                   Auctions
                 </span>
               </h2>
@@ -115,7 +115,7 @@ export function TopAuctionsSection() {
 
               <div className="flex flex-wrap gap-6 mb-8">
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-violet-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-linear-to-br from-purple-500/20 to-violet-500/20 flex items-center justify-center">
                     <FontAwesomeIcon
                       icon={faEye}
                       className="w-4 h-4 text-purple-400"
@@ -127,7 +127,7 @@ export function TopAuctionsSection() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-linear-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
                     <FontAwesomeIcon
                       icon={faGavel}
                       className="w-4 h-4 text-green-400"
@@ -142,7 +142,7 @@ export function TopAuctionsSection() {
 
               <Link
                 href={ROUTES.AUCTIONS.LIST}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-semibold hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/25 hover:shadow-xl hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-linear-to-r from-amber-500 to-yellow-500 text-slate-900 font-semibold hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/25 hover:shadow-xl hover:-translate-y-0.5"
               >
                 <span>View All Auctions</span>
                 <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
@@ -187,7 +187,7 @@ export function TopAuctionsSection() {
                             relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0
                             ${
                               index < 3
-                                ? `bg-gradient-to-br ${rankColors[index]} ${rankShadows[index]} shadow-lg`
+                                ? `bg-linear-to-br ${rankColors[index]} ${rankShadows[index]} shadow-lg`
                                 : "bg-slate-700/50"
                             }
                           `}
@@ -227,14 +227,14 @@ export function TopAuctionsSection() {
                         </div>
 
                         <div className="text-right shrink-0">
-                          <p className="text-lg font-bold bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                          <p className="text-lg font-bold bg-linear-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
                             ${listing.currentBid.toLocaleString()}
                           </p>
                           <p className="text-xs text-slate-500">Current bid</p>
                         </div>
 
                         {index === 0 && (
-                          <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold flex items-center gap-1 shadow-lg">
+                          <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full bg-linear-to-r from-orange-500 to-red-500 text-white text-xs font-bold flex items-center gap-1 shadow-lg">
                             <FontAwesomeIcon
                               icon={faFire}
                               className="w-3 h-3"

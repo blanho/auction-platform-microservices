@@ -59,12 +59,12 @@ function PremiumAuctionCard({
 
   const badgeColors = {
     purple:
-      "bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30",
-    blue: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30",
+      "bg-linear-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30",
+    blue: "bg-linear-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30",
     orange:
-      "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30",
+      "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30",
     emerald:
-      "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30",
+      "bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30",
   };
 
   return (
@@ -80,7 +80,7 @@ function PremiumAuctionCard({
           transition={{ duration: 0.2 }}
           className="group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5 transition-all duration-300"
         >
-          <div className="relative aspect-[4/3] overflow-hidden">
+          <div className="relative aspect-4/3 overflow-hidden">
             <Image
               src={imageUrl}
               alt={title}
@@ -89,7 +89,7 @@ function PremiumAuctionCard({
               sizes="(max-width: 768px) 50vw, 25vw"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {badge && (
               <div
@@ -138,7 +138,7 @@ function PremiumAuctionCard({
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
                   Current Bid
                 </p>
-                <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <p className="text-lg font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   ${(auction.currentHighBid || auction.reservePrice || 0).toLocaleString()}
                 </p>
               </div>
@@ -170,7 +170,7 @@ function PremiumAuctionCard({
 function CardSkeleton() {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80">
-      <Skeleton className="aspect-[4/3]" />
+      <Skeleton className="aspect-4/3" />
       <div className="p-4 space-y-3">
         <Skeleton className="h-5 w-3/4" />
         <div className="flex justify-between">
@@ -189,7 +189,7 @@ function ExploreMoreCard({ href, icon, text }: { href: string; icon: typeof faWa
         whileHover={{ y: -6, scale: 1.02 }}
         className="h-full min-h-[280px] flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-purple-400 dark:hover:border-purple-500 bg-slate-50/50 dark:bg-slate-900/50 transition-all duration-300 cursor-pointer group"
       >
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <div className="w-14 h-14 rounded-full bg-linear-to-br from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
           <FontAwesomeIcon
             icon={icon}
             className="w-6 h-6 text-purple-500 dark:text-purple-400"
@@ -214,7 +214,7 @@ export function PersonalizationSection() {
         return (
             <AnimatedSection className="py-24 bg-slate-950 relative overflow-hidden">
                 <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/50 via-slate-950 to-slate-950" />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-purple-900/50 via-slate-950 to-slate-950" />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[150px]" />
                 </div>
                 
@@ -227,7 +227,7 @@ export function PersonalizationSection() {
                         
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                             {CTA_CONTENT.TITLE.split(".")[0]}.<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400">
+                            <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-orange-400">
                                 {CTA_CONTENT.TITLE.split(".")[1]?.trim() || "Start Winning."}
                             </span>
                         </h2>
@@ -339,7 +339,7 @@ function LoggedInPersonalization() {
   }, [fetchRecommendedAuctions, fetchRecentlyViewed]);
 
   return (
-    <AnimatedSection className="py-20 md:py-28 bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden relative">
+    <AnimatedSection className="py-20 md:py-28 bg-linear-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.1),transparent_50%)]" />
 
@@ -352,7 +352,7 @@ function LoggedInPersonalization() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
                   <FontAwesomeIcon
                     icon={faWandSparkles}
                     className="w-5 h-5 text-white"
@@ -412,7 +412,7 @@ function LoggedInPersonalization() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <FontAwesomeIcon
                     icon={faEye}
                     className="w-5 h-5 text-white"
@@ -465,7 +465,7 @@ function LoggedInPersonalization() {
               ) : (
                 <div className="col-span-full">
                   <div className="text-center py-12 px-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 flex items-center justify-center mx-auto mb-4">
                       <FontAwesomeIcon
                         icon={faEye}
                         className="w-7 h-7 text-blue-500 dark:text-blue-400"
@@ -478,7 +478,7 @@ function LoggedInPersonalization() {
                       Your recently viewed items will appear here so you can easily find them again
                     </p>
                     <Button
-                      className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-full px-6"
+                      className="bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-full px-6"
                       asChild
                     >
                       <Link href={ROUTES.AUCTIONS.LIST}>

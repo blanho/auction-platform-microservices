@@ -22,10 +22,10 @@ export function RelatedAuctions({ auctions }: RelatedAuctionsProps) {
     return (
         <div className="mt-8">
             <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
                     <FontAwesomeIcon icon={faGavel} className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold bg-linear-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                     Related Items
                 </h2>
             </div>
@@ -49,7 +49,7 @@ export function RelatedAuctions({ auctions }: RelatedAuctionsProps) {
                                             fill
                                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                     <CardContent className="p-4">
                                         <h3 className="font-semibold truncate text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
@@ -59,7 +59,7 @@ export function RelatedAuctions({ auctions }: RelatedAuctionsProps) {
                                             {auction.categoryName || "Uncategorized"}
                                         </p>
                                         <div className="flex items-center justify-between mt-3">
-                                            <span className="font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                            <span className="font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                                 {formatCurrency(auction.currentHighBid || auction.reservePrice)}
                                             </span>
                                             <span className="text-xs text-slate-400 flex items-center gap-1">

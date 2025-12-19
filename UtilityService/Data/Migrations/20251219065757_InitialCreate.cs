@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -83,54 +83,6 @@ namespace UtilityService.Data.Migrations
                     table.PrimaryKey("PK_Reports", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "StoredFiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    FileName = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
-                    OriginalFileName = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
-                    ContentType = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Size = table.Column<long>(type: "bigint", nullable: false),
-                    Path = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: false),
-                    Url = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    EntityId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
-                    EntityType = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    UploadedBy = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ConfirmedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Tags = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StoredFiles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WalletTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Username = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ReferenceType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    PaymentMethod = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    ExternalTransactionId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ProcessedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WalletTransactions", x => x.Id);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_EntityId",
                 table: "AuditLogs",
@@ -201,51 +153,6 @@ namespace UtilityService.Data.Migrations
                 name: "IX_Reports_Type",
                 table: "Reports",
                 column: "Type");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoredFiles_EntityId",
-                table: "StoredFiles",
-                column: "EntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoredFiles_EntityType",
-                table: "StoredFiles",
-                column: "EntityType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoredFiles_EntityType_EntityId",
-                table: "StoredFiles",
-                columns: new[] { "EntityType", "EntityId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoredFiles_Status",
-                table: "StoredFiles",
-                column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StoredFiles_Status_CreatedAt",
-                table: "StoredFiles",
-                columns: new[] { "Status", "CreatedAt" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_Status",
-                table: "WalletTransactions",
-                column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_Type",
-                table: "WalletTransactions",
-                column: "Type");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_Username",
-                table: "WalletTransactions",
-                column: "Username");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_Username_CreatedAt",
-                table: "WalletTransactions",
-                columns: new[] { "Username", "CreatedAt" });
         }
 
         /// <inheritdoc />
@@ -259,12 +166,6 @@ namespace UtilityService.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reports");
-
-            migrationBuilder.DropTable(
-                name: "StoredFiles");
-
-            migrationBuilder.DropTable(
-                name: "WalletTransactions");
         }
     }
 }

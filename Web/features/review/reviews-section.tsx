@@ -111,7 +111,7 @@ function ReviewCard({ review, isOwner, onResponseAdded }: { review: Review; isOw
       className="border-b border-slate-200 dark:border-slate-800 pb-4 last:border-0"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center shrink-0">
           <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
@@ -275,7 +275,7 @@ function ReviewForm({
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || rating === 0}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
         >
           {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 mr-2 animate-spin" />}
           Submit Review
@@ -346,7 +346,7 @@ export function ReviewsSection({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xl">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
               <FontAwesomeIcon icon={faStar} className="w-4 h-4 text-white" />
             </div>
             Seller Reviews

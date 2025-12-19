@@ -88,7 +88,7 @@ export function AuctionList() {
                         className="flex flex-col items-center justify-center py-16 gap-4"
                     >
                         <div className="relative">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin" style={{ animationDuration: '1.5s' }}>
+                            <div className="w-16 h-16 rounded-full bg-linear-to-r from-purple-500 to-blue-500 animate-spin" style={{ animationDuration: '1.5s' }}>
                                 <div className="absolute inset-1 bg-white dark:bg-slate-950 rounded-full" />
                             </div>
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -134,7 +134,7 @@ export function AuctionList() {
                         exit={{ opacity: 0 }}
                     >
                         <div className="flex flex-col items-center justify-center py-16 gap-4">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center">
+                            <div className="w-24 h-24 rounded-full bg-linear-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center">
                                 <FontAwesomeIcon icon={faGavel} className="w-10 h-10 text-purple-500" />
                             </div>
                             <div className="text-center max-w-sm">
@@ -144,7 +144,7 @@ export function AuctionList() {
                                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                                     Try adjusting your filters or be the first to create an auction!
                                 </p>
-                                <Button asChild className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                                <Button asChild className="gap-2 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                                     <Link href="/auctions/create">
                                         <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
                                         Create Auction

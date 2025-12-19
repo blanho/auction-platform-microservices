@@ -97,7 +97,7 @@ function EmptyState({ type }: { type: TabValue }) {
             ? "Items you save will appear here. Start browsing to find something you love!"
             : "Items you're tracking will appear here. Watch auctions to follow their progress."}
         </p>
-        <Button asChild className="bg-gradient-to-r from-purple-600 to-blue-600">
+        <Button asChild className="bg-linear-to-r from-purple-600 to-blue-600">
           <Link href={ROUTES.AUCTIONS.LIST}>
             <FontAwesomeIcon icon={faInbox} className="mr-2 h-4 w-4" />
             Browse Auctions
@@ -192,7 +192,7 @@ function AuctionCard({
                   reservePrice={reservePrice}
                   auctionTitle={title}
                   trigger={
-                    <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600">
+                    <Button size="sm" className="bg-linear-to-r from-purple-600 to-blue-600">
                       Bid
                     </Button>
                   }
@@ -275,7 +275,7 @@ function AuctionCard({
             reservePrice={reservePrice}
             auctionTitle={title}
             trigger={
-              <Button className="w-full mt-3 bg-gradient-to-r from-purple-600 to-blue-600">
+              <Button className="w-full mt-3 bg-linear-to-r from-purple-600 to-blue-600">
                 Place Bid
               </Button>
             }

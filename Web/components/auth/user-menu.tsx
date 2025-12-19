@@ -59,7 +59,7 @@ export function UserMenu() {
                 <AuthDialog
                     defaultMode="register"
                     trigger={
-                        <Button size="sm" className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                        <Button size="sm" className="gap-2 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                             <FontAwesomeIcon icon={faUserPlus} className="h-4 w-4" />
                             Register
                         </Button>

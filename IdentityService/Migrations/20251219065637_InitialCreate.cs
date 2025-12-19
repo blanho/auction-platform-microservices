@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
 
 namespace IdentityService.Migrations
 {
@@ -29,6 +31,22 @@ namespace IdentityService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: true),
+                    Bio = table.Column<string>(type: "text", nullable: true),
+                    Location = table.Column<string>(type: "text", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsSuspended = table.Column<bool>(type: "boolean", nullable: false),
+                    SuspensionReason = table.Column<string>(type: "text", nullable: true),
+                    SuspendedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastLoginAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    EmailBidUpdates = table.Column<bool>(type: "boolean", nullable: false),
+                    EmailOutbid = table.Column<bool>(type: "boolean", nullable: false),
+                    EmailAuctionEnd = table.Column<bool>(type: "boolean", nullable: false),
+                    EmailNewsletter = table.Column<bool>(type: "boolean", nullable: false),
+                    PushNotifications = table.Column<bool>(type: "boolean", nullable: false),
+                    SmsNotifications = table.Column<bool>(type: "boolean", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

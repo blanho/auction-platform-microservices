@@ -54,12 +54,12 @@ function BidItem({ bid }: { bid: LiveBid }) {
         <div
             className={`shrink-0 flex items-center gap-3 px-4 py-2.5 rounded-full transition-all duration-300 ${
                 bid.isNew
-                    ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
+                    ? "bg-linear-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
                     : "bg-white/10 border border-white/10"
             }`}
         >
             {bid.isNew && <FontAwesomeIcon icon={faZap} className="w-4 h-4 text-green-400" />}
-            <span className="text-sm font-medium text-white truncate max-w-[160px]">
+            <span className="text-sm font-medium text-white truncate max-w-40">
                 {bid.item}
             </span>
             <Badge className={bid.isNew ? "bg-green-500 text-white border-0" : "bg-purple-500/80 text-white border-0"}>
@@ -143,8 +143,8 @@ export function LiveAuctionTicker() {
                 </div>
             </div>
 
-            <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
+            <div className="absolute left-0 top-0 bottom-0 w-24 bg-linear-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-24 bg-linear-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
         </section>
     );
 }

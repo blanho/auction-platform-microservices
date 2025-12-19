@@ -218,14 +218,14 @@ export function AuthDialog({
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button className="h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                    <Button className="h-12 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                         <FontAwesomeIcon icon={faRightToBracket} className="mr-2 w-4 h-4" />
                         Sign In
                     </Button>
                 )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-0 shadow-2xl bg-white dark:bg-slate-900">
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600" />
+                <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-purple-600 to-blue-600" />
                 
                 <AnimatePresence mode="wait">
                     {success ? (
@@ -236,7 +236,7 @@ export function AuthDialog({
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="p-8 text-center"
                         >
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-linear-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
                                 <FontAwesomeIcon icon={faCheckCircle} className="w-8 h-8 text-white" />
                             </div>
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -248,7 +248,7 @@ export function AuthDialog({
                             </p>
                             <Button
                                 onClick={() => switchMode("signin")}
-                                className="w-full h-11 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                                className="w-full h-11 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                             >
                                 <FontAwesomeIcon icon={faRightToBracket} className="mr-2 w-4 h-4" />
                                 Go to Sign In
@@ -265,7 +265,7 @@ export function AuthDialog({
                         >
                             <DialogHeader className="mb-6">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                                    <div className="w-10 h-10 rounded-xl bg-linear-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
                                         <FontAwesomeIcon 
                                             icon={mode === "signin" ? faRightToBracket : faUserPlus} 
                                             className="w-5 h-5 text-white" 
@@ -453,7 +453,7 @@ export function AuthDialog({
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full h-11 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-semibold"
+                                    className="w-full h-11 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-semibold"
                                 >
                                     {loading ? (
                                         <>

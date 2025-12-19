@@ -76,7 +76,7 @@ export function BuyNowButton({
                 <Button
                     className={cn(
                         "font-semibold",
-                        variant === 'primary' && "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white",
+                        variant === 'primary' && "w-full bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white",
                         variant === 'secondary' && "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200"
                     )}
                     size={variant === 'primary' ? 'lg' : 'default'}
@@ -107,7 +107,7 @@ export function BuyNowButton({
                     <AlertDialogAction
                         onClick={handleBuyNow}
                         disabled={isLoading}
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                        className="bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
                     >
                         {isLoading ? (
                             <>

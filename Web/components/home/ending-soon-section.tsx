@@ -138,7 +138,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
             <Link href={`/auctions/${auction.id}`} className="group block">
                 <div className="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-red-400/50 dark:hover:border-red-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/10 dark:hover:shadow-red-500/20 hover:-translate-y-2">
                     <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between">
-                        <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
+                        <Badge className="bg-linear-to-r from-red-500 to-orange-500 text-white px-3 py-1 text-xs border-0 shadow-lg">
                             <PulsingDot className="mr-1.5" />
                             Ending Soon
                         </Badge>
@@ -165,7 +165,7 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4">
                             <div className="flex items-center justify-between">
@@ -195,13 +195,13 @@ function EndingSoonCard({ auction, index }: AuctionCardProps) {
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">
                                     Current Bid
                                 </p>
-                                <p className="text-2xl font-bold bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                                <p className="text-2xl font-bold bg-linear-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
                                     ${currentBid.toLocaleString()}
                                 </p>
                             </div>
                             <Button
                                 size="sm"
-                                className="h-10 px-5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/25"
+                                className="h-10 px-5 bg-linear-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/25"
                             >
                                 Bid Now
                                 <FontAwesomeIcon icon={faArrowRight} className="ml-2 w-3 h-3" />
@@ -256,8 +256,8 @@ export function EndingSoonSection() {
     }
 
     return (
-        <section className="relative py-24 bg-gradient-to-b from-slate-50 via-red-50/30 to-slate-50 dark:from-slate-950 dark:via-red-950/10 dark:to-slate-950 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-200/20 via-transparent to-transparent dark:from-red-900/10" />
+        <section className="relative py-24 bg-linear-to-b from-slate-50 via-red-50/30 to-slate-50 dark:from-slate-950 dark:via-red-950/10 dark:to-slate-950 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-red-200/20 via-transparent to-transparent dark:from-red-900/10" />
             <div className="absolute top-20 right-1/4 w-72 h-72 bg-orange-400/10 dark:bg-orange-600/10 rounded-full blur-3xl" />
             <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-red-400/10 dark:bg-red-600/10 rounded-full blur-3xl" />
 
@@ -281,7 +281,7 @@ export function EndingSoonSection() {
 
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                             Ending
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
+                            <span className="block text-transparent bg-clip-text bg-linear-to-r from-red-500 via-orange-500 to-amber-500">
                                 Very Soon
                             </span>
                         </h2>
@@ -319,7 +319,7 @@ export function EndingSoonSection() {
                         </div>
 
                         <Button
-                            className="h-12 px-6 rounded-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-medium shadow-lg shadow-red-500/25"
+                            className="h-12 px-6 rounded-full bg-linear-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-medium shadow-lg shadow-red-500/25"
                             asChild
                         >
                             <Link href="/auctions?sort=ending-soon">

@@ -46,7 +46,7 @@ export function CountdownTimer({ endDate, isUrgent }: CountdownTimerProps) {
             <div className={`flex gap-2 font-mono ${urgentClass}`}>
                 {showDays && (
                     <div className="flex flex-col items-center">
-                        <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                        <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                             {timeLeft.days}
                         </span>
                         <span className="text-[10px] uppercase tracking-wider text-slate-500">Days</span>
@@ -56,14 +56,14 @@ export function CountdownTimer({ endDate, isUrgent }: CountdownTimerProps) {
                     <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
                 )}
                 <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                         {formatUnit(timeLeft.hours)}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Hours</span>
                 </div>
                 <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
                 <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
                         {formatUnit(timeLeft.minutes)}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-500">Mins</span>
@@ -74,7 +74,7 @@ export function CountdownTimer({ endDate, isUrgent }: CountdownTimerProps) {
                         className={`text-3xl font-bold ${
                             isUrgent
                                 ? "text-red-500"
-                                : "bg-gradient-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent"
+                                : "bg-linear-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent"
                         }`}
                     >
                         {formatUnit(timeLeft.seconds)}

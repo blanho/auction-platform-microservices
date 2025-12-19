@@ -95,7 +95,7 @@ export function BiddingPanel({
 
     return (
         <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl overflow-hidden">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-purple-600 to-blue-600" />
             <CardContent className="pt-8">
                 <div className="space-y-6">
                     <div>
@@ -103,7 +103,7 @@ export function BiddingPanel({
                             <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
                             Current Price
                         </p>
-                        <p className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
+                        <p className="text-4xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mt-1">
                             {formatCurrency(currentHighBid || 0)}
                         </p>
                     </div>
@@ -125,7 +125,7 @@ export function BiddingPanel({
 
                     {status === AuctionStatus.Live && !isOwner && (
                         <div className="space-y-4">
-                            <div className="rounded-xl bg-gradient-to-br from-purple-50/80 to-blue-50/80 dark:from-purple-950/20 dark:to-blue-950/20 p-4 border border-purple-200/50 dark:border-purple-800/30">
+                            <div className="rounded-xl bg-linear-to-br from-purple-50/80 to-blue-50/80 dark:from-purple-950/20 dark:to-blue-950/20 p-4 border border-purple-200/50 dark:border-purple-800/30">
                                 <p className="text-xs font-medium text-purple-700 dark:text-purple-400 uppercase tracking-wide mb-3">
                                     Place Your Bid
                                 </p>
@@ -201,7 +201,7 @@ export function BiddingPanel({
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
+                            className="rounded-xl bg-linear-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-5 border border-emerald-200/50 dark:border-emerald-800/50"
                         >
                             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                                 <FontAwesomeIcon icon={faTrophy} className="w-5 h-5 text-amber-500" />

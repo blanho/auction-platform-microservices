@@ -142,8 +142,8 @@ export function StatsCounterSection() {
     );
 
     return (
-        <section className="relative py-24 bg-gradient-to-b from-slate-100 via-purple-50/50 to-slate-100 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-900 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-300/20 via-transparent to-transparent dark:from-purple-900/20" />
+        <section className="relative py-24 bg-linear-to-b from-slate-100 via-purple-50/50 to-slate-100 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-900 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-purple-300/20 via-transparent to-transparent dark:from-purple-900/20" />
             <div className="absolute top-20 left-1/4 w-80 h-80 bg-purple-400/10 dark:bg-purple-600/10 rounded-full blur-3xl" />
             <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-pink-400/10 dark:bg-pink-600/10 rounded-full blur-3xl" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/5 dark:bg-blue-600/5 rounded-full blur-3xl" />
@@ -164,7 +164,7 @@ export function StatsCounterSection() {
 
                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                         Real-Time
-                        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
+                        <span className="block text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
                             Platform Activity
                         </span>
                     </h2>
@@ -197,12 +197,12 @@ export function StatsCounterSection() {
                                     className={`relative p-6 md:p-8 rounded-3xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${stat.shadowColor}`}
                                 >
                                     <div
-                                        className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                                        className={`absolute inset-0 rounded-3xl bg-linear-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                                     />
 
                                     <div className="relative z-10">
                                         <div
-                                            className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}
+                                            className={`w-14 h-14 rounded-2xl bg-linear-to-br ${stat.gradient} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}
                                         >
                                             <FontAwesomeIcon
                                                 icon={stat.icon}
@@ -211,7 +211,7 @@ export function StatsCounterSection() {
                                         </div>
 
                                         <div
-                                            className={`text-transparent bg-clip-text bg-gradient-to-r ${stat.gradient}`}
+                                            className={`text-transparent bg-clip-text bg-linear-to-r ${stat.gradient}`}
                                         >
                                             <AnimatedCounter
                                                 value={stat.value}

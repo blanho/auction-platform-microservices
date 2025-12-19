@@ -225,7 +225,7 @@ export function PlaceBidDialog({
         trigger={
           <Button 
             size="lg" 
-            className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="h-12 flex-shrink-0 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             onClick={handleAuthTriggerClick}
           >
             Sign in to place a bid
@@ -239,7 +239,7 @@ export function PlaceBidDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="lg" className="h-12 flex-shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+          <Button size="lg" className="h-12 flex-shrink-0 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
             <FontAwesomeIcon icon={faGavel} className="mr-2 h-4 w-4" />
             Place Bid
           </Button>
@@ -335,7 +335,7 @@ export function PlaceBidDialog({
                     </div>
                   )}
 
-                  <div className="rounded-xl border bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-4 space-y-3">
+                  <div className="rounded-xl border bg-linear-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Your Bid</span>
                       <span className="text-2xl font-bold">${watchedAmount.toLocaleString()}</span>
@@ -388,7 +388,7 @@ export function PlaceBidDialog({
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full sm:w-auto bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
                     {isSubmitting ? (
                       <>

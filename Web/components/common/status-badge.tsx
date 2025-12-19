@@ -35,7 +35,7 @@ function getStatusConfig(status: string): BadgeConfig {
         case "LIVE":
         case AuctionStatus.Live.toUpperCase():
             return {
-                bg: "bg-gradient-to-r from-green-500 to-emerald-500",
+                bg: "bg-linear-to-r from-green-500 to-emerald-500",
                 text: "Live",
                 icon: faBolt,
                 pulse: true,
@@ -52,7 +52,7 @@ function getStatusConfig(status: string): BadgeConfig {
         case "RESERVE_NOT_MET":
         case AuctionStatus.ReserveNotMet.toUpperCase():
             return {
-                bg: "bg-gradient-to-r from-amber-500 to-yellow-500",
+                bg: "bg-linear-to-r from-amber-500 to-yellow-500",
                 text: "Reserve Not Met",
                 icon: faTag,
                 pulse: false,
@@ -77,22 +77,22 @@ function getStatusConfig(status: string): BadgeConfig {
 
 const BADGE_CONFIGS: Record<Exclude<StatusBadgeType, "status">, BadgeConfig> = {
     featured: {
-        bg: "bg-gradient-to-r from-purple-500 to-pink-500",
+        bg: "bg-linear-to-r from-purple-500 to-pink-500",
         text: "Featured",
         icon: faStar,
     },
     hot: {
-        bg: "bg-gradient-to-r from-amber-500 to-orange-500",
+        bg: "bg-linear-to-r from-amber-500 to-orange-500",
         text: "Hot",
         icon: faFire,
     },
     new: {
-        bg: "bg-gradient-to-r from-emerald-500 to-teal-500",
+        bg: "bg-linear-to-r from-emerald-500 to-teal-500",
         text: "New",
         icon: faRocket,
     },
     "ending-soon": {
-        bg: "bg-gradient-to-r from-red-500 to-orange-500",
+        bg: "bg-linear-to-r from-red-500 to-orange-500",
         text: "Ending Soon",
         icon: null,
         pulse: true,

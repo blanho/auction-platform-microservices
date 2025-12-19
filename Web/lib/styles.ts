@@ -92,20 +92,20 @@ export function getBidStyle(userBid: number, highestBid: number, isUserBid: bool
 }
 
 export const gradients = {
-    primary: "bg-gradient-to-r from-purple-600 to-blue-600",
-    primaryHover: "bg-gradient-to-r from-purple-700 to-blue-700",
-    primarySubtle: "bg-gradient-to-r from-purple-600/10 to-blue-600/10",
-    gold: "bg-gradient-to-r from-amber-500 to-yellow-400",
-    success: "bg-gradient-to-r from-green-500 to-emerald-500",
-    danger: "bg-gradient-to-r from-red-500 to-rose-500",
-    dark: "bg-gradient-to-br from-slate-900 to-slate-950",
+    primary: "bg-linear-to-r from-purple-600 to-blue-600",
+    primaryHover: "bg-linear-to-r from-purple-700 to-blue-700",
+    primarySubtle: "bg-linear-to-r from-purple-600/10 to-blue-600/10",
+    gold: "bg-linear-to-r from-amber-500 to-yellow-400",
+    success: "bg-linear-to-r from-green-500 to-emerald-500",
+    danger: "bg-linear-to-r from-red-500 to-rose-500",
+    dark: "bg-linear-to-br from-slate-900 to-slate-950",
     mesh: "gradient-mesh",
 } as const;
 
 export const gradientText = {
-    primary: "bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent",
-    gold: "bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent",
-    success: "bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent",
+    primary: "bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent",
+    gold: "bg-linear-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent",
+    success: "bg-linear-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent",
 } as const;
 
 export const glass = {
@@ -137,7 +137,7 @@ export const shadows = {
 export const buttons = {
     primary: cn(
         "inline-flex items-center justify-center gap-2",
-        "bg-gradient-to-r from-purple-600 to-blue-600",
+        "bg-linear-to-r from-purple-600 to-blue-600",
         "hover:from-purple-700 hover:to-blue-700",
         "text-white font-medium",
         "shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40",
@@ -169,7 +169,7 @@ export const buttons = {
     ),
     danger: cn(
         "inline-flex items-center justify-center gap-2",
-        "bg-gradient-to-r from-red-500 to-rose-500",
+        "bg-linear-to-r from-red-500 to-rose-500",
         "hover:from-red-600 hover:to-rose-600",
         "text-white font-medium",
         "shadow-lg shadow-red-500/25 hover:shadow-red-500/40",
@@ -178,7 +178,7 @@ export const buttons = {
     ),
     success: cn(
         "inline-flex items-center justify-center gap-2",
-        "bg-gradient-to-r from-green-500 to-emerald-500",
+        "bg-linear-to-r from-green-500 to-emerald-500",
         "hover:from-green-600 hover:to-emerald-600",
         "text-white font-medium",
         "shadow-lg shadow-green-500/25 hover:shadow-green-500/40",
@@ -249,7 +249,7 @@ export const cards = {
         "shadow-md"
     ),
     gradient: cn(
-        "bg-gradient-to-br from-purple-600 to-blue-600",
+        "bg-linear-to-br from-purple-600 to-blue-600",
         "rounded-2xl",
         "text-white",
         "shadow-lg shadow-purple-500/25"
@@ -306,14 +306,14 @@ export const badges = {
         "inline-flex items-center gap-1.5",
         "px-2.5 py-0.5 rounded-full",
         "text-xs font-bold",
-        "bg-gradient-to-r from-purple-600 to-blue-600",
+        "bg-linear-to-r from-purple-600 to-blue-600",
         "text-white"
     ),
     hot: cn(
         "inline-flex items-center gap-1.5",
         "px-2.5 py-0.5 rounded-full",
         "text-xs font-bold",
-        "bg-gradient-to-r from-orange-500 to-red-500",
+        "bg-linear-to-r from-orange-500 to-red-500",
         "text-white"
     ),
 } as const;
@@ -431,8 +431,8 @@ export const skeleton = {
 } as const;
 
 export const dividers = {
-    horizontal: "h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent",
-    vertical: "w-px h-full bg-gradient-to-b from-transparent via-slate-300 dark:via-slate-700 to-transparent",
+    horizontal: "h-px bg-linear-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent",
+    vertical: "w-px h-full bg-linear-to-b from-transparent via-slate-300 dark:via-slate-700 to-transparent",
     solid: "h-px bg-slate-200 dark:bg-slate-800",
     dashed: "border-t border-dashed border-slate-200 dark:border-slate-800",
 } as const;
@@ -493,7 +493,7 @@ export const iconContainers = {
     gradient: cn(
         "w-10 h-10 rounded-xl",
         "flex items-center justify-center",
-        "bg-gradient-to-br from-purple-600 to-blue-600",
+        "bg-linear-to-br from-purple-600 to-blue-600",
         "text-white",
         "shadow-lg shadow-purple-500/25"
     ),

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -46,7 +46,7 @@ namespace NotificationService.Infrastructure.Migrations
                     Message = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     Data = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     AuctionId = table.Column<Guid>(type: "uuid", nullable: true),
                     BidId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

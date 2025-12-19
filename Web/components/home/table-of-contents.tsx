@@ -156,7 +156,7 @@ export function TableOfContents() {
           <div className="backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-l border-y border-slate-200/50 dark:border-slate-700/50 rounded-l-xl py-2 px-1.5 shadow-lg">
             <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <motion.div
-                className="w-full bg-gradient-to-b from-purple-500 to-blue-500 rounded-full origin-top"
+                className="w-full bg-linear-to-b from-purple-500 to-blue-500 rounded-full origin-top"
                 style={{ height: `${progress}%` }}
               />
             </div>
@@ -171,9 +171,9 @@ export function TableOfContents() {
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "block w-7 h-7 rounded-lg flex items-center justify-center transition-all",
+                      "w-7 h-7 rounded-lg flex items-center justify-center transition-all",
                       isActive
-                        ? "bg-gradient-to-br from-purple-500 to-blue-600 text-white shadow-md shadow-purple-500/30"
+                        ? "bg-linear-to-br from-purple-500 to-blue-600 text-white shadow-md shadow-purple-500/30"
                         : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                     )}
                     title={item.label}
@@ -188,7 +188,7 @@ export function TableOfContents() {
                   onClick={scrollToTop}
                   whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.95 }}
-                  className="block w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                   title="Back to top"
                 >
                   <FontAwesomeIcon icon={faChevronUp} className="w-3 h-3" />
@@ -220,7 +220,7 @@ export function TableOfContents() {
                       className={cn(
                         "flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-medium transition-all",
                         isActive
-                          ? "bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-purple-700 dark:text-purple-300"
+                          ? "bg-linear-to-br from-purple-500/20 to-blue-500/20 text-purple-700 dark:text-purple-300"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                       )}
                     >
@@ -228,7 +228,7 @@ export function TableOfContents() {
                         className={cn(
                           "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
                           isActive
-                            ? "bg-gradient-to-br from-purple-500 to-blue-600 text-white"
+                            ? "bg-linear-to-br from-purple-500 to-blue-600 text-white"
                             : "bg-slate-100 dark:bg-slate-800"
                         )}
                       >
@@ -264,7 +264,7 @@ export function TableOfContents() {
             className={cn(
               "w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all",
               isOpen
-                ? "bg-gradient-to-br from-purple-500 to-blue-600 text-white"
+                ? "bg-linear-to-br from-purple-500 to-blue-600 text-white"
                 : "backdrop-blur-md bg-white/90 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400"
             )}
           >
@@ -278,7 +278,7 @@ export function TableOfContents() {
 
       <div className="fixed bottom-0 left-0 right-0 h-0.5 bg-slate-200/30 dark:bg-slate-800/30 z-40 lg:hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+          className="h-full bg-linear-to-r from-purple-500 to-blue-500"
           style={{ width: `${progress}%` }}
         />
       </div>

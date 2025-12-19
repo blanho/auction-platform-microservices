@@ -90,12 +90,12 @@ function CategoryCard({ category, index, isActive, onHover }: CategoryCardProps)
                         unoptimized
                     />
                     
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/10" />
                     
-                    <div className={`absolute inset-0 bg-gradient-to-br ${gradient.from} ${gradient.to} opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
+                    <div className={`absolute inset-0 bg-linear-to-br ${gradient.from} ${gradient.to} opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
 
                     <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient.from} ${gradient.to} flex items-center justify-center shadow-lg ${gradient.glow}`}>
+                        <div className={`w-12 h-12 rounded-2xl bg-linear-to-br ${gradient.from} ${gradient.to} flex items-center justify-center shadow-lg ${gradient.glow}`}>
                             <FontAwesomeIcon icon={icon} className="w-5 h-5 text-white" />
                         </div>
                         {(category.auctionCount || 0) > 50 && (
@@ -114,7 +114,7 @@ function CategoryCard({ category, index, isActive, onHover }: CategoryCardProps)
                             </span>
                         </div>
                         
-                        <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-all">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-white group-hover:to-slate-300 transition-all">
                             {category.name}
                         </h3>
                         
@@ -163,7 +163,7 @@ export function CategoriesSection() {
 
     return (
         <section className="relative py-24 bg-slate-50 dark:bg-slate-950 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-200/30 via-slate-50 to-slate-50 dark:from-purple-900/20 dark:via-slate-950 dark:to-slate-950" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-purple-200/30 via-slate-50 to-slate-50 dark:from-purple-900/20 dark:via-slate-950 dark:to-slate-950" />
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-400/10 dark:bg-purple-600/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl" />
 
@@ -182,7 +182,7 @@ export function CategoriesSection() {
                         
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                             Find Your
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 dark:from-purple-400 dark:via-pink-400 dark:to-orange-400">
+                            <span className="block text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 dark:from-purple-400 dark:via-pink-400 dark:to-orange-400">
                                 Perfect Category
                             </span>
                         </h2>
@@ -259,7 +259,7 @@ export function CategoriesSection() {
                                 <Link href="/categories" className="group block">
                                     <div className="relative h-72 sm:h-80 rounded-3xl overflow-hidden border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-purple-500/50 transition-all duration-500 bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10">
                                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
+                                            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
                                                 <FontAwesomeIcon icon={faArrowRight} className="w-6 h-6 text-white" />
                                             </div>
                                             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">

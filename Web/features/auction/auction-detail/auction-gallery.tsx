@@ -74,14 +74,14 @@ export function AuctionGallery({ images, title, status, isUrgent }: AuctionGalle
                     />
 
                     <div
-                        className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}
+                        className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-linear-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}
                     >
                         {statusConfig.pulse && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
                         {status}
                     </div>
 
                     {status === AuctionStatus.Live && isUrgent && (
-                        <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+                        <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-linear-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
                             <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
                             Ending Soon
                         </div>

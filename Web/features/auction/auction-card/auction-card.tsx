@@ -183,7 +183,7 @@ function CarouselCard({
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                             <CountdownBadge
@@ -221,7 +221,7 @@ function CarouselCard({
                                 amount={currentBid}
                                 label="Current Bid"
                                 variant="gradient"
-                                gradientColors={cn("bg-gradient-to-r", colors.gradient)}
+                                gradientColors={cn("bg-linear-to-r", colors.gradient)}
                             />
                             <Button
                                 size="sm"
@@ -300,7 +300,7 @@ function FeaturedCard({
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             unoptimized={imageUrl.includes("unsplash")}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                             <CountdownBadge
@@ -329,7 +329,7 @@ function FeaturedCard({
                                 amount={currentBid}
                                 label="Current Bid"
                                 variant="gradient"
-                                gradientColors="bg-gradient-to-r from-purple-600 to-pink-600"
+                                gradientColors="bg-linear-to-r from-purple-600 to-pink-600"
                             />
                             <Button
                                 size="sm"
@@ -405,7 +405,7 @@ function DefaultCard({
                         </div>
                     )}
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     <div className="absolute top-3 left-3 flex flex-wrap gap-2">
                         <StatusBadge type="status" status={status} />
@@ -490,7 +490,7 @@ function DefaultCard({
                     </div>
                 </div>
 
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-purple-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-linear-to-r from-purple-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
             </motion.div>
         </Link>
     );

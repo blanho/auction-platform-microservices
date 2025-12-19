@@ -23,10 +23,10 @@ const aspectClasses = {
 };
 
 const overlayClasses = {
-    t: "bg-gradient-to-t from-black/80 via-black/20 to-transparent",
-    b: "bg-gradient-to-b from-black/80 via-black/20 to-transparent",
-    r: "bg-gradient-to-r from-black/80 via-black/20 to-transparent",
-    l: "bg-gradient-to-l from-black/80 via-black/20 to-transparent",
+    t: "bg-linear-to-t from-black/80 via-black/20 to-transparent",
+    b: "bg-linear-to-b from-black/80 via-black/20 to-transparent",
+    r: "bg-linear-to-r from-black/80 via-black/20 to-transparent",
+    l: "bg-linear-to-l from-black/80 via-black/20 to-transparent",
 };
 
 export function CardImageContainer({

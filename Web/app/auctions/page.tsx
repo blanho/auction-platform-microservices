@@ -27,7 +27,7 @@ function AuctionsContent() {
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div className="space-y-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
                                     <FontAwesomeIcon icon={faGavel} className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
@@ -41,7 +41,7 @@ function AuctionsContent() {
                             </div>
                         </div>
 
-                        <Button asChild className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg shadow-purple-500/25 h-11 px-6">
+                        <Button asChild className="gap-2 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg shadow-purple-500/25 h-11 px-6">
                             <Link href="/auctions/create">
                                 <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
                                 Create Auction
@@ -61,7 +61,7 @@ function AuctionsLoading() {
         <MainLayout>
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <div className="relative">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin" style={{ animationDuration: '1.5s' }}>
+                    <div className="w-16 h-16 rounded-full bg-linear-to-r from-purple-500 to-blue-500 animate-spin" style={{ animationDuration: '1.5s' }}>
                         <div className="absolute inset-1 bg-white dark:bg-slate-950 rounded-full" />
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">

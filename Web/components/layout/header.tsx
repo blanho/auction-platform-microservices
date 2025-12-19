@@ -42,7 +42,7 @@ const navLinks = [
         href: "/deals", 
         icon: faFire, 
         badge: "Hot", 
-        badgeColor: "bg-gradient-to-r from-orange-500 to-red-500",
+        badgeColor: "bg-linear-to-r from-orange-500 to-red-500",
     },
     { 
         name: "Live Auctions", 
@@ -56,14 +56,14 @@ const navLinks = [
         href: "/premium", 
         icon: faCrown, 
         badge: "VIP", 
-        badgeColor: "bg-gradient-to-r from-amber-500 to-yellow-500",
+        badgeColor: "bg-linear-to-r from-amber-500 to-yellow-500",
     },
     { 
         name: "New Arrivals", 
         href: "/new", 
         icon: faRocket, 
         badge: "New", 
-        badgeColor: "bg-gradient-to-r from-purple-500 to-pink-500",
+        badgeColor: "bg-linear-to-r from-purple-500 to-pink-500",
     },
 ];
 
@@ -205,8 +205,8 @@ export function Header() {
                                 whileTap={{ scale: 0.95 }}
                                 className="relative w-12 h-12"
                             >
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 shadow-xl shadow-purple-500/30 dark:shadow-purple-500/20" />
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-purple-600 via-purple-500 to-blue-600 shadow-xl shadow-purple-500/30 dark:shadow-purple-500/20" />
+                                <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-purple-500 via-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <FontAwesomeIcon icon={faGavel} className="h-6 w-6 text-white drop-shadow-lg" />
                                 </div>
@@ -298,7 +298,7 @@ export function Header() {
                                                     <FontAwesomeIcon icon={faArrowTrendUp} className="w-4 h-4 text-purple-500" />
                                                     Trending Searches
                                                 </div>
-                                                <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700" />
+                                                <div className="flex-1 h-px bg-linear-to-r from-slate-200 to-transparent dark:from-slate-700" />
                                             </div>
                                             <div className="grid grid-cols-2 gap-2 mb-6">
                                                 {trendingSearches.map((item) => (
@@ -309,7 +309,7 @@ export function Header() {
                                                         onClick={() => setSearchQuery(item.term)}
                                                         className="flex items-center gap-3 p-3 text-left bg-slate-50 dark:bg-slate-800/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all group border border-transparent hover:border-purple-200 dark:hover:border-purple-800"
                                                     >
-                                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                        <div className="w-10 h-10 rounded-lg bg-linear-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                                                             <i className={`fa-solid ${item.icon} text-purple-600 dark:text-purple-400`}></i>
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -347,7 +347,7 @@ export function Header() {
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ delay: index * 0.05 }}
-                                                        className="text-center p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700"
+                                                        className="text-center p-4 rounded-xl bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700"
                                                     >
                                                         <FontAwesomeIcon icon={stat.icon} className={cn("w-5 h-5 mx-auto mb-2", stat.color)} />
                                                         <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -395,7 +395,7 @@ export function Header() {
                                 </Button>
                             </motion.div>
 
-                            <div className="hidden sm:block h-8 w-px bg-gradient-to-b from-transparent via-slate-300 dark:via-slate-600 to-transparent mx-2" />
+                            <div className="hidden sm:block h-8 w-px bg-linear-to-b from-transparent via-slate-300 dark:via-slate-600 to-transparent mx-2" />
 
                             <UserMenu />
 
@@ -407,7 +407,7 @@ export function Header() {
                                 </SheetTrigger>
                                 <SheetContent side="left" className="w-80 p-0">
                                     <div className="flex flex-col h-full">
-                                        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-purple-600 to-blue-600">
+                                        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-linear-to-r from-purple-600 to-blue-600">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">

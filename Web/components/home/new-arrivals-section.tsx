@@ -39,8 +39,8 @@ export function NewArrivalsSection() {
     }
 
     return (
-        <section className="relative py-24 bg-gradient-to-b from-slate-50 via-emerald-50/30 to-slate-50 dark:from-slate-950 dark:via-emerald-950/10 dark:to-slate-950 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-200/20 via-transparent to-transparent dark:from-emerald-900/10" />
+        <section className="relative py-24 bg-linear-to-b from-slate-50 via-emerald-50/30 to-slate-50 dark:from-slate-950 dark:via-emerald-950/10 dark:to-slate-950 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-emerald-200/20 via-transparent to-transparent dark:from-emerald-900/10" />
             <div className="absolute top-40 right-1/4 w-80 h-80 bg-teal-400/10 dark:bg-teal-600/10 rounded-full blur-3xl" />
             <div className="absolute bottom-40 left-1/4 w-80 h-80 bg-emerald-400/10 dark:bg-emerald-600/10 rounded-full blur-3xl" />
 
@@ -64,7 +64,7 @@ export function NewArrivalsSection() {
 
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                             New
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 dark:from-emerald-400 dark:via-teal-400 dark:to-emerald-400">
+                            <span className="block text-transparent bg-clip-text bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-600 dark:from-emerald-400 dark:via-teal-400 dark:to-emerald-400">
                                 Arrivals
                             </span>
                         </h2>
@@ -102,7 +102,7 @@ export function NewArrivalsSection() {
                         </div>
 
                         <Button
-                            className="h-12 px-6 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium shadow-lg shadow-emerald-500/25"
+                            className="h-12 px-6 rounded-full bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium shadow-lg shadow-emerald-500/25"
                             asChild
                         >
                             <Link href="/auctions?sort=newest">

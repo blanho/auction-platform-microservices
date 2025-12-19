@@ -14,6 +14,9 @@ import {
   StatsCounterSection,
   TrendingSearchesSection,
   FooterSection,
+  ValuePropsBanner,
+  CategoriesSection,
+  CTASection,
 } from "@/components/home";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -26,20 +29,29 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 bg-slate-50 dark:bg-slate-950">
         <HeroSectionNew />
+        <ValuePropsBanner />
         <QuickAccessBar />
         <LiveAuctionTicker />
-        <section id="top-deals">
+        
+        <section id="top-deals" className="py-8 md:py-12">
           <TopDealsCarousel />
         </section>
-        <section id="featured">
+
+        <section id="categories" className="py-8 md:py-12 bg-white dark:bg-slate-900">
+          <CategoriesSection />
+        </section>
+
+        <section id="featured" className="py-8 md:py-12">
           <FeaturedAuctionsSection />
         </section>
-        <section id="ending-soon">
+
+        <section id="ending-soon" className="py-8 md:py-12 bg-white dark:bg-slate-900">
           <EndingSoonSection />
         </section>
-        <section id="new-arrivals">
+
+        <section id="new-arrivals" className="py-8 md:py-12">
           <NewArrivalsSection />
         </section>
 
@@ -48,12 +60,13 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0, height: 0 }}
-              className="py-12 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950"
+              className="py-16 bg-linear-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
             >
               <div className="container mx-auto px-4">
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    Discover more features
+                <div className="flex flex-col items-center gap-6">
+                  <div className="w-16 h-1 bg-linear-to-r from-purple-500 to-pink-500 rounded-full opacity-50"></div>
+                  <p className="text-slate-500 dark:text-slate-400 text-base font-medium">
+                    Discover more features & insights
                   </p>
                   <Button
                     onClick={() => setShowMoreSections(true)}
@@ -84,18 +97,20 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <section id="brands">
+              <section id="brands" className="py-8 md:py-12 bg-white dark:bg-slate-900">
                 <BrandSliderSection />
               </section>
-              <section id="stats">
+              <section id="stats" className="py-8 md:py-12">
                 <StatsCounterSection />
               </section>
-              <section id="trending">
+              <section id="trending" className="py-8 md:py-12 bg-white dark:bg-slate-900">
                 <TrendingSearchesSection />
               </section>
             </motion.div>
           )}
         </AnimatePresence>
+
+        <CTASection />
       </main>
       <FooterSection />
     </div>

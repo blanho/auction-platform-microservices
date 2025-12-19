@@ -97,7 +97,7 @@ export function TrendingSearchesSection() {
   const hasData = trendingSearches && trendingSearches.length > 0;
 
   return (
-    <AnimatedSection className="py-20 md:py-28 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden relative">
+    <AnimatedSection className="py-20 md:py-28 bg-linear-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.08),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.08),transparent_50%)]" />
 
@@ -108,7 +108,7 @@ export function TrendingSearchesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 border border-orange-200/50 dark:border-orange-500/30 mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r from-orange-500/10 to-red-500/10 dark:from-orange-500/20 dark:to-red-500/20 border border-orange-200/50 dark:border-orange-500/30 mb-6"
           >
             <FontAwesomeIcon
               icon={faFire}
@@ -127,7 +127,7 @@ export function TrendingSearchesSection() {
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4"
           >
             Discover What&apos;s{" "}
-            <span className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent">
               Trending
             </span>
           </motion.h2>
@@ -177,11 +177,11 @@ export function TrendingSearchesSection() {
                       transition-all duration-300
                       ${
                         search.hot
-                          ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25 dark:shadow-orange-500/20"
+                          ? "bg-linear-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25 dark:shadow-orange-500/20"
                           : search.trending
-                            ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25 dark:shadow-purple-500/20"
+                            ? "bg-linear-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25 dark:shadow-purple-500/20"
                             : search.isNew
-                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 dark:shadow-emerald-500/20"
+                              ? "bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 dark:shadow-emerald-500/20"
                               : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-slate-700/80 shadow-sm"
                       }
                     `}
@@ -244,15 +244,15 @@ export function TrendingSearchesSection() {
         >
           <div className="inline-flex flex-wrap items-center justify-center gap-4 md:gap-8 text-sm text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500" />
+              <span className="w-3 h-3 rounded-full bg-linear-to-r from-orange-500 to-red-500" />
               <span>Hot</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-500" />
+              <span className="w-3 h-3 rounded-full bg-linear-to-r from-purple-500 to-blue-500" />
               <span>Trending</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+              <span className="w-3 h-3 rounded-full bg-linear-to-r from-emerald-500 to-teal-500" />
               <span>New</span>
             </div>
           </div>

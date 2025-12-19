@@ -50,7 +50,7 @@ export function CollapsibleSection({
             style={{ maxHeight: previewHeight }}
           >
             {children}
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-slate-950 dark:via-slate-950/90" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-white via-white/90 to-transparent dark:from-slate-950 dark:via-slate-950/90" />
           </motion.div>
         )}
       </AnimatePresence>
