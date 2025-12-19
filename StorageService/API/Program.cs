@@ -7,6 +7,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.CQRS.Extensions;
 using Common.Messaging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +20,8 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddDomainEvents(typeof(StorageService.Infrastructure.Repositories.UnitOfWork).Assembly);
 
 builder.Services.AddMassTransitWithRabbitMq(builder.Configuration, x =>
 {

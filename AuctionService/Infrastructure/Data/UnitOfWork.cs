@@ -1,19 +1,13 @@
 using AuctionService.Application.Interfaces;
-using AuctionService.Infrastructure.Data;
+using Common.Repository.Implementations;
+using MediatR;
 
 namespace AuctionService.Infrastructure.Data;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : BaseUnitOfWork<AuctionDbContext>, IUnitOfWork
 {
-    private readonly AuctionDbContext _context;
-
-    public UnitOfWork(AuctionDbContext context)
+    public UnitOfWork(AuctionDbContext context, IMediator mediator)
+        : base(context, mediator)
     {
-        _context = context;
-    }
-
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.SaveChangesAsync(cancellationToken);
     }
 }

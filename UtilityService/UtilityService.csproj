@@ -36,6 +36,7 @@
     <ProjectReference Include="..\Common\Common.Audit\Common.Audit.csproj" />
     <ProjectReference Include="..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\Common\Common.Messaging\Common.Messaging.csproj" />
+    <ProjectReference Include="..\Common\Common.Resilience\Common.Resilience.csproj" />
     <ProjectReference Include="..\Common\Common.Scheduling\Common.Scheduling.csproj" />
   </ItemGroup>
 

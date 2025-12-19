@@ -1,5 +1,7 @@
 using Common.Messaging.Abstractions;
 using Common.Messaging.Implementations;
+using Common.Resilience;
+using Common.Resilience.Extensions;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -33,23 +35,26 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 builder.Services.AddDbContext<UtilityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddResiliencePolicies(builder.Configuration);
+var resilienceOptions = builder.Configuration.GetSection(ResilienceOptions.SectionName).Get<ResilienceOptions>() ?? new ResilienceOptions();
+
 var auctionServiceGrpcUrl = builder.Configuration["GrpcServices:AuctionService"] ?? "http://localhost:7002";
 builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
 {
     options.Address = new Uri(auctionServiceGrpcUrl);
-});
+}).AddResiliencePolicies(resilienceOptions);
 
 var bidServiceGrpcUrl = builder.Configuration["GrpcServices:BidService"] ?? "http://localhost:7004";
 builder.Services.AddGrpcClient<BidStatsGrpc.BidStatsGrpcClient>(options =>
 {
     options.Address = new Uri(bidServiceGrpcUrl);
-});
+}).AddResiliencePolicies(resilienceOptions);
 
 var paymentServiceGrpcUrl = builder.Configuration["GrpcServices:PaymentService"] ?? "http://localhost:7008";
 builder.Services.AddGrpcClient<PaymentAnalyticsGrpc.PaymentAnalyticsGrpcClient>(options =>
 {
     options.Address = new Uri(paymentServiceGrpcUrl);
-});
+}).AddResiliencePolicies(resilienceOptions);
 
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();

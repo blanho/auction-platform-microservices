@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Domain\StorageService.Domain.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
   </ItemGroup>
 
 </Project>

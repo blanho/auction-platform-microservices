@@ -38,7 +38,7 @@ namespace BidService.API.Services
                 Id = bid.Id.ToString(),
                 AuctionId = bid.AuctionId.ToString(),
                 Bidder = bid.BidderUsername,
-                Amount = (int)bid.Amount,
+                Amount = (double)bid.Amount,
                 BidTime = bid.BidTime.ToString("O"),
                 Status = bid.Status.ToString()
             };
@@ -67,7 +67,7 @@ namespace BidService.API.Services
                     Id = bid.Id.ToString(),
                     AuctionId = bid.AuctionId.ToString(),
                     Bidder = bid.BidderUsername,
-                    Amount = (int)bid.Amount,
+                    Amount = (double)bid.Amount,
                     BidTime = bid.BidTime.ToString("O"),
                     Status = bid.Status.ToString()
                 });
@@ -101,7 +101,7 @@ namespace BidService.API.Services
                     Id = userBid.Id.ToString(),
                     AuctionId = userBid.AuctionId.ToString(),
                     Bidder = userBid.BidderUsername,
-                    Amount = (int)userBid.Amount,
+                    Amount = (double)userBid.Amount,
                     BidTime = userBid.BidTime.ToString("O"),
                     Status = userBid.Status.ToString()
                 };

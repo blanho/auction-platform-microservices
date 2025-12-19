@@ -15,41 +15,41 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'auction-service'
+  - job_name: 'auction-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['auction-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'auction-service'
+        replacement: 'auction-api'
 
-  - job_name: 'bid-service'
+  - job_name: 'bid-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['bid-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'bid-service'
+        replacement: 'bid-api'
 
-  - job_name: 'payment-service'
+  - job_name: 'payment-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['payment-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'payment-service'
+        replacement: 'payment-api'
 
-  - job_name: 'notification-service'
+  - job_name: 'notification-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['notification-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'notification-service'
+        replacement: 'notification-api'
 
   - job_name: 'identity-service'
     metrics_path: '/metrics'
@@ -60,29 +60,29 @@ scrape_configs:
         target_label: service
         replacement: 'identity-service'
 
-  - job_name: 'utility-service'
+  - job_name: 'utility-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['utility-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'utility-service'
+        replacement: 'utility-api'
 
-  - job_name: 'gateway-service'
+  - job_name: 'gateway'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['gateway:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'gateway-service'
+        replacement: 'gateway'
 
-  - job_name: 'storage-service'
+  - job_name: 'storage-api'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['storage-api:8080']
     relabel_configs:
       - source_labels: [__address__]
         target_label: service
-        replacement: 'storage-service'
+        replacement: 'storage-api'

@@ -8,6 +8,7 @@ using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.CQRS.Extensions;
 using Common.Observability;
 using Common.Audit.Extensions;
 using Common.Utilities;
@@ -42,6 +43,8 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+
+builder.Services.AddDomainEvents(typeof(PaymentService.Infrastructure.Data.UnitOfWork).Assembly);
 
 builder.Services.AddAuditServices(builder.Configuration);
 

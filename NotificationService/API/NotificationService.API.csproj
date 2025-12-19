@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Application\NotificationService.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\NotificationService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\Common\Common.OpenApi\Common.OpenApi.csproj" />
   </ItemGroup>

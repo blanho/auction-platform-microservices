@@ -1,20 +1,13 @@
+using Common.Repository.Implementations;
+using MediatR;
 using NotificationService.Application.Interfaces;
-using NotificationService.Infrastructure.Data;
 
-namespace NotificationService.Infrastructure.Data
+namespace NotificationService.Infrastructure.Data;
+
+public class UnitOfWork : BaseUnitOfWork<NotificationDbContext>, IUnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    public UnitOfWork(NotificationDbContext context, IMediator mediator)
+        : base(context, mediator)
     {
-        private readonly NotificationDbContext _context;
-
-        public UnitOfWork(NotificationDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.SaveChangesAsync(cancellationToken);
-        }
     }
 }

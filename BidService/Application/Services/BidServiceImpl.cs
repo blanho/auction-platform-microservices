@@ -4,6 +4,7 @@ using BidService.Application.Interfaces;
 using BidService.Domain.Entities;
 using BidService.Domain.ValueObjects;
 using Common.Core.Interfaces;
+using Common.Domain.Enums;
 using Common.Locking.Abstractions;
 using Common.Messaging.Abstractions;
 using Common.Messaging.Events;
@@ -112,28 +113,23 @@ namespace BidService.Application.Services
                 };
             }
 
-            var bid = _mapper.Map<Bid>(dto);
-            bid.BidderId = bidderId;
-            bid.BidderUsername = bidderUsername;
-            bid.BidTime = _dateTime.UtcNow;
+            var bid = Bid.Create(
+                dto.AuctionId,
+                bidderId,
+                bidderUsername,
+                dto.Amount,
+                _dateTime.UtcNow);
 
-            if (highestBid == null)
+            if (highestBid == null || dto.Amount > highestBid.Amount)
             {
-                bid.Status = BidStatus.Accepted;
-            }
-            else if (dto.Amount > highestBid.Amount)
-            {
-                bid.Status = BidStatus.Accepted;
+                bid.Accept(highestBid?.Amount);
             }
             else
             {
-                bid.Status = BidStatus.TooLow;
+                bid.MarkAsTooLow();
             }
 
             var createdBid = await _repository.CreateAsync(bid, cancellationToken);
-
-            var bidPlacedEvent = _mapper.Map<BidPlacedEvent>(createdBid);
-            await _eventPublisher.PublishAsync(bidPlacedEvent, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

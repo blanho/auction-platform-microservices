@@ -4,6 +4,7 @@
     <ProjectReference Include="..\Domain\BidService.Domain.csproj" />
     <ProjectReference Include="..\Application\BidService.Application.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Repository\Common.Repository.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,6 +9,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.CQRS.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,8 @@ builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+
+builder.Services.AddDomainEvents(typeof(NotificationService.Infrastructure.Data.UnitOfWork).Assembly);
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();

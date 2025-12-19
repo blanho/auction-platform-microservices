@@ -38,6 +38,8 @@
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Locking\Common.Locking.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Resilience\Common.Resilience.csproj" />
+    <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
   </ItemGroup>
 
 </Project>

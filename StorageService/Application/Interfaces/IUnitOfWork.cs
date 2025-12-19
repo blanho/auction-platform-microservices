@@ -1,7 +1,8 @@
+using Common.Repository.Interfaces;
+
 namespace StorageService.Application.Interfaces;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IBaseUnitOfWork
 {
     IStoredFileRepository StoredFiles { get; }
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -8,8 +8,6 @@ using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
 using Common.Domain.Enums;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.CreateAuction;
@@ -20,7 +18,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly IMapper _mapper;
     private readonly IAppLogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
-    private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
     private readonly IFileConfirmationService _fileConfirmationService;
@@ -30,7 +27,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         IMapper mapper,
         IAppLogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IEventPublisher eventPublisher,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher,
         IFileConfirmationService fileConfirmationService)
@@ -39,7 +35,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
-        _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
         _auditPublisher = auditPublisher;
         _fileConfirmationService = fileConfirmationService;
@@ -52,6 +47,8 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         try
         {
             var auction = CreateAuctionEntity(request);
+            
+            auction.RaiseCreatedEvent();
 
             var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
@@ -71,9 +68,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
                 _logger.LogInformation("Confirmed {FileCount} files for auction {AuctionId}", 
                     fileIds.Count, createdAuction.Id);
             }
-
-            var auctionCreatedEvent = _mapper.Map<AuctionCreatedEvent>(createdAuction);
-            await _eventPublisher.PublishAsync(auctionCreatedEvent, cancellationToken);
 
             await _auditPublisher.PublishAsync(
                 createdAuction.Id,

@@ -5,8 +5,6 @@ using Common.Audit.Enums;
 using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.DeleteAuction;
@@ -16,7 +14,6 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
     private readonly IAuctionRepository _repository;
     private readonly IAppLogger<DeleteAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
-    private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
@@ -24,14 +21,12 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
         IAuctionRepository repository,
         IAppLogger<DeleteAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IEventPublisher eventPublisher,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
-        _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
         _auditPublisher = auditPublisher;
     }
@@ -42,26 +37,18 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
 
         try
         {
-            var exists = await _repository.ExistsAsync(request.Id, cancellationToken);
+            var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
-            if (!exists)
+            if (auction == null)
             {
                 _logger.LogWarning("Auction {AuctionId} not found for deletion", request.Id);
                 return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
             }
 
-            var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            auction.RaiseDeletedEvent();
 
             await _repository.DeleteAsync(request.Id, cancellationToken);
 
-            // Publish event
-            await _eventPublisher.PublishAsync(new AuctionDeletedEvent
-            {
-                Id = request.Id,
-                Seller = auction!.SellerUsername
-            }, cancellationToken);
-
-            // Publish audit event
             await _auditPublisher.PublishAsync(
                 auction.Id,
                 auction,

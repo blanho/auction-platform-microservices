@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Application\StorageService.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\StorageService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
+    <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging\Common.Messaging.csproj" />
     <ProjectReference Include="..\..\Common\Common.OpenApi\Common.OpenApi.csproj" />

@@ -29,7 +29,7 @@ message BidResponse {
   string id = 1;
   string auction_id = 2;
   string bidder = 3;
-  int32 amount = 4;
+  double amount = 4;
   string bid_time = 5;
   string status = 6;
 }

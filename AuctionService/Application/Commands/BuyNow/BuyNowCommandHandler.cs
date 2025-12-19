@@ -7,8 +7,6 @@ using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
 using Common.Domain.Enums;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.BuyNow;
@@ -19,7 +17,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     private readonly IMapper _mapper;
     private readonly IAppLogger<BuyNowCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
-    private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
@@ -28,7 +25,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         IMapper mapper,
         IAppLogger<BuyNowCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IEventPublisher eventPublisher,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
     {
@@ -36,7 +32,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
-        _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
         _auditPublisher = auditPublisher;
     }
@@ -74,35 +69,9 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                     Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active"));
             }
 
-            auction.WinnerId = request.BuyerId;
-            auction.WinnerUsername = request.BuyerUsername;
-            auction.SoldAmount = auction.BuyNowPrice;
-            auction.Status = Status.Finished;
+            auction.ExecuteBuyNow(request.BuyerId, request.BuyerUsername);
 
             await _repository.UpdateAsync(auction, cancellationToken);
-
-            var buyNowEvent = new BuyNowExecutedEvent
-            {
-                AuctionId = auction.Id,
-                Buyer = request.BuyerUsername,
-                Seller = auction.SellerUsername,
-                BuyNowPrice = auction.BuyNowPrice!.Value,
-                ItemTitle = auction.Item.Title,
-                ExecutedAt = DateTimeOffset.UtcNow
-            };
-            await _eventPublisher.PublishAsync(buyNowEvent, cancellationToken);
-
-            var auctionFinishedEvent = new AuctionFinishedEvent
-            {
-                ItemSold = true,
-                AuctionId = auction.Id,
-                WinnerId = request.BuyerId,
-                WinnerUsername = request.BuyerUsername,
-                SellerId = auction.SellerId,
-                SellerUsername = auction.SellerUsername,
-                SoldAmount = auction.BuyNowPrice
-            };
-            await _eventPublisher.PublishAsync(auctionFinishedEvent, cancellationToken);
 
             await _auditPublisher.PublishAsync(
                 auction.Id,

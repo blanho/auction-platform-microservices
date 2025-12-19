@@ -1,4 +1,5 @@
 using Common.Domain.Entities;
+using PaymentService.Domain.Events;
 
 namespace PaymentService.Domain.Entities;
 
@@ -25,6 +26,90 @@ public class Order : BaseEntity
     public DateTimeOffset? DeliveredAt { get; set; }
     public string? BuyerNotes { get; set; }
     public string? SellerNotes { get; set; }
+
+    public void RaiseCreatedEvent()
+    {
+        AddDomainEvent(new OrderCreatedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername,
+            ItemTitle = ItemTitle,
+            TotalAmount = TotalAmount
+        });
+    }
+
+    public void ChangeStatus(OrderStatus newStatus)
+    {
+        var oldStatus = Status;
+        Status = newStatus;
+        AddDomainEvent(new OrderStatusChangedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            OldStatus = oldStatus,
+            NewStatus = newStatus
+        });
+    }
+
+    public void CompletePayment(string? transactionId)
+    {
+        PaymentStatus = PaymentStatus.Completed;
+        PaymentTransactionId = transactionId;
+        PaidAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.PaymentReceived;
+
+        AddDomainEvent(new PaymentCompletedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername,
+            Amount = TotalAmount,
+            TransactionId = transactionId
+        });
+    }
+
+    public void MarkAsShipped(string? trackingNumber, string? carrier)
+    {
+        TrackingNumber = trackingNumber;
+        ShippingCarrier = carrier;
+        ShippedAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.Shipped;
+
+        AddDomainEvent(new OrderShippedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            TrackingNumber = trackingNumber,
+            ShippingCarrier = carrier
+        });
+    }
+
+    public void MarkAsDelivered()
+    {
+        DeliveredAt = DateTimeOffset.UtcNow;
+        Status = OrderStatus.Delivered;
+
+        AddDomainEvent(new OrderDeliveredDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            SellerId = SellerId,
+            SellerUsername = SellerUsername
+        });
+    }
 }
 
 public enum OrderStatus

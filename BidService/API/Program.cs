@@ -1,20 +1,22 @@
 using BidService.API.Extensions;
 using BidService.API.Services;
 using BidService.Application.Interfaces;
+using BidService.Application.EventHandlers;
 using BidService.Infrastructure.Data;
 using BidService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.CQRS.Extensions;
 using Common.Locking.Extensions;
+using Common.Resilience;
+using Common.Resilience.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using AuctionService.API.Grpc;
-using Polly;
-using Polly.Extensions.Http;
 using StackExchange.Redis;
 using System.Threading.RateLimiting;
 
@@ -30,18 +32,21 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConnection));
 builder.Services.AddDistributedLocking();
 
+builder.Services.AddResiliencePolicies(builder.Configuration);
+var resilienceOptions = builder.Configuration.GetSection(ResilienceOptions.SectionName).Get<ResilienceOptions>() ?? new ResilienceOptions();
+
 var auctionGrpcUrl = builder.Configuration["AuctionService:GrpcUrl"] ?? "http://localhost:5000";
 builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
 {
     options.Address = new Uri(auctionGrpcUrl);
-})
-.AddPolicyHandler(GetRetryPolicy())
-.AddPolicyHandler(GetCircuitBreakerPolicy());
+}).AddResiliencePolicies(resilienceOptions);
 
 builder.Services.AddScoped<IAuctionValidationService, AuctionValidationService>();
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+
+builder.Services.AddCQRS(typeof(BidPlacedDomainEventHandler).Assembly);
 
 builder.Services.AddGrpc(options =>
 {
@@ -134,18 +139,3 @@ app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Bid Service");
 
 app.Run();
-
-static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .WaitAndRetryAsync(3, retryAttempt => 
-            TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-}
-
-static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
-}

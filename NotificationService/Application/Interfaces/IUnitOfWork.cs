@@ -1,6 +1,7 @@
+using Common.Repository.Interfaces;
+
 namespace NotificationService.Application.Interfaces;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IBaseUnitOfWork
 {
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -1,18 +1,13 @@
+using Common.Repository.Implementations;
+using MediatR;
 using PaymentService.Application.Interfaces;
 
 namespace PaymentService.Infrastructure.Data;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : BaseUnitOfWork<PaymentDbContext>, IUnitOfWork
 {
-    private readonly PaymentDbContext _context;
-
-    public UnitOfWork(PaymentDbContext context)
+    public UnitOfWork(PaymentDbContext context, IMediator mediator)
+        : base(context, mediator)
     {
-        _context = context;
-    }
-
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.SaveChangesAsync(cancellationToken);
     }
 }

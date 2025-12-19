@@ -22,4 +22,16 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddDomainEvents(
+        this IServiceCollection services,
+        params Assembly[] assemblies)
+    {
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssemblies(assemblies);
+        });
+
+        return services;
+    }
 }

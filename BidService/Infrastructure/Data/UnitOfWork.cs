@@ -1,20 +1,13 @@
 using BidService.Application.Interfaces;
-using BidService.Infrastructure.Data;
+using Common.Repository.Implementations;
+using MediatR;
 
-namespace BidService.Infrastructure.Data
+namespace BidService.Infrastructure.Data;
+
+public class UnitOfWork : BaseUnitOfWork<BidDbContext>, IUnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    public UnitOfWork(BidDbContext context, IMediator mediator)
+        : base(context, mediator)
     {
-        private readonly BidDbContext _context;
-
-        public UnitOfWork(BidDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.SaveChangesAsync(cancellationToken);
-        }
     }
 }

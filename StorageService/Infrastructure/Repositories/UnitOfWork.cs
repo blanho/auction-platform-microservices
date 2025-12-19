@@ -1,22 +1,18 @@
+using Common.Repository.Implementations;
+using MediatR;
 using StorageService.Application.Interfaces;
 using StorageService.Infrastructure.Data;
 
 namespace StorageService.Infrastructure.Repositories;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork : BaseUnitOfWork<StorageDbContext>, IUnitOfWork
 {
-    private readonly StorageDbContext _context;
-    private IStoredFileRepository _storedFiles;
+    private IStoredFileRepository? _storedFiles;
 
-    public UnitOfWork(StorageDbContext context)
+    public UnitOfWork(StorageDbContext context, IMediator mediator)
+        : base(context, mediator)
     {
-        _context = context;
     }
 
-    public IStoredFileRepository StoredFiles => _storedFiles ??= new StoredFileRepository(_context);
-
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.SaveChangesAsync(cancellationToken);
-    }
+    public IStoredFileRepository StoredFiles => _storedFiles ??= new StoredFileRepository(Context);
 }

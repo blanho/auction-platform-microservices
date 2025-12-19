@@ -4,8 +4,6 @@ using Common.Audit.Abstractions;
 using Common.Core.Helpers;
 using Common.Core.Interfaces;
 using Common.CQRS.Abstractions;
-using Common.Messaging.Abstractions;
-using Common.Messaging.Events;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Commands.UpdateAuction;
@@ -15,7 +13,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly IAuctionRepository _repository;
     private readonly IAppLogger<UpdateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
-    private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
@@ -23,14 +20,12 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         IAuctionRepository repository,
         IAppLogger<UpdateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IEventPublisher eventPublisher,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
-        _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
         _auditPublisher = auditPublisher;
     }
@@ -79,18 +74,9 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 }
             }
 
+            auction.RaiseUpdatedEvent();
+            
             await _repository.UpdateAsync(auction, cancellationToken);
-
-            await _eventPublisher.PublishAsync(new AuctionUpdatedEvent
-            {
-                Id = request.Id,
-                SellerId = auction.SellerId,
-                SellerUsername = auction.SellerUsername,
-                Title = request.Title,
-                Description = request.Description,
-                Condition = request.Condition,
-                YearManufactured = request.YearManufactured
-            }, cancellationToken);
 
             await _auditPublisher.PublishAsync(
                 auction.Id,

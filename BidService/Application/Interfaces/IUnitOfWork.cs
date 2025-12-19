@@ -1,7 +1,7 @@
-namespace BidService.Application.Interfaces
+using Common.Repository.Interfaces;
+
+namespace BidService.Application.Interfaces;
+
+public interface IUnitOfWork : IBaseUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    }
 }

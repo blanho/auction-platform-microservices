@@ -3,6 +3,7 @@ using BidService.Domain.Entities;
 using BidService.Infrastructure.Data;
 using Common.Core.Constants;
 using Common.Core.Interfaces;
+using Common.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BidService.Infrastructure.Repositories
