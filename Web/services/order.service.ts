@@ -1,4 +1,5 @@
 import apiClient from '@/lib/api/axios';
+import { API_ENDPOINTS } from '@/constants/api';
 import {
     Order,
     OrderStatus,
@@ -12,63 +13,63 @@ export type { Order, OrderSummary, UpdateOrderStatusDto, ShipOrderDto } from '@/
 export { OrderStatus, PaymentStatus } from '@/types/order';
 
 export const orderService = {
-    async getOrder(id: string): Promise<Order> {
-        const response = await apiClient.get<Order>(`/orders/${id}`);
-        return response.data;
+    getOrder: async (id: string): Promise<Order> => {
+        const { data } = await apiClient.get<Order>(API_ENDPOINTS.ORDERS.BY_ID(id));
+        return data;
     },
 
-    async getOrderByAuction(auctionId: string): Promise<Order | null> {
+    getOrderByAuction: async (auctionId: string): Promise<Order | null> => {
         try {
-            const response = await apiClient.get<Order>(`/orders/auction/${auctionId}`);
-            return response.data;
+            const { data } = await apiClient.get<Order>(API_ENDPOINTS.ORDERS.BY_AUCTION(auctionId));
+            return data;
         } catch {
             return null;
         }
     },
 
-    async getMyPurchases(username: string): Promise<Order[]> {
-        const response = await apiClient.get<Order[]>(`/orders/buyer/${username}`);
-        return response.data;
+    getMyPurchases: async (username: string): Promise<Order[]> => {
+        const { data } = await apiClient.get<Order[]>(API_ENDPOINTS.ORDERS.BY_BUYER(username));
+        return data;
     },
 
-    async getMySales(username: string): Promise<Order[]> {
-        const response = await apiClient.get<Order[]>(`/orders/seller/${username}`);
-        return response.data;
+    getMySales: async (username: string): Promise<Order[]> => {
+        const { data } = await apiClient.get<Order[]>(API_ENDPOINTS.ORDERS.BY_SELLER(username));
+        return data;
     },
 
-    async getOrderSummary(): Promise<OrderSummary> {
-        const response = await apiClient.get<OrderSummary>('/orders/summary');
-        return response.data;
+    getOrderSummary: async (): Promise<OrderSummary> => {
+        const { data } = await apiClient.get<OrderSummary>(API_ENDPOINTS.ORDERS.SUMMARY);
+        return data;
     },
 
-    async updateOrder(id: string, dto: UpdateOrderStatusDto): Promise<Order> {
-        const response = await apiClient.put<Order>(`/orders/${id}`, dto);
-        return response.data;
+    updateOrder: async (id: string, dto: UpdateOrderStatusDto): Promise<Order> => {
+        const { data } = await apiClient.put<Order>(API_ENDPOINTS.ORDERS.BY_ID(id), dto);
+        return data;
     },
 
-    async markAsShipped(id: string, dto: ShipOrderDto): Promise<Order> {
-        const response = await apiClient.put<Order>(`/orders/${id}`, {
+    markAsShipped: async (id: string, dto: ShipOrderDto): Promise<Order> => {
+        const { data } = await apiClient.put<Order>(API_ENDPOINTS.ORDERS.BY_ID(id), {
             status: OrderStatus.Shipped,
             trackingNumber: dto.trackingNumber,
             shippingCarrier: dto.carrier,
         });
-        return response.data;
+        return data;
     },
 
-    async markAsDelivered(id: string): Promise<Order> {
-        const response = await apiClient.put<Order>(`/orders/${id}`, {
+    markAsDelivered: async (id: string): Promise<Order> => {
+        const { data } = await apiClient.put<Order>(API_ENDPOINTS.ORDERS.BY_ID(id), {
             status: OrderStatus.Delivered,
         });
-        return response.data;
+        return data;
     },
 
-    async confirmDelivery(id: string): Promise<Order> {
-        const response = await apiClient.put<Order>(`/orders/${id}`, {
+    confirmDelivery: async (id: string): Promise<Order> => {
+        const { data } = await apiClient.put<Order>(API_ENDPOINTS.ORDERS.BY_ID(id), {
             status: OrderStatus.Delivered,
         });
-        return response.data;
+        return data;
     },
-};
+} as const;
 
 export const getOrderStatusColor = (status: OrderStatus) => {
     const colors: Record<OrderStatus, { bg: string; text: string }> = {

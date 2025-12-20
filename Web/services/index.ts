@@ -7,16 +7,24 @@ export type { GetAuctionsParams, GetMyAuctionsParams, AuctionPagedResult } from 
 export { auditService } from "./audit.service";
 export { autoBidService } from "./autobid.service";
 export { bidService } from "./bid.service";
+export type { BidIncrementInfo } from "./bid.service";
 export { bookmarkService } from "./bookmark.service";
 export { brandService } from "./brand.service";
 export { cloudinaryService } from "./cloudinary.service";
 export { dashboardService } from "./dashboard.service";
 export type { UserDashboardStats, RecentActivity } from "./dashboard.service";
 export { notificationService } from "./notification.service";
-export { orderService } from "./order.service";
+export { orderService, getOrderStatusColor, getStatusColor, getOrderStatusLabel, getStatusLabel, getPaymentStatusColor, getPaymentStatusLabel } from "./order.service";
+export type { Order, OrderSummary, UpdateOrderStatusDto, ShipOrderDto } from "./order.service";
+export { OrderStatus, PaymentStatus } from "./order.service";
+export { paymentService } from "./payment.service";
+export type { CreatePaymentIntentRequest, CreatePaymentIntentResponse, CheckoutSessionRequest, CheckoutSessionResponse, PaymentIntentStatus, RefundRequest, RefundResponse } from "./payment.service";
 export { reportService } from "./report.service";
 export { reviewService } from "./review.service";
 export { settingsService } from "./settings.service";
-export { stripeService } from "./stripe.service";
-export { walletService } from "./wallet.service";
+export { storageService } from "./storage.service";
+export type { FileMetadata, RequestUploadDto, UploadUrlResponse, ConfirmUploadRequest, DownloadUrlResponse } from "./storage.service";
+export { walletService, adminPaymentService } from "./wallet.service";
+export type { WalletTransaction, WalletBalance, CreateDepositDto, CreateWithdrawalDto, AdminWithdrawal, PaymentStatistics, GetTransactionsParams } from "./wallet.service";
 export { wishlistService } from "./wishlist.service";
+

@@ -1,4 +1,5 @@
 import apiClient from '@/lib/api/axios';
+import { API_ENDPOINTS } from '@/constants/api';
 
 export interface WalletTransaction {
     id: string;
@@ -59,60 +60,79 @@ export interface PaymentStatistics {
 }
 
 export const walletService = {
-    async getWallet(username: string): Promise<WalletBalance> {
-        const response = await apiClient.get<WalletBalance>(`/wallets/${username}`);
-        return response.data;
+    getWallet: async (username: string): Promise<WalletBalance> => {
+        const { data } = await apiClient.get<WalletBalance>(
+            API_ENDPOINTS.WALLETS.BY_USERNAME(username)
+        );
+        return data;
     },
 
-    async createWallet(username: string): Promise<WalletBalance> {
-        const response = await apiClient.post<WalletBalance>(`/wallets/${username}/create`);
-        return response.data;
+    createWallet: async (username: string): Promise<WalletBalance> => {
+        const { data } = await apiClient.post<WalletBalance>(
+            API_ENDPOINTS.WALLETS.CREATE(username)
+        );
+        return data;
     },
 
-    async getTransactions(username: string, params: GetTransactionsParams = {}): Promise<WalletTransaction[]> {
-        const response = await apiClient.get<WalletTransaction[]>(`/wallets/${username}/transactions`, {
-            params: {
-                page: params.pageNumber || 1,
-                pageSize: params.pageSize || 20,
-            },
-        });
-        return response.data;
+    getTransactions: async (username: string, params: GetTransactionsParams = {}): Promise<WalletTransaction[]> => {
+        const { data } = await apiClient.get<WalletTransaction[]>(
+            API_ENDPOINTS.WALLETS.TRANSACTIONS(username),
+            {
+                params: {
+                    page: params.pageNumber || 1,
+                    pageSize: params.pageSize || 20,
+                },
+            }
+        );
+        return data;
     },
 
-    async getTransaction(id: string): Promise<WalletTransaction> {
-        const response = await apiClient.get<WalletTransaction>(`/wallets/transactions/${id}`);
-        return response.data;
+    getTransaction: async (id: string): Promise<WalletTransaction> => {
+        const { data } = await apiClient.get<WalletTransaction>(
+            API_ENDPOINTS.WALLETS.TRANSACTION_BY_ID(id)
+        );
+        return data;
     },
 
-    async createDeposit(username: string, dto: CreateDepositDto): Promise<WalletTransaction> {
-        const response = await apiClient.post<WalletTransaction>(`/wallets/${username}/deposit`, dto);
-        return response.data;
+    createDeposit: async (username: string, dto: CreateDepositDto): Promise<WalletTransaction> => {
+        const { data } = await apiClient.post<WalletTransaction>(
+            API_ENDPOINTS.WALLETS.DEPOSIT(username),
+            dto
+        );
+        return data;
     },
 
-    async createWithdrawal(username: string, dto: CreateWithdrawalDto): Promise<WalletTransaction> {
-        const response = await apiClient.post<WalletTransaction>(`/wallets/${username}/withdraw`, dto);
-        return response.data;
+    createWithdrawal: async (username: string, dto: CreateWithdrawalDto): Promise<WalletTransaction> => {
+        const { data } = await apiClient.post<WalletTransaction>(
+            API_ENDPOINTS.WALLETS.WITHDRAW(username),
+            dto
+        );
+        return data;
     },
-};
+} as const;
 
 export const adminPaymentService = {
-    async getPendingWithdrawals(): Promise<AdminWithdrawal[]> {
-        const response = await apiClient.get<AdminWithdrawal[]>('/admin/payments/withdrawals/pending');
-        return response.data;
+    getPendingWithdrawals: async (): Promise<AdminWithdrawal[]> => {
+        const { data } = await apiClient.get<AdminWithdrawal[]>(
+            API_ENDPOINTS.ADMIN.PAYMENTS_PENDING
+        );
+        return data;
     },
 
-    async approveWithdrawal(id: string, externalTransactionId?: string): Promise<void> {
-        await apiClient.post(`/admin/payments/withdrawals/${id}/approve`, {
+    approveWithdrawal: async (id: string, externalTransactionId?: string): Promise<void> => {
+        await apiClient.post(API_ENDPOINTS.ADMIN.PAYMENT_APPROVE(id), {
             externalTransactionId,
         });
     },
 
-    async rejectWithdrawal(id: string, reason: string): Promise<void> {
-        await apiClient.post(`/admin/payments/withdrawals/${id}/reject`, { reason });
+    rejectWithdrawal: async (id: string, reason: string): Promise<void> => {
+        await apiClient.post(API_ENDPOINTS.ADMIN.PAYMENT_REJECT(id), { reason });
     },
 
-    async getStatistics(): Promise<PaymentStatistics> {
-        const response = await apiClient.get<PaymentStatistics>('/admin/payments/statistics');
-        return response.data;
+    getStatistics: async (): Promise<PaymentStatistics> => {
+        const { data } = await apiClient.get<PaymentStatistics>(
+            API_ENDPOINTS.ADMIN.PAYMENTS_STATS
+        );
+        return data;
     },
-};
+} as const;

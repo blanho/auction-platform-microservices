@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api/axios";
+import { API_ENDPOINTS } from "@/constants/api";
 
 export interface CreatePaymentIntentRequest {
   amountInCents: number;
@@ -40,29 +41,47 @@ export interface PaymentIntentStatus {
   currency: string;
 }
 
-const UTILITY_API_URL = process.env.NEXT_PUBLIC_UTILITY_API_URL || "http://localhost:5005";
+export interface RefundRequest {
+  paymentIntentId: string;
+  amountInCents?: number;
+  reason?: string;
+}
 
-export const stripeService = {
+export interface RefundResponse {
+  id: string;
+  status: string;
+  amount: number;
+}
+
+export const paymentService = {
   createPaymentIntent: async (request: CreatePaymentIntentRequest): Promise<CreatePaymentIntentResponse> => {
-    const response = await apiClient.post<CreatePaymentIntentResponse>(
-      `${UTILITY_API_URL}/api/payments/create-payment-intent`,
+    const { data } = await apiClient.post<CreatePaymentIntentResponse>(
+      API_ENDPOINTS.PAYMENTS.CREATE_PAYMENT_INTENT,
       request
     );
-    return response.data;
+    return data;
   },
 
   createCheckoutSession: async (request: CheckoutSessionRequest): Promise<CheckoutSessionResponse> => {
-    const response = await apiClient.post<CheckoutSessionResponse>(
-      `${UTILITY_API_URL}/api/payments/create-checkout-session`,
+    const { data } = await apiClient.post<CheckoutSessionResponse>(
+      API_ENDPOINTS.PAYMENTS.CREATE_CHECKOUT_SESSION,
       request
     );
-    return response.data;
+    return data;
   },
 
   getPaymentIntentStatus: async (paymentIntentId: string): Promise<PaymentIntentStatus> => {
-    const response = await apiClient.get<PaymentIntentStatus>(
-      `${UTILITY_API_URL}/api/payments/payment-intent/${paymentIntentId}`
+    const { data } = await apiClient.get<PaymentIntentStatus>(
+      API_ENDPOINTS.PAYMENTS.PAYMENT_INTENT_STATUS(paymentIntentId)
     );
-    return response.data;
+    return data;
   },
-};
+
+  requestRefund: async (request: RefundRequest): Promise<RefundResponse> => {
+    const { data } = await apiClient.post<RefundResponse>(
+      API_ENDPOINTS.PAYMENTS.REFUND,
+      request
+    );
+    return data;
+  },
+} as const;

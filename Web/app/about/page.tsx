@@ -30,68 +30,23 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ROUTES } from "@/constants/routes";
+import { PLATFORM_STATS, PLATFORM_VALUES, LEADERSHIP_TEAM } from "@/constants/platform";
 
 export const metadata: Metadata = {
   title: "About Us | Auction Platform",
   description: "Learn about our mission, values, and the team behind the platform.",
 };
 
-const STATS = [
-  { label: "Active Users", value: "50,000+", icon: Users },
-  { label: "Auctions Completed", value: "100,000+", icon: Award },
-  { label: "Countries Served", value: "25+", icon: Globe },
-  { label: "Items Listed", value: "500,000+", icon: TrendingUp },
-];
-
-const VALUES = [
-  {
-    title: "Trust & Transparency",
-    description:
-      "We believe in building trust through transparent processes. Every transaction is secure, and every listing is verified.",
-    icon: Shield,
-  },
-  {
-    title: "User-First Approach",
-    description:
-      "Our platform is designed with you in mind. We continuously improve based on user feedback to deliver the best experience.",
-    icon: Heart,
-  },
-  {
-    title: "Innovation",
-    description:
-      "We leverage cutting-edge technology to provide real-time bidding, secure payments, and a seamless user experience.",
-    icon: Zap,
-  },
-  {
-    title: "Fair Marketplace",
-    description:
-      "We ensure a level playing field for all buyers and sellers with clear rules, dispute resolution, and fraud protection.",
-    icon: Target,
-  },
-];
-
-const TEAM = [
-  {
-    name: "John Smith",
-    role: "CEO & Founder",
-    bio: "20+ years in e-commerce and marketplace development",
-  },
-  {
-    name: "Sarah Johnson",
-    role: "CTO",
-    bio: "Former tech lead at major tech companies",
-  },
-  {
-    name: "Michael Chen",
-    role: "Head of Operations",
-    bio: "Expert in logistics and customer experience",
-  },
-  {
-    name: "Emily Davis",
-    role: "Head of Trust & Safety",
-    bio: "Background in fraud prevention and security",
-  },
-];
+const ICON_MAP = {
+  Users,
+  Shield,
+  Award,
+  Globe,
+  Zap,
+  Heart,
+  Target,
+  TrendingUp,
+} as const;
 
 export default function AboutPage() {
   return (
@@ -130,8 +85,8 @@ export default function AboutPage() {
         </section>
 
         <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {STATS.map((stat) => {
-            const Icon = stat.icon;
+          {PLATFORM_STATS.map((stat) => {
+            const Icon = ICON_MAP[stat.iconName];
             return (
               <Card key={stat.label} className="text-center">
                 <CardContent className="pt-6">
@@ -162,8 +117,8 @@ export default function AboutPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {VALUES.map((value) => {
-              const Icon = value.icon;
+            {PLATFORM_VALUES.map((value) => {
+              const Icon = ICON_MAP[value.iconName];
               return (
                 <Card key={value.title}>
                   <CardHeader>
@@ -231,7 +186,7 @@ export default function AboutPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {TEAM.map((member) => (
+            {LEADERSHIP_TEAM.map((member) => (
               <Card key={member.name} className="text-center">
                 <CardContent className="pt-6">
                   <div className="w-20 h-20 rounded-full bg-zinc-200 dark:bg-zinc-800 mx-auto mb-4 flex items-center justify-center">

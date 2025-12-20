@@ -77,10 +77,35 @@ export const API_ENDPOINTS = {
   },
 
   PAYMENTS: {
-    CREATE_PAYMENT_INTENT: "/utility/api/payments/create-payment-intent",
-    CREATE_CHECKOUT_SESSION: "/utility/api/payments/create-checkout-session",
-    PAYMENT_INTENT_STATUS: (id: string) => `/utility/api/payments/payment-intent/${id}`,
-    REFUND: "/utility/api/payments/refund"
+    CREATE_PAYMENT_INTENT: "/payments/create-payment-intent",
+    CREATE_CHECKOUT_SESSION: "/payments/create-checkout-session",
+    PAYMENT_INTENT_STATUS: (id: string) => `/payments/payment-intent/${id}`,
+    REFUND: "/payments/refund"
+  },
+
+  STORAGE: {
+    REQUEST_UPLOAD: "/files/request-upload",
+    CONFIRM_UPLOAD: "/files/confirm-upload",
+    FILE_METADATA: (id: string) => `/files/${id}`,
+    DOWNLOAD_URL: (id: string) => `/files/${id}/download-url`,
+    DELETE_FILE: (id: string) => `/files/${id}`
+  },
+
+  WALLETS: {
+    BY_USERNAME: (username: string) => `/wallets/${username}`,
+    CREATE: (username: string) => `/wallets/${username}/create`,
+    TRANSACTIONS: (username: string) => `/wallets/${username}/transactions`,
+    TRANSACTION_BY_ID: (id: string) => `/wallets/transactions/${id}`,
+    DEPOSIT: (username: string) => `/wallets/${username}/deposit`,
+    WITHDRAW: (username: string) => `/wallets/${username}/withdraw`
+  },
+
+  ORDERS: {
+    BY_ID: (id: string) => `/orders/${id}`,
+    BY_AUCTION: (auctionId: string) => `/orders/auction/${auctionId}`,
+    BY_BUYER: (username: string) => `/orders/buyer/${username}`,
+    BY_SELLER: (username: string) => `/orders/seller/${username}`,
+    SUMMARY: "/orders/summary"
   }
 } as const;
 

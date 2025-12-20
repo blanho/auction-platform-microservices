@@ -33,6 +33,7 @@ import { bidService } from "@/services/bid.service";
 import { BidStatus } from "@/types/bid";
 import { AuthDialog } from "@/features/auth";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { BID_PLATFORM_FEE_PERCENTAGE } from "@/constants/platform";
 
 interface PlaceBidDialogProps {
   auctionId: string;
@@ -44,7 +45,6 @@ interface PlaceBidDialogProps {
 }
 
 const MIN_BID_INCREMENT = 100;
-const PLATFORM_FEE_PERCENT = 2.5;
 const PENDING_BID_KEY = "pending_bid_intent";
 
 type DialogStep = "input" | "confirm";
@@ -144,7 +144,7 @@ export function PlaceBidDialog({
   }, [isAuthenticated, pendingBidChecked, auctionId, minBid, form]);
 
   const watchedAmount = form.watch("amount");
-  const platformFee = (watchedAmount * PLATFORM_FEE_PERCENT) / 100;
+  const platformFee = (watchedAmount * BID_PLATFORM_FEE_PERCENTAGE) / 100;
   const meetsReserve = watchedAmount >= reservePrice;
 
   const handleOpenChange = (open: boolean) => {
@@ -342,7 +342,7 @@ export function PlaceBidDialog({
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Platform Fee ({PLATFORM_FEE_PERCENT}%)</span>
+                      <span className="text-muted-foreground">Platform Fee ({BID_PLATFORM_FEE_PERCENTAGE}%)</span>
                       <span className="font-medium">${platformFee.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">

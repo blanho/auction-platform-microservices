@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { stripeService } from "@/services/stripe.service";
+import { paymentService } from "@/services/payment.service";
 import { ROUTES } from "@/constants/routes";
 
 export default function PaymentSuccessPage() {
@@ -36,7 +36,7 @@ export default function PaymentSuccessPage() {
       }
 
       try {
-        const paymentIntent = await stripeService.getPaymentIntentStatus(paymentIntentId);
+        const paymentIntent = await paymentService.getPaymentIntentStatus(paymentIntentId);
         
         if (paymentIntent.status === "succeeded") {
           setStatus("success");

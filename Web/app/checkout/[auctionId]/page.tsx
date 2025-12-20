@@ -50,28 +50,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { auctionService } from "@/services/auction.service";
 import { walletService } from "@/services/wallet.service";
-import { stripeService } from "@/services/stripe.service";
+import { paymentService } from "@/services/payment.service";
 import { StripeCheckout } from "@/features/payment";
 import { formatAmountForStripe } from "@/lib/stripe";
+import { PLATFORM_FEE_PERCENTAGE, PAYMENT_METHODS } from "@/constants/platform";
 import { Auction, AuctionStatus } from "@/types/auction";
 import { ROUTES } from "@/constants/routes";
 import { formatCurrency, getAuctionTitle, getAuctionYearManufactured, getAuctionAttributes } from "@/utils";
 
-const PLATFORM_FEE_PERCENTAGE = 5;
-const PAYMENT_METHODS = [
-  {
-    id: "wallet",
-    name: "Wallet Balance",
-    description: "Pay using your auction wallet balance",
-    icon: Wallet,
-  },
-  {
-    id: "card",
-    name: "Credit/Debit Card",
-    description: "Pay securely with Stripe",
-    icon: CreditCard,
-  },
-];
+const PAYMENT_METHOD_ICONS = {
+  Wallet,
+  CreditCard,
+} as const;
 
 interface ShippingAddress {
   fullName: string;
@@ -179,7 +169,7 @@ export default function CheckoutPage() {
     if (method === "card" && !stripeClientSecret && auction && session?.user) {
       setIsCreatingPaymentIntent(true);
       try {
-        const response = await stripeService.createPaymentIntent({
+        const response = await paymentService.createPaymentIntent({
           amountInCents: formatAmountForStripe(totalAmount),
           currency: "usd",
           customerEmail: session.user.email || "",
@@ -401,7 +391,7 @@ export default function CheckoutPage() {
               <CardContent>
                 <RadioGroup value={paymentMethod} onValueChange={handlePaymentMethodChange}>
                   {PAYMENT_METHODS.map((method) => {
-                    const Icon = method.icon;
+                    const Icon = PAYMENT_METHOD_ICONS[method.iconName];
                     const isDisabled = method.id === "wallet" && hasInsufficientBalance;
 
                     return (
