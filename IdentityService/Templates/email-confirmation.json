@@ -1,0 +1,8 @@
+{
+  "name": "email-confirmation",
+  "subject": "Confirm your email - Auction Platform",
+  "variables": ["username", "confirmationLink"],
+  "headerGradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  "buttonColor": "#667eea",
+  "body": "<div class=\"header\" style=\"background: {{headerGradient}};\"><h1>🎉 Welcome to Auction Platform!</h1></div><div class=\"content\"><p>Hi <strong>{{username}}</strong>,</p><p>Thank you for registering! Please confirm your email address by clicking the button below:</p><p style=\"text-align: center;\"><a href=\"{{confirmationLink}}\" class=\"button\" style=\"background: {{buttonColor}};\">Confirm Email</a></p><p>Or copy and paste this link into your browser:</p><p class=\"link-text\" style=\"color: {{buttonColor}};\">{{confirmationLink}}</p><p>This link will expire in 24 hours.</p><p>If you didn't create an account, you can safely ignore this email.</p></div>"
+}

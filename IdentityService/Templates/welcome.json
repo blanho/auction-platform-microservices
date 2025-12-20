@@ -1,0 +1,8 @@
+{
+  "name": "welcome",
+  "subject": "Welcome to Auction Platform! 🎉",
+  "variables": ["username", "exploreLink"],
+  "headerGradient": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+  "buttonColor": "#11998e",
+  "body": "<div class=\"header\" style=\"background: {{headerGradient}};\"><h1>Welcome Aboard, {{username}}! 🚀</h1></div><div class=\"content\"><p>Your email has been confirmed and your account is now active!</p><p>Here's what you can do on Auction Platform:</p><div class=\"feature\"><span class=\"feature-icon\">🔨</span><div><strong>Bid on Items</strong> - Find amazing deals and place your bids</div></div><div class=\"feature\"><span class=\"feature-icon\">📦</span><div><strong>Sell Your Items</strong> - List your items and reach thousands of buyers</div></div><div class=\"feature\"><span class=\"feature-icon\">👀</span><div><strong>Watch Auctions</strong> - Save items to your watchlist</div></div><div class=\"feature\"><span class=\"feature-icon\">💰</span><div><strong>Manage Your Wallet</strong> - Easy deposits and withdrawals</div></div><p style=\"text-align: center;\"><a href=\"{{exploreLink}}\" class=\"button\" style=\"background: {{buttonColor}};\">Start Exploring</a></p></div>"
+}

@@ -49,10 +49,10 @@ internal static class HostingExtensions
         // Configure token lifespan
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
-            options.TokenLifespan = TimeSpan.FromHours(24); // Email confirmation tokens valid for 24 hours
+            options.TokenLifespan = TimeSpan.FromHours(24);
         });
 
-        // Register email service
+        builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
         builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
         builder.Services

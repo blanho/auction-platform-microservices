@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{subject}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; background: #f9fafb; }
+        .content p { margin: 0 0 15px 0; }
+        .button { display: inline-block; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; color: white; }
+        .button:hover { opacity: 0.9; }
+        .link-text { word-break: break-all; font-size: 14px; }
+        .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .feature { display: flex; align-items: center; margin: 15px 0; padding: 15px; background: white; border-radius: 8px; }
+        .feature-icon { font-size: 24px; margin-right: 15px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {{body}}
+        <div class="footer">
+            <p>© {{year}} Auction Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
