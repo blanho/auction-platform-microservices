@@ -85,8 +85,9 @@ const statusOptions = [
   { value: AuctionStatus.Live, label: "Live" },
   { value: AuctionStatus.Inactive, label: "Inactive" },
   { value: AuctionStatus.Finished, label: "Finished" },
-  { value: AuctionStatus.ReserveNotMet, label: "Reserve Not Met" },
-  { value: AuctionStatus.Cancelled, label: "Cancelled" },
+  { value: AuctionStatus.ReservedNotMet, label: "Reserve Not Met" },
+  { value: AuctionStatus.Scheduled, label: "Scheduled" },
+  { value: AuctionStatus.ReservedForBuyNow, label: "Reserved for Buy Now" },
 ];
 
 export function AuctionDataTable({ data, onActionComplete, isAdmin = false }: AuctionDataTableProps) {

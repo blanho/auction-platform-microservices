@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import {
     ArrowDownLeft,
     ArrowUpRight,
@@ -52,6 +53,7 @@ import { toast } from "sonner";
 import { walletService, WalletBalance, WalletTransaction } from "@/services/wallet.service";
 
 export default function WalletPage() {
+    const { data: session } = useSession();
     const [balance, setBalance] = useState<WalletBalance | null>(null);
     const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -63,31 +65,34 @@ export default function WalletPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const availableBalance = balance?.availableBalance ?? 0;
+    const username = session?.user?.name || "";
 
     const fetchBalance = useCallback(async () => {
+        if (!username) return;
         try {
-            const data = await walletService.getBalance();
+            const data = await walletService.getWallet(username);
             setBalance(data);
         } catch (error) {
             toast.error(MESSAGES.ERROR.GENERIC);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [username]);
 
     const fetchTransactions = useCallback(async () => {
+        if (!username) return;
         setIsTransactionsLoading(true);
         try {
-            const data = await walletService.getTransactions({
+            const data = await walletService.getTransactions(username, {
                 pageNumber: 1,
                 pageSize: PAGINATION.TRANSACTIONS_PAGE_SIZE,
             });
-            setTransactions(data.transactions);
+            setTransactions(data);
         } catch (error) {
         } finally {
             setIsTransactionsLoading(false);
         }
-    }, []);
+    }, [username]);
 
     useEffect(() => {
         fetchBalance();
@@ -100,10 +105,14 @@ export default function WalletPage() {
             toast.error("Please enter a valid amount");
             return;
         }
+        if (!username) {
+            toast.error("Please sign in to continue");
+            return;
+        }
         
         setIsSubmitting(true);
         try {
-            await walletService.createDeposit({ amount });
+            await walletService.createDeposit(username, { amount });
             toast.success(`Deposit of ${formatCurrency(amount)} initiated`);
             setIsDepositOpen(false);
             setDepositAmount("");
@@ -126,10 +135,14 @@ export default function WalletPage() {
             toast.error("Insufficient available balance");
             return;
         }
+        if (!username) {
+            toast.error("Please sign in to continue");
+            return;
+        }
         
         setIsSubmitting(true);
         try {
-            await walletService.createWithdrawal({ amount });
+            await walletService.createWithdrawal(username, { amount });
             toast.success(`Withdrawal of ${formatCurrency(amount)} initiated`);
             setIsWithdrawOpen(false);
             setWithdrawAmount("");

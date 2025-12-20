@@ -199,9 +199,10 @@ export interface Category {
 export enum AuctionStatus {
   Live = "Live",
   Finished = "Finished",
-  ReserveNotMet = "ReserveNotMet",
-  Cancelled = "Cancelled",
-  Inactive = "Inactive"
+  ReservedNotMet = "ReservedNotMet",
+  Inactive = "Inactive",
+  Scheduled = "Scheduled",
+  ReservedForBuyNow = "ReservedForBuyNow"
 }
 
 export interface CreateAuctionDto {

@@ -16,6 +16,18 @@ import {
     faTrophy,
     faClock,
     faEnvelope,
+    faBolt,
+    faXmark,
+    faGavel,
+    faBagShopping,
+    faTruck,
+    faBoxOpen,
+    faCreditCard,
+    faStar,
+    faUserPlus,
+    faKey,
+    faUserCheck,
+    faGears,
     IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
@@ -37,13 +49,27 @@ const NOTIFICATION_ICONS: Record<NotificationType, IconDefinition> = {
     [NotificationType.AuctionUpdated]: faPenToSquare,
     [NotificationType.AuctionDeleted]: faTrashCan,
     [NotificationType.AuctionFinished]: faFlagCheckered,
+    [NotificationType.AuctionStarted]: faBolt,
+    [NotificationType.AuctionEnding]: faClock,
+    [NotificationType.AuctionEndingSoon]: faClock,
+    [NotificationType.AuctionLost]: faXmark,
     [NotificationType.BidPlaced]: faMoneyBillWave,
     [NotificationType.BidAccepted]: faCircleCheck,
+    [NotificationType.BidRejected]: faXmark,
+    [NotificationType.Outbid]: faTriangleExclamation,
     [NotificationType.OutBid]: faTriangleExclamation,
     [NotificationType.AuctionWon]: faTrophy,
-    [NotificationType.AuctionEndingSoon]: faClock,
-    [NotificationType.SystemNotification]: faEnvelope,
-    [NotificationType.Broadcast]: faEnvelope
+    [NotificationType.BuyNowExecuted]: faGavel,
+    [NotificationType.OrderCreated]: faBagShopping,
+    [NotificationType.OrderShipped]: faTruck,
+    [NotificationType.OrderDelivered]: faBoxOpen,
+    [NotificationType.PaymentReceived]: faCreditCard,
+    [NotificationType.PaymentCompleted]: faCircleCheck,
+    [NotificationType.ReviewReceived]: faStar,
+    [NotificationType.WelcomeEmail]: faUserPlus,
+    [NotificationType.PasswordReset]: faKey,
+    [NotificationType.AccountVerification]: faUserCheck,
+    [NotificationType.System]: faGears
 };
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
@@ -51,13 +77,27 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
     [NotificationType.AuctionUpdated]: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     [NotificationType.AuctionDeleted]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     [NotificationType.AuctionFinished]: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    [NotificationType.AuctionStarted]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    [NotificationType.AuctionEnding]: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    [NotificationType.AuctionEndingSoon]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    [NotificationType.AuctionLost]: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
     [NotificationType.BidPlaced]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     [NotificationType.BidAccepted]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    [NotificationType.BidRejected]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    [NotificationType.Outbid]: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     [NotificationType.OutBid]: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     [NotificationType.AuctionWon]: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-    [NotificationType.AuctionEndingSoon]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    [NotificationType.SystemNotification]: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-    [NotificationType.Broadcast]: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+    [NotificationType.BuyNowExecuted]: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    [NotificationType.OrderCreated]: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    [NotificationType.OrderShipped]: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
+    [NotificationType.OrderDelivered]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    [NotificationType.PaymentReceived]: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+    [NotificationType.PaymentCompleted]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    [NotificationType.ReviewReceived]: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+    [NotificationType.WelcomeEmail]: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    [NotificationType.PasswordReset]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    [NotificationType.AccountVerification]: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200",
+    [NotificationType.System]: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
 };
 
 const DEFAULT_ICON = faEnvelope;

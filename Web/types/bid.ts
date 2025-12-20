@@ -1,10 +1,14 @@
 export interface Bid {
   id: string;
   auctionId: string;
-  bidder: string;
+  bidderId: string;
+  bidderUsername: string;
   amount: number;
   bidTime: string;
   status: BidStatus;
+  errorMessage?: string;
+  minimumNextBid: number;
+  minimumIncrement: number;
   createdAt: string;
   updatedAt?: string;
 }

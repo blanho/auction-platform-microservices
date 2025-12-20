@@ -45,7 +45,7 @@ import {
     faStar,
     faUserPlus,
     faKey,
-    faShieldCheck,
+    faUserCheck,
     faGear,
     IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
@@ -74,7 +74,7 @@ const notificationTypeIcons: Record<string, IconDefinition> = {
     [NotificationType.ReviewReceived]: faStar,
     [NotificationType.WelcomeEmail]: faUserPlus,
     [NotificationType.PasswordReset]: faKey,
-    [NotificationType.AccountVerification]: faShieldCheck,
+    [NotificationType.AccountVerification]: faUserCheck,
     [NotificationType.System]: faGear
 };
 

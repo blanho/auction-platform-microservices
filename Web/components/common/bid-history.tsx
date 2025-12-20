@@ -139,7 +139,7 @@ function BidItem({ bid, isHighest }: BidItemProps) {
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{bid.bidder}</span>
+                    <span className="font-medium text-sm truncate">{bid.bidderUsername}</span>
                     {isHighest && (
                         <Badge variant="default" className="text-xs">
                             Highest

@@ -50,9 +50,10 @@ const STATUS_OPTIONS = [
   { value: "all", label: "All Statuses" },
   { value: AuctionStatus.Live, label: "Live" },
   { value: AuctionStatus.Finished, label: "Finished" },
-  { value: AuctionStatus.ReserveNotMet, label: "Reserve Not Met" },
-  { value: AuctionStatus.Cancelled, label: "Cancelled" },
-  { value: AuctionStatus.Inactive, label: "Inactive" }
+  { value: AuctionStatus.ReservedNotMet, label: "Reserve Not Met" },
+  { value: AuctionStatus.Inactive, label: "Inactive" },
+  { value: AuctionStatus.Scheduled, label: "Scheduled" },
+  { value: AuctionStatus.ReservedForBuyNow, label: "Reserved for Buy Now" }
 ];
 
 export function ExportAuctionsDialog({

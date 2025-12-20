@@ -87,10 +87,11 @@ function OrdersPageContent() {
     const [carrier, setCarrier] = useState("");
 
     const fetchOrders = useCallback(async () => {
+        if (!session?.user?.name) return;
         try {
             const [purchasesData, salesData] = await Promise.all([
-                orderService.getMyPurchases(),
-                orderService.getMySales(),
+                orderService.getMyPurchases(session.user.name),
+                orderService.getMySales(session.user.name),
             ]);
             setPurchases(purchasesData);
             setSales(salesData);
@@ -99,7 +100,7 @@ function OrdersPageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [session?.user?.name]);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -115,7 +116,7 @@ function OrdersPageContent() {
         if (!selectedOrder || !trackingNumber) return;
 
         try {
-            await orderService.updateShipping(selectedOrder.id, {
+            await orderService.markAsShipped(selectedOrder.id, {
                 trackingNumber,
                 carrier,
             });
@@ -214,7 +215,7 @@ function OrdersPageContent() {
                             <div className="flex items-center gap-2">
                                 <Truck className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-sm">
-                                    {order.carrier && `${order.carrier}: `}
+                                    {order.shippingCarrier && `${order.shippingCarrier}: `}
                                     {order.trackingNumber}
                                 </span>
                             </div>
@@ -232,7 +233,7 @@ function OrdersPageContent() {
                         {isSeller && order.status === OrderStatus.PendingPayment && (
                             <p className="text-sm text-amber-600">Waiting for buyer payment</p>
                         )}
-                        {isSeller && order.status === OrderStatus.Paid && (
+                        {isSeller && order.status === OrderStatus.PaymentReceived && (
                             <Button
                                 size="sm"
                                 onClick={() => {

@@ -26,13 +26,15 @@ export function AuctionCardWithActions({
         return "bg-green-500";
       case "FINISHED":
         return "bg-gray-500";
-      case "RESERVENOTMET":
-      case "RESERVE_NOT_MET":
+      case "RESERVEDNOTMET":
+      case "RESERVED_NOT_MET":
         return "bg-yellow-500";
-      case "CANCELLED":
-        return "bg-red-500";
       case "INACTIVE":
-        return "bg-orange-500";
+        return "bg-slate-500";
+      case "SCHEDULED":
+        return "bg-blue-500";
+      case "RESERVEDFORBUYNOW":
+        return "bg-purple-500";
       default:
         return "bg-gray-500";
     }

@@ -116,7 +116,7 @@ export function EditAuctionForm({ auction, categories }: EditAuctionFormProps) {
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
     const isLive = auction.status === AuctionStatus.Live;
-    const isEnded = auction.status === AuctionStatus.Finished || auction.status === AuctionStatus.ReserveNotMet;
+    const isEnded = auction.status === AuctionStatus.Finished || auction.status === AuctionStatus.ReservedNotMet;
 
     useEffect(() => {
         if (auction.files && auction.files.length > 0) {

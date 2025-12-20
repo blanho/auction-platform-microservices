@@ -68,15 +68,20 @@ const statusConfig: Record<
         color: "text-blue-600",
         bgColor: "bg-blue-500/10",
     },
-    [AuctionStatus.ReserveNotMet]: {
+    [AuctionStatus.ReservedNotMet]: {
         label: "Reserve Not Met",
         color: "text-orange-600",
         bgColor: "bg-orange-500/10",
     },
-    [AuctionStatus.Cancelled]: {
-        label: "Cancelled",
-        color: "text-red-600",
-        bgColor: "bg-red-500/10",
+    [AuctionStatus.Scheduled]: {
+        label: "Scheduled",
+        color: "text-indigo-600",
+        bgColor: "bg-indigo-500/10",
+    },
+    [AuctionStatus.ReservedForBuyNow]: {
+        label: "Reserved",
+        color: "text-purple-600",
+        bgColor: "bg-purple-500/10",
     },
 };
 
@@ -154,7 +159,7 @@ export default function MyListingsPage() {
         if (activeTab === "completed")
             return (
                 auction.status === AuctionStatus.Finished ||
-                auction.status === AuctionStatus.ReserveNotMet
+                auction.status === AuctionStatus.ReservedNotMet
             );
         return true;
     });
@@ -167,7 +172,7 @@ export default function MyListingsPage() {
         completed: auctions.filter(
             (a) =>
                 a.status === AuctionStatus.Finished ||
-                a.status === AuctionStatus.ReserveNotMet
+                a.status === AuctionStatus.ReservedNotMet
         ).length,
     };
 

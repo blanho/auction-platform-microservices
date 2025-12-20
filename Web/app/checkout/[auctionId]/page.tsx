@@ -117,13 +117,13 @@ export default function CheckoutPage() {
     }
 
     const fetchData = async () => {
-      if (!auctionId) return;
+      if (!auctionId || !session?.user?.name) return;
 
       setIsLoading(true);
       try {
         const [auctionData, balanceData] = await Promise.all([
           auctionService.getAuctionById(auctionId),
-          walletService.getBalance(),
+          walletService.getWallet(session.user.name),
         ]);
 
         if (auctionData.status !== AuctionStatus.Finished) {

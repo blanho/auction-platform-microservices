@@ -1,8 +1,10 @@
 export const AUCTION_STATUS = {
   LIVE: 'Live',
   FINISHED: 'Finished',
-  RESERVE_NOT_MET: 'ReserveNotMet',
-  CANCELLED: 'Cancelled',
+  RESERVED_NOT_MET: 'ReservedNotMet',
+  INACTIVE: 'Inactive',
+  SCHEDULED: 'Scheduled',
+  RESERVED_FOR_BUYNOW: 'ReservedForBuyNow',
 } as const;
 
 export type AuctionStatusType = (typeof AUCTION_STATUS)[keyof typeof AUCTION_STATUS];
@@ -10,15 +12,19 @@ export type AuctionStatusType = (typeof AUCTION_STATUS)[keyof typeof AUCTION_STA
 export const AUCTION_STATUS_COLORS: Record<string, string> = {
   [AUCTION_STATUS.LIVE]: 'bg-green-500',
   [AUCTION_STATUS.FINISHED]: 'bg-gray-500',
-  [AUCTION_STATUS.RESERVE_NOT_MET]: 'bg-yellow-500',
-  [AUCTION_STATUS.CANCELLED]: 'bg-red-500',
+  [AUCTION_STATUS.RESERVED_NOT_MET]: 'bg-yellow-500',
+  [AUCTION_STATUS.INACTIVE]: 'bg-slate-500',
+  [AUCTION_STATUS.SCHEDULED]: 'bg-blue-500',
+  [AUCTION_STATUS.RESERVED_FOR_BUYNOW]: 'bg-purple-500',
 } as const;
 
 export const AUCTION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   [AUCTION_STATUS.LIVE]: 'default',
   [AUCTION_STATUS.FINISHED]: 'secondary',
-  [AUCTION_STATUS.RESERVE_NOT_MET]: 'outline',
-  [AUCTION_STATUS.CANCELLED]: 'destructive',
+  [AUCTION_STATUS.RESERVED_NOT_MET]: 'outline',
+  [AUCTION_STATUS.INACTIVE]: 'secondary',
+  [AUCTION_STATUS.SCHEDULED]: 'outline',
+  [AUCTION_STATUS.RESERVED_FOR_BUYNOW]: 'default',
 } as const;
 
 export const REPORT_STATUS = {

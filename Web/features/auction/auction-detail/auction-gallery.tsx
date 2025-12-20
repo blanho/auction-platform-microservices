@@ -24,20 +24,25 @@ const STATUS_CONFIG: Record<AuctionStatus, StatusConfig> = {
         bgGlow: "",
         pulse: false,
     },
-    [AuctionStatus.ReserveNotMet]: {
+    [AuctionStatus.ReservedNotMet]: {
         gradient: "from-amber-500 to-orange-600",
         bgGlow: "shadow-amber-500/25",
-        pulse: false,
-    },
-    [AuctionStatus.Cancelled]: {
-        gradient: "from-red-500 to-rose-600",
-        bgGlow: "",
         pulse: false,
     },
     [AuctionStatus.Inactive]: {
         gradient: "from-slate-400 to-slate-500",
         bgGlow: "",
         pulse: false,
+    },
+    [AuctionStatus.Scheduled]: {
+        gradient: "from-blue-500 to-indigo-600",
+        bgGlow: "shadow-blue-500/25",
+        pulse: false,
+    },
+    [AuctionStatus.ReservedForBuyNow]: {
+        gradient: "from-purple-500 to-violet-600",
+        bgGlow: "shadow-purple-500/25",
+        pulse: true,
     },
 };
 

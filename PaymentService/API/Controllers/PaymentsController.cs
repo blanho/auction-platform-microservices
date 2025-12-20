@@ -5,7 +5,7 @@ using PaymentService.Application.Interfaces;
 namespace PaymentService.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class PaymentsController : ControllerBase
 {

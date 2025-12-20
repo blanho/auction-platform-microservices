@@ -34,12 +34,14 @@ export interface GetTransactionsParams {
 
 export interface CreateDepositDto {
     amount: number;
-    paymentMethodId?: string;
+    paymentMethod?: string;
+    description?: string;
 }
 
 export interface CreateWithdrawalDto {
     amount: number;
-    paymentMethodId?: string;
+    paymentMethod?: string;
+    description?: string;
 }
 
 export interface AdminWithdrawal {
@@ -57,17 +59,20 @@ export interface PaymentStatistics {
 }
 
 export const walletService = {
-    async getBalance(): Promise<WalletBalance> {
-        const response = await apiClient.get<WalletBalance>('/utility/api/v1/wallet/balance');
+    async getWallet(username: string): Promise<WalletBalance> {
+        const response = await apiClient.get<WalletBalance>(`/wallets/${username}`);
         return response.data;
     },
 
-    async getTransactions(params: GetTransactionsParams = {}): Promise<PagedTransactionsResponse> {
-        const response = await apiClient.get<PagedTransactionsResponse>('/utility/api/v1/wallet/transactions', {
+    async createWallet(username: string): Promise<WalletBalance> {
+        const response = await apiClient.post<WalletBalance>(`/wallets/${username}/create`);
+        return response.data;
+    },
+
+    async getTransactions(username: string, params: GetTransactionsParams = {}): Promise<WalletTransaction[]> {
+        const response = await apiClient.get<WalletTransaction[]>(`/wallets/${username}/transactions`, {
             params: {
-                type: params.type && params.type !== 'all' ? params.type : undefined,
-                status: params.status && params.status !== 'all' ? params.status : undefined,
-                pageNumber: params.pageNumber || 1,
+                page: params.pageNumber || 1,
                 pageSize: params.pageSize || 20,
             },
         });
@@ -75,39 +80,39 @@ export const walletService = {
     },
 
     async getTransaction(id: string): Promise<WalletTransaction> {
-        const response = await apiClient.get<WalletTransaction>(`/utility/api/v1/wallet/transactions/${id}`);
+        const response = await apiClient.get<WalletTransaction>(`/wallets/transactions/${id}`);
         return response.data;
     },
 
-    async createDeposit(dto: CreateDepositDto): Promise<WalletTransaction> {
-        const response = await apiClient.post<WalletTransaction>('/utility/api/v1/wallet/deposit', dto);
+    async createDeposit(username: string, dto: CreateDepositDto): Promise<WalletTransaction> {
+        const response = await apiClient.post<WalletTransaction>(`/wallets/${username}/deposit`, dto);
         return response.data;
     },
 
-    async createWithdrawal(dto: CreateWithdrawalDto): Promise<WalletTransaction> {
-        const response = await apiClient.post<WalletTransaction>('/utility/api/v1/wallet/withdraw', dto);
+    async createWithdrawal(username: string, dto: CreateWithdrawalDto): Promise<WalletTransaction> {
+        const response = await apiClient.post<WalletTransaction>(`/wallets/${username}/withdraw`, dto);
         return response.data;
     },
 };
 
 export const adminPaymentService = {
     async getPendingWithdrawals(): Promise<AdminWithdrawal[]> {
-        const response = await apiClient.get<AdminWithdrawal[]>('/utility/api/v1/admin/payments/withdrawals/pending');
+        const response = await apiClient.get<AdminWithdrawal[]>('/admin/payments/withdrawals/pending');
         return response.data;
     },
 
     async approveWithdrawal(id: string, externalTransactionId?: string): Promise<void> {
-        await apiClient.post(`/utility/api/v1/admin/payments/withdrawals/${id}/approve`, {
+        await apiClient.post(`/admin/payments/withdrawals/${id}/approve`, {
             externalTransactionId,
         });
     },
 
     async rejectWithdrawal(id: string, reason: string): Promise<void> {
-        await apiClient.post(`/utility/api/v1/admin/payments/withdrawals/${id}/reject`, { reason });
+        await apiClient.post(`/admin/payments/withdrawals/${id}/reject`, { reason });
     },
 
     async getStatistics(): Promise<PaymentStatistics> {
-        const response = await apiClient.get<PaymentStatistics>('/utility/api/v1/admin/payments/statistics');
+        const response = await apiClient.get<PaymentStatistics>('/admin/payments/statistics');
         return response.data;
     },
 };

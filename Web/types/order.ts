@@ -1,6 +1,5 @@
 export enum OrderStatus {
     PendingPayment = 'PendingPayment',
-    Paid = 'Paid',
     PaymentReceived = 'PaymentReceived',
     Processing = 'Processing',
     Shipped = 'Shipped',
@@ -13,17 +12,18 @@ export enum OrderStatus {
 
 export enum PaymentStatus {
     Pending = 'Pending',
-    Paid = 'Paid',
+    Processing = 'Processing',
+    Completed = 'Completed',
     Failed = 'Failed',
     Refunded = 'Refunded',
-    Cancelled = 'Cancelled',
-    Completed = 'Completed',
 }
 
 export interface Order {
     id: string;
     auctionId: string;
+    buyerId: string;
     buyerUsername: string;
+    sellerId: string;
     sellerUsername: string;
     itemTitle: string;
     itemImageUrl?: string;
@@ -33,13 +33,17 @@ export interface Order {
     platformFee?: number;
     status: OrderStatus;
     paymentStatus: PaymentStatus;
+    paymentTransactionId?: string;
+    shippingAddress?: string;
     trackingNumber?: string;
     shippingCarrier?: string;
-    carrier?: string;
     paidAt?: string;
     shippedAt?: string;
     deliveredAt?: string;
+    buyerNotes?: string;
+    sellerNotes?: string;
     createdAt: string;
+    updatedAt?: string;
     hasReview?: boolean;
 }
 

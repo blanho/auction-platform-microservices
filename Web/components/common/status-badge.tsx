@@ -48,20 +48,36 @@ function getStatusConfig(status: string): BadgeConfig {
                 icon: faCircleCheck,
                 pulse: false,
             };
-        case "RESERVENOTMET":
-        case "RESERVE_NOT_MET":
-        case AuctionStatus.ReserveNotMet.toUpperCase():
+        case "RESERVEDNOTMET":
+        case "RESERVED_NOT_MET":
+        case AuctionStatus.ReservedNotMet.toUpperCase():
             return {
                 bg: "bg-linear-to-r from-amber-500 to-yellow-500",
                 text: "Reserve Not Met",
                 icon: faTag,
                 pulse: false,
             };
-        case "CANCELLED":
-        case AuctionStatus.Cancelled.toUpperCase():
+        case "INACTIVE":
+        case AuctionStatus.Inactive.toUpperCase():
             return {
-                bg: "bg-red-500",
-                text: "Cancelled",
+                bg: "bg-slate-500",
+                text: "Inactive",
+                icon: null,
+                pulse: false,
+            };
+        case "SCHEDULED":
+        case AuctionStatus.Scheduled.toUpperCase():
+            return {
+                bg: "bg-blue-500",
+                text: "Scheduled",
+                icon: null,
+                pulse: false,
+            };
+        case "RESERVEDFORBUYNOW":
+        case AuctionStatus.ReservedForBuyNow.toUpperCase():
+            return {
+                bg: "bg-purple-500",
+                text: "Reserved",
                 icon: null,
                 pulse: false,
             };

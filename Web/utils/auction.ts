@@ -21,11 +21,16 @@ export function getStatusColorSafe(status: string | null | undefined): string {
       return 'bg-green-500';
     case 'FINISHED':
       return 'bg-gray-500';
-    case 'RESERVENOTMET':
-    case 'RESERVE_NOT_MET':
+    case 'RESERVEDNOTMET':
+    case 'RESERVED_NOT_MET':
       return 'bg-yellow-500';
-    case 'CANCELLED':
-      return 'bg-red-500';
+    case 'INACTIVE':
+      return 'bg-slate-500';
+    case 'SCHEDULED':
+      return 'bg-blue-500';
+    case 'RESERVEDFORBUYNOW':
+    case 'RESERVED_FOR_BUYNOW':
+      return 'bg-purple-500';
     default:
       return 'bg-gray-500';
   }
@@ -43,7 +48,7 @@ export function isAuctionActive(status: string): boolean {
  */
 export function isAuctionEnded(status: string): boolean {
   const statusUpper = status.toUpperCase();
-  return statusUpper === 'FINISHED' || statusUpper === 'CANCELLED';
+  return statusUpper === 'FINISHED' || statusUpper === 'RESERVEDNOTMET';
 }
 
 /**

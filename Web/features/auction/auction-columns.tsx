@@ -20,12 +20,14 @@ function getStatusBadgeVariant(status: AuctionStatus) {
       return "default";
     case AuctionStatus.Finished:
       return "secondary";
-    case AuctionStatus.ReserveNotMet:
+    case AuctionStatus.ReservedNotMet:
       return "destructive";
-    case AuctionStatus.Cancelled:
-      return "outline";
     case AuctionStatus.Inactive:
       return "secondary";
+    case AuctionStatus.Scheduled:
+      return "outline";
+    case AuctionStatus.ReservedForBuyNow:
+      return "default";
     default:
       return "outline";
   }

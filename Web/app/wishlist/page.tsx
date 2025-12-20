@@ -77,8 +77,14 @@ export default function WishlistPage() {
                 return "bg-green-500";
             case "finished":
                 return "bg-zinc-500";
-            case "reservenotmet":
+            case "reservednotmet":
                 return "bg-yellow-500";
+            case "inactive":
+                return "bg-slate-500";
+            case "scheduled":
+                return "bg-blue-500";
+            case "reservedforbuynow":
+                return "bg-purple-500";
             default:
                 return "bg-blue-500";
         }
