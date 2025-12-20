@@ -61,22 +61,6 @@ services:
     networks:
       - microservices
 
-  search-mongo:
-    image: mongo:7
-    container_name: search-mongo
-    restart: unless-stopped
-    ports:
-      - "27018:27017"
-    volumes:
-      - search_mongo_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices
-
   auction-api:
     build:
       context: .
@@ -399,8 +383,6 @@ volumes:
   redis_data:
     driver: local
   rabbitmq_data:
-    driver: local
-  search_mongo_data:
     driver: local
   auction_api_logs:
     driver: local

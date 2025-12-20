@@ -6,7 +6,3 @@ services:
   postgres:
     ports:
       - "5433:5432"
-
-  search-mongo:
-    ports:
-      - "27018:27017"

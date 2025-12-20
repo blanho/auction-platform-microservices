@@ -6,17 +6,20 @@ A modern, scalable auction platform built with microservices architecture using 
 
 This application consists of multiple microservices:
 
-- **Auction Service** - Manages auction listings and bids
-- **Search Service** - Provides search functionality with MongoDB
-- **Identity Service** - Handles authentication and authorization (Duende IdentityServer)
+- **Auction Service** - Manages auction listings and items
+- **Bid Service** - Handles bid processing
+- **Payment Service** - Orders, wallets, and revenue
+- **Notification Service** - Email and push notifications
+- **Storage Service** - File storage with pre-signed URLs
+- **Utility Service** - Analytics and audit logs
+- **Identity Service** - Authentication and authorization (Duende IdentityServer)
 - **Gateway Service** - API Gateway using YARP reverse proxy
 - **Web** - Next.js frontend application
 
 ### Supporting Infrastructure
 
-- **PostgreSQL** - Database for Auction and Identity services
-- **MongoDB** - Database for Search service
-- **Redis** - Caching layer
+- **PostgreSQL** - Primary database for all services
+- **Redis** - Caching and distributed locking
 - **RabbitMQ** - Message broker for inter-service communication
 
 ## Prerequisites
@@ -62,11 +65,14 @@ This application consists of multiple microservices:
 | ------------------- | --------- | -------------- | ------------------------ |
 | Web                 | 3000      | 3000           | Next.js frontend         |
 | Gateway             | 6001      | 8080           | API Gateway              |
-| Auction API         | 5000      | 8080           | Auction service (direct) |
-| Search API          | 5001      | 8080           | Search service (direct)  |
-| Identity            | 5002      | 5001           | Identity server          |
+| Auction API         | 7001      | 8080           | Auction service          |
+| Bid API             | 7003      | 8080           | Bid service              |
+| Payment API         | 7007      | 8080           | Payment service          |
+| Notification API    | 7005      | 8080           | Notification service     |
+| Storage API         | 7009      | 8080           | Storage service          |
+| Utility API         | 5005      | 8080           | Utility service          |
+| Identity            | 5001      | 5001           | Identity server          |
 | PostgreSQL          | 5433      | 5432           | Database                 |
-| MongoDB             | 27018     | 27017          | Search database          |
 | Redis               | 6379      | 6379           | Cache                    |
 | RabbitMQ            | 5672      | 5672           | Message broker           |
 | RabbitMQ Management | 15672     | 15672          | Management UI            |
@@ -325,12 +331,6 @@ auction-microservices/
 - `ConnectionStrings__DefaultConnection` - PostgreSQL connection
 - `ConnectionStrings__Redis` - Redis connection
 - `RabbitMQ__Host` - RabbitMQ host
-
-### Search Service
-
-- `MongoDb__ConnectionString` - MongoDB connection
-- `MongoDb__DatabaseName` - Database name
-- `MongoDb__CollectionName` - Collection name
 
 ## Contributing
 
