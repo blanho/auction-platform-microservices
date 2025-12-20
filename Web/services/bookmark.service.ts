@@ -32,7 +32,7 @@ export interface UpdateNotificationsRequest {
   notifyOnEnd: boolean;
 }
 
-const BASE_URL = "/auction/api/v1/bookmarks";
+const BASE_URL = "/bookmarks";
 
 export const bookmarkService = {
   async getWatchlist(): Promise<BookmarkItem[]> {

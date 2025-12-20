@@ -44,9 +44,10 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
     const isAuthenticated = status === "authenticated" && !!session;
+    const isSessionLoading = status === "loading";
 
     const refreshWishlist = useCallback(async () => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated || isSessionLoading) {
             setWishlistIds(new Set());
             return;
         }
@@ -57,10 +58,10 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
         } catch (error) {
             console.error("Failed to fetch wishlist:", error);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, isSessionLoading]);
 
     const refreshWatchlist = useCallback(async () => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated || isSessionLoading) {
             setWatchlistIds(new Set());
             return;
         }
@@ -71,10 +72,14 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
         } catch (error) {
             console.error("Failed to fetch watchlist:", error);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, isSessionLoading]);
 
     useEffect(() => {
         let isMounted = true;
+
+        if (isSessionLoading) {
+            return;
+        }
 
         if (!isAuthenticated) {
             if (!initialLoadComplete) {

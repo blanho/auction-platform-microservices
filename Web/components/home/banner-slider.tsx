@@ -34,7 +34,7 @@ const BANNER_SLIDES: BannerSlide[] = [
     imageUrl: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=1200",
     link: "/deals",
     buttonText: "Shop Now",
-    gradient: "from-purple-600/90 to-pink-600/90",
+    gradient: "from-purple-600/70 via-purple-600/50 to-transparent",
   },
   {
     id: "2",
@@ -44,7 +44,7 @@ const BANNER_SLIDES: BannerSlide[] = [
     imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200",
     link: "/auctions?sort=newest",
     buttonText: "Explore",
-    gradient: "from-blue-600/90 to-cyan-600/90",
+    gradient: "from-blue-600/70 via-blue-600/50 to-transparent",
   },
   {
     id: "3",
@@ -54,7 +54,7 @@ const BANNER_SLIDES: BannerSlide[] = [
     imageUrl: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1200",
     link: "/categories/watches",
     buttonText: "View Collection",
-    gradient: "from-amber-600/90 to-orange-600/90",
+    gradient: "from-amber-600/70 via-amber-600/50 to-transparent",
   },
   {
     id: "4",
@@ -64,7 +64,7 @@ const BANNER_SLIDES: BannerSlide[] = [
     imageUrl: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=1200",
     link: "/categories/electronics",
     buttonText: "Browse Tech",
-    gradient: "from-emerald-600/90 to-teal-600/90",
+    gradient: "from-emerald-600/70 via-emerald-600/50 to-transparent",
   },
 ];
 
@@ -194,7 +194,7 @@ export function PromoBanner({
   subtitle, 
   imageUrl, 
   link, 
-  gradient = "from-blue-600/80 to-purple-600/80" 
+  gradient = "from-slate-900/60 via-slate-900/40 to-transparent" 
 }: PromoBannerProps) {
   return (
     <Link href={link} className="block relative w-full h-full rounded-xl overflow-hidden group">

@@ -110,11 +110,12 @@ builder.Services.AddRateLimiter(options =>
 var identityAuthority = builder.Configuration["Identity:Authority"];
 if (!string.IsNullOrEmpty(identityAuthority))
 {
+    var isLocalDevelopment = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Local";
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.Authority = identityAuthority;
-            options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+            options.RequireHttpsMetadata = !isLocalDevelopment;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,

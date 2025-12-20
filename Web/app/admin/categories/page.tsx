@@ -28,6 +28,7 @@ import {
     faGem,
     faPalette,
     faMusic,
+    faImage,
     faGamepad,
     faBook,
     faHome,
@@ -102,6 +103,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { SingleImageUpload } from "@/components/ui/single-image-upload";
 import { toast } from "sonner";
 
 import {
@@ -966,14 +968,18 @@ export default function AdminCategoriesPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="imageUrl">Image URL</Label>
-                            <Input
-                                id="imageUrl"
+                            <Label>
+                                <FontAwesomeIcon icon={faImage} className="w-3 h-3 mr-1.5" />
+                                Category Image
+                            </Label>
+                            <SingleImageUpload
                                 value={formData.imageUrl}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
+                                onChange={(url) =>
+                                    setFormData((prev) => ({ ...prev, imageUrl: url }))
                                 }
-                                placeholder="https://example.com/image.jpg"
+                                folder="categories"
+                                aspectRatio="video"
+                                disabled={isSaving}
                             />
                         </div>
 

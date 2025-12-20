@@ -3,12 +3,10 @@ using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
 using IdentityService.Services;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using Serilog.Filters;
 
 namespace IdentityService;
 
@@ -18,30 +16,10 @@ internal static class HostingExtensions
     {
         builder.Host.UseSerilog((ctx, lc) =>
         {
-            lc.WriteTo.Logger(consoleLogger =>
-            {
-                consoleLogger.WriteTo.Console(
-                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
-                    formatProvider: CultureInfo.InvariantCulture);
-                if (builder.Environment.IsDevelopment())
-                {
-                    consoleLogger.Filter.ByExcluding(Matching.FromSource("Duende.IdentityServer.Diagnostics.Summary"));
-                }
-            });
-            if (builder.Environment.IsDevelopment())
-            {
-                lc.WriteTo.Logger(fileLogger =>
-                {
-                    fileLogger
-                        .WriteTo.File("./diagnostics/diagnostic.log", rollingInterval: RollingInterval.Day,
-                            fileSizeLimitBytes: 1024 * 1024 * 10, // 10 MB
-                            rollOnFileSizeLimit: true,
-                            outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
-                            formatProvider: CultureInfo.InvariantCulture)
-                        .Filter
-                        .ByIncludingOnly(Matching.FromSource("Duende.IdentityServer.Diagnostics.Summary"));
-                }).Enrich.FromLogContext().ReadFrom.Configuration(ctx.Configuration);
-            }
+            lc.WriteTo.Console(
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
+                formatProvider: CultureInfo.InvariantCulture);
+            lc.Enrich.FromLogContext().ReadFrom.Configuration(ctx.Configuration);
         });
         return builder;
     }
@@ -85,14 +63,7 @@ internal static class HostingExtensions
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
                 
-                // Set a consistent issuer URI for all environments
                 options.IssuerUri = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
-
-                // Use a large chunk size for diagnostic data in development where it will be redirected to a local file.
-                if (builder.Environment.IsDevelopment())
-                {
-                    options.Diagnostics.ChunkSize = 1024 * 1024 * 10; // 10 MB
-                }
             })
             .AddInMemoryIdentityResources(Config.IdentityResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
@@ -111,10 +82,11 @@ internal static class HostingExtensions
 
         // Add JWT Bearer for API endpoints
         var identityAuthority = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+        var isLocalDevelopment = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Local";
         authBuilder.AddJwtBearer("Bearer", options =>
         {
             options.Authority = identityAuthority;
-            options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+            options.RequireHttpsMetadata = !isLocalDevelopment;
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -190,20 +162,17 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
-        // Add CORS for development
         app.UseCors(policy =>
             policy.WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials());
 
-        app.UseStaticFiles();
         app.UseRouting();
         app.UseIdentityServer();
         app.UseAuthorization();
 
         app.MapControllers();
-        // Removed MapRazorPages() - using Next.js UI instead
 
         return app;
     }

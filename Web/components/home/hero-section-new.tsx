@@ -30,7 +30,7 @@ export function HeroSectionNew() {
                 subtitle="Up to 50% Off"
                 imageUrl="https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=600"
                 link="/deals?type=christmas"
-                gradient="from-red-600/80 to-green-600/80"
+                gradient="from-red-700/50 via-green-700/30 to-transparent"
               />
             </div>
             <div className="hidden lg:block h-[184px]">
@@ -39,7 +39,7 @@ export function HeroSectionNew() {
                 subtitle="Electronics & Gadgets"
                 imageUrl="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600"
                 link="/categories/electronics"
-                gradient="from-blue-600/80 to-cyan-600/80"
+                gradient="from-blue-700/50 via-blue-600/30 to-transparent"
               />
             </div>
           </div>

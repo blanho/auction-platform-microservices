@@ -29,7 +29,7 @@ export interface UpdateBrandDto {
     isFeatured?: boolean;
 }
 
-const BASE_URL = "/auction/api/v1/brands";
+const BASE_URL = "/brands";
 
 export const brandService = {
     async getBrands(params?: {
