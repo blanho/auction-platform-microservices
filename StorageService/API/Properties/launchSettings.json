@@ -4,8 +4,7 @@
     "StorageService.API": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:7011",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
