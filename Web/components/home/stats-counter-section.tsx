@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuickStats } from "@/hooks/use-analytics";
+import { useQuickStatsQuery } from "@/hooks/queries";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faUsers,
@@ -97,7 +97,7 @@ function StatSkeleton() {
 }
 
 export function StatsCounterSection() {
-    const { data: stats, isLoading } = useQuickStats();
+    const { data: stats, isLoading } = useQuickStatsQuery();
 
     const statsData: StatItem[] = useMemo(
         () => [

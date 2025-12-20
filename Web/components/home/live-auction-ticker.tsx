@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt, faUsers, faChartLine, faZap } from "@fortawesome/free-solid-svg-icons";
-import { useQuickStats } from "@/hooks/use-analytics";
+import { useQuickStatsQuery } from "@/hooks/queries";
 import { LiveIndicator } from "@/components/ui/animated";
 
 interface LiveBid {
@@ -71,7 +71,7 @@ function BidItem({ bid }: { bid: LiveBid }) {
 }
 
 export function LiveAuctionTicker() {
-    const { data: stats, isLoading } = useQuickStats();
+    const { data: stats, isLoading } = useQuickStatsQuery();
     const [bids, setBids] = useState<LiveBid[]>([]);
 
     useEffect(() => {

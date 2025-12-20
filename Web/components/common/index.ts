@@ -1,6 +1,7 @@
 export { AuditHistory } from "./audit-history";
 export { BidHistory } from "./bid-history";
 export { EmptyState } from "./empty-state";
+export { ErrorBoundary, RouteErrorBoundary } from "./error-boundary";
 export { LoadingSpinner } from "./loading-spinner";
 export { NotificationBell } from "./notification-bell";
 export { Pagination } from "./pagination";

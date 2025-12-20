@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,7 +9,9 @@ import { bidService } from "@/services/bid.service";
 import { Bid, BidStatus } from "@/types/bid";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
-import { User, DollarSign, Clock } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faDollarSign, faClock } from "@fortawesome/free-solid-svg-icons";
+import { getBidStatusStyle } from "@/constants/status";
 
 
 interface BidHistoryProps {
@@ -18,41 +20,9 @@ interface BidHistoryProps {
     maxHeight?: string;
 }
 
-interface StatusConfig {
-    label: string;
-    className: string;
-}
-
 const DEFAULT_MAX_HEIGHT = "300px";
 const SKELETON_COUNT = 3;
 
-const STATUS_CONFIG: Record<BidStatus, StatusConfig> = {
-    [BidStatus.Accepted]: {
-        label: "Accepted",
-        className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-    },
-    [BidStatus.AcceptedBelowReserve]: {
-        label: "Below Reserve",
-        className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-    },
-    [BidStatus.TooLow]: {
-        label: "Too Low",
-        className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-    },
-    [BidStatus.Pending]: {
-        label: "Pending",
-        className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-    },
-    [BidStatus.Rejected]: {
-        label: "Rejected",
-        className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-    }
-};
-
-
-function getStatusConfig(status: BidStatus): StatusConfig {
-    return STATUS_CONFIG[status] || STATUS_CONFIG[BidStatus.Pending];
-}
 
 function sortBidsByTime(bids: Bid[]): Bid[] {
     return [...bids].sort((a, b) =>
@@ -105,7 +75,7 @@ function EmptyState() {
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.1 }}
             >
-                <DollarSign className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                <FontAwesomeIcon icon={faDollarSign} className="h-10 w-10 mx-auto mb-2 opacity-50" />
             </motion.div>
             <p className="text-sm">No bids yet. Be the first to bid!</p>
         </motion.div>
@@ -118,7 +88,7 @@ interface BidItemProps {
 }
 
 function BidItem({ bid, isHighest }: BidItemProps) {
-    const config = getStatusConfig(bid.status as BidStatus);
+    const config = getBidStatusStyle(bid.status as BidStatus);
 
     return (
         <motion.div
@@ -135,7 +105,10 @@ function BidItem({ bid, isHighest }: BidItemProps) {
                 "h-10 w-10 rounded-full flex items-center justify-center",
                 isHighest ? "bg-green-100 dark:bg-green-900" : "bg-gray-100 dark:bg-gray-800"
             )}>
-                <User className={cn("h-5 w-5", isHighest ? "text-green-600" : "text-gray-500")} />
+                <FontAwesomeIcon 
+                    icon={faUser} 
+                    className={cn("h-5 w-5", isHighest ? "text-green-600" : "text-gray-500")} 
+                />
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -147,7 +120,7 @@ function BidItem({ bid, isHighest }: BidItemProps) {
                     )}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <Clock className="h-3 w-3" />
+                    <FontAwesomeIcon icon={faClock} className="h-3 w-3" />
                     <span>
                         {formatDistanceToNow(new Date(bid.bidTime), { addSuffix: true })}
                     </span>
@@ -173,23 +146,36 @@ export function BidHistory({
     const [bids, setBids] = useState<Bid[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const fetchBids = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const data = await bidService.getBidsForAuction(auctionId);
-            setBids(sortBidsByTime(data));
-        } catch {
-            setError("Failed to load bid history");
-        } finally {
-            setIsLoading(false);
-        }
-    }, [auctionId]);
+    const isMountedRef = useRef(true);
 
     useEffect(() => {
+        isMountedRef.current = true;
+
+        const fetchBids = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const data = await bidService.getBidsForAuction(auctionId);
+                if (isMountedRef.current) {
+                    setBids(sortBidsByTime(data));
+                }
+            } catch {
+                if (isMountedRef.current) {
+                    setError("Failed to load bid history");
+                }
+            } finally {
+                if (isMountedRef.current) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
         fetchBids();
-    }, [fetchBids, refreshTrigger]);
+
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, [auctionId, refreshTrigger]);
 
     if (isLoading) {
         return <LoadingSkeleton />;

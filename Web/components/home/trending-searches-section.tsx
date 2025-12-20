@@ -21,7 +21,7 @@ import {
   faCamera,
 } from "@fortawesome/free-solid-svg-icons";
 import { AnimatedSection } from "@/components/ui/animated";
-import { useTrendingSearches } from "@/hooks/use-analytics";
+import { useTrendingSearchesQuery } from "@/hooks/queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/constants";
 
@@ -85,7 +85,7 @@ function TrendingSearchSkeleton() {
 }
 
 export function TrendingSearchesSection() {
-  const { data: trendingSearches, isLoading, error } = useTrendingSearches(12);
+  const { data: trendingSearches, isLoading, error } = useTrendingSearchesQuery(12);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

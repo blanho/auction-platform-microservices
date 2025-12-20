@@ -14,7 +14,7 @@ import {
   faMedal,
   faAward,
 } from "@fortawesome/free-solid-svg-icons";
-import { useTopListings } from "@/hooks/use-analytics";
+import { useTopListingsQuery } from "@/hooks/queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ROUTES } from "@/constants";
 import { AnimatedSection } from "@/components/ui/animated";
@@ -65,7 +65,7 @@ function TopListingSkeleton() {
 }
 
 export function TopAuctionsSection() {
-  const { data: topListings, isLoading, error } = useTopListings(6);
+  const { data: topListings, isLoading, error } = useTopListingsQuery(6);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -6,45 +6,7 @@ import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faFire } from "@fortawesome/free-solid-svg-icons";
 import { AuctionStatus } from "@/types/auction";
-
-interface StatusConfig {
-    gradient: string;
-    bgGlow: string;
-    pulse: boolean;
-}
-
-const STATUS_CONFIG: Record<AuctionStatus, StatusConfig> = {
-    [AuctionStatus.Live]: {
-        gradient: "from-emerald-500 to-green-600",
-        bgGlow: "shadow-emerald-500/25",
-        pulse: true,
-    },
-    [AuctionStatus.Finished]: {
-        gradient: "from-slate-500 to-slate-600",
-        bgGlow: "",
-        pulse: false,
-    },
-    [AuctionStatus.ReservedNotMet]: {
-        gradient: "from-amber-500 to-orange-600",
-        bgGlow: "shadow-amber-500/25",
-        pulse: false,
-    },
-    [AuctionStatus.Inactive]: {
-        gradient: "from-slate-400 to-slate-500",
-        bgGlow: "",
-        pulse: false,
-    },
-    [AuctionStatus.Scheduled]: {
-        gradient: "from-blue-500 to-indigo-600",
-        bgGlow: "shadow-blue-500/25",
-        pulse: false,
-    },
-    [AuctionStatus.ReservedForBuyNow]: {
-        gradient: "from-purple-500 to-violet-600",
-        bgGlow: "shadow-purple-500/25",
-        pulse: true,
-    },
-};
+import { getAuctionStatusStyle } from "@/constants/status";
 
 interface AuctionGalleryProps {
     images: string[];
@@ -55,7 +17,7 @@ interface AuctionGalleryProps {
 
 export function AuctionGallery({ images, title, status, isUrgent }: AuctionGalleryProps) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG[AuctionStatus.Inactive];
+    const statusConfig = getAuctionStatusStyle(status);
     const currentImage = images[selectedImageIndex] || "/placeholder-car.jpg";
 
     const navigateImage = (direction: "prev" | "next") => {
@@ -137,5 +99,3 @@ export function AuctionGallery({ images, title, status, isUrgent }: AuctionGalle
         </div>
     );
 }
-
-export { STATUS_CONFIG };

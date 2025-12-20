@@ -1,3 +1,6 @@
+import { AuctionStatus } from "@/types/auction";
+import { BidStatus } from "@/types/bid";
+
 export const AUCTION_STATUS = {
   LIVE: 'Live',
   FINISHED: 'Finished',
@@ -26,6 +29,81 @@ export const AUCTION_STATUS_VARIANTS: Record<string, 'default' | 'secondary' | '
   [AUCTION_STATUS.SCHEDULED]: 'outline',
   [AUCTION_STATUS.RESERVED_FOR_BUYNOW]: 'default',
 } as const;
+
+export interface AuctionStatusStyleConfig {
+  gradient: string;
+  bgGlow: string;
+  pulse: boolean;
+}
+
+export const AUCTION_STATUS_STYLES: Record<AuctionStatus, AuctionStatusStyleConfig> = {
+  [AuctionStatus.Live]: {
+    gradient: "from-emerald-500 to-green-600",
+    bgGlow: "shadow-emerald-500/25",
+    pulse: true,
+  },
+  [AuctionStatus.Finished]: {
+    gradient: "from-slate-500 to-slate-600",
+    bgGlow: "",
+    pulse: false,
+  },
+  [AuctionStatus.ReservedNotMet]: {
+    gradient: "from-amber-500 to-orange-600",
+    bgGlow: "shadow-amber-500/25",
+    pulse: false,
+  },
+  [AuctionStatus.Inactive]: {
+    gradient: "from-slate-400 to-slate-500",
+    bgGlow: "",
+    pulse: false,
+  },
+  [AuctionStatus.Scheduled]: {
+    gradient: "from-blue-500 to-indigo-600",
+    bgGlow: "shadow-blue-500/25",
+    pulse: false,
+  },
+  [AuctionStatus.ReservedForBuyNow]: {
+    gradient: "from-purple-500 to-violet-600",
+    bgGlow: "shadow-purple-500/25",
+    pulse: true,
+  },
+};
+
+export function getAuctionStatusStyle(status: AuctionStatus): AuctionStatusStyleConfig {
+  return AUCTION_STATUS_STYLES[status] || AUCTION_STATUS_STYLES[AuctionStatus.Inactive];
+}
+
+export interface BidStatusStyleConfig {
+  label: string;
+  className: string;
+}
+
+export const BID_STATUS_STYLES: Record<BidStatus, BidStatusStyleConfig> = {
+  [BidStatus.Accepted]: {
+    label: "Accepted",
+    className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+  },
+  [BidStatus.AcceptedBelowReserve]: {
+    label: "Below Reserve",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+  },
+  [BidStatus.TooLow]: {
+    label: "Too Low",
+    className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+  },
+  [BidStatus.Pending]: {
+    label: "Pending",
+    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+  },
+  [BidStatus.Rejected]: {
+    label: "Rejected",
+    className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+  }
+};
+
+export function getBidStatusStyle(status: BidStatus): BidStatusStyleConfig {
+  return BID_STATUS_STYLES[status] || BID_STATUS_STYLES[BidStatus.Pending];
+}
 
 export const REPORT_STATUS = {
   PENDING: 'Pending',

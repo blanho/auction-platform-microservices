@@ -31,9 +31,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/s
 import { NotificationBell } from "@/components/common/notification-bell";
 import { cn } from "@/lib/utils";
 import { gradients, gradientText, glass, shadows } from "@/lib/styles";
-import { useCategories } from "@/hooks/use-auctions";
+import { useCategoriesQuery, useQuickStatsQuery, useTrendingSearchesQuery } from "@/hooks/queries";
 import { wishlistService } from "@/services/wishlist.service";
-import { analyticsService } from "@/services/analytics.service";
 import { useAuthSession } from "@/hooks/use-auth-session";
 
 const navLinks = [
@@ -74,26 +73,29 @@ export function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [showAnnouncement, setShowAnnouncement] = useState(true);
     const [wishlistCount, setWishlistCount] = useState(0);
-    const [quickStatsData, setQuickStatsData] = useState<any>(null);
-    const [trendingSearchesData, setTrendingSearchesData] = useState<any[]>([]);
-    const { data: categories, isLoading: categoriesLoading } = useCategories();
+    
+    const { data: categories, isLoading: categoriesLoading } = useCategoriesQuery();
+    const { data: quickStatsData } = useQuickStatsQuery();
+    const { data: trendingSearchesData = [] } = useTrendingSearchesQuery(6);
 
     useEffect(() => {
-        const fetchAllData = async () => {
-            const [wishlistData, quickStats, trendingSearches] = await Promise.all([
-                user?.id ? wishlistService.getWishlist().catch(() => []) : Promise.resolve([]),
-                analyticsService.getQuickStats().catch(() => null),
-                analyticsService.getTrendingSearches(6).catch(() => [])
-            ]);
+        if (!user?.id) {
+            setWishlistCount(0);
+            return;
+        }
 
-            if (user?.id) setWishlistCount(wishlistData.length);
-            setQuickStatsData(quickStats);
-            setTrendingSearchesData(trendingSearches);
+        let isMounted = true;
+        wishlistService.getWishlist()
+            .then((data) => {
+                if (isMounted) setWishlistCount(data.length);
+            })
+            .catch(() => {
+                if (isMounted) setWishlistCount(0);
+            });
+
+        return () => {
+            isMounted = false;
         };
-
-        fetchAllData();
-        const interval = setInterval(fetchAllData, 60000);
-        return () => clearInterval(interval);
     }, [user?.id]);
 
     const trendingSearches = trendingSearchesData
@@ -471,7 +473,7 @@ export function Header() {
                                                     Categories
                                                 </h3>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    {!categoriesLoading && categories.map((cat) => (
+                                                    {!categoriesLoading && categories?.map((cat) => (
                                                         <Link
                                                             key={cat.id}
                                                             href={`/search?category=${cat.slug}`}

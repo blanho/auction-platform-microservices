@@ -96,117 +96,19 @@ import {
 import { toast } from 'sonner';
 
 import { Auction, AuctionStatus } from '@/types/auction';
+import { getAuctionStatusStyle } from '@/constants/status';
 
 import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { BuyNowButton } from '@/features/auction/buy-now-button';
+import { CountdownTimer } from '@/features/auction/auction-detail';
 import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
 import { ReviewsSection } from '@/features/review';
 import { useAuctionQuery, useRelatedAuctionsQuery } from '@/hooks/queries';
 import { bookmarkService } from '@/services/bookmark.service';
 import { AuditHistory } from '@/components/common/audit-history';
 import { BidHistory } from '@/components/common/bid-history';
-
-interface TimeLeft {
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-}
-
-const STATUS_CONFIG = {
-    [AuctionStatus.Live]: {
-        gradient: 'from-emerald-500 to-green-600',
-        bgGlow: 'shadow-emerald-500/25',
-        pulse: true,
-    },
-    [AuctionStatus.Finished]: {
-        gradient: 'from-slate-500 to-slate-600',
-        bgGlow: '',
-        pulse: false,
-    },
-    [AuctionStatus.ReservedNotMet]: {
-        gradient: 'from-amber-500 to-orange-600',
-        bgGlow: 'shadow-amber-500/25',
-        pulse: false,
-    },
-    [AuctionStatus.Inactive]: {
-        gradient: 'from-slate-400 to-slate-500',
-        bgGlow: '',
-        pulse: false,
-    },
-    [AuctionStatus.Scheduled]: {
-        gradient: 'from-blue-500 to-indigo-600',
-        bgGlow: 'shadow-blue-500/25',
-        pulse: false,
-    },
-    [AuctionStatus.ReservedForBuyNow]: {
-        gradient: 'from-purple-500 to-violet-600',
-        bgGlow: 'shadow-purple-500/25',
-        pulse: true,
-    },
-};
-
-function CountdownTimer({ endDate, isUrgent }: { endDate: string; isUrgent?: boolean }) {
-    const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeRemaining(endDate));
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft(getTimeRemaining(endDate));
-        }, TIME.COUNTDOWN_INTERVAL);
-        return () => clearInterval(timer);
-    }, [endDate]);
-
-    if (!timeLeft) {
-        return (
-            <div className="flex items-center gap-2 text-red-500 font-semibold">
-                <FontAwesomeIcon icon={faGavel} className="w-5 h-5" />
-                <span>{MESSAGES.LABELS.AUCTION_ENDED}</span>
-            </div>
-        );
-    }
-
-    const showDays = timeLeft.days > 0;
-    const formatUnit = (value: number) => String(value).padStart(2, '0');
-    const urgentClass = isUrgent ? 'animate-pulse' : '';
-
-    return (
-        <div className="flex items-center gap-3">
-            <div className={`flex gap-2 font-mono ${urgentClass}`}>
-                {showDays && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                            {timeLeft.days}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-wider text-slate-500">Days</span>
-                    </div>
-                )}
-                {showDays && <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>}
-                <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                        {formatUnit(timeLeft.hours)}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Hours</span>
-                </div>
-                <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
-                <div className="flex flex-col items-center">
-                    <span className="text-3xl font-bold bg-linear-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                        {formatUnit(timeLeft.minutes)}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Mins</span>
-                </div>
-                <span className="text-2xl text-slate-300 dark:text-slate-600 self-start mt-1">:</span>
-                <div className="flex flex-col items-center">
-                    <span className={`text-3xl font-bold ${isUrgent ? 'text-red-500' : 'bg-linear-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent'}`}>
-                        {formatUnit(timeLeft.seconds)}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500">Secs</span>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 export default function AuctionDetailPage() {
     const params = useParams();
@@ -347,7 +249,7 @@ export default function AuctionDetailPage() {
     const sellerUsername = getAuctionSellerUsername(auction);
     const isOwner = user?.name === sellerUsername;
     const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
-    const statusConfig = STATUS_CONFIG[auction.status] || STATUS_CONFIG[AuctionStatus.Inactive];
+    const statusConfig = getAuctionStatusStyle(auction.status);
     const timeRemaining = getTimeRemaining(auction.auctionEnd);
     const isUrgent = timeRemaining && timeRemaining.days === 0 && timeRemaining.hours < 1;
     const auctionTitle = getAuctionTitle(auction);

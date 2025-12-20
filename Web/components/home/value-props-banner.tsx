@@ -15,7 +15,7 @@ import {
   faBolt,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { useQuickStats } from "@/hooks/use-analytics";
+import { useQuickStatsQuery } from "@/hooks/queries";
 
 interface ValueProp {
   icon: IconDefinition;
@@ -65,7 +65,7 @@ const item = {
 };
 
 export function ValuePropsBanner() {
-  const { data: stats, isLoading } = useQuickStats();
+  const { data: stats, isLoading } = useQuickStatsQuery();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
