@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -125,7 +126,7 @@ function SignInContent() {
 
                             {reset && (
                                 <Alert className="bg-green-500/15 border-green-500/50">
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                    <FontAwesomeIcon icon={faCircleCheck} className="h-4 w-4 text-green-600" />
                                     <AlertDescription className="text-green-600 dark:text-green-400">
                                         Password reset successful! You can now sign in with your new password.
                                     </AlertDescription>
@@ -185,7 +186,7 @@ function SignInContent() {
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                                         Signing in...
                                     </>
                                 ) : (
@@ -212,7 +213,7 @@ function SignInContent() {
                                     disabled={!!oauthLoading}
                                 >
                                     {oauthLoading === 'Google' ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                                     ) : (
                                         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                                             <path

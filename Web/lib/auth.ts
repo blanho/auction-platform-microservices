@@ -1,6 +1,9 @@
 import { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { cookies } from "next/headers";
+
+const TOKEN_COOKIE_NAME = "auth-tokens";
 
 export interface ExtendedUser {
   id: string;
@@ -20,6 +23,31 @@ export interface ExtendedToken extends JWT {
   role?: string;
 }
 
+async function setTokenCookieInternal(tokens: { accessToken: string; refreshToken: string; expiresAt: number }) {
+  const { SignJWT } = await import("jose");
+  const secret = process.env.TOKEN_ENCRYPTION_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) return;
+  
+  const secretKey = new TextEncoder().encode(secret);
+  const jwt = await new SignJWT({ ...tokens })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(secretKey);
+  
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(TOKEN_COOKIE_NAME, jwt, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  } catch {
+  }
+}
+
 export interface ExtendedSession {
   user: {
     id: string;
@@ -28,7 +56,6 @@ export interface ExtendedSession {
     image?: string | null;
     role?: string;
   };
-  accessToken?: string;
   error?: string;
   expires: string;
 }
@@ -148,6 +175,12 @@ export const authOptions: NextAuthOptions = {
           const tokenPayload = parseJwt(tokens.access_token);
           const role = (tokenPayload.role as string) || "user";
 
+          await setTokenCookieInternal({
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token,
+            expiresAt: Date.now() + tokens.expires_in * 1000,
+          });
+
           return {
             id: userInfo.sub,
             name: userInfo.name || credentials.username,
@@ -206,6 +239,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       const extendedToken = token as ExtendedToken;
 
+      if (extendedToken.access_token && extendedToken.refresh_token && extendedToken.expires_at) {
+        await setTokenCookieInternal({
+          accessToken: extendedToken.access_token,
+          refreshToken: extendedToken.refresh_token,
+          expiresAt: extendedToken.expires_at,
+        });
+      }
+
       return {
         ...session,
         user: {
@@ -213,7 +254,6 @@ export const authOptions: NextAuthOptions = {
           id: extendedToken.id || extendedToken.sub,
           role: extendedToken.role || "user"
         },
-        accessToken: extendedToken.access_token,
         error: extendedToken.error,
         expires: session.expires
       } as ExtendedSession;

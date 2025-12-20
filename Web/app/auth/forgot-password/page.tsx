@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Mail, ArrowLeft } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faEnvelope, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -71,7 +72,7 @@ export default function ForgotPasswordPage() {
                     <CardHeader className="space-y-1">
                         <div className="flex items-center justify-center mb-4">
                             <div className="rounded-full bg-green-100 p-3">
-                                <Mail className="h-8 w-8 text-green-600" />
+                                <FontAwesomeIcon icon={faEnvelope} className="h-8 w-8 text-green-600" />
                             </div>
                         </div>
                         <CardTitle className="text-2xl font-bold text-center">
@@ -100,7 +101,7 @@ export default function ForgotPasswordPage() {
                             </Button>
                             <Link href="/auth/signin" className="w-full">
                                 <Button variant="ghost" className="w-full">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    <FontAwesomeIcon icon={faArrowLeft} className="mr-2 h-4 w-4" />
                                     Back to Sign In
                                 </Button>
                             </Link>
@@ -150,7 +151,7 @@ export default function ForgotPasswordPage() {
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                                         Sending...
                                     </>
                                 ) : (

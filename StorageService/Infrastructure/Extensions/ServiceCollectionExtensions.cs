@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using StorageService.Application.Configuration;
 using StorageService.Application.Interfaces;
 using StorageService.Application.Services;
@@ -16,9 +17,14 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.UseJsonNet();
+        var dataSource = dataSourceBuilder.Build();
+
         services.AddDbContext<StorageDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            options.UseNpgsql(dataSource);
         });
 
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));

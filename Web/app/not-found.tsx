@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { FileQuestion, Home, ArrowLeft } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleQuestion, faHome, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 
 export default function NotFoundPage() {
@@ -8,7 +9,7 @@ export default function NotFoundPage() {
             <div className="max-w-md w-full text-center space-y-6">
                 <div className="flex justify-center">
                     <div className="w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
-                        <FileQuestion className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+                        <FontAwesomeIcon icon={faCircleQuestion} className="w-10 h-10 text-amber-600 dark:text-amber-400" />
                     </div>
                 </div>
 
@@ -27,13 +28,13 @@ export default function NotFoundPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button variant="default" asChild>
                         <Link href="/">
-                            <Home className="w-4 h-4 mr-2" />
+                            <FontAwesomeIcon icon={faHome} className="w-4 h-4 mr-2" />
                             Go Home
                         </Link>
                     </Button>
                     <Button variant="outline" asChild>
                         <Link href="/auctions">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 mr-2" />
                             Browse Auctions
                         </Link>
                     </Button>

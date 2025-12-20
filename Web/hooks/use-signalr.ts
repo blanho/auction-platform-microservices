@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Notification } from "@/types/notification";
 import { API_ENDPOINTS } from "@/constants/api";
@@ -27,8 +27,19 @@ interface UseSignalRReturn {
   error: Error | null;
 }
 
+async function fetchSignalRToken(): Promise<string | null> {
+  try {
+    const response = await fetch("/api/auth/signalr-token");
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.token || null;
+  } catch {
+    return null;
+  }
+}
+
 export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
-  const { accessToken, isAuthenticated, isLoading } = useAuthSession();
+  const { isAuthenticated, isLoading } = useAuthSession();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const [connectionState, setConnectionState] =
     useState<signalR.HubConnectionState>(
@@ -41,8 +52,13 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
     optionsRef.current = options;
   }, [options]);
 
+  const getToken = useCallback(async (): Promise<string> => {
+    const token = await fetchSignalRToken();
+    return token || "";
+  }, []);
+
   useEffect(() => {
-    if (isLoading || !isAuthenticated || !accessToken) {
+    if (isLoading || !isAuthenticated) {
       if (connectionRef.current) {
         connectionRef.current.stop().then(() => {
           connectionRef.current = null;
@@ -62,7 +78,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
       try {
         const connection = new signalR.HubConnectionBuilder()
           .withUrl(`${GATEWAY_URL}${API_ENDPOINTS.NOTIFICATIONS_HUB}`, {
-            accessTokenFactory: () => accessToken
+            accessTokenFactory: getToken
           })
           .withAutomaticReconnect({
             nextRetryDelayInMilliseconds: (retryContext) => {
@@ -129,7 +145,7 @@ export function useSignalR(options: UseSignalROptions = {}): UseSignalRReturn {
         connectionRef.current = null;
       }
     };
-  }, [isLoading, isAuthenticated, accessToken]);
+  }, [isLoading, isAuthenticated, getToken]);
 
   return {
     connectionState,

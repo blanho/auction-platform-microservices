@@ -151,7 +151,13 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
               .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-              .WithHeaders("Authorization", "Content-Type", "X-Requested-With", "Accept")
+              .WithHeaders(
+                  "Authorization", 
+                  "Content-Type", 
+                  "X-Requested-With", 
+                  "Accept",
+                  "X-Correlation-Id",
+                  "X-SignalR-User-Agent")
               .AllowCredentials();
     });
 });

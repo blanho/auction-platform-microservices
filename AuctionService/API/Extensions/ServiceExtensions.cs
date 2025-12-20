@@ -7,6 +7,7 @@ using Common.Caching.Abstractions;
 using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
 using AutoMapper;
+using Npgsql;
 using Serilog;
 using System.Text.Json.Serialization;
 
@@ -36,8 +37,14 @@ namespace AuctionService.API.Extensions
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 });
+
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+            dataSourceBuilder.UseJsonNet();
+            var dataSource = dataSourceBuilder.Build();
+
             services.AddDbContext<AuctionDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(dataSource));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
             

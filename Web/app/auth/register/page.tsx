@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Mail } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -83,7 +84,7 @@ export default function RegisterPage() {
                     <CardHeader className="space-y-1">
                         <div className="flex items-center justify-center mb-4">
                             <div className="rounded-full bg-primary/10 p-3">
-                                <Mail className="h-8 w-8 text-primary" />
+                                <FontAwesomeIcon icon={faEnvelope} className="h-8 w-8 text-primary" />
                             </div>
                         </div>
                         <CardTitle className="text-2xl font-bold text-center">
@@ -97,7 +98,7 @@ export default function RegisterPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <Alert>
-                            <Mail className="h-4 w-4" />
+                            <FontAwesomeIcon icon={faEnvelope} className="h-4 w-4" />
                             <AlertDescription>
                                 Didn&apos;t receive the email? Check your spam folder or
                                 wait a few minutes.
@@ -211,7 +212,7 @@ export default function RegisterPage() {
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />
                                         Creating Account...
                                     </>
                                 ) : (

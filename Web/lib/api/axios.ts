@@ -3,12 +3,18 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig
 } from "axios";
-import { getSession } from "next-auth/react";
 
-const baseURL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:6001";
+const isServer = typeof window === "undefined";
+
+const getBaseUrl = () => {
+  if (isServer) {
+    return process.env.GATEWAY_URL || process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:6001";
+  }
+  return "/api/proxy";
+};
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL,
+  baseURL: getBaseUrl(),
   timeout: 30000,
   headers: {
     "Content-Type": "application/json"
@@ -18,13 +24,6 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== "undefined") {
-      const session = await getSession();
-      if (session?.accessToken && config.headers) {
-        config.headers.Authorization = `Bearer ${session.accessToken}`;
-      }
-    }
-
     const correlationId = crypto.randomUUID();
     if (config.headers) {
       config.headers["X-Correlation-Id"] = correlationId;
