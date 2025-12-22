@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- 注文検証メッセージ -->
+  <data name="Order_Id_Required" xml:space="preserve">
+    <value>注文IDは必須です。</value>
+  </data>
+  <data name="Order_AuctionId_Required" xml:space="preserve">
+    <value>オークションIDは必須です。</value>
+  </data>
+  <data name="Order_BuyerId_Required" xml:space="preserve">
+    <value>購入者IDは必須です。</value>
+  </data>
+  <data name="Order_SellerId_Required" xml:space="preserve">
+    <value>出品者IDは必須です。</value>
+  </data>
+  <data name="Order_Amount_GreaterThanZero" xml:space="preserve">
+    <value>注文金額は0より大きい値で入力してください。</value>
+  </data>
+
+  <!-- 注文エラーメッセージ -->
+  <data name="Order_NotFound" xml:space="preserve">
+    <value>ID {0} の注文が見つかりません。</value>
+  </data>
+  <data name="Order_AlreadyExists" xml:space="preserve">
+    <value>このオークションの注文は既に存在します。</value>
+  </data>
+  <data name="Order_CreateFailed" xml:space="preserve">
+    <value>注文の作成に失敗しました: {0}</value>
+  </data>
+  <data name="Order_UpdateFailed" xml:space="preserve">
+    <value>注文の更新に失敗しました: {0}</value>
+  </data>
+  <data name="Order_CancelFailed" xml:space="preserve">
+    <value>注文のキャンセルに失敗しました: {0}</value>
+  </data>
+  <data name="Order_InvalidStatus" xml:space="preserve">
+    <value>注文を{0}できません。現在のステータス: {1}</value>
+  </data>
+  <data name="Order_AlreadyCompleted" xml:space="preserve">
+    <value>注文は既に完了しています。</value>
+  </data>
+  <data name="Order_AlreadyCancelled" xml:space="preserve">
+    <value>注文は既にキャンセルされています。</value>
+  </data>
+  <data name="Order_PaymentRequired" xml:space="preserve">
+    <value>この注文を完了するには支払いが必要です。</value>
+  </data>
+  <data name="Order_ShippingRequired" xml:space="preserve">
+    <value>配送情報が必要です。</value>
+  </data>
+
+  <!-- ウォレット検証メッセージ -->
+  <data name="Wallet_UserId_Required" xml:space="preserve">
+    <value>ユーザーIDは必須です。</value>
+  </data>
+  <data name="Wallet_Amount_GreaterThanZero" xml:space="preserve">
+    <value>金額は0より大きい値で入力してください。</value>
+  </data>
+  <data name="Wallet_Currency_Required" xml:space="preserve">
+    <value>通貨は必須です。</value>
+  </data>
+
+  <!-- ウォレットエラーメッセージ -->
+  <data name="Wallet_NotFound" xml:space="preserve">
+    <value>ユーザー {0} のウォレットが見つかりません。</value>
+  </data>
+  <data name="Wallet_InsufficientBalance" xml:space="preserve">
+    <value>残高不足です。利用可能: {0}、必要: {1}</value>
+  </data>
+  <data name="Wallet_DepositFailed" xml:space="preserve">
+    <value>入金に失敗しました: {0}</value>
+  </data>
+  <data name="Wallet_WithdrawFailed" xml:space="preserve">
+    <value>出金に失敗しました: {0}</value>
+  </data>
+  <data name="Wallet_TransferFailed" xml:space="preserve">
+    <value>送金に失敗しました: {0}</value>
+  </data>
+  <data name="Wallet_AlreadyExists" xml:space="preserve">
+    <value>このユーザーのウォレットは既に存在します。</value>
+  </data>
+  <data name="Wallet_CreateFailed" xml:space="preserve">
+    <value>ウォレットの作成に失敗しました: {0}</value>
+  </data>
+  <data name="Wallet_Frozen" xml:space="preserve">
+    <value>ウォレットは凍結されています。サポートにお問い合わせください。</value>
+  </data>
+
+  <!-- 取引メッセージ -->
+  <data name="Transaction_NotFound" xml:space="preserve">
+    <value>ID {0} の取引が見つかりません。</value>
+  </data>
+  <data name="Transaction_FetchFailed" xml:space="preserve">
+    <value>取引の取得に失敗しました: {0}</value>
+  </data>
+  <data name="Transaction_InvalidType" xml:space="preserve">
+    <value>無効な取引タイプです。</value>
+  </data>
+
+  <!-- 支払いメッセージ -->
+  <data name="Payment_Failed" xml:space="preserve">
+    <value>支払い処理に失敗しました: {0}</value>
+  </data>
+  <data name="Payment_AlreadyProcessed" xml:space="preserve">
+    <value>支払いは既に処理されています。</value>
+  </data>
+  <data name="Payment_RefundFailed" xml:space="preserve">
+    <value>返金処理に失敗しました: {0}</value>
+  </data>
+  <data name="Payment_RefundNotAllowed" xml:space="preserve">
+    <value>この注文は返金できません。</value>
+  </data>
+
+  <!-- 収益/分析メッセージ -->
+  <data name="Revenue_FetchFailed" xml:space="preserve">
+    <value>収益統計の取得に失敗しました: {0}</value>
+  </data>
+  <data name="Analytics_FetchFailed" xml:space="preserve">
+    <value>分析データの取得に失敗しました: {0}</value>
+  </data>
+
+</root>

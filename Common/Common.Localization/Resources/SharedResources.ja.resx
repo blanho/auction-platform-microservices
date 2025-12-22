@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- バリデーションメッセージ -->
+  <data name="Validation_Required" xml:space="preserve">
+    <value>{0}は必須です。</value>
+  </data>
+  <data name="Validation_MaxLength" xml:space="preserve">
+    <value>{0}は{1}文字以内で入力してください。</value>
+  </data>
+  <data name="Validation_MinLength" xml:space="preserve">
+    <value>{0}は{1}文字以上で入力してください。</value>
+  </data>
+  <data name="Validation_Range" xml:space="preserve">
+    <value>{0}は{1}から{2}の間で入力してください。</value>
+  </data>
+  <data name="Validation_Email" xml:space="preserve">
+    <value>有効なメールアドレスを入力してください。</value>
+  </data>
+  <data name="Validation_GreaterThan" xml:space="preserve">
+    <value>{0}は{1}より大きい値を入力してください。</value>
+  </data>
+  <data name="Validation_GreaterThanOrEqual" xml:space="preserve">
+    <value>{0}は{1}以上の値を入力してください。</value>
+  </data>
+  <data name="Validation_LessThan" xml:space="preserve">
+    <value>{0}は{1}より小さい値を入力してください。</value>
+  </data>
+  <data name="Validation_Positive" xml:space="preserve">
+    <value>{0}は正の数を入力してください。</value>
+  </data>
+  <data name="Validation_FutureDate" xml:space="preserve">
+    <value>{0}は未来の日付を入力してください。</value>
+  </data>
+  <data name="Validation_PastDate" xml:space="preserve">
+    <value>{0}は過去の日付を入力してください。</value>
+  </data>
+
+  <!-- オークションメッセージ -->
+  <data name="Auction_NotFound" xml:space="preserve">
+    <value>オークションが見つかりません。</value>
+  </data>
+  <data name="Auction_AlreadyEnded" xml:space="preserve">
+    <value>このオークションは既に終了しています。</value>
+  </data>
+  <data name="Auction_NotLive" xml:space="preserve">
+    <value>このオークションは現在開催中ではありません。</value>
+  </data>
+  <data name="Auction_CannotBidOwnAuction" xml:space="preserve">
+    <value>自分のオークションに入札することはできません。</value>
+  </data>
+  <data name="Auction_Created" xml:space="preserve">
+    <value>オークションを作成しました。</value>
+  </data>
+  <data name="Auction_Updated" xml:space="preserve">
+    <value>オークションを更新しました。</value>
+  </data>
+  <data name="Auction_Deleted" xml:space="preserve">
+    <value>オークションを削除しました。</value>
+  </data>
+  <data name="Auction_ReservePriceMet" xml:space="preserve">
+    <value>最低落札価格に達しました。</value>
+  </data>
+  <data name="Auction_ReservePriceNotMet" xml:space="preserve">
+    <value>最低落札価格に達していません。</value>
+  </data>
+
+  <!-- 入札メッセージ -->
+  <data name="Bid_TooLow" xml:space="preserve">
+    <value>入札額は現在の入札額{0}より高くする必要があります。</value>
+  </data>
+  <data name="Bid_MinimumRequired" xml:space="preserve">
+    <value>最低入札額は{0}です。</value>
+  </data>
+  <data name="Bid_Placed" xml:space="preserve">
+    <value>入札が完了しました。</value>
+  </data>
+  <data name="Bid_Outbid" xml:space="preserve">
+    <value>他の入札者に上回られました。</value>
+  </data>
+  <data name="Bid_YouAreWinning" xml:space="preserve">
+    <value>あなたが最高入札者です。</value>
+  </data>
+
+  <!-- ユーザーメッセージ -->
+  <data name="User_NotFound" xml:space="preserve">
+    <value>ユーザーが見つかりません。</value>
+  </data>
+  <data name="User_AlreadyExists" xml:space="preserve">
+    <value>このメールアドレスは既に登録されています。</value>
+  </data>
+  <data name="User_InvalidCredentials" xml:space="preserve">
+    <value>メールアドレスまたはパスワードが正しくありません。</value>
+  </data>
+  <data name="User_AccountLocked" xml:space="preserve">
+    <value>アカウントがロックされています。しばらくしてから再度お試しください。</value>
+  </data>
+  <data name="User_EmailNotConfirmed" xml:space="preserve">
+    <value>メールアドレスを確認してください。</value>
+  </data>
+  <data name="User_PasswordChanged" xml:space="preserve">
+    <value>パスワードを変更しました。</value>
+  </data>
+  <data name="User_ProfileUpdated" xml:space="preserve">
+    <value>プロフィールを更新しました。</value>
+  </data>
+
+  <!-- 支払いメッセージ -->
+  <data name="Payment_InsufficientFunds" xml:space="preserve">
+    <value>ウォレットの残高が不足しています。</value>
+  </data>
+  <data name="Payment_Success" xml:space="preserve">
+    <value>支払いが完了しました。</value>
+  </data>
+  <data name="Payment_Failed" xml:space="preserve">
+    <value>支払い処理に失敗しました。再度お試しください。</value>
+  </data>
+  <data name="Payment_Refunded" xml:space="preserve">
+    <value>返金が完了しました。</value>
+  </data>
+
+  <!-- 注文メッセージ -->
+  <data name="Order_NotFound" xml:space="preserve">
+    <value>注文が見つかりません。</value>
+  </data>
+  <data name="Order_Created" xml:space="preserve">
+    <value>注文が作成されました。</value>
+  </data>
+  <data name="Order_Shipped" xml:space="preserve">
+    <value>注文が発送されました。</value>
+  </data>
+  <data name="Order_Delivered" xml:space="preserve">
+    <value>注文が配達されました。</value>
+  </data>
+  <data name="Order_Cancelled" xml:space="preserve">
+    <value>注文がキャンセルされました。</value>
+  </data>
+
+  <!-- カテゴリーメッセージ -->
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>カテゴリーが見つかりません。</value>
+  </data>
+  <data name="Category_AlreadyExists" xml:space="preserve">
+    <value>この名前のカテゴリーは既に存在します。</value>
+  </data>
+
+  <!-- 一般メッセージ -->
+  <data name="Error_Generic" xml:space="preserve">
+    <value>エラーが発生しました。再度お試しください。</value>
+  </data>
+  <data name="Error_NotFound" xml:space="preserve">
+    <value>リソースが見つかりません。</value>
+  </data>
+  <data name="Error_Unauthorized" xml:space="preserve">
+    <value>この操作を実行する権限がありません。</value>
+  </data>
+  <data name="Error_Forbidden" xml:space="preserve">
+    <value>アクセスが拒否されました。</value>
+  </data>
+  <data name="Error_ValidationFailed" xml:space="preserve">
+    <value>入力内容を確認してください。</value>
+  </data>
+
+  <!-- 通知メッセージ -->
+  <data name="Notification_NewBid" xml:space="preserve">
+    <value>オークション「{1}」に{0}の入札がありました。</value>
+  </data>
+  <data name="Notification_Outbid" xml:space="preserve">
+    <value>「{0}」で他の入札者に上回られました。現在の入札額: {1}。</value>
+  </data>
+  <data name="Notification_AuctionWon" xml:space="preserve">
+    <value>おめでとうございます！オークション「{0}」を{1}で落札しました。</value>
+  </data>
+  <data name="Notification_AuctionEnded" xml:space="preserve">
+    <value>オークション「{0}」が終了しました。</value>
+  </data>
+  <data name="Notification_PaymentReceived" xml:space="preserve">
+    <value>「{1}」の支払い{0}を受け取りました。</value>
+  </data>
+  <data name="Notification_OrderShipped" xml:space="preserve">
+    <value>「{0}」の注文が発送されました。</value>
+  </data>
+
+</root>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- 入札検証メッセージ -->
+  <data name="Bid_AuctionId_Required" xml:space="preserve">
+    <value>オークションIDは必須です。</value>
+  </data>
+  <data name="Bid_BidderId_Required" xml:space="preserve">
+    <value>入札者IDは必須です。</value>
+  </data>
+  <data name="Bid_BidderUsername_Required" xml:space="preserve">
+    <value>入札者ユーザー名は必須です。</value>
+  </data>
+  <data name="Bid_BidderUsername_MaxLength" xml:space="preserve">
+    <value>入札者ユーザー名は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Bid_Amount_GreaterThanZero" xml:space="preserve">
+    <value>入札金額は0より大きい値で入力してください。</value>
+  </data>
+  <data name="Bid_Amount_Required" xml:space="preserve">
+    <value>入札金額は必須です。</value>
+  </data>
+
+  <!-- 入札エラーメッセージ -->
+  <data name="Bid_NotFound" xml:space="preserve">
+    <value>入札が見つかりません。</value>
+  </data>
+  <data name="Bid_AnotherBidProcessing" xml:space="preserve">
+    <value>別の入札を処理中です。もう一度お試しください。</value>
+  </data>
+  <data name="Bid_AuctionNotLive" xml:space="preserve">
+    <value>入札できません。オークションは開催中ではありません。</value>
+  </data>
+  <data name="Bid_AuctionEnded" xml:space="preserve">
+    <value>入札できません。オークションは終了しました。</value>
+  </data>
+  <data name="Bid_OwnAuction" xml:space="preserve">
+    <value>自分のオークションには入札できません。</value>
+  </data>
+  <data name="Bid_TooLow" xml:space="preserve">
+    <value>入札金額は現在の最高入札額 {0} より高くする必要があります。</value>
+  </data>
+  <data name="Bid_BelowMinimum" xml:space="preserve">
+    <value>入札金額は最低 {0} 以上である必要があります。</value>
+  </data>
+  <data name="Bid_BelowReserve" xml:space="preserve">
+    <value>入札金額が最低落札価格を下回っています。</value>
+  </data>
+  <data name="Bid_PlacementFailed" xml:space="preserve">
+    <value>入札に失敗しました: {0}</value>
+  </data>
+  <data name="Bid_FetchFailed" xml:space="preserve">
+    <value>入札の取得に失敗しました: {0}</value>
+  </data>
+
+  <!-- 自動入札メッセージ -->
+  <data name="AutoBid_MaxAmount_Required" xml:space="preserve">
+    <value>最大入札金額は必須です。</value>
+  </data>
+  <data name="AutoBid_MaxAmount_GreaterThanZero" xml:space="preserve">
+    <value>最大入札金額は0より大きい値で入力してください。</value>
+  </data>
+  <data name="AutoBid_BelowCurrent" xml:space="preserve">
+    <value>最大自動入札金額は現在の最高入札額より高くする必要があります。</value>
+  </data>
+  <data name="AutoBid_SetFailed" xml:space="preserve">
+    <value>自動入札の設定に失敗しました: {0}</value>
+  </data>
+  <data name="AutoBid_CancelFailed" xml:space="preserve">
+    <value>自動入札のキャンセルに失敗しました: {0}</value>
+  </data>
+
+</root>

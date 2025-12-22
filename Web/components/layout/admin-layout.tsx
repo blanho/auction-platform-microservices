@@ -201,7 +201,8 @@ function SidebarContent({ pathname, username, collapsed = false, onToggleCollaps
 }
 
 function AdminHeader({ onMobileMenuClick }: { onMobileMenuClick: () => void }) {
-    const { data: session } = useSession();
+    const sessionData = useSession();
+    const session = sessionData?.data;
     const router = useRouter();
     const { theme, setTheme } = useTheme();
 
@@ -316,7 +317,8 @@ function AdminLayoutContent({
     children,
 }: AdminLayoutProps) {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const sessionData = useSession();
+    const session = sessionData?.data;
     const [mobileOpen, setMobileOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 

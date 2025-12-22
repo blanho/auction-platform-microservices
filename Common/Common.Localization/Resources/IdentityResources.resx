@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- User Authentication Messages -->
+  <data name="User_Username_Required" xml:space="preserve">
+    <value>Username is required.</value>
+  </data>
+  <data name="User_Username_MinLength" xml:space="preserve">
+    <value>Username must be at least {0} characters.</value>
+  </data>
+  <data name="User_Username_MaxLength" xml:space="preserve">
+    <value>Username cannot exceed {0} characters.</value>
+  </data>
+  <data name="User_Username_Invalid" xml:space="preserve">
+    <value>Username can only contain letters, numbers, and underscores.</value>
+  </data>
+  <data name="User_Email_Required" xml:space="preserve">
+    <value>Email is required.</value>
+  </data>
+  <data name="User_Email_Invalid" xml:space="preserve">
+    <value>Please enter a valid email address.</value>
+  </data>
+  <data name="User_Password_Required" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="User_Password_MinLength" xml:space="preserve">
+    <value>Password must be at least {0} characters.</value>
+  </data>
+  <data name="User_Password_Complexity" xml:space="preserve">
+    <value>Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.</value>
+  </data>
+  <data name="User_ConfirmPassword_Mismatch" xml:space="preserve">
+    <value>Passwords do not match.</value>
+  </data>
+
+  <!-- User Error Messages -->
+  <data name="User_NotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="User_UsernameExists" xml:space="preserve">
+    <value>Username '{0}' is already taken.</value>
+  </data>
+  <data name="User_EmailExists" xml:space="preserve">
+    <value>Email '{0}' is already registered.</value>
+  </data>
+  <data name="User_InvalidCredentials" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="User_AccountLocked" xml:space="preserve">
+    <value>Account is locked. Please try again in {0} minutes.</value>
+  </data>
+  <data name="User_AccountDisabled" xml:space="preserve">
+    <value>Account has been disabled. Please contact support.</value>
+  </data>
+  <data name="User_AccountNotVerified" xml:space="preserve">
+    <value>Please verify your email address before logging in.</value>
+  </data>
+  <data name="User_RegistrationFailed" xml:space="preserve">
+    <value>Registration failed: {0}</value>
+  </data>
+  <data name="User_UpdateFailed" xml:space="preserve">
+    <value>Failed to update user profile: {0}</value>
+  </data>
+
+  <!-- Email Verification Messages -->
+  <data name="Email_VerificationSent" xml:space="preserve">
+    <value>Verification email has been sent to {0}.</value>
+  </data>
+  <data name="Email_VerificationFailed" xml:space="preserve">
+    <value>Failed to send verification email: {0}</value>
+  </data>
+  <data name="Email_VerificationExpired" xml:space="preserve">
+    <value>Verification link has expired. Please request a new one.</value>
+  </data>
+  <data name="Email_VerificationInvalid" xml:space="preserve">
+    <value>Invalid verification link.</value>
+  </data>
+  <data name="Email_AlreadyVerified" xml:space="preserve">
+    <value>Email is already verified.</value>
+  </data>
+  <data name="Email_ConfirmationRequired" xml:space="preserve">
+    <value>Email confirmation is required.</value>
+  </data>
+
+  <!-- Password Reset Messages -->
+  <data name="Password_ResetSent" xml:space="preserve">
+    <value>Password reset instructions have been sent to your email.</value>
+  </data>
+  <data name="Password_ResetFailed" xml:space="preserve">
+    <value>Failed to reset password: {0}</value>
+  </data>
+  <data name="Password_ResetExpired" xml:space="preserve">
+    <value>Password reset link has expired. Please request a new one.</value>
+  </data>
+  <data name="Password_ResetInvalid" xml:space="preserve">
+    <value>Invalid password reset link.</value>
+  </data>
+  <data name="Password_ChangeFailed" xml:space="preserve">
+    <value>Failed to change password: {0}</value>
+  </data>
+  <data name="Password_CurrentIncorrect" xml:space="preserve">
+    <value>Current password is incorrect.</value>
+  </data>
+
+  <!-- Token Messages -->
+  <data name="Token_Invalid" xml:space="preserve">
+    <value>Invalid or expired token.</value>
+  </data>
+  <data name="Token_Expired" xml:space="preserve">
+    <value>Token has expired.</value>
+  </data>
+  <data name="Token_RefreshFailed" xml:space="preserve">
+    <value>Failed to refresh token: {0}</value>
+  </data>
+  <data name="Token_RevocationFailed" xml:space="preserve">
+    <value>Failed to revoke token: {0}</value>
+  </data>
+
+  <!-- OAuth Messages -->
+  <data name="OAuth_ProviderError" xml:space="preserve">
+    <value>Authentication failed with {0}: {1}</value>
+  </data>
+  <data name="OAuth_AccountLinked" xml:space="preserve">
+    <value>Your {0} account has been linked successfully.</value>
+  </data>
+  <data name="OAuth_AccountAlreadyLinked" xml:space="preserve">
+    <value>This {0} account is already linked to another user.</value>
+  </data>
+  <data name="OAuth_UnlinkFailed" xml:space="preserve">
+    <value>Failed to unlink {0} account: {1}</value>
+  </data>
+
+  <!-- Role/Permission Messages -->
+  <data name="Role_NotFound" xml:space="preserve">
+    <value>Role '{0}' not found.</value>
+  </data>
+  <data name="Role_AssignFailed" xml:space="preserve">
+    <value>Failed to assign role: {0}</value>
+  </data>
+  <data name="Permission_Denied" xml:space="preserve">
+    <value>You do not have permission to perform this action.</value>
+  </data>
+
+  <!-- Two-Factor Authentication Messages -->
+  <data name="TwoFactor_CodeRequired" xml:space="preserve">
+    <value>Two-factor authentication code is required.</value>
+  </data>
+  <data name="TwoFactor_CodeInvalid" xml:space="preserve">
+    <value>Invalid authentication code.</value>
+  </data>
+  <data name="TwoFactor_SetupFailed" xml:space="preserve">
+    <value>Failed to setup two-factor authentication: {0}</value>
+  </data>
+  <data name="TwoFactor_DisableFailed" xml:space="preserve">
+    <value>Failed to disable two-factor authentication: {0}</value>
+  </data>
+
+</root>

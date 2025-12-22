@@ -8,6 +8,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faFire,
@@ -373,6 +374,8 @@ export function Header() {
                         </form>
 
                         <div className="flex items-center gap-2 ml-auto">
+                            <LanguageSwitcher variant="compact" />
+                            
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <ThemeToggle variant="icon" />
                             </motion.div>

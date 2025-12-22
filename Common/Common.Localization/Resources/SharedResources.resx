@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Validation Messages -->
+  <data name="Validation_Required" xml:space="preserve">
+    <value>{0} is required.</value>
+  </data>
+  <data name="Validation_MaxLength" xml:space="preserve">
+    <value>{0} must not exceed {1} characters.</value>
+  </data>
+  <data name="Validation_MinLength" xml:space="preserve">
+    <value>{0} must be at least {1} characters.</value>
+  </data>
+  <data name="Validation_Range" xml:space="preserve">
+    <value>{0} must be between {1} and {2}.</value>
+  </data>
+  <data name="Validation_Email" xml:space="preserve">
+    <value>Please enter a valid email address.</value>
+  </data>
+  <data name="Validation_GreaterThan" xml:space="preserve">
+    <value>{0} must be greater than {1}.</value>
+  </data>
+  <data name="Validation_GreaterThanOrEqual" xml:space="preserve">
+    <value>{0} must be greater than or equal to {1}.</value>
+  </data>
+  <data name="Validation_LessThan" xml:space="preserve">
+    <value>{0} must be less than {1}.</value>
+  </data>
+  <data name="Validation_Positive" xml:space="preserve">
+    <value>{0} must be a positive number.</value>
+  </data>
+  <data name="Validation_FutureDate" xml:space="preserve">
+    <value>{0} must be in the future.</value>
+  </data>
+  <data name="Validation_PastDate" xml:space="preserve">
+    <value>{0} must be in the past.</value>
+  </data>
+
+  <!-- Auction Messages -->
+  <data name="Auction_NotFound" xml:space="preserve">
+    <value>Auction not found.</value>
+  </data>
+  <data name="Auction_AlreadyEnded" xml:space="preserve">
+    <value>This auction has already ended.</value>
+  </data>
+  <data name="Auction_NotLive" xml:space="preserve">
+    <value>This auction is not currently live.</value>
+  </data>
+  <data name="Auction_CannotBidOwnAuction" xml:space="preserve">
+    <value>You cannot bid on your own auction.</value>
+  </data>
+  <data name="Auction_Created" xml:space="preserve">
+    <value>Auction created successfully.</value>
+  </data>
+  <data name="Auction_Updated" xml:space="preserve">
+    <value>Auction updated successfully.</value>
+  </data>
+  <data name="Auction_Deleted" xml:space="preserve">
+    <value>Auction deleted successfully.</value>
+  </data>
+  <data name="Auction_ReservePriceMet" xml:space="preserve">
+    <value>Reserve price has been met.</value>
+  </data>
+  <data name="Auction_ReservePriceNotMet" xml:space="preserve">
+    <value>Reserve price has not been met.</value>
+  </data>
+
+  <!-- Bid Messages -->
+  <data name="Bid_TooLow" xml:space="preserve">
+    <value>Your bid must be higher than the current bid of {0}.</value>
+  </data>
+  <data name="Bid_MinimumRequired" xml:space="preserve">
+    <value>Minimum bid is {0}.</value>
+  </data>
+  <data name="Bid_Placed" xml:space="preserve">
+    <value>Bid placed successfully.</value>
+  </data>
+  <data name="Bid_Outbid" xml:space="preserve">
+    <value>You have been outbid.</value>
+  </data>
+  <data name="Bid_YouAreWinning" xml:space="preserve">
+    <value>You are the highest bidder.</value>
+  </data>
+
+  <!-- User Messages -->
+  <data name="User_NotFound" xml:space="preserve">
+    <value>User not found.</value>
+  </data>
+  <data name="User_AlreadyExists" xml:space="preserve">
+    <value>A user with this email already exists.</value>
+  </data>
+  <data name="User_InvalidCredentials" xml:space="preserve">
+    <value>Invalid email or password.</value>
+  </data>
+  <data name="User_AccountLocked" xml:space="preserve">
+    <value>Your account has been locked. Please try again later.</value>
+  </data>
+  <data name="User_EmailNotConfirmed" xml:space="preserve">
+    <value>Please confirm your email address.</value>
+  </data>
+  <data name="User_PasswordChanged" xml:space="preserve">
+    <value>Password changed successfully.</value>
+  </data>
+  <data name="User_ProfileUpdated" xml:space="preserve">
+    <value>Profile updated successfully.</value>
+  </data>
+
+  <!-- Payment Messages -->
+  <data name="Payment_InsufficientFunds" xml:space="preserve">
+    <value>Insufficient funds in your wallet.</value>
+  </data>
+  <data name="Payment_Success" xml:space="preserve">
+    <value>Payment processed successfully.</value>
+  </data>
+  <data name="Payment_Failed" xml:space="preserve">
+    <value>Payment processing failed. Please try again.</value>
+  </data>
+  <data name="Payment_Refunded" xml:space="preserve">
+    <value>Payment has been refunded.</value>
+  </data>
+
+  <!-- Order Messages -->
+  <data name="Order_NotFound" xml:space="preserve">
+    <value>Order not found.</value>
+  </data>
+  <data name="Order_Created" xml:space="preserve">
+    <value>Order created successfully.</value>
+  </data>
+  <data name="Order_Shipped" xml:space="preserve">
+    <value>Order has been shipped.</value>
+  </data>
+  <data name="Order_Delivered" xml:space="preserve">
+    <value>Order has been delivered.</value>
+  </data>
+  <data name="Order_Cancelled" xml:space="preserve">
+    <value>Order has been cancelled.</value>
+  </data>
+
+  <!-- Category Messages -->
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>Category not found.</value>
+  </data>
+  <data name="Category_AlreadyExists" xml:space="preserve">
+    <value>A category with this name already exists.</value>
+  </data>
+
+  <!-- General Messages -->
+  <data name="Error_Generic" xml:space="preserve">
+    <value>An error occurred. Please try again.</value>
+  </data>
+  <data name="Error_NotFound" xml:space="preserve">
+    <value>The requested resource was not found.</value>
+  </data>
+  <data name="Error_Unauthorized" xml:space="preserve">
+    <value>You are not authorized to perform this action.</value>
+  </data>
+  <data name="Error_Forbidden" xml:space="preserve">
+    <value>Access denied.</value>
+  </data>
+  <data name="Error_ValidationFailed" xml:space="preserve">
+    <value>Validation failed. Please check your input.</value>
+  </data>
+
+  <!-- Notification Messages -->
+  <data name="Notification_NewBid" xml:space="preserve">
+    <value>New bid of {0} on your auction "{1}".</value>
+  </data>
+  <data name="Notification_Outbid" xml:space="preserve">
+    <value>You have been outbid on "{0}". Current bid: {1}.</value>
+  </data>
+  <data name="Notification_AuctionWon" xml:space="preserve">
+    <value>Congratulations! You won the auction "{0}" for {1}.</value>
+  </data>
+  <data name="Notification_AuctionEnded" xml:space="preserve">
+    <value>Your auction "{0}" has ended.</value>
+  </data>
+  <data name="Notification_PaymentReceived" xml:space="preserve">
+    <value>Payment of {0} received for "{1}".</value>
+  </data>
+  <data name="Notification_OrderShipped" xml:space="preserve">
+    <value>Your order for "{0}" has been shipped.</value>
+  </data>
+
+</root>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ファイルアップロード検証メッセージ -->
+  <data name="File_Id_Required" xml:space="preserve">
+    <value>ファイルIDは必須です。</value>
+  </data>
+  <data name="File_Name_Required" xml:space="preserve">
+    <value>ファイル名は必須です。</value>
+  </data>
+  <data name="File_Name_MaxLength" xml:space="preserve">
+    <value>ファイル名は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="File_ContentType_Required" xml:space="preserve">
+    <value>コンテンツタイプは必須です。</value>
+  </data>
+  <data name="File_Size_GreaterThanZero" xml:space="preserve">
+    <value>ファイルサイズは0より大きい必要があります。</value>
+  </data>
+  <data name="File_ContainerName_Required" xml:space="preserve">
+    <value>コンテナ名は必須です。</value>
+  </data>
+
+  <!-- ファイルエラーメッセージ -->
+  <data name="File_NotFound" xml:space="preserve">
+    <value>ID {0} のファイルが見つかりません。</value>
+  </data>
+  <data name="File_UploadFailed" xml:space="preserve">
+    <value>ファイルのアップロードに失敗しました: {0}</value>
+  </data>
+  <data name="File_DeleteFailed" xml:space="preserve">
+    <value>ファイルの削除に失敗しました: {0}</value>
+  </data>
+  <data name="File_DownloadFailed" xml:space="preserve">
+    <value>ファイルのダウンロードに失敗しました: {0}</value>
+  </data>
+  <data name="File_ExtensionNotAllowed" xml:space="preserve">
+    <value>ファイル拡張子 '{0}' は許可されていません。許可されている拡張子: {1}</value>
+  </data>
+  <data name="File_SizeExceedsLimit" xml:space="preserve">
+    <value>ファイルサイズが最大制限 {0} を超えています。</value>
+  </data>
+  <data name="File_TypeNotAllowed" xml:space="preserve">
+    <value>ファイルタイプ '{0}' は許可されていません。</value>
+  </data>
+  <data name="File_Empty" xml:space="preserve">
+    <value>ファイルが空です。</value>
+  </data>
+  <data name="File_Corrupted" xml:space="preserve">
+    <value>ファイルが破損しているようです。</value>
+  </data>
+
+  <!-- 署名付きURLメッセージ -->
+  <data name="PresignedUrl_GenerationFailed" xml:space="preserve">
+    <value>署名付きURLの生成に失敗しました: {0}</value>
+  </data>
+  <data name="PresignedUrl_Expired" xml:space="preserve">
+    <value>署名付きURLの有効期限が切れています。</value>
+  </data>
+  <data name="PresignedUrl_Invalid" xml:space="preserve">
+    <value>無効な署名付きURLです。</value>
+  </data>
+
+  <!-- コンテナメッセージ -->
+  <data name="Container_NotFound" xml:space="preserve">
+    <value>ストレージコンテナ '{0}' が見つかりません。</value>
+  </data>
+  <data name="Container_CreateFailed" xml:space="preserve">
+    <value>コンテナの作成に失敗しました: {0}</value>
+  </data>
+  <data name="Container_AccessDenied" xml:space="preserve">
+    <value>コンテナ '{0}' へのアクセスが拒否されました。</value>
+  </data>
+
+  <!-- 画像固有のメッセージ -->
+  <data name="Image_ProcessingFailed" xml:space="preserve">
+    <value>画像の処理に失敗しました: {0}</value>
+  </data>
+  <data name="Image_InvalidFormat" xml:space="preserve">
+    <value>無効な画像形式です。サポートされている形式: {0}</value>
+  </data>
+  <data name="Image_TooSmall" xml:space="preserve">
+    <value>画像サイズが小さすぎます。最小: {0}x{1}</value>
+  </data>
+  <data name="Image_TooLarge" xml:space="preserve">
+    <value>画像サイズが大きすぎます。最大: {0}x{1}</value>
+  </data>
+
+  <!-- 一括操作メッセージ -->
+  <data name="Bulk_UploadFailed" xml:space="preserve">
+    <value>一括アップロードに失敗しました: {1}件中{0}件が失敗。</value>
+  </data>
+  <data name="Bulk_DeleteFailed" xml:space="preserve">
+    <value>一括削除に失敗しました: {1}件中{0}件が失敗。</value>
+  </data>
+  <data name="Bulk_MaxFilesExceeded" xml:space="preserve">
+    <value>一度に{0}件を超えるファイルをアップロードすることはできません。</value>
+  </data>
+
+</root>

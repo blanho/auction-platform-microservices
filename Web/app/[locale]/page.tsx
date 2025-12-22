@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Header } from "@/components/layout/header";
 import {
   HeroSectionNew,
@@ -16,15 +17,19 @@ import {
   FooterSection,
   ValuePropsBanner,
   CategoriesSection,
-  CTASection,
+  CTASection
 } from "@/components/home";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faWandSparkles } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faWandSparkles
+} from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const [showMoreSections, setShowMoreSections] = useState(false);
+  const t = useTranslations();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -34,12 +39,15 @@ export default function Home() {
         <ValuePropsBanner />
         <QuickAccessBar />
         <LiveAuctionTicker />
-        
+
         <section id="top-deals" className="py-8 md:py-12">
           <TopDealsCarousel />
         </section>
 
-        <section id="categories" className="py-8 md:py-12 bg-white dark:bg-slate-900">
+        <section
+          id="categories"
+          className="py-8 md:py-12 bg-white dark:bg-slate-900"
+        >
           <CategoriesSection />
         </section>
 
@@ -47,7 +55,10 @@ export default function Home() {
           <FeaturedAuctionsSection />
         </section>
 
-        <section id="ending-soon" className="py-8 md:py-12 bg-white dark:bg-slate-900">
+        <section
+          id="ending-soon"
+          className="py-8 md:py-12 bg-white dark:bg-slate-900"
+        >
           <EndingSoonSection />
         </section>
 
@@ -66,7 +77,7 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-6">
                   <div className="w-16 h-1 bg-linear-to-r from-purple-500 to-pink-500 rounded-full opacity-50"></div>
                   <p className="text-slate-500 dark:text-slate-400 text-base font-medium">
-                    Discover more features & insights
+                    {t("common.learnMore")}
                   </p>
                   <Button
                     onClick={() => setShowMoreSections(true)}
@@ -78,7 +89,7 @@ export default function Home() {
                       icon={faWandSparkles}
                       className="w-4 h-4 text-purple-500 group-hover:text-purple-600"
                     />
-                    <span>Explore Brands, Stats & Trending</span>
+                    <span>{t("common.viewAll")}</span>
                     <FontAwesomeIcon
                       icon={faChevronDown}
                       className="w-4 h-4 text-slate-400 group-hover:translate-y-0.5 transition-transform"
@@ -97,13 +108,19 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <section id="brands" className="py-8 md:py-12 bg-white dark:bg-slate-900">
+              <section
+                id="brands"
+                className="py-8 md:py-12 bg-white dark:bg-slate-900"
+              >
                 <BrandSliderSection />
               </section>
               <section id="stats" className="py-8 md:py-12">
                 <StatsCounterSection />
               </section>
-              <section id="trending" className="py-8 md:py-12 bg-white dark:bg-slate-900">
+              <section
+                id="trending"
+                className="py-8 md:py-12 bg-white dark:bg-slate-900"
+              >
                 <TrendingSearchesSection />
               </section>
             </motion.div>

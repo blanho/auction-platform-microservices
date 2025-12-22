@@ -19,7 +19,9 @@ interface UseAuthSessionResult {
 }
 
 export function useAuthSession(): UseAuthSessionResult {
-    const { data: session, status } = useSession();
+    const sessionResult = useSession();
+    const session = sessionResult?.data;
+    const status = sessionResult?.status ?? "loading";
 
     return useMemo(() => {
         const isLoading = status === "loading";

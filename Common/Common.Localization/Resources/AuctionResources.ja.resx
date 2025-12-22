@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- オークション検証メッセージ -->
+  <data name="Auction_Title_Required" xml:space="preserve">
+    <value>タイトルは必須です。</value>
+  </data>
+  <data name="Auction_Title_MaxLength" xml:space="preserve">
+    <value>タイトルは{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Auction_Title_MinLength" xml:space="preserve">
+    <value>タイトルは{0}文字以上で入力してください。</value>
+  </data>
+  <data name="Auction_Description_Required" xml:space="preserve">
+    <value>説明は必須です。</value>
+  </data>
+  <data name="Auction_Description_MaxLength" xml:space="preserve">
+    <value>説明は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Auction_Description_MinLength" xml:space="preserve">
+    <value>説明は{0}文字以上で入力してください。</value>
+  </data>
+  <data name="Auction_Condition_MaxLength" xml:space="preserve">
+    <value>状態は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Auction_Year_Range" xml:space="preserve">
+    <value>年式は{0}から{1}の間で入力してください。</value>
+  </data>
+  <data name="Auction_ReservePrice_NonNegative" xml:space="preserve">
+    <value>最低落札価格は0以上で入力してください。</value>
+  </data>
+  <data name="Auction_EndDate_Future" xml:space="preserve">
+    <value>オークション終了日時は{0}時間以上先の日時を指定してください。</value>
+  </data>
+  <data name="Auction_Seller_Required" xml:space="preserve">
+    <value>出品者は必須です。</value>
+  </data>
+  <data name="Auction_SellerId_Required" xml:space="preserve">
+    <value>出品者IDは必須です。</value>
+  </data>
+  <data name="Auction_Currency_Required" xml:space="preserve">
+    <value>通貨は必須です。</value>
+  </data>
+  <data name="Auction_Currency_Invalid" xml:space="preserve">
+    <value>通貨は有効な3文字のコードを入力してください。</value>
+  </data>
+  <data name="Auction_Id_Required" xml:space="preserve">
+    <value>オークションIDは必須です。</value>
+  </data>
+
+  <!-- オークションエラーメッセージ -->
+  <data name="Auction_NotFound" xml:space="preserve">
+    <value>ID {0} のオークションが見つかりません。</value>
+  </data>
+  <data name="Auction_CreateFailed" xml:space="preserve">
+    <value>オークションの作成に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_UpdateFailed" xml:space="preserve">
+    <value>オークションの更新に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_DeleteFailed" xml:space="preserve">
+    <value>オークションの削除に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_FetchFailed" xml:space="preserve">
+    <value>オークションの取得に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_ExportFailed" xml:space="preserve">
+    <value>オークションのエクスポートに失敗しました: {0}</value>
+  </data>
+  <data name="Auction_BulkUpdateFailed" xml:space="preserve">
+    <value>オークションの一括更新に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_InvalidStatus" xml:space="preserve">
+    <value>オークションを{0}できません。現在のステータス: {1}</value>
+  </data>
+  <data name="Auction_EndDatePassed" xml:space="preserve">
+    <value>オークションを開始できません。終了日時が既に過ぎています。</value>
+  </data>
+  <data name="Auction_ActivationFailed" xml:space="preserve">
+    <value>オークションの開始に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_DeactivationFailed" xml:space="preserve">
+    <value>オークションの停止に失敗しました: {0}</value>
+  </data>
+  <data name="Auction_AlreadyEnded" xml:space="preserve">
+    <value>このオークションは既に終了しています。</value>
+  </data>
+  <data name="Auction_NotLive" xml:space="preserve">
+    <value>このオークションは現在開催中ではありません。</value>
+  </data>
+
+  <!-- 即決購入メッセージ -->
+  <data name="BuyNow_NotAvailable" xml:space="preserve">
+    <value>このオークションでは即決購入は利用できません。</value>
+  </data>
+  <data name="BuyNow_OwnAuction" xml:space="preserve">
+    <value>自分のオークションは購入できません。</value>
+  </data>
+  <data name="BuyNow_Failed" xml:space="preserve">
+    <value>即決購入の処理に失敗しました: {0}</value>
+  </data>
+  <data name="BuyNow_BuyerId_Required" xml:space="preserve">
+    <value>購入者IDは必須です。</value>
+  </data>
+  <data name="BuyNow_BuyerUsername_Required" xml:space="preserve">
+    <value>購入者ユーザー名は必須です。</value>
+  </data>
+  <data name="BuyNow_BuyerUsername_MaxLength" xml:space="preserve">
+    <value>購入者ユーザー名は{0}文字以内で入力してください。</value>
+  </data>
+
+  <!-- カテゴリー検証メッセージ -->
+  <data name="Category_Name_Required" xml:space="preserve">
+    <value>カテゴリー名は必須です。</value>
+  </data>
+  <data name="Category_Name_MaxLength" xml:space="preserve">
+    <value>カテゴリー名は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Category_Slug_Required" xml:space="preserve">
+    <value>スラッグは必須です。</value>
+  </data>
+  <data name="Category_Slug_MaxLength" xml:space="preserve">
+    <value>スラッグは{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Category_Slug_Format" xml:space="preserve">
+    <value>スラッグは小文字とハイフンのみ使用可能です。</value>
+  </data>
+  <data name="Category_Icon_Required" xml:space="preserve">
+    <value>アイコンは必須です。</value>
+  </data>
+  <data name="Category_Icon_MaxLength" xml:space="preserve">
+    <value>アイコンは{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Category_Description_MaxLength" xml:space="preserve">
+    <value>説明は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Category_ImageUrl_MaxLength" xml:space="preserve">
+    <value>画像URLは{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Category_DisplayOrder_NonNegative" xml:space="preserve">
+    <value>表示順は0以上で入力してください。</value>
+  </data>
+
+  <!-- カテゴリーエラーメッセージ -->
+  <data name="Category_NotFound" xml:space="preserve">
+    <value>ID '{0}' のカテゴリーが見つかりません。</value>
+  </data>
+  <data name="Category_SlugExists" xml:space="preserve">
+    <value>スラッグ '{0}' は既に使用されています。</value>
+  </data>
+  <data name="Category_SelfParent" xml:space="preserve">
+    <value>カテゴリー自身を親カテゴリーに設定することはできません。</value>
+  </data>
+  <data name="Category_HasItems" xml:space="preserve">
+    <value>関連する商品があるカテゴリーは削除できません。先に商品を移動または削除してください。</value>
+  </data>
+  <data name="Category_CreateFailed" xml:space="preserve">
+    <value>カテゴリーの作成に失敗しました: {0}</value>
+  </data>
+  <data name="Category_DeleteFailed" xml:space="preserve">
+    <value>カテゴリーの削除に失敗しました: {0}</value>
+  </data>
+  <data name="Category_FetchError" xml:space="preserve">
+    <value>カテゴリーの取得中にエラーが発生しました: {0}</value>
+  </data>
+  <data name="Category_BulkUpdateFailed" xml:space="preserve">
+    <value>カテゴリーの一括更新に失敗しました: {0}</value>
+  </data>
+  <data name="Category_ImportFailed" xml:space="preserve">
+    <value>カテゴリーのインポートに失敗しました: {0}</value>
+  </data>
+
+  <!-- ブランド検証メッセージ -->
+  <data name="Brand_Name_Required" xml:space="preserve">
+    <value>ブランド名は必須です。</value>
+  </data>
+  <data name="Brand_Name_MaxLength" xml:space="preserve">
+    <value>ブランド名は{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Brand_LogoUrl_MaxLength" xml:space="preserve">
+    <value>ロゴURLは{0}文字以内で入力してください。</value>
+  </data>
+  <data name="Brand_Description_MaxLength" xml:space="preserve">
+    <value>説明は{0}文字以内で入力してください。</value>
+  </data>
+
+  <!-- ブランドエラーメッセージ -->
+  <data name="Brand_NotFound" xml:space="preserve">
+    <value>ID '{0}' のブランドが見つかりません。</value>
+  </data>
+  <data name="Brand_SlugExists" xml:space="preserve">
+    <value>スラッグ '{0}' は既に使用されています。</value>
+  </data>
+  <data name="Brand_CreateFailed" xml:space="preserve">
+    <value>ブランドの作成に失敗しました: {0}</value>
+  </data>
+  <data name="Brand_UpdateFailed" xml:space="preserve">
+    <value>ブランドの更新に失敗しました: {0}</value>
+  </data>
+  <data name="Brand_DeleteFailed" xml:space="preserve">
+    <value>ブランドの削除に失敗しました: {0}</value>
+  </data>
+  <data name="Brand_FetchError" xml:space="preserve">
+    <value>ブランドの取得中にエラーが発生しました: {0}</value>
+  </data>
+
+  <!-- レビュー検証メッセージ -->
+  <data name="Review_AuctionId_Required" xml:space="preserve">
+    <value>オークションIDは必須です。</value>
+  </data>
+  <data name="Review_ReviewerId_Required" xml:space="preserve">
+    <value>レビュアーIDは必須です。</value>
+  </data>
+  <data name="Review_ReviewerUsername_Required" xml:space="preserve">
+    <value>レビュアーユーザー名は必須です。</value>
+  </data>
+  <data name="Review_Rating_Range" xml:space="preserve">
+    <value>評価は{0}から{1}の間で入力してください。</value>
+  </data>
+  <data name="Review_Response_Required" xml:space="preserve">
+    <value>返信は必須です。</value>
+  </data>
+  <data name="Review_Response_MinLength" xml:space="preserve">
+    <value>返信は{0}文字以上で入力してください。</value>
+  </data>
+  <data name="Review_SellerUsername_Required" xml:space="preserve">
+    <value>出品者ユーザー名は必須です。</value>
+  </data>
+
+  <!-- レビューエラーメッセージ -->
+  <data name="Review_NotFound" xml:space="preserve">
+    <value>レビューが見つかりません。</value>
+  </data>
+  <data name="Review_AlreadyExists" xml:space="preserve">
+    <value>このオークションには既にレビューがあります。</value>
+  </data>
+  <data name="Review_InvalidRating" xml:space="preserve">
+    <value>評価は1から5の間で入力してください。</value>
+  </data>
+  <data name="Review_Forbidden" xml:space="preserve">
+    <value>このレビューに返信できるのは出品者のみです。</value>
+  </data>
+  <data name="Review_AlreadyResponded" xml:space="preserve">
+    <value>出品者は既にこのレビューに返信しています。</value>
+  </data>
+
+  <!-- インポート検証メッセージ -->
+  <data name="Import_AtLeastOneRequired" xml:space="preserve">
+    <value>インポートには少なくとも1つの{0}が必要です。</value>
+  </data>
+  <data name="Import_MaxLimit" xml:space="preserve">
+    <value>一度に{0}件を超える{1}をインポートすることはできません。</value>
+  </data>
+
+  <!-- 停止メッセージ -->
+  <data name="Deactivate_Reason_MaxLength" xml:space="preserve">
+    <value>理由は{0}文字以内で入力してください。</value>
+  </data>
+
+  <!-- ダッシュボード/分析メッセージ -->
+  <data name="Dashboard_Error" xml:space="preserve">
+    <value>ダッシュボード統計の取得に失敗しました。</value>
+  </data>
+  <data name="Analytics_Error" xml:space="preserve">
+    <value>出品者分析の取得に失敗しました。</value>
+  </data>
+
+</root>
