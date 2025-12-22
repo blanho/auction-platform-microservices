@@ -30,10 +30,19 @@ public static class DependencyInjection
 
         services.AddSingleton<ITemplateRenderer, DefaultTemplateRenderer>();
 
-        services.Configure<SmtpEmailSenderOptions>(configuration.GetSection("Email:Smtp"));
-        services.AddSingleton<INotificationSender, SmtpEmailSender>();
-        services.AddSingleton<INotificationSender, ConsoleSmsNotificationSender>();
-        services.AddSingleton<INotificationSender, ConsolePushNotificationSender>();
+        services.AddHttpClient();
+        
+        services.Configure<ResendEmailSenderOptions>(configuration.GetSection("Email:Resend"));
+        services.AddHttpClient("Resend");
+        services.AddSingleton<INotificationSender, ResendEmailSender>();
+        
+        services.Configure<TwilioSmsSenderOptions>(configuration.GetSection("Sms:Twilio"));
+        services.AddHttpClient("Twilio");
+        services.AddSingleton<INotificationSender, TwilioSmsSender>();
+        
+        services.Configure<FirebasePushSenderOptions>(configuration.GetSection("Push:Firebase"));
+        services.AddHttpClient("Firebase");
+        services.AddSingleton<INotificationSender, FirebasePushSender>();
 
         services.AddSingleton<INotificationSenderFactory, NotificationSenderFactory>();
 

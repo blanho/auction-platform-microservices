@@ -1,4 +1,5 @@
 using System.Globalization;
+using AspNet.Security.OAuth.GitHub;
 using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
@@ -53,7 +54,9 @@ internal static class HostingExtensions
         });
 
         builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
-        builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+        builder.Services.AddHttpClient();
+        builder.Services.AddHttpClient("Resend");
+        builder.Services.AddScoped<IEmailService, ResendEmailService>();
 
         builder.Services
             .AddIdentityServer(options =>
@@ -128,25 +131,18 @@ internal static class HostingExtensions
             });
         }
 
-        // Demo OpenID Connect (can be removed in production)
-        if (builder.Environment.IsDevelopment())
+        // GitHub OAuth
+        var githubClientId = builder.Configuration["Authentication:GitHub:ClientId"];
+        var githubClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
+        if (!string.IsNullOrEmpty(githubClientId) && !string.IsNullOrEmpty(githubClientSecret))
         {
-            authBuilder.AddOpenIdConnect("oidc", "Sign-in with demo.duendesoftware.com", options =>
+            authBuilder.AddGitHub("GitHub", options =>
             {
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-                options.SaveTokens = true;
-
-                options.Authority = "https://demo.duendesoftware.com";
-                options.ClientId = "interactive.confidential";
-                options.ClientSecret = "secret";
-                options.ResponseType = "code";
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = "name",
-                    RoleClaimType = "role"
-                };
+                options.ClientId = githubClientId;
+                options.ClientSecret = githubClientSecret;
+                options.Scope.Add("user:email");
+                options.Scope.Add("read:user");
             });
         }
 

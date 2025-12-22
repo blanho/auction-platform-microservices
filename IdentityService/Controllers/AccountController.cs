@@ -264,67 +264,54 @@ public class AccountController : ControllerBase
         return Ok(ApiResponse<List<string>>.SuccessResponse(providers));
     }
 
-    [HttpPost("external-login")]
+    [HttpGet("external-login")]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public IActionResult ExternalLogin([FromBody] ExternalLoginDto dto)
+    public IActionResult ExternalLogin([FromQuery] string provider, [FromQuery] string? returnUrl = null)
     {
-        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl = dto.ReturnUrl });
-        var properties = _signInManager.ConfigureExternalAuthenticationProperties(dto.Provider, redirectUrl);
-        return Challenge(properties, dto.Provider);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        returnUrl ??= frontendUrl;
+        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+        return Challenge(properties, provider);
     }
 
     [HttpGet("external-login-callback")]
     public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
     {
         var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-        returnUrl ??= $"{frontendUrl}/dashboard";
+        returnUrl ??= frontendUrl;
 
         if (remoteError != null)
         {
             _logger.LogError("External login error: {Error}", remoteError);
-            return Redirect($"{frontendUrl}/auth/login?error={HttpUtility.UrlEncode(remoteError)}");
+            return Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(remoteError)}");
         }
 
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
         {
             _logger.LogError("External login info is null");
-            return Redirect($"{frontendUrl}/auth/login?error=External+login+failed");
+            return Redirect($"{frontendUrl}/auth/signin?error=External+login+failed");
         }
 
-        // Sign in the user with this external login provider if the user already has a login
-        var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-
-        if (signInResult.Succeeded)
-        {
-            _logger.LogInformation("User logged in with {Provider}", info.LoginProvider);
-            return Redirect(returnUrl);
-        }
-
-        if (signInResult.IsLockedOut)
-        {
-            return Redirect($"{frontendUrl}/auth/login?error=Account+is+locked");
-        }
-
-        // If the user does not have an account, create one
         var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
         var name = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
 
         if (string.IsNullOrEmpty(email))
         {
-            return Redirect($"{frontendUrl}/auth/login?error=Email+not+provided+by+external+provider");
+            return Redirect($"{frontendUrl}/auth/signin?error=Email+not+provided+by+external+provider");
         }
 
         var user = await _userManager.FindByEmailAsync(email);
+        
         if (user == null)
         {
-            // Create new user
             var username = GenerateUniqueUsername(name ?? email.Split('@')[0]);
             user = new ApplicationUser
             {
                 UserName = username,
                 Email = email,
-                EmailConfirmed = true, // External providers verify email
+                EmailConfirmed = true,
                 FullName = name
             };
 
@@ -333,10 +320,9 @@ public class AccountController : ControllerBase
             {
                 var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
                 _logger.LogError("Failed to create user from external login: {Errors}", errors);
-                return Redirect($"{frontendUrl}/auth/login?error=Failed+to+create+account");
+                return Redirect($"{frontendUrl}/auth/signin?error=Failed+to+create+account");
             }
 
-            // Send welcome email
             try
             {
                 await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
@@ -346,19 +332,29 @@ public class AccountController : ControllerBase
                 _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
             }
         }
-
-        // Link the external login to the user
-        var addLoginResult = await _userManager.AddLoginAsync(user, info);
-        if (!addLoginResult.Succeeded)
+        else if (user.IsSuspended)
         {
-            _logger.LogError("Failed to add external login for user {UserId}", user.Id);
+            return Redirect($"{frontendUrl}/auth/signin?error=Account+is+suspended");
         }
 
-        // Sign in the user
+        var existingLogins = await _userManager.GetLoginsAsync(user);
+        if (!existingLogins.Any(l => l.LoginProvider == info.LoginProvider && l.ProviderKey == info.ProviderKey))
+        {
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+            }
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
         await _signInManager.SignInAsync(user, isPersistent: false);
         _logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
 
-        return Redirect(returnUrl);
+        var redirectUrl = $"{frontendUrl}/auth/callback?success=true&provider={info.LoginProvider}&username={HttpUtility.UrlEncode(user.UserName!)}&returnUrl={HttpUtility.UrlEncode(returnUrl)}";
+        return Redirect(redirectUrl);
     }
 
     private string GenerateUniqueUsername(string baseName)

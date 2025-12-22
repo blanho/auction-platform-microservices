@@ -1,58 +1,64 @@
-using System.Net;
-using System.Net.Mail;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace IdentityService.Services;
 
-public class SmtpEmailService : IEmailService
+public class ResendEmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
     private readonly IEmailTemplateService _templateService;
-    private readonly ILogger<SmtpEmailService> _logger;
+    private readonly ILogger<ResendEmailService> _logger;
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
 
-    public SmtpEmailService(
+    public ResendEmailService(
         IConfiguration configuration,
         IEmailTemplateService templateService,
-        ILogger<SmtpEmailService> logger)
+        ILogger<ResendEmailService> logger,
+        IHttpClientFactory httpClientFactory)
     {
         _configuration = configuration;
         _templateService = templateService;
         _logger = logger;
+        _httpClient = httpClientFactory.CreateClient("Resend");
+
+        _apiKey = _configuration["Email:Resend:ApiKey"]
+            ?? throw new InvalidOperationException("Email:Resend:ApiKey is not configured");
     }
 
     public async Task SendEmailAsync(string to, string subject, string htmlBody)
     {
-        var smtpSettings = _configuration.GetSection("Smtp");
-        var host = smtpSettings["Host"] ?? "smtp.gmail.com";
-        var port = int.Parse(smtpSettings["Port"] ?? "587");
-        var username = smtpSettings["Username"] ?? "";
-        var password = smtpSettings["Password"] ?? "";
-        var fromEmail = smtpSettings["FromEmail"] ?? username;
-        var fromName = smtpSettings["FromName"] ?? "Auction Platform";
-        var enableSsl = bool.Parse(smtpSettings["EnableSsl"] ?? "true");
+        var fromEmail = _configuration["Email:Resend:FromEmail"] ?? "onboarding@resend.dev";
+        var fromName = _configuration["Email:Resend:FromName"] ?? "Auction Platform";
 
         try
         {
-            using var client = new SmtpClient(host, port)
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails")
             {
-                Credentials = new NetworkCredential(username, password),
-                EnableSsl = enableSsl
+                Headers = { { "Authorization", $"Bearer {_apiKey}" } },
+                Content = JsonContent.Create(new
+                {
+                    from = $"{fromName} <{fromEmail}>",
+                    to = new[] { to },
+                    subject,
+                    html = htmlBody
+                })
             };
 
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(fromEmail, fromName),
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
-            };
-            mailMessage.To.Add(to);
+            var response = await _httpClient.SendAsync(request);
 
-            await client.SendMailAsync(mailMessage);
-            _logger.LogInformation("Email sent successfully to {Email}", to);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Resend API error: {StatusCode} - {Error}", response.StatusCode, error);
+                throw new Exception($"Failed to send email: {error}");
+            }
+
+            _logger.LogInformation("Email sent successfully via Resend to {Email}", to);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {Email}", to);
+            _logger.LogError(ex, "Failed to send email via Resend to {Email}", to);
             throw;
         }
     }

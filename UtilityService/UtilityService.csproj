@@ -16,7 +16,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
@@ -27,17 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Quartz" Version="3.13.1" />
-    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.1" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Common\Common.Audit\Common.Audit.csproj" />
     <ProjectReference Include="..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\Common\Common.CQRS\Common.CQRS.csproj" />
     <ProjectReference Include="..\Common\Common.Domain\Common.Domain.csproj" />
     <ProjectReference Include="..\Common\Common.Messaging\Common.Messaging.csproj" />
+    <ProjectReference Include="..\Common\Common.OpenApi\Common.OpenApi.csproj" />
     <ProjectReference Include="..\Common\Common.Repository\Common.Repository.csproj" />
     <ProjectReference Include="..\Common\Common.Resilience\Common.Resilience.csproj" />
     <ProjectReference Include="..\Common\Common.Scheduling\Common.Scheduling.csproj" />
