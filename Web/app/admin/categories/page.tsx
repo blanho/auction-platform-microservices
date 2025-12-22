@@ -977,7 +977,6 @@ export default function AdminCategoriesPage() {
                                 onChange={(url) =>
                                     setFormData((prev) => ({ ...prev, imageUrl: url }))
                                 }
-                                folder="categories"
                                 aspectRatio="video"
                                 disabled={isSaving}
                             />

@@ -161,7 +161,7 @@ export function ReviewStep({ form, categories, uploadedImages, mode }: StepProps
             <div className="grid grid-cols-4 gap-2">
               {successfulImages.slice(0, 4).map((image, index) => (
                 <div
-                  key={image.publicId || index}
+                  key={image.fileId || index}
                   className={cn(
                     "relative aspect-square overflow-hidden rounded-lg border-2",
                     image.isPrimary

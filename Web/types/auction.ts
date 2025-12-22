@@ -233,7 +233,7 @@ export interface CreateAuctionDto {
 
 export interface FileInfoDto {
   url: string;
-  publicId: string;
+  fileId: string;
   fileName: string;
   contentType: string;
   size: number;

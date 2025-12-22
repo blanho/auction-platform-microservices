@@ -13,13 +13,13 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cloudinaryService } from '@/services/cloudinary.service';
+import { storageService } from '@/services/storage.service';
 import { cn } from '@/lib/utils';
 
 interface SingleImageUploadProps {
     value: string;
     onChange: (url: string) => void;
-    folder?: string;
+    ownerService?: string;
     className?: string;
     disabled?: boolean;
     placeholder?: string;
@@ -32,7 +32,7 @@ const MAX_SIZE_MB = 5;
 export function SingleImageUpload({
     value,
     onChange,
-    folder = 'auction',
+    ownerService = 'AuctionService',
     className,
     disabled = false,
     placeholder = 'Upload an image or enter URL',
@@ -75,12 +75,12 @@ export function SingleImageUpload({
             setUploadProgress(0);
 
             try {
-                const result = await cloudinaryService.upload(
+                const result = await storageService.upload(
                     file,
                     (progress) => setUploadProgress(progress.percentage),
-                    folder
+                    ownerService
                 );
-                onChange(result.secureUrl);
+                onChange(result.url);
                 toast.success('Image uploaded successfully');
             } catch {
                 toast.error('Failed to upload image');
@@ -92,7 +92,7 @@ export function SingleImageUpload({
                 }
             }
         },
-        [folder, onChange, validateFile]
+        [ownerService, onChange, validateFile]
     );
 
     const handleUrlSubmit = useCallback(() => {

@@ -86,6 +86,7 @@ export const API_ENDPOINTS = {
   STORAGE: {
     REQUEST_UPLOAD: "/files/request-upload",
     CONFIRM_UPLOAD: "/files/confirm-upload",
+    DIRECT_UPLOAD: "/files/direct-upload",
     FILE_METADATA: (id: string) => `/files/${id}`,
     DOWNLOAD_URL: (id: string) => `/files/${id}/download-url`,
     DELETE_FILE: (id: string) => `/files/${id}`

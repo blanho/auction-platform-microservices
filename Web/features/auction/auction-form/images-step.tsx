@@ -8,7 +8,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 import { StepProps } from "./types";
 
@@ -22,7 +22,7 @@ export function ImagesStep({ uploadedImages, onImagesChange }: StepProps) {
 
       <FormItem>
         <FormLabel>Upload Images</FormLabel>
-        <CloudinaryUpload
+        <ImageUpload
           value={uploadedImages}
           onChange={onImagesChange}
           maxImages={10}

@@ -19,7 +19,7 @@ import { RequireAuth } from '@/features/auth';
 import { AuctionForm, AuctionFormValues } from '@/features/auction/auction-form';
 import { auctionService } from '@/services/auction.service';
 import { Auction, Category, UpdateAuctionDto, ShippingType } from '@/types/auction';
-import { UploadedImage } from '@/components/ui/cloudinary-upload';
+import { UploadedImage } from '@/components/ui/image-upload';
 import { getAuctionTitle } from '@/utils/auction';
 
 export default function EditAuctionPage() {
@@ -71,7 +71,7 @@ export default function EditAuctionPage() {
         const successfulImages = images.filter(img => img.status === 'success');
         const files = successfulImages.map((img, index) => ({
             url: img.url,
-            publicId: img.publicId,
+            fileId: img.fileId,
             fileName: img.name,
             contentType: 'image/jpeg',
             size: 0,

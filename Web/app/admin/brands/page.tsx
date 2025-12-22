@@ -608,7 +608,6 @@ export default function AdminBrandsPage() {
                                 onChange={(url) =>
                                     setFormData((prev) => ({ ...prev, logoUrl: url }))
                                 }
-                                folder="brands"
                                 aspectRatio="square"
                                 disabled={isSaving}
                             />

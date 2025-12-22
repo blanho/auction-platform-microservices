@@ -18,7 +18,7 @@ import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { DraftRestorePrompt } from "@/components/ui/draft-restore-prompt";
-import { UploadedImage } from "@/components/ui/cloudinary-upload";
+import { UploadedImage } from "@/components/ui/image-upload";
 import { useFormDraft } from "@/hooks/use-form-draft";
 import { showErrorToast, showSuccessToast } from "@/utils";
 import { ROUTES } from "@/constants";

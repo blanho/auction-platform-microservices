@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { auctionService } from '@/services/auction.service';
 import { Category, CreateAuctionDto, ShippingType } from '@/types/auction';
-import { UploadedImage } from '@/components/ui/cloudinary-upload';
+import { UploadedImage } from '@/components/ui/image-upload';
 
 export default function CreateAuctionPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -35,7 +35,7 @@ export default function CreateAuctionPage() {
         const successfulImages = images.filter(img => img.status === 'success');
         const files = successfulImages.map((img, index) => ({
             url: img.url,
-            publicId: img.publicId,
+            fileId: img.fileId,
             fileName: img.name,
             contentType: 'image/jpeg',
             size: 0,

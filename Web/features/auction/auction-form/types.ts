@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { ShippingType, Auction, Category } from "@/types/auction";
-import { UploadedImage } from "@/components/ui/cloudinary-upload";
+import { UploadedImage } from "@/components/ui/image-upload";
 
 export const auctionFormSchema = z
   .object({

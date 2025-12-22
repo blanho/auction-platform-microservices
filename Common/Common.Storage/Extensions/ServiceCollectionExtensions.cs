@@ -29,9 +29,6 @@ public static class ServiceCollectionExtensions
             case StorageType.AzureBlob:
                 services.AddSingleton<IStorageProvider, AzureBlobStorageProvider>();
                 break;
-            case StorageType.Cloudinary:
-                services.AddSingleton<IStorageProvider, CloudinaryStorageProvider>();
-                break;
             case StorageType.Local:
             default:
                 services.AddSingleton<IStorageProvider, LocalStorageProvider>();
@@ -54,9 +51,6 @@ public static class ServiceCollectionExtensions
         {
             case StorageType.AzureBlob:
                 services.AddSingleton<IStorageProvider, AzureBlobStorageProvider>();
-                break;
-            case StorageType.Cloudinary:
-                services.AddSingleton<IStorageProvider, CloudinaryStorageProvider>();
                 break;
             case StorageType.Local:
             default:
