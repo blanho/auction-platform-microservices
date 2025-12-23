@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { format, formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-import { ROUTES, MESSAGES, TIME, AUCTION_BID } from '@/constants';
+import { ROUTES, MESSAGES, AUCTION_BID } from '@/constants';
 import {
     formatCurrency,
     getTimeRemaining,
@@ -36,34 +36,21 @@ import {
     faPause,
     faEdit,
     faDollarSign,
-    faHistory,
     faTrophy,
     faCheckCircle,
     faChevronLeft,
-    faChevronRight,
     faUser,
     faBolt,
     faShieldAlt,
     faFire,
-    faFileAlt,
-    faComments,
-    faLayerGroup,
+    faHistory,
 } from '@fortawesome/free-solid-svg-icons';
-import {
-    faFacebook,
-    faXTwitter,
-} from '@fortawesome/free-brands-svg-icons';
+import { faFacebook, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -75,24 +62,9 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 import { Auction, AuctionStatus } from '@/types/auction';
@@ -102,13 +74,14 @@ import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { BuyNowButton } from '@/features/auction/buy-now-button';
-import { CountdownTimer } from '@/features/auction/auction-detail';
+import { CountdownTimer, EnhancedGallery, EnhancedBidHistory, AuctionDetailTabs, ShippingInfo } from '@/features/auction/auction-detail';
 import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
 import { ReviewsSection } from '@/features/review';
 import { useAuctionQuery, useRelatedAuctionsQuery } from '@/hooks/queries';
 import { bookmarkService } from '@/services/bookmark.service';
 import { AuditHistory } from '@/components/common/audit-history';
-import { BidHistory } from '@/components/common/bid-history';
+import { StickyBidBar } from '@/components/common/mobile-enhancements';
+import { bidService } from '@/services/bid.service';
 
 export default function AuctionDetailPage() {
     const params = useParams();
@@ -118,36 +91,37 @@ export default function AuctionDetailPage() {
     const { data: auction, isLoading, error, refetch: refetchAuction } = useAuctionQuery(auctionId);
     const { data: relatedAuctions = [] } = useRelatedAuctionsQuery(auction?.categoryId, auctionId, !!auction);
     const [bidRefreshTrigger, setBidRefreshTrigger] = useState(0);
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isInWatchlist, setIsInWatchlist] = useState(false);
     const [bidAmount, setBidAmount] = useState('');
 
-    useEffect(() => {
-        if (auction) {
-            const minBid = (auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT;
-            setBidAmount(minBid.toString());
-        }
-    }, [auction]);
-
-    const handleBidPlaced = () => {
+    const handleBidPlaced = useCallback(() => {
         setBidRefreshTrigger(prev => prev + 1);
         refetchAuction();
-    };
+    }, [refetchAuction]);
 
+    const handlePlaceBidFromMobile = useCallback(async (amount: number) => {
+        await bidService.placeBid({
+            auctionId,
+            amount,
+        });
+        handleBidPlaced();
+    }, [auctionId, handleBidPlaced]);
+
+    const auctionFiles = auction?.files;
     const images = useMemo(() => {
-        if (!auction?.files?.length) return [];
-        return auction.files
+        if (!auctionFiles?.length) return [];
+        return auctionFiles
             .filter(f => f.fileType === 'Image' && f.url)
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(f => f.url!);
-    }, [auction?.files]);
+    }, [auctionFiles]);
 
     const attributes = useMemo(() => 
         auction ? getAuctionAttributes(auction) : {}, 
         [auction]
     );
 
-    const toggleWatchlist = async () => {
+    const toggleWatchlist = useCallback(async () => {
         if (!auction) return;
         if (!user) {
             toast.error('Please sign in to add to watchlist');
@@ -160,25 +134,24 @@ export default function AuctionDetailPage() {
         } catch {
             toast.error('Failed to update watchlist');
         }
-    };
+    }, [auction, user]);
 
-    const copyLink = () => {
+    const copyLink = useCallback(() => {
         navigator.clipboard.writeText(window.location.href);
         toast.success('Link copied to clipboard');
-    };
+    }, []);
 
-    const shareToTwitter = () => {
+    const shareToTwitter = useCallback(() => {
         const text = `Check out this auction: ${auction?.title}`;
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
-    };
+    }, [auction?.title]);
 
-    const shareToFacebook = () => {
+    const shareToFacebook = useCallback(() => {
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
-    };
+    }, []);
 
     useEffect(() => {
         if (!auction?.id || !user) {
-            setIsInWatchlist(false);
             return;
         }
 
@@ -187,11 +160,11 @@ export default function AuctionDetailPage() {
             .then(inWatchlist => {
                 if (isMounted) setIsInWatchlist(inWatchlist);
             })
-            .catch(() => { });
+            .catch(() => {
+                if (isMounted) setIsInWatchlist(false);
+            });
 
-        return () => {
-            isMounted = false;
-        };
+        return () => { isMounted = false; };
     }, [auction?.id, user]);
 
     if (isLoading) {
@@ -220,10 +193,7 @@ export default function AuctionDetailPage() {
         return (
             <MainLayout>
                 <div className="container py-8 max-w-6xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                         <Alert variant="destructive" className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50">
                             <AlertDescription className="flex items-center gap-2">
                                 <FontAwesomeIcon icon={faGavel} className="w-4 h-4" />
@@ -248,44 +218,28 @@ export default function AuctionDetailPage() {
 
     const sellerUsername = getAuctionSellerUsername(auction);
     const isOwner = user?.name === sellerUsername;
-    const currentImage = images[selectedImageIndex] || '/placeholder-car.jpg';
     const statusConfig = getAuctionStatusStyle(auction.status);
     const timeRemaining = getTimeRemaining(auction.auctionEnd);
     const isUrgent = timeRemaining && timeRemaining.days === 0 && timeRemaining.hours < 1;
     const auctionTitle = getAuctionTitle(auction);
     const yearManufactured = getAuctionYearManufactured(auction);
-
-    const navigateImage = (direction: 'prev' | 'next') => {
-        if (direction === 'prev') {
-            setSelectedImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
-        } else {
-            setSelectedImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-        }
-    };
+    const isLive = auction.status === AuctionStatus.Live;
 
     return (
         <MainLayout>
-            <div className="container py-8 max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
+            <div className="container py-8 max-w-7xl mx-auto pb-24 md:pb-8">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <Breadcrumb className="mb-6">
                         <BreadcrumbList>
                             <BreadcrumbItem>
                                 <BreadcrumbLink asChild>
-                                    <Link href={ROUTES.HOME} className="text-slate-500 hover:text-purple-600 transition-colors">
-                                        Home
-                                    </Link>
+                                    <Link href={ROUTES.HOME} className="text-slate-500 hover:text-purple-600 transition-colors">Home</Link>
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
                                 <BreadcrumbLink asChild>
-                                    <Link href={ROUTES.AUCTIONS.LIST} className="text-slate-500 hover:text-purple-600 transition-colors">
-                                        Auctions
-                                    </Link>
+                                    <Link href={ROUTES.AUCTIONS.LIST} className="text-slate-500 hover:text-purple-600 transition-colors">Auctions</Link>
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             {auction.categoryName && (
@@ -293,10 +247,7 @@ export default function AuctionDetailPage() {
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbLink asChild>
-                                            <Link
-                                                href={`${ROUTES.AUCTIONS.LIST}?category=${auction.categorySlug}`}
-                                                className="text-slate-500 hover:text-purple-600 transition-colors"
-                                            >
+                                            <Link href={`${ROUTES.AUCTIONS.LIST}?category=${auction.categorySlug}`} className="text-slate-500 hover:text-purple-600 transition-colors">
                                                 {auction.categoryName}
                                             </Link>
                                         </BreadcrumbLink>
@@ -305,9 +256,7 @@ export default function AuctionDetailPage() {
                             )}
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="font-medium text-slate-900 dark:text-white">
-                                    {auctionTitle}
-                                </BreadcrumbPage>
+                                <BreadcrumbPage className="font-medium text-slate-900 dark:text-white">{auctionTitle}</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
@@ -317,17 +266,15 @@ export default function AuctionDetailPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-6 flex items-center justify-between p-4 rounded-xl bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-800/50"
+                        className="mb-6 flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200/50 dark:border-purple-800/50"
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-linear-to-r from-purple-600 to-blue-600 flex items-center justify-center">
                                 <FontAwesomeIcon icon={faUser} className="w-5 h-5 text-white" />
                             </div>
-                            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                                You are the owner of this auction
-                            </span>
+                            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">You are the owner of this auction</span>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             {auction.status === AuctionStatus.Inactive && (
                                 <ActivateAuctionDialog
                                     auctionId={auction.id}
@@ -363,120 +310,32 @@ export default function AuctionDetailPage() {
                                 <FontAwesomeIcon icon={faEdit} className="mr-2 w-3 h-3" />
                                 Edit
                             </Button>
-                            <DeleteAuctionDialog
-                                auctionId={auction.id}
-                                auctionTitle={auctionTitle}
-                                redirectAfterDelete="/auctions"
-                            />
+                            <DeleteAuctionDialog auctionId={auction.id} auctionTitle={auctionTitle} redirectAfterDelete="/auctions" />
                         </div>
                     </motion.div>
                 )}
 
-                <div className="sticky top-16 z-40 -mx-4 px-4 py-3 mb-6 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-800/50">
-                    <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
-                        {[
-                            { id: 'overview', label: 'Overview', icon: faLayerGroup },
-                            { id: 'description', label: 'Description', icon: faFileAlt },
-                            { id: 'bid-history', label: 'Bid History', icon: faHistory },
-                            { id: 'reviews', label: 'Reviews', icon: faComments },
-                        ].map((section) => (
-                            <button
-                                key={section.id}
-                                onClick={() => {
-                                    const element = document.getElementById(section.id);
-                                    if (element) {
-                                        const offset = 120;
-                                        const elementPosition = element.getBoundingClientRect().top;
-                                        const offsetPosition = elementPosition + window.pageYOffset - offset;
-                                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-                                    }
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors whitespace-nowrap"
-                            >
-                                <FontAwesomeIcon icon={section.icon} className="w-3.5 h-3.5" />
-                                {section.label}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
-
-                <div id="overview" className="grid gap-8 lg:grid-cols-5">
+                <div className="grid gap-8 lg:grid-cols-5">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4 }}
                         className="lg:col-span-3 space-y-4"
                     >
-                        <div className="relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-xl">
-                            <div className="relative aspect-[4/3] w-full group">
-                                <Image
-                                    src={currentImage}
-                                    alt={auctionTitle}
-                                    fill
-                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                    priority
-                                />
-
-                                <div className={`absolute top-4 left-4 px-4 py-2 rounded-full bg-linear-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
-                                    {statusConfig.pulse && (
-                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                                    )}
-                                    {auction.status}
-                                </div>
-
-                                {auction.status === AuctionStatus.Live && isUrgent && (
-                                    <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-linear-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
-                                        <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
-                                        Ending Soon
-                                    </div>
-                                )}
-
-                                {images.length > 1 && (
-                                    <>
-                                        <button
-                                            onClick={() => navigateImage('prev')}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                                        >
-                                            <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 text-slate-700 dark:text-white" />
-                                        </button>
-                                        <button
-                                            onClick={() => navigateImage('next')}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                                        >
-                                            <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4 text-slate-700 dark:text-white" />
-                                        </button>
-                                    </>
-                                )}
-
-                                <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
-                                    {selectedImageIndex + 1} / {images.length || 1}
-                                </div>
+                        <div className="relative">
+                            <div className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-full bg-linear-to-r ${statusConfig.gradient} text-white text-sm font-semibold shadow-lg ${statusConfig.bgGlow} flex items-center gap-2`}>
+                                {statusConfig.pulse && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                                {auction.status}
                             </div>
+                            {isLive && isUrgent && (
+                                <div className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-full bg-linear-to-r from-red-500 to-orange-500 text-white text-xs font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+                                    <FontAwesomeIcon icon={faFire} className="w-3 h-3" />
+                                    Ending Soon
+                                </div>
+                            )}
+                            <EnhancedGallery images={images} title={auctionTitle} />
                         </div>
 
-                        {images.length > 1 && (
-                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                                {images.map((img, idx) => (
-                                    <motion.button
-                                        key={idx}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => setSelectedImageIndex(idx)}
-                                        className={`relative w-20 h-20 shrink-0 rounded-xl overflow-hidden transition-all ${selectedImageIndex === idx
-                                                ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
-                                                : 'opacity-60 hover:opacity-100'
-                                            }`}
-                                    >
-                                        <Image
-                                            src={img}
-                                            alt={`${auctionTitle} - Image ${idx + 1}`}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </motion.button>
-                                ))}
-                            </div>
-                        )}
                         <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                             <CardHeader className="pb-2">
                                 <div className="flex items-start justify-between">
@@ -574,151 +433,16 @@ export default function AuctionDetailPage() {
                                         <CountdownTimer endDate={auction.auctionEnd} isUrgent={isUrgent} />
                                     </div>
 
-                                    {auction.status === AuctionStatus.Live && !isOwner && (
+                                    {isLive && !isOwner && (
                                         <>
                                             <Separator className="bg-slate-200 dark:bg-slate-700" />
-                                            
-                                            {auction.isBuyNowAvailable && auction.buyNowPrice ? (
-                                                <Tabs defaultValue="bid" className="w-full">
-                                                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                                                        <TabsTrigger value="bid" className="gap-2">
-                                                            <FontAwesomeIcon icon={faGavel} className="w-3.5 h-3.5" />
-                                                            Place Bid
-                                                        </TabsTrigger>
-                                                        <TabsTrigger value="buynow" className="gap-2">
-                                                            <FontAwesomeIcon icon={faBolt} className="w-3.5 h-3.5" />
-                                                            Buy Now
-                                                        </TabsTrigger>
-                                                    </TabsList>
-                                                    
-                                                    <TabsContent value="bid" className="space-y-4 mt-0">
-                                                        <div className="flex gap-2">
-                                                            <div className="relative flex-1">
-                                                                <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                                <Input
-                                                                    type="number"
-                                                                    value={bidAmount}
-                                                                    onChange={(e) => setBidAmount(e.target.value)}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') {
-                                                                            e.preventDefault();
-                                                                        }
-                                                                    }}
-                                                                    className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                                    placeholder="Enter bid amount"
-                                                                />
-                                                            </div>
-                                                            <PlaceBidDialog
-                                                                auctionId={auction.id}
-                                                                currentHighBid={auction.currentHighBid || 0}
-                                                                reservePrice={auction.reservePrice}
-                                                                onBidPlaced={handleBidPlaced}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {[10, 50, 100, 500].map((increment) => (
-                                                                <Button
-                                                                    key={increment}
-                                                                    type="button"
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => setBidAmount((prev) => {
-                                                                        const current = parseFloat(prev) || (auction.currentHighBid || auction.reservePrice);
-                                                                        return (current + increment).toString();
-                                                                    })}
-                                                                    className="h-8 px-3 text-xs font-medium rounded-lg border-slate-200 dark:border-slate-700 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:border-purple-700 transition-colors"
-                                                                >
-                                                                    +${increment}
-                                                                </Button>
-                                                            ))}
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <p className="text-xs text-slate-500">
-                                                                Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
-                                                            </p>
-                                                            <AutoBidDialog
-                                                                auctionId={auction.id}
-                                                                currentHighBid={auction.currentHighBid || 0}
-                                                                reservePrice={auction.reservePrice}
-                                                            />
-                                                        </div>
-                                                    </TabsContent>
-                                                    
-                                                    <TabsContent value="buynow" className="mt-0">
-                                                        <div className="rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
-                                                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Skip the bidding!</p>
-                                                            </div>
-                                                            <p className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-4">
-                                                                {formatCurrency(auction.buyNowPrice)}
-                                                            </p>
-                                                            <BuyNowButton
-                                                                auctionId={auction.id}
-                                                                buyNowPrice={auction.buyNowPrice}
-                                                                auctionTitle={auctionTitle}
-                                                                onSuccess={() => window.location.reload()}
-                                                            />
-                                                            <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-3">
-                                                                Buy now and get this item immediately
-                                                            </p>
-                                                        </div>
-                                                    </TabsContent>
-                                                </Tabs>
-                                            ) : (
-                                                <div className="space-y-4">
-                                                    <div className="flex gap-2">
-                                                        <div className="relative flex-1">
-                                                            <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                            <Input
-                                                                type="number"
-                                                                value={bidAmount}
-                                                                onChange={(e) => setBidAmount(e.target.value)}
-                                                                onKeyDown={(e) => {
-                                                                    if (e.key === 'Enter') {
-                                                                        e.preventDefault();
-                                                                    }
-                                                                }}
-                                                                className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                                placeholder="Enter bid amount"
-                                                            />
-                                                        </div>
-                                                        <PlaceBidDialog
-                                                            auctionId={auction.id}
-                                                            currentHighBid={auction.currentHighBid || 0}
-                                                            reservePrice={auction.reservePrice}
-                                                            onBidPlaced={handleBidPlaced}
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {[10, 50, 100, 500].map((increment) => (
-                                                            <Button
-                                                                key={increment}
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setBidAmount((prev) => {
-                                                                    const current = parseFloat(prev) || (auction.currentHighBid || auction.reservePrice);
-                                                                    return (current + increment).toString();
-                                                                })}
-                                                                className="h-8 px-3 text-xs font-medium rounded-lg border-slate-200 dark:border-slate-700 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:border-purple-700 transition-colors"
-                                                            >
-                                                                +${increment}
-                                                            </Button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <p className="text-xs text-slate-500">
-                                                            Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
-                                                        </p>
-                                                        <AutoBidDialog
-                                                            auctionId={auction.id}
-                                                            currentHighBid={auction.currentHighBid || 0}
-                                                            reservePrice={auction.reservePrice}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <BiddingSection
+                                                auction={auction}
+                                                auctionTitle={auctionTitle}
+                                                bidAmount={bidAmount}
+                                                setBidAmount={setBidAmount}
+                                                handleBidPlaced={handleBidPlaced}
+                                            />
                                         </>
                                     )}
 
@@ -751,16 +475,14 @@ export default function AuctionDetailPage() {
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={toggleWatchlist}
                                                         className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isInWatchlist
-                                                                ? 'bg-red-100 dark:bg-red-950/50 text-red-500'
-                                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
-                                                            }`}
+                                                            ? 'bg-red-100 dark:bg-red-950/50 text-red-500'
+                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
+                                                        }`}
                                                     >
                                                         <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${isInWatchlist ? 'text-red-500' : ''}`} />
                                                     </motion.button>
                                                 </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
-                                                </TooltipContent>
+                                                <TooltipContent>{isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}</TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
 
@@ -794,33 +516,7 @@ export default function AuctionDetailPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                    <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-purple-500" />
-                                    Seller
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-full bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
-                                        {getAuctionSellerUsername(auction).charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-slate-900 dark:text-white">{getAuctionSellerUsername(auction)}</p>
-                                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                                            <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-amber-400" />
-                                            <span className="font-medium">4.8</span>
-                                            <span className="text-slate-300 dark:text-slate-600">•</span>
-                                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                                                <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
-                                                Verified
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <SellerCard sellerUsername={sellerUsername} />
 
                         <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
                             <CardContent className="pt-6">
@@ -831,9 +527,9 @@ export default function AuctionDetailPage() {
                                             Reserve Price
                                         </span>
                                         <span className={`font-semibold ${auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
-                                                ? 'text-emerald-600 dark:text-emerald-400'
-                                                : 'text-slate-900 dark:text-white'
-                                            }`}>
+                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                            : 'text-slate-900 dark:text-white'
+                                        }`}>
                                             {auction.currentHighBid && auction.currentHighBid >= auction.reservePrice
                                                 ? MESSAGES.LABELS.RESERVE_MET
                                                 : formatCurrency(auction.reservePrice)}
@@ -855,65 +551,48 @@ export default function AuctionDetailPage() {
                 </div>
 
                 <motion.div
-                    id="description"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
+                    className="mt-8"
                 >
-                    <Card className="mt-8 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-xl">
-                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                                    <FontAwesomeIcon icon={faTag} className="w-4 h-4 text-white" />
-                                </div>
-                                Description
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
-                                {getAuctionDescription(auction)}
-                            </p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    id="bid-history"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.3 }}
-                >
-                    <Card className="mt-6 border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-xl">
-                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                                    <FontAwesomeIcon icon={faHistory} className="w-4 h-4 text-white" />
-                                </div>
-                                Bid History
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <BidHistory
+                    <AuctionDetailTabs
+                        descriptionContent={
+                            <div className="prose dark:prose-invert max-w-none">
+                                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
+                                    {getAuctionDescription(auction)}
+                                </p>
+                            </div>
+                        }
+                        bidsContent={
+                            <EnhancedBidHistory
                                 auctionId={auction.id}
                                 refreshTrigger={bidRefreshTrigger}
-                                maxHeight="300px"
+                                isLive={isLive}
+                                pollingInterval={isLive ? 5000 : undefined}
                             />
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    id="reviews"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.35 }}
-                >
-                    <ReviewsSection
-                        auctionId={auction.id}
-                        sellerId={auction.sellerId}
-                        sellerUsername={sellerUsername}
-                        auctionStatus={auction.status}
-                        winnerId={auction.winnerId}
+                        }
+                        shippingContent={
+                            <ShippingInfo
+                                shippingOptions={[
+                                    { method: 'Standard Shipping', price: 0, estimatedDays: '5-7 business days' },
+                                    { method: 'Express Shipping', price: 25, estimatedDays: '2-3 business days', carrier: 'FedEx' },
+                                ]}
+                                sellerLocation="United States"
+                                shipsTo={['United States', 'Canada', 'Europe']}
+                                returnPolicy="30-day return policy. Buyer pays return shipping."
+                            />
+                        }
+                        reviewsContent={
+                            <ReviewsSection
+                                auctionId={auction.id}
+                                sellerId={auction.sellerId}
+                                sellerUsername={sellerUsername}
+                                auctionStatus={auction.status}
+                                winnerId={auction.winnerId}
+                            />
+                        }
+                        reviewCount={0}
                     />
                 </motion.div>
 
@@ -944,7 +623,7 @@ export default function AuctionDetailPage() {
                                     >
                                         <Link href={`/auctions/${related.id}`}>
                                             <Card className="overflow-hidden border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                                <div className="relative aspect-[4/3]">
+                                                <div className="relative aspect-4/3">
                                                     <Image
                                                         src={relatedImage}
                                                         alt={related.title}
@@ -957,9 +636,7 @@ export default function AuctionDetailPage() {
                                                     <h3 className="font-semibold truncate text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                                         {related.title}
                                                     </h3>
-                                                    <p className="text-sm text-slate-500 mt-0.5">
-                                                        {related.categoryName || 'Uncategorized'}
-                                                    </p>
+                                                    <p className="text-sm text-slate-500 mt-0.5">{related.categoryName || 'Uncategorized'}</p>
                                                     <div className="flex items-center justify-between mt-3">
                                                         <span className="font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                                             {formatCurrency(related.currentHighBid || related.reservePrice)}
@@ -993,22 +670,192 @@ export default function AuctionDetailPage() {
                                     </div>
                                     Activity History
                                 </CardTitle>
-                                <CardDescription>
-                                    Track all changes made to this auction
-                                </CardDescription>
+                                <CardDescription>Track all changes made to this auction</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <AuditHistory
-                                    entityType="Auction"
-                                    entityId={auction.id}
-                                    maxHeight="400px"
-                                    showDetails={true}
-                                />
+                                <AuditHistory entityType="Auction" entityId={auction.id} maxHeight="400px" showDetails={true} />
                             </CardContent>
                         </Card>
                     </motion.div>
                 )}
             </div>
+
+            {isLive && !isOwner && (
+                <StickyBidBar
+                    currentBid={auction.currentHighBid || auction.reservePrice}
+                    minBidIncrement={AUCTION_BID.MIN_INCREMENT}
+                    isLive={isLive}
+                    isAuthenticated={!!user}
+                    onPlaceBid={handlePlaceBidFromMobile}
+                    onBuyNow={auction.isBuyNowAvailable && auction.buyNowPrice ? () => {} : undefined}
+                    buyNowPrice={auction.buyNowPrice}
+                />
+            )}
         </MainLayout>
+    );
+}
+
+function BiddingSection({
+    auction,
+    auctionTitle,
+    bidAmount,
+    setBidAmount,
+    handleBidPlaced,
+}: {
+    auction: Auction;
+    auctionTitle: string;
+    bidAmount: string;
+    setBidAmount: React.Dispatch<React.SetStateAction<string>>;
+    handleBidPlaced: () => void;
+}) {
+    if (auction.isBuyNowAvailable && auction.buyNowPrice) {
+        return (
+            <Tabs defaultValue="bid" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="bid" className="gap-2">
+                        <FontAwesomeIcon icon={faGavel} className="w-3.5 h-3.5" />
+                        Place Bid
+                    </TabsTrigger>
+                    <TabsTrigger value="buynow" className="gap-2">
+                        <FontAwesomeIcon icon={faBolt} className="w-3.5 h-3.5" />
+                        Buy Now
+                    </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="bid" className="space-y-4 mt-0">
+                    <BidInputSection
+                        auction={auction}
+                        bidAmount={bidAmount}
+                        setBidAmount={setBidAmount}
+                        handleBidPlaced={handleBidPlaced}
+                    />
+                </TabsContent>
+                
+                <TabsContent value="buynow" className="mt-0">
+                    <div className="rounded-xl bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 border border-amber-200/50 dark:border-amber-800/50">
+                        <div className="flex items-center gap-2 mb-2">
+                            <FontAwesomeIcon icon={faBolt} className="w-4 h-4 text-amber-500" />
+                            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">Skip the bidding!</p>
+                        </div>
+                        <p className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-4">
+                            {formatCurrency(auction.buyNowPrice)}
+                        </p>
+                        <BuyNowButton
+                            auctionId={auction.id}
+                            buyNowPrice={auction.buyNowPrice}
+                            auctionTitle={auctionTitle}
+                            onSuccess={() => window.location.reload()}
+                        />
+                        <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-3">
+                            Buy now and get this item immediately
+                        </p>
+                    </div>
+                </TabsContent>
+            </Tabs>
+        );
+    }
+
+    return (
+        <BidInputSection
+            auction={auction}
+            bidAmount={bidAmount}
+            setBidAmount={setBidAmount}
+            handleBidPlaced={handleBidPlaced}
+        />
+    );
+}
+
+function BidInputSection({
+    auction,
+    bidAmount,
+    setBidAmount,
+    handleBidPlaced,
+}: {
+    auction: Auction;
+    bidAmount: string;
+    setBidAmount: React.Dispatch<React.SetStateAction<string>>;
+    handleBidPlaced: () => void;
+}) {
+    return (
+        <div className="space-y-4">
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <FontAwesomeIcon icon={faDollarSign} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                        type="number"
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                        className="pl-9 h-12 rounded-xl border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Enter bid amount"
+                    />
+                </div>
+                <PlaceBidDialog
+                    auctionId={auction.id}
+                    currentHighBid={auction.currentHighBid || 0}
+                    reservePrice={auction.reservePrice}
+                    onBidPlaced={handleBidPlaced}
+                />
+            </div>
+            <div className="flex flex-wrap gap-2">
+                {[10, 50, 100, 500].map((increment) => (
+                    <Button
+                        key={increment}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBidAmount((prev) => {
+                            const current = parseFloat(prev) || (auction.currentHighBid || auction.reservePrice);
+                            return (current + increment).toString();
+                        })}
+                        className="h-8 px-3 text-xs font-medium rounded-lg border-slate-200 dark:border-slate-700 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 dark:hover:border-purple-700 transition-colors"
+                    >
+                        +${increment}
+                    </Button>
+                ))}
+            </div>
+            <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                    Min bid: {formatCurrency((auction.currentHighBid || auction.reservePrice) + AUCTION_BID.MIN_INCREMENT)}
+                </p>
+                <AutoBidDialog
+                    auctionId={auction.id}
+                    currentHighBid={auction.currentHighBid || 0}
+                    reservePrice={auction.reservePrice}
+                />
+            </div>
+        </div>
+    );
+}
+
+function SellerCard({ sellerUsername }: { sellerUsername: string }) {
+    return (
+        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl">
+            <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-purple-500" />
+                    Seller
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-linear-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/25">
+                        {sellerUsername.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <p className="font-semibold text-slate-900 dark:text-white">{sellerUsername}</p>
+                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                            <FontAwesomeIcon icon={faStar} className="w-3 h-3 text-amber-400" />
+                            <span className="font-medium">4.8</span>
+                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
+                                Verified
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
