@@ -4,7 +4,8 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-	</PropertyGroup>
+	  <UserSecretsId>8e3a4e46-bbce-47c4-8b41-2e47e7bc6d0c</UserSecretsId>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.3.0" />
