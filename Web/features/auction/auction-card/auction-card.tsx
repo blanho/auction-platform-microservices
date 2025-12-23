@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import {
     CountdownBadge,
     StatusBadge,
-    WishlistIconButton,
+    WatchlistIconButton,
     PriceDisplay,
     getStatusConfig,
 } from "@/components/common";
@@ -30,6 +30,7 @@ import {
     getAuctionCondition,
     getAuctionYearManufactured,
 } from "@/utils/auction";
+import { useWatchlist } from "@/context/watchlist.context";
 import type { AuctionCardProps, AuctionCardColorScheme } from "./types";
 
 const COLOR_SCHEMES: Record<AuctionCardColorScheme, { hover: string; gradient: string; shadow: string }> = {
@@ -126,9 +127,9 @@ function CarouselCard({
     isNew,
     index,
     colorScheme,
-    showWishlistButton,
-    isWishlisted,
-    onWishlistClick,
+    showWatchlistButton,
+    isWatched,
+    onWatchlistClick,
 }: {
     auction: Auction;
     imageUrl: string;
@@ -139,9 +140,9 @@ function CarouselCard({
     isNew: boolean;
     index: number;
     colorScheme: AuctionCardColorScheme;
-    showWishlistButton: boolean;
-    isWishlisted: boolean;
-    onWishlistClick: (e: React.MouseEvent) => void;
+    showWatchlistButton: boolean;
+    isWatched: boolean;
+    onWatchlistClick: (e: React.MouseEvent) => void;
 }) {
     const colors = COLOR_SCHEMES[colorScheme];
 
@@ -166,10 +167,10 @@ function CarouselCard({
                             {isNew && <StatusBadge type="new" />}
                             {auction.isFeatured && <StatusBadge type="featured" />}
                         </div>
-                        {showWishlistButton && (
-                            <WishlistIconButton
-                                isWishlisted={isWishlisted}
-                                onClick={onWishlistClick}
+                        {showWatchlistButton && (
+                            <WatchlistIconButton
+                                isWatched={isWatched}
+                                onClick={onWatchlistClick}
                                 variant="circle"
                             />
                         )}
@@ -253,9 +254,9 @@ function FeaturedCard({
     timeLeft,
     isUrgent,
     index,
-    showWishlistButton,
-    isWishlisted,
-    onWishlistClick,
+    showWatchlistButton,
+    isWatched,
+    onWatchlistClick,
 }: {
     auction: Auction;
     imageUrl: string;
@@ -265,9 +266,9 @@ function FeaturedCard({
     timeLeft: ReturnType<typeof useCountdown>;
     isUrgent: boolean;
     index: number;
-    showWishlistButton: boolean;
-    isWishlisted: boolean;
-    onWishlistClick: (e: React.MouseEvent) => void;
+    showWatchlistButton: boolean;
+    isWatched: boolean;
+    onWatchlistClick: (e: React.MouseEvent) => void;
 }) {
     return (
         <motion.div
@@ -283,10 +284,10 @@ function FeaturedCard({
                             {auction.isFeatured && <StatusBadge type="featured" />}
                             {isUrgent && <StatusBadge type="ending-soon" />}
                         </div>
-                        {showWishlistButton && (
-                            <WishlistIconButton
-                                isWishlisted={isWishlisted}
-                                onClick={onWishlistClick}
+                        {showWatchlistButton && (
+                            <WatchlistIconButton
+                                isWatched={isWatched}
+                                onClick={onWatchlistClick}
                                 variant="circle"
                             />
                         )}
@@ -360,9 +361,9 @@ function DefaultCard({
     status,
     timeLeft,
     isUrgent,
-    showWishlistButton,
-    isWishlisted,
-    onWishlistClick,
+    showWatchlistButton,
+    isWatched,
+    onWatchlistClick,
 }: {
     auction: Auction | SearchItem;
     imageUrl: string | undefined;
@@ -377,9 +378,9 @@ function DefaultCard({
     status: string;
     timeLeft: ReturnType<typeof useCountdown>;
     isUrgent: boolean;
-    showWishlistButton: boolean;
-    isWishlisted: boolean;
-    onWishlistClick: (e: React.MouseEvent) => void;
+    showWatchlistButton: boolean;
+    isWatched: boolean;
+    onWatchlistClick: (e: React.MouseEvent) => void;
 }) {
     const timeText = timeLeft ? formatTimeDisplay(timeLeft) : null;
     const statusConfig = getStatusConfig(status);
@@ -414,10 +415,10 @@ function DefaultCard({
                         )}
                     </div>
 
-                    {showWishlistButton && (
-                        <WishlistIconButton
-                            isWishlisted={isWishlisted}
-                            onClick={onWishlistClick}
+                    {showWatchlistButton && (
+                        <WatchlistIconButton
+                            isWatched={isWatched}
+                            onClick={onWatchlistClick}
                             variant="square"
                             className="absolute top-3 right-3"
                         />
@@ -501,12 +502,12 @@ export function AuctionCard({
     variant = "default",
     colorScheme = "purple",
     index = 0,
-    showWishlistButton = true,
-    isWishlisted: externalIsWishlisted,
-    onWishlistToggle,
+    showWatchlistButton = true,
+    isWatched: externalisWatched,
+    onWatchlistToggle,
 }: AuctionCardProps) {
-    const [internalIsWishlisted, setInternalIsWishlisted] = useState(false);
-    const isWishlisted = externalIsWishlisted ?? internalIsWishlisted;
+    const { isInWatchlist, toggleWatchlist } = useWatchlist();
+    const isWatched = externalisWatched ?? isInWatchlist(auction.id);
 
     const endDate = "auctionEnd" in auction ? auction.auctionEnd : null;
     const timeLeft = useCountdown(endDate);
@@ -535,17 +536,17 @@ export function AuctionCard({
         return createdTime > now - 24 * 60 * 60 * 1000;
     }, [auction]);
 
-    const handleWishlistClick = useCallback(
+    const handleWatchlistClick = useCallback(
         (e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-            if (onWishlistToggle) {
-                onWishlistToggle(auction.id);
+            if (onWatchlistToggle) {
+                onWatchlistToggle(auction.id);
             } else {
-                setInternalIsWishlisted((prev) => !prev);
+                toggleWatchlist(auction.id);
             }
         },
-        [auction.id, onWishlistToggle]
+        [auction.id, onWatchlistToggle, toggleWatchlist]
     );
 
     if (variant === "compact") {
@@ -573,9 +574,9 @@ export function AuctionCard({
                 isNew={isNew}
                 index={index}
                 colorScheme={colorScheme}
-                showWishlistButton={showWishlistButton}
-                isWishlisted={isWishlisted}
-                onWishlistClick={handleWishlistClick}
+                showWatchlistButton={showWatchlistButton}
+                isWatched={isWatched}
+                onWatchlistClick={handleWatchlistClick}
             />
         );
     }
@@ -591,9 +592,9 @@ export function AuctionCard({
                 timeLeft={timeLeft}
                 isUrgent={isUrgent}
                 index={index}
-                showWishlistButton={showWishlistButton}
-                isWishlisted={isWishlisted}
-                onWishlistClick={handleWishlistClick}
+                showWatchlistButton={showWatchlistButton}
+                isWatched={isWatched}
+                onWatchlistClick={handleWatchlistClick}
             />
         );
     }
@@ -613,9 +614,9 @@ export function AuctionCard({
             status={auction.status}
             timeLeft={timeLeft}
             isUrgent={isUrgent}
-            showWishlistButton={showWishlistButton}
-            isWishlisted={isWishlisted}
-            onWishlistClick={handleWishlistClick}
+            showWatchlistButton={showWatchlistButton}
+            isWatched={isWatched}
+            onWatchlistClick={handleWatchlistClick}
         />
     );
 }

@@ -33,7 +33,7 @@ import { NotificationBell } from "@/components/common/notification-bell";
 import { cn } from "@/lib/utils";
 import { gradients, gradientText, glass, shadows } from "@/lib/styles";
 import { useCategoriesQuery, useQuickStatsQuery, useTrendingSearchesQuery } from "@/hooks/queries";
-import { wishlistService } from "@/services/wishlist.service";
+import { useWatchlist } from "@/context/watchlist.context";
 import { useAuthSession } from "@/hooks/use-auth-session";
 
 const navLinks = [
@@ -73,31 +73,11 @@ export function Header() {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [showAnnouncement, setShowAnnouncement] = useState(true);
-    const [wishlistCount, setWishlistCount] = useState(0);
+    const { watchlistCount } = useWatchlist();
     
     const { data: categories, isLoading: categoriesLoading } = useCategoriesQuery();
     const { data: quickStatsData } = useQuickStatsQuery();
     const { data: trendingSearchesData = [] } = useTrendingSearchesQuery(6);
-
-    useEffect(() => {
-        if (!user?.id) {
-            setWishlistCount(0);
-            return;
-        }
-
-        let isMounted = true;
-        wishlistService.getWishlist()
-            .then((data) => {
-                if (isMounted) setWishlistCount(data.length);
-            })
-            .catch(() => {
-                if (isMounted) setWishlistCount(0);
-            });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [user?.id]);
 
     const trendingSearches = trendingSearchesData
         .filter((item) => item.searchTerm)
@@ -391,9 +371,9 @@ export function Header() {
                                 >
                                     <Link href="/saved">
                                         <FontAwesomeIcon icon={faHeart} className="h-5 w-5" />
-                                        {wishlistCount > 0 && (
+                                        {watchlistCount > 0 && (
                                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                                {wishlistCount > 99 ? '99+' : wishlistCount}
+                                                {watchlistCount > 99 ? '99+' : watchlistCount}
                                             </span>
                                         )}
                                     </Link>

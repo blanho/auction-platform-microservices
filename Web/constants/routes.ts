@@ -51,8 +51,7 @@ export const ROUTES = {
   LIVE: '/live',
   GIFTS: '/gifts',
   SAVED: '/saved',
-  WISHLIST: '/saved?tab=wishlist',
-  WATCHLIST: '/saved?tab=watchlist',
+  WATCHLIST: '/saved',
   HELP: '/help',
   
   NOTIFICATIONS: '/notifications',

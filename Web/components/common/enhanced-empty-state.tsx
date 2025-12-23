@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faGavel,
     faSearch,
-    faHeart,
+    faEye,
     faBell,
     faShoppingCart,
     faBox,
@@ -25,7 +25,7 @@ type EmptyStateVariant =
     | "auctions"
     | "bids"
     | "search"
-    | "wishlist"
+    | "watchlist"
     | "notifications"
     | "orders"
     | "error"
@@ -59,10 +59,10 @@ const ILLUSTRATIONS: Record<EmptyStateVariant, IllustrationConfig> = {
         gradient: "from-blue-500 to-cyan-600",
         bgGlow: "bg-blue-500/10",
     },
-    wishlist: {
-        icon: faHeart,
-        gradient: "from-pink-500 to-rose-600",
-        bgGlow: "bg-pink-500/10",
+    watchlist: {
+        icon: faEye,
+        gradient: "from-blue-500 to-cyan-600",
+        bgGlow: "bg-blue-500/10",
     },
     notifications: {
         icon: faBell,
@@ -314,11 +314,11 @@ export const EMPTY_STATE_PRESETS = {
         description:
             "Try adjusting your search terms or filters to find what you're looking for.",
     },
-    emptyWishlist: {
-        variant: "wishlist" as const,
-        title: "Your wishlist is empty",
+    emptyWatchlist: {
+        variant: "watchlist" as const,
+        title: "Your watchlist is empty",
         description:
-            "Save items you love by clicking the heart icon. They'll appear here for easy access.",
+            "Watch items by clicking the eye icon. They'll appear here for easy access.",
     },
     noNotifications: {
         variant: "notifications" as const,

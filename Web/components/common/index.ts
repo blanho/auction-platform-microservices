@@ -8,6 +8,6 @@ export { Pagination } from "./pagination";
 export { CountdownBadge } from "./countdown-badge";
 export { StatusBadge, getStatusConfig } from "./status-badge";
 export type { BadgeConfig } from "./status-badge";
-export { WishlistIconButton } from "./wishlist-icon-button";
+export { WatchlistIconButton } from "./watchlist-icon-button";
 export { PriceDisplay } from "./price-display";
 export { CardImageContainer } from "./card-image-container";

@@ -12,53 +12,32 @@ import { useSession } from "next-auth/react";
 import { bookmarkService } from "@/services/bookmark.service";
 import { showSuccessToast, showErrorToast } from "@/utils";
 
-interface WishlistContextType {
-    wishlistIds: Set<string>;
+interface WatchlistContextType {
     watchlistIds: Set<string>;
-    isInWishlist: (auctionId: string) => boolean;
     isInWatchlist: (auctionId: string) => boolean;
-    toggleWishlist: (auctionId: string) => Promise<boolean>;
     toggleWatchlist: (auctionId: string) => Promise<boolean>;
-    addToWishlist: (auctionId: string) => Promise<void>;
     addToWatchlist: (auctionId: string) => Promise<void>;
-    removeFromWishlist: (auctionId: string) => Promise<void>;
     removeFromWatchlist: (auctionId: string) => Promise<void>;
-    refreshWishlist: () => Promise<void>;
     refreshWatchlist: () => Promise<void>;
     isLoading: boolean;
-    wishlistCount: number;
     watchlistCount: number;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WatchlistContext = createContext<WatchlistContextType | undefined>(undefined);
 
-interface WishlistProviderProps {
+interface WatchlistProviderProps {
     children: React.ReactNode;
 }
 
-export function WishlistProvider({ children }: WishlistProviderProps) {
+export function WatchlistProvider({ children }: WatchlistProviderProps) {
     const { data: session, status } = useSession();
-    const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
     const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(false);
     const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+    const [pendingWatchlist, setPendingWatchlist] = useState<Set<string>>(new Set());
 
     const isAuthenticated = status === "authenticated" && !!session;
     const isSessionLoading = status === "loading";
-
-    const refreshWishlist = useCallback(async () => {
-        if (!isAuthenticated || isSessionLoading) {
-            setWishlistIds(new Set());
-            return;
-        }
-
-        try {
-            const items = await bookmarkService.getWishlist();
-            setWishlistIds(new Set(items.map((item) => item.auctionId)));
-        } catch (error) {
-            console.error("Failed to fetch wishlist:", error);
-        }
-    }, [isAuthenticated, isSessionLoading]);
 
     const refreshWatchlist = useCallback(async () => {
         if (!isAuthenticated || isSessionLoading) {
@@ -91,17 +70,13 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [wishlistItems, watchlistItems] = await Promise.all([
-                    bookmarkService.getWishlist(),
-                    bookmarkService.getWatchlist(),
-                ]);
+                const watchlistItems = await bookmarkService.getWatchlist();
 
                 if (isMounted) {
-                    setWishlistIds(new Set(wishlistItems.map((item) => item.auctionId)));
                     setWatchlistIds(new Set(watchlistItems.map((item) => item.auctionId)));
                 }
             } catch (error) {
-                console.error("Failed to fetch bookmarks:", error);
+                console.error("Failed to fetch watchlist:", error);
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -115,35 +90,11 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
         return () => {
             isMounted = false;
         };
-    }, [isAuthenticated, initialLoadComplete]);
-
-    const isInWishlist = useCallback(
-        (auctionId: string) => wishlistIds.has(auctionId),
-        [wishlistIds]
-    );
+    }, [isAuthenticated, isSessionLoading, initialLoadComplete]);
 
     const isInWatchlist = useCallback(
         (auctionId: string) => watchlistIds.has(auctionId),
         [watchlistIds]
-    );
-
-    const addToWishlist = useCallback(
-        async (auctionId: string) => {
-            if (!isAuthenticated) {
-                showErrorToast("Please sign in to add items to your wishlist");
-                return;
-            }
-
-            try {
-                await bookmarkService.addToWishlist(auctionId);
-                setWishlistIds((prev) => new Set([...prev, auctionId]));
-                showSuccessToast("Added to wishlist");
-            } catch (error) {
-                showErrorToast(error);
-                throw error;
-            }
-        },
-        [isAuthenticated]
     );
 
     const addToWatchlist = useCallback(
@@ -153,6 +104,12 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
                 return;
             }
 
+            if (watchlistIds.has(auctionId) || pendingWatchlist.has(auctionId)) {
+                return;
+            }
+
+            setPendingWatchlist((prev) => new Set([...prev, auctionId]));
+
             try {
                 await bookmarkService.addToWatchlist({ auctionId });
                 setWatchlistIds((prev) => new Set([...prev, auctionId]));
@@ -160,34 +117,26 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
             } catch (error) {
                 showErrorToast(error);
                 throw error;
-            }
-        },
-        [isAuthenticated]
-    );
-
-    const removeFromWishlist = useCallback(
-        async (auctionId: string) => {
-            if (!isAuthenticated) return;
-
-            try {
-                await bookmarkService.removeFromWishlist(auctionId);
-                setWishlistIds((prev) => {
+            } finally {
+                setPendingWatchlist((prev) => {
                     const next = new Set(prev);
                     next.delete(auctionId);
                     return next;
                 });
-                showSuccessToast("Removed from wishlist");
-            } catch (error) {
-                showErrorToast(error);
-                throw error;
             }
         },
-        [isAuthenticated]
+        [isAuthenticated, watchlistIds, pendingWatchlist]
     );
 
     const removeFromWatchlist = useCallback(
         async (auctionId: string) => {
             if (!isAuthenticated) return;
+
+            if (pendingWatchlist.has(auctionId)) {
+                return;
+            }
+
+            setPendingWatchlist((prev) => new Set([...prev, auctionId]));
 
             try {
                 await bookmarkService.removeFromWatchlist(auctionId);
@@ -200,33 +149,15 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
             } catch (error) {
                 showErrorToast(error);
                 throw error;
+            } finally {
+                setPendingWatchlist((prev) => {
+                    const next = new Set(prev);
+                    next.delete(auctionId);
+                    return next;
+                });
             }
         },
-        [isAuthenticated]
-    );
-
-    const toggleWishlist = useCallback(
-        async (auctionId: string): Promise<boolean> => {
-            if (!isAuthenticated) {
-                showErrorToast("Please sign in to manage your wishlist");
-                return false;
-            }
-
-            const isCurrentlyInWishlist = wishlistIds.has(auctionId);
-
-            try {
-                if (isCurrentlyInWishlist) {
-                    await removeFromWishlist(auctionId);
-                    return false;
-                } else {
-                    await addToWishlist(auctionId);
-                    return true;
-                }
-            } catch {
-                return isCurrentlyInWishlist;
-            }
-        },
-        [isAuthenticated, wishlistIds, addToWishlist, removeFromWishlist]
+        [isAuthenticated, pendingWatchlist]
     );
 
     const toggleWatchlist = useCallback(
@@ -234,6 +165,10 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
             if (!isAuthenticated) {
                 showErrorToast("Please sign in to manage your watchlist");
                 return false;
+            }
+
+            if (pendingWatchlist.has(auctionId)) {
+                return watchlistIds.has(auctionId);
             }
 
             const isCurrentlyInWatchlist = watchlistIds.has(auctionId);
@@ -250,57 +185,46 @@ export function WishlistProvider({ children }: WishlistProviderProps) {
                 return isCurrentlyInWatchlist;
             }
         },
-        [isAuthenticated, watchlistIds, addToWatchlist, removeFromWatchlist]
+        [isAuthenticated, watchlistIds, pendingWatchlist, addToWatchlist, removeFromWatchlist]
     );
 
-    const value = useMemo<WishlistContextType>(
+    const value = useMemo<WatchlistContextType>(
         () => ({
-            wishlistIds,
             watchlistIds,
-            isInWishlist,
             isInWatchlist,
-            toggleWishlist,
             toggleWatchlist,
-            addToWishlist,
             addToWatchlist,
-            removeFromWishlist,
             removeFromWatchlist,
-            refreshWishlist,
             refreshWatchlist,
             isLoading,
-            wishlistCount: wishlistIds.size,
             watchlistCount: watchlistIds.size,
         }),
         [
-            wishlistIds,
             watchlistIds,
-            isInWishlist,
             isInWatchlist,
-            toggleWishlist,
             toggleWatchlist,
-            addToWishlist,
             addToWatchlist,
-            removeFromWishlist,
             removeFromWatchlist,
-            refreshWishlist,
             refreshWatchlist,
             isLoading,
         ]
     );
 
     return (
-        <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>
+        <WatchlistContext.Provider value={value}>
+            {children}
+        </WatchlistContext.Provider>
     );
 }
 
-export function useWishlist() {
-    const context = useContext(WishlistContext);
+export function useWatchlist() {
+    const context = useContext(WatchlistContext);
     if (context === undefined) {
-        throw new Error("useWishlist must be used within a WishlistProvider");
+        throw new Error("useWatchlist must be used within a WatchlistProvider");
     }
     return context;
 }
 
-export function useWishlistOptional() {
-    return useContext(WishlistContext);
+export function useWatchlistOptional() {
+    return useContext(WatchlistContext);
 }

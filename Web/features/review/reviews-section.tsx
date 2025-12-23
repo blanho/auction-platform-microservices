@@ -351,7 +351,7 @@ export function ReviewsSection({
             </div>
             Seller Reviews
           </div>
-          {summary && (
+          {summary && summary.averageRating != null && (
             <div className="flex items-center gap-2">
               <StarRating rating={summary.averageRating} readonly size="sm" />
               <span className="text-lg font-bold">{summary.averageRating.toFixed(1)}</span>

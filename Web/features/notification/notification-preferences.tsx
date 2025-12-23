@@ -81,7 +81,7 @@ const DEFAULT_NOTIFICATION_CATEGORIES: NotificationCategory[] = [
       {
         id: "price_drop",
         label: "Price Alerts",
-        description: "When items in your wishlist have new activity",
+        description: "When items in your watchlist have new activity",
         email: true,
         push: false,
         inApp: true,

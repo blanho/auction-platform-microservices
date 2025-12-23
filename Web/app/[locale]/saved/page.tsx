@@ -2,12 +2,11 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faHeart,
   faEye,
   faSpinner,
   faTrash,
@@ -20,7 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MainLayout } from "@/components/layout/main-layout";
 import { PlaceBidDialog } from "@/features/bid/place-bid-dialog";
@@ -28,20 +26,18 @@ import { showUndoToast } from "@/components/ui/undo-toast";
 
 import { Auction, AuctionStatus } from "@/types/auction";
 import { auctionService } from "@/services/auction.service";
-import { wishlistService, WishlistItem } from "@/services/wishlist.service";
 import { toast } from "sonner";
+import { useWatchlist } from "@/context/watchlist.context";
 
 import { ROUTES } from "@/constants";
 import {
   formatCurrency,
   getTimeRemaining,
-  watchlistStorage,
   getAuctionImageUrl,
   getAuctionTitle,
 } from "@/utils";
 
 type ViewMode = "grid" | "list";
-type TabValue = "wishlist" | "watchlist";
 
 interface TimeLeft {
   hours: number;
@@ -77,25 +73,21 @@ function CountdownTimer({ endTime }: { endTime: Date }) {
   );
 }
 
-function EmptyState({ type }: { type: TabValue }) {
-  const isWishlist = type === "wishlist";
-  
+function EmptyState() {
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-16">
         <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
           <FontAwesomeIcon 
-            icon={isWishlist ? faHeart : faEye} 
+            icon={faEye} 
             className="h-8 w-8 text-slate-400" 
           />
         </div>
         <h3 className="text-xl font-semibold mb-2 text-slate-900 dark:text-white">
-          {isWishlist ? "No saved items" : "No watched items"}
+          No watched items
         </h3>
         <p className="text-slate-500 mb-6 text-center max-w-sm">
-          {isWishlist 
-            ? "Items you save will appear here. Start browsing to find something you love!"
-            : "Items you're tracking will appear here. Watch auctions to follow their progress."}
+          Items you&apos;re tracking will appear here. Watch auctions to follow their progress.
         </p>
         <Button asChild className="bg-linear-to-r from-purple-600 to-blue-600">
           <Link href={ROUTES.AUCTIONS.LIST}>
@@ -108,26 +100,22 @@ function EmptyState({ type }: { type: TabValue }) {
   );
 }
 
-function AuctionCard({
+function WatchlistCard({
   auction,
   viewMode,
   onRemove,
 }: {
-  auction: Auction | WishlistItem;
-  type: TabValue;
+  auction: Auction;
   viewMode: ViewMode;
   onRemove: (id: string) => void;
 }) {
-  const isWishlistItem = "auctionId" in auction;
-  const id = isWishlistItem ? auction.auctionId : auction.id;
-  const title = isWishlistItem ? auction.auctionTitle : getAuctionTitle(auction);
-  const imageUrl = isWishlistItem ? auction.auctionImageUrl : getAuctionImageUrl(auction.files);
-  const currentBid = isWishlistItem ? auction.currentBid : auction.currentHighBid;
-  const status = isWishlistItem ? auction.status : auction.status;
-  const auctionEnd = isWishlistItem 
-    ? new Date(auction.auctionEnd) 
-    : new Date(auction.auctionEnd);
-  const reservePrice = isWishlistItem ? 0 : auction.reservePrice;
+  const id = auction.id;
+  const title = getAuctionTitle(auction);
+  const imageUrl = getAuctionImageUrl(auction.files);
+  const currentBid = auction.currentHighBid;
+  const status = auction.status;
+  const auctionEnd = new Date(auction.auctionEnd);
+  const reservePrice = auction.reservePrice;
 
   const isLive = status === AuctionStatus.Live;
   const isEnded = status === AuctionStatus.Finished;
@@ -185,7 +173,7 @@ function AuctionCard({
             </div>
 
             <div className="flex items-center gap-2 pr-4">
-              {isLive && !isWishlistItem && (
+              {isLive && (
                 <PlaceBidDialog
                   auctionId={id}
                   currentHighBid={currentBid || 0}
@@ -268,7 +256,7 @@ function AuctionCard({
           )}
         </div>
 
-        {isLive && !isWishlistItem && (
+        {isLive && (
           <PlaceBidDialog
             auctionId={id}
             currentHighBid={currentBid || 0}
@@ -289,59 +277,36 @@ function AuctionCard({
 function SavedItemsContent() {
   const { status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { watchlistIds, removeFromWatchlist } = useWatchlist();
   
-  const initialTab = (searchParams.get("tab") as TabValue) || "wishlist";
-  const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  
-  const [isLoadingWishlist, setIsLoadingWishlist] = useState(true);
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  
-  const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [watchlistItems, setWatchlistItems] = useState<Auction[]>([]);
-
-  const fetchWishlist = useCallback(async () => {
-    try {
-      setIsLoadingWishlist(true);
-      const data = await wishlistService.getWishlist();
-      setWishlistItems(data);
-    } catch {
-      toast.error("Failed to load wishlist");
-    } finally {
-      setIsLoadingWishlist(false);
-    }
-  }, []);
 
   const fetchWatchlist = useCallback(async () => {
     try {
-      setIsLoadingWatchlist(true);
-      const watchlistIds = watchlistStorage.get();
+      setIsLoading(true);
+      const ids = Array.from(watchlistIds);
       
-      if (watchlistIds.length === 0) {
+      if (ids.length === 0) {
         setWatchlistItems([]);
         return;
       }
 
-      const auctionsPromises = watchlistIds.map((id: string) => 
+      const auctionsPromises = ids.map((id: string) => 
         auctionService.getAuctionById(id).catch(() => null)
       );
       
       const results = await Promise.all(auctionsPromises);
       const validAuctions = results.filter((a): a is Auction => a !== null);
       
-      const removedIds = watchlistIds.filter(
-        (id: string) => !validAuctions.some((a: Auction) => a.id === id)
-      );
-      removedIds.forEach((id: string) => watchlistStorage.remove(id));
-      
       setWatchlistItems(validAuctions);
     } catch {
       toast.error("Failed to load watchlist");
     } finally {
-      setIsLoadingWatchlist(false);
+      setIsLoading(false);
     }
-  }, []);
+  }, [watchlistIds]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -350,77 +315,42 @@ function SavedItemsContent() {
     }
 
     if (status === "authenticated") {
-      fetchWishlist();
       fetchWatchlist();
     }
-  }, [status, router, fetchWishlist, fetchWatchlist]);
-
-  const handleRemoveFromWishlist = async (auctionId: string) => {
-    const removedItem = wishlistItems.find(item => item.auctionId === auctionId);
-    
-    setWishlistItems(prev => prev.filter(item => item.auctionId !== auctionId));
-    
-    showUndoToast({
-      message: "Removed from wishlist",
-      variant: "remove",
-      onConfirm: async () => {
-        try {
-          await wishlistService.removeFromWishlist(auctionId);
-        } catch {
-          if (removedItem) {
-            setWishlistItems(prev => [...prev, removedItem]);
-          }
-          toast.error("Failed to remove from wishlist");
-        }
-      },
-      onUndo: () => {
-        if (removedItem) {
-          setWishlistItems(prev => [...prev, removedItem]);
-        }
-      },
-    });
-  };
+  }, [status, router, fetchWatchlist]);
 
   const handleRemoveFromWatchlist = (auctionId: string) => {
     const removedItem = watchlistItems.find(item => item.id === auctionId);
     
     setWatchlistItems(prev => prev.filter(item => item.id !== auctionId));
-    watchlistStorage.remove(auctionId);
     
     showUndoToast({
       message: "Removed from watchlist",
       variant: "remove",
-      onConfirm: () => {},
+      onConfirm: () => {
+        removeFromWatchlist(auctionId);
+      },
       onUndo: () => {
         if (removedItem) {
           setWatchlistItems(prev => [...prev, removedItem]);
-          watchlistStorage.add(auctionId);
         }
       },
     });
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value as TabValue);
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", value);
-    window.history.pushState({}, "", url);
-  };
-
-  const isLoading = status === "loading" || 
-    (activeTab === "wishlist" && isLoadingWishlist) ||
-    (activeTab === "watchlist" && isLoadingWatchlist);
+  const isPageLoading = status === "loading" || isLoading;
 
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Saved Items
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <FontAwesomeIcon icon={faEye} className="h-8 w-8 text-blue-500" />
+              Watchlist
             </h1>
             <p className="text-slate-500 mt-1">
-              Manage your wishlist and watched auctions
+              Track auctions you&apos;re interested in
             </p>
           </div>
 
@@ -439,83 +369,31 @@ function SavedItemsContent() {
           </ToggleGroup>
         </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800">
-            <TabsTrigger value="wishlist" className="gap-2">
-              <FontAwesomeIcon icon={faHeart} className="h-4 w-4" />
-              Wishlist
-              {wishlistItems.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {wishlistItems.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="watchlist" className="gap-2">
-              <FontAwesomeIcon icon={faEye} className="h-4 w-4" />
-              Watchlist
-              {watchlistItems.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {watchlistItems.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          {isLoading ? (
-            <div className="flex justify-center py-16">
-              <FontAwesomeIcon 
-                icon={faSpinner} 
-                className="h-8 w-8 animate-spin text-purple-500" 
+        {isPageLoading ? (
+          <div className="flex justify-center py-16">
+            <FontAwesomeIcon 
+              icon={faSpinner} 
+              className="h-8 w-8 animate-spin text-purple-500" 
+            />
+          </div>
+        ) : watchlistItems.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              : "space-y-4"
+          }>
+            {watchlistItems.map((item) => (
+              <WatchlistCard
+                key={item.id}
+                auction={item}
+                viewMode={viewMode}
+                onRemove={handleRemoveFromWatchlist}
               />
-            </div>
-          ) : (
-            <>
-              <TabsContent value="wishlist">
-                {wishlistItems.length === 0 ? (
-                  <EmptyState type="wishlist" />
-                ) : (
-                  <div className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                      : "space-y-4"
-                  }>
-                    {wishlistItems.map((item) => (
-                      <AuctionCard
-                        key={item.auctionId}
-                        auction={item}
-                        type="wishlist"
-                        viewMode={viewMode}
-                        onRemove={handleRemoveFromWishlist}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="watchlist">
-                {watchlistItems.length === 0 ? (
-                  <EmptyState type="watchlist" />
-                ) : (
-                  <div className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                      : "space-y-4"
-                  }>
-                    {watchlistItems.map((item) => (
-                      <AuctionCard
-                        key={item.id}
-                        auction={item}
-                        type="watchlist"
-                        viewMode={viewMode}
-                        onRemove={handleRemoveFromWatchlist}
-                      />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
+            ))}
+          </div>
+        )}
       </div>
     </MainLayout>
   );

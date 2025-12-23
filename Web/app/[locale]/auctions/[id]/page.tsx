@@ -23,7 +23,7 @@ import { useAuthSession } from '@/hooks/use-auth-session';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faGavel,
-    faHeart,
+    faEye,
     faClock,
     faCalendarAlt,
     faTachometerAlt,
@@ -149,7 +149,7 @@ export default function AuctionDetailPage() {
             return;
         }
         try {
-            const result = await bookmarkService.toggleBookmark(auction.id, 0);
+            const result = await bookmarkService.toggleWatchlist(auction.id);
             setIsInWatchlist(result.isBookmarked);
             toast.success(result.message);
         } catch {
@@ -407,6 +407,17 @@ export default function AuctionDetailPage() {
                                             </div>
                                         </div>
                                     )}
+                                    {auction.brandName && (
+                                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                                                <FontAwesomeIcon icon={faStar} className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-500">Brand</p>
+                                                <p className="font-semibold text-slate-900 dark:text-white">{auction.brandName}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -482,11 +493,11 @@ export default function AuctionDetailPage() {
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={toggleWatchlist}
                                                         className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isInWatchlist
-                                                            ? 'bg-red-100 dark:bg-red-950/50 text-red-500'
-                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'
+                                                            ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-500'
+                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30'
                                                         }`}
                                                     >
-                                                        <FontAwesomeIcon icon={faHeart} className={`w-5 h-5 ${isInWatchlist ? 'text-red-500' : ''}`} />
+                                                        <FontAwesomeIcon icon={faEye} className={`w-5 h-5 ${isInWatchlist ? 'text-blue-500' : ''}`} />
                                                     </motion.button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>{isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}</TooltipContent>

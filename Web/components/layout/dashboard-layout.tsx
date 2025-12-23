@@ -40,7 +40,6 @@ const buyerNavItems: NavItem[] = [
     { title: "My Bids", href: "/dashboard/bids", icon: faGavel },
     { title: "Orders", href: "/dashboard/orders", icon: faBagShopping },
     { title: "Watchlist", href: "/dashboard/watchlist", icon: faEye },
-    { title: "Wishlist", href: "/wishlist", icon: faHeart },
     { title: "Settings", href: "/dashboard/settings", icon: faGear },
 ];
 

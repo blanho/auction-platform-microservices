@@ -6,7 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { UndoToastContainer } from "@/components/ui/undo-toast";
 import { NotificationProvider } from "@/context/notification.context";
-import { WishlistProvider } from "@/context/wishlist.context";
+import { WatchlistProvider } from "@/context/watchlist.context";
 import { QueryProvider } from "./query-provider";
 
 interface ProvidersProps {
@@ -27,9 +27,9 @@ export function Providers({ children }: ProvidersProps) {
                     disableTransitionOnChange
                 >
                     <NotificationProvider>
-                        <WishlistProvider>
+                        <WatchlistProvider>
                             {children}
-                        </WishlistProvider>
+                        </WatchlistProvider>
                     </NotificationProvider>
                     <Toaster />
                     <UndoToastContainer />
@@ -38,3 +38,4 @@ export function Providers({ children }: ProvidersProps) {
         </NextAuthSessionProvider>
     );
 }
+

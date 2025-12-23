@@ -150,12 +150,6 @@ export function UserMenu() {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href="/wishlist">
-                        <FontAwesomeIcon icon={faHeart} className="mr-2 h-4 w-4" />
-                        Wishlist
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                     <Link href="/dashboard/wallet">
                         <FontAwesomeIcon icon={faWallet} className="mr-2 h-4 w-4" />
                         Wallet

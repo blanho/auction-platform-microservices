@@ -7,7 +7,7 @@ import {
     faGavel,
     faClock,
     faDollarSign,
-    faHeart,
+    faEye,
     faShare,
     faBolt,
     faTrophy,
@@ -227,13 +227,13 @@ export function BiddingPanel({
                                         onClick={onToggleWatchlist}
                                         className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
                                             isInWatchlist
-                                                ? "bg-red-100 dark:bg-red-950/50 text-red-500"
-                                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                ? "bg-blue-100 dark:bg-blue-950/50 text-blue-500"
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                                         }`}
                                     >
                                         <FontAwesomeIcon
-                                            icon={faHeart}
-                                            className={`w-5 h-5 ${isInWatchlist ? "text-red-500" : ""}`}
+                                            icon={faEye}
+                                            className={`w-5 h-5 ${isInWatchlist ? "text-blue-500" : ""}`}
                                         />
                                     </motion.button>
                                 </TooltipTrigger>

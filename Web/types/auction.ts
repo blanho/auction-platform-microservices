@@ -106,7 +106,6 @@ export interface Brand {
 
 export enum BookmarkType {
   Watchlist = 0,
-  Wishlist = 1,
 }
 
 export interface UserAuctionBookmark {
@@ -171,6 +170,8 @@ export interface Auction {
   categoryName?: string;
   categorySlug?: string;
   categoryIcon?: string;
+  brandId?: string;
+  brandName?: string;
 
   files: AuctionFile[];
   shippingType?: ShippingType;

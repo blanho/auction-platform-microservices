@@ -467,10 +467,6 @@
     @apply absolute top-3 left-3 z-10;
   }
 
-  .auction-card-wishlist {
-    @apply absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-900 transition-colors;
-  }
-
   .price-current {
     @apply text-2xl font-bold text-slate-900 dark:text-white;
   }

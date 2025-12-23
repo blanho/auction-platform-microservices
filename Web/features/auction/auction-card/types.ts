@@ -10,11 +10,11 @@ export interface AuctionCardProps {
     variant?: AuctionCardVariant;
     colorScheme?: AuctionCardColorScheme;
     index?: number;
-    showWishlistButton?: boolean;
+    showWatchlistButton?: boolean;
     showBidButton?: boolean;
     showStats?: boolean;
-    isWishlisted?: boolean;
-    onWishlistToggle?: (auctionId: string) => void;
+    isWatched?: boolean;
+    onWatchlistToggle?: (auctionId: string) => void;
 }
 
 export interface TimeDisplayProps {

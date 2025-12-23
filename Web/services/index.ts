@@ -25,5 +25,3 @@ export { storageService } from "./storage.service";
 export type { FileMetadata, RequestUploadDto, UploadUrlResponse, ConfirmUploadRequest, DownloadUrlResponse, UploadProgress, UploadResult } from "./storage.service";
 export { walletService, adminPaymentService } from "./wallet.service";
 export type { WalletTransaction, WalletBalance, CreateDepositDto, CreateWithdrawalDto, AdminWithdrawal, PaymentStatistics, GetTransactionsParams } from "./wallet.service";
-export { wishlistService } from "./wishlist.service";
-

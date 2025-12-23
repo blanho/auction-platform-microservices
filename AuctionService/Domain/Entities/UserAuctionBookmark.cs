@@ -17,6 +17,5 @@ public class UserAuctionBookmark : BaseEntity
 
 public enum BookmarkType
 {
-    Watchlist = 0,
-    Wishlist = 1
+    Watchlist = 0
 }
