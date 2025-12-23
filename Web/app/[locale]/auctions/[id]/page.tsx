@@ -30,8 +30,6 @@ import {
     faPalette,
     faTag,
     faStar,
-    faShare,
-    faCopy,
     faPlay,
     faPause,
     faEdit,
@@ -45,7 +43,6 @@ import {
     faFire,
     faHistory,
 } from '@fortawesome/free-solid-svg-icons';
-import { faFacebook, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +60,6 @@ import {
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
@@ -74,10 +70,11 @@ import { DeleteAuctionDialog } from '@/features/auction/delete-auction-dialog';
 import { ActivateAuctionDialog } from '@/features/auction/activate-auction-dialog';
 import { DeactivateAuctionDialog } from '@/features/auction/deactivate-auction-dialog';
 import { BuyNowButton } from '@/features/auction/buy-now-button';
-import { CountdownTimer, EnhancedGallery, EnhancedBidHistory, AuctionDetailTabs, ShippingInfo } from '@/features/auction/auction-detail';
+import { CountdownTimer, EnhancedGallery, EnhancedBidHistory, AuctionDetailTabs, ShippingInfo, SharePanel } from '@/features/auction/auction-detail';
 import { PlaceBidDialog, AutoBidDialog } from '@/features/bid';
 import { ReviewsSection } from '@/features/review';
 import { useAuctionQuery, useRelatedAuctionsQuery } from '@/hooks/queries';
+import { useAuctionRealtime } from '@/hooks/use-auction-realtime';
 import { bookmarkService } from '@/services/bookmark.service';
 import { AuditHistory } from '@/components/common/audit-history';
 import { StickyBidBar } from '@/components/common/mobile-enhancements';
@@ -98,6 +95,30 @@ export default function AuctionDetailPage() {
         setBidRefreshTrigger(prev => prev + 1);
         refetchAuction();
     }, [refetchAuction]);
+
+    const handleOutbid = useCallback(() => {
+        toast.warning('You have been outbid!', {
+            description: 'Someone placed a higher bid on this auction.',
+            action: {
+                label: 'Place New Bid',
+                onClick: () => document.getElementById('bid-input')?.focus(),
+            },
+        });
+    }, []);
+
+    const handleAuctionEnded = useCallback(() => {
+        toast.info('This auction has ended');
+        refetchAuction();
+    }, [refetchAuction]);
+
+    const { isConnected: isRealtimeConnected } = useAuctionRealtime({
+        auctionId,
+        enabled: !!auctionId && auction?.status === AuctionStatus.Live,
+        onBidUpdate: handleBidPlaced,
+        onOutbid: handleOutbid,
+        onAuctionEnded: handleAuctionEnded,
+        onAuctionEndingSoon: () => toast.warning('This auction is ending soon!'),
+    });
 
     const handlePlaceBidFromMobile = useCallback(async (amount: number) => {
         await bidService.placeBid({
@@ -135,20 +156,6 @@ export default function AuctionDetailPage() {
             toast.error('Failed to update watchlist');
         }
     }, [auction, user]);
-
-    const copyLink = useCallback(() => {
-        navigator.clipboard.writeText(window.location.href);
-        toast.success('Link copied to clipboard');
-    }, []);
-
-    const shareToTwitter = useCallback(() => {
-        const text = `Check out this auction: ${auction?.title}`;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
-    }, [auction?.title]);
-
-    const shareToFacebook = useCallback(() => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
-    }, []);
 
     useEffect(() => {
         if (!auction?.id || !user) {
@@ -486,31 +493,12 @@ export default function AuctionDetailPage() {
                                             </Tooltip>
                                         </TooltipProvider>
 
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all"
-                                                >
-                                                    <FontAwesomeIcon icon={faShare} className="w-5 h-5" />
-                                                </motion.button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="rounded-xl">
-                                                <DropdownMenuItem onClick={shareToFacebook} className="cursor-pointer">
-                                                    <FontAwesomeIcon icon={faFacebook} className="w-4 h-4 mr-2 text-blue-600" />
-                                                    Facebook
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={shareToTwitter} className="cursor-pointer">
-                                                    <FontAwesomeIcon icon={faXTwitter} className="w-4 h-4 mr-2" />
-                                                    X (Twitter)
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={copyLink} className="cursor-pointer">
-                                                    <FontAwesomeIcon icon={faCopy} className="w-4 h-4 mr-2 text-slate-500" />
-                                                    Copy Link
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <SharePanel
+                                            title={auctionTitle}
+                                            description={getAuctionDescription(auction)}
+                                            price={auction.currentHighBid || auction.reservePrice}
+                                            variant="icon"
+                                        />
                                     </div>
                                 </div>
                             </CardContent>

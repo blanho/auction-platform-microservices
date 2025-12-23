@@ -1,5 +1,6 @@
 export * from "./use-auctions";
 export * from "./use-auth-session";
+export * from "./use-auction-realtime";
 export * from "./use-countdown";
 export * from "./use-debounce";
 export * from "./use-form-draft";

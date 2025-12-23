@@ -6,6 +6,7 @@ export { OwnerActionsBar } from "./owner-actions-bar";
 export { RelatedAuctions } from "./related-auctions";
 export { SellerCard } from "./seller-card";
 export { ShareMenu } from "./share-menu";
+export { SharePanel, QuickShareButtons } from "./share-panel";
 
 export { EnhancedGallery } from "./enhanced-gallery";
 export { EnhancedBidHistory } from "./enhanced-bid-history";
