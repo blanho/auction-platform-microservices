@@ -1,6 +1,8 @@
 import { NextAuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
 import { cookies } from "next/headers";
 
 const TOKEN_COOKIE_NAME = "auth-tokens";
@@ -123,6 +125,21 @@ async function refreshAccessToken(
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!
+    }),
     CredentialsProvider({
       id: "id-server",
       name: "Identity Server",
@@ -198,9 +215,71 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if ((account?.provider === "google" || account?.provider === "facebook") && profile?.email) {
+        try {
+          const providerName = account.provider === "google" ? "Google" : "Facebook";
+          console.log("[OAuth SignIn] Syncing external user:", { provider: providerName, email: profile.email });
+          
+          const response = await fetch(`${identityServerUrl}/api/account/external-user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              provider: providerName,
+              providerKey: account.providerAccountId,
+              email: profile.email,
+              name: profile.name || user.name
+            })
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            console.error("[OAuth SignIn] Failed to sync external user:", error);
+            return false;
+          }
+
+          const userData = await response.json();
+          console.log("[OAuth SignIn] Backend response:", { 
+            userId: userData.userId, 
+            hasAccessToken: !!userData.accessToken,
+            accessTokenLength: userData.accessToken?.length,
+            expiresIn: userData.expiresIn 
+          });
+          
+          user.id = userData.userId;
+          (user as ExtendedUser).role = userData.role;
+          (user as ExtendedUser).accessToken = userData.accessToken;
+          (user as ExtendedUser).refreshToken = userData.refreshToken;
+          (user as ExtendedUser).expiresAt = Date.now() + userData.expiresIn * 1000;
+          
+          console.log("[OAuth SignIn] User object updated:", {
+            id: user.id,
+            accessToken: !!(user as ExtendedUser).accessToken,
+            expiresAt: (user as ExtendedUser).expiresAt
+          });
+        } catch (error) {
+          console.error("[OAuth SignIn] Error syncing external user:", error);
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user, account }) {
+      console.log("[JWT Callback] Called with:", { 
+        hasUser: !!user, 
+        hasAccount: !!account,
+        userAccessToken: user ? !!(user as ExtendedUser).accessToken : 'N/A',
+        accountProvider: account?.provider 
+      });
+      
       if (user) {
         const extendedUser = user as ExtendedUser;
+        console.log("[JWT Callback] Using user data for token:", {
+          hasAccessToken: !!extendedUser.accessToken,
+          expiresAt: extendedUser.expiresAt
+        });
         return {
           ...token,
           access_token: extendedUser.accessToken,
@@ -239,10 +318,10 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       const extendedToken = token as ExtendedToken;
 
-      if (extendedToken.access_token && extendedToken.refresh_token && extendedToken.expires_at) {
+      if (extendedToken.access_token && extendedToken.expires_at) {
         await setTokenCookieInternal({
           accessToken: extendedToken.access_token,
-          refreshToken: extendedToken.refresh_token,
+          refreshToken: extendedToken.refresh_token || "",
           expiresAt: extendedToken.expires_at,
         });
       }

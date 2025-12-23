@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGlobe, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { cn } from "@/lib/utils";
 import { useTransition } from "react";
 
-const localeConfig: Record<Locale, { name: string; flag: string }> = {
-  en: { name: "English", flag: "🇺🇸" },
-  ja: { name: "日本語", flag: "🇯🇵" }
+const localeConfig: Record<Locale, { name: string; flagCode: string }> = {
+  en: { name: "English", flagCode: "us" },
+  ja: { name: "日本語", flagCode: "jp" }
 };
 
 interface LanguageSwitcherProps {
@@ -54,10 +54,16 @@ export function LanguageSwitcher({
           )}
           disabled={isPending}
         >
-          <FontAwesomeIcon icon={faGlobe} className="h-4 w-4" />
+          <span
+            className={cn(
+              "fi fis rounded-sm",
+              `fi-${localeConfig[locale].flagCode}`
+            )}
+            style={{ width: "1.25rem", height: "1.25rem" }}
+          />
           {variant === "default" && (
             <span className="hidden sm:inline">
-              {localeConfig[locale].flag} {localeConfig[locale].name}
+              {localeConfig[locale].name}
             </span>
           )}
         </Button>
@@ -72,7 +78,10 @@ export function LanguageSwitcher({
               locale === loc && "bg-slate-100 dark:bg-slate-800"
             )}
           >
-            <span className="text-lg">{localeConfig[loc].flag}</span>
+            <span
+              className={cn("fi fis rounded-sm", `fi-${localeConfig[loc].flagCode}`)}
+              style={{ width: "1.25rem", height: "1.25rem" }}
+            />
             <span className="flex-1">{localeConfig[loc].name}</span>
             {locale === loc && (
               <FontAwesomeIcon

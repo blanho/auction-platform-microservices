@@ -30,7 +30,7 @@ export interface UserRatingSummary {
     totalReviews: number;
 }
 
-const BASE_URL = '/auction/api/v1/reviews';
+const BASE_URL = '/reviews';
 
 export const reviewService = {
     async createReview(dto: CreateReviewDto): Promise<Review> {

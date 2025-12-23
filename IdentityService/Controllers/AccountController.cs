@@ -14,6 +14,7 @@ public class AccountController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailService _emailService;
+    private readonly ITokenGenerationService _tokenService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AccountController> _logger;
 
@@ -21,12 +22,14 @@ public class AccountController : ControllerBase
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IEmailService emailService,
+        ITokenGenerationService tokenService,
         IConfiguration configuration,
         ILogger<AccountController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
+        _tokenService = tokenService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -264,6 +267,99 @@ public class AccountController : ControllerBase
         return Ok(ApiResponse<List<string>>.SuccessResponse(providers));
     }
 
+    [HttpPost("external-user")]
+    [ProducesResponseType(typeof(ExternalUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateOrGetExternalUser([FromBody] CreateExternalUserRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Provider) || string.IsNullOrEmpty(request.ProviderKey))
+        {
+            return BadRequest(new { error = "Email, provider, and providerKey are required" });
+        }
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user == null)
+        {
+            var username = GenerateUniqueUsername(request.Name ?? request.Email.Split('@')[0]);
+            user = new ApplicationUser
+            {
+                UserName = username,
+                Email = request.Email,
+                EmailConfirmed = true,
+                FullName = request.Name
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                _logger.LogError("Failed to create user from external login: {Errors}", errors);
+                return BadRequest(new { error = "Failed to create account", details = errors });
+            }
+
+            var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(request.Provider, request.ProviderKey, request.Provider));
+            if (!addLoginResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+            }
+
+            try
+            {
+                await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
+            }
+
+            _logger.LogInformation("Created new user {Username} via {Provider}", user.UserName, request.Provider);
+        }
+        else
+        {
+            if (user.IsSuspended)
+            {
+                return BadRequest(new { error = "Account is suspended" });
+            }
+
+            var existingLogins = await _userManager.GetLoginsAsync(user);
+            if (!existingLogins.Any(l => l.LoginProvider == request.Provider && l.ProviderKey == request.ProviderKey))
+            {
+                var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(request.Provider, request.ProviderKey, request.Provider));
+                if (!addLoginResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+                }
+            }
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        var tokens = await _tokenService.GenerateTokensForUserAsync(user.Id, "nextApp");
+        if (tokens == null)
+        {
+            _logger.LogError("Failed to generate tokens for external user {UserId}", user.Id);
+            return BadRequest(new { error = "Failed to generate authentication tokens" });
+        }
+
+        _logger.LogInformation("User {Username} authenticated via {Provider}", user.UserName, request.Provider);
+
+        return Ok(new ExternalUserResponse
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            AccessToken = tokens.AccessToken,
+            RefreshToken = tokens.RefreshToken,
+            ExpiresIn = tokens.ExpiresIn
+        });
+    }
+
     [HttpGet("external-login")]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult ExternalLogin([FromQuery] string provider, [FromQuery] string? returnUrl = null)
@@ -350,11 +446,8 @@ public class AccountController : ControllerBase
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        await _signInManager.SignInAsync(user, isPersistent: false);
         _logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
-
-        var redirectUrl = $"{frontendUrl}/auth/callback?success=true&provider={info.LoginProvider}&username={HttpUtility.UrlEncode(user.UserName!)}&returnUrl={HttpUtility.UrlEncode(returnUrl)}";
-        return Redirect(redirectUrl);
+        return Redirect($"{returnUrl}?loginSuccess=true");
     }
 
     private string GenerateUniqueUsername(string baseName)

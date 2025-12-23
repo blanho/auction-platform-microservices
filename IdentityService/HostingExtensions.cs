@@ -1,9 +1,9 @@
 using System.Globalization;
-using AspNet.Security.OAuth.GitHub;
-using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
 using IdentityService.Services;
+using MassTransit;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -54,9 +54,21 @@ internal static class HostingExtensions
         });
 
         builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
-        builder.Services.AddHttpClient();
-        builder.Services.AddHttpClient("Resend");
-        builder.Services.AddScoped<IEmailService, ResendEmailService>();
+        builder.Services.AddScoped<IEmailService, EventBasedEmailService>();
+        builder.Services.AddScoped<ITokenGenerationService, TokenGenerationService>();
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var rabbitConfig = builder.Configuration.GetSection("RabbitMq");
+                cfg.Host(rabbitConfig["Host"] ?? "localhost", "/", h =>
+                {
+                    h.Username(rabbitConfig["Username"] ?? "guest");
+                    h.Password(rabbitConfig["Password"] ?? "guest");
+                });
+            });
+        });
 
         builder.Services
             .AddIdentityServer(options =>
@@ -78,6 +90,12 @@ internal static class HostingExtensions
         builder.Services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.SameSite = SameSiteMode.Lax;
+        });
+
+        builder.Services.ConfigureExternalCookie(options =>
+        {
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         });
 
         // Configure external authentication providers
@@ -108,7 +126,7 @@ internal static class HostingExtensions
         {
             authBuilder.AddGoogle("Google", options =>
             {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
                 options.ClientId = googleClientId;
                 options.ClientSecret = googleClientSecret;
                 options.Scope.Add("email");
@@ -123,26 +141,11 @@ internal static class HostingExtensions
         {
             authBuilder.AddFacebook("Facebook", options =>
             {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
                 options.AppId = facebookAppId;
                 options.AppSecret = facebookAppSecret;
                 options.Scope.Add("email");
                 options.Scope.Add("public_profile");
-            });
-        }
-
-        // GitHub OAuth
-        var githubClientId = builder.Configuration["Authentication:GitHub:ClientId"];
-        var githubClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"];
-        if (!string.IsNullOrEmpty(githubClientId) && !string.IsNullOrEmpty(githubClientSecret))
-        {
-            authBuilder.AddGitHub("GitHub", options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                options.ClientId = githubClientId;
-                options.ClientSecret = githubClientSecret;
-                options.Scope.Add("user:email");
-                options.Scope.Add("read:user");
             });
         }
 
@@ -166,6 +169,7 @@ internal static class HostingExtensions
 
         app.UseRouting();
         app.UseIdentityServer();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();

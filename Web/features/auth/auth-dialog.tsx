@@ -209,9 +209,9 @@ export function AuthDialog({
         }
     };
 
-    const handleOAuthLogin = (provider: string) => {
+    const handleOAuthLogin = async (provider: string) => {
         setOauthLoading(provider);
-        window.location.href = `${identityServerUrl}/api/account/external-login?provider=${provider}&returnUrl=${encodeURIComponent(callbackUrl)}`;
+        await signIn(provider.toLowerCase(), { callbackUrl });
     };
 
     return (

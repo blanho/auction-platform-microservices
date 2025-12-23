@@ -116,3 +116,42 @@ public class UseRecoveryCodeDto
     [Required]
     public string RecoveryCode { get; set; } = string.Empty;
 }
+
+public class ExchangeCodeRequest
+{
+    public string Code { get; set; } = string.Empty;
+}
+
+public class ExternalLoginTokenResponse
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = "user";
+}
+
+public class CreateExternalUserRequest
+{
+    [Required]
+    public string Provider { get; set; } = string.Empty;
+
+    [Required]
+    public string ProviderKey { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    public string? Name { get; set; }
+}
+
+public class ExternalUserResponse
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = "user";
+    public string AccessToken { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; }
+    public int ExpiresIn { get; set; }
+}

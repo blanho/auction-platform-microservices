@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,36 +12,23 @@ function CallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-    const [message, setMessage] = useState('Completing sign in...');
+    const [message, setMessage] = useState('Processing...');
 
     useEffect(() => {
-        const handleCallback = async () => {
-            const error = searchParams.get('error');
-            const success = searchParams.get('success');
-            const provider = searchParams.get('provider');
-            const username = searchParams.get('username');
-            const returnUrl = searchParams.get('returnUrl') || '/';
+        const error = searchParams.get('error');
+        const returnUrl = searchParams.get('returnUrl') || searchParams.get('callbackUrl') || '/';
 
-            if (error) {
-                setStatus('error');
-                setMessage(decodeURIComponent(error.replace(/\+/g, ' ')));
-                return;
-            }
+        if (error) {
+            setStatus('error');
+            setMessage(decodeURIComponent(error.replace(/\+/g, ' ')));
+            return;
+        }
 
-            if (success === 'true' && provider && username) {
-                setStatus('success');
-                setMessage(`Signed in with ${provider}! Redirecting...`);
-
-                setTimeout(() => {
-                    router.push(returnUrl);
-                }, 1500);
-            } else {
-                setStatus('error');
-                setMessage('Invalid callback parameters');
-            }
-        };
-
-        handleCallback();
+        setStatus('success');
+        setMessage('Sign in successful! Redirecting...');
+        setTimeout(() => {
+            router.push(returnUrl);
+        }, 1500);
     }, [searchParams, router]);
 
     return (
@@ -61,7 +47,7 @@ function CallbackContent() {
                         )}
                     </div>
                     <CardTitle className="text-2xl">
-                        {status === 'loading' && 'Signing In'}
+                        {status === 'loading' && 'Processing'}
                         {status === 'success' && 'Welcome!'}
                         {status === 'error' && 'Sign In Failed'}
                     </CardTitle>
