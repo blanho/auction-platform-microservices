@@ -1,11 +1,11 @@
 using PaymentService.Application.Interfaces;
-using PaymentService.Application.Services;
 using PaymentService.Infrastructure.Data;
 using PaymentService.Infrastructure.Repositories;
 using PaymentService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Common.Repository.Interfaces;
 using Common.Repository.Implementations;
+using Common.CQRS.Extensions;
 using Serilog;
 using System.Text.Json.Serialization;
 
@@ -41,6 +41,9 @@ public static class ServiceExtensions
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+        var applicationAssembly = typeof(PaymentService.Application.DTOs.OrderDto).Assembly;
+        services.AddCQRS(applicationAssembly);
+
         services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
 
         services.AddScoped<IOrderRepository, OrderRepository>();
@@ -49,9 +52,6 @@ public static class ServiceExtensions
 
         services.AddScoped<Application.Interfaces.IUnitOfWork, UnitOfWork>();
         services.AddScoped<IStripePaymentService, StripePaymentService>();
-        
-        services.AddScoped<IWalletService, WalletService>();
-        services.AddScoped<IOrderService, OrderService>();
 
         return services;
     }

@@ -1,8 +1,14 @@
-using AutoMapper;
+using Common.Utilities.Helpers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PaymentService.Application.Commands.CreateWallet;
+using PaymentService.Application.Commands.Deposit;
+using PaymentService.Application.Commands.Withdraw;
 using PaymentService.Application.DTOs;
-using PaymentService.Application.Interfaces;
+using PaymentService.Application.Queries.GetTransactionById;
+using PaymentService.Application.Queries.GetWallet;
+using PaymentService.Application.Queries.GetWalletTransactions;
 
 namespace PaymentService.API.Controllers;
 
@@ -11,83 +17,93 @@ namespace PaymentService.API.Controllers;
 [Authorize]
 public class WalletsController : ControllerBase
 {
-    private readonly IWalletService _walletService;
-    private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
     private readonly ILogger<WalletsController> _logger;
 
     public WalletsController(
-        IWalletService walletService,
-        IMapper mapper,
+        IMediator mediator,
         ILogger<WalletsController> logger)
     {
-        _walletService = walletService;
-        _mapper = mapper;
+        _mediator = mediator;
         _logger = logger;
     }
 
     [HttpGet("{username}")]
     public async Task<ActionResult<WalletDto>> GetWallet(string username, CancellationToken cancellationToken)
     {
-        var wallet = await _walletService.GetWalletAsync(username, cancellationToken);
-        if (wallet == null)
+        var result = await _mediator.Send(new GetWalletQuery { Username = username }, cancellationToken);
+        
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        if (result.Value == null)
             return NotFound();
 
-        return Ok(wallet);
+        return Ok(result.Value);
     }
 
     [HttpPost("{username}/create")]
     public async Task<ActionResult<WalletDto>> CreateWallet(string username, CancellationToken cancellationToken)
     {
-        try
+        var userId = GetUserIdFromClaims();
+        var result = await _mediator.Send(new CreateWalletCommand
         {
-            var userId = GetUserIdFromClaims();
-            var wallet = await _walletService.CreateWalletAsync(userId, username, cancellationToken);
-            return CreatedAtAction(nameof(GetWallet), new { username }, wallet);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+            UserId = userId,
+            Username = username
+        }, cancellationToken);
+
+        if (!result.IsSuccess)
+            return Conflict(ProblemDetailsHelper.FromError(result.Error!));
+
+        return CreatedAtAction(nameof(GetWallet), new { username }, result.Value);
     }
 
     [HttpPost("{username}/deposit")]
-    public async Task<ActionResult<WalletTransactionDto>> Deposit(string username, [FromBody] DepositDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<WalletTransactionDto>> Deposit(
+        string username,
+        [FromBody] DepositDto dto,
+        CancellationToken cancellationToken)
     {
-        try
+        var result = await _mediator.Send(new DepositCommand
         {
-            var transaction = await _walletService.DepositAsync(username, dto.Amount, dto.PaymentMethod, dto.Description, cancellationToken);
-            return Ok(transaction);
-        }
-        catch (KeyNotFoundException)
+            Username = username,
+            Amount = dto.Amount,
+            PaymentMethod = dto.PaymentMethod,
+            Description = dto.Description
+        }, cancellationToken);
+
+        if (!result.IsSuccess)
         {
-            return NotFound("Wallet not found");
+            if (result.Error?.Code == "Wallet.NotFound")
+                return NotFound(ProblemDetailsHelper.FromError(result.Error));
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(result.Value);
     }
 
     [HttpPost("{username}/withdraw")]
-    public async Task<ActionResult<WalletTransactionDto>> Withdraw(string username, [FromBody] WithdrawDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<WalletTransactionDto>> Withdraw(
+        string username,
+        [FromBody] WithdrawDto dto,
+        CancellationToken cancellationToken)
     {
-        try
+        var result = await _mediator.Send(new WithdrawCommand
         {
-            var transaction = await _walletService.WithdrawAsync(username, dto.Amount, dto.PaymentMethod, dto.Description, cancellationToken);
-            return Ok(transaction);
-        }
-        catch (KeyNotFoundException)
+            Username = username,
+            Amount = dto.Amount,
+            PaymentMethod = dto.PaymentMethod,
+            Description = dto.Description
+        }, cancellationToken);
+
+        if (!result.IsSuccess)
         {
-            return NotFound("Wallet not found");
+            if (result.Error?.Code == "Wallet.NotFound")
+                return NotFound(ProblemDetailsHelper.FromError(result.Error));
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(result.Value);
     }
 
     [HttpGet("{username}/transactions")]
@@ -97,23 +113,35 @@ public class WalletsController : ControllerBase
         [FromQuery] int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (transactions, totalCount) = await _walletService.GetTransactionsAsync(username, page, pageSize, cancellationToken);
+        var result = await _mediator.Send(new GetWalletTransactionsQuery
+        {
+            Username = username,
+            Page = page,
+            PageSize = pageSize
+        }, cancellationToken);
 
-        Response.Headers.Append("X-Total-Count", totalCount.ToString());
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
         Response.Headers.Append("X-Page", page.ToString());
         Response.Headers.Append("X-Page-Size", pageSize.ToString());
 
-        return Ok(transactions);
+        return Ok(result.Value.Transactions);
     }
 
     [HttpGet("transactions/{id:guid}")]
     public async Task<ActionResult<WalletTransactionDto>> GetTransaction(Guid id, CancellationToken cancellationToken)
     {
-        var transaction = await _walletService.GetTransactionByIdAsync(id, cancellationToken);
-        if (transaction == null)
+        var result = await _mediator.Send(new GetTransactionByIdQuery { TransactionId = id }, cancellationToken);
+        
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        if (result.Value == null)
             return NotFound();
 
-        return Ok(transaction);
+        return Ok(result.Value);
     }
 
     private Guid GetUserIdFromClaims()

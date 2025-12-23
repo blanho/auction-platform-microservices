@@ -11,6 +11,7 @@ using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.CQRS.Extensions;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -25,6 +26,9 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddNotificationInfrastructure(builder.Configuration);
 
 builder.Services.AddDomainEvents(typeof(NotificationService.Infrastructure.Data.UnitOfWork).Assembly);
+
+var applicationAssembly = typeof(NotificationService.Application.DTOs.NotificationDto).Assembly;
+builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();

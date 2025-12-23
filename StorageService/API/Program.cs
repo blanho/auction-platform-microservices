@@ -9,6 +9,7 @@ using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.CQRS.Extensions;
 using Common.Messaging.Extensions;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +23,9 @@ builder.Services.AddSingleton<ICorrelationIdProvider, CorrelationIdProvider>();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddDomainEvents(typeof(StorageService.Infrastructure.Repositories.UnitOfWork).Assembly);
+
+var applicationAssembly = typeof(StorageService.Application.DTOs.FileMetadataDto).Assembly;
+builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 
 builder.Services.AddMassTransitWithRabbitMq(builder.Configuration, x =>
 {

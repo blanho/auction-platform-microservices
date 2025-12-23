@@ -1,9 +1,16 @@
-using AutoMapper;
+using Common.Utilities.Helpers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PaymentService.Application.Commands.CreateOrder;
+using PaymentService.Application.Commands.ProcessPayment;
+using PaymentService.Application.Commands.ShipOrder;
+using PaymentService.Application.Commands.UpdateOrderStatus;
 using PaymentService.Application.DTOs;
-using PaymentService.Application.Interfaces;
-using PaymentService.Domain.Entities;
+using PaymentService.Application.Queries.GetOrderByAuctionId;
+using PaymentService.Application.Queries.GetOrderById;
+using PaymentService.Application.Queries.GetOrdersByBuyer;
+using PaymentService.Application.Queries.GetOrdersBySeller;
 
 namespace PaymentService.API.Controllers;
 
@@ -12,112 +19,162 @@ namespace PaymentService.API.Controllers;
 [Authorize]
 public class OrdersController : ControllerBase
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
     private readonly ILogger<OrdersController> _logger;
 
-    public OrdersController(
-        IOrderRepository orderRepository,
-        IMapper mapper,
-        ILogger<OrdersController> logger)
+    public OrdersController(IMediator mediator, ILogger<OrdersController> logger)
     {
-        _orderRepository = orderRepository;
-        _mapper = mapper;
+        _mediator = mediator;
         _logger = logger;
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<OrderDto>> GetById(Guid id)
+    public async Task<ActionResult<OrderDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByIdAsync(id);
-        if (order == null)
+        var query = new GetOrderByIdQuery(id);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        if (result.Value == null)
             return NotFound();
 
-        return Ok(_mapper.Map<OrderDto>(order));
+        return Ok(result.Value);
     }
 
     [HttpGet("auction/{auctionId:guid}")]
-    public async Task<ActionResult<OrderDto>> GetByAuctionId(Guid auctionId)
+    public async Task<ActionResult<OrderDto>> GetByAuctionId(Guid auctionId, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByAuctionIdAsync(auctionId);
-        if (order == null)
+        var query = new GetOrderByAuctionIdQuery(auctionId);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        if (result.Value == null)
             return NotFound();
 
-        return Ok(_mapper.Map<OrderDto>(order));
+        return Ok(result.Value);
     }
 
     [HttpGet("buyer/{username}")]
-    public async Task<ActionResult<IEnumerable<OrderDto>>> GetByBuyer(string username, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<OrderDto>>> GetByBuyer(
+        string username, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
-        var orders = await _orderRepository.GetByBuyerUsernameAsync(username, page, pageSize);
-        var totalCount = await _orderRepository.GetCountByBuyerUsernameAsync(username);
+        var query = new GetOrdersByBuyerQuery(username, page, pageSize);
+        var result = await _mediator.Send(query, cancellationToken);
 
-        Response.Headers.Append("X-Total-Count", totalCount.ToString());
-        Response.Headers.Append("X-Page", page.ToString());
-        Response.Headers.Append("X-Page-Size", pageSize.ToString());
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
-        return Ok(_mapper.Map<IEnumerable<OrderDto>>(orders));
+        Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
+        Response.Headers.Append("X-Page", result.Value.Page.ToString());
+        Response.Headers.Append("X-Page-Size", result.Value.PageSize.ToString());
+
+        return Ok(result.Value.Items);
     }
 
     [HttpGet("seller/{username}")]
-    public async Task<ActionResult<IEnumerable<OrderDto>>> GetBySeller(string username, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<IEnumerable<OrderDto>>> GetBySeller(
+        string username, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
-        var orders = await _orderRepository.GetBySellerUsernameAsync(username, page, pageSize);
-        var totalCount = await _orderRepository.GetCountBySellerUsernameAsync(username);
+        var query = new GetOrdersBySellerQuery(username, page, pageSize);
+        var result = await _mediator.Send(query, cancellationToken);
 
-        Response.Headers.Append("X-Total-Count", totalCount.ToString());
-        Response.Headers.Append("X-Page", page.ToString());
-        Response.Headers.Append("X-Page-Size", pageSize.ToString());
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
-        return Ok(_mapper.Map<IEnumerable<OrderDto>>(orders));
+        Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
+        Response.Headers.Append("X-Page", result.Value.Page.ToString());
+        Response.Headers.Append("X-Page-Size", result.Value.PageSize.ToString());
+
+        return Ok(result.Value.Items);
     }
 
     [HttpPost]
-    public async Task<ActionResult<OrderDto>> Create([FromBody] CreateOrderDto dto)
+    public async Task<ActionResult<OrderDto>> Create([FromBody] CreateOrderDto dto, CancellationToken cancellationToken)
     {
-        var order = _mapper.Map<Order>(dto);
-        var created = await _orderRepository.AddAsync(order);
+        var command = new CreateOrderCommand(
+            dto.AuctionId,
+            dto.BuyerId,
+            dto.BuyerUsername,
+            dto.SellerId,
+            dto.SellerUsername,
+            dto.ItemTitle,
+            dto.WinningBid,
+            dto.ShippingCost,
+            dto.PlatformFee,
+            dto.ShippingAddress,
+            dto.BuyerNotes
+        );
 
-        _logger.LogInformation("Order created: {OrderId} for auction {AuctionId}", created.Id, created.AuctionId);
+        var result = await _mediator.Send(command, cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<OrderDto>(created));
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        _logger.LogInformation("Order created: {OrderId} for auction {AuctionId}", result.Value.Id, result.Value.AuctionId);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<OrderDto>> Update(Guid id, [FromBody] UpdateOrderDto dto)
+    public async Task<ActionResult<OrderDto>> Update(Guid id, [FromBody] UpdateOrderDto dto, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByIdAsync(id);
-        if (order == null)
-            return NotFound();
+        var command = new UpdateOrderStatusCommand(
+            id,
+            dto.Status,
+            dto.PaymentStatus,
+            dto.PaymentTransactionId,
+            dto.ShippingAddress,
+            dto.TrackingNumber,
+            dto.ShippingCarrier,
+            dto.BuyerNotes,
+            dto.SellerNotes
+        );
 
-        if (dto.Status.HasValue)
-            order.Status = dto.Status.Value;
-        if (dto.PaymentStatus.HasValue)
-            order.PaymentStatus = dto.PaymentStatus.Value;
-        if (!string.IsNullOrEmpty(dto.PaymentTransactionId))
-            order.PaymentTransactionId = dto.PaymentTransactionId;
-        if (!string.IsNullOrEmpty(dto.ShippingAddress))
-            order.ShippingAddress = dto.ShippingAddress;
-        if (!string.IsNullOrEmpty(dto.TrackingNumber))
-            order.TrackingNumber = dto.TrackingNumber;
-        if (!string.IsNullOrEmpty(dto.ShippingCarrier))
-            order.ShippingCarrier = dto.ShippingCarrier;
-        if (!string.IsNullOrEmpty(dto.BuyerNotes))
-            order.BuyerNotes = dto.BuyerNotes;
-        if (!string.IsNullOrEmpty(dto.SellerNotes))
-            order.SellerNotes = dto.SellerNotes;
+        var result = await _mediator.Send(command, cancellationToken);
 
-        if (dto.PaymentStatus == PaymentStatus.Completed && order.PaidAt == null)
-            order.PaidAt = DateTimeOffset.UtcNow;
-        if (dto.Status == OrderStatus.Shipped && order.ShippedAt == null)
-            order.ShippedAt = DateTimeOffset.UtcNow;
-        if (dto.Status == OrderStatus.Delivered && order.DeliveredAt == null)
-            order.DeliveredAt = DateTimeOffset.UtcNow;
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
-        var updated = await _orderRepository.UpdateAsync(order);
+        _logger.LogInformation("Order updated: {OrderId}", result.Value.Id);
 
-        _logger.LogInformation("Order updated: {OrderId}", updated.Id);
+        return Ok(result.Value);
+    }
 
-        return Ok(_mapper.Map<OrderDto>(updated));
+    [HttpPost("{id:guid}/payment")]
+    public async Task<ActionResult<OrderDto>> ProcessPayment(Guid id, [FromBody] ProcessPaymentDto dto, CancellationToken cancellationToken)
+    {
+        var command = new ProcessPaymentCommand(id, dto.PaymentMethod, dto.ExternalTransactionId);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        _logger.LogInformation("Payment processed for order: {OrderId}", result.Value.Id);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/ship")]
+    public async Task<ActionResult<OrderDto>> ShipOrder(Guid id, [FromBody] UpdateShippingDto dto, CancellationToken cancellationToken)
+    {
+        var command = new ShipOrderCommand(id, dto.TrackingNumber, dto.ShippingCarrier, dto.SellerNotes);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        _logger.LogInformation("Order shipped: {OrderId}", result.Value.Id);
+
+        return Ok(result.Value);
     }
 }
