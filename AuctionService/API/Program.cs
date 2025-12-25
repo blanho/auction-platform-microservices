@@ -2,6 +2,7 @@ using AuctionService.API.Extensions;
 using AuctionService.Application.Services;
 using AuctionService.Infrastructure.Data;
 using AuctionService.Infrastructure.Extensions;
+using Carter;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Caching.Abstractions;
@@ -51,6 +52,8 @@ builder.Services.AddAuctionScheduling(builder.Configuration);
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
+
+builder.Services.AddCarter();
 
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
@@ -130,7 +133,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapCarter();
 app.MapGrpcService<AuctionService.API.Services.AuctionGrpcService>();
 app.MapGrpcReflectionService();
 

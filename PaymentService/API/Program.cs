@@ -1,3 +1,4 @@
+using Carter;
 using PaymentService.API.Extensions;
 using PaymentService.API.Services;
 using PaymentService.Infrastructure.Data;
@@ -50,6 +51,7 @@ builder.Services.AddAuditServices(builder.Configuration);
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
+builder.Services.AddCarter();
 
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>
@@ -112,7 +114,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGrpcService<PaymentAnalyticsGrpcService>();
-app.MapControllers();
+app.MapCarter();
 
 app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Payment Service");
