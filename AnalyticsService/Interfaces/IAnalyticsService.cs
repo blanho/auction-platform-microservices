@@ -9,8 +9,8 @@ public interface IAnalyticsService
         CancellationToken cancellationToken = default);
 
     Task<TopPerformersDto> GetTopPerformersAsync(
-        int limit = 10,
-        string period = "month",
+        int limit = AnalyticsDefaults.DefaultLimit,
+        string period = AnalyticsDefaults.DefaultPeriod,
         CancellationToken cancellationToken = default);
 
     Task<RealTimeStatsDto> GetRealTimeStatsAsync(
@@ -19,13 +19,13 @@ public interface IAnalyticsService
     Task<List<TrendDataPoint>> GetRevenueTrendAsync(
         DateTimeOffset startDate,
         DateTimeOffset endDate,
-        string granularity = "day",
+        string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default);
 
     Task<List<TrendDataPoint>> GetAuctionTrendAsync(
         DateTimeOffset startDate,
         DateTimeOffset endDate,
-        string granularity = "day",
+        string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default);
 
     Task<List<CategoryBreakdown>> GetCategoryPerformanceAsync(

@@ -1,5 +1,13 @@
 namespace AnalyticsService.DTOs;
 
+public static class AnalyticsDefaults
+{
+    public const int DefaultDays = 30;
+    public const int DefaultLimit = 10;
+    public const string DefaultPeriod = "month";
+    public const string DefaultGranularity = "day";
+}
+
 public class PlatformAnalyticsDto
 {
     public OverviewMetrics Overview { get; set; } = new();

@@ -29,3 +29,9 @@ public class CreateSettingDto
     public string? DataType { get; set; }
     public string? ValidationRules { get; set; }
 }
+
+public class SettingKeyValue
+{
+    public string Key { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
+}

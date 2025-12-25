@@ -27,7 +27,7 @@ public class PlatformAnalyticsService : IAnalyticsService
         AnalyticsQueryParams query,
         CancellationToken cancellationToken = default)
     {
-        var startDate = query.StartDate ?? DateTimeOffset.UtcNow.AddDays(-30);
+        var startDate = query.StartDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var endDate = query.EndDate ?? DateTimeOffset.UtcNow;
 
         var analytics = new PlatformAnalyticsDto();
@@ -55,8 +55,8 @@ public class PlatformAnalyticsService : IAnalyticsService
     }
 
     public async Task<TopPerformersDto> GetTopPerformersAsync(
-        int limit = 10,
-        string period = "month",
+        int limit = AnalyticsDefaults.DefaultLimit,
+        string period = AnalyticsDefaults.DefaultPeriod,
         CancellationToken cancellationToken = default)
     {
         var result = new TopPerformersDto();
@@ -185,7 +185,7 @@ public class PlatformAnalyticsService : IAnalyticsService
     public async Task<List<TrendDataPoint>> GetRevenueTrendAsync(
         DateTimeOffset startDate,
         DateTimeOffset endDate,
-        string granularity = "day",
+        string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default)
     {
         var trend = new List<TrendDataPoint>();
@@ -215,7 +215,7 @@ public class PlatformAnalyticsService : IAnalyticsService
     public async Task<List<TrendDataPoint>> GetAuctionTrendAsync(
         DateTimeOffset startDate,
         DateTimeOffset endDate,
-        string granularity = "day",
+        string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default)
     {
         var trend = new List<TrendDataPoint>();

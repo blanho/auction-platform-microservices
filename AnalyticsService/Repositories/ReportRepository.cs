@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using AnalyticsService.Data;
 using AnalyticsService.Domain.Entities;
+using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
 namespace AnalyticsService.Repositories;
@@ -8,6 +10,15 @@ namespace AnalyticsService.Repositories;
 public class ReportRepository : IReportRepository
 {
     private readonly AnalyticsDbContext _context;
+
+    private static readonly Expression<Func<Report, bool>> IsUnresolvedCritical =
+        r => r.Priority == ReportPriority.Critical && r.Status != ReportStatus.Resolved;
+
+    private static readonly Expression<Func<Report, bool>> IsUnresolvedHigh =
+        r => r.Priority == ReportPriority.High && r.Status != ReportStatus.Resolved;
+
+    private static readonly Expression<Func<Report, bool>> IsPendingForEscalation =
+        r => r.Status == ReportStatus.Pending;
 
     public ReportRepository(AnalyticsDbContext context)
     {
@@ -19,52 +30,41 @@ public class ReportRepository : IReportRepository
         return await _context.Reports.FindAsync(new object[] { id }, cancellationToken);
     }
 
-    public async Task<List<Report>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Reports.ToListAsync(cancellationToken);
-    }
-
     public async Task<(List<Report> Reports, int TotalCount)> GetPagedAsync(
-        ReportStatus? status,
-        ReportType? type,
-        ReportPriority? priority,
-        string? reportedUsername,
-        int pageNumber,
-        int pageSize,
+        ReportQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Reports.AsQueryable();
-
-        if (status.HasValue)
-        {
-            query = query.Where(r => r.Status == status.Value);
-        }
-
-        if (type.HasValue)
-        {
-            query = query.Where(r => r.Type == type.Value);
-        }
-
-        if (priority.HasValue)
-        {
-            query = query.Where(r => r.Priority == priority.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(reportedUsername))
-        {
-            query = query.Where(r => r.ReportedUsername.ToLower().Contains(reportedUsername.ToLower()));
-        }
+        var query = BuildFilteredQuery(queryParams);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var reports = await query
             .OrderByDescending(r => r.Priority)
             .ThenByDescending(r => r.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
             .ToListAsync(cancellationToken);
 
         return (reports, totalCount);
+    }
+
+    private IQueryable<Report> BuildFilteredQuery(ReportQueryParams queryParams)
+    {
+        var query = _context.Reports.AsQueryable();
+
+        if (queryParams.Status.HasValue)
+            query = query.Where(r => r.Status == queryParams.Status.Value);
+
+        if (queryParams.Type.HasValue)
+            query = query.Where(r => r.Type == queryParams.Type.Value);
+
+        if (queryParams.Priority.HasValue)
+            query = query.Where(r => r.Priority == queryParams.Priority.Value);
+
+        if (!string.IsNullOrWhiteSpace(queryParams.ReportedUsername))
+            query = query.Where(r => r.ReportedUsername.ToLower().Contains(queryParams.ReportedUsername.ToLower()));
+
+        return query;
     }
 
     public async Task<Report> AddAsync(Report report, CancellationToken cancellationToken = default)
@@ -83,27 +83,43 @@ public class ReportRepository : IReportRepository
         _context.Reports.Remove(report);
     }
 
-    public async Task<int> GetCountByStatusAsync(ReportStatus status, CancellationToken cancellationToken = default)
+    public async Task<ReportStatsDto> GetStatsAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Reports.CountAsync(r => r.Status == status, cancellationToken);
-    }
+        var statusCounts = await _context.Reports
+            .GroupBy(r => r.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
 
-    public async Task<int> GetCountByPriorityAsync(ReportPriority priority, CancellationToken cancellationToken = default)
-    {
-        return await _context.Reports.CountAsync(r => r.Priority == priority && r.Status != ReportStatus.Resolved, cancellationToken);
+        var criticalCount = await _context.Reports
+            .Where(IsUnresolvedCritical)
+            .CountAsync(cancellationToken);
+
+        var highPriorityCount = await _context.Reports
+            .Where(IsUnresolvedHigh)
+            .CountAsync(cancellationToken);
+
+        return new ReportStatsDto
+        {
+            TotalReports = statusCounts.Sum(x => x.Count),
+            PendingReports = statusCounts.FirstOrDefault(x => x.Status == ReportStatus.Pending)?.Count ?? 0,
+            UnderReviewReports = statusCounts.FirstOrDefault(x => x.Status == ReportStatus.UnderReview)?.Count ?? 0,
+            ResolvedReports = statusCounts.FirstOrDefault(x => x.Status == ReportStatus.Resolved)?.Count ?? 0,
+            DismissedReports = statusCounts.FirstOrDefault(x => x.Status == ReportStatus.Dismissed)?.Count ?? 0,
+            CriticalReports = criticalCount,
+            HighPriorityReports = highPriorityCount
+        };
     }
 
     public async Task<List<Report>> GetReportsForEscalationAsync(
         TimeSpan unreviewedThreshold,
-        int maxEscalations,
         CancellationToken cancellationToken = default)
     {
         var cutoffTime = DateTimeOffset.UtcNow - unreviewedThreshold;
-        
+
         return await _context.Reports
-            .Where(r => r.Status == ReportStatus.Pending &&
-                       r.CreatedAt <= cutoffTime &&
-                       (r.EscalatedAt == null || r.EscalatedAt <= cutoffTime))
+            .Where(IsPendingForEscalation)
+            .Where(r => r.CreatedAt <= cutoffTime)
+            .Where(r => r.EscalatedAt == null || r.EscalatedAt <= cutoffTime)
             .OrderByDescending(r => r.Priority)
             .ThenBy(r => r.CreatedAt)
             .ToListAsync(cancellationToken);

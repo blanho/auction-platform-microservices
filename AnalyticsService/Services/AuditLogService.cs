@@ -38,15 +38,7 @@ public class AuditLogService : IAuditLogService
         CancellationToken cancellationToken = default)
     {
         var (items, totalCount) = await _unitOfWork.AuditLogs.GetPagedAsync(
-            queryParams.Page,
-            queryParams.PageSize,
-            queryParams.EntityId,
-            queryParams.EntityType,
-            queryParams.UserId,
-            queryParams.ServiceName,
-            queryParams.Action,
-            queryParams.FromDate,
-            queryParams.ToDate,
+            queryParams,
             cancellationToken);
 
         var dtos = items.Select(MapToDto).ToList();

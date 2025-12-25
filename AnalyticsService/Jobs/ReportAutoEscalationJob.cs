@@ -27,9 +27,8 @@ public class ReportAutoEscalationJob : BaseJob
         var reportRepository = scopedProvider.GetRequiredService<IReportRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
 
-        const int maxEscalations = 3;
         var unreviewedReports = await reportRepository
-            .GetReportsForEscalationAsync(EscalationThreshold, maxEscalations, cancellationToken);
+            .GetReportsForEscalationAsync(EscalationThreshold, cancellationToken);
 
         if (unreviewedReports.Count == 0)
         {

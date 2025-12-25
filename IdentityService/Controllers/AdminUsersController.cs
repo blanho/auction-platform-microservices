@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using IdentityService.DTOs;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ namespace IdentityService.Controllers;
 
 [ApiController]
 [Route("api/admin/users")]
-[Authorize(AuthenticationSchemes = "Bearer", Roles = "admin")]
+[Authorize(AuthenticationSchemes = "Bearer", Roles = AppRoles.Admin)]
 [Produces("application/json")]
 public class AdminUsersController : ControllerBase
 {

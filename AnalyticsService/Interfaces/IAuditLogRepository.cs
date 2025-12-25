@@ -1,5 +1,6 @@
 using Common.Audit.Enums;
 using AnalyticsService.Domain.Entities;
+using AnalyticsService.DTOs;
 
 namespace AnalyticsService.Interfaces;
 
@@ -13,15 +14,7 @@ public interface IAuditLogRepository
         CancellationToken cancellationToken = default);
     
     Task<(IEnumerable<AuditLog> Items, int TotalCount)> GetPagedAsync(
-        int page,
-        int pageSize,
-        Guid? entityId = null,
-        string? entityType = null,
-        Guid? userId = null,
-        string? serviceName = null,
-        AuditAction? action = null,
-        DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null,
+        AuditLogQueryParams queryParams,
         CancellationToken cancellationToken = default);
     
     Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken = default);

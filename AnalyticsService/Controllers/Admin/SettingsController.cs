@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AnalyticsService.Domain.Entities;
@@ -8,7 +9,7 @@ namespace AnalyticsService.Controllers;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = AppRoles.Admin)]
 public class SettingsController : ControllerBase
 {
     private readonly IPlatformSettingService _settingService;

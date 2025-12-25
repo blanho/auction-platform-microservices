@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.DTOs;
@@ -24,7 +25,7 @@ namespace NotificationService.API.Controllers
 
         private string GetUserId()
         {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                 ?? User.FindFirst("sub")?.Value
                 ?? User.FindFirst("username")?.Value
                 ?? throw new UnauthorizedAccessException("User ID not found in token");
@@ -96,7 +97,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<NotificationDto>> Create([FromBody] CreateNotificationDto dto)
         {
             var notification = await _notificationService.CreateNotificationAsync(dto);
@@ -104,7 +105,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("admin/all")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<PagedNotificationsDto>> GetAllNotifications(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
@@ -118,7 +119,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPost("admin/broadcast")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult> BroadcastNotification([FromBody] BroadcastNotificationDto dto)
         {
             await _notificationService.BroadcastNotificationAsync(dto);
@@ -126,7 +127,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("admin/stats")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<NotificationStatsDto>> GetNotificationStats()
         {
             var stats = await _notificationService.GetNotificationStatsAsync();

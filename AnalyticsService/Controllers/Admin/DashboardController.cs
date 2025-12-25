@@ -1,4 +1,5 @@
 using Common.Audit.Enums;
+using Common.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AnalyticsService.Interfaces;
@@ -7,7 +8,7 @@ namespace AnalyticsService.Controllers.Admin;
 
 [ApiController]
 [Route("api/v1/admin/[controller]")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = AppRoles.Admin)]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardStatsService _dashboardStatsService;

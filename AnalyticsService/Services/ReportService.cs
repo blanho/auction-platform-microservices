@@ -25,12 +25,7 @@ public class ReportService : IReportService
         CancellationToken cancellationToken = default)
     {
         var (reports, totalCount) = await _reportRepository.GetPagedAsync(
-            queryParams.Status,
-            queryParams.Type,
-            queryParams.Priority,
-            queryParams.ReportedUsername,
-            queryParams.PageNumber,
-            queryParams.PageSize,
+            queryParams,
             cancellationToken);
 
         return new PagedReportsDto
@@ -120,18 +115,7 @@ public class ReportService : IReportService
 
     public async Task<ReportStatsDto> GetReportStatsAsync(CancellationToken cancellationToken = default)
     {
-        var allReports = await _reportRepository.GetAllAsync(cancellationToken);
-
-        return new ReportStatsDto
-        {
-            TotalReports = allReports.Count,
-            PendingReports = allReports.Count(r => r.Status == ReportStatus.Pending),
-            UnderReviewReports = allReports.Count(r => r.Status == ReportStatus.UnderReview),
-            ResolvedReports = allReports.Count(r => r.Status == ReportStatus.Resolved),
-            DismissedReports = allReports.Count(r => r.Status == ReportStatus.Dismissed),
-            CriticalReports = allReports.Count(r => r.Priority == ReportPriority.Critical && r.Status != ReportStatus.Resolved),
-            HighPriorityReports = allReports.Count(r => r.Priority == ReportPriority.High && r.Status != ReportStatus.Resolved)
-        };
+        return await _reportRepository.GetStatsAsync(cancellationToken);
     }
 
     private static ReportPriority DeterminePriority(ReportType type)

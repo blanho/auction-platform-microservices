@@ -2,6 +2,7 @@ using Common.Audit.Enums;
 using Microsoft.EntityFrameworkCore;
 using AnalyticsService.Data;
 using AnalyticsService.Domain.Entities;
+using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
 namespace AnalyticsService.Repositories;
@@ -33,49 +34,48 @@ public class AuditLogRepository : IAuditLogRepository
     }
 
     public async Task<(IEnumerable<AuditLog> Items, int TotalCount)> GetPagedAsync(
-        int page,
-        int pageSize,
-        Guid? entityId = null,
-        string? entityType = null,
-        Guid? userId = null,
-        string? serviceName = null,
-        AuditAction? action = null,
-        DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null,
+        AuditLogQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.AuditLogs.AsQueryable();
-
-        if (entityId.HasValue)
-            query = query.Where(x => x.EntityId == entityId.Value);
-
-        if (!string.IsNullOrEmpty(entityType))
-            query = query.Where(x => x.EntityType == entityType);
-
-        if (userId.HasValue)
-            query = query.Where(x => x.UserId == userId.Value);
-
-        if (!string.IsNullOrEmpty(serviceName))
-            query = query.Where(x => x.ServiceName == serviceName);
-
-        if (action.HasValue)
-            query = query.Where(x => x.Action == action.Value);
-
-        if (fromDate.HasValue)
-            query = query.Where(x => x.Timestamp >= fromDate.Value);
-
-        if (toDate.HasValue)
-            query = query.Where(x => x.Timestamp <= toDate.Value);
+        var query = BuildFilteredQuery(queryParams);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
             .OrderByDescending(x => x.Timestamp)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((queryParams.Page - 1) * queryParams.PageSize)
+            .Take(queryParams.PageSize)
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
+    }
+
+    private IQueryable<AuditLog> BuildFilteredQuery(AuditLogQueryParams queryParams)
+    {
+        var query = _context.AuditLogs.AsQueryable();
+
+        if (queryParams.EntityId.HasValue)
+            query = query.Where(x => x.EntityId == queryParams.EntityId.Value);
+
+        if (!string.IsNullOrEmpty(queryParams.EntityType))
+            query = query.Where(x => x.EntityType == queryParams.EntityType);
+
+        if (queryParams.UserId.HasValue)
+            query = query.Where(x => x.UserId == queryParams.UserId.Value);
+
+        if (!string.IsNullOrEmpty(queryParams.ServiceName))
+            query = query.Where(x => x.ServiceName == queryParams.ServiceName);
+
+        if (queryParams.Action.HasValue)
+            query = query.Where(x => x.Action == queryParams.Action.Value);
+
+        if (queryParams.FromDate.HasValue)
+            query = query.Where(x => x.Timestamp >= queryParams.FromDate.Value);
+
+        if (queryParams.ToDate.HasValue)
+            query = query.Where(x => x.Timestamp <= queryParams.ToDate.Value);
+
+        return query;
     }
 
     public async Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken = default)

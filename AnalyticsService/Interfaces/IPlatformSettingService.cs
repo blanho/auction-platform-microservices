@@ -13,9 +13,3 @@ public interface IPlatformSettingService
     Task DeleteSettingAsync(Guid id, CancellationToken cancellationToken = default);
     Task BulkUpdateSettingsAsync(List<SettingKeyValue> settings, string? modifiedBy, CancellationToken cancellationToken = default);
 }
-
-public class SettingKeyValue
-{
-    public string Key { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
-}

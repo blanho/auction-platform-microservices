@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using AnalyticsService.Data;
+using AnalyticsService.DTOs;
 using AnalyticsService.Grpc;
 using AnalyticsService.Interfaces;
 
@@ -54,7 +55,7 @@ public class DashboardStatsService : IDashboardStatsService
     {
         var health = new PlatformHealthStatus
         {
-            ApiStatus = "healthy"
+            ApiStatus = HealthStatus.Healthy
         };
 
         health.DatabaseStatus = await CheckDatabaseHealthAsync(cancellationToken);
@@ -62,11 +63,11 @@ public class DashboardStatsService : IDashboardStatsService
         try
         {
             await _auctionGrpcClient.GetAuctionStatsAsync(new GetAuctionStatsRequest(), cancellationToken: cancellationToken);
-            health.QueueStatus = "healthy";
+            health.QueueStatus = HealthStatus.Healthy;
         }
         catch
         {
-            health.QueueStatus = "auction_service_unavailable";
+            health.QueueStatus = HealthStatus.AuctionServiceUnavailable;
         }
 
         return health;
@@ -77,12 +78,12 @@ public class DashboardStatsService : IDashboardStatsService
         try
         {
             await _context.Database.CanConnectAsync(cancellationToken);
-            return "connected";
+            return HealthStatus.Connected;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database health check failed");
-            return "disconnected";
+            return HealthStatus.Disconnected;
         }
     }
 }
