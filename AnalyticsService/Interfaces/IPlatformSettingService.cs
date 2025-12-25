@@ -1,0 +1,21 @@
+using AnalyticsService.Domain.Entities;
+using AnalyticsService.DTOs;
+
+namespace AnalyticsService.Interfaces;
+
+public interface IPlatformSettingService
+{
+    Task<List<PlatformSettingDto>> GetSettingsAsync(SettingCategory? category, CancellationToken cancellationToken = default);
+    Task<PlatformSettingDto> GetSettingByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<PlatformSettingDto> GetSettingByKeyAsync(string key, CancellationToken cancellationToken = default);
+    Task<PlatformSettingDto> CreateSettingAsync(CreateSettingDto dto, string? modifiedBy, CancellationToken cancellationToken = default);
+    Task<PlatformSettingDto> UpdateSettingAsync(Guid id, UpdateSettingDto dto, string? modifiedBy, CancellationToken cancellationToken = default);
+    Task DeleteSettingAsync(Guid id, CancellationToken cancellationToken = default);
+    Task BulkUpdateSettingsAsync(List<SettingKeyValue> settings, string? modifiedBy, CancellationToken cancellationToken = default);
+}
+
+public class SettingKeyValue
+{
+    public string Key { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
+}

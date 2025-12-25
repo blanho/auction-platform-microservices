@@ -61,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Observability", "Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Audit", "Common\Common.Audit\Common.Audit.csproj", "{741DB13C-F32F-4628-B79F-57880EB8D8B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilityService", "UtilityService\UtilityService.csproj", "{8360E34D-BE6F-4683-BAAA-928A704FBA9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyticsService", "AnalyticsService\AnalyticsService.csproj", "{8360E34D-BE6F-4683-BAAA-928A704FBA9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Storage", "Common\Common.Storage\Common.Storage.csproj", "{A5B173D0-74A3-4747-AECA-B3D2867956D8}"
 EndProject

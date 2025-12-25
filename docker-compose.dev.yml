@@ -50,11 +50,11 @@ services:
     volumes:
       - ./GatewayService:/src/GatewayService:ro
 
-  utility-api:
+  analytics-api:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
     volumes:
-      - ./UtilityService:/src/UtilityService:ro
+      - ./AnalyticsService:/src/AnalyticsService:ro
 
   web:
     environment:
