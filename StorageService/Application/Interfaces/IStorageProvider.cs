@@ -1,3 +1,6 @@
+using StorageService.Application.DTOs;
+using StorageService.Domain.Constants;
+
 namespace StorageService.Application.Interfaces;
 
 public interface IStorageProvider
@@ -21,29 +24,15 @@ public interface IStorageProvider
         string fileName,
         string contentType,
         string folder,
-        int expirationMinutes = 15,
+        int expirationMinutes = StorageDefaults.DefaultUrlExpirationMinutes,
         CancellationToken cancellationToken = default);
     
     Task<PreSignedUrlResult> GenerateDownloadUrlAsync(
         string path,
-        int expirationMinutes = 15,
+        int expirationMinutes = StorageDefaults.DefaultUrlExpirationMinutes,
         CancellationToken cancellationToken = default);
     
     Task<string?> ComputeChecksumAsync(string path, CancellationToken cancellationToken = default);
     
     string GetStoragePath(string folder, string fileName);
 }
-
-public record StorageUploadResult(
-    bool Success, 
-    string? Path, 
-    string? Url, 
-    string? Checksum = null,
-    string? Error = null);
-
-public record PreSignedUrlResult(
-    bool Success,
-    string? Url,
-    DateTimeOffset? ExpiresAt,
-    Dictionary<string, string>? RequiredHeaders = null,
-    string? Error = null);

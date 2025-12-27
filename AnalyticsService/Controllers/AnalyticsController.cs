@@ -53,8 +53,8 @@ public class AnalyticsController : ControllerBase
     [HttpGet("top-performers")]
     [ProducesResponseType(typeof(TopPerformersDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<TopPerformersDto>> GetTopPerformers(
-        [FromQuery] int limit = 10,
-        [FromQuery] string period = "month",
+        [FromQuery] int limit = AnalyticsDefaults.DefaultLimit,
+        [FromQuery] string period = AnalyticsDefaults.DefaultPeriod,
         CancellationToken cancellationToken = default)
     {
         var performers = await _analyticsService.GetTopPerformersAsync(limit, period, cancellationToken);
@@ -66,10 +66,10 @@ public class AnalyticsController : ControllerBase
     public async Task<ActionResult<List<TrendDataPoint>>> GetRevenueTrend(
         [FromQuery] DateTimeOffset? startDate,
         [FromQuery] DateTimeOffset? endDate,
-        [FromQuery] string granularity = "day",
+        [FromQuery] string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default)
     {
-        var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-30);
+        var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var end = endDate ?? DateTimeOffset.UtcNow;
 
         var trend = await _analyticsService.GetRevenueTrendAsync(start, end, granularity, cancellationToken);
@@ -81,10 +81,10 @@ public class AnalyticsController : ControllerBase
     public async Task<ActionResult<List<TrendDataPoint>>> GetAuctionTrend(
         [FromQuery] DateTimeOffset? startDate,
         [FromQuery] DateTimeOffset? endDate,
-        [FromQuery] string granularity = "day",
+        [FromQuery] string granularity = AnalyticsDefaults.DefaultGranularity,
         CancellationToken cancellationToken = default)
     {
-        var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-30);
+        var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var end = endDate ?? DateTimeOffset.UtcNow;
 
         var trend = await _analyticsService.GetAuctionTrendAsync(start, end, granularity, cancellationToken);

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using NotificationService.Application.DTOs;
 using NotificationService.Application.Ports;
 using NotificationService.Application.UseCases.SendNotification;
 using NotificationService.Domain.Enums;

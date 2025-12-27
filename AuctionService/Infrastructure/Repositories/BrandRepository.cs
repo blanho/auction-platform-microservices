@@ -63,7 +63,7 @@ namespace AuctionService.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<Brand>> GetFeaturedBrandsAsync(int count = 10, CancellationToken cancellationToken = default)
+        public async Task<List<Brand>> GetFeaturedBrandsAsync(int count = PaginationDefaults.DefaultPageSize, CancellationToken cancellationToken = default)
         {
             return await _context.Brands
                 .Where(b => !b.IsDeleted && b.IsActive && b.IsFeatured)

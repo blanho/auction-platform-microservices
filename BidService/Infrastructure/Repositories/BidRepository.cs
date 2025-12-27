@@ -1,3 +1,4 @@
+using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.Entities;
 using BidService.Infrastructure.Data;

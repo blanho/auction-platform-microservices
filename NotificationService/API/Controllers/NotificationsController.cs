@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Enums;
 using System.Security.Claims;
 
 namespace NotificationService.API.Controllers
@@ -52,7 +53,7 @@ namespace NotificationService.API.Controllers
         {
             var userId = GetUserId();
             var notifications = await _notificationService.GetUserNotificationsAsync(userId, cancellationToken);
-            var unread = notifications.Where(n => n.Status == "Unread").ToList();
+            var unread = notifications.Where(n => n.Status == nameof(NotificationStatus.Unread)).ToList();
             return Ok(unread);
         }
 
@@ -107,8 +108,8 @@ namespace NotificationService.API.Controllers
         [HttpGet("admin/all")]
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<ActionResult<PagedNotificationsDto>> GetAllNotifications(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
+            [FromQuery] int pageNumber = PaginationDefaults.DefaultPage,
+            [FromQuery] int pageSize = PaginationDefaults.LargePageSize,
             [FromQuery] string? userId = null,
             [FromQuery] string? type = null,
             [FromQuery] string? status = null)

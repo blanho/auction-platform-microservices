@@ -1,4 +1,6 @@
+using Common.Core.Constants;
 using Microsoft.EntityFrameworkCore;
+using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
 using PaymentService.Domain.Entities;
 using PaymentService.Infrastructure.Data;
@@ -24,7 +26,7 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders.FirstOrDefaultAsync(o => o.AuctionId == auctionId);
     }
 
-    public async Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.Orders
             .Where(o => o.BuyerUsername == username)
@@ -34,7 +36,7 @@ public class OrderRepository : IOrderRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.Orders
             .Where(o => o.SellerUsername == username)

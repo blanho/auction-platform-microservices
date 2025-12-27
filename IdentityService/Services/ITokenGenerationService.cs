@@ -6,9 +6,3 @@ public interface ITokenGenerationService
 {
     Task<TokenResponse?> GenerateTokensForUserAsync(string userId, string clientId);
 }
-
-public record TokenResponse(
-    string AccessToken,
-    string? RefreshToken,
-    int ExpiresIn
-);

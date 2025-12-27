@@ -2,6 +2,7 @@ using Common.Audit.Enums;
 using Common.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
 namespace AnalyticsService.Controllers.Admin;
@@ -46,7 +47,7 @@ public class DashboardController : ControllerBase
 
     [HttpGet("activity")]
     public async Task<ActionResult<List<AdminRecentActivityDto>>> GetRecentActivity(
-        [FromQuery] int limit = 10,
+        [FromQuery] int limit = AnalyticsDefaults.DefaultLimit,
         CancellationToken cancellationToken = default)
     {
         var auditLogs = await _auditLogRepository.GetRecentAsync(limit, cancellationToken);
@@ -92,37 +93,4 @@ public class DashboardController : ControllerBase
             _ => "info"
         };
     }
-}
-
-public class AdminDashboardStatsDto
-{
-    public decimal TotalRevenue { get; set; }
-    public decimal RevenueChange { get; set; }
-    public int ActiveUsers { get; set; }
-    public decimal ActiveUsersChange { get; set; }
-    public int LiveAuctions { get; set; }
-    public decimal LiveAuctionsChange { get; set; }
-    public int PendingReports { get; set; }
-    public decimal PendingReportsChange { get; set; }
-    public int TotalOrders { get; set; }
-    public int CompletedOrders { get; set; }
-}
-
-public class AdminRecentActivityDto
-{
-    public string Id { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public DateTimeOffset Timestamp { get; set; }
-    public string Status { get; set; } = "info";
-    public string? RelatedEntityId { get; set; }
-}
-
-public class PlatformHealthDto
-{
-    public string ApiStatus { get; set; } = "healthy";
-    public string DatabaseStatus { get; set; } = "connected";
-    public string CacheStatus { get; set; } = "active";
-    public int QueueJobCount { get; set; }
-    public string QueueStatus { get; set; } = "healthy";
 }

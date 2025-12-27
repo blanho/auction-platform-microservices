@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
 using PaymentService.Domain.Entities;
 using Stripe;

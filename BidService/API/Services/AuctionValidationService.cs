@@ -1,4 +1,5 @@
 using AuctionService.API.Grpc;
+using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;

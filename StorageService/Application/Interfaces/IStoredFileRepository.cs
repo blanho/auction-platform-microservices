@@ -1,3 +1,4 @@
+using StorageService.Domain.Constants;
 using StorageService.Domain.Entities;
 using StorageService.Domain.Enums;
 
@@ -25,7 +26,7 @@ public interface IStoredFileRepository
         CancellationToken cancellationToken = default);
     
     Task<IEnumerable<StoredFile>> GetDeletedFilesAsync(
-        int batchSize = 100,
+        int batchSize = StorageDefaults.MaxBatchSize,
         CancellationToken cancellationToken = default);
     
     Task AddAsync(StoredFile file, CancellationToken cancellationToken = default);

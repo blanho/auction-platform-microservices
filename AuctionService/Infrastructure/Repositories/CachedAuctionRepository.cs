@@ -1,9 +1,11 @@
 #nullable enable
+using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
 using AuctionService.Domain.Entities;
 using AutoMapper;
 using Common.Caching.Abstractions;
 using Common.Caching.Keys;
+using Common.Core.Constants;
 using Common.Domain.Enums;
 using Common.Repository.Interfaces;
 
@@ -139,8 +141,8 @@ public class CachedAuctionRepository : IAuctionRepository
         bool? isFeatured = null,
         string? orderBy = null,
         bool descending = true,
-        int pageNumber = 1,
-        int pageSize = 12,
+        int pageNumber = PaginationDefaults.DefaultPage,
+        int pageSize = PaginationDefaults.DefaultPageSize,
         CancellationToken cancellationToken = default)
         => _inner.GetPagedAsync(status, seller, winner, searchTerm, category, isFeatured, orderBy, descending, pageNumber, pageSize, cancellationToken);
 

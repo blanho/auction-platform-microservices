@@ -69,3 +69,22 @@ public class ProcessPaymentDto
     public string PaymentMethod { get; set; } = string.Empty;
     public string? ExternalTransactionId { get; set; }
 }
+
+public record RevenueStatsDto(
+    decimal TotalRevenue,
+    decimal TotalPlatformFees,
+    int TotalTransactions,
+    int CompletedOrders,
+    int PendingOrders,
+    int RefundedOrders,
+    decimal AverageOrderValue,
+    decimal RevenueToday,
+    decimal RevenueThisWeek,
+    decimal RevenueThisMonth
+);
+
+public record DailyRevenueStatDto(DateOnly Date, decimal Revenue, decimal PlatformFees, int OrderCount);
+
+public record TopSellerDto(Guid SellerId, string Username, decimal TotalSales, int OrderCount, decimal AverageOrderValue);
+
+public record TopBuyerDto(Guid BuyerId, string Username, decimal TotalSpent, int OrderCount);

@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using Common.CQRS.Abstractions;
 using AuctionService.Application.DTOs;
 
@@ -7,7 +8,7 @@ public record GetMyAuctionsQuery(
     string Username,
     string? Status = null,
     string? SearchTerm = null,
-    int PageNumber = 1,
-    int PageSize = 10,
+    int PageNumber = PaginationDefaults.DefaultPage,
+    int PageSize = PaginationDefaults.DefaultPageSize,
     string? OrderBy = null,
     bool Descending = false) : IQuery<PagedResult<AuctionDto>>;

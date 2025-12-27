@@ -1,4 +1,5 @@
 #nullable enable
+using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
 using AuctionService.Domain.Entities;
 using AuctionService.Infrastructure.Data;
@@ -99,8 +100,8 @@ namespace AuctionService.Infrastructure.Repositories
             bool? isFeatured = null,
             string? orderBy = null,
             bool descending = true,
-            int pageNumber = 1,
-            int pageSize = 12,
+            int pageNumber = PaginationDefaults.DefaultPage,
+            int pageSize = PaginationDefaults.DefaultPageSize,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Auctions

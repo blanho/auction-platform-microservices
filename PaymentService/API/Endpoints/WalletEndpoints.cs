@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Carter;
+using Common.Core.Constants;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -138,19 +139,22 @@ public class WalletEndpoints : ICarterModule
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
+        var effectivePage = page > 0 ? page : PaginationDefaults.DefaultPage;
+        var effectivePageSize = pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize;
+
         var result = await mediator.Send(new GetWalletTransactionsQuery
         {
             Username = username,
-            Page = page > 0 ? page : 1,
-            PageSize = pageSize > 0 ? pageSize : 10
+            Page = effectivePage,
+            PageSize = effectivePageSize
         }, cancellationToken);
 
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
         httpContext.Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append("X-Page", (page > 0 ? page : 1).ToString());
-        httpContext.Response.Headers.Append("X-Page-Size", (pageSize > 0 ? pageSize : 10).ToString());
+        httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
+        httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
 
         return TypedResults.Ok(result.Value.Transactions);
     }

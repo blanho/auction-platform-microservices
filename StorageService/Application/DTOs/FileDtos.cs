@@ -76,3 +76,17 @@ public record FileConfirmRequest
     public string OwnerService { get; init; } = string.Empty;
     public Dictionary<string, string>? Metadata { get; init; }
 }
+
+public record StorageUploadResult(
+    bool Success,
+    string? Path = null,
+    string? Url = null,
+    string? Checksum = null,
+    string? Error = null);
+
+public record PreSignedUrlResult(
+    bool Success,
+    string? Url = null,
+    DateTimeOffset? ExpiresAt = null,
+    Dictionary<string, string>? RequiredHeaders = null,
+    string? Error = null);

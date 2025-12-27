@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StorageService.Application.Interfaces;
+using StorageService.Domain.Constants;
 using StorageService.Domain.Entities;
 using StorageService.Domain.Enums;
 using StorageService.Infrastructure.Data;
@@ -59,7 +60,7 @@ public class StoredFileRepository : IStoredFileRepository
     }
 
     public async Task<IEnumerable<StoredFile>> GetDeletedFilesAsync(
-        int batchSize = 100,
+        int batchSize = StorageDefaults.MaxBatchSize,
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles

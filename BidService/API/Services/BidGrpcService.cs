@@ -1,5 +1,6 @@
 using BidService.API.Grpc;
 using BidService.Application.Interfaces;
+using BidService.Domain.Constants;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 
@@ -115,7 +116,7 @@ namespace BidService.API.Services
             _logger.LogInformation("GetBidStats called");
 
             var stats = await _bidRepository.GetBidStatsAsync(context.CancellationToken);
-            var dailyStats = await _bidRepository.GetDailyBidStatsAsync(30, context.CancellationToken);
+            var dailyStats = await _bidRepository.GetDailyBidStatsAsync(BidDefaults.DefaultDaysForStats, context.CancellationToken);
 
             var response = new BidStatsResponse
             {
@@ -145,7 +146,7 @@ namespace BidService.API.Services
         {
             _logger.LogInformation("GetTopBidders called with limit {Limit}", request.Limit);
 
-            var limit = request.Limit > 0 ? request.Limit : 10;
+            var limit = request.Limit > 0 ? request.Limit : BidDefaults.DefaultTopBiddersLimit;
             var topBidders = await _bidRepository.GetTopBiddersAsync(limit, context.CancellationToken);
 
             var response = new TopBiddersResponse();

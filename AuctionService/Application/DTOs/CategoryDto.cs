@@ -61,4 +61,6 @@ namespace AuctionService.Application.DTOs
         public string Format { get; set; } = "json";
         public bool? ActiveOnly { get; set; }
     }
+
+    public record CategoryStatDto(Guid CategoryId, string CategoryName, int AuctionCount, decimal Revenue);
 }

@@ -1,11 +1,11 @@
+using AuctionService.Application.DTOs;
 using AuctionService.Domain.Entities;
+using Common.Core.Constants;
 using Common.Core.Helpers;
 using Common.Domain.Enums;
 using Common.Repository.Interfaces;
 
 namespace AuctionService.Application.Interfaces;
-
-public record CategoryStatDto(Guid CategoryId, string CategoryName, int AuctionCount, decimal Revenue);
 
 public interface IAuctionRepository : IRepository<Auction>
 {
@@ -18,8 +18,8 @@ public interface IAuctionRepository : IRepository<Auction>
         bool? isFeatured = null,
         string? orderBy = null,
         bool descending = true,
-        int pageNumber = 1,
-        int pageSize = 12,
+        int pageNumber = PaginationDefaults.DefaultPage,
+        int pageSize = PaginationDefaults.DefaultPageSize,
         CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default);

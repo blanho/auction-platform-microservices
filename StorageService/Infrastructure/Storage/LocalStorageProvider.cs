@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using StorageService.Application.Configuration;
+using StorageService.Application.DTOs;
 using StorageService.Application.Interfaces;
+using StorageService.Domain.Constants;
 
 namespace StorageService.Infrastructure.Storage;
 
@@ -120,7 +122,7 @@ public class LocalStorageProvider : IStorageProvider
         string fileName,
         string contentType,
         string folder,
-        int expirationMinutes = 15,
+        int expirationMinutes = StorageDefaults.DefaultUrlExpirationMinutes,
         CancellationToken cancellationToken = default)
     {
         var baseUrl = _options.BaseUrl ?? "http://localhost:5011";
@@ -137,7 +139,7 @@ public class LocalStorageProvider : IStorageProvider
 
     public Task<PreSignedUrlResult> GenerateDownloadUrlAsync(
         string path,
-        int expirationMinutes = 15,
+        int expirationMinutes = StorageDefaults.DefaultUrlExpirationMinutes,
         CancellationToken cancellationToken = default)
     {
         var baseUrl = _options.BaseUrl ?? "http://localhost:5011";

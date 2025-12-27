@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using Common.CQRS.Abstractions;
 using PaymentService.Application.DTOs;
 
@@ -5,8 +6,8 @@ namespace PaymentService.Application.Queries.GetOrdersByBuyer;
 
 public record GetOrdersByBuyerQuery(
     string BuyerUsername,
-    int Page = 1,
-    int PageSize = 10
+    int Page = PaginationDefaults.DefaultPage,
+    int PageSize = PaginationDefaults.DefaultPageSize
 ) : IQuery<PagedOrderResult>;
 
 public record PagedOrderResult(

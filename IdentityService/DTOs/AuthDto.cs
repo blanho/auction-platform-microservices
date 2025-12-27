@@ -155,3 +155,9 @@ public class ExternalUserResponse
     public string? RefreshToken { get; set; }
     public int ExpiresIn { get; set; }
 }
+
+public record TokenResponse(
+    string AccessToken,
+    string? RefreshToken,
+    int ExpiresIn
+);

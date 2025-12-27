@@ -1,4 +1,5 @@
 using Carter;
+using Common.Core.Constants;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -98,7 +99,7 @@ public class OrderEndpoints : ICarterModule
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrdersByBuyerQuery(username, page > 0 ? page : 1, pageSize > 0 ? pageSize : 10);
+        var query = new GetOrdersByBuyerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)
@@ -119,7 +120,7 @@ public class OrderEndpoints : ICarterModule
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrdersBySellerQuery(username, page > 0 ? page : 1, pageSize > 0 ? pageSize : 10);
+        var query = new GetOrdersBySellerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)

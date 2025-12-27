@@ -1,3 +1,5 @@
+using Common.Core.Constants;
+
 namespace AuctionService.Application.DTOs.Requests;
 
 public class GetAuctionsRequest
@@ -8,8 +10,8 @@ public class GetAuctionsRequest
     public string? SearchTerm { get; set; }
     public string? Category { get; set; }
     public bool? IsFeatured { get; set; }
-    public int PageNumber { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+    public int PageNumber { get; set; } = PaginationDefaults.DefaultPage;
+    public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
     public string? OrderBy { get; set; }
     public bool Descending { get; set; } = false;
 }

@@ -1,3 +1,4 @@
+using Common.Core.Constants;
 using Microsoft.EntityFrameworkCore;
 using PaymentService.Application.Interfaces;
 using PaymentService.Domain.Entities;
@@ -19,7 +20,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
         return await _context.WalletTransactions.FindAsync(id);
     }
 
-    public async Task<IEnumerable<WalletTransaction>> GetByUsernameAsync(string username, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<WalletTransaction>> GetByUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.WalletTransactions
             .Where(t => t.Username == username)

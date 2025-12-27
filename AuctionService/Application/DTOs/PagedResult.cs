@@ -1,3 +1,5 @@
+using Common.Core.Constants;
+
 namespace AuctionService.Application.DTOs;
 
 public class PagedResult<T>
@@ -21,7 +23,7 @@ public class PagedResult<T>
         };
     }
 
-    public static PagedResult<T> Empty(int pageNumber = 1, int pageSize = 10)
+    public static PagedResult<T> Empty(int pageNumber = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return new PagedResult<T>
         {
