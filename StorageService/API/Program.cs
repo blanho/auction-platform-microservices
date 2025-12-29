@@ -7,6 +7,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Core.Authorization;
 using Common.CQRS.Extensions;
 using Common.Messaging.Extensions;
 using FluentValidation;
@@ -87,7 +88,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy($"Permission:{Permissions.Storage.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Storage.View)));
+    options.AddPolicy($"Permission:{Permissions.Storage.Upload}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Storage.Upload)));
+    options.AddPolicy($"Permission:{Permissions.Storage.Delete}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Storage.Delete)));
+});
+
+builder.Services.AddPermissionBasedAuthorization();
 
 var app = builder.Build();
 

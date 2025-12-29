@@ -10,6 +10,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Core.Authorization;
 using Common.CQRS.Extensions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -89,7 +90,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy($"Permission:{Permissions.Notifications.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Notifications.View)));
+    options.AddPolicy($"Permission:{Permissions.Notifications.Send}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Notifications.Send)));
+    options.AddPolicy($"Permission:{Permissions.Notifications.ManageTemplates}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Notifications.ManageTemplates)));
+});
+
+builder.Services.AddPermissionBasedAuthorization();
 
 var app = builder.Build();
 

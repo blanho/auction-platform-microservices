@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Carter;
+using Common.Core.Authorization;
 using Common.Core.Constants;
 using Common.Utilities.Helpers;
 using MediatR;
@@ -23,19 +24,23 @@ public class WalletEndpoints : ICarterModule
 
         group.MapGet("/{username}", GetWallet)
             .WithName("GetWallet")
-            .WithSummary("Get wallet by username");
+            .WithSummary("Get wallet by username")
+            .RequireAuthorization($"Permission:{Permissions.Wallets.ViewOwn}");
 
         group.MapPost("/{username}/create", CreateWallet)
             .WithName("CreateWallet")
-            .WithSummary("Create a wallet for a user");
+            .WithSummary("Create a wallet for a user")
+            .RequireAuthorization($"Permission:{Permissions.Wallets.ViewOwn}");
 
         group.MapPost("/{username}/deposit", Deposit)
             .WithName("DepositToWallet")
-            .WithSummary("Deposit funds to wallet");
+            .WithSummary("Deposit funds to wallet")
+            .RequireAuthorization($"Permission:{Permissions.Wallets.Deposit}");
 
         group.MapPost("/{username}/withdraw", Withdraw)
             .WithName("WithdrawFromWallet")
-            .WithSummary("Withdraw funds from wallet");
+            .WithSummary("Withdraw funds from wallet")
+            .RequireAuthorization($"Permission:{Permissions.Wallets.Withdraw}");
     }
 
     private static async Task<Results<Ok<WalletDto>, NotFound, BadRequest<ProblemDetails>>> GetWallet(

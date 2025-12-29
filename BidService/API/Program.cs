@@ -6,6 +6,7 @@ using BidService.Infrastructure.Data;
 using BidService.Infrastructure.Extensions;
 using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
+using Common.Core.Authorization;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.CQRS.Extensions;
@@ -98,12 +99,20 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("BidScope", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "bid");
-    });
+    options.AddPolicy($"Permission:{Permissions.Bids.Place}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Bids.Place)));
+
+    options.AddPolicy($"Permission:{Permissions.Bids.PlaceAuto}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Bids.PlaceAuto)));
+
+    options.AddPolicy($"Permission:{Permissions.Bids.ViewOwn}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Bids.ViewOwn)));
+
+    options.AddPolicy($"Permission:{Permissions.Bids.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Bids.View)));
 });
+
+builder.Services.AddPermissionBasedAuthorization();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

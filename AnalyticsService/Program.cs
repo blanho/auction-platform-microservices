@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Common.Core.Authorization;
 using Serilog;
 using AnalyticsService.Consumers;
 using AnalyticsService.Data;
@@ -115,7 +116,31 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy($"Permission:{Permissions.Analytics.ViewPlatform}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Analytics.ViewPlatform)));
+    options.AddPolicy($"Permission:{Permissions.Analytics.ViewSeller}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Analytics.ViewSeller)));
+    options.AddPolicy($"Permission:{Permissions.Analytics.ViewOwn}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Analytics.ViewOwn)));
+    options.AddPolicy($"Permission:{Permissions.Analytics.Export}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Analytics.Export)));
+    options.AddPolicy($"Permission:{Permissions.AuditLogs.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.AuditLogs.View)));
+    options.AddPolicy($"Permission:{Permissions.AuditLogs.Export}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.AuditLogs.Export)));
+    options.AddPolicy($"Permission:{Permissions.Users.ManageSettings}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Users.ManageSettings)));
+    options.AddPolicy($"Permission:{Permissions.Reports.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Reports.View)));
+    options.AddPolicy($"Permission:{Permissions.Reports.Create}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Reports.Create)));
+    options.AddPolicy($"Permission:{Permissions.Reports.Manage}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Reports.Manage)));
+});
+
+builder.Services.AddPermissionBasedAuthorization();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

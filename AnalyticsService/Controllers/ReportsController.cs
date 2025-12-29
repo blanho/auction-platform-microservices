@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Common.Core.Constants;
+using Common.Core.Authorization;
 using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
@@ -25,7 +24,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = AppRoles.Admin)]
+    [HasPermission(Permissions.Reports.View)]
     [ProducesResponseType(typeof(PagedReportsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedReportsDto>> GetReports(
         [FromQuery] ReportQueryParams queryParams,
@@ -36,7 +35,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = AppRoles.Admin)]
+    [HasPermission(Permissions.Reports.View)]
     [ProducesResponseType(typeof(ReportDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReportDto>> GetReport(Guid id, CancellationToken cancellationToken)
@@ -53,7 +52,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [HasPermission(Permissions.Reports.Create)]
     [ProducesResponseType(typeof(ReportDto), StatusCodes.Status201Created)]
     public async Task<ActionResult<ReportDto>> CreateReport(
         [FromBody] CreateReportDto dto,
@@ -66,7 +65,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPut("{id:guid}/status")]
-    [Authorize(Roles = AppRoles.Admin)]
+    [HasPermission(Permissions.Reports.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateReportStatus(
@@ -87,7 +86,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = AppRoles.Admin)]
+    [HasPermission(Permissions.Reports.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteReport(Guid id, CancellationToken cancellationToken)
@@ -104,7 +103,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("stats")]
-    [Authorize(Roles = AppRoles.Admin)]
+    [HasPermission(Permissions.Reports.View)]
     [ProducesResponseType(typeof(ReportStatsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<ReportStatsDto>> GetStats(CancellationToken cancellationToken)
     {

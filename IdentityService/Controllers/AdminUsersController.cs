@@ -1,3 +1,4 @@
+using Common.Core.Authorization;
 using Common.Core.Constants;
 using IdentityService.DTOs;
 using IdentityService.Models;
@@ -10,7 +11,7 @@ namespace IdentityService.Controllers;
 
 [ApiController]
 [Route("api/admin/users")]
-[Authorize(AuthenticationSchemes = "Bearer", Roles = AppRoles.Admin)]
+[Authorize(AuthenticationSchemes = "Bearer")]
 [Produces("application/json")]
 public class AdminUsersController : ControllerBase
 {
@@ -29,6 +30,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpGet]
+    [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserListDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<AdminUserListDto>>> GetUsers(
         [FromQuery] string? search = null,
@@ -105,6 +107,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<AdminUserDto>>> GetUser(string id)
@@ -136,6 +139,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/suspend")]
+    [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> SuspendUser(string id, [FromBody] SuspendUserDto dto)
@@ -164,6 +168,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/unsuspend")]
+    [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> UnsuspendUser(string id)
@@ -192,6 +197,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/activate")]
+    [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> ActivateUser(string id)
@@ -218,6 +224,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/deactivate")]
+    [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> DeactivateUser(string id)
@@ -244,6 +251,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPut("{id}/roles")]
+    [HasPermission(Permissions.Users.ManageRoles)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> UpdateUserRoles(string id, [FromBody] UpdateUserRolesDto dto)
@@ -274,6 +282,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.Users.Delete)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteUser(string id)
@@ -298,6 +307,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpGet("stats")]
+    [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(typeof(ApiResponse<AdminStatsDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<AdminStatsDto>>> GetStats()
     {

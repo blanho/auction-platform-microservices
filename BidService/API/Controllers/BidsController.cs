@@ -2,6 +2,7 @@ using Asp.Versioning;
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.ValueObjects;
+using Common.Core.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -25,7 +26,7 @@ namespace BidService.API.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [HasPermission(Permissions.Bids.Place)]
         [EnableRateLimiting("bid")]
         public async Task<ActionResult<BidDto>> PlaceBid([FromBody] PlaceBidDto dto, CancellationToken cancellationToken)
         {
@@ -55,7 +56,7 @@ namespace BidService.API.Controllers
         }
 
         [HttpGet("my")]
-        [Authorize]
+        [HasPermission(Permissions.Bids.ViewOwn)]
         public async Task<ActionResult<List<BidDto>>> GetMyBids(CancellationToken cancellationToken)
         {
             var currentUser = User.Identity?.Name;
@@ -69,7 +70,7 @@ namespace BidService.API.Controllers
         }
 
         [HttpGet("bidder/{bidder}")]
-        [Authorize]
+        [HasPermission(Permissions.Bids.View)]
         public async Task<ActionResult<List<BidDto>>> GetBidsForBidder(string bidder, CancellationToken cancellationToken)
         {
             var currentUser = User.Identity?.Name;

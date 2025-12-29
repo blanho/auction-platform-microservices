@@ -8,6 +8,7 @@ using AuctionService.Application.Queries.GetReviewsForAuction;
 using AuctionService.Application.Queries.GetReviewsForUser;
 using AuctionService.Application.Queries.GetUserRatingSummary;
 using Carter;
+using Common.Core.Authorization;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -45,13 +46,13 @@ public class ReviewEndpoints : ICarterModule
 
         group.MapPost("/", CreateReview)
             .WithName("CreateReview")
-            .RequireAuthorization("AuctionScope")
+            .RequireAuthorization($"Permission:{Permissions.Reviews.Create}")
             .Produces<ReviewDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPost("/{id:guid}/response", AddSellerResponse)
             .WithName("AddSellerResponse")
-            .RequireAuthorization("AuctionScope")
+            .RequireAuthorization($"Permission:{Permissions.Reviews.Edit}")
             .Produces<ReviewDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound);

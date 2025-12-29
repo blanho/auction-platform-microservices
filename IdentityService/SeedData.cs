@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Duende.IdentityModel;
 using IdentityService.Data;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Identity;
@@ -35,10 +34,10 @@ public class SeedData
                 }
 
                 result = userMgr.AddClaimsAsync(admin, new Claim[]{
-                            new Claim(JwtClaimTypes.Name, "Admin User"),
-                            new Claim(JwtClaimTypes.GivenName, "Admin"),
-                            new Claim(JwtClaimTypes.FamilyName, "User"),
-                            new Claim(JwtClaimTypes.Role, "admin"),
+                            new Claim(ClaimTypes.Name, "Admin User"),
+                            new Claim(ClaimTypes.GivenName, "Admin"),
+                            new Claim(ClaimTypes.Surname, "User"),
+                            new Claim(ClaimTypes.Role, "admin"),
                         }).Result;
                 if (!result.Succeeded)
                 {
@@ -67,11 +66,11 @@ public class SeedData
                 }
 
                 result = userMgr.AddClaimsAsync(alice, new Claim[]{
-                            new Claim(JwtClaimTypes.Name, "Alice Smith"),
-                            new Claim(JwtClaimTypes.GivenName, "Alice"),
-                            new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                            new Claim(JwtClaimTypes.WebSite, "http://alice.example.com"),
-                            new Claim(JwtClaimTypes.Role, "user"),
+                            new Claim(ClaimTypes.Name, "Alice Smith"),
+                            new Claim(ClaimTypes.GivenName, "Alice"),
+                            new Claim(ClaimTypes.Surname, "Smith"),
+                            new Claim(ClaimTypes.Webpage, "http://alice.example.com"),
+                            new Claim(ClaimTypes.Role, "user"),
                         }).Result;
                 if (!result.Succeeded)
                 {
@@ -100,11 +99,11 @@ public class SeedData
                 }
 
                 result = userMgr.AddClaimsAsync(bob, new Claim[]{
-                            new Claim(JwtClaimTypes.Name, "Bob Smith"),
-                            new Claim(JwtClaimTypes.GivenName, "Bob"),
-                            new Claim(JwtClaimTypes.FamilyName, "Smith"),
-                            new Claim(JwtClaimTypes.WebSite, "http://bob.example.com"),
-                            new Claim(JwtClaimTypes.Role, "user"),
+                            new Claim(ClaimTypes.Name, "Bob Smith"),
+                            new Claim(ClaimTypes.GivenName, "Bob"),
+                            new Claim(ClaimTypes.Surname, "Smith"),
+                            new Claim(ClaimTypes.Webpage, "http://bob.example.com"),
+                            new Claim(ClaimTypes.Role, "user"),
                             new Claim("location", "somewhere")
                         }).Result;
                 if (!result.Succeeded)

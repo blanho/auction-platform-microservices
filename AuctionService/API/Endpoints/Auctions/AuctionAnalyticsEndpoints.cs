@@ -5,6 +5,7 @@ using AuctionService.Application.Queries.GetQuickStats;
 using AuctionService.Application.Queries.GetTrendingSearches;
 using AuctionService.Application.Queries.GetUserDashboardStats;
 using Carter;
+using Common.Core.Authorization;
 using Common.Core.Helpers;
 using Common.Utilities.Helpers;
 using MediatR;
@@ -21,12 +22,12 @@ public class AuctionAnalyticsEndpoints : ICarterModule
 
         group.MapGet("/dashboard/stats", GetDashboardStats)
             .WithName("GetDashboardStats")
-            .RequireAuthorization("AuctionScope")
+            .RequireAuthorization($"Permission:{Permissions.Analytics.ViewOwn}")
             .Produces<UserDashboardStatsDto>(StatusCodes.Status200OK);
 
         group.MapGet("/analytics/seller", GetSellerAnalytics)
             .WithName("GetSellerAnalytics")
-            .RequireAuthorization("AuctionScope")
+            .RequireAuthorization($"Permission:{Permissions.Analytics.ViewSeller}")
             .Produces<SellerAnalyticsDto>(StatusCodes.Status200OK);
 
         group.MapGet("/analytics/quick-stats", GetQuickStats)

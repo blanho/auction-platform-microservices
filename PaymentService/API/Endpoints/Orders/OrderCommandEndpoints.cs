@@ -1,4 +1,5 @@
 using Carter;
+using Common.Core.Authorization;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -21,19 +22,23 @@ public class OrderCommandEndpoints : ICarterModule
 
         group.MapPost("/", Create)
             .WithName("CreateOrder")
-            .WithSummary("Create a new order");
+            .WithSummary("Create a new order")
+            .RequireAuthorization($"Permission:{Permissions.Orders.Create}");
 
         group.MapPut("/{id:guid}", Update)
             .WithName("UpdateOrder")
-            .WithSummary("Update an order");
+            .WithSummary("Update an order")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
 
         group.MapPost("/{id:guid}/payment", ProcessPayment)
             .WithName("ProcessOrderPayment")
-            .WithSummary("Process payment for an order");
+            .WithSummary("Process payment for an order")
+            .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapPost("/{id:guid}/ship", ShipOrder)
             .WithName("ShipOrder")
-            .WithSummary("Mark order as shipped");
+            .WithSummary("Mark order as shipped")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
     }
 
     private static async Task<Results<Created<OrderDto>, BadRequest<ProblemDetails>>> Create(

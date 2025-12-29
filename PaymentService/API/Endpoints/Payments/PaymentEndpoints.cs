@@ -1,4 +1,5 @@
 using Carter;
+using Common.Core.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
@@ -15,23 +16,28 @@ public class PaymentEndpoints : ICarterModule
 
         group.MapPost("/payment-intent", CreatePaymentIntent)
             .WithName("CreatePaymentIntent")
-            .WithSummary("Create a Stripe payment intent");
+            .WithSummary("Create a Stripe payment intent")
+            .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapGet("/payment-intent/{paymentIntentId}", GetPaymentIntent)
             .WithName("GetPaymentIntent")
-            .WithSummary("Get a payment intent by ID");
+            .WithSummary("Get a payment intent by ID")
+            .RequireAuthorization($"Permission:{Permissions.Payments.View}");
 
         group.MapPost("/checkout-session", CreateCheckoutSession)
             .WithName("CreateCheckoutSession")
-            .WithSummary("Create a Stripe checkout session");
+            .WithSummary("Create a Stripe checkout session")
+            .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapPost("/customer", CreateCustomer)
             .WithName("CreateStripeCustomer")
-            .WithSummary("Create or get existing Stripe customer");
+            .WithSummary("Create or get existing Stripe customer")
+            .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapPost("/refund", CreateRefund)
             .WithName("CreateRefund")
-            .WithSummary("Create a refund for a payment");
+            .WithSummary("Create a refund for a payment")
+            .RequireAuthorization($"Permission:{Permissions.Payments.Refund}");
     }
 
     private static async Task<Ok<CreatePaymentIntentResponseDto>> CreatePaymentIntent(

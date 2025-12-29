@@ -1,3 +1,4 @@
+using Common.Core.Authorization;
 using Common.Core.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult<List<NotificationDto>>> GetMyNotifications(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -41,6 +43,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("summary")]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult<NotificationSummaryDto>> GetSummary(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -49,6 +52,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("unread")]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult<List<NotificationDto>>> GetUnreadNotifications(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -58,6 +62,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPut("{id}/read")]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -74,6 +79,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPut("read-all")]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult> MarkAllAsRead(CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -82,6 +88,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [HasPermission(Permissions.Notifications.View)]
         public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             var userId = GetUserId();
@@ -98,7 +105,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = AppRoles.Admin)]
+        [HasPermission(Permissions.Notifications.Send)]
         public async Task<ActionResult<NotificationDto>> Create([FromBody] CreateNotificationDto dto)
         {
             var notification = await _notificationService.CreateNotificationAsync(dto);
@@ -106,7 +113,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("admin/all")]
-        [Authorize(Roles = AppRoles.Admin)]
+        [HasPermission(Permissions.Notifications.ManageTemplates)]
         public async Task<ActionResult<PagedNotificationsDto>> GetAllNotifications(
             [FromQuery] int pageNumber = PaginationDefaults.DefaultPage,
             [FromQuery] int pageSize = PaginationDefaults.LargePageSize,
@@ -120,7 +127,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpPost("admin/broadcast")]
-        [Authorize(Roles = AppRoles.Admin)]
+        [HasPermission(Permissions.Notifications.Send)]
         public async Task<ActionResult> BroadcastNotification([FromBody] BroadcastNotificationDto dto)
         {
             await _notificationService.BroadcastNotificationAsync(dto);
@@ -128,7 +135,7 @@ namespace NotificationService.API.Controllers
         }
 
         [HttpGet("admin/stats")]
-        [Authorize(Roles = AppRoles.Admin)]
+        [HasPermission(Permissions.Notifications.ManageTemplates)]
         public async Task<ActionResult<NotificationStatsDto>> GetNotificationStats()
         {
             var stats = await _notificationService.GetNotificationStatsAsync();

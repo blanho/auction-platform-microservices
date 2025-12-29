@@ -1,9 +1,11 @@
 using System.Globalization;
+using System.Text;
+using Common.Core.Authorization;
 using IdentityService.Data;
 using IdentityService.Models;
 using IdentityService.Services;
 using MassTransit;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -47,7 +49,6 @@ internal static class HostingExtensions
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        // Configure token lifespan
         builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
             options.TokenLifespan = TimeSpan.FromHours(24);
@@ -70,22 +71,64 @@ internal static class HostingExtensions
             });
         });
 
-        builder.Services
-            .AddIdentityServer(options =>
+        var identityAuthority = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+        var secretKey = builder.Configuration["Identity:SecretKey"]
+            ?? throw new InvalidOperationException("Identity:SecretKey is not configured");
+        var isLocalDevelopment = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Local";
+
+        builder.Services.AddAuthentication(options =>
             {
-                options.Events.RaiseErrorEvents = true;
-                options.Events.RaiseInformationEvents = true;
-                options.Events.RaiseFailureEvents = true;
-                options.Events.RaiseSuccessEvents = true;
-                
-                options.IssuerUri = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddInMemoryIdentityResources(Config.IdentityResources)
-            .AddInMemoryApiScopes(Config.ApiScopes)
-            .AddInMemoryClients(Config.GetClients(builder.Configuration))
-            .AddAspNetIdentity<ApplicationUser>()
-            .AddProfileService<CustomProfileService>()
-            .AddLicenseSummary();
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = !isLocalDevelopment;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = identityAuthority,
+                    ValidateAudience = true,
+                    ValidAudience = "auctionApp",
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                    ClockSkew = TimeSpan.Zero,
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
+            });
+
+        var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+        {
+            builder.Services.AddAuthentication()
+                .AddGoogle("Google", options =>
+                {
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                    options.ClientId = googleClientId;
+                    options.ClientSecret = googleClientSecret;
+                    options.Scope.Add("email");
+                    options.Scope.Add("profile");
+                });
+        }
+
+        var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+        var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+        if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
+        {
+            builder.Services.AddAuthentication()
+                .AddFacebook("Facebook", options =>
+                {
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                    options.AppId = facebookAppId;
+                    options.AppSecret = facebookAppSecret;
+                    options.Scope.Add("email");
+                    options.Scope.Add("public_profile");
+                });
+        }
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
@@ -98,56 +141,23 @@ internal static class HostingExtensions
             options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         });
 
-        // Configure external authentication providers
-        var authBuilder = builder.Services.AddAuthentication();
+        builder.Services.AddPermissionBasedAuthorization();
 
-        // Add JWT Bearer for API endpoints
-        var identityAuthority = builder.Configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
-        var isLocalDevelopment = builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Local";
-        authBuilder.AddJwtBearer("Bearer", options =>
+        builder.Services.AddAuthorization(options =>
         {
-            options.Authority = identityAuthority;
-            options.RequireHttpsMetadata = !isLocalDevelopment;
-            options.MapInboundClaims = false;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = identityAuthority,
-                ValidateAudience = false,
-                NameClaimType = "name",
-                RoleClaimType = "role"
-            };
+            options.AddPolicy($"Permission:{Permissions.Users.View}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.View)));
+            options.AddPolicy($"Permission:{Permissions.Users.Create}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.Create)));
+            options.AddPolicy($"Permission:{Permissions.Users.Edit}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.Edit)));
+            options.AddPolicy($"Permission:{Permissions.Users.Delete}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.Delete)));
+            options.AddPolicy($"Permission:{Permissions.Users.ManageRoles}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.ManageRoles)));
+            options.AddPolicy($"Permission:{Permissions.Users.Ban}", policy =>
+                policy.Requirements.Add(new PermissionRequirement(Permissions.Users.Ban)));
         });
-
-        // Google OAuth
-        var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-        var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-        if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
-        {
-            authBuilder.AddGoogle("Google", options =>
-            {
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-                options.ClientId = googleClientId;
-                options.ClientSecret = googleClientSecret;
-                options.Scope.Add("email");
-                options.Scope.Add("profile");
-            });
-        }
-
-        // Facebook OAuth
-        var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
-        var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
-        if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
-        {
-            authBuilder.AddFacebook("Facebook", options =>
-            {
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-                options.AppId = facebookAppId;
-                options.AppSecret = facebookAppSecret;
-                options.Scope.Add("email");
-                options.Scope.Add("public_profile");
-            });
-        }
 
         return builder.Build();
     }
@@ -161,14 +171,16 @@ internal static class HostingExtensions
             app.UseDeveloperExceptionPage();
         }
 
+        var allowedOrigins = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+            ?? ["http://localhost:3000"];
+
         app.UseCors(policy =>
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(allowedOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials());
 
         app.UseRouting();
-        app.UseIdentityServer();
         app.UseAuthentication();
         app.UseAuthorization();
 

@@ -7,6 +7,7 @@ using Common.OpenApi.Extensions;
 using Common.OpenApi.Middleware;
 using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
+using Common.Core.Authorization;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Messaging.Extensions;
@@ -79,37 +80,35 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AuctionScope", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "auction");
-    });
-    
-    options.AddPolicy("AuctionWrite", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "auction");
-    });
-    
-    options.AddPolicy("AuctionOwner", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "auction");
-    });
-    
-    options.AddPolicy("AuctionOwnerOrAdmin", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "auction");
-    });
-    
-    options.AddPolicy("Admin", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "auction");
-        policy.RequireClaim("role", "admin");
-    });
+    options.AddPolicy($"Permission:{Permissions.Auctions.Create}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.Create)));
+
+    options.AddPolicy($"Permission:{Permissions.Auctions.Edit}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.Edit)));
+
+    options.AddPolicy($"Permission:{Permissions.Auctions.Delete}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.Delete)));
+
+    options.AddPolicy($"Permission:{Permissions.Auctions.Moderate}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.Moderate)));
+
+    options.AddPolicy($"Permission:{Permissions.Auctions.ManageCategories}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.ManageCategories)));
+
+    options.AddPolicy($"Permission:{Permissions.Auctions.ManageBrands}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Auctions.ManageBrands)));
+
+    options.AddPolicy($"Permission:{Permissions.Analytics.ViewSeller}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Analytics.ViewSeller)));
+
+    options.AddPolicy($"Permission:{Permissions.Reviews.Create}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Reviews.Create)));
+
+    options.AddPolicy($"Permission:{Permissions.Reviews.Moderate}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Reviews.Moderate)));
 });
+
+builder.Services.AddPermissionBasedAuthorization();
 
 var app = builder.Build();
 

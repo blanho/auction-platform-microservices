@@ -1,0 +1,841 @@
+using IdentityService.DTOs;
+using IdentityService.Models;
+using IdentityService.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Web;
+
+namespace IdentityService.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+[Produces("application/json")]
+public class AuthController : ControllerBase
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly ITokenGenerationService _tokenService;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<AuthController> _logger;
+    private const string ClientId = "nextApp";
+    private const string RefreshTokenCookieName = "refreshToken";
+    private const int RefreshTokenCookieExpirationDays = 7;
+
+    public AuthController(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        ITokenGenerationService tokenService,
+        IEmailService emailService,
+        IConfiguration configuration,
+        ILogger<AuthController> logger)
+    {
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _tokenService = tokenService;
+        _emailService = emailService;
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] RegisterDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
+        }
+
+        var existingUser = await _userManager.FindByNameAsync(dto.Username);
+        if (existingUser != null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Username already exists"));
+        }
+
+        existingUser = await _userManager.FindByEmailAsync(dto.Email);
+        if (existingUser != null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Email already registered"));
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = dto.Username,
+            Email = dto.Email,
+            EmailConfirmed = false
+        };
+
+        var result = await _userManager.CreateAsync(user, dto.Password);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            _logger.LogWarning("User registration failed for {Username}: {Errors}", dto.Username, string.Join(", ", errors));
+            return BadRequest(ApiResponse<object>.ErrorResponse("Registration failed", errors));
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = HttpUtility.UrlEncode(token);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var confirmationLink = $"{frontendUrl}/auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+        try
+        {
+            await _emailService.SendEmailConfirmationAsync(user.Email!, user.UserName!, confirmationLink);
+            _logger.LogInformation("Confirmation email sent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send confirmation email to {Email}", user.Email);
+        }
+
+        _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!
+        };
+
+        return CreatedAtAction(
+            nameof(GetCurrentUser),
+            ApiResponse<UserDto>.SuccessResponse(userDto, "Registration successful. Please check your email to confirm your account.")
+        );
+    }
+
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ConfirmEmail([FromBody] ConfirmEmailDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(dto.UserId);
+        if (user == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid confirmation link"));
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Email already confirmed"));
+        }
+
+        var decodedToken = HttpUtility.UrlDecode(dto.Token);
+        var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            _logger.LogWarning("Email confirmation failed for {UserId}: {Errors}", dto.UserId, string.Join(", ", errors));
+            return BadRequest(ApiResponse<object>.ErrorResponse("Email confirmation failed. The link may have expired.", errors));
+        }
+
+        try
+        {
+            await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
+        }
+
+        _logger.LogInformation("Email confirmed for user {Username}", user.UserName);
+        return Ok(ApiResponse<object>.SuccessResponse(null, "Email confirmed successfully. You can now log in."));
+    }
+
+    [HttpPost("resend-confirmation")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ResendConfirmation([FromBody] ResendConfirmationDto dto)
+    {
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a confirmation link will be sent."));
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Email is already confirmed"));
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = HttpUtility.UrlEncode(token);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var confirmationLink = $"{frontendUrl}/auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+        try
+        {
+            await _emailService.SendEmailConfirmationAsync(user.Email!, user.UserName!, confirmationLink);
+            _logger.LogInformation("Confirmation email resent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to resend confirmation email to {Email}", user.Email);
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to send email. Please try again later."));
+        }
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "Confirmation email sent. Please check your inbox."));
+    }
+
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+
+        if (user == null || !user.EmailConfirmed)
+        {
+            _logger.LogWarning("Password reset requested for non-existent or unconfirmed email: {Email}", dto.Email);
+            return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a password reset link will be sent."));
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = HttpUtility.UrlEncode(token);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var resetLink = $"{frontendUrl}/auth/reset-password?email={HttpUtility.UrlEncode(user.Email!)}&token={encodedToken}";
+
+        try
+        {
+            await _emailService.SendPasswordResetAsync(user.Email!, user.UserName!, resetLink);
+            _logger.LogInformation("Password reset email sent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
+        }
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a password reset link will be sent."));
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
+        }
+
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid reset request"));
+        }
+
+        var decodedToken = HttpUtility.UrlDecode(dto.Token);
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            _logger.LogWarning("Password reset failed for {Email}: {Errors}", dto.Email, string.Join(", ", errors));
+            return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed. The link may have expired.", errors));
+        }
+
+        _logger.LogInformation("Password reset successful for {Email}", dto.Email);
+        return Ok(ApiResponse<object>.SuccessResponse(null, "Password reset successful. You can now log in with your new password."));
+    }
+
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
+        }
+
+        var user = await FindUserByUsernameOrEmailAsync(dto.UsernameOrEmail);
+        if (user == null)
+        {
+            _logger.LogWarning("Login failed: user not found for {UsernameOrEmail}", dto.UsernameOrEmail);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
+        }
+
+        if (user.IsSuspended)
+        {
+            _logger.LogWarning("Login attempt for suspended user {Username}", user.UserName);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Account is suspended", new List<string> { user.SuspensionReason ?? "Contact support for more information" }));
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            _logger.LogWarning("Login attempt for unconfirmed email {Username}", user.UserName);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Please confirm your email before logging in"));
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
+
+        if (result.IsLockedOut)
+        {
+            _logger.LogWarning("User {Username} is locked out", user.UserName);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Account is locked. Please try again later."));
+        }
+
+        if (result.RequiresTwoFactor)
+        {
+            _logger.LogInformation("User {Username} requires two-factor authentication", user.UserName);
+            return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
+            {
+                UserId = user.Id,
+                Username = user.UserName!,
+                Email = user.Email!,
+                RequiresTwoFactor = true
+            }, "Two-factor authentication required"));
+        }
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Login failed for user {Username}: invalid password", user.UserName);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
+        }
+
+        var ipAddress = GetIpAddress();
+        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
+        if (tokens == null)
+        {
+            _logger.LogError("Failed to generate tokens for user {Username}", user.UserName);
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to generate authentication tokens"));
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        _logger.LogInformation("User {Username} logged in successfully", user.UserName);
+
+        SetRefreshTokenCookie(tokens.Value.RefreshToken);
+
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            AccessToken = tokens.Value.AccessToken,
+            ExpiresIn = tokens.Value.ExpiresIn,
+            RequiresTwoFactor = false
+        }, "Login successful"));
+    }
+
+    [HttpPost("login-2fa")]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> LoginWith2FA([FromBody] TwoFactorLoginDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
+        }
+
+        var user = await _userManager.FindByIdAsync(dto.UserId);
+        if (user == null)
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid authentication attempt"));
+        }
+
+        var isValidCode = await _userManager.VerifyTwoFactorTokenAsync(
+            user,
+            _userManager.Options.Tokens.AuthenticatorTokenProvider,
+            dto.Code);
+
+        if (!isValidCode)
+        {
+            _logger.LogWarning("Invalid 2FA code for user {Username}", user.UserName);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid verification code"));
+        }
+
+        var ipAddress = GetIpAddress();
+        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
+        if (tokens == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to generate authentication tokens"));
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        _logger.LogInformation("User {Username} logged in successfully with 2FA", user.UserName);
+
+        SetRefreshTokenCookie(tokens.Value.RefreshToken);
+
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            AccessToken = tokens.Value.AccessToken,
+            ExpiresIn = tokens.Value.ExpiresIn,
+            RequiresTwoFactor = false
+        }, "Login successful"));
+    }
+
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(ApiResponse<RefreshTokenResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<RefreshTokenResponseDto>>> RefreshToken()
+    {
+        var refreshToken = GetRefreshTokenFromCookie();
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Refresh token not found"));
+        }
+
+        var ipAddress = GetIpAddress();
+        var tokens = await _tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
+
+        if (tokens == null)
+        {
+            ClearRefreshTokenCookie();
+            _logger.LogWarning("Invalid refresh token attempt from {IpAddress}", ipAddress);
+            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid or expired refresh token"));
+        }
+
+        _logger.LogInformation("Token refreshed successfully from {IpAddress}", ipAddress);
+
+        SetRefreshTokenCookie(tokens.Value.RefreshToken);
+
+        return Ok(ApiResponse<RefreshTokenResponseDto>.SuccessResponse(new RefreshTokenResponseDto
+        {
+            AccessToken = tokens.Value.AccessToken,
+            ExpiresIn = tokens.Value.ExpiresIn
+        }, "Token refreshed successfully"));
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<object>>> Logout()
+    {
+        var ipAddress = GetIpAddress();
+        var refreshToken = GetRefreshTokenFromCookie();
+
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            await _tokenService.RevokeTokenAsync(refreshToken, ipAddress);
+        }
+        else
+        {
+            var userId = User.FindFirst("sub")?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await _tokenService.RevokeAllUserTokensAsync(userId, ipAddress);
+            }
+        }
+
+        ClearRefreshTokenCookie();
+
+        _logger.LogInformation("User logged out successfully");
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "Logged out successfully"));
+    }
+
+    [HttpPost("logout-all")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<object>>> LogoutAll()
+    {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("User not found"));
+        }
+
+        var ipAddress = GetIpAddress();
+        await _tokenService.RevokeAllUserTokensAsync(userId, ipAddress);
+
+        ClearRefreshTokenCookie();
+
+        _logger.LogInformation("All sessions revoked for user {UserId}", userId);
+
+        return Ok(ApiResponse<object>.SuccessResponse(null, "All sessions have been logged out"));
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetCurrentUser()
+    {
+        var userId = User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User not authenticated"));
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Unauthorized(ApiResponse<object>.ErrorResponse("User not found"));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        return Ok(ApiResponse<UserDto>.SuccessResponse(new UserDto
+        {
+            Id = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            FullName = user.FullName,
+            AvatarUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt
+        }));
+    }
+
+    [HttpGet("external-providers")]
+    [ProducesResponseType(typeof(ApiResponse<List<string>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<string>>>> GetExternalProviders()
+    {
+        var schemes = await _signInManager.GetExternalAuthenticationSchemesAsync();
+        var providers = schemes.Select(s => s.Name).ToList();
+        return Ok(ApiResponse<List<string>>.SuccessResponse(providers));
+    }
+
+    [HttpPost("external-user")]
+    [ProducesResponseType(typeof(ExternalUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateOrGetExternalUser([FromBody] CreateExternalUserRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Provider) || string.IsNullOrEmpty(request.ProviderKey))
+        {
+            return BadRequest(new { error = "Email, provider, and providerKey are required" });
+        }
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user == null)
+        {
+            var username = GenerateUniqueUsername(request.Name ?? request.Email.Split('@')[0]);
+            user = new ApplicationUser
+            {
+                UserName = username,
+                Email = request.Email,
+                EmailConfirmed = true,
+                FullName = request.Name
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                _logger.LogError("Failed to create user from external login: {Errors}", errors);
+                return BadRequest(new { error = "Failed to create account", details = errors });
+            }
+
+            var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(request.Provider, request.ProviderKey, request.Provider));
+            if (!addLoginResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+            }
+
+            try
+            {
+                await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
+            }
+
+            _logger.LogInformation("Created new user {Username} via {Provider}", user.UserName, request.Provider);
+        }
+        else
+        {
+            if (user.IsSuspended)
+            {
+                return BadRequest(new { error = "Account is suspended" });
+            }
+
+            var existingLogins = await _userManager.GetLoginsAsync(user);
+            if (!existingLogins.Any(l => l.LoginProvider == request.Provider && l.ProviderKey == request.ProviderKey))
+            {
+                var addLoginResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(request.Provider, request.ProviderKey, request.Provider));
+                if (!addLoginResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+                }
+            }
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        var tokens = await _tokenService.GenerateTokensForUserAsync(user.Id, ClientId);
+        if (tokens == null)
+        {
+            _logger.LogError("Failed to generate tokens for external user {UserId}", user.Id);
+            return BadRequest(new { error = "Failed to generate authentication tokens" });
+        }
+
+        _logger.LogInformation("User {Username} authenticated via {Provider}", user.UserName, request.Provider);
+
+        return Ok(new ExternalUserResponse
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            AccessToken = tokens.AccessToken,
+            RefreshToken = tokens.RefreshToken,
+            ExpiresIn = tokens.ExpiresIn
+        });
+    }
+
+    [HttpGet("external-login")]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    public IActionResult ExternalLogin([FromQuery] string provider, [FromQuery] string? returnUrl = null)
+    {
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        returnUrl ??= frontendUrl;
+        var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth", new { returnUrl });
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+        return Challenge(properties, provider);
+    }
+
+    [HttpGet("external-login-callback")]
+    public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+    {
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        returnUrl ??= frontendUrl;
+
+        if (remoteError != null)
+        {
+            _logger.LogError("External login error: {Error}", remoteError);
+            return Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(remoteError)}");
+        }
+
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info == null)
+        {
+            _logger.LogError("External login info is null");
+            return Redirect($"{frontendUrl}/auth/signin?error=External+login+failed");
+        }
+
+        var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var name = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return Redirect($"{frontendUrl}/auth/signin?error=Email+not+provided+by+external+provider");
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            var username = GenerateUniqueUsername(name ?? email.Split('@')[0]);
+            user = new ApplicationUser
+            {
+                UserName = username,
+                Email = email,
+                EmailConfirmed = true,
+                FullName = name
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                _logger.LogError("Failed to create user from external login: {Errors}", errors);
+                return Redirect($"{frontendUrl}/auth/signin?error=Failed+to+create+account");
+            }
+
+            try
+            {
+                await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
+            }
+        }
+        else if (user.IsSuspended)
+        {
+            return Redirect($"{frontendUrl}/auth/signin?error=Account+is+suspended");
+        }
+
+        var existingLogins = await _userManager.GetLoginsAsync(user);
+        if (!existingLogins.Any(l => l.LoginProvider == info.LoginProvider && l.ProviderKey == info.ProviderKey))
+        {
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+            }
+        }
+
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var tokens = await _tokenService.GenerateTokensForUserAsync(user.Id, ClientId);
+        if (tokens == null)
+        {
+            _logger.LogError("Failed to generate tokens for external user {UserId}", user.Id);
+            return Redirect($"{frontendUrl}/auth/signin?error=Failed+to+generate+tokens");
+        }
+
+        if (!string.IsNullOrEmpty(tokens.RefreshToken))
+        {
+            SetRefreshTokenCookie(tokens.RefreshToken);
+        }
+
+        _logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
+
+        var accessTokenParam = HttpUtility.UrlEncode(tokens.AccessToken);
+        return Redirect($"{returnUrl}?loginSuccess=true&accessToken={accessTokenParam}&expiresIn={tokens.ExpiresIn}");
+    }
+
+    [HttpGet("check-username/{username}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> CheckUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Username is required"));
+        }
+
+        var user = await _userManager.FindByNameAsync(username);
+        var available = user == null;
+
+        return Ok(ApiResponse<bool>.SuccessResponse(available));
+    }
+
+    [HttpGet("check-email/{email}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<bool>>> CheckEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Email is required"));
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+        var available = user == null;
+
+        return Ok(ApiResponse<bool>.SuccessResponse(available));
+    }
+
+    private async Task<ApplicationUser?> FindUserByUsernameOrEmailAsync(string usernameOrEmail)
+    {
+        if (usernameOrEmail.Contains('@'))
+        {
+            return await _userManager.FindByEmailAsync(usernameOrEmail);
+        }
+        return await _userManager.FindByNameAsync(usernameOrEmail);
+    }
+
+    private string GenerateUniqueUsername(string baseName)
+    {
+        var sanitized = new string(baseName.Where(c => char.IsLetterOrDigit(c)).ToArray());
+        if (sanitized.Length < 3)
+        {
+            sanitized = "user";
+        }
+
+        var username = sanitized;
+        var counter = 1;
+
+        while (_userManager.FindByNameAsync(username).Result != null)
+        {
+            username = $"{sanitized}{counter++}";
+        }
+
+        return username;
+    }
+
+    private string? GetIpAddress()
+    {
+        if (Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            return Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
+        }
+        return HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+    }
+
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        var isProduction = !string.Equals(
+            _configuration["ASPNETCORE_ENVIRONMENT"],
+            "Development",
+            StringComparison.OrdinalIgnoreCase);
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(RefreshTokenCookieExpirationDays),
+            Path = "/api/auth"
+        };
+
+        Response.Cookies.Append(RefreshTokenCookieName, refreshToken, cookieOptions);
+    }
+
+    private void ClearRefreshTokenCookie()
+    {
+        var isProduction = !string.Equals(
+            _configuration["ASPNETCORE_ENVIRONMENT"],
+            "Development",
+            StringComparison.OrdinalIgnoreCase);
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1),
+            Path = "/api/auth"
+        };
+
+        Response.Cookies.Append(RefreshTokenCookieName, string.Empty, cookieOptions);
+    }
+
+    private string? GetRefreshTokenFromCookie()
+    {
+        return Request.Cookies[RefreshTokenCookieName];
+    }
+}
+
+public class TwoFactorLoginDto
+{
+    public string UserId { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+}

@@ -1,3 +1,4 @@
+using Common.Core.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StorageService.Application.DTOs;
@@ -20,6 +21,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("request-upload")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> RequestUpload([FromBody] RequestUploadDto request, CancellationToken cancellationToken)
     {
         try
@@ -35,6 +37,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("confirm-upload")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> ConfirmUpload([FromBody] ConfirmUploadRequest request, CancellationToken cancellationToken)
     {
         var result = await _fileStorageService.ConfirmUploadAsync(request, cancellationToken);
@@ -48,6 +51,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet("{fileId:guid}/download-url")]
+    [HasPermission(Permissions.Storage.View)]
     public async Task<IActionResult> GetDownloadUrl(Guid fileId, CancellationToken cancellationToken)
     {
         var response = await _fileStorageService.GetDownloadUrlAsync(fileId, cancellationToken);
@@ -61,6 +65,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("direct-upload")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> DirectUpload(
         IFormFile file, 
         [FromQuery] string ownerService,
@@ -96,6 +101,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("direct-upload/batch")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> DirectUploadBatch(
         List<IFormFile> files, 
         [FromQuery] string ownerService,
@@ -140,6 +146,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("confirm")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> Confirm([FromBody] FileConfirmRequest request, CancellationToken cancellationToken)
     {
         var result = await _fileStorageService.ConfirmFileAsync(request, cancellationToken);
@@ -153,6 +160,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("confirm/batch")]
+    [HasPermission(Permissions.Storage.Upload)]
     public async Task<IActionResult> ConfirmBatch([FromBody] BatchConfirmRequest request, CancellationToken cancellationToken)
     {
         var results = new List<FileMetadataDto>();
@@ -182,6 +190,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet("{fileId:guid}")]
+    [HasPermission(Permissions.Storage.View)]
     public async Task<IActionResult> GetMetadata(Guid fileId, CancellationToken cancellationToken)
     {
         var metadata = await _fileStorageService.GetMetadataAsync(fileId, cancellationToken);
@@ -195,6 +204,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet("owner/{ownerService}/{ownerId}")]
+    [HasPermission(Permissions.Storage.View)]
     public async Task<IActionResult> GetByOwner(string ownerService, string ownerId, CancellationToken cancellationToken)
     {
         var files = await _fileStorageService.GetByOwnerAsync(ownerService, ownerId, cancellationToken);
@@ -202,6 +212,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpDelete("{fileId:guid}")]
+    [HasPermission(Permissions.Storage.Delete)]
     public async Task<IActionResult> Delete(Guid fileId, CancellationToken cancellationToken)
     {
         var result = await _fileStorageService.DeleteAsync(fileId, cancellationToken);

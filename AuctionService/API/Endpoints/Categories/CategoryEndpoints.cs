@@ -7,6 +7,7 @@ using AuctionService.Application.Commands.UpdateCategory;
 using AuctionService.Application.DTOs;
 using AuctionService.Application.Queries.GetCategories;
 using Carter;
+using Common.Core.Authorization;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -28,32 +29,32 @@ public class CategoryEndpoints : ICarterModule
 
         group.MapPost("/", CreateCategory)
             .WithName("CreateCategory")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageCategories}")
             .Produces<CategoryDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPut("/{id:guid}", UpdateCategory)
             .WithName("UpdateCategory")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageCategories}")
             .Produces<CategoryDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapDelete("/{id:guid}", DeleteCategory)
             .WithName("DeleteCategory")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageCategories}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/bulk-update", BulkUpdateCategories)
             .WithName("BulkUpdateCategories")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageCategories}")
             .Produces<int>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPost("/import", ImportCategories)
             .WithName("ImportCategories")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageCategories}")
             .Produces<ImportCategoriesResultDto>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }

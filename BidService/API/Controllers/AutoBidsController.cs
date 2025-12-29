@@ -1,5 +1,6 @@
 using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
+using Common.Core.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,7 +9,7 @@ namespace BidService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[HasPermission(Permissions.Bids.PlaceAuto)]
 public class AutoBidsController : ControllerBase
 {
     private readonly IAutoBidService _autoBidService;

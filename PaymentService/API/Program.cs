@@ -9,6 +9,7 @@ using Common.Caching.Abstractions;
 using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Core.Authorization;
 using Common.CQRS.Extensions;
 using Common.Observability;
 using Common.Audit.Extensions;
@@ -74,18 +75,35 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("PaymentScope", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("scope", "payment");
-    });
+    options.AddPolicy($"Permission:{Permissions.Orders.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Orders.View)));
+    options.AddPolicy($"Permission:{Permissions.Orders.ViewOwn}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Orders.ViewOwn)));
+    options.AddPolicy($"Permission:{Permissions.Orders.Create}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Orders.Create)));
+    options.AddPolicy($"Permission:{Permissions.Orders.Cancel}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Orders.Cancel)));
+    options.AddPolicy($"Permission:{Permissions.Orders.Refund}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Orders.Refund)));
 
-    options.AddPolicy("Admin", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("role", "admin");
-    });
+    options.AddPolicy($"Permission:{Permissions.Payments.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Payments.View)));
+    options.AddPolicy($"Permission:{Permissions.Payments.Process}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Payments.Process)));
+    options.AddPolicy($"Permission:{Permissions.Payments.Refund}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Payments.Refund)));
+
+    options.AddPolicy($"Permission:{Permissions.Wallets.View}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Wallets.View)));
+    options.AddPolicy($"Permission:{Permissions.Wallets.ViewOwn}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Wallets.ViewOwn)));
+    options.AddPolicy($"Permission:{Permissions.Wallets.Deposit}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Wallets.Deposit)));
+    options.AddPolicy($"Permission:{Permissions.Wallets.Withdraw}", policy =>
+        policy.AddRequirements(new PermissionRequirement(Permissions.Wallets.Withdraw)));
 });
+
+builder.Services.AddPermissionBasedAuthorization();
 
 var app = builder.Build();
 

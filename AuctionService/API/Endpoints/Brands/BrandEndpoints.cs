@@ -6,6 +6,7 @@ using AuctionService.Application.DTOs;
 using AuctionService.Application.Queries.GetBrandById;
 using AuctionService.Application.Queries.GetBrands;
 using Carter;
+using Common.Core.Authorization;
 using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -33,20 +34,20 @@ public class BrandEndpoints : ICarterModule
 
         group.MapPost("/", CreateBrand)
             .WithName("CreateBrand")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageBrands}")
             .Produces<BrandDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPut("/{id:guid}", UpdateBrand)
             .WithName("UpdateBrand")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageBrands}")
             .Produces<BrandDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapDelete("/{id:guid}", DeleteBrand)
             .WithName("DeleteBrand")
-            .RequireAuthorization(policy => policy.RequireRole("admin"))
+            .RequireAuthorization($"Permission:{Permissions.Auctions.ManageBrands}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
     }

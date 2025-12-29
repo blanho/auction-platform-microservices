@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Common.Core.Constants;
+using Common.Core.Authorization;
 using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
@@ -8,7 +7,7 @@ namespace AnalyticsService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[HasPermission(Permissions.AuditLogs.View)]
 public class AuditLogsController : ControllerBase
 {
     private readonly IAuditLogService _auditLogService;

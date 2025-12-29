@@ -1,33 +1,38 @@
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
-using Duende.IdentityServer.Stores;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Common.Core.Authorization;
+using IdentityService.Data;
 using IdentityService.DTOs;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityService.Services;
 
 public class TokenGenerationService : ITokenGenerationService
 {
-    private readonly ITokenService _tokenService;
-    private readonly IClientStore _clientStore;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<TokenGenerationService> _logger;
-    private readonly IIssuerNameService _issuerNameService;
+    private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
+
+    private const int AccessTokenExpirationMinutes = 15;
+    private const int RefreshTokenExpirationDays = 7;
+    private const int RefreshTokenAbsoluteExpirationDays = 30;
 
     public TokenGenerationService(
-        ITokenService tokenService,
-        IClientStore clientStore,
         UserManager<ApplicationUser> userManager,
         ILogger<TokenGenerationService> logger,
-        IIssuerNameService issuerNameService)
+        ApplicationDbContext context,
+        IConfiguration configuration)
     {
-        _tokenService = tokenService;
-        _clientStore = clientStore;
         _userManager = userManager;
         _logger = logger;
-        _issuerNameService = issuerNameService;
+        _context = context;
+        _configuration = configuration;
     }
 
     public async Task<TokenResponse?> GenerateTokensForUserAsync(string userId, string clientId)
@@ -41,64 +46,261 @@ public class TokenGenerationService : ITokenGenerationService
                 return null;
             }
 
-            var client = await _clientStore.FindClientByIdAsync(clientId);
-            if (client == null)
-            {
-                _logger.LogWarning("Client {ClientId} not found for token generation", clientId);
-                return null;
-            }
+            var accessToken = await GenerateAccessTokenAsync(user);
+            var expiresIn = AccessTokenExpirationMinutes * 60;
 
-            var roles = await _userManager.GetRolesAsync(user);
+            _logger.LogInformation("Generated access token for user {Username}", user.UserName);
 
-            var claims = new List<Claim>
-            {
-                new Claim("sub", user.Id),
-                new Claim("name", user.UserName ?? ""),
-                new Claim("email", user.Email ?? ""),
-                new Claim("scope", "openid"),
-                new Claim("scope", "profile"),
-                new Claim("scope", "auction"),
-                new Claim("scope", "roles")
-            };
-
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim("role", role));
-            }
-
-            if (!roles.Any())
-            {
-                claims.Add(new Claim("role", "user"));
-            }
-
-            var issuer = await _issuerNameService.GetCurrentAsync();
-
-            var token = new Token
-            {
-                CreationTime = DateTime.UtcNow,
-                Issuer = issuer,
-                Lifetime = client.AccessTokenLifetime,
-                Claims = claims,
-                ClientId = clientId,
-                AccessTokenType = AccessTokenType.Jwt,
-                AllowedSigningAlgorithms = client.AllowedIdentityTokenSigningAlgorithms,
-                Audiences = { "auctionApp" }
-            };
-
-            var accessTokenValue = await _tokenService.CreateSecurityTokenAsync(token);
-
-            _logger.LogInformation("Generated access token for user {Username} via external auth", user.UserName);
-
-            return new TokenResponse(
-                accessTokenValue,
-                null,
-                client.AccessTokenLifetime
-            );
+            return new TokenResponse(accessToken, null, expiresIn);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate tokens for user {UserId}", userId);
             return null;
         }
+    }
+
+    public async Task<(string AccessToken, string RefreshToken, int ExpiresIn)?> GenerateTokenPairAsync(
+        string userId,
+        string clientId,
+        string? ipAddress = null)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("User {UserId} not found for token generation", userId);
+                return null;
+            }
+
+            var jwtId = Guid.NewGuid().ToString();
+            var accessToken = await GenerateAccessTokenAsync(user, jwtId);
+            var refreshToken = await CreateRefreshTokenAsync(userId, jwtId, ipAddress);
+            var expiresIn = AccessTokenExpirationMinutes * 60;
+
+            _logger.LogInformation("Generated token pair for user {Username}", user.UserName);
+
+            return (accessToken, refreshToken, expiresIn);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate token pair for user {UserId}", userId);
+            return null;
+        }
+    }
+
+    public async Task<(string AccessToken, string RefreshToken, int ExpiresIn)?> RefreshTokenAsync(
+        string refreshToken,
+        string clientId,
+        string? ipAddress = null)
+    {
+        try
+        {
+            var hashedToken = HashToken(refreshToken);
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == hashedToken);
+
+            if (storedToken == null)
+            {
+                _logger.LogWarning("Refresh token not found");
+                return null;
+            }
+
+            if (!storedToken.IsActive)
+            {
+                _logger.LogWarning("Refresh token is not active for user {UserId}", storedToken.UserId);
+
+                if (storedToken.IsRevoked)
+                {
+                    await RevokeDescendantTokensAsync(storedToken, ipAddress, "Attempted reuse of revoked token");
+                }
+
+                return null;
+            }
+
+            var newTokens = await GenerateTokenPairAsync(storedToken.UserId, clientId, ipAddress);
+            if (newTokens == null)
+            {
+                return null;
+            }
+
+            storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTimeOffset.UtcNow;
+            storedToken.RevokedByIp = ipAddress;
+            storedToken.ReplacedByToken = HashToken(newTokens.Value.RefreshToken);
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Refreshed tokens for user {UserId}", storedToken.UserId);
+
+            return newTokens;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to refresh token");
+            return null;
+        }
+    }
+
+    public async Task<bool> RevokeTokenAsync(string refreshToken, string? ipAddress = null)
+    {
+        try
+        {
+            var hashedToken = HashToken(refreshToken);
+            var storedToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == hashedToken);
+
+            if (storedToken == null || !storedToken.IsActive)
+            {
+                return false;
+            }
+
+            storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTimeOffset.UtcNow;
+            storedToken.RevokedByIp = ipAddress;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Revoked refresh token for user {UserId}", storedToken.UserId);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to revoke token");
+            return false;
+        }
+    }
+
+    public async Task RevokeAllUserTokensAsync(string userId, string? ipAddress = null)
+    {
+        try
+        {
+            var activeTokens = await _context.RefreshTokens
+                .Where(t => t.UserId == userId && !t.IsRevoked)
+                .ToListAsync();
+
+            foreach (var token in activeTokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTimeOffset.UtcNow;
+                token.RevokedByIp = ipAddress;
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Revoked all tokens for user {UserId}", userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to revoke all tokens for user {UserId}", userId);
+        }
+    }
+
+    private async Task<string> GenerateAccessTokenAsync(ApplicationUser user, string? jwtId = null)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        var issuer = _configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+        var secretKey = _configuration["Identity:SecretKey"]
+            ?? throw new InvalidOperationException("Identity:SecretKey is not configured");
+
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Jti, jwtId ?? Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+            new("name", user.UserName ?? string.Empty),
+            new("email", user.Email ?? string.Empty)
+        };
+
+        var effectiveRoles = roles.Any() ? roles : new List<string> { AppRoles.User };
+
+        foreach (var role in effectiveRoles)
+        {
+            claims.Add(new Claim("role", role));
+        }
+
+        var permissions = RolePermissions.GetPermissionsForRoles(effectiveRoles);
+        foreach (var permission in permissions)
+        {
+            claims.Add(new Claim("permission", permission));
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: "auctionApp",
+            claims: claims,
+            notBefore: DateTime.UtcNow,
+            expires: DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private async Task<string> CreateRefreshTokenAsync(string userId, string jwtId, string? ipAddress, string? userAgent = null)
+    {
+        var rawToken = GenerateSecureToken();
+        var hashedToken = HashToken(rawToken);
+
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Token = hashedToken,
+            JwtId = jwtId,
+            CreatedAt = DateTimeOffset.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(RefreshTokenExpirationDays),
+            AbsoluteExpiration = DateTimeOffset.UtcNow.AddDays(RefreshTokenAbsoluteExpirationDays),
+            CreatedByIp = ipAddress,
+            UserAgent = userAgent
+        };
+
+        await _context.RefreshTokens.AddAsync(refreshToken);
+        await _context.SaveChangesAsync();
+
+        return rawToken;
+    }
+
+    private static string HashToken(string token)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(token);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
+    private async Task RevokeDescendantTokensAsync(RefreshToken token, string? ipAddress, string reason)
+    {
+        if (!string.IsNullOrEmpty(token.ReplacedByToken))
+        {
+            var childToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == token.ReplacedByToken);
+
+            if (childToken != null)
+            {
+                if (childToken.IsActive)
+                {
+                    childToken.IsRevoked = true;
+                    childToken.RevokedAt = DateTimeOffset.UtcNow;
+                    childToken.RevokedByIp = ipAddress;
+                }
+
+                await RevokeDescendantTokensAsync(childToken, ipAddress, reason);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    private static string GenerateSecureToken()
+    {
+        var randomBytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

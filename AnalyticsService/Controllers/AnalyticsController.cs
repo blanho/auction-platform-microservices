@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Common.Core.Authorization;
 using AnalyticsService.DTOs;
 using AnalyticsService.Interfaces;
 
@@ -7,7 +7,7 @@ namespace AnalyticsService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "AdminScope")]
+[HasPermission(Permissions.Analytics.ViewPlatform)]
 public class AnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _analyticsService;

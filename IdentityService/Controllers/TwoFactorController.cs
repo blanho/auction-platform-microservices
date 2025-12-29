@@ -9,7 +9,7 @@ using System.Text.Encodings.Web;
 namespace IdentityService.Controllers;
 
 [ApiController]
-[Route("api/account/2fa")]
+[Route("api/auth/2fa")]
 [Authorize]
 [Produces("application/json")]
 public class TwoFactorController : ControllerBase

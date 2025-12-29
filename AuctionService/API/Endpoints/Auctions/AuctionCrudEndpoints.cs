@@ -7,6 +7,7 @@ using AuctionService.Application.Commands.UpdateAuction;
 using AuctionService.Application.DTOs;
 using AuctionService.Application.DTOs.Requests;
 using Carter;
+using Common.Core.Authorization;
 using Common.Core.Helpers;
 using Common.Utilities.Helpers;
 using MediatR;
@@ -24,32 +25,32 @@ public class AuctionCrudEndpoints : ICarterModule
 
         group.MapPost("/", CreateAuction)
             .WithName("CreateAuction")
-            .RequireAuthorization("AuctionWrite")
+            .RequireAuthorization($"Permission:{Permissions.Auctions.Create}")
             .Produces<AuctionDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPut("/{id:guid}", UpdateAuction)
             .WithName("UpdateAuction")
-            .RequireAuthorization("AuctionOwner")
+            .RequireAuthorization($"Permission:{Permissions.Auctions.Edit}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapDelete("/{id:guid}", DeleteAuction)
             .WithName("DeleteAuction")
-            .RequireAuthorization("AuctionOwner")
+            .RequireAuthorization($"Permission:{Permissions.Auctions.Delete}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/activate", ActivateAuction)
             .WithName("ActivateAuction")
-            .RequireAuthorization("AuctionOwner")
+            .RequireAuthorization($"Permission:{Permissions.Auctions.Edit}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/deactivate", DeactivateAuction)
             .WithName("DeactivateAuction")
-            .RequireAuthorization("AuctionOwner")
+            .RequireAuthorization($"Permission:{Permissions.Auctions.Edit}")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
     }

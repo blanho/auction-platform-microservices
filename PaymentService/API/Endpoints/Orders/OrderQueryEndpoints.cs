@@ -1,4 +1,5 @@
 using Carter;
+using Common.Core.Authorization;
 using Common.Core.Constants;
 using Common.Utilities.Helpers;
 using MediatR;
@@ -22,19 +23,23 @@ public class OrderQueryEndpoints : ICarterModule
 
         group.MapGet("/{id:guid}", GetById)
             .WithName("GetOrderById")
-            .WithSummary("Get order by ID");
+            .WithSummary("Get order by ID")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
 
         group.MapGet("/auction/{auctionId:guid}", GetByAuctionId)
             .WithName("GetOrderByAuctionId")
-            .WithSummary("Get order by auction ID");
+            .WithSummary("Get order by auction ID")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
 
         group.MapGet("/buyer/{username}", GetByBuyer)
             .WithName("GetOrdersByBuyer")
-            .WithSummary("Get orders by buyer username");
+            .WithSummary("Get orders by buyer username")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
 
         group.MapGet("/seller/{username}", GetBySeller)
             .WithName("GetOrdersBySeller")
-            .WithSummary("Get orders by seller username");
+            .WithSummary("Get orders by seller username")
+            .RequireAuthorization($"Permission:{Permissions.Orders.ViewOwn}");
     }
 
     private static async Task<Results<Ok<OrderDto>, NotFound, BadRequest<ProblemDetails>>> GetById(
