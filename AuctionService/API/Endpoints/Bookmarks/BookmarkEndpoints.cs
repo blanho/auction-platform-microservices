@@ -6,7 +6,7 @@ using Carter;
 using Common.Repository.Interfaces;
 using Common.Utilities.Helpers;
 
-namespace AuctionService.API.Endpoints;
+namespace AuctionService.API.Endpoints.Bookmarks;
 
 public class BookmarkEndpoints : ICarterModule
 {

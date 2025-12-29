@@ -10,7 +10,7 @@ using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuctionService.API.Endpoints;
+namespace AuctionService.API.Endpoints.Brands;
 
 public class BrandEndpoints : ICarterModule
 {

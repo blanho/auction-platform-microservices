@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
 
-namespace PaymentService.API.Endpoints;
+namespace PaymentService.API.Endpoints.Payments;
 
 public class PaymentEndpoints : ICarterModule
 {
@@ -32,11 +32,6 @@ public class PaymentEndpoints : ICarterModule
         group.MapPost("/refund", CreateRefund)
             .WithName("CreateRefund")
             .WithSummary("Create a refund for a payment");
-
-        group.MapPost("/webhook", HandleWebhook)
-            .WithName("StripeWebhook")
-            .WithSummary("Handle Stripe webhook events")
-            .AllowAnonymous();
     }
 
     private static async Task<Ok<CreatePaymentIntentResponseDto>> CreatePaymentIntent(
@@ -146,26 +141,5 @@ public class PaymentEndpoints : ICarterModule
             Status = refund.Status,
             Amount = refund.Amount,
         });
-    }
-
-    private static async Task<Results<Ok, BadRequest>> HandleWebhook(
-        HttpContext httpContext,
-        IStripePaymentService stripePaymentService,
-        ILogger<PaymentEndpoints> logger,
-        CancellationToken cancellationToken)
-    {
-        var json = await new StreamReader(httpContext.Request.Body).ReadToEndAsync(cancellationToken);
-        var stripeSignature = httpContext.Request.Headers["Stripe-Signature"].ToString();
-
-        try
-        {
-            await stripePaymentService.HandleWebhookAsync(json, stripeSignature, cancellationToken);
-            return TypedResults.Ok();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error processing Stripe webhook");
-            return TypedResults.BadRequest();
-        }
     }
 }

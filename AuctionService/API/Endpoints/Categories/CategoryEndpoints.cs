@@ -9,10 +9,9 @@ using AuctionService.Application.Queries.GetCategories;
 using Carter;
 using Common.Utilities.Helpers;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuctionService.API.Endpoints;
+namespace AuctionService.API.Endpoints.Categories;
 
 public class CategoryEndpoints : ICarterModule
 {

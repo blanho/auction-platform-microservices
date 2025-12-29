@@ -12,7 +12,7 @@ using Common.Utilities.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AuctionService.API.Endpoints;
+namespace AuctionService.API.Endpoints.Reviews;
 
 public class ReviewEndpoints : ICarterModule
 {

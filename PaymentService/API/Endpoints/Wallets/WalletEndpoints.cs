@@ -9,11 +9,9 @@ using PaymentService.Application.Commands.CreateWallet;
 using PaymentService.Application.Commands.Deposit;
 using PaymentService.Application.Commands.Withdraw;
 using PaymentService.Application.DTOs;
-using PaymentService.Application.Queries.GetTransactionById;
 using PaymentService.Application.Queries.GetWallet;
-using PaymentService.Application.Queries.GetWalletTransactions;
 
-namespace PaymentService.API.Endpoints;
+namespace PaymentService.API.Endpoints.Wallets;
 
 public class WalletEndpoints : ICarterModule
 {
@@ -38,14 +36,6 @@ public class WalletEndpoints : ICarterModule
         group.MapPost("/{username}/withdraw", Withdraw)
             .WithName("WithdrawFromWallet")
             .WithSummary("Withdraw funds from wallet");
-
-        group.MapGet("/{username}/transactions", GetTransactions)
-            .WithName("GetWalletTransactions")
-            .WithSummary("Get wallet transactions");
-
-        group.MapGet("/transactions/{id:guid}", GetTransaction)
-            .WithName("GetWalletTransaction")
-            .WithSummary("Get a specific transaction by ID");
     }
 
     private static async Task<Results<Ok<WalletDto>, NotFound, BadRequest<ProblemDetails>>> GetWallet(
@@ -127,50 +117,6 @@ public class WalletEndpoints : ICarterModule
                 return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error));
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
-
-        return TypedResults.Ok(result.Value);
-    }
-
-    private static async Task<Results<Ok<IEnumerable<WalletTransactionDto>>, BadRequest<ProblemDetails>>> GetTransactions(
-        string username,
-        int page,
-        int pageSize,
-        IMediator mediator,
-        HttpContext httpContext,
-        CancellationToken cancellationToken)
-    {
-        var effectivePage = page > 0 ? page : PaginationDefaults.DefaultPage;
-        var effectivePageSize = pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize;
-
-        var result = await mediator.Send(new GetWalletTransactionsQuery
-        {
-            Username = username,
-            Page = effectivePage,
-            PageSize = effectivePageSize
-        }, cancellationToken);
-
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        httpContext.Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
-        httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Transactions);
-    }
-
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound, BadRequest<ProblemDetails>>> GetTransaction(
-        Guid id,
-        IMediator mediator,
-        CancellationToken cancellationToken)
-    {
-        var result = await mediator.Send(new GetTransactionByIdQuery { TransactionId = id }, cancellationToken);
-
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
 
         return TypedResults.Ok(result.Value);
     }
