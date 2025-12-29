@@ -81,11 +81,11 @@ services:
           cpus: '0.5'
           memory: 256M
 
-  utility-api:
+  analytics-api:
     restart: always
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=utility_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=analytics_db;Username=${POSTGRES_USER:-auction_user};Password=${POSTGRES_PASSWORD:-auction_pass}
       RabbitMQ__Username: ${RABBITMQ_USER:-auction_user}
       RabbitMQ__Password: ${RABBITMQ_PASS:-auction_pass}
     deploy:
