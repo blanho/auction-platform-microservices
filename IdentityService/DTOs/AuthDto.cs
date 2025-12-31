@@ -156,6 +156,23 @@ public class ExternalUserResponse
     public int ExpiresIn { get; set; }
 }
 
+public class TwoFactorLoginDto
+{
+    [Required]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(7, MinimumLength = 6)]
+    public string Code { get; set; } = string.Empty;
+}
+
+public class TokenResponseDto
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; }
+    public int ExpiresIn { get; set; }
+}
+
 public record TokenResponse(
     string AccessToken,
     string? RefreshToken,

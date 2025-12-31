@@ -1,4 +1,5 @@
 using IdentityService.DTOs;
+using IdentityService.Interfaces;
 using IdentityService.Models;
 using IdentityService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,7 @@ public class AuthController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenGenerationService _tokenService;
     private readonly IEmailService _emailService;
+    private readonly IAuthService _authService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
     private const string ClientId = "nextApp";
@@ -28,6 +30,7 @@ public class AuthController : ControllerBase
         SignInManager<ApplicationUser> signInManager,
         ITokenGenerationService tokenService,
         IEmailService emailService,
+        IAuthService authService,
         IConfiguration configuration,
         ILogger<AuthController> logger)
     {
@@ -35,6 +38,7 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
         _tokenService = tokenService;
         _emailService = emailService;
+        _authService = authService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -45,69 +49,16 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] RegisterDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
-        }
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", GetModelStateErrors()));
 
-        var existingUser = await _userManager.FindByNameAsync(dto.Username);
-        if (existingUser != null)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Username already exists"));
-        }
+        var result = await _authService.RegisterAsync(dto);
 
-        existingUser = await _userManager.FindByEmailAsync(dto.Email);
-        if (existingUser != null)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Email already registered"));
-        }
-
-        var user = new ApplicationUser
-        {
-            UserName = dto.Username,
-            Email = dto.Email,
-            EmailConfirmed = false
-        };
-
-        var result = await _userManager.CreateAsync(user, dto.Password);
-
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("User registration failed for {Username}: {Errors}", dto.Username, string.Join(", ", errors));
-            return BadRequest(ApiResponse<object>.ErrorResponse("Registration failed", errors));
-        }
-
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = HttpUtility.UrlEncode(token);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-        var confirmationLink = $"{frontendUrl}/auth/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        try
-        {
-            await _emailService.SendEmailConfirmationAsync(user.Email!, user.UserName!, confirmationLink);
-            _logger.LogInformation("Confirmation email sent to {Email}", user.Email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send confirmation email to {Email}", user.Email);
-        }
-
-        _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
-
-        var userDto = new UserDto
-        {
-            Id = user.Id,
-            Username = user.UserName!,
-            Email = user.Email!
-        };
+        if (!result.IsSuccess)
+            return BadRequest(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
         return CreatedAtAction(
             nameof(GetCurrentUser),
-            ApiResponse<UserDto>.SuccessResponse(userDto, "Registration successful. Please check your email to confirm your account.")
+            ApiResponse<UserDto>.SuccessResponse(result.Data!, result.Message)
         );
     }
 
@@ -116,38 +67,12 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object>>> ConfirmEmail([FromBody] ConfirmEmailDto dto)
     {
-        var user = await _userManager.FindByIdAsync(dto.UserId);
-        if (user == null)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid confirmation link"));
-        }
+        var result = await _authService.ConfirmEmailAsync(dto);
 
-        if (user.EmailConfirmed)
-        {
-            return Ok(ApiResponse<object>.SuccessResponse(null, "Email already confirmed"));
-        }
+        if (!result.IsSuccess)
+            return BadRequest(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
-        var decodedToken = HttpUtility.UrlDecode(dto.Token);
-        var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
-
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("Email confirmation failed for {UserId}: {Errors}", dto.UserId, string.Join(", ", errors));
-            return BadRequest(ApiResponse<object>.ErrorResponse("Email confirmation failed. The link may have expired.", errors));
-        }
-
-        try
-        {
-            await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send welcome email to {Email}", user.Email);
-        }
-
-        _logger.LogInformation("Email confirmed for user {Username}", user.UserName);
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Email confirmed successfully. You can now log in."));
+        return Ok(ApiResponse<object>.SuccessResponse(null, result.Message));
     }
 
     [HttpPost("resend-confirmation")]
@@ -155,64 +80,20 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object>>> ResendConfirmation([FromBody] ResendConfirmationDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-        {
-            return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a confirmation link will be sent."));
-        }
+        var result = await _authService.ResendConfirmationAsync(dto.Email);
 
-        if (user.EmailConfirmed)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Email is already confirmed"));
-        }
+        if (!result.IsSuccess)
+            return BadRequest(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = HttpUtility.UrlEncode(token);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-        var confirmationLink = $"{frontendUrl}/auth/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        try
-        {
-            await _emailService.SendEmailConfirmationAsync(user.Email!, user.UserName!, confirmationLink);
-            _logger.LogInformation("Confirmation email resent to {Email}", user.Email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to resend confirmation email to {Email}", user.Email);
-            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to send email. Please try again later."));
-        }
-
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Confirmation email sent. Please check your inbox."));
+        return Ok(ApiResponse<object>.SuccessResponse(null, result.Message));
     }
 
     [HttpPost("forgot-password")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-
-        if (user == null || !user.EmailConfirmed)
-        {
-            _logger.LogWarning("Password reset requested for non-existent or unconfirmed email: {Email}", dto.Email);
-            return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a password reset link will be sent."));
-        }
-
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var encodedToken = HttpUtility.UrlEncode(token);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-        var resetLink = $"{frontendUrl}/auth/reset-password?email={HttpUtility.UrlEncode(user.Email!)}&token={encodedToken}";
-
-        try
-        {
-            await _emailService.SendPasswordResetAsync(user.Email!, user.UserName!, resetLink);
-            _logger.LogInformation("Password reset email sent to {Email}", user.Email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
-        }
-
-        return Ok(ApiResponse<object>.SuccessResponse(null, "If an account exists with this email, a password reset link will be sent."));
+        var result = await _authService.ForgotPasswordAsync(dto.Email);
+        return Ok(ApiResponse<object>.SuccessResponse(null, result.Message));
     }
 
     [HttpPost("reset-password")]
@@ -221,32 +102,14 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
-        }
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", GetModelStateErrors()));
 
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid reset request"));
-        }
+        var result = await _authService.ResetPasswordAsync(dto);
 
-        var decodedToken = HttpUtility.UrlDecode(dto.Token);
-        var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+        if (!result.IsSuccess)
+            return BadRequest(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
-        if (!result.Succeeded)
-        {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("Password reset failed for {Email}: {Errors}", dto.Email, string.Join(", ", errors));
-            return BadRequest(ApiResponse<object>.ErrorResponse("Password reset failed. The link may have expired.", errors));
-        }
-
-        _logger.LogInformation("Password reset successful for {Email}", dto.Email);
-        return Ok(ApiResponse<object>.SuccessResponse(null, "Password reset successful. You can now log in with your new password."));
+        return Ok(ApiResponse<object>.SuccessResponse(null, result.Message));
     }
 
     [HttpPost("login")]
@@ -256,87 +119,21 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
-        }
-
-        var user = await FindUserByUsernameOrEmailAsync(dto.UsernameOrEmail);
-        if (user == null)
-        {
-            _logger.LogWarning("Login failed: user not found for {UsernameOrEmail}", dto.UsernameOrEmail);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
-        }
-
-        if (user.IsSuspended)
-        {
-            _logger.LogWarning("Login attempt for suspended user {Username}", user.UserName);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Account is suspended", new List<string> { user.SuspensionReason ?? "Contact support for more information" }));
-        }
-
-        if (!user.EmailConfirmed)
-        {
-            _logger.LogWarning("Login attempt for unconfirmed email {Username}", user.UserName);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Please confirm your email before logging in"));
-        }
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
-
-        if (result.IsLockedOut)
-        {
-            _logger.LogWarning("User {Username} is locked out", user.UserName);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Account is locked. Please try again later."));
-        }
-
-        if (result.RequiresTwoFactor)
-        {
-            _logger.LogInformation("User {Username} requires two-factor authentication", user.UserName);
-            return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
-            {
-                UserId = user.Id,
-                Username = user.UserName!,
-                Email = user.Email!,
-                RequiresTwoFactor = true
-            }, "Two-factor authentication required"));
-        }
-
-        if (!result.Succeeded)
-        {
-            _logger.LogWarning("Login failed for user {Username}: invalid password", user.UserName);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid credentials"));
-        }
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", GetModelStateErrors()));
 
         var ipAddress = GetIpAddress();
-        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
-        if (tokens == null)
-        {
-            _logger.LogError("Failed to generate tokens for user {Username}", user.UserName);
-            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to generate authentication tokens"));
-        }
+        var result = await _authService.LoginAsync(dto, ipAddress!);
 
-        user.LastLoginAt = DateTimeOffset.UtcNow;
-        await _userManager.UpdateAsync(user);
+        if (!result.IsSuccess)
+            return Unauthorized(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "user";
+        if (result.RequiresTwoFactor)
+            return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(result.Data!, result.Message));
 
-        _logger.LogInformation("User {Username} logged in successfully", user.UserName);
+        if (!string.IsNullOrEmpty(result.Data?.RefreshToken))
+            SetRefreshTokenCookie(result.Data.RefreshToken);
 
-        SetRefreshTokenCookie(tokens.Value.RefreshToken);
-
-        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
-        {
-            UserId = user.Id,
-            Username = user.UserName!,
-            Email = user.Email!,
-            Role = role,
-            AccessToken = tokens.Value.AccessToken,
-            ExpiresIn = tokens.Value.ExpiresIn,
-            RequiresTwoFactor = false
-        }, "Login successful"));
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(result.Data!, result.Message));
     }
 
     [HttpPost("login-2fa")]
@@ -346,58 +143,18 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<LoginResponseDto>>> LoginWith2FA([FromBody] TwoFactorLoginDto dto)
     {
         if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", errors));
-        }
-
-        var user = await _userManager.FindByIdAsync(dto.UserId);
-        if (user == null)
-        {
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid authentication attempt"));
-        }
-
-        var isValidCode = await _userManager.VerifyTwoFactorTokenAsync(
-            user,
-            _userManager.Options.Tokens.AuthenticatorTokenProvider,
-            dto.Code);
-
-        if (!isValidCode)
-        {
-            _logger.LogWarning("Invalid 2FA code for user {Username}", user.UserName);
-            return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid verification code"));
-        }
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid request data", GetModelStateErrors()));
 
         var ipAddress = GetIpAddress();
-        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
-        if (tokens == null)
-        {
-            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to generate authentication tokens"));
-        }
+        var result = await _authService.LoginWith2FAAsync(dto, ipAddress!);
 
-        user.LastLoginAt = DateTimeOffset.UtcNow;
-        await _userManager.UpdateAsync(user);
+        if (!result.IsSuccess)
+            return Unauthorized(ApiResponse<object>.ErrorResponse(result.Message!, result.Errors));
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "user";
+        if (!string.IsNullOrEmpty(result.Data?.RefreshToken))
+            SetRefreshTokenCookie(result.Data.RefreshToken);
 
-        _logger.LogInformation("User {Username} logged in successfully with 2FA", user.UserName);
-
-        SetRefreshTokenCookie(tokens.Value.RefreshToken);
-
-        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
-        {
-            UserId = user.Id,
-            Username = user.UserName!,
-            Email = user.Email!,
-            Role = role,
-            AccessToken = tokens.Value.AccessToken,
-            ExpiresIn = tokens.Value.ExpiresIn,
-            RequiresTwoFactor = false
-        }, "Login successful"));
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(result.Data!, result.Message));
     }
 
     [HttpPost("refresh")]
@@ -762,6 +519,14 @@ public class AuthController : ControllerBase
         return await _userManager.FindByNameAsync(usernameOrEmail);
     }
 
+    private List<string> GetModelStateErrors()
+    {
+        return ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .ToList();
+    }
+
     private string GenerateUniqueUsername(string baseName)
     {
         var sanitized = new string(baseName.Where(c => char.IsLetterOrDigit(c)).ToArray());
@@ -832,10 +597,4 @@ public class AuthController : ControllerBase
     {
         return Request.Cookies[RefreshTokenCookieName];
     }
-}
-
-public class TwoFactorLoginDto
-{
-    public string UserId { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
 }

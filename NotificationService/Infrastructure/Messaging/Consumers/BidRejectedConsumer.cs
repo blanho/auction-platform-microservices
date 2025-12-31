@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
@@ -8,51 +9,43 @@ using System.Text.Json;
 
 namespace NotificationService.Infrastructure.Messaging.Consumers;
 
-public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
+public class BidRejectedConsumer : IdempotentConsumerBase<BidRejectedEvent>
 {
     private readonly INotificationService _notificationService;
-    private readonly ILogger<BidRejectedConsumer> _logger;
 
     public BidRejectedConsumer(
         INotificationService notificationService,
-        ILogger<BidRejectedConsumer> logger)
+        IDistributedCache cache,
+        ILogger<BidRejectedConsumer> logger) : base(cache, logger)
     {
         _notificationService = notificationService;
-        _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<BidRejectedEvent> context)
+    protected override async Task ProcessMessageAsync(ConsumeContext<BidRejectedEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Consuming BidRejectedEvent for auction {AuctionId}, bidder {Bidder}",
-            message.AuctionId, message.BidderUsername);
-
-        try
+        
+        var notification = new CreateNotificationDto
         {
-            var notification = new CreateNotificationDto
+            UserId = message.BidderUsername,
+            Type = NotificationType.BidPlaced,
+            Title = "Bid Not Accepted",
+            Message = $"Your bid of ${message.Amount:N2} was not accepted. Reason: {message.Reason}",
+            AuctionId = message.AuctionId,
+            BidId = message.BidId,
+            Data = JsonSerializer.Serialize(new
             {
-                UserId = message.BidderUsername,
-                Type = NotificationType.BidPlaced,
-                Title = "Bid Not Accepted",
-                Message = $"Your bid of ${message.Amount:N2} was not accepted. Reason: {message.Reason}",
-                AuctionId = message.AuctionId,
-                BidId = message.BidId,
-                Data = JsonSerializer.Serialize(new
-                {
-                    message.BidId,
-                    message.Amount,
-                    message.Reason,
-                    message.RejectedAt
-                })
-            };
-            await _notificationService.CreateNotificationAsync(notification);
+                message.BidId,
+                message.Amount,
+                message.Reason,
+                message.RejectedAt
+            })
+        };
+        await _notificationService.CreateNotificationAsync(notification);
+    }
 
-            _logger.LogInformation("Sent bid rejected notification for auction {AuctionId} to {User}",
-                message.AuctionId, message.BidderUsername);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing BidRejectedEvent for auction {AuctionId}", message.AuctionId);
-        }
+    protected override string GetIdempotencyKey(ConsumeContext<BidRejectedEvent> context)
+    {
+        return $"bid-rejected:{context.Message.BidId}";
     }
 }

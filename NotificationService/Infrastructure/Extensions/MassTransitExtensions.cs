@@ -36,10 +36,10 @@ namespace NotificationService.Infrastructure.Extensions
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(configuration["RabbitMq:Host"] ?? "localhost", "/", h =>
+                    cfg.Host(configuration["RabbitMQ:Host"] ?? "localhost", "/", h =>
                     {
-                        h.Username(configuration["RabbitMq:Username"] ?? "guest");
-                        h.Password(configuration["RabbitMq:Password"] ?? "guest");
+                        h.Username(configuration["RabbitMQ:Username"] ?? "guest");
+                        h.Password(configuration["RabbitMQ:Password"] ?? "guest");
                     });
 
                     cfg.ConfigureEndpoints(context);

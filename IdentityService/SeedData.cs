@@ -9,12 +9,17 @@ namespace IdentityService;
 
 public class SeedData
 {
+    private const string DefaultSeedPassword = "SeedUser@Dev123!";
+    
     public static void EnsureSeedData(WebApplication app)
     {
         using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             context.Database.Migrate();
+
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var seedPassword = configuration["SeedData:Password"] ?? DefaultSeedPassword;
 
             var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             
@@ -27,7 +32,7 @@ public class SeedData
                     Email = "admin@example.com",
                     EmailConfirmed = true,
                 };
-                var result = userMgr.CreateAsync(admin, "Admin@Secure123!").Result;
+                var result = userMgr.CreateAsync(admin, seedPassword).Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
@@ -59,7 +64,7 @@ public class SeedData
                     Email = "AliceSmith@example.com",
                     EmailConfirmed = true,
                 };
-                var result = userMgr.CreateAsync(alice, "Alice@Secure123!").Result;
+                var result = userMgr.CreateAsync(alice, seedPassword).Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);
@@ -92,7 +97,7 @@ public class SeedData
                     Email = "BobSmith@example.com",
                     EmailConfirmed = true
                 };
-                var result = userMgr.CreateAsync(bob, "Bob@Secure123!").Result;
+                var result = userMgr.CreateAsync(bob, seedPassword).Result;
                 if (!result.Succeeded)
                 {
                     throw new Exception(result.Errors.First().Description);

@@ -10,6 +10,8 @@ using Common.Caching.Implementations;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Core.Authorization;
+using Common.Core.HealthChecks;
+using Common.Idempotency.Extensions;
 using Common.CQRS.Extensions;
 using Common.Observability;
 using Common.Audit.Extensions;
@@ -40,8 +42,18 @@ builder.Services.AddGrpc();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "payment:";
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+// Idempotency
+builder.Services.AddIdempotencyService(options =>
+{
+    options.KeyPrefix = "payment:idempotency:";
+    options.DefaultLockTimeout = TimeSpan.FromMinutes(5);
+    options.DefaultResultTtl = TimeSpan.FromHours(48);
+    options.AllowRetryOnFailure = false; // Payment operations should not auto-retry
+});
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
@@ -105,6 +117,13 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddPermissionBasedAuthorization();
 
+// Health Checks
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
+    databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+    serviceName: "PaymentService");
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -122,9 +141,8 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 app.UseRequestTracing();
 app.UseAppExceptionHandling();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
-   .AllowAnonymous()
-   .WithTags("Health");
+// Health check endpoints
+app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();
 

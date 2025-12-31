@@ -5,11 +5,33 @@ namespace NotificationService.Domain.Entities;
 
 public class Notification : BaseEntity
 {
+    private string _title = string.Empty;
+    private string _message = string.Empty;
+
     public string UserId { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public NotificationType Type { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
+
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            ValidateTitle(value);
+            _title = value;
+        }
+    }
+
+    public string Message
+    {
+        get => _message;
+        set
+        {
+            ValidateMessage(value);
+            _message = value;
+        }
+    }
+
     public string? HtmlContent { get; set; }
     public string Data { get; set; } = string.Empty;
     public NotificationStatus Status { get; set; } = NotificationStatus.Unread;
@@ -35,14 +57,18 @@ public class Notification : BaseEntity
         Guid? orderId = null,
         string? referenceId = null)
     {
+        ValidateUserId(userId);
+        ValidateTitle(title);
+        ValidateMessage(message);
+
         return new Notification
         {
             Id = Guid.NewGuid(),
             UserId = userId,
-            Username = username,
+            Username = username ?? string.Empty,
             Type = type,
-            Title = title,
-            Message = message,
+            _title = title,
+            _message = message,
             Channels = channels,
             Data = data ?? string.Empty,
             IdempotencyKey = idempotencyKey,
@@ -63,12 +89,52 @@ public class Notification : BaseEntity
 
     public void MarkAsRead()
     {
+        if (Status == NotificationStatus.Dismissed)
+            throw new InvalidOperationException("Cannot mark dismissed notification as read");
+
         Status = NotificationStatus.Read;
         ReadAt = DateTimeOffset.UtcNow;
+    }
+
+    public void MarkAsUnread()
+    {
+        if (Status == NotificationStatus.Dismissed)
+            throw new InvalidOperationException("Cannot mark dismissed notification as unread");
+
+        Status = NotificationStatus.Unread;
+        ReadAt = null;
     }
 
     public void Dismiss()
     {
         Status = NotificationStatus.Dismissed;
+    }
+
+    public bool IsRead => Status == NotificationStatus.Read;
+    public bool IsDismissed => Status == NotificationStatus.Dismissed;
+    public bool IsPending => Status == NotificationStatus.Pending;
+
+    private static void ValidateUserId(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("User ID cannot be empty", nameof(userId));
+    }
+
+    private static void ValidateTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty", nameof(title));
+
+        if (title.Length > 200)
+            throw new ArgumentException("Title cannot exceed 200 characters", nameof(title));
+    }
+
+    private static void ValidateMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("Message cannot be empty", nameof(message));
+
+        if (message.Length > 2000)
+            throw new ArgumentException("Message cannot exceed 2000 characters", nameof(message));
     }
 }

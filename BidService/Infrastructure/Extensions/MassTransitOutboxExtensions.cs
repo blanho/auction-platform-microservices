@@ -27,9 +27,9 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMq:Host"] ?? "localhost";
-                var username = configuration["RabbitMq:Username"] ?? "guest";
-                var password = configuration["RabbitMq:Password"] ?? "guest";
+                var host = configuration["RabbitMQ:Host"] ?? "localhost";
+                var username = configuration["RabbitMQ:Username"] ?? "guest";
+                var password = configuration["RabbitMQ:Password"] ?? "guest";
 
                 cfg.Host(host, "/", h =>
                 {

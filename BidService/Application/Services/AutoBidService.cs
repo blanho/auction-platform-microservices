@@ -138,23 +138,16 @@ namespace BidService.Application.Services
 
             if (newBidAmount <= highestAutoBid.MaxAmount)
             {
-                try
-                {
-                    var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = newBidAmount };
-                    await _bidService.PlaceBidAsync(bidDto, highestAutoBid.UserId, highestAutoBid.Username, cancellationToken);
+                var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = newBidAmount };
+                await _bidService.PlaceBidAsync(bidDto, highestAutoBid.UserId, highestAutoBid.Username, cancellationToken);
 
-                    highestAutoBid.CurrentBidAmount = newBidAmount;
-                    highestAutoBid.LastBidAt = DateTimeOffset.UtcNow;
-                    await _autoBidRepository.UpdateAsync(highestAutoBid);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                highestAutoBid.CurrentBidAmount = newBidAmount;
+                highestAutoBid.LastBidAt = DateTimeOffset.UtcNow;
+                await _autoBidRepository.UpdateAsync(highestAutoBid);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                    _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
-                        auctionId, highestAutoBid.Username, newBidAmount);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to process auto-bid for auction {AuctionId}", auctionId);
-                }
+                _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
+                    auctionId, highestAutoBid.Username, newBidAmount);
             }
         }
 

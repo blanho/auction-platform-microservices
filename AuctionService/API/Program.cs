@@ -10,6 +10,7 @@ using Common.Caching.Implementations;
 using Common.Core.Authorization;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Core.HealthChecks;
 using Common.Messaging.Extensions;
 using Common.CQRS.Extensions;
 using Common.Observability;
@@ -110,6 +111,13 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddPermissionBasedAuthorization();
 
+// Health Checks
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
+    databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+    serviceName: "AuctionService");
+
 var app = builder.Build();
 
 await app.Services.SeedDatabaseAsync();
@@ -123,9 +131,8 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 app.UseRequestTracing();
 app.UseAppExceptionHandling();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
-   .AllowAnonymous()
-   .WithTags("Health");
+// Health check endpoints
+app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();
 

@@ -20,6 +20,7 @@ public class LoginResponseDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = "user";
     public string AccessToken { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; }
     public int ExpiresIn { get; set; }
     public bool RequiresTwoFactor { get; set; }
 }

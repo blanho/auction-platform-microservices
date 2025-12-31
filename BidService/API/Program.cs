@@ -9,6 +9,8 @@ using Common.OpenApi.Middleware;
 using Common.Core.Authorization;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
+using Common.Core.HealthChecks;
+using Common.Idempotency.Extensions;
 using Common.CQRS.Extensions;
 using Common.Locking.Extensions;
 using Common.Resilience;
@@ -32,6 +34,20 @@ var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "loc
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConnection));
 builder.Services.AddDistributedLocking();
+
+// Idempotency
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+    options.InstanceName = "bid:";
+});
+builder.Services.AddIdempotencyService(options =>
+{
+    options.KeyPrefix = "bid:idempotency:";
+    options.DefaultLockTimeout = TimeSpan.FromSeconds(30);
+    options.DefaultResultTtl = TimeSpan.FromHours(24);
+    options.AllowRetryOnFailure = true;
+});
 
 builder.Services.AddResiliencePolicies(builder.Configuration);
 var resilienceOptions = builder.Configuration.GetSection(ResilienceOptions.SectionName).Get<ResilienceOptions>() ?? new ResilienceOptions();
@@ -114,6 +130,13 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddPermissionBasedAuthorization();
 
+// Health Checks
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
+    databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+    serviceName: "BidService");
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
@@ -131,9 +154,8 @@ app.UseAppExceptionHandling();
 
 app.UseRateLimiter();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
-   .AllowAnonymous()
-   .WithTags("Health");
+// Health check endpoints
+app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();
 

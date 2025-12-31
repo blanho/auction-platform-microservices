@@ -1,10 +1,14 @@
 #nullable enable
+using AuctionService.Application.Commands.Bookmarks.AddToWatchlist;
+using AuctionService.Application.Commands.Bookmarks.RemoveFromWatchlist;
+using AuctionService.Application.Commands.Bookmarks.UpdateBookmarkNotifications;
 using AuctionService.Application.DTOs;
-using AuctionService.Application.Interfaces;
-using AuctionService.Domain.Entities;
+using AuctionService.Application.Queries.Bookmarks.GetWatchlist;
+using AuctionService.Application.Queries.Bookmarks.GetWatchlistCount;
+using AuctionService.Application.Queries.Bookmarks.IsInWatchlist;
 using Carter;
-using Common.Repository.Interfaces;
 using Common.Utilities.Helpers;
+using MediatR;
 
 namespace AuctionService.API.Endpoints.Bookmarks;
 
@@ -48,109 +52,83 @@ public class BookmarkEndpoints : ICarterModule
 
     private static async Task<IResult> GetWatchlist(
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
+        ISender sender,
         CancellationToken ct)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-        var items = await bookmarkRepository.GetByUsernameAsync(username, BookmarkType.Watchlist, ct);
-        return Results.Ok(MapToDto(items));
+        var query = new GetWatchlistQuery(username);
+        var result = await sender.Send(query, ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Message);
     }
 
     private static async Task<IResult> GetWatchlistCount(
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
+        ISender sender,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        var count = await bookmarkRepository.GetCountAsync(userId, BookmarkType.Watchlist, ct);
-        return Results.Ok(count);
+        var query = new GetWatchlistCountQuery(userId);
+        var result = await sender.Send(query, ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Message);
     }
 
     private static async Task<IResult> IsInWatchlist(
         Guid auctionId,
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
+        ISender sender,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        var exists = await bookmarkRepository.ExistsAsync(userId, auctionId, BookmarkType.Watchlist, ct);
-        return Results.Ok(exists);
+        var query = new IsInWatchlistQuery(userId, auctionId);
+        var result = await sender.Send(query, ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Message);
     }
 
     private static async Task<IResult> AddToWatchlist(
         AddBookmarkDto dto,
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
-        IAuctionRepository auctionRepository,
-        IUnitOfWork unitOfWork,
-        ILogger<BookmarkEndpoints> logger,
+        ISender sender,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var username = UserHelper.GetUsername(httpContext.User);
 
-        var auction = await auctionRepository.GetByIdAsync(dto.AuctionId, ct);
-        if (auction == null)
-            return Results.NotFound("Auction not found");
+        var command = new AddToWatchlistCommand(
+            dto.AuctionId,
+            userId,
+            username,
+            dto.NotifyOnBid,
+            dto.NotifyOnEnd);
 
-        var existing = await bookmarkRepository.ExistsAsync(userId, dto.AuctionId, BookmarkType.Watchlist, ct);
-        if (existing)
-            return Results.BadRequest("Auction is already in your watchlist");
+        var result = await sender.Send(command, ct);
 
-        var bookmark = new UserAuctionBookmark
+        if (result.IsFailure)
         {
-            UserId = userId,
-            Username = username,
-            AuctionId = dto.AuctionId,
-            Type = BookmarkType.Watchlist,
-            NotifyOnBid = dto.NotifyOnBid,
-            NotifyOnEnd = dto.NotifyOnEnd,
-            AddedAt = DateTimeOffset.UtcNow
-        };
+            return result.Error.Code switch
+            {
+                "Auction.NotFound" => Results.NotFound(result.Error.Message),
+                "Bookmark.AlreadyExists" => Results.BadRequest(result.Error.Message),
+                _ => Results.Problem(result.Error.Message)
+            };
+        }
 
-        await bookmarkRepository.AddAsync(bookmark, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        logger.LogInformation("User {Username} added auction {AuctionId} to watchlist", username, dto.AuctionId);
-
-        var result = new BookmarkItemDto
-        {
-            Id = bookmark.Id,
-            AuctionId = bookmark.AuctionId,
-            BookmarkType = bookmark.Type.ToString(),
-            AuctionTitle = auction.Item?.Title ?? string.Empty,
-            PrimaryImageFileId = auction.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.FileId,
-            CurrentBid = auction.CurrentHighBid ?? 0,
-            ReservePrice = auction.ReservePrice,
-            AuctionEnd = auction.AuctionEnd,
-            Status = auction.Status.ToString(),
-            AddedAt = bookmark.AddedAt,
-            NotifyOnBid = bookmark.NotifyOnBid,
-            NotifyOnEnd = bookmark.NotifyOnEnd
-        };
-
-        return Results.CreatedAtRoute("GetWatchlist", result);
+        return Results.CreatedAtRoute("GetWatchlist", result.Value);
     }
 
     private static async Task<IResult> RemoveFromWatchlist(
         Guid auctionId,
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
-        IUnitOfWork unitOfWork,
-        ILogger<BookmarkEndpoints> logger,
+        ISender sender,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var username = UserHelper.GetUsername(httpContext.User);
 
-        var bookmark = await bookmarkRepository.GetByUserAndAuctionAsync(userId, auctionId, BookmarkType.Watchlist, ct);
-        if (bookmark == null)
-            return Results.NotFound("Item not found in watchlist");
+        var command = new RemoveFromWatchlistCommand(auctionId, userId, username);
+        var result = await sender.Send(command, ct);
 
-        await bookmarkRepository.DeleteAsync(bookmark.Id, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        logger.LogInformation("User {Username} removed auction {AuctionId} from watchlist", username, auctionId);
+        if (result.IsFailure)
+            return Results.NotFound(result.Error.Message);
 
         return Results.NoContent();
     }
@@ -159,41 +137,22 @@ public class BookmarkEndpoints : ICarterModule
         Guid auctionId,
         UpdateBookmarkNotificationsDto dto,
         HttpContext httpContext,
-        IUserAuctionBookmarkRepository bookmarkRepository,
-        IUnitOfWork unitOfWork,
+        ISender sender,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
 
-        var bookmark = await bookmarkRepository.GetByUserAndAuctionAsync(userId, auctionId, BookmarkType.Watchlist, ct);
-        if (bookmark == null)
-            return Results.NotFound("Item not found in watchlist");
+        var command = new UpdateBookmarkNotificationsCommand(
+            auctionId,
+            userId,
+            dto.NotifyOnBid,
+            dto.NotifyOnEnd);
 
-        bookmark.NotifyOnBid = dto.NotifyOnBid;
-        bookmark.NotifyOnEnd = dto.NotifyOnEnd;
+        var result = await sender.Send(command, ct);
 
-        await bookmarkRepository.UpdateAsync(bookmark, ct);
-        await unitOfWork.SaveChangesAsync(ct);
+        if (result.IsFailure)
+            return Results.NotFound(result.Error.Message);
 
         return Results.NoContent();
-    }
-
-    private static List<BookmarkItemDto> MapToDto(IEnumerable<UserAuctionBookmark> items)
-    {
-        return items.Select(b => new BookmarkItemDto
-        {
-            Id = b.Id,
-            AuctionId = b.AuctionId,
-            BookmarkType = b.Type.ToString(),
-            AuctionTitle = b.Auction?.Item?.Title ?? string.Empty,
-            PrimaryImageFileId = b.Auction?.Item?.Files.FirstOrDefault(f => f.IsPrimary)?.FileId,
-            CurrentBid = b.Auction?.CurrentHighBid ?? 0,
-            ReservePrice = b.Auction?.ReservePrice ?? 0,
-            AuctionEnd = b.Auction?.AuctionEnd ?? DateTimeOffset.MinValue,
-            Status = b.Auction?.Status.ToString() ?? string.Empty,
-            AddedAt = b.AddedAt,
-            NotifyOnBid = b.NotifyOnBid,
-            NotifyOnEnd = b.NotifyOnEnd
-        }).ToList();
     }
 }

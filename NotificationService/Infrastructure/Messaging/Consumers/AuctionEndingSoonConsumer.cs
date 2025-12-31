@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
@@ -8,54 +9,46 @@ using System.Text.Json;
 
 namespace NotificationService.Infrastructure.Messaging.Consumers;
 
-public class AuctionEndingSoonConsumer : IConsumer<AuctionEndingSoonEvent>
+public class AuctionEndingSoonConsumer : IdempotentConsumerBase<AuctionEndingSoonEvent>
 {
     private readonly INotificationService _notificationService;
-    private readonly ILogger<AuctionEndingSoonConsumer> _logger;
 
     public AuctionEndingSoonConsumer(
         INotificationService notificationService,
-        ILogger<AuctionEndingSoonConsumer> logger)
+        IDistributedCache cache,
+        ILogger<AuctionEndingSoonConsumer> logger) : base(cache, logger)
     {
         _notificationService = notificationService;
-        _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<AuctionEndingSoonEvent> context)
+    protected override async Task ProcessMessageAsync(ConsumeContext<AuctionEndingSoonEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Consuming AuctionEndingSoonEvent for auction {AuctionId}, {TimeRemaining} remaining",
-            message.AuctionId, message.TimeRemaining);
 
-        try
+        foreach (var watcher in message.WatcherUsernames)
         {
-            foreach (var watcher in message.WatcherUsernames)
+            var notification = new CreateNotificationDto
             {
-                var notification = new CreateNotificationDto
+                UserId = watcher,
+                Type = NotificationType.AuctionEndingSoon,
+                Title = "Auction Ending Soon!",
+                Message = $"\"{message.Title}\" is ending in {message.TimeRemaining}! Current bid: ${message.CurrentHighBid:N2}",
+                AuctionId = message.AuctionId,
+                Data = JsonSerializer.Serialize(new
                 {
-                    UserId = watcher,
-                    Type = NotificationType.AuctionEndingSoon,
-                    Title = "Auction Ending Soon!",
-                    Message = $"\"{message.Title}\" is ending in {message.TimeRemaining}! Current bid: ${message.CurrentHighBid:N2}",
-                    AuctionId = message.AuctionId,
-                    Data = JsonSerializer.Serialize(new
-                    {
-                        message.AuctionId,
-                        message.Title,
-                        message.CurrentHighBid,
-                        message.EndTime,
-                        message.TimeRemaining
-                    })
-                };
-                await _notificationService.CreateNotificationAsync(notification);
-            }
+                    message.AuctionId,
+                    message.Title,
+                    message.CurrentHighBid,
+                    message.EndTime,
+                    message.TimeRemaining
+                })
+            };
+            await _notificationService.CreateNotificationAsync(notification);
+        }
+    }
 
-            _logger.LogInformation("Sent auction ending soon notifications for auction {AuctionId} to {Count} watchers",
-                message.AuctionId, message.WatcherUsernames.Count);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing AuctionEndingSoonEvent for auction {AuctionId}", message.AuctionId);
-        }
+    protected override string GetIdempotencyKey(ConsumeContext<AuctionEndingSoonEvent> context)
+    {
+        return $"auction-ending-soon:{context.Message.AuctionId}:{context.Message.TimeRemaining}";
     }
 }

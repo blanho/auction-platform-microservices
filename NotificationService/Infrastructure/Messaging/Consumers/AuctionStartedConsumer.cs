@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
@@ -8,49 +9,43 @@ using System.Text.Json;
 
 namespace NotificationService.Infrastructure.Messaging.Consumers;
 
-public class AuctionStartedConsumer : IConsumer<AuctionStartedEvent>
+public class AuctionStartedConsumer : IdempotentConsumerBase<AuctionStartedEvent>
 {
     private readonly INotificationService _notificationService;
-    private readonly ILogger<AuctionStartedConsumer> _logger;
 
     public AuctionStartedConsumer(
         INotificationService notificationService,
-        ILogger<AuctionStartedConsumer> logger)
+        IDistributedCache cache,
+        ILogger<AuctionStartedConsumer> logger) : base(cache, logger)
     {
         _notificationService = notificationService;
-        _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<AuctionStartedEvent> context)
+    protected override async Task ProcessMessageAsync(ConsumeContext<AuctionStartedEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Consuming AuctionStartedEvent for auction {AuctionId}", message.AuctionId);
-
-        try
+        
+        var notification = new CreateNotificationDto
         {
-            var notification = new CreateNotificationDto
+            UserId = message.Seller,
+            Type = NotificationType.AuctionCreated,
+            Title = "Your Auction is Now Live!",
+            Message = $"Your auction \"{message.Title}\" is now live and accepting bids.",
+            AuctionId = message.AuctionId,
+            Data = JsonSerializer.Serialize(new
             {
-                UserId = message.Seller,
-                Type = NotificationType.AuctionCreated,
-                Title = "Your Auction is Now Live!",
-                Message = $"Your auction \"{message.Title}\" is now live and accepting bids.",
-                AuctionId = message.AuctionId,
-                Data = JsonSerializer.Serialize(new
-                {
-                    message.AuctionId,
-                    message.Title,
-                    message.ReservePrice,
-                    message.StartTime,
-                    message.EndTime
-                })
-            };
-            await _notificationService.CreateNotificationAsync(notification);
+                message.AuctionId,
+                message.Title,
+                message.ReservePrice,
+                message.StartTime,
+                message.EndTime
+            })
+        };
+        await _notificationService.CreateNotificationAsync(notification);
+    }
 
-            _logger.LogInformation("Sent auction started notification for auction {AuctionId}", message.AuctionId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing AuctionStartedEvent for auction {AuctionId}", message.AuctionId);
-        }
+    protected override string GetIdempotencyKey(ConsumeContext<AuctionStartedEvent> context)
+    {
+        return $"auction-started:{context.Message.AuctionId}";
     }
 }

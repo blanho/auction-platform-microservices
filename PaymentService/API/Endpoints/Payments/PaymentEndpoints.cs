@@ -1,5 +1,6 @@
 using Carter;
 using Common.Core.Authorization;
+using Common.Idempotency.Abstractions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PaymentService.Application.DTOs;
 using PaymentService.Application.Interfaces;
@@ -16,7 +17,7 @@ public class PaymentEndpoints : ICarterModule
 
         group.MapPost("/payment-intent", CreatePaymentIntent)
             .WithName("CreatePaymentIntent")
-            .WithSummary("Create a Stripe payment intent")
+            .WithSummary("Create a Stripe payment intent (idempotent with Idempotency-Key header)")
             .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapGet("/payment-intent/{paymentIntentId}", GetPaymentIntent)
@@ -26,7 +27,7 @@ public class PaymentEndpoints : ICarterModule
 
         group.MapPost("/checkout-session", CreateCheckoutSession)
             .WithName("CreateCheckoutSession")
-            .WithSummary("Create a Stripe checkout session")
+            .WithSummary("Create a Stripe checkout session (idempotent with Idempotency-Key header)")
             .RequireAuthorization($"Permission:{Permissions.Payments.Process}");
 
         group.MapPost("/customer", CreateCustomer)
@@ -36,27 +37,69 @@ public class PaymentEndpoints : ICarterModule
 
         group.MapPost("/refund", CreateRefund)
             .WithName("CreateRefund")
-            .WithSummary("Create a refund for a payment")
+            .WithSummary("Create a refund for a payment (idempotent with Idempotency-Key header)")
             .RequireAuthorization($"Permission:{Permissions.Payments.Refund}");
     }
 
-    private static async Task<Ok<CreatePaymentIntentResponseDto>> CreatePaymentIntent(
+    private static async Task<Results<Ok<CreatePaymentIntentResponseDto>, Conflict<object>, BadRequest<object>>> CreatePaymentIntent(
         CreatePaymentIntentRequestDto request,
         IStripePaymentService stripePaymentService,
+        IIdempotencyService idempotencyService,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var paymentIntent = await stripePaymentService.CreatePaymentIntentAsync(
-            request.AmountInCents,
-            request.Currency,
-            request.CustomerId,
-            request.Metadata,
-            cancellationToken);
+        var idempotencyKey = httpContext.Request.Headers["Idempotency-Key"].FirstOrDefault();
+        
+        if (!string.IsNullOrEmpty(idempotencyKey))
+        {
+            var fullKey = $"payment-intent:{idempotencyKey}";
+            var idempotencyResult = await idempotencyService.TryStartProcessingAsync(fullKey, TimeSpan.FromMinutes(5), cancellationToken);
+
+            if (!idempotencyResult.CanProcess)
+            {
+                if (idempotencyResult.Status == IdempotencyStatus.Completed)
+                {
+                    var cached = await idempotencyService.GetResultAsync<CreatePaymentIntentResponseDto>(fullKey, cancellationToken);
+                    if (cached != null)
+                    {
+                        httpContext.Response.Headers.Append("X-Idempotency-Replayed", "true");
+                        return TypedResults.Ok(cached);
+                    }
+                }
+                return TypedResults.Conflict(new { error = "Request with this idempotency key is being processed" } as object);
+            }
+
+            try
+            {
+                var paymentIntent = await stripePaymentService.CreatePaymentIntentAsync(
+                    request.AmountInCents, request.Currency, request.CustomerId, request.Metadata, cancellationToken);
+
+                var response = new CreatePaymentIntentResponseDto
+                {
+                    PaymentIntentId = paymentIntent.Id,
+                    ClientSecret = paymentIntent.ClientSecret,
+                    Status = paymentIntent.Status,
+                };
+
+                await idempotencyService.MarkAsProcessedAsync(fullKey, response, TimeSpan.FromHours(48), cancellationToken);
+                httpContext.Response.Headers.Append("X-Idempotency-Key", idempotencyKey);
+                return TypedResults.Ok(response);
+            }
+            catch (Exception ex)
+            {
+                await idempotencyService.MarkAsFailedAsync(fullKey, ex.Message, cancellationToken);
+                throw;
+            }
+        }
+
+        var result = await stripePaymentService.CreatePaymentIntentAsync(
+            request.AmountInCents, request.Currency, request.CustomerId, request.Metadata, cancellationToken);
 
         return TypedResults.Ok(new CreatePaymentIntentResponseDto
         {
-            PaymentIntentId = paymentIntent.Id,
-            ClientSecret = paymentIntent.ClientSecret,
-            Status = paymentIntent.Status,
+            PaymentIntentId = result.Id,
+            ClientSecret = result.ClientSecret,
+            Status = result.Status,
         });
     }
 

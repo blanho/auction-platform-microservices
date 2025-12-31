@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
@@ -6,40 +7,36 @@ using NotificationService.Domain.Enums;
 using Common.Messaging.Events;
 using System.Text.Json;
 
-namespace NotificationService.Infrastructure.Messaging.Consumers
+namespace NotificationService.Infrastructure.Messaging.Consumers;
+
+public class AuctionDeletedConsumer : IdempotentConsumerBase<AuctionDeletedEvent>
 {
-    public class AuctionDeletedConsumer : IConsumer<AuctionDeletedEvent>
+    private readonly INotificationService _notificationService;
+
+    public AuctionDeletedConsumer(
+        INotificationService notificationService,
+        IDistributedCache cache,
+        ILogger<AuctionDeletedConsumer> logger) : base(cache, logger)
     {
-        private readonly INotificationService _notificationService;
-        private readonly ILogger<AuctionDeletedConsumer> _logger;
+        _notificationService = notificationService;
+    }
 
-        public AuctionDeletedConsumer(INotificationService notificationService, ILogger<AuctionDeletedConsumer> logger)
+    protected override async Task ProcessMessageAsync(ConsumeContext<AuctionDeletedEvent> context)
+    {
+        var notification = new CreateNotificationDto
         {
-            _notificationService = notificationService;
-            _logger = logger;
-        }
+            UserId = context.Message.Seller,
+            Type = NotificationType.AuctionDeleted,
+            Title = "Auction Deleted",
+            Message = "Your auction has been deleted.",
+            AuctionId = context.Message.Id,
+            Data = JsonSerializer.Serialize(new { DeletedAt = DateTime.UtcNow })
+        };
+        await _notificationService.CreateNotificationAsync(notification);
+    }
 
-        public async Task Consume(ConsumeContext<AuctionDeletedEvent> context)
-        {
-            _logger.LogInformation("Consuming AuctionDeletedEvent for auction {AuctionId}", context.Message.Id);
-
-            try
-            {
-                var notification = new CreateNotificationDto
-                {
-                    UserId = context.Message.Seller,
-                    Type = NotificationType.AuctionDeleted,
-                    Title = "Auction Deleted",
-                    Message = "Your auction has been deleted.",
-                    AuctionId = context.Message.Id,
-                    Data = JsonSerializer.Serialize(new { DeletedAt = DateTime.UtcNow })
-                };
-                await _notificationService.CreateNotificationAsync(notification);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing AuctionDeletedEvent for auction {AuctionId}", context.Message.Id);
-            }
-        }
+    protected override string GetIdempotencyKey(ConsumeContext<AuctionDeletedEvent> context)
+    {
+        return $"auction-deleted:{context.Message.Id}";
     }
 }

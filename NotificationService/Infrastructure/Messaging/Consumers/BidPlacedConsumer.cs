@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
@@ -6,47 +7,43 @@ using NotificationService.Domain.Enums;
 using Common.Messaging.Events;
 using System.Text.Json;
 
-namespace NotificationService.Infrastructure.Messaging.Consumers
+namespace NotificationService.Infrastructure.Messaging.Consumers;
+
+public class BidPlacedConsumer : IdempotentConsumerBase<BidPlacedEvent>
 {
-    public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
+    private readonly INotificationService _notificationService;
+
+    public BidPlacedConsumer(
+        INotificationService notificationService,
+        IDistributedCache cache,
+        ILogger<BidPlacedConsumer> logger) : base(cache, logger)
     {
-        private readonly INotificationService _notificationService;
-        private readonly ILogger<BidPlacedConsumer> _logger;
+        _notificationService = notificationService;
+    }
 
-        public BidPlacedConsumer(INotificationService notificationService, ILogger<BidPlacedConsumer> logger)
+    protected override async Task ProcessMessageAsync(ConsumeContext<BidPlacedEvent> context)
+    {
+        var notification = new CreateNotificationDto
         {
-            _notificationService = notificationService;
-            _logger = logger;
-        }
-
-        public async Task Consume(ConsumeContext<BidPlacedEvent> context)
-        {
-            _logger.LogInformation("Consuming BidPlacedEvent for auction {AuctionId}", context.Message.AuctionId);
-
-            try
+            UserId = context.Message.Bidder,
+            Type = NotificationType.BidPlaced,
+            Title = "Bid Placed Successfully",
+            Message = $"Your bid of ${context.Message.BidAmount} has been placed with status: {context.Message.BidStatus}",
+            AuctionId = context.Message.AuctionId,
+            BidId = context.Message.Id,
+            Data = JsonSerializer.Serialize(new
             {
-                var notification = new CreateNotificationDto
-                {
-                    UserId = context.Message.Bidder,
-                    Type = NotificationType.BidPlaced,
-                    Title = "Bid Placed Successfully",
-                    Message = $"Your bid of ${context.Message.BidAmount} has been placed with status: {context.Message.BidStatus}",
-                    AuctionId = context.Message.AuctionId,
-                    BidId = context.Message.Id,
-                    Data = JsonSerializer.Serialize(new
-                    {
-                        context.Message.BidAmount,
-                        context.Message.Bidder,
-                        context.Message.BidStatus,
-                        context.Message.BidTime
-                    })
-                };
-                await _notificationService.CreateNotificationAsync(notification);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing BidPlacedEvent for auction {AuctionId}", context.Message.AuctionId);
-            }
-        }
+                context.Message.BidAmount,
+                context.Message.Bidder,
+                context.Message.BidStatus,
+                context.Message.BidTime
+            })
+        };
+        await _notificationService.CreateNotificationAsync(notification);
+    }
+
+    protected override string GetIdempotencyKey(ConsumeContext<BidPlacedEvent> context)
+    {
+        return $"bid-placed:{context.Message.Id}";
     }
 }

@@ -11,6 +11,7 @@ using Common.OpenApi.Middleware;
 using Common.Core.Interfaces;
 using Common.Core.Implementations;
 using Common.Core.Authorization;
+using Common.Core.HealthChecks;
 using Common.CQRS.Extensions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,13 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddPermissionBasedAuthorization();
 
+// Health Checks
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
+    databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+    serviceName: "NotificationService");
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -118,9 +126,8 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 
 app.UseAppExceptionHandling();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
-   .AllowAnonymous()
-   .WithTags("Health");
+// Health check endpoints
+app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();
 app.UseCors("SignalRCorsPolicy");

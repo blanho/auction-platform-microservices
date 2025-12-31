@@ -60,6 +60,7 @@ internal static class HostingExtensions
         builder.Services.AddScoped<IEmailService, EventBasedEmailService>();
         builder.Services.AddScoped<ITokenGenerationService, TokenGenerationService>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddMassTransit(x =>
         {

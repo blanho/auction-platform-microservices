@@ -34,6 +34,7 @@
     <ProjectReference Include="..\..\Common\Common.Messaging\Common.Messaging.csproj" />
     <ProjectReference Include="..\..\Common\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Idempotency\Common.Idempotency.csproj" />
     <ProjectReference Include="..\..\Common\Common.Locking\Common.Locking.csproj" />
     <ProjectReference Include="..\..\Common\Common.Resilience\Common.Resilience.csproj" />
     <ProjectReference Include="..\..\Common\Common.CQRS\Common.CQRS.csproj" />
