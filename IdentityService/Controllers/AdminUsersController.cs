@@ -1,11 +1,10 @@
 using Common.Core.Authorization;
 using Common.Core.Constants;
 using IdentityService.DTOs;
+using IdentityService.Interfaces;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace IdentityService.Controllers;
 
@@ -15,17 +14,14 @@ namespace IdentityService.Controllers;
 [Produces("application/json")]
 public class AdminUsersController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<AdminUsersController> _logger;
 
     public AdminUsersController(
-        UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager,
+        IUserRepository userRepository,
         ILogger<AdminUsersController> logger)
     {
-        _userManager = userManager;
-        _roleManager = roleManager;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -38,47 +34,17 @@ public class AdminUsersController : ControllerBase
         [FromQuery] bool? isActive = null,
         [FromQuery] bool? isSuspended = null,
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
-        var query = _userManager.Users.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            search = search.ToLower();
-            query = query.Where(u =>
-                u.UserName!.ToLower().Contains(search) ||
-                u.Email!.ToLower().Contains(search) ||
-                (u.FullName != null && u.FullName.ToLower().Contains(search)));
-        }
-
-        if (isActive.HasValue)
-        {
-            query = query.Where(u => u.IsActive == isActive.Value);
-        }
-
-        if (isSuspended.HasValue)
-        {
-            query = query.Where(u => u.IsSuspended == isSuspended.Value);
-        }
-
-        var totalCount = await query.CountAsync();
-
-        var users = await query
-            .OrderByDescending(u => u.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var (users, totalCount) = await _userRepository.GetPagedAsync(
+            search, role, isActive, isSuspended, pageNumber, pageSize, cancellationToken);
 
         var userDtos = new List<AdminUserDto>();
 
         foreach (var user in users)
         {
-            var roles = await _userManager.GetRolesAsync(user);
-
-            if (!string.IsNullOrWhiteSpace(role) && !roles.Contains(role))
-            {
-                continue;
-            }
+            var roles = await _userRepository.GetRolesAsync(user);
 
             userDtos.Add(new AdminUserDto
             {
@@ -110,16 +76,16 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(typeof(ApiResponse<AdminUserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<AdminUserDto>>> GetUser(string id)
+    public async Task<ActionResult<ApiResponse<AdminUserDto>>> GetUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
             return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _userRepository.GetRolesAsync(user);
 
         var dto = new AdminUserDto
         {
@@ -142,9 +108,9 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> SuspendUser(string id, [FromBody] SuspendUserDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> SuspendUser(string id, [FromBody] SuspendUserDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
@@ -155,7 +121,7 @@ public class AdminUsersController : ControllerBase
         user.SuspensionReason = dto.Reason;
         user.SuspendedAt = DateTimeOffset.UtcNow;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userRepository.UpdateAsync(user);
 
         if (!result.Succeeded)
         {
@@ -171,9 +137,9 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> UnsuspendUser(string id)
+    public async Task<ActionResult<ApiResponse<object>>> UnsuspendUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
@@ -184,7 +150,7 @@ public class AdminUsersController : ControllerBase
         user.SuspensionReason = null;
         user.SuspendedAt = null;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userRepository.UpdateAsync(user);
 
         if (!result.Succeeded)
         {
@@ -200,9 +166,9 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> ActivateUser(string id)
+    public async Task<ActionResult<ApiResponse<object>>> ActivateUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
@@ -211,7 +177,7 @@ public class AdminUsersController : ControllerBase
 
         user.IsActive = true;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userRepository.UpdateAsync(user);
 
         if (!result.Succeeded)
         {
@@ -227,9 +193,9 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.Ban)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> DeactivateUser(string id)
+    public async Task<ActionResult<ApiResponse<object>>> DeactivateUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
@@ -238,7 +204,7 @@ public class AdminUsersController : ControllerBase
 
         user.IsActive = false;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userRepository.UpdateAsync(user);
 
         if (!result.Succeeded)
         {
@@ -254,27 +220,27 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.ManageRoles)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateUserRoles(string id, [FromBody] UpdateUserRolesDto dto)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateUserRoles(string id, [FromBody] UpdateUserRolesDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
             return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
         }
 
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        var currentRoles = await _userRepository.GetRolesAsync(user);
+        await _userRepository.RemoveFromRolesAsync(user, currentRoles);
 
         foreach (var role in dto.Roles)
         {
-            if (!await _roleManager.RoleExistsAsync(role))
+            if (!await _userRepository.RoleExistsAsync(role))
             {
-                await _roleManager.CreateAsync(new IdentityRole(role));
+                await _userRepository.CreateRoleAsync(role);
             }
         }
 
-        await _userManager.AddToRolesAsync(user, dto.Roles);
+        await _userRepository.AddToRolesAsync(user, dto.Roles);
 
         _logger.LogInformation("Admin updated roles for user {UserId}: {Roles}", id, string.Join(", ", dto.Roles));
 
@@ -285,16 +251,16 @@ public class AdminUsersController : ControllerBase
     [HasPermission(Permissions.Users.Delete)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApiResponse<object>>> DeleteUser(string id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
         if (user == null)
         {
             return NotFound(ApiResponse<object>.ErrorResponse("User not found"));
         }
 
-        var result = await _userManager.DeleteAsync(user);
+        var result = await _userRepository.DeleteAsync(user);
 
         if (!result.Succeeded)
         {
@@ -309,21 +275,9 @@ public class AdminUsersController : ControllerBase
     [HttpGet("stats")]
     [HasPermission(Permissions.Users.View)]
     [ProducesResponseType(typeof(ApiResponse<AdminStatsDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<AdminStatsDto>>> GetStats()
+    public async Task<ActionResult<ApiResponse<AdminStatsDto>>> GetStats(CancellationToken cancellationToken = default)
     {
-        var totalUsers = await _userManager.Users.CountAsync();
-        var activeUsers = await _userManager.Users.CountAsync(u => u.IsActive);
-        var suspendedUsers = await _userManager.Users.CountAsync(u => u.IsSuspended);
-        var newUsersThisMonth = await _userManager.Users
-            .CountAsync(u => u.CreatedAt >= DateTimeOffset.UtcNow.AddDays(-30));
-
-        var stats = new AdminStatsDto
-        {
-            TotalUsers = totalUsers,
-            ActiveUsers = activeUsers,
-            SuspendedUsers = suspendedUsers,
-            NewUsersThisMonth = newUsersThisMonth
-        };
+        var stats = await _userRepository.GetStatsAsync(cancellationToken);
 
         return Ok(ApiResponse<AdminStatsDto>.SuccessResponse(stats));
     }

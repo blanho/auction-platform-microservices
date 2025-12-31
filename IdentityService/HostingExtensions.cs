@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Text;
 using Common.Core.Authorization;
 using IdentityService.Data;
+using IdentityService.Interfaces;
 using IdentityService.Models;
+using IdentityService.Repositories;
 using IdentityService.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,6 +59,7 @@ internal static class HostingExtensions
         builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
         builder.Services.AddScoped<IEmailService, EventBasedEmailService>();
         builder.Services.AddScoped<ITokenGenerationService, TokenGenerationService>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
 
         builder.Services.AddMassTransit(x =>
         {
