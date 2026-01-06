@@ -1,7 +1,5 @@
 namespace Common.Messaging.Events.Saga;
 
-// ================== Auction Completion Saga Events ==================
-
 /// <summary>
 /// Initiates the auction completion saga when an auction ends with a winner.
 /// </summary>

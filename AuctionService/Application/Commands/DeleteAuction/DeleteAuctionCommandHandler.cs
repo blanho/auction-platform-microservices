@@ -33,7 +33,8 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
 
     public async Task<Result<bool>> Handle(DeleteAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting auction {AuctionId} at {Timestamp}", request.Id, _dateTime.UtcNow);
+        _logger.LogInformation("Deleting auction {AuctionId} by user {UserId} at {Timestamp}", 
+            request.Id, request.RequestingUserId, _dateTime.UtcNow);
 
         try
         {
@@ -43,6 +44,13 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
             {
                 _logger.LogWarning("Auction {AuctionId} not found for deletion", request.Id);
                 return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
+            }
+            if (!request.IsAdmin && auction.SellerId != request.RequestingUserId)
+            {
+                _logger.LogWarning(
+                    "Unauthorized delete attempt on auction {AuctionId} by user {UserId}. Owner is {SellerId}",
+                    request.Id, request.RequestingUserId, auction.SellerId);
+                return Result.Failure<bool>(Error.Create("Auction.Unauthorized", "You are not authorized to delete this auction"));
             }
 
             auction.RaiseDeletedEvent();

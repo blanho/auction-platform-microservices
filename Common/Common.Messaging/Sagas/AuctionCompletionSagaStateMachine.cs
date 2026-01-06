@@ -11,14 +11,11 @@ namespace Common.Messaging.Sagas;
 /// </summary>
 public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<AuctionCompletionSagaState>
 {
-    // States
     public State CreatingOrder { get; private set; } = null!;
     public State SendingNotifications { get; private set; } = null!;
     public State Completed { get; private set; } = null!;
     public State Failed { get; private set; } = null!;
     public State Compensating { get; private set; } = null!;
-
-    // Events
     public Event<AuctionCompletionSagaStarted> SagaStarted { get; private set; } = null!;
     public Event<AuctionWinnerOrderCreated> OrderCreated { get; private set; } = null!;
     public Event<AuctionWinnerOrderFailed> OrderFailed { get; private set; } = null!;
@@ -29,16 +26,12 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
     public AuctionCompletionSagaStateMachine()
     {
         InstanceState(x => x.CurrentState);
-
-        // Event correlation
         Event(() => SagaStarted, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => OrderCreated, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => OrderFailed, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => NotificationsSent, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => NotificationsFailed, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => CompletionReverted, e => e.CorrelateById(m => m.Message.CorrelationId));
-
-        // ===== Initial State =====
         Initially(
             When(SagaStarted)
                 .Then(context =>
@@ -65,8 +58,6 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 })
                 .TransitionTo(CreatingOrder)
         );
-
-        // ===== Creating Order State =====
         During(CreatingOrder,
             When(OrderCreated)
                 .Then(context =>
@@ -101,8 +92,6 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 })
                 .TransitionTo(Compensating)
         );
-
-        // ===== Sending Notifications State =====
         During(SendingNotifications,
             When(NotificationsSent)
                 .Then(context =>
@@ -121,12 +110,9 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 })
                 .TransitionTo(Completed)
                 .Finalize(),
-
-            // Notification failure is non-critical - we still complete the saga
             When(NotificationsFailed)
                 .Then(context =>
                 {
-                    // Log warning but don't fail the saga
                     context.Saga.CompletedAt = DateTimeOffset.UtcNow;
                 })
                 .Publish(context => new AuctionCompletionSagaCompleted
@@ -141,8 +127,6 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 .TransitionTo(Completed)
                 .Finalize()
         );
-
-        // ===== Compensating State =====
         During(Compensating,
             When(CompletionReverted)
                 .Then(context =>

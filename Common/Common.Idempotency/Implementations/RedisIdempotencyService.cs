@@ -2,15 +2,18 @@ using System.Text.Json;
 using Common.Idempotency.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace Common.Idempotency.Implementations;
 
 /// <summary>
 /// Redis-based idempotency service with distributed locking support.
+/// Uses atomic Redis operations to prevent race conditions.
 /// </summary>
 public class RedisIdempotencyService : IIdempotencyService
 {
     private readonly IDistributedCache _cache;
+    private readonly IConnectionMultiplexer? _redis;
     private readonly ILogger<RedisIdempotencyService> _logger;
     private readonly IdempotencyOptions _options;
     
@@ -23,11 +26,13 @@ public class RedisIdempotencyService : IIdempotencyService
     public RedisIdempotencyService(
         IDistributedCache cache,
         ILogger<RedisIdempotencyService> logger,
-        IdempotencyOptions? options = null)
+        IdempotencyOptions? options = null,
+        IConnectionMultiplexer? redis = null)
     {
         _cache = cache;
         _logger = logger;
         _options = options ?? new IdempotencyOptions();
+        _redis = redis;
     }
 
     public async Task<bool> IsProcessedAsync(string key, CancellationToken cancellationToken = default)
@@ -48,6 +53,8 @@ public class RedisIdempotencyService : IIdempotencyService
         CancellationToken cancellationToken = default)
     {
         var cacheKey = GetCacheKey(key);
+        var timeout = lockTimeout ?? _options.DefaultLockTimeout;
+        
         var existingValue = await _cache.GetStringAsync(cacheKey, cancellationToken);
 
         if (existingValue != null)
@@ -56,27 +63,7 @@ public class RedisIdempotencyService : IIdempotencyService
             
             if (existingRecord != null)
             {
-                // Check if it's a stale processing lock
-                if (existingRecord.Status == IdempotencyStatus.Processing)
-                {
-                    var processingTimeout = lockTimeout ?? _options.DefaultLockTimeout;
-                    if (existingRecord.StartedAt.Add(processingTimeout) < DateTimeOffset.UtcNow)
-                    {
-                        _logger.LogWarning(
-                            "Stale idempotency lock detected for key {Key}. Allowing new processing.",
-                            key);
-                    }
-                    else
-                    {
-                        return new IdempotencyResult
-                        {
-                            CanProcess = false,
-                            Status = IdempotencyStatus.Processing,
-                            ErrorMessage = "Request is currently being processed"
-                        };
-                    }
-                }
-                else if (existingRecord.Status == IdempotencyStatus.Completed)
+                if (existingRecord.Status == IdempotencyStatus.Completed)
                 {
                     return new IdempotencyResult
                     {
@@ -86,7 +73,8 @@ public class RedisIdempotencyService : IIdempotencyService
                         ProcessedAt = existingRecord.CompletedAt
                     };
                 }
-                else if (existingRecord.Status == IdempotencyStatus.Failed && !_options.AllowRetryOnFailure)
+                
+                if (existingRecord.Status == IdempotencyStatus.Failed && !_options.AllowRetryOnFailure)
                 {
                     return new IdempotencyResult
                     {
@@ -95,10 +83,25 @@ public class RedisIdempotencyService : IIdempotencyService
                         ErrorMessage = existingRecord.ErrorMessage
                     };
                 }
+                if (existingRecord.Status == IdempotencyStatus.Processing)
+                {
+                    if (existingRecord.StartedAt.Add(timeout) >= DateTimeOffset.UtcNow)
+                    {
+                        return new IdempotencyResult
+                        {
+                            CanProcess = false,
+                            Status = IdempotencyStatus.Processing,
+                            ErrorMessage = "Request is currently being processed"
+                        };
+                    }
+                    
+                    _logger.LogWarning(
+                        "Stale idempotency lock detected for key {Key}. Attempting to acquire.",
+                        key);
+                }
             }
         }
 
-        // Try to acquire the lock
         var processingRecord = new IdempotencyRecord
         {
             Key = key,
@@ -106,26 +109,67 @@ public class RedisIdempotencyService : IIdempotencyService
             StartedAt = DateTimeOffset.UtcNow
         };
 
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = lockTimeout ?? _options.DefaultLockTimeout
-        };
+        var recordJson = JsonSerializer.Serialize(processingRecord, JsonOptions);
 
         try
         {
-            await _cache.SetStringAsync(
-                cacheKey,
-                JsonSerializer.Serialize(processingRecord, JsonOptions),
-                options,
-                cancellationToken);
-
-            _logger.LogDebug("Acquired idempotency lock for key {Key}", key);
-
-            return new IdempotencyResult
+            bool acquired;
+            
+            if (_redis != null)
             {
-                CanProcess = true,
-                Status = IdempotencyStatus.New
-            };
+                var db = _redis.GetDatabase();
+                acquired = await db.StringSetAsync(
+                    cacheKey, 
+                    recordJson, 
+                    timeout, 
+                    When.NotExists);
+                
+                if (!acquired && existingValue != null)
+                {
+                    var existingRecord = JsonSerializer.Deserialize<IdempotencyRecord>(existingValue, JsonOptions);
+                    if (existingRecord?.Status == IdempotencyStatus.Processing && 
+                        existingRecord.StartedAt.Add(timeout) < DateTimeOffset.UtcNow)
+                    {
+                        var transaction = db.CreateTransaction();
+                        transaction.AddCondition(Condition.StringEqual(cacheKey, existingValue));
+                        _ = transaction.StringSetAsync(cacheKey, recordJson, timeout);
+                        acquired = await transaction.ExecuteAsync();
+                    }
+                }
+            }
+            else
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = timeout
+                };
+
+                await _cache.SetStringAsync(cacheKey, recordJson, options, cancellationToken);
+                acquired = true;
+                
+                _logger.LogDebug(
+                    "Using non-atomic idempotency lock for key {Key}. Consider providing IConnectionMultiplexer for atomic operations.",
+                    key);
+            }
+
+            if (acquired)
+            {
+                _logger.LogDebug("Acquired idempotency lock for key {Key}", key);
+                return new IdempotencyResult
+                {
+                    CanProcess = true,
+                    Status = IdempotencyStatus.New
+                };
+            }
+            else
+            {
+                return new IdempotencyResult
+                {
+                    CanProcess = false,
+                    Status = IdempotencyStatus.Processing,
+                    ErrorMessage = "Request is currently being processed by another instance"
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -188,7 +232,6 @@ public class RedisIdempotencyService : IIdempotencyService
 
         if (_options.AllowRetryOnFailure)
         {
-            // Just remove the lock so it can be retried
             await _cache.RemoveAsync(cacheKey, cancellationToken);
             _logger.LogDebug("Removed idempotency lock for failed key {Key} (retry allowed)", key);
             return;

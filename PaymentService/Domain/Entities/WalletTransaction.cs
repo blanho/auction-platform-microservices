@@ -16,8 +16,6 @@ public class WalletTransaction : BaseEntity
     public string? PaymentMethod { get; set; }
     public string? ExternalTransactionId { get; set; }
     public DateTimeOffset? ProcessedAt { get; set; }
-
-    // Domain behavior methods
     public void MarkAsProcessing()
     {
         EnsurePending();

@@ -97,35 +97,49 @@ public class AuctionCrudEndpoints : ICarterModule
     private static async Task<IResult> UpdateAuction(
         Guid id,
         UpdateAuctionDto dto,
+        HttpContext httpContext,
         IMediator mediator,
         CancellationToken ct)
     {
+        var requestingUserId = UserHelper.GetRequiredUserId(httpContext.User);
+        var isAdmin = httpContext.User.IsInRole("Admin");
+        
         var command = new UpdateAuctionCommand(
             id,
             dto.Title,
             dto.Description,
             dto.Condition,
             dto.YearManufactured,
-            dto.Attributes);
+            dto.Attributes,
+            requestingUserId,
+            isAdmin);
 
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
             ? Results.NoContent()
-            : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+            : result.Error?.Code == "Auction.Unauthorized"
+                ? Results.Forbid()
+                : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     private static async Task<IResult> DeleteAuction(
         Guid id,
+        HttpContext httpContext,
         IMediator mediator,
         CancellationToken ct)
     {
-        var command = new DeleteAuctionCommand(id);
+        var requestingUserId = UserHelper.GetRequiredUserId(httpContext.User);
+        var isAdmin = httpContext.User.IsInRole("Admin");
+        
+        var command = new DeleteAuctionCommand(id, requestingUserId, isAdmin);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
             ? Results.NoContent()
-            : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+            : result.Error?.Code == "Auction.Unauthorized"
+                ? Results.Forbid()
+                : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     private static async Task<IResult> ActivateAuction(

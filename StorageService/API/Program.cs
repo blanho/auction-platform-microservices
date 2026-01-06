@@ -47,14 +47,24 @@ builder.Services.AddQuartz(q =>
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Services.AddGrpc();
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:3000" };
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("StoragePolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+    options.AddPolicy("UploadPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .WithHeaders("Content-Type", "Authorization", "X-Idempotency-Key")
+              .WithMethods("POST", "PUT")
+              .AllowCredentials();
     });
 });
 
@@ -122,7 +132,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("StoragePolicy");
 app.UseStaticFiles();
 
 app.UseAuthentication();

@@ -1,3 +1,4 @@
+using BidService.Application.Interfaces;
 using BidService.Domain.Events;
 using Common.Messaging.Abstractions;
 using Common.Messaging.Events;
@@ -9,13 +10,16 @@ namespace BidService.Application.EventHandlers;
 public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestBidUpdatedDomainEvent>
 {
     private readonly IEventPublisher _eventPublisher;
+    private readonly IAutoBidService _autoBidService;
     private readonly ILogger<HighestBidUpdatedDomainEventHandler> _logger;
 
     public HighestBidUpdatedDomainEventHandler(
         IEventPublisher eventPublisher,
+        IAutoBidService autoBidService,
         ILogger<HighestBidUpdatedDomainEventHandler> logger)
     {
         _eventPublisher = eventPublisher;
+        _autoBidService = autoBidService;
         _logger = logger;
     }
 
@@ -58,6 +62,19 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
                 PreviousBidAmount = notification.PreviousHighestAmount ?? 0,
                 OutbidAt = DateTimeOffset.UtcNow
             }, cancellationToken);
+        }
+        try
+        {
+            await _autoBidService.ProcessAutoBidsForAuctionAsync(
+                notification.AuctionId,
+                notification.NewHighestAmount,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to process auto-bids for auction {AuctionId} after bid update to {Amount}",
+                notification.AuctionId, notification.NewHighestAmount);
         }
     }
 }

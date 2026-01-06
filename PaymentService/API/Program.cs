@@ -45,8 +45,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "payment:";
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
-
-// Idempotency
 builder.Services.AddIdempotencyService(options =>
 {
     options.KeyPrefix = "payment:idempotency:";
@@ -116,8 +114,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddPermissionBasedAuthorization();
-
-// Health Checks
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
@@ -140,8 +136,6 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 
 app.UseRequestTracing();
 app.UseAppExceptionHandling();
-
-// Health check endpoints
 app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();

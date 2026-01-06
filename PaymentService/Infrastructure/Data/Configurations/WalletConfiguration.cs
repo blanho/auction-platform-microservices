@@ -10,6 +10,9 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
+
         builder.Property(x => x.Username)
             .IsRequired()
             .HasMaxLength(200);

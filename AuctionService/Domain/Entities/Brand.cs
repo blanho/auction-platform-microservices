@@ -41,8 +41,6 @@ public class Brand : BaseEntity
     public bool IsFeatured { get; set; }
 
     public ICollection<Item> Items { get; set; } = new List<Item>();
-
-    // Domain behavior methods
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
     public void SetFeatured(bool featured) => IsFeatured = featured;

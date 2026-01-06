@@ -48,8 +48,6 @@ public class Item : BaseEntity
 
     public List<ItemFileInfo> Files { get; set; } = new();
     public Dictionary<string, string> Attributes { get; set; } = new();
-
-    // Domain behavior methods
     public void UpdateDetails(string title, string description, string? condition = null, int? yearManufactured = null)
     {
         Title = title;

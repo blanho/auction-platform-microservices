@@ -39,16 +39,12 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
     {
         var httpContext = context.HttpContext;
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<IdempotentAttribute>>();
-
-        // Only apply to mutating operations
         var method = httpContext.Request.Method;
         if (method != "POST" && method != "PUT" && method != "PATCH")
         {
             await next();
             return;
         }
-
-        // Get idempotency key from header
         if (!httpContext.Request.Headers.TryGetValue(_headerName, out var idempotencyKeyValues) ||
             string.IsNullOrWhiteSpace(idempotencyKeyValues.FirstOrDefault()))
         {
@@ -62,8 +58,6 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
                 });
                 return;
             }
-
-            // Not required, proceed without idempotency
             await next();
             return;
         }
@@ -74,8 +68,6 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
         var fullKey = $"{serviceName}:{actionName}:{idempotencyKey}";
 
         var idempotencyService = httpContext.RequestServices.GetRequiredService<IIdempotencyService>();
-
-        // Try to start processing
         var result = await idempotencyService.TryStartProcessingAsync(
             fullKey,
             TimeSpan.FromMinutes(5));
@@ -87,8 +79,6 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
                 logger.LogInformation(
                     "Returning cached response for idempotency key {Key}",
                     idempotencyKey);
-
-                // Return cached result
                 httpContext.Response.Headers.Append("X-Idempotency-Replayed", "true");
                 httpContext.Response.Headers.Append("X-Idempotency-Key", idempotencyKey);
                 
@@ -114,8 +104,6 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
                 });
                 return;
             }
-
-            // Failed status
             context.Result = new ObjectResult(new
             {
                 error = "PreviousRequestFailed",
@@ -126,11 +114,7 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
             };
             return;
         }
-
-        // Execute the action
         var executedContext = await next();
-
-        // Cache the result on success
         if (executedContext.Exception == null && executedContext.Result is ObjectResult objectResult)
         {
             if (objectResult.StatusCode is >= 200 and < 300)

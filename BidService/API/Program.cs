@@ -34,8 +34,6 @@ var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? "loc
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConnection));
 builder.Services.AddDistributedLocking();
-
-// Idempotency
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnection;
@@ -92,8 +90,6 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
-
-// Authentication & Authorization
 var identityAuthority = builder.Configuration["Identity:Authority"] ?? "http://localhost:5001";
 builder.Services.AddAuthentication(options =>
 {
@@ -129,8 +125,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddPermissionBasedAuthorization();
-
-// Health Checks
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
@@ -153,8 +147,6 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 app.UseAppExceptionHandling();
 
 app.UseRateLimiter();
-
-// Health check endpoints
 app.MapCustomHealthChecks();
 
 app.UseHttpsRedirection();

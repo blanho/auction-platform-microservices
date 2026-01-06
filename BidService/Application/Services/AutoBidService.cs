@@ -2,6 +2,7 @@ using BidService.Application.DTOs;
 using BidService.Application.Interfaces;
 using BidService.Domain.Entities;
 using BidService.Domain.ValueObjects;
+using Common.Locking.Abstractions;
 using Common.Repository.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -12,17 +13,23 @@ namespace BidService.Application.Services
         private readonly IAutoBidRepository _autoBidRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBidService _bidService;
+        private readonly IDistributedLock _distributedLock;
         private readonly ILogger<AutoBidService> _logger;
+        
+        private static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan LockWait = TimeSpan.FromSeconds(10);
 
         public AutoBidService(
             IAutoBidRepository autoBidRepository,
             IUnitOfWork unitOfWork,
             IBidService bidService,
+            IDistributedLock distributedLock,
             ILogger<AutoBidService> logger)
         {
             _autoBidRepository = autoBidRepository;
             _unitOfWork = unitOfWork;
             _bidService = bidService;
+            _distributedLock = distributedLock;
             _logger = logger;
         }
 
@@ -111,43 +118,66 @@ namespace BidService.Application.Services
 
         public async Task ProcessAutoBidsForAuctionAsync(Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken = default)
         {
-            var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(auctionId);
-            var eligibleAutoBids = activeAutoBids
-                .Where(ab => ab.MaxAmount > currentHighBid)
-                .OrderByDescending(ab => ab.MaxAmount)
-                .ThenBy(ab => ab.CreatedAt)
-                .ToList();
-
-            if (eligibleAutoBids.Count == 0)
+            var lockKey = $"autobid:auction:{auctionId}";
+            await using var lockHandle = await _distributedLock.AcquireAsync(
+                lockKey,
+                expiry: LockExpiry,
+                wait: LockWait,
+                cancellationToken);
+            
+            if (lockHandle is null)
             {
+                _logger.LogWarning(
+                    "Failed to acquire auto-bid lock for auction {AuctionId}. Another process is handling auto-bids.",
+                    auctionId);
                 return;
             }
-
-            var highestAutoBid = eligibleAutoBids.First();
-            var secondHighestMax = eligibleAutoBids.Count > 1 ? eligibleAutoBids[1].MaxAmount : currentHighBid;
-
-            var newBidAmount = Math.Min(
-                highestAutoBid.MaxAmount,
-                secondHighestMax + BidIncrement.GetIncrement(secondHighestMax)
-            );
-
-            if (newBidAmount <= currentHighBid)
+            
+            try
             {
-                newBidAmount = currentHighBid + BidIncrement.GetIncrement(currentHighBid);
+                var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(auctionId);
+                var eligibleAutoBids = activeAutoBids
+                    .Where(ab => ab.MaxAmount > currentHighBid)
+                    .OrderByDescending(ab => ab.MaxAmount)
+                    .ThenBy(ab => ab.CreatedAt)
+                    .ToList();
+
+                if (eligibleAutoBids.Count == 0)
+                {
+                    return;
+                }
+
+                var highestAutoBid = eligibleAutoBids.First();
+                var secondHighestMax = eligibleAutoBids.Count > 1 ? eligibleAutoBids[1].MaxAmount : currentHighBid;
+
+                var newBidAmount = Math.Min(
+                    highestAutoBid.MaxAmount,
+                    secondHighestMax + BidIncrement.GetIncrement(secondHighestMax)
+                );
+
+                if (newBidAmount <= currentHighBid)
+                {
+                    newBidAmount = currentHighBid + BidIncrement.GetIncrement(currentHighBid);
+                }
+
+                if (newBidAmount <= highestAutoBid.MaxAmount)
+                {
+                    var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = newBidAmount };
+                    await _bidService.PlaceBidAsync(bidDto, highestAutoBid.UserId, highestAutoBid.Username, cancellationToken);
+
+                    highestAutoBid.CurrentBidAmount = newBidAmount;
+                    highestAutoBid.LastBidAt = DateTimeOffset.UtcNow;
+                    await _autoBidRepository.UpdateAsync(highestAutoBid);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
+                        auctionId, highestAutoBid.Username, newBidAmount);
+                }
             }
-
-            if (newBidAmount <= highestAutoBid.MaxAmount)
+            catch (Exception ex)
             {
-                var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = newBidAmount };
-                await _bidService.PlaceBidAsync(bidDto, highestAutoBid.UserId, highestAutoBid.Username, cancellationToken);
-
-                highestAutoBid.CurrentBidAmount = newBidAmount;
-                highestAutoBid.LastBidAt = DateTimeOffset.UtcNow;
-                await _autoBidRepository.UpdateAsync(highestAutoBid);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
-                    auctionId, highestAutoBid.Username, newBidAmount);
+                _logger.LogError(ex, "Error processing auto-bids for auction {AuctionId}", auctionId);
+                throw;
             }
         }
 

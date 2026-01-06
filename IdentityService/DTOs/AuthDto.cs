@@ -158,8 +158,12 @@ public class ExternalUserResponse
 
 public class TwoFactorLoginDto
 {
+    /// <summary>
+    /// Secure state token received after successful password authentication.
+    /// This token proves the user already verified their password.
+    /// </summary>
     [Required]
-    public string UserId { get; set; } = string.Empty;
+    public string TwoFactorStateToken { get; set; } = string.Empty;
 
     [Required]
     [StringLength(7, MinimumLength = 6)]

@@ -303,4 +303,84 @@ public class TokenGenerationService : ITokenGenerationService
         rng.GetBytes(randomBytes);
         return Convert.ToBase64String(randomBytes);
     }
+
+    /// <summary>
+    /// Generates a short-lived state token for 2FA verification.
+    /// This token proves the user has already verified their password.
+    /// </summary>
+    public string GenerateTwoFactorStateToken(string userId)
+    {
+        var issuer = _configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+        var secretKey = _configuration["Identity:SecretKey"]
+            ?? throw new InvalidOperationException("Identity:SecretKey is not configured");
+
+        var claims = new[]
+        {
+            new Claim("purpose", "2fa-state"),
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: "2fa-verification",
+            claims: claims,
+            notBefore: DateTime.UtcNow,
+            expires: DateTime.UtcNow.AddMinutes(5), // Short-lived: 5 minutes
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>
+    /// Validates the 2FA state token and extracts the user ID.
+    /// </summary>
+    public (bool IsValid, string? UserId) ValidateTwoFactorStateToken(string token)
+    {
+        try
+        {
+            var issuer = _configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
+            var secretKey = _configuration["Identity:SecretKey"]
+                ?? throw new InvalidOperationException("Identity:SecretKey is not configured");
+
+            var handler = new JwtSecurityTokenHandler();
+            var principal = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = "2fa-verification",
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                ClockSkew = TimeSpan.Zero // No tolerance for expiration
+            }, out _);
+
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value 
+                ?? principal.FindFirst("sub")?.Value;
+            var purpose = principal.FindFirst("purpose")?.Value;
+
+            if (purpose != "2fa-state" || string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("Invalid 2FA state token: purpose={Purpose}, hasUserId={HasUserId}", 
+                    purpose, !string.IsNullOrEmpty(userId));
+                return (false, null);
+            }
+
+            return (true, userId);
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            _logger.LogWarning("2FA state token has expired");
+            return (false, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to validate 2FA state token");
+            return (false, null);
+        }
+    }
 }

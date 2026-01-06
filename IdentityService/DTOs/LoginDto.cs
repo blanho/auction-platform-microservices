@@ -23,6 +23,13 @@ public class LoginResponseDto
     public string? RefreshToken { get; set; }
     public int ExpiresIn { get; set; }
     public bool RequiresTwoFactor { get; set; }
+    
+    /// <summary>
+    /// Secure state token for 2FA verification. Only set when RequiresTwoFactor is true.
+    /// This token proves the user already verified their password and must be sent
+    /// to the login-2fa endpoint along with the 2FA code.
+    /// </summary>
+    public string? TwoFactorStateToken { get; set; }
 }
 
 public class RefreshTokenResponseDto

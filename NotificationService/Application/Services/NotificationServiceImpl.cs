@@ -38,8 +38,6 @@ namespace NotificationService.Application.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var notificationDto = _mapper.Map<NotificationDto>(notification);
-
-            // Send real-time notification via SignalR
             await _hubService.SendNotificationToUserAsync(dto.UserId, notificationDto);
 
             return notificationDto;

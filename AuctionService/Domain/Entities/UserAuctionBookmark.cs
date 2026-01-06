@@ -13,8 +13,6 @@ public class UserAuctionBookmark : BaseEntity
     public BookmarkType Type { get; set; } = BookmarkType.Watchlist;
     public bool NotifyOnBid { get; set; } = true;
     public bool NotifyOnEnd { get; set; } = true;
-
-    // Domain behavior methods
     public void UpdateNotificationSettings(bool notifyOnBid, bool notifyOnEnd)
     {
         NotifyOnBid = notifyOnBid;

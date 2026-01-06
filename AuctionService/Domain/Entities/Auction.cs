@@ -107,13 +107,18 @@ public class Auction : BaseEntity
         });
     }
 
-    public void RaiseUpdatedEvent()
+    public void RaiseUpdatedEvent(IReadOnlyList<string>? modifiedFields = null)
     {
         AddDomainEvent(new AuctionUpdatedDomainEvent
         {
             AuctionId = Id,
             SellerId = SellerId,
-            Title = Item.Title
+            Title = Item.Title,
+            Description = Item.Description,
+            Condition = Item.Condition,
+            YearManufactured = Item.YearManufactured,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            ModifiedFields = modifiedFields ?? Array.Empty<string>()
         });
     }
 

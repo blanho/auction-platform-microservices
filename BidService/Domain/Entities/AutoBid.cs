@@ -34,8 +34,6 @@ public class AutoBid : BaseEntity
 
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? LastBidAt { get; set; }
-
-    // Domain behavior methods
     public void UpdateMaxAmount(decimal newMaxAmount)
     {
         ValidateMaxAmount(newMaxAmount);

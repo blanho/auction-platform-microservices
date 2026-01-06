@@ -33,7 +33,6 @@ public interface IFileStorageGrpcClient
         IEnumerable<(Guid FileId, string EntityType, string EntityId)> files,
         CancellationToken cancellationToken = default);
 
-
     Task<FileConfirmResult> UploadAndConfirmAsync(
         Stream stream,
         string fileName,
@@ -43,11 +42,9 @@ public interface IFileStorageGrpcClient
         string? uploadedBy = null,
         CancellationToken cancellationToken = default);
 
-
     Task<FileMetadata?> GetMetadataAsync(
         Guid fileId,
         CancellationToken cancellationToken = default);
-
 
     Task<bool> DeleteAsync(
         Guid fileId,

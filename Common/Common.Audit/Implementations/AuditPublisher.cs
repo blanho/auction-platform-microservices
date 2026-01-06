@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 
 namespace Common.Audit.Implementations;
 
-
 public class AuditPublisher : IAuditPublisher
 {
     private readonly IEventPublisher _eventPublisher;

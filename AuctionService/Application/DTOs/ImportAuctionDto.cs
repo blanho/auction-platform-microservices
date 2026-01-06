@@ -11,7 +11,6 @@ public class ImportAuctionDto
     public DateTimeOffset AuctionEnd { get; set; }
 }
 
-
 public class ImportAuctionResultDto
 {
     public int RowNumber { get; set; }

@@ -44,8 +44,6 @@ public class Category : BaseEntity
     public Category? ParentCategory { get; set; }
     public ICollection<Category> SubCategories { get; set; } = new List<Category>();
     public ICollection<Item> Items { get; set; } = new List<Item>();
-
-    // Domain behavior methods
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 

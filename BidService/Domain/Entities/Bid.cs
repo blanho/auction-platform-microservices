@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Common.Domain.Entities;
 using Common.Domain.Enums;
 using BidService.Domain.Events;
@@ -12,6 +13,12 @@ public class Bid : BaseEntity
     public decimal Amount { get; private set; }
     public DateTimeOffset BidTime { get; private set; }
     public BidStatus Status { get; private set; }
+    
+    /// <summary>
+    /// Optimistic concurrency token to prevent race conditions on bid updates.
+    /// </summary>
+    [Timestamp]
+    public uint RowVersion { get; private set; }
 
     private Bid() { }
 

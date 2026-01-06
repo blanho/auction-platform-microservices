@@ -3,6 +3,7 @@ using Common.Idempotency.Implementations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace Common.Idempotency.Extensions;
 
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
 
     /// <summary>
     /// Adds idempotency services with custom options.
+    /// Automatically resolves IConnectionMultiplexer for atomic operations if registered.
     /// </summary>
     public static IServiceCollection AddIdempotencyService(
         this IServiceCollection services,
@@ -34,7 +36,8 @@ public static class ServiceCollectionExtensions
         {
             var cache = sp.GetRequiredService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
             var logger = sp.GetRequiredService<ILogger<RedisIdempotencyService>>();
-            return new RedisIdempotencyService(cache, logger, options);
+            var redis = sp.GetService<IConnectionMultiplexer>();
+            return new RedisIdempotencyService(cache, logger, options, redis);
         });
 
         return services;

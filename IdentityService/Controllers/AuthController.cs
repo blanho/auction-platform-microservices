@@ -5,6 +5,9 @@ using IdentityService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 using System.Web;
 
 namespace IdentityService.Controllers;
@@ -21,6 +24,7 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
+    private readonly IDistributedCache _cache;
     private const string ClientId = "nextApp";
     private const string RefreshTokenCookieName = "refreshToken";
     private const int RefreshTokenCookieExpirationDays = 7;
@@ -32,7 +36,8 @@ public class AuthController : ControllerBase
         IEmailService emailService,
         IAuthService authService,
         IConfiguration configuration,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IDistributedCache cache)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -41,9 +46,11 @@ public class AuthController : ControllerBase
         _authService = authService;
         _configuration = configuration;
         _logger = logger;
+        _cache = cache;
     }
 
     [HttpPost("register")]
+    [EnableRateLimiting("registration")]
     [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] RegisterDto dto)
@@ -76,6 +83,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("resend-confirmation")]
+    [EnableRateLimiting("password-reset")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object>>> ResendConfirmation([FromBody] ResendConfirmationDto dto)
@@ -89,6 +97,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("password-reset")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
@@ -113,6 +122,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -137,6 +147,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login-2fa")]
+    [EnableRateLimiting("2fa")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -461,23 +472,70 @@ public class AuthController : ControllerBase
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await _userManager.UpdateAsync(user);
-
-        var tokens = await _tokenService.GenerateTokensForUserAsync(user.Id, ClientId);
-        if (tokens == null)
-        {
-            _logger.LogError("Failed to generate tokens for external user {UserId}", user.Id);
-            return Redirect($"{frontendUrl}/auth/signin?error=Failed+to+generate+tokens");
-        }
-
-        if (!string.IsNullOrEmpty(tokens.RefreshToken))
-        {
-            SetRefreshTokenCookie(tokens.RefreshToken);
-        }
+        var authCode = await GenerateAuthorizationCodeAsync(user.Id, ClientId);
 
         _logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
+        return Redirect($"{returnUrl}?code={authCode}");
+    }
 
-        var accessTokenParam = HttpUtility.UrlEncode(tokens.AccessToken);
-        return Redirect($"{returnUrl}?loginSuccess=true&accessToken={accessTokenParam}&expiresIn={tokens.ExpiresIn}");
+    /// <summary>
+    /// Exchange authorization code for tokens. This is more secure than passing tokens in URL.
+    /// </summary>
+    [HttpPost("exchange-code")]
+    [EnableRateLimiting("auth")]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> ExchangeCodeForTokens([FromBody] ExchangeCodeRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Code))
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Authorization code is required"));
+        }
+
+        var cacheKey = $"auth-code:{request.Code}";
+        var cached = await _cache.GetStringAsync(cacheKey);
+
+        if (string.IsNullOrEmpty(cached))
+        {
+            _logger.LogWarning("Invalid or expired authorization code attempt");
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid or expired authorization code"));
+        }
+        await _cache.RemoveAsync(cacheKey);
+
+        var codeData = JsonSerializer.Deserialize<AuthCodeData>(cached);
+        if (codeData == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Invalid authorization code data"));
+        }
+
+        var user = await _userManager.FindByIdAsync(codeData.UserId);
+        if (user == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("User not found"));
+        }
+
+        var ipAddress = GetIpAddress();
+        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
+        if (tokens == null)
+        {
+            return BadRequest(ApiResponse<object>.ErrorResponse("Failed to generate tokens"));
+        }
+
+        SetRefreshTokenCookie(tokens.Value.RefreshToken);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "user";
+
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResponse(new LoginResponseDto
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            Role = role,
+            AccessToken = tokens.Value.AccessToken,
+            ExpiresIn = tokens.Value.ExpiresIn,
+            RequiresTwoFactor = false
+        }, "Login successful"));
     }
 
     [HttpGet("check-username/{username}")]
@@ -596,5 +654,35 @@ public class AuthController : ControllerBase
     private string? GetRefreshTokenFromCookie()
     {
         return Request.Cookies[RefreshTokenCookieName];
+    }
+
+    private async Task<string> GenerateAuthorizationCodeAsync(string userId, string clientId)
+    {
+        var code = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32))
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
+            
+        var cacheKey = $"auth-code:{code}";
+        var codeData = new AuthCodeData
+        {
+            UserId = userId,
+            ClientId = clientId,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(codeData), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2) // Very short-lived
+        });
+
+        return code;
+    }
+
+    private class AuthCodeData
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string ClientId { get; set; } = string.Empty;
+        public DateTimeOffset CreatedAt { get; set; }
     }
 }

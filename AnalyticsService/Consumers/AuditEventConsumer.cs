@@ -29,8 +29,6 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
     {
         var auditEvent = context.Message;
         var idempotencyKey = $"{IdempotencyKeyPrefix}{auditEvent.Id}";
-
-        // Check for duplicate processing
         var existingValue = await _cache.GetStringAsync(idempotencyKey, context.CancellationToken);
         if (!string.IsNullOrEmpty(existingValue))
         {
@@ -72,8 +70,6 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
 
         await _unitOfWork.AuditLogs.AddAsync(auditLog, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-
-        // Mark as processed
         await _cache.SetStringAsync(
             idempotencyKey,
             "processed",

@@ -43,7 +43,6 @@ public class AuctionUpdatedConsumer : IdempotentConsumerBase<AuctionUpdatedEvent
 
     protected override string GetIdempotencyKey(ConsumeContext<AuctionUpdatedEvent> context)
     {
-        // Use message ID from MassTransit context for idempotency
         var messageId = context.MessageId?.ToString() ?? context.Message.Id.ToString();
         return $"auction-updated:{context.Message.Id}:{messageId}";
     }

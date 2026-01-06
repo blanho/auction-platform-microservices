@@ -43,7 +43,8 @@ public static class ServiceCollectionExtensions
                 services.AddSingleton<IStorageProvider>(sp =>
                 {
                     var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<StorageOptions>>();
-                    return new LocalStorageProvider(options, basePath);
+                    var config = sp.GetRequiredService<IConfiguration>();
+                    return new LocalStorageProvider(options, config, basePath);
                 });
                 break;
         }

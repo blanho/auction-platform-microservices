@@ -7,7 +7,6 @@ public enum StorageType
     S3
 }
 
-
 public enum FileStatus
 {
     Temporary,

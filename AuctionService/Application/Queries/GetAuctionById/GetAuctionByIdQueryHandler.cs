@@ -1,6 +1,7 @@
 using AuctionService.Application.DTOs;
 using AuctionService.Application.Interfaces;
 using AutoMapper;
+using Common.Caching.Abstractions;
 using Common.Core.Helpers;
 using Common.Repository.Interfaces;
 using Common.CQRS.Abstractions;
@@ -11,15 +12,21 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cache;
     private readonly IAppLogger<GetAuctionByIdQueryHandler> _logger;
+    
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+    private const string CacheKeyPrefix = "auction:";
 
     public GetAuctionByIdQueryHandler(
         IAuctionRepository repository,
         IMapper mapper,
+        ICacheService cache,
         IAppLogger<GetAuctionByIdQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -29,6 +36,15 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
 
         try
         {
+            var cacheKey = $"{CacheKeyPrefix}{request.Id}";
+            var cachedDto = await _cache.GetAsync<AuctionDto>(cacheKey, cancellationToken);
+            
+            if (cachedDto != null)
+            {
+                _logger.LogDebug("Auction {AuctionId} retrieved from cache", request.Id);
+                return Result.Success(cachedDto);
+            }
+
             var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
             if (auction == null)
@@ -38,6 +54,8 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
             }
 
             var dto = _mapper.Map<AuctionDto>(auction);
+            await _cache.SetAsync(cacheKey, dto, CacheDuration, cancellationToken);
+            
             return Result.Success(dto);
         }
         catch (Exception ex)

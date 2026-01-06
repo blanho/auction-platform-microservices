@@ -207,13 +207,16 @@ public class AuthService : IAuthService
 
         if (result.RequiresTwoFactor)
         {
+            var twoFactorStateToken = _tokenService.GenerateTwoFactorStateToken(user.Id);
+            
             _logger.LogInformation("User {Username} requires two-factor authentication", user.UserName);
             return AuthResult<LoginResponseDto>.TwoFactorRequired(new LoginResponseDto
             {
                 UserId = user.Id,
                 Username = user.UserName!,
                 Email = user.Email!,
-                RequiresTwoFactor = true
+                RequiresTwoFactor = true,
+                TwoFactorStateToken = twoFactorStateToken // Secure token instead of just UserId
             }, "Two-factor authentication required");
         }
 
@@ -253,7 +256,14 @@ public class AuthService : IAuthService
 
     public async Task<AuthResult<LoginResponseDto>> LoginWith2FAAsync(TwoFactorLoginDto dto, string ipAddress)
     {
-        var user = await _userManager.FindByIdAsync(dto.UserId);
+        var (isValid, userId) = _tokenService.ValidateTwoFactorStateToken(dto.TwoFactorStateToken);
+        if (!isValid || string.IsNullOrEmpty(userId))
+        {
+            _logger.LogWarning("Invalid or expired 2FA state token from {IpAddress}", ipAddress);
+            return AuthResult<LoginResponseDto>.Failure("Invalid or expired authentication state. Please login again.");
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             return AuthResult<LoginResponseDto>.Failure("Invalid authentication attempt");
 

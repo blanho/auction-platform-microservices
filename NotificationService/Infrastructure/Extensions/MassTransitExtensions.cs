@@ -42,6 +42,25 @@ namespace NotificationService.Infrastructure.Extensions
                         h.Password(configuration["RabbitMQ:Password"] ?? "guest");
                     });
 
+                    cfg.UseMessageRetry(r =>
+                    {
+                        r.Exponential(
+                            retryLimit: 5,
+                            minInterval: TimeSpan.FromMilliseconds(100),
+                            maxInterval: TimeSpan.FromSeconds(30),
+                            intervalDelta: TimeSpan.FromMilliseconds(200));
+                        r.Ignore<ArgumentException>();
+                        r.Ignore<InvalidOperationException>();
+                    });
+
+                    cfg.UseCircuitBreaker(cb =>
+                    {
+                        cb.TrackingPeriod = TimeSpan.FromMinutes(1);
+                        cb.TripThreshold = 15;
+                        cb.ActiveThreshold = 10;
+                        cb.ResetInterval = TimeSpan.FromMinutes(5);
+                    });
+
                     cfg.ConfigureEndpoints(context);
                 });
             });

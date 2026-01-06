@@ -32,8 +32,6 @@ public class Review : BaseEntity
     public string? Comment { get; set; }
     public string? SellerResponse { get; set; }
     public DateTimeOffset? SellerResponseAt { get; set; }
-
-    // Domain behavior methods
     public void AddSellerResponse(string response)
     {
         if (string.IsNullOrWhiteSpace(response))

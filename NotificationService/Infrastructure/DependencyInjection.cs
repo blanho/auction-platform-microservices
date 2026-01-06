@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using NotificationService.Application.Ports;
 using NotificationService.Application.Services;
 using NotificationService.Application.UseCases.DismissNotification;
@@ -11,6 +12,7 @@ using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Senders;
 using NotificationService.Infrastructure.Services;
 using NotificationService.Infrastructure.Templates;
+using Polly;
 
 namespace NotificationService.Infrastructure;
 
@@ -33,15 +35,45 @@ public static class DependencyInjection
         services.AddHttpClient();
         
         services.Configure<ResendEmailSenderOptions>(configuration.GetSection("Email:Resend"));
-        services.AddHttpClient("Resend");
+        services.AddHttpClient("Resend")
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromMilliseconds(500);
+                options.Retry.UseJitter = true;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 10;
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
         services.AddSingleton<INotificationSender, ResendEmailSender>();
         
         services.Configure<TwilioSmsSenderOptions>(configuration.GetSection("Sms:Twilio"));
-        services.AddHttpClient("Twilio");
+        services.AddHttpClient("Twilio")
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromMilliseconds(500);
+                options.Retry.UseJitter = true;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 10;
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
         services.AddSingleton<INotificationSender, TwilioSmsSender>();
         
         services.Configure<FirebasePushSenderOptions>(configuration.GetSection("Push:Firebase"));
-        services.AddHttpClient("Firebase");
+        services.AddHttpClient("Firebase")
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromMilliseconds(500);
+                options.Retry.UseJitter = true;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 10;
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
         services.AddSingleton<INotificationSender, FirebasePushSender>();
 
         services.AddSingleton<INotificationSenderFactory, NotificationSenderFactory>();

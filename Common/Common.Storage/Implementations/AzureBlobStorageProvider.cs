@@ -8,7 +8,6 @@ using Microsoft.Extensions.Options;
 
 namespace Common.Storage.Implementations;
 
-
 public class AzureBlobStorageProvider : IStorageProvider
 {
     private readonly StorageOptions _options;

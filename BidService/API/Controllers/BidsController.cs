@@ -46,8 +46,6 @@ namespace BidService.API.Controllers
             {
                 return Unauthorized(new { error = "User identity not found" });
             }
-
-            // Idempotency check
             if (!string.IsNullOrEmpty(idempotencyKey))
             {
                 var fullKey = $"bid:{bidderId}:{dto.AuctionId}:{idempotencyKey}";
@@ -94,8 +92,6 @@ namespace BidService.API.Controllers
                     throw;
                 }
             }
-            
-            // No idempotency key provided
             var result = await _bidService.PlaceBidAsync(dto, bidderId, username, cancellationToken);
             
             if (!string.IsNullOrEmpty(result.ErrorMessage))

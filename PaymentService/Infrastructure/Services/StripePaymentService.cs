@@ -29,7 +29,18 @@ public class StripePaymentService : IStripePaymentService
 
         var secretKey = _configuration["Stripe:SecretKey"]
             ?? throw new InvalidOperationException("Stripe:SecretKey is not configured");
-        _webhookSecret = _configuration["Stripe:WebhookSecret"] ?? string.Empty;
+        _webhookSecret = _configuration["Stripe:WebhookSecret"] 
+            ?? throw new InvalidOperationException(
+                "Stripe:WebhookSecret must be configured. " +
+                "Get your webhook signing secret from the Stripe Dashboard: " +
+                "https://dashboard.stripe.com/webhooks");
+        
+        if (_webhookSecret.Length < 20 || !_webhookSecret.StartsWith("whsec_"))
+        {
+            throw new InvalidOperationException(
+                "Stripe:WebhookSecret appears to be invalid. " +
+                "It should start with 'whsec_' and be obtained from the Stripe Dashboard.");
+        }
 
         StripeConfiguration.ApiKey = secretKey;
     }

@@ -22,8 +22,6 @@ public class StoredFile : BaseEntity
     public DateTimeOffset? ExpiresAt { get; set; }
     public string? FailureReason { get; set; }
     public Dictionary<string, string>? Metadata { get; set; }
-
-    // Domain behavior methods
     public void Confirm()
     {
         if (Status != FileStatus.Pending)

@@ -9,6 +9,8 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
     public void Configure(EntityTypeBuilder<Bid> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.RowVersion)
+            .IsRowVersion();
 
         builder.Property(e => e.BidderId)
             .IsRequired();

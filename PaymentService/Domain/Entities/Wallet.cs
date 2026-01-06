@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Common.Domain.Entities;
 
 namespace PaymentService.Domain.Entities;
@@ -9,6 +10,13 @@ public class Wallet : BaseEntity
 
     public Guid UserId { get; set; }
     public string Username { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Optimistic concurrency token to prevent race conditions on wallet balance updates.
+    /// Critical for preventing double-spend and ensuring balance integrity.
+    /// </summary>
+    [Timestamp]
+    public uint RowVersion { get; private set; }
 
     public decimal Balance
     {
@@ -25,8 +33,6 @@ public class Wallet : BaseEntity
     public decimal AvailableBalance => Balance - HeldAmount;
     public string Currency { get; set; } = "USD";
     public bool IsActive { get; set; } = true;
-
-    // Domain behavior methods
     public void Deposit(decimal amount)
     {
         if (amount <= 0)

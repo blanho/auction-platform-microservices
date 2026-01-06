@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using StorageService.Application.Configuration;
 using StorageService.Application.DTOs;
@@ -11,11 +13,27 @@ public class LocalStorageProvider : IStorageProvider
 {
     private readonly StorageOptions _options;
     private readonly string _basePath;
+    private readonly string _tokenSigningKey;
 
-    public LocalStorageProvider(IOptions<StorageOptions> options, string basePath = "uploads")
+    public LocalStorageProvider(
+        IOptions<StorageOptions> options, 
+        IConfiguration configuration,
+        string basePath = "uploads")
     {
         _options = options.Value;
         _basePath = basePath;
+        
+        _tokenSigningKey = configuration["Storage:TokenSigningKey"]
+            ?? throw new InvalidOperationException(
+                "Storage:TokenSigningKey must be configured. " +
+                "Generate a secure random string of at least 32 characters.");
+        
+        if (_tokenSigningKey.Length < 32)
+        {
+            throw new InvalidOperationException(
+                "Storage:TokenSigningKey must be at least 32 characters long for security.");
+        }
+        
         EnsureDirectoriesExist();
     }
 
@@ -168,12 +186,50 @@ public class LocalStorageProvider : IStorageProvider
         return Path.Combine(folder, fileName);
     }
 
-    private static string GenerateDownloadToken(string path, int expirationMinutes)
+    private string GenerateDownloadToken(string path, int expirationMinutes)
     {
         var expiry = DateTimeOffset.UtcNow.AddMinutes(expirationMinutes).ToUnixTimeSeconds();
         var data = $"{path}:{expiry}";
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(data));
-        return $"{expiry}.{Convert.ToBase64String(hash).Replace("+", "-").Replace("/", "_").TrimEnd('=')}";
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_tokenSigningKey));
+        var signature = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+        var signatureBase64 = Convert.ToBase64String(signature)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
+        
+        return $"{expiry}.{signatureBase64}";
+    }
+    
+    /// <summary>
+    /// Validates a download token to ensure it hasn't been tampered with and hasn't expired.
+    /// </summary>
+    public bool ValidateDownloadToken(string path, string token)
+    {
+        try
+        {
+            var parts = token.Split('.');
+            if (parts.Length != 2)
+                return false;
+            
+            if (!long.TryParse(parts[0], out var expiry))
+                return false;
+            if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() > expiry)
+                return false;
+            var data = $"{path}:{expiry}";
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_tokenSigningKey));
+            var expectedSignature = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+            var expectedSignatureBase64 = Convert.ToBase64String(expectedSignature)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .TrimEnd('=');
+            
+            return CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(parts[1]),
+                Encoding.UTF8.GetBytes(expectedSignatureBase64));
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

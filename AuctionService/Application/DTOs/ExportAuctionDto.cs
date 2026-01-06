@@ -17,7 +17,6 @@ public class ExportAuctionDto
     public required string Status { get; set; }
 }
 
-
 public class ExportQueryDto
 {
     public string? Status { get; set; }
