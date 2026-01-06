@@ -1,3 +1,4 @@
+using Common.Core.Authorization;
 using IdentityService.DTOs;
 using IdentityService.Interfaces;
 using IdentityService.Models;
@@ -58,6 +59,12 @@ public class AuthService : IAuthService
             return AuthResult<UserDto>.Failure("Registration failed", errors);
         }
 
+        var roleResult = await _userManager.AddToRoleAsync(user, AppRoles.User);
+        if (!roleResult.Succeeded)
+        {
+            _logger.LogWarning("Failed to assign default role to {Username}", dto.Username);
+        }
+
         await SendConfirmationEmailAsync(user);
 
         _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
@@ -66,7 +73,8 @@ public class AuthService : IAuthService
         {
             Id = user.Id,
             Username = user.UserName!,
-            Email = user.Email!
+            Email = user.Email!,
+            Role = AppRoles.User
         };
 
         return AuthResult<UserDto>.Success(userDto, "Registration successful. Please check your email to confirm your account.");

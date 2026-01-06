@@ -270,14 +270,15 @@ public class AuthController : ControllerBase
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "user";
+        var primaryRole = roles.FirstOrDefault() ?? Common.Core.Authorization.AppRoles.User;
 
         return Ok(ApiResponse<UserDto>.SuccessResponse(new UserDto
         {
             Id = user.Id,
             Username = user.UserName!,
             Email = user.Email!,
-            Role = role,
+            Role = primaryRole,
+            Roles = roles.ToList(),
             FullName = user.FullName,
             AvatarUrl = user.AvatarUrl,
             CreatedAt = user.CreatedAt,
