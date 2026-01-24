@@ -15,13 +15,6 @@ public class NotificationRepository : INotificationRepository
         _context = context;
     }
 
-    public async Task<List<NotificationEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Notifications
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<NotificationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Notifications.FindAsync([id], cancellationToken);

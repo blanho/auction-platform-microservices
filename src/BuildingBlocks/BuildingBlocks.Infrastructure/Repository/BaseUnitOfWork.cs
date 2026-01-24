@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions.Persistence;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Events;
 using MediatR;

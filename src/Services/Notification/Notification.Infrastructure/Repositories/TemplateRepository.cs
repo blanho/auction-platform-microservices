@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
@@ -28,11 +29,15 @@ public class TemplateRepository : ITemplateRepository
             .ToListAsync(ct);
     }
 
-    public async Task<List<NotificationTemplate>> GetAllAsync(CancellationToken ct = default)
+    public async Task<PaginatedResult<NotificationTemplate>> GetPagedAsync(int page, int pageSize, CancellationToken ct = default)
     {
-        return await _context.Templates
-            .OrderBy(t => t.Name)
+        var query = _context.Templates.OrderBy(t => t.Name);
+        var totalCount = await query.CountAsync(ct);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(ct);
+        return new PaginatedResult<NotificationTemplate>(items, totalCount, page, pageSize);
     }
 
     public async Task AddAsync(NotificationTemplate template, CancellationToken ct = default)

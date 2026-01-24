@@ -2,6 +2,7 @@
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
@@ -17,12 +18,22 @@ public class ReviewRepository : IReviewRepository
         _dateTime = dateTime;
     }
 
-    public async Task<List<Review>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<Review>> GetPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return await _context.Reviews
+        var query = _context.Reviews
             .Where(x => !x.IsDeleted)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<Review>(items, totalCount, page, pageSize);
     }
 
     public async Task<Review> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

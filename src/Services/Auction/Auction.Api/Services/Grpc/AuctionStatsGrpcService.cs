@@ -12,18 +12,15 @@ public partial class AuctionGrpcService
         GetAuctionStatsRequest request,
         ServerCallContext context)
     {
-        var allAuctions = await _auctionRepository.GetAllAsync(context.CancellationToken);
-
-        var liveAuctions = allAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Live);
-        var completedAuctions = allAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Finished);
-        var totalRevenue = allAuctions
-            .Where(a => a.SoldAmount.HasValue)
-            .Sum(a => a.SoldAmount!.Value);
+        var liveAuctions = await _auctionRepository.CountLiveAuctionsAsync(context.CancellationToken);
+        var completedAuctions = await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Finished, context.CancellationToken);
+        var totalAuctions = await _auctionRepository.GetTotalCountAsync(context.CancellationToken);
+        var totalRevenue = await _auctionRepository.GetTotalRevenueAsync(context.CancellationToken);
 
         return new AuctionStatsResponse
         {
             LiveAuctions = liveAuctions,
-            TotalAuctions = allAuctions.Count,
+            TotalAuctions = totalAuctions,
             CompletedAuctions = completedAuctions,
             TotalRevenue = decimal.ToDouble(totalRevenue)
         };
@@ -36,31 +33,27 @@ public partial class AuctionGrpcService
         var startDate = DateTime.TryParse(request.StartDate, out var start) ? start : DateTime.UtcNow.AddMonths(-1);
         var endDate = DateTime.TryParse(request.EndDate, out var end) ? end : DateTime.UtcNow;
 
-        var auctions = await _auctionRepository.GetAllAsync(context.CancellationToken);
-        var filteredAuctions = auctions
-            .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate)
-            .ToList();
-
-        var liveAuctions = filteredAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Live);
-        var completedAuctions = filteredAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Finished);
-        var cancelledAuctions = 0;
-        var pendingAuctions = filteredAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Draft || a.Status == BuildingBlocks.Domain.Enums.Status.Scheduled);
-
-        var soldAuctions = filteredAuctions.Where(a => a.SoldAmount.HasValue).ToList();
-        var totalRevenue = soldAuctions.Sum(a => a.SoldAmount!.Value);
-        var avgFinalPrice = soldAuctions.Any() ? soldAuctions.Average(a => a.SoldAmount!.Value) : 0m;
-        var successRate = filteredAuctions.Any() ? soldAuctions.Count * 100.0 / filteredAuctions.Count : 0.0;
+        var liveAuctions = await _auctionRepository.CountLiveAuctionsAsync(context.CancellationToken);
+        var completedAuctions = await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Finished, context.CancellationToken);
+        var pendingAuctions = await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Draft, context.CancellationToken);
+        pendingAuctions += await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Scheduled, context.CancellationToken);
+        var totalRevenue = await _auctionRepository.GetTotalRevenueAsync(context.CancellationToken);
+        var totalAuctions = await _auctionRepository.GetTotalCountAsync(context.CancellationToken);
+        
+        var avgFinalPrice = totalAuctions > 0 ? totalRevenue / totalAuctions : 0m;
+        var successRate = totalAuctions > 0 ? completedAuctions * 100.0 / totalAuctions : 0.0;
 
         var today = DateTime.UtcNow.Date;
+        var endOfDay = today.AddDays(1);
         var endOfWeek = today.AddDays(7);
-        var endingToday = auctions.Count(a => a.AuctionEnd.Date == today && a.Status == BuildingBlocks.Domain.Enums.Status.Live);
-        var endingThisWeek = auctions.Count(a => a.AuctionEnd.Date <= endOfWeek && a.Status == BuildingBlocks.Domain.Enums.Status.Live);
+        var endingToday = await _auctionRepository.GetCountEndingBetweenAsync(today, endOfDay, context.CancellationToken);
+        var endingThisWeek = await _auctionRepository.GetCountEndingBetweenAsync(today, endOfWeek, context.CancellationToken);
 
         var response = new AuctionAnalyticsResponse
         {
             LiveAuctions = liveAuctions,
             CompletedAuctions = completedAuctions,
-            CancelledAuctions = cancelledAuctions,
+            CancelledAuctions = 0,
             PendingAuctions = pendingAuctions,
             TotalRevenue = decimal.ToDouble(totalRevenue),
             AverageFinalPrice = decimal.ToDouble(avgFinalPrice),
@@ -68,19 +61,6 @@ public partial class AuctionGrpcService
             AuctionsEndingToday = endingToday,
             AuctionsEndingThisWeek = endingThisWeek
         };
-
-        var dailyStats = filteredAuctions
-            .GroupBy(a => a.CreatedAt.Date)
-            .Select(g => new DailyAuctionStat
-            {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                Created = g.Count(),
-                Completed = g.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Finished),
-                Revenue = decimal.ToDouble(g.Where(a => a.SoldAmount.HasValue).Sum(a => a.SoldAmount!.Value))
-            })
-            .OrderBy(d => d.Date);
-
-        response.DailyStats.AddRange(dailyStats);
 
         return response;
     }
@@ -90,14 +70,7 @@ public partial class AuctionGrpcService
         ServerCallContext context)
     {
         var limit = request.Limit > 0 ? request.Limit : 10;
-        var auctions = await _auctionRepository.GetAllAsync(context.CancellationToken);
-
-        var query = auctions.Where(a => a.Status == BuildingBlocks.Domain.Enums.Status.Live);
-
-        var topAuctions = query
-            .OrderByDescending(a => a.CurrentHighBid ?? 0)
-            .Take(limit)
-            .ToList();
+        var topAuctions = await _auctionRepository.GetTrendingItemsAsync(limit, context.CancellationToken);
 
         var response = new TopAuctionsResponse();
         foreach (var auction in topAuctions)
@@ -119,24 +92,20 @@ public partial class AuctionGrpcService
         GetCategoryStatsRequest request,
         ServerCallContext context)
     {
-        var auctions = await _auctionRepository.GetAllAsync(context.CancellationToken);
-
-        var categoryStats = auctions
-            .Where(a => a.Item?.Category != null)
-            .GroupBy(a => a.Item!.Category)
-            .Select(g => new CategoryStat
-            {
-                CategoryId = g.Key.Id.ToString(),
-                CategoryName = g.Key.Name,
-                AuctionCount = g.Count(),
-                Revenue = decimal.ToDouble(g.Where(a => a.SoldAmount.HasValue).Sum(a => a.SoldAmount!.Value)),
-                Percentage = 0
-            })
-            .OrderByDescending(c => c.AuctionCount)
-            .ToList();
+        var categoryStats = await _auctionRepository.GetCategoryStatsAsync(context.CancellationToken);
 
         var response = new CategoryStatsResponse();
-        response.Categories.AddRange(categoryStats);
+        foreach (var stat in categoryStats)
+        {
+            response.Categories.Add(new CategoryStat
+            {
+                CategoryId = stat.CategoryId.ToString(),
+                CategoryName = stat.CategoryName,
+                AuctionCount = stat.AuctionCount,
+                Revenue = decimal.ToDouble(stat.Revenue),
+                Percentage = 0
+            });
+        }
 
         return response;
     }

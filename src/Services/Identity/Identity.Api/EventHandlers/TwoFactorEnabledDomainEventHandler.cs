@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Identity.Api.DomainEvents;
+using IdentityService.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -18,13 +19,19 @@ public class TwoFactorEnabledDomainEventHandler : INotificationHandler<TwoFactor
         _logger = logger;
     }
 
-    public Task Handle(TwoFactorEnabledDomainEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(TwoFactorEnabledDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Processing TwoFactorEnabledDomainEvent for User {UserId} ({Username})",
             notification.UserId,
             notification.Username);
 
-        return Task.CompletedTask;
+        await _eventPublisher.PublishAsync(new TwoFactorEnabledEvent
+        {
+            UserId = notification.UserId,
+            Username = notification.Username,
+            Email = notification.Email,
+            EnabledAt = notification.OccurredAt
+        }, cancellationToken);
     }
 }

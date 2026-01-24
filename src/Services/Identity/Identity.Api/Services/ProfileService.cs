@@ -106,6 +106,13 @@ public class ProfileService : IProfileService
         if (!result.Succeeded)
             return Result.Failure(IdentityErrors.WithIdentityErrors("Failed to change password", result.Errors));
 
+        await _mediator.Publish(new PasswordChangedDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!
+        }, cancellationToken);
+
         await _auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             new AuthAuditData

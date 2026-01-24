@@ -2,6 +2,7 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -28,21 +29,26 @@ public class CachedAuctionRepository : IAuctionRepository
         _logger = logger;
     }
 
-    public async Task<List<Auction>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<Auction>> GetPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        var key = CacheKeys.AuctionList();
-        var cachedDtos = await _cache.GetAsync<List<Application.DTOs.AuctionDto>>(key, cancellationToken);
-        if (cachedDtos != null)
+        var key = CacheKeys.AuctionList($"page:{page}:size:{pageSize}");
+        var cached = await _cache.GetAsync<PaginatedResult<Application.DTOs.AuctionDto>>(key, cancellationToken);
+        if (cached != null)
         {
-            _logger.LogInformation("Cache HIT for all auctions");
-            return _mapper.Map<List<Auction>>(cachedDtos);
+            _logger.LogInformation("Cache HIT for paged auctions (page {Page}, size {Size})", page, pageSize);
+            var mappedItems = _mapper.Map<List<Auction>>(cached.Items);
+            return new PaginatedResult<Auction>(mappedItems, cached.TotalCount, cached.Page, cached.PageSize);
         }
 
-        _logger.LogInformation("Cache MISS for all auctions - fetching from database");
-        var auctions = await _inner.GetAllAsync(cancellationToken);
-        var dtos = _mapper.Map<List<Application.DTOs.AuctionDto>>(auctions);
-        await _cache.SetAsync(key, dtos, AuctionListTtl, cancellationToken);
-        return auctions;
+        _logger.LogInformation("Cache MISS for paged auctions - fetching from database");
+        var result = await _inner.GetPagedAsync(page, pageSize, cancellationToken);
+        var dtos = _mapper.Map<List<Application.DTOs.AuctionDto>>(result.Items);
+        var cachedResult = new PaginatedResult<Application.DTOs.AuctionDto>(dtos, result.TotalCount, result.Page, result.PageSize);
+        await _cache.SetAsync(key, cachedResult, AuctionListTtl, cancellationToken);
+        return result;
     }
 
     public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -167,6 +173,15 @@ public class CachedAuctionRepository : IAuctionRepository
         DateTimeOffset? previousPeriodStart = null, 
         CancellationToken cancellationToken = default)
         => _inner.GetSellerStatsAsync(username, periodStart, previousPeriodStart, cancellationToken);
+
+    public Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
+        => _inner.GetActiveAuctionsBySellerIdAsync(sellerId, cancellationToken);
+
+    public Task<List<Auction>> GetAllBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
+        => _inner.GetAllBySellerIdAsync(sellerId, cancellationToken);
+
+    public Task<List<Auction>> GetAuctionsWithWinnerIdAsync(Guid winnerId, CancellationToken cancellationToken = default)
+        => _inner.GetAuctionsWithWinnerIdAsync(winnerId, cancellationToken);
 
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {

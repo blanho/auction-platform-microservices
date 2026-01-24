@@ -507,6 +507,14 @@ public class AuthService : IAuthService
         await Task.WhenAll(updateTask, rolesTask);
         var roles = rolesTask.Result;
 
+        await _mediator.Publish(new UserLoginDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            IpAddress = ipAddress
+        });
+
         await _auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             new AuthAuditData

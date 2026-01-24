@@ -35,6 +35,64 @@ public static class MassTransitConfiguration
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
 
+            x.AddConsumer<UserCreatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(
+                        retryLimit: 5,
+                        minInterval: TimeSpan.FromSeconds(5),
+                        maxInterval: TimeSpan.FromMinutes(5),
+                        intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<EmailNotificationRequestedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(
+                        retryLimit: 5,
+                        minInterval: TimeSpan.FromSeconds(5),
+                        maxInterval: TimeSpan.FromMinutes(5),
+                        intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<PasswordChangedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<TwoFactorEnabledConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<TwoFactorDisabledConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<UserLoginConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
             x.AddEntityFrameworkOutbox<NotificationDbContext>(o =>
             {
                 o.UsePostgres();
@@ -75,6 +133,74 @@ public static class MassTransitConfiguration
                             TimeSpan.FromMinutes(30),
                             TimeSpan.FromHours(1)));
 
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-user-created", e =>
+                {
+                    e.ConfigureConsumer<UserCreatedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r
+                        .Intervals(
+                            TimeSpan.FromSeconds(5),
+                            TimeSpan.FromSeconds(30),
+                            TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-email-requests", e =>
+                {
+                    e.ConfigureConsumer<EmailNotificationRequestedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r
+                        .Intervals(
+                            TimeSpan.FromSeconds(5),
+                            TimeSpan.FromSeconds(30),
+                            TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-password-changed", e =>
+                {
+                    e.ConfigureConsumer<PasswordChangedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-2fa-enabled", e =>
+                {
+                    e.ConfigureConsumer<TwoFactorEnabledConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-2fa-disabled", e =>
+                {
+                    e.ConfigureConsumer<TwoFactorDisabledConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-user-login", e =>
+                {
+                    e.ConfigureConsumer<UserLoginConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.DiscardFaultedMessages();
+                    e.DiscardSkippedMessages();
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
 

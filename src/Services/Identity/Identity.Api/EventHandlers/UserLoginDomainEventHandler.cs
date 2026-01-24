@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Identity.Api.DomainEvents;
+using IdentityService.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +19,7 @@ public class UserLoginDomainEventHandler : INotificationHandler<UserLoginDomainE
         _logger = logger;
     }
 
-    public Task Handle(UserLoginDomainEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(UserLoginDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Processing UserLoginDomainEvent for User {UserId} ({Username}) from IP {IpAddress}",
@@ -26,6 +27,13 @@ public class UserLoginDomainEventHandler : INotificationHandler<UserLoginDomainE
             notification.Username,
             notification.IpAddress);
 
-        return Task.CompletedTask;
+        await _eventPublisher.PublishAsync(new UserLoginEvent
+        {
+            UserId = notification.UserId,
+            Username = notification.Username,
+            Email = notification.Email,
+            IpAddress = notification.IpAddress,
+            LoginAt = notification.OccurredAt
+        }, cancellationToken);
     }
 }

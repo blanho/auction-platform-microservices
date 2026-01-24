@@ -7,7 +7,6 @@ namespace Notification.Application.Interfaces;
 
 public interface INotificationRepository
 {
-    Task<List<NotificationEntity>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<NotificationEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<NotificationEntity> CreateAsync(NotificationEntity notification, CancellationToken cancellationToken = default);
     Task UpdateAsync(NotificationEntity notification, CancellationToken cancellationToken = default);

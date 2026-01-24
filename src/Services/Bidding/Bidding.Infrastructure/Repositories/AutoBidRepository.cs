@@ -4,6 +4,7 @@
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Application.Constants;
 using Microsoft.EntityFrameworkCore;
@@ -21,12 +22,22 @@ public class AutoBidRepository : IAutoBidRepository
         _dateTime = dateTime;
     }
 
-    public async Task<List<AutoBid>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<AutoBid>> GetPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return await _context.AutoBids
+        var query = _context.AutoBids
             .Where(x => !x.IsDeleted)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<AutoBid>(items, totalCount, page, pageSize);
     }
 
     public async Task<AutoBid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

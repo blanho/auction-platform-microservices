@@ -41,6 +41,9 @@
     <!-- Locking -->
     <PackageReference Include="RedLock.net" Version="2.3.2" />
     
+    <!-- Resilience -->
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.1.0" />
+    
     <!-- Logging & Observability -->
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />

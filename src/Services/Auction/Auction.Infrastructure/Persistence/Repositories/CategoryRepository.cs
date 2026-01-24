@@ -2,6 +2,7 @@
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
@@ -17,13 +18,23 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             _dateTime = dateTime;
         }
 
-        public async Task<List<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Category>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Categories
+            var query = _context.Categories
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.DisplayOrder)
-                .ThenBy(x => x.Name)
+                .ThenBy(x => x.Name);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Category>(items, totalCount, page, pageSize);
         }
 
         public async Task<Category> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

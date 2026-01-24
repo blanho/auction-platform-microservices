@@ -101,7 +101,8 @@ public class TwoFactorService : ITwoFactorService
         await _mediator.Publish(new TwoFactorEnabledDomainEvent
         {
             UserId = user.Id,
-            Username = user.UserName!
+            Username = user.UserName!,
+            Email = user.Email!
         });
 
         await _auditPublisher.PublishAsync(
@@ -141,7 +142,8 @@ public class TwoFactorService : ITwoFactorService
         await _mediator.Publish(new TwoFactorDisabledDomainEvent
         {
             UserId = user.Id,
-            Username = user.UserName!
+            Username = user.UserName!,
+            Email = user.Email!
         });
 
         await _auditPublisher.PublishAsync(

@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Identity.Api.DomainEvents;
+using IdentityService.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -18,13 +19,19 @@ public class PasswordChangedDomainEventHandler : INotificationHandler<PasswordCh
         _logger = logger;
     }
 
-    public Task Handle(PasswordChangedDomainEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(PasswordChangedDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Processing PasswordChangedDomainEvent for User {UserId} ({Username})",
             notification.UserId,
             notification.Username);
 
-        return Task.CompletedTask;
+        await _eventPublisher.PublishAsync(new PasswordChangedEvent
+        {
+            UserId = notification.UserId,
+            Username = notification.Username,
+            Email = notification.Email,
+            ChangedAt = notification.OccurredAt
+        }, cancellationToken);
     }
 }

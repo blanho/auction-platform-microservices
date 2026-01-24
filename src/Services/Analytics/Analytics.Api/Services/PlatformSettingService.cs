@@ -10,6 +10,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
 {
     private readonly IPlatformSettingRepository _settingRepository;
     private readonly ILogger<PlatformSettingService> _logger;
+    private const int MaxSettings = 200;
 
     public PlatformSettingService(
         IPlatformSettingRepository settingRepository,
@@ -23,9 +24,16 @@ public sealed class PlatformSettingService : IPlatformSettingService
         SettingCategory? category,
         CancellationToken cancellationToken = default)
     {
-        var settings = category.HasValue
-            ? await _settingRepository.GetByCategoryAsync(category.Value, cancellationToken)
-            : await _settingRepository.GetAllAsync(cancellationToken);
+        List<PlatformSetting> settings;
+        if (category.HasValue)
+        {
+            settings = await _settingRepository.GetByCategoryAsync(category.Value, cancellationToken);
+        }
+        else
+        {
+            var result = await _settingRepository.GetPagedAsync(1, MaxSettings, cancellationToken);
+            settings = result.Items.ToList();
+        }
 
         return settings.Select(MapToDto).ToList();
     }

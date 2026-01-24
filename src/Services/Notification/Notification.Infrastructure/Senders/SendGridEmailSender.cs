@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -44,7 +45,7 @@ public class SendGridEmailSender : IEmailSender
                 from,
                 toAddress,
                 subject,
-                plainTextBody ?? StripHtml(htmlBody),
+                plainTextBody ?? TemplateHelper.StripHtml(htmlBody),
                 htmlBody);
 
             msg.SetClickTracking(_options.EnableClickTracking, _options.EnableClickTracking);
@@ -111,12 +112,6 @@ public class SendGridEmailSender : IEmailSender
             : localPart;
 
         return $"{maskedLocal}@{domain}";
-    }
-
-    private static string StripHtml(string html)
-    {
-        if (string.IsNullOrEmpty(html)) return string.Empty;
-        return System.Text.RegularExpressions.Regex.Replace(html, "<[^>]*>", string.Empty);
     }
 }
 

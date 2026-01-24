@@ -3,6 +3,7 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Domain.Enums;
 
@@ -19,16 +20,26 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             _dateTime = dateTime;
         }
 
-        public async Task<List<Auction>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
+                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
         }
 
         public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

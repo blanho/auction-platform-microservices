@@ -2,6 +2,7 @@ using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Bidding.Application.DTOs;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Application.Constants;
 using Bidding.Domain.Enums;
@@ -20,12 +21,22 @@ namespace Bidding.Infrastructure.Repositories
             _dateTime = dateTime;
         }
 
-        public async Task<List<Bid>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Bid>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            var query = _context.Bids
                 .Where(x => !x.IsDeleted)
-                .OrderByDescending(x => x.BidTime)
+                .OrderByDescending(x => x.BidTime);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Bid>(items, totalCount, page, pageSize);
         }
 
         public async Task<Bid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
