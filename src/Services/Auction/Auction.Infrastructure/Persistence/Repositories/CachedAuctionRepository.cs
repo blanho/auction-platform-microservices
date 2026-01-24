@@ -51,7 +51,7 @@ public class CachedAuctionRepository : IAuctionRepository
         return result;
     }
 
-    public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.Auction(id);
         var cachedDto = await _cache.GetAsync<Application.DTOs.AuctionDto>(key, cancellationToken);

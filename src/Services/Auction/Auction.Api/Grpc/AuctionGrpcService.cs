@@ -3,7 +3,7 @@ using Auctions.Application.Interfaces;
 using Grpc.Core;
 using MediatR;
 
-namespace Auctions.Api.Services.Grpc;
+namespace Auctions.Api.Grpc;
 
 public partial class AuctionGrpcService(
     IAuctionRepository auctionRepository,

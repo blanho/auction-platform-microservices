@@ -1,3 +1,4 @@
+using Bidding.Application.Errors;
 using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.UpdateAutoBid;
@@ -29,19 +30,19 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
         var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
         {
-            return Result.Failure<UpdateAutoBidResult>(Error.Create("AutoBid.NotFound", "Auto-bid not found"));
+            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.NotFound);
         }
 
         if (autoBid.UserId != request.UserId)
         {
             _logger.LogWarning("User {UserId} attempted to update auto-bid {AutoBidId} owned by {OwnerId}",
                 request.UserId, request.AutoBidId, autoBid.UserId);
-            return Result.Failure<UpdateAutoBidResult>(Error.Create("AutoBid.Unauthorized", "You can only update your own auto-bids"));
+            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.Unauthorized);
         }
 
         if (!autoBid.IsActive)
         {
-            return Result.Failure<UpdateAutoBidResult>(Error.Create("AutoBid.Inactive", "This auto-bid is no longer active"));
+            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.Inactive);
         }
 
         try
@@ -50,7 +51,7 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
         }
         catch (Exception ex)
         {
-            return Result.Failure<UpdateAutoBidResult>(Error.Create("AutoBid.UpdateFailed", ex.Message));
+            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.UpdateFailed(ex.Message));
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

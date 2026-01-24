@@ -5,7 +5,7 @@ using Auctions.Application.Queries.GetQuickStats;
 using Auctions.Application.Queries.GetTrendingSearches;
 using Grpc.Core;
 
-namespace Auctions.Api.Services.Grpc;
+namespace Auctions.Api.Grpc;
 
 public partial class AuctionGrpcService
 {
@@ -91,10 +91,9 @@ public partial class AuctionGrpcService
         var stats = result.Value;
         return new QuickStatsResponse
         {
-            TotalAuctions = 0,
             LiveAuctions = stats.LiveAuctions,
-            TotalUsers = stats.ActiveUsers,
-            TotalBids = 0
+            EndingSoon = stats.EndingSoon,
+            NewToday = 0
         };
     }
 
@@ -115,9 +114,8 @@ public partial class AuctionGrpcService
         {
             response.Searches.Add(new TrendingSearch
             {
-                SearchTerm = search.SearchTerm,
-                SearchCount = search.Count,
-                GrowthRate = 0
+                Keyword = search.SearchTerm,
+                SearchCount = search.Count
             });
         }
 

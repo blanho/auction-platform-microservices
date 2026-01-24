@@ -1,8 +1,10 @@
+using Bidding.Application.Errors;
 using Bidding.Application.Features.AutoBids.CancelAutoBid;
 using Bidding.Application.Features.AutoBids.CreateAutoBid;
 using Bidding.Application.Features.AutoBids.GetAutoBid;
 using Bidding.Application.Features.AutoBids.GetMyAutoBids;
 using Bidding.Application.Features.AutoBids.UpdateAutoBid;
+using Bidding.Domain.Constants;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Carter;
@@ -50,7 +52,7 @@ public class AutoBidEndpoints : ICarterModule
     }
 
     private static async Task<IResult> CreateAutoBid(
-        CreateAutoBidRequest request,
+        CreateAutoBidDto request,
         HttpContext context,
         IMediator mediator,
         CancellationToken ct)
@@ -67,9 +69,15 @@ public class AutoBidEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Created($"/api/v1/autobids/{result.Value.AutoBidId}", result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        if (result.Value == null)
+            return Results.BadRequest(ProblemDetailsHelper.FromError(BiddingErrors.AutoBid.CreateFailed("Auto-bid creation failed")));
+
+        return Results.Created($"/api/v1/autobids/{result.Value.AutoBidId}", result.Value);
     }
 
     private static async Task<IResult> GetAutoBid(
@@ -80,31 +88,39 @@ public class AutoBidEndpoints : ICarterModule
         var query = new GetAutoBidQuery(autoBidId);
         var result = await mediator.Send(query, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound();
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+        }
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> GetMyAutoBids(
         HttpContext context,
         IMediator mediator,
         [FromQuery] bool? activeOnly,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int page = BidDefaults.DefaultPage,
+        [FromQuery] int pageSize = BidDefaults.DefaultPageSize,
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
+        page = page < 1 ? BidDefaults.DefaultPage : page;
+        pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
         var query = new GetMyAutoBidsQuery(userId, activeOnly, page, pageSize);
         var result = await mediator.Send(query, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> UpdateAutoBid(
         Guid autoBidId,
-        UpdateAutoBidRequest request,
+        UpdateAutoBidDto request,
         HttpContext context,
         IMediator mediator,
         CancellationToken ct)
@@ -118,9 +134,14 @@ public class AutoBidEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        if (!result.IsSuccess)
+        {
+            if (result.Error == BiddingErrors.AutoBid.NotFound)
+                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> CancelAutoBid(
@@ -133,21 +154,13 @@ public class AutoBidEndpoints : ICarterModule
         var command = new CancelAutoBidCommand(autoBidId, userId);
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        if (!result.IsSuccess)
+        {
+            if (result.Error == BiddingErrors.AutoBid.NotFound)
+                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
     }
-}
-
-public record CreateAutoBidRequest
-{
-    public Guid AuctionId { get; init; }
-    public decimal MaxAmount { get; init; }
-    public decimal? BidIncrement { get; init; }
-}
-
-public record UpdateAutoBidRequest
-{
-    public decimal MaxAmount { get; init; }
-    public decimal? BidIncrement { get; init; }
 }

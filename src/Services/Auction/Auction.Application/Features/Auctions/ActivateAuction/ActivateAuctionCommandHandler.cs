@@ -42,6 +42,10 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
         try
         {
             var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
+            if (auction == null)
+            {
+                return Result.Failure<AuctionDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found"));
+            }
 
             if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
             {

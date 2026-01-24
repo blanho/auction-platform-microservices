@@ -1,6 +1,9 @@
 using Bidding.Api.Extensions;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
+using Bidding.Infrastructure.Grpc;
+using Bidding.Application.Interfaces;
+using Auctions.Api.Grpc;
 using Carter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,6 +29,19 @@ builder.Services.AddCarter();
 
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
+
+builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
+{
+    var auctionGrpcUrl = builder.Configuration["GrpcServices:AuctionService"]
+        ?? "https://localhost:7001";
+    options.Address = new Uri(auctionGrpcUrl);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+});
+
+builder.Services.AddScoped<IAuctionGrpcClient, AuctionGrpcClient>();
 
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>

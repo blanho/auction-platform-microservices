@@ -100,7 +100,7 @@ app.UseAuthorization();
 app.UseAccessAuthorization();
 
 app.MapCarter();
-app.MapGrpcService<Auctions.Api.Services.Grpc.AuctionGrpcService>();
+app.MapGrpcService<Auctions.Api.Grpc.AuctionGrpcService>();
 app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();

@@ -26,6 +26,10 @@ public class AddSellerResponseCommandHandler : ICommandHandler<AddSellerResponse
         try
         {
             var review = await _reviewRepository.GetByIdAsync(request.ReviewId, cancellationToken);
+            if (review == null)
+            {
+                return Result.Failure<ReviewDto>(Error.Create("Review.NotFound", $"Review with ID {request.ReviewId} not found"));
+            }
 
             if (review.ReviewedUsername != request.SellerUsername)
                 return Result.Failure<ReviewDto>(Error.Create("Review.Forbidden", "Only the reviewed seller can respond to this review"));

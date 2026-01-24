@@ -40,7 +40,7 @@
     <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     
     <!-- Contracts for events being orchestrated -->
-    <ProjectReference Include="..\..\Services\Auction\Auction.Contracts\Auction.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\Services\Payment\Payment.Contracts\Payment.Contracts.csproj" />
   </ItemGroup>
 

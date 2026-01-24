@@ -48,27 +48,3 @@ message CategoryBreakdown {
   int32 auction_count = 2;
   double revenue = 3;
 }
-
-message GetQuickStatsRequest {
-}
-
-message QuickStatsResponse {
-  int32 total_auctions = 1;
-  int32 live_auctions = 2;
-  int32 total_users = 3;
-  int32 total_bids = 4;
-}
-
-message GetTrendingSearchesRequest {
-  int32 limit = 1;
-}
-
-message TrendingSearchesResponse {
-  repeated TrendingSearch searches = 1;
-}
-
-message TrendingSearch {
-  string search_term = 1;
-  int32 search_count = 2;
-  double growth_rate = 3;
-}

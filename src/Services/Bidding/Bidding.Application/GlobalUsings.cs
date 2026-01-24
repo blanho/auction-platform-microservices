@@ -14,10 +14,10 @@ global using Bidding.Domain.Entities;
 global using Bidding.Domain.Enums;
 global using Bidding.Domain.ValueObjects;
 global using Bidding.Domain.Events;
+global using Bidding.Domain.Constants;
 
 global using Bidding.Application.DTOs;
 global using Bidding.Application.Interfaces;
-global using Bidding.Application.Constants;
 
 global using BidService.Contracts.Events;
 

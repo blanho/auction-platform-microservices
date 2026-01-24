@@ -3,7 +3,7 @@ using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using Grpc.Core;
 
-namespace Auctions.Api.Services.Grpc;
+namespace Auctions.Api.Grpc;
 
 public partial class AuctionGrpcService
 {

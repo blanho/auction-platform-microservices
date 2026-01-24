@@ -2,7 +2,7 @@ using Grpc.Core;
 using Payment.Api.Grpc;
 using Payment.Application.Interfaces;
 
-namespace Payment.Api.Services;
+namespace Payment.Api.Grpc;
 
 public class PaymentAnalyticsGrpcService : PaymentAnalyticsGrpc.PaymentAnalyticsGrpcBase
 {

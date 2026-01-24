@@ -37,14 +37,12 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return new PaginatedResult<Category>(items, totalCount, page, pageSize);
         }
 
-        public async Task<Category> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var category = await _context.Categories
+            return await _context.Categories
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Items.Where(i => !i.IsDeleted))
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-            
-            return category ?? throw new KeyNotFoundException($"Category with ID {id} not found");
         }
 
         public async Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)

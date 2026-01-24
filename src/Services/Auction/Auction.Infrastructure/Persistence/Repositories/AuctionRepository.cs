@@ -42,7 +42,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
         }
 
-        public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
@@ -98,6 +98,54 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        }
+
+        public Task AddRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            foreach (var auction in auctions)
+            {
+                auction.CreatedAt = utcNow;
+                auction.CreatedBy = SystemGuids.System;
+                auction.IsDeleted = false;
+
+                if (auction.Item != null)
+                {
+                    auction.Item.CreatedAt = utcNow;
+                    auction.Item.CreatedBy = SystemGuids.System;
+                    auction.Item.IsDeleted = false;
+                }
+            }
+            _context.Auctions.AddRange(auctions);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            foreach (var auction in auctions)
+            {
+                auction.UpdatedAt = utcNow;
+                auction.UpdatedBy = SystemGuids.System;
+            }
+            _context.Auctions.UpdateRange(auctions);
+            return Task.CompletedTask;
+        }
+
+        public async Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            var auctions = await _context.Auctions
+                .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            foreach (var auction in auctions)
+            {
+                auction.IsDeleted = true;
+                auction.DeletedAt = utcNow;
+                auction.DeletedBy = SystemGuids.System;
+            }
+            _context.Auctions.UpdateRange(auctions);
         }
 
         public async Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(

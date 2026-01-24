@@ -1,3 +1,5 @@
+using Bidding.Application.Errors;
+using Bidding.Domain.Constants;
 using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.Bids.RetractBid;
@@ -9,8 +11,6 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
     private readonly IEventPublisher _eventPublisher;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<RetractBidCommandHandler> _logger;
-
-    private const int RetractWindowMinutes = 5;
 
     public RetractBidCommandHandler(
         IBidRepository repository,
@@ -34,25 +34,25 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         var bid = await _repository.GetByIdAsync(request.BidId, cancellationToken);
         if (bid == null)
         {
-            return Result.Failure<RetractBidResult>(Error.Create("Bid.NotFound", "Bid not found"));
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.NotFound);
         }
 
         if (bid.BidderId != request.UserId)
         {
             _logger.LogWarning("User {UserId} attempted to retract bid {BidId} owned by {OwnerId}",
                 request.UserId, request.BidId, bid.BidderId);
-            return Result.Failure<RetractBidResult>(Error.Create("Bid.Unauthorized", "You can only retract your own bids"));
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.Unauthorized);
         }
 
         if (bid.Status == BidStatus.Rejected)
         {
-            return Result.Failure<RetractBidResult>(Error.Create("Bid.AlreadyRejected", "Cannot retract a rejected bid"));
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRejected);
         }
 
         var timeSinceBid = _dateTime.UtcNowOffset - bid.BidTime;
-        if (timeSinceBid.TotalMinutes > RetractWindowMinutes)
+        if (timeSinceBid.TotalMinutes > BidDefaults.RetractWindowMinutes)
         {
-            return Result.Failure<RetractBidResult>(Error.Create("Bid.RetractWindowExpired", $"Bids can only be retracted within {RetractWindowMinutes} minutes of placement"));
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.RetractWindowExpired(BidDefaults.RetractWindowMinutes));
         }
 
         var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);

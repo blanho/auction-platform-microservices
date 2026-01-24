@@ -33,6 +33,10 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         try
         {
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            if (category == null)
+            {
+                return Result.Failure<CategoryDto>(Error.Create("Category.NotFound", $"Category with ID {request.Id} not found"));
+            }
 
             var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
             if (slugExists)

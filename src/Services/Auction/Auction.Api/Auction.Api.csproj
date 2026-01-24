@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Auction.Api</RootNamespace>
+    <RootNamespace>Auctions.Api</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,10 +34,10 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\bids.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\auctions.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\auction_validation.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\auction_stats.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\user_analytics.proto" GrpcServices="Server" />
+    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auctions.proto" GrpcServices="Server" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
+    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auction_validation.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
+    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auction_stats.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
+    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\user_analytics.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
   </ItemGroup>
 
   <ItemGroup>

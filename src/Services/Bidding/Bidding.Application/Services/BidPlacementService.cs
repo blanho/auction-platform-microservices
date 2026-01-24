@@ -2,24 +2,26 @@ using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWo
 
 namespace Bidding.Application.Services
 {
-    public class BidServiceImpl : IBidService
+    public class BidPlacementService : IBidService
     {
         private readonly IBidRepository _repository;
         private readonly IMapper _mapper;
-        private readonly ILogger<BidServiceImpl> _logger;
+        private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
         private readonly IEventPublisher _eventPublisher;
         private readonly UnitOfWork _unitOfWork;
         private readonly IDistributedLock _distributedLock;
+        private readonly IAuctionGrpcClient _auctionGrpcClient;
 
-        public BidServiceImpl(
+        public BidPlacementService(
             IBidRepository repository,
             IMapper mapper,
-            ILogger<BidServiceImpl> logger,
+            ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
             IEventPublisher eventPublisher,
             UnitOfWork unitOfWork,
-            IDistributedLock distributedLock)
+            IDistributedLock distributedLock,
+            IAuctionGrpcClient auctionGrpcClient)
         {
             _repository = repository;
             _mapper = mapper;
@@ -28,6 +30,7 @@ namespace Bidding.Application.Services
             _eventPublisher = eventPublisher;
             _unitOfWork = unitOfWork;
             _distributedLock = distributedLock;
+            _auctionGrpcClient = auctionGrpcClient;
         }
 
         public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken cancellationToken)
@@ -74,23 +77,24 @@ namespace Bidding.Application.Services
             bool isAutoBid,
             CancellationToken ct)
         {
-            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
-            var currentHighBid = highestBid?.Amount ?? 0;
+            var auctionValidation = await ValidateAuctionForBid(dto, bidderUsername, bidderId, ct);
+            if (auctionValidation != null)
+                return auctionValidation;
 
-            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
-                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
+            var bidIncrementValidation = await ValidateBidIncrement(dto, bidderId, bidderUsername, ct);
+            if (bidIncrementValidation != null)
+                return bidIncrementValidation;
 
-            var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid);
-            var createdBid = await _repository.CreateAsync(bid, ct);
+            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, ct);
+            if (bid.Status == BidStatus.Rejected.ToString())
+                return bid;
 
-            var saveResult = await SaveBidWithRaceConditionHandling(dto, bidderId, bidderUsername, ct);
-            if (saveResult != null)
-                return saveResult;
+            await CheckAndExtendAuctionIfNeeded(dto.AuctionId, ct);
 
             _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
-                createdBid.Id, dto.AuctionId, bid.Status);
+                bid.Id, dto.AuctionId, bid.Status);
 
-            return _mapper.Map<BidDto>(createdBid);
+            return bid;
         }
 
         private bool IsValidBidIncrement(decimal amount, decimal currentHighBid, out string errorMessage)
@@ -108,6 +112,35 @@ namespace Bidding.Application.Services
 
             errorMessage = BidIncrement.GetIncrementErrorMessage(amount, currentHighBid);
             return false;
+        }
+
+        private async Task CheckAndExtendAuctionIfNeeded(Guid auctionId, CancellationToken ct)
+        {
+            try
+            {
+                var auctionDetails = await _auctionGrpcClient.GetAuctionDetailsAsync(auctionId, ct);
+                if (auctionDetails == null) return;
+
+                var timeRemaining = auctionDetails.EndTime - _dateTime.UtcNow;
+                if (timeRemaining <= TimeSpan.FromMinutes(BidDefaults.AntiSnipeThresholdMinutes) && 
+                    timeRemaining > TimeSpan.Zero)
+                {
+                    var newEndTime = auctionDetails.EndTime.AddMinutes(BidDefaults.AntiSnipeExtensionMinutes);
+                    var result = await _auctionGrpcClient.ExtendAuctionAsync(auctionId, newEndTime, ct);
+                    
+                    if (result.Success)
+                    {
+                        _logger.LogInformation(
+                            "Auction {AuctionId} extended to {NewEndTime} due to anti-snipe rule",
+                            auctionId,
+                            result.NewEndTime);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to check/extend auction {AuctionId} for anti-snipe", auctionId);
+            }
         }
 
         private Bid CreateBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, Bid? highestBid, bool isAutoBid)
@@ -185,6 +218,53 @@ namespace Bidding.Application.Services
                 Status = BidStatus.TooLow.ToString(),
                 ErrorMessage = errorMessage
             };
+        }
+
+        private async Task<BidDto?> ValidateAuctionForBid(PlaceBidDto dto, string bidderUsername, Guid bidderId, CancellationToken ct)
+        {
+            var validationResult = await _auctionGrpcClient.ValidateAuctionForBidAsync(
+                dto.AuctionId,
+                bidderUsername,
+                dto.Amount,
+                ct);
+
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning(
+                    "Auction validation failed for {AuctionId}: {ErrorCode} - {ErrorMessage}",
+                    dto.AuctionId,
+                    validationResult.ErrorCode,
+                    validationResult.ErrorMessage);
+
+                return CreateRejectedBid(dto, bidderId, bidderUsername, validationResult.ErrorMessage);
+            }
+
+            return null;
+        }
+
+        private async Task<BidDto?> ValidateBidIncrement(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken ct)
+        {
+            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
+            var currentHighBid = highestBid?.Amount ?? 0;
+
+            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
+                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
+
+            return null;
+        }
+
+        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, CancellationToken ct)
+        {
+            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
+            var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid);
+            
+            var createdBid = await _repository.CreateAsync(bid, ct);
+
+            var raceConditionResult = await SaveBidWithRaceConditionHandling(dto, bidderId, bidderUsername, ct);
+            if (raceConditionResult != null)
+                return raceConditionResult;
+
+            return _mapper.Map<BidDto>(createdBid);
         }
 
         #endregion

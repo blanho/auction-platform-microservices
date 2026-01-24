@@ -28,6 +28,10 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
         try
         {
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            if (category == null)
+            {
+                return Result.Failure<bool>(Error.Create("Category.NotFound", $"Category with ID {request.Id} not found"));
+            }
 
             if (category.Items.Any())
             {

@@ -32,10 +32,7 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Protobuf Include="Protos\auctions.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\bids.proto" GrpcServices="Server" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\Bidding.Application\Bidding.Application.csproj" />

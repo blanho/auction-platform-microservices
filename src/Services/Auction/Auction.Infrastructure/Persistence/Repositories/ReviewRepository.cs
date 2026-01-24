@@ -36,15 +36,13 @@ public class ReviewRepository : IReviewRepository
         return new PaginatedResult<Review>(items, totalCount, page, pageSize);
     }
 
-    public async Task<Review> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Review?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var review = await _context.Reviews
+        return await _context.Reviews
             .Where(x => !x.IsDeleted)
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        
-        return review ?? throw new KeyNotFoundException($"Review with ID {id} not found");
     }
 
     public async Task<Review?> GetByAuctionAndReviewerAsync(Guid auctionId, string reviewerUsername, CancellationToken cancellationToken = default)

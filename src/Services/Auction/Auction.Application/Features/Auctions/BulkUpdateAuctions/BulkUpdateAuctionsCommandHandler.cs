@@ -37,6 +37,11 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
             foreach (var auctionId in request.AuctionIds)
             {
                 var auction = await _repository.GetByIdAsync(auctionId, cancellationToken);
+                if (auction == null)
+                {
+                    _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
+                    continue;
+                }
 
                 if (request.Activate)
                 {

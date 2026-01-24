@@ -11,6 +11,18 @@
 
   <ItemGroup>
     <PackageReference Include="MassTransit.Abstractions" Version="8.4.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.70.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Grpc\auctions.proto" GrpcServices="None" />
+    <Protobuf Include="Grpc\auction_validation.proto" GrpcServices="None" />
+    <Protobuf Include="Grpc\auction_stats.proto" GrpcServices="None" />
+    <Protobuf Include="Grpc\user_analytics.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>

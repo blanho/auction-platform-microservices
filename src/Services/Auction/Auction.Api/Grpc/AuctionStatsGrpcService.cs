@@ -4,7 +4,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 
-namespace Auctions.Api.Services.Grpc;
+namespace Auctions.Api.Grpc;
 
 public partial class AuctionGrpcService
 {
@@ -77,11 +77,13 @@ public partial class AuctionGrpcService
         {
             response.Auctions.Add(new TopAuction
             {
-                AuctionId = auction.Id.ToString(),
+                Id = auction.Id.ToString(),
                 Title = auction.Item?.Title ?? string.Empty,
-                SellerUsername = auction.SellerUsername,
-                FinalPrice = decimal.ToDouble(auction.CurrentHighBid ?? 0m),
-                BidCount = 0
+                Seller = auction.SellerUsername,
+                CurrentBid = (int)decimal.ToDouble(auction.CurrentHighBid ?? 0m),
+                BidCount = 0,
+                EndTime = auction.AuctionEnd.ToString("O"),
+                Status = auction.Status.ToString()
             });
         }
 
@@ -99,11 +101,10 @@ public partial class AuctionGrpcService
         {
             response.Categories.Add(new CategoryStat
             {
-                CategoryId = stat.CategoryId.ToString(),
                 CategoryName = stat.CategoryName,
-                AuctionCount = stat.AuctionCount,
-                Revenue = decimal.ToDouble(stat.Revenue),
-                Percentage = 0
+                ActiveAuctions = stat.AuctionCount,
+                TotalAuctions = stat.AuctionCount,
+                TotalValue = decimal.ToDouble(stat.Revenue)
             });
         }
 

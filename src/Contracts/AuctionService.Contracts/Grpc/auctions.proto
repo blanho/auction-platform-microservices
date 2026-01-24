@@ -4,9 +4,9 @@ option csharp_namespace = "Auctions.Api.Grpc";
 
 package auctions;
 
-import "Protos/auction_validation.proto";
-import "Protos/auction_stats.proto";
-import "Protos/user_analytics.proto";
+import "Grpc/auction_validation.proto";
+import "Grpc/auction_stats.proto";
+import "Grpc/user_analytics.proto";
 
 service AuctionGrpc {
   rpc ValidateAuctionForBid (ValidateAuctionRequest) returns (ValidateAuctionResponse);

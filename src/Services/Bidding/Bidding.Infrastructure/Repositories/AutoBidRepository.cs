@@ -70,15 +70,15 @@ public class AutoBidRepository : IAutoBidRepository
         return autoBids;
     }
 
-    public async Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
         autoBid.UpdatedAt = _dateTime.UtcNow;
         autoBid.UpdatedBy = autoBid.UserId;
         _context.AutoBids.Update(autoBid);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
+    public Task UpdateRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
     {
         var utcNow = _dateTime.UtcNow;
         foreach (var autoBid in autoBids)
@@ -87,7 +87,7 @@ public class AutoBidRepository : IAutoBidRepository
             autoBid.UpdatedBy = autoBid.UserId;
         }
         _context.AutoBids.UpdateRange(autoBids);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

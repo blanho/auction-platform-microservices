@@ -69,14 +69,15 @@ namespace Bidding.Infrastructure.Repositories
             return bids;
         }
 
-        public async Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
+        public Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
             bid.UpdatedAt = _dateTime.UtcNow;
             bid.UpdatedBy = SystemGuids.System;
             _context.Bids.Update(bid);
+            return Task.CompletedTask;
         }
 
-        public async Task UpdateRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
+        public Task UpdateRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
         {
             var utcNow = _dateTime.UtcNow;
             foreach (var bid in bids)
@@ -85,6 +86,7 @@ namespace Bidding.Infrastructure.Repositories
                 bid.UpdatedBy = SystemGuids.System;
             }
             _context.Bids.UpdateRange(bids);
+            return Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
