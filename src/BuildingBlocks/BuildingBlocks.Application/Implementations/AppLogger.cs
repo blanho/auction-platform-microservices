@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BuildingBlocks.Application.Implementations;
 
+[System.Obsolete("Use ILogger<T> from Microsoft.Extensions.Logging directly instead.")]
 public class AppLogger<T> : IAppLogger<T>
 {
     private readonly ILogger<T> _logger;

@@ -1,4 +1,6 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.TwoFactor;
 using Identity.Api.Errors;
 using Identity.Api.Helpers;
@@ -13,15 +15,18 @@ public class TwoFactorService : ITwoFactorService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly UrlEncoder _urlEncoder;
 
     public TwoFactorService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
+        IAuditPublisher auditPublisher,
         UrlEncoder urlEncoder)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _auditPublisher = auditPublisher;
         _urlEncoder = urlEncoder;
     }
 
@@ -88,6 +93,18 @@ public class TwoFactorService : ITwoFactorService
         await _userManager.SetTwoFactorEnabledAsync(user, true);
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
 
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new TwoFactorAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "Enable2FA",
+                IsEnabled = true
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "2fa_enabled" });
+
         return Result.Success(new RecoveryCodesResponse
         {
             RecoveryCodes = recoveryCodes?.ToList() ?? new List<string>()
@@ -109,6 +126,19 @@ public class TwoFactorService : ITwoFactorService
             return Result.Failure(IdentityErrors.TwoFactor.DisableFailed);
 
         await _userManager.ResetAuthenticatorKeyAsync(user);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new TwoFactorAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "Disable2FA",
+                IsEnabled = false
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "2fa_disabled" });
+
         return Result.Success();
     }
 

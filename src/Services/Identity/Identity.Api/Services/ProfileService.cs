@@ -1,6 +1,8 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.Profile;
 using Identity.Api.Errors;
@@ -16,6 +18,7 @@ public class ProfileService : IProfileService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserService _userService;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<ProfileService> _logger;
 
@@ -23,12 +26,14 @@ public class ProfileService : IProfileService
         UserManager<ApplicationUser> userManager,
         IUserService userService,
         IEventPublisher eventPublisher,
+        IAuditPublisher auditPublisher,
         IMapper mapper,
         ILogger<ProfileService> logger)
     {
         _userManager = userManager;
         _userService = userService;
         _eventPublisher = eventPublisher;
+        _auditPublisher = auditPublisher;
         _mapper = mapper;
         _logger = logger;
     }
@@ -50,6 +55,8 @@ public class ProfileService : IProfileService
         var (user, roles) = await _userService.GetByIdWithRolesAsync(userId, cancellationToken);
         if (user == null)
             return Result.Failure<UserProfileDto>(IdentityErrors.User.NotFound);
+
+        var oldUserData = UserAuditData.FromUser(user, roles);
 
         user.FullName = request.FullName ?? user.FullName;
         user.Bio = request.Bio ?? user.Bio;
@@ -78,6 +85,14 @@ public class ProfileService : IProfileService
             UpdatedAt = DateTimeOffset.UtcNow
         });
 
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "profile_update" },
+            cancellationToken);
+
         return Result.Success(profile);
     }
 
@@ -91,6 +106,19 @@ public class ProfileService : IProfileService
 
         if (!result.Succeeded)
             return Result.Failure(IdentityErrors.WithIdentityErrors("Failed to change password", result.Errors));
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new AuthAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "PasswordChange",
+                Success = true
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "password_change" },
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("User {UserId} changed their password", userId);
 

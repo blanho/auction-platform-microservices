@@ -29,7 +29,7 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 
 builder.Services.AddCQRS(typeof(Auctions.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
 
-builder.Services.AddAuditServices(builder.Configuration);
+builder.Services.AddAuditServices(builder.Configuration, "auction-service");
 
 builder.Services.AddSeeders();
 

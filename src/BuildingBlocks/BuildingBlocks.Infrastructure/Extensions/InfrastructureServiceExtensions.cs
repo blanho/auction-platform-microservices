@@ -34,15 +34,16 @@ public static class InfrastructureServiceExtensions
         return services;
     }
 
+    [System.Obsolete("EventStormProtection is not currently used. Remove this call or implement consumers first.")]
     public static IServiceCollection AddEventStormProtection(this IServiceCollection services)
     {
         services.AddSingleton<IEventStormProtection, EventStormProtection>();
         return services;
     }
 
+    [System.Obsolete("This method only adds unused EventStormProtection. Remove this call.")]
     public static IServiceCollection AddInfrastructureMessaging(this IServiceCollection services)
     {
-        services.AddEventStormProtection();
         return services;
     }
 }

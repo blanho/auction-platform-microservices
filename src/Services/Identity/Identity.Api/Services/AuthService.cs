@@ -1,6 +1,8 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.External;
 using Identity.Api.DTOs.TwoFactor;
@@ -25,6 +27,7 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private const string ClientId = "nextApp";
 
@@ -35,6 +38,7 @@ public class AuthService : IAuthService
         IConfiguration configuration,
         ILogger<AuthService> logger,
         IEventPublisher eventPublisher,
+        IAuditPublisher auditPublisher,
         IMapper mapper)
     {
         _userService = userService;
@@ -43,6 +47,7 @@ public class AuthService : IAuthService
         _configuration = configuration;
         _logger = logger;
         _eventPublisher = eventPublisher;
+        _auditPublisher = auditPublisher;
         _mapper = mapper;
     }
 
@@ -90,6 +95,11 @@ public class AuthService : IAuthService
             Role = AppRoles.User,
             CreatedAt = DateTimeOffset.UtcNow
         });
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, [AppRoles.User]),
+            AuditAction.Created);
 
         _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
 
@@ -496,6 +506,19 @@ public class AuthService : IAuthService
 
         await Task.WhenAll(updateTask, rolesTask);
         var roles = rolesTask.Result;
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new AuthAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "Login",
+                IpAddress = ipAddress,
+                Success = true
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "login" });
 
         _logger.LogInformation("User {Username} logged in successfully", user.UserName);
 

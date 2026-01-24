@@ -1,4 +1,5 @@
 using System.Globalization;
+using BuildingBlocks.Web.Extensions;
 using Identity.Api.Data;
 using Identity.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,9 @@ internal static class HostingExtensions
             .AddIdentityRateLimiting()
             .AddMessaging(builder.Configuration)
             .AddBackgroundJobs(builder.Configuration)
-            .AddIdentityAuthentication(builder.Configuration, builder.Environment);
+            .AddIdentityAuthentication(builder.Configuration, builder.Environment)
+            .AddCommonUtilities()
+            .AddAuditServices(builder.Configuration, "identity-service");
 
         return builder.Build();
     }

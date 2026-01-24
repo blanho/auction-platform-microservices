@@ -1,8 +1,10 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Seller;
 using Identity.Api.DTOs.Users;
 using Identity.Api.Errors;
@@ -20,6 +22,7 @@ public class UserService : IUserService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
 
@@ -27,12 +30,14 @@ public class UserService : IUserService
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IEventPublisher eventPublisher,
+        IAuditPublisher auditPublisher,
         IMapper mapper,
         ILogger<UserService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _eventPublisher = eventPublisher;
+        _auditPublisher = auditPublisher;
         _mapper = mapper;
         _logger = logger;
     }
@@ -208,6 +213,8 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
 
+        var oldUserData = UserAuditData.FromUser(user, roles);
+
         user.IsSuspended = true;
         user.SuspensionReason = reason;
         user.SuspendedAt = DateTimeOffset.UtcNow;
@@ -224,6 +231,14 @@ public class UserService : IUserService
             SuspendedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "suspend", ["reason"] = reason },
+            cancellationToken);
+
         _logger.LogWarning("User {UserId} suspended for reason: {Reason}", userId, reason);
         var dto = _mapper.Map<AdminUserDto>(user);
         dto.Roles = roles.ToList();
@@ -237,6 +252,8 @@ public class UserService : IUserService
         var (user, roles) = await GetByIdWithRolesAsync(userId, cancellationToken);
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
+
+        var oldUserData = UserAuditData.FromUser(user, roles);
 
         user.IsSuspended = false;
         user.SuspensionReason = null;
@@ -253,6 +270,14 @@ public class UserService : IUserService
             ReactivatedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "unsuspend" },
+            cancellationToken);
+
         _logger.LogInformation("User {UserId} unsuspended", userId);
         var dto = _mapper.Map<AdminUserDto>(user);
         dto.Roles = roles.ToList();
@@ -265,11 +290,20 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
 
+        var oldUserData = UserAuditData.FromUser(user, roles);
         user.IsActive = true;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.ActivateFailed);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "activate" },
+            cancellationToken);
 
         var dto = _mapper.Map<AdminUserDto>(user);
         dto.Roles = roles.ToList();
@@ -282,11 +316,20 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
 
+        var oldUserData = UserAuditData.FromUser(user, roles);
         user.IsActive = false;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.DeactivateFailed);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "deactivate" },
+            cancellationToken);
 
         var dto = _mapper.Map<AdminUserDto>(user);
         dto.Roles = roles.ToList();
@@ -302,6 +345,8 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
 
+        var oldUserData = UserAuditData.FromUser(user, currentRoles);
+
         await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
         var rolesList = roles.ToList();
@@ -315,6 +360,19 @@ public class UserService : IUserService
             Roles = rolesList.ToArray(),
             ChangedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, rolesList),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object>
+            {
+                ["action"] = "role_change",
+                ["previousRoles"] = currentRoles.ToList(),
+                ["newRoles"] = rolesList
+            },
+            cancellationToken);
 
         _logger.LogInformation("User {UserId} roles updated to: {Roles}", userId, string.Join(", ", rolesList));
         var dto = _mapper.Map<AdminUserDto>(user);
@@ -330,6 +388,7 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure(IdentityErrors.User.NotFound);
 
+        var userAuditData = UserAuditData.FromUser(user);
         var username = user.UserName!;
         var result = await _userManager.DeleteAsync(user);
         if (!result.Succeeded)
@@ -341,6 +400,12 @@ public class UserService : IUserService
             Username = username,
             DeletedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(userId),
+            userAuditData,
+            AuditAction.Deleted,
+            cancellationToken: cancellationToken);
 
         _logger.LogWarning("User {UserId} deleted", userId);
         return Result.Success();
