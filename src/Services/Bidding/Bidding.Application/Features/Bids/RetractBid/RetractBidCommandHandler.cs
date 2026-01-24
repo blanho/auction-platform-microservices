@@ -8,7 +8,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
     private readonly UnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IDateTimeProvider _dateTime;
-    private readonly IAppLogger<RetractBidCommandHandler> _logger;
+    private readonly ILogger<RetractBidCommandHandler> _logger;
 
     private const int RetractWindowMinutes = 5;
 
@@ -17,7 +17,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         UnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         IDateTimeProvider dateTime,
-        IAppLogger<RetractBidCommandHandler> logger)
+        ILogger<RetractBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

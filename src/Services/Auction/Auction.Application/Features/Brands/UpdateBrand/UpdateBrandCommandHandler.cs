@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -10,13 +10,13 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
 {
     private readonly IBrandRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<UpdateBrandCommandHandler> _logger;
+    private readonly ILogger<UpdateBrandCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateBrandCommandHandler(
         IBrandRepository repository,
         IMapper mapper,
-        IAppLogger<UpdateBrandCommandHandler> logger,
+        ILogger<UpdateBrandCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;

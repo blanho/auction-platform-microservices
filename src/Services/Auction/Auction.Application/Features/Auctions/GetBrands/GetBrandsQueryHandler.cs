@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,12 +11,12 @@ public class GetBrandsQueryHandler : IQueryHandler<GetBrandsQuery, List<BrandDto
 {
     private readonly IBrandRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetBrandsQueryHandler> _logger;
+    private readonly ILogger<GetBrandsQueryHandler> _logger;
 
     public GetBrandsQueryHandler(
         IBrandRepository repository,
         IMapper mapper,
-        IAppLogger<GetBrandsQueryHandler> logger)
+        ILogger<GetBrandsQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;

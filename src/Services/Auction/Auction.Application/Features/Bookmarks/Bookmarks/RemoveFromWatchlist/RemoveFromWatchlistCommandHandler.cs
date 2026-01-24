@@ -1,5 +1,5 @@
 using Auctions.Domain.Entities;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -10,12 +10,12 @@ public class RemoveFromWatchlistCommandHandler : ICommandHandler<RemoveFromWatch
 {
     private readonly IUserAuctionBookmarkRepository _bookmarkRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAppLogger<RemoveFromWatchlistCommandHandler> _logger;
+    private readonly ILogger<RemoveFromWatchlistCommandHandler> _logger;
 
     public RemoveFromWatchlistCommandHandler(
         IUserAuctionBookmarkRepository bookmarkRepository,
         IUnitOfWork unitOfWork,
-        IAppLogger<RemoveFromWatchlistCommandHandler> logger)
+        ILogger<RemoveFromWatchlistCommandHandler> logger)
     {
         _bookmarkRepository = bookmarkRepository;
         _unitOfWork = unitOfWork;

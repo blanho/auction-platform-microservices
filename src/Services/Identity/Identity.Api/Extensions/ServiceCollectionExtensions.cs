@@ -5,8 +5,8 @@ using Identity.Api.Data.Repositories;
 using Identity.Api.Interfaces;
 using Identity.Api.Jobs;
 using Identity.Api.Mappings;
-using Identity.Api.Messaging;
 using Identity.Api.Services;
+using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 
 namespace Identity.Api.Extensions;
@@ -52,7 +52,7 @@ internal static class ServiceCollectionExtensions
             });
         });
 
-        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
 
         return services;
     }

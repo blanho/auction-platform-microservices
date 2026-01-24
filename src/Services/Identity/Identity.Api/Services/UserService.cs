@@ -1,9 +1,9 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
+using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Seller;
 using Identity.Api.DTOs.Users;
@@ -11,7 +11,7 @@ using Identity.Api.Errors;
 using Identity.Api.Filters;
 using Identity.Api.Interfaces;
 using Identity.Api.Models;
-using IdentityService.Contracts.Events;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +21,7 @@ public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IMediator _mediator;
     private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
@@ -29,14 +29,14 @@ public class UserService : IUserService
     public UserService(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        IEventPublisher eventPublisher,
+        IMediator mediator,
         IAuditPublisher auditPublisher,
         IMapper mapper,
         ILogger<UserService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _eventPublisher = eventPublisher;
+        _mediator = mediator;
         _auditPublisher = auditPublisher;
         _mapper = mapper;
         _logger = logger;
@@ -223,12 +223,11 @@ public class UserService : IUserService
         if (!result.Succeeded)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.SuspendFailed);
 
-        await _eventPublisher.PublishAsync(new UserSuspendedEvent
+        await _mediator.Publish(new UserSuspendedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
-            Reason = reason,
-            SuspendedAt = DateTimeOffset.UtcNow
+            Reason = reason
         }, cancellationToken);
 
         await _auditPublisher.PublishAsync(
@@ -263,11 +262,10 @@ public class UserService : IUserService
         if (!result.Succeeded)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.UnsuspendFailed);
 
-        await _eventPublisher.PublishAsync(new UserReactivatedEvent
+        await _mediator.Publish(new UserReactivatedDomainEvent
         {
             UserId = user.Id,
-            Username = user.UserName!,
-            ReactivatedAt = DateTimeOffset.UtcNow
+            Username = user.UserName!
         }, cancellationToken);
 
         await _auditPublisher.PublishAsync(
@@ -353,12 +351,11 @@ public class UserService : IUserService
         await EnsureRolesExistAsync(rolesList);
         await _userManager.AddToRolesAsync(user, rolesList);
 
-        await _eventPublisher.PublishAsync(new UserRoleChangedEvent
+        await _mediator.Publish(new UserRoleChangedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
-            Roles = rolesList.ToArray(),
-            ChangedAt = DateTimeOffset.UtcNow
+            Roles = rolesList.ToArray()
         }, cancellationToken);
 
         await _auditPublisher.PublishAsync(
@@ -394,11 +391,10 @@ public class UserService : IUserService
         if (!result.Succeeded)
             return Result.Failure(IdentityErrors.User.DeleteFailed);
 
-        await _eventPublisher.PublishAsync(new UserDeletedEvent
+        await _mediator.Publish(new UserDeletedDomainEvent
         {
             UserId = userId,
-            Username = username,
-            DeletedAt = DateTimeOffset.UtcNow
+            Username = username
         }, cancellationToken);
 
         await _auditPublisher.PublishAsync(
@@ -434,12 +430,11 @@ public class UserService : IUserService
 
         var updatedRoles = roles.Append(AppRoles.Seller).ToList();
 
-        await _eventPublisher.PublishAsync(new UserRoleChangedEvent
+        await _mediator.Publish(new UserRoleChangedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
-            Roles = updatedRoles.ToArray(),
-            ChangedAt = DateTimeOffset.UtcNow
+            Roles = updatedRoles.ToArray()
         }, cancellationToken);
 
         _logger.LogInformation("User {UserId} upgraded to seller", userId);

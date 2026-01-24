@@ -25,7 +25,7 @@ builder.AddApplicationLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 
-builder.Services.AddCommonServices();
+builder.Services.AddCommonUtilities();
 
 builder.Services.AddGrpc();
 

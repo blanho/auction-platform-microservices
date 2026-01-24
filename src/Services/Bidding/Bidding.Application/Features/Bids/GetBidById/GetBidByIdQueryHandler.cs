@@ -3,11 +3,11 @@ namespace Bidding.Application.Features.Bids.GetBidById;
 public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDto?>
 {
     private readonly IBidRepository _repository;
-    private readonly IAppLogger<GetBidByIdQueryHandler> _logger;
+    private readonly ILogger<GetBidByIdQueryHandler> _logger;
 
     public GetBidByIdQueryHandler(
         IBidRepository repository,
-        IAppLogger<GetBidByIdQueryHandler> logger)
+        ILogger<GetBidByIdQueryHandler> logger)
     {
         _repository = repository;
         _logger = logger;

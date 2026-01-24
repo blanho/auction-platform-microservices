@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,12 +11,12 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetCategoriesQueryHandler> _logger;
+    private readonly ILogger<GetCategoriesQueryHandler> _logger;
 
     public GetCategoriesQueryHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<GetCategoriesQueryHandler> logger)
+        ILogger<GetCategoriesQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;

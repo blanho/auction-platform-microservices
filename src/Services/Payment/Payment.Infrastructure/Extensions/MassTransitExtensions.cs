@@ -1,7 +1,7 @@
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Messaging;
 using Payment.Infrastructure.Messaging.Consumers;
-
+using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,7 +64,7 @@ public static class MassTransitExtensions
             });
         });
 
-        services.AddScoped<IEventPublisher, OutboxEventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         return services;
     }
 }

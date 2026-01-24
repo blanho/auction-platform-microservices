@@ -4,7 +4,7 @@ using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -16,11 +16,11 @@ public class CachedAuctionRepository : IAuctionRepository
     private readonly IAuctionRepository _inner;
     private readonly ICacheService _cache;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CachedAuctionRepository> _logger;
+    private readonly ILogger<CachedAuctionRepository> _logger;
     private static readonly TimeSpan SingleAuctionTtl = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan AuctionListTtl = TimeSpan.FromMinutes(1);
 
-    public CachedAuctionRepository(IAuctionRepository inner, ICacheService cache, IMapper mapper, IAppLogger<CachedAuctionRepository> logger)
+    public CachedAuctionRepository(IAuctionRepository inner, ICacheService cache, IMapper mapper, ILogger<CachedAuctionRepository> logger)
     {
         _inner = inner;
         _cache = cache;

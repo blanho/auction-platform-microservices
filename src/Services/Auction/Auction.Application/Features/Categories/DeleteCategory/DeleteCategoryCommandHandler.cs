@@ -1,4 +1,4 @@
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -8,12 +8,12 @@ namespace Auctions.Application.Commands.DeleteCategory;
 public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryCommand, bool>
 {
     private readonly ICategoryRepository _repository;
-    private readonly IAppLogger<DeleteCategoryCommandHandler> _logger;
+    private readonly ILogger<DeleteCategoryCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteCategoryCommandHandler(
         ICategoryRepository repository,
-        IAppLogger<DeleteCategoryCommandHandler> logger,
+        ILogger<DeleteCategoryCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;

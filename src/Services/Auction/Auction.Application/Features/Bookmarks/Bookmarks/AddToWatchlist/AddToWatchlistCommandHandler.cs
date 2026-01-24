@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -12,13 +12,13 @@ public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistComman
     private readonly IUserAuctionBookmarkRepository _bookmarkRepository;
     private readonly IAuctionRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAppLogger<AddToWatchlistCommandHandler> _logger;
+    private readonly ILogger<AddToWatchlistCommandHandler> _logger;
 
     public AddToWatchlistCommandHandler(
         IUserAuctionBookmarkRepository bookmarkRepository,
         IAuctionRepository auctionRepository,
         IUnitOfWork unitOfWork,
-        IAppLogger<AddToWatchlistCommandHandler> logger)
+        ILogger<AddToWatchlistCommandHandler> logger)
     {
         _bookmarkRepository = bookmarkRepository;
         _auctionRepository = auctionRepository;

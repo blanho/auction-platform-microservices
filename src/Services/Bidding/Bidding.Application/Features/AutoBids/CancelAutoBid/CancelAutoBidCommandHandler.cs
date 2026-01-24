@@ -6,12 +6,12 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
 {
     private readonly IAutoBidRepository _repository;
     private readonly UnitOfWork _unitOfWork;
-    private readonly IAppLogger<CancelAutoBidCommandHandler> _logger;
+    private readonly ILogger<CancelAutoBidCommandHandler> _logger;
 
     public CancelAutoBidCommandHandler(
         IAutoBidRepository repository,
         UnitOfWork unitOfWork,
-        IAppLogger<CancelAutoBidCommandHandler> logger)
+        ILogger<CancelAutoBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

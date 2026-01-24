@@ -1,11 +1,13 @@
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.TwoFactor;
 using Identity.Api.Errors;
 using Identity.Api.Helpers;
 using Identity.Api.Interfaces;
 using Identity.Api.Models;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using System.Text.Encodings.Web;
 
@@ -15,17 +17,20 @@ public class TwoFactorService : ITwoFactorService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IMediator _mediator;
     private readonly IAuditPublisher _auditPublisher;
     private readonly UrlEncoder _urlEncoder;
 
     public TwoFactorService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
+        IMediator mediator,
         IAuditPublisher auditPublisher,
         UrlEncoder urlEncoder)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _mediator = mediator;
         _auditPublisher = auditPublisher;
         _urlEncoder = urlEncoder;
     }
@@ -93,6 +98,12 @@ public class TwoFactorService : ITwoFactorService
         await _userManager.SetTwoFactorEnabledAsync(user, true);
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
 
+        await _mediator.Publish(new TwoFactorEnabledDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!
+        });
+
         await _auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             new TwoFactorAuditData
@@ -126,6 +137,12 @@ public class TwoFactorService : ITwoFactorService
             return Result.Failure(IdentityErrors.TwoFactor.DisableFailed);
 
         await _userManager.ResetAuthenticatorKeyAsync(user);
+
+        await _mediator.Publish(new TwoFactorDisabledDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!
+        });
 
         await _auditPublisher.PublishAsync(
             Guid.Parse(user.Id),

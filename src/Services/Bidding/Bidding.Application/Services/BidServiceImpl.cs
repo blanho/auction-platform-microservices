@@ -6,7 +6,7 @@ namespace Bidding.Application.Services
     {
         private readonly IBidRepository _repository;
         private readonly IMapper _mapper;
-        private readonly IAppLogger<BidServiceImpl> _logger;
+        private readonly ILogger<BidServiceImpl> _logger;
         private readonly IDateTimeProvider _dateTime;
         private readonly IEventPublisher _eventPublisher;
         private readonly UnitOfWork _unitOfWork;
@@ -15,7 +15,7 @@ namespace Bidding.Application.Services
         public BidServiceImpl(
             IBidRepository repository,
             IMapper mapper,
-            IAppLogger<BidServiceImpl> logger,
+            ILogger<BidServiceImpl> logger,
             IDateTimeProvider dateTime,
             IEventPublisher eventPublisher,
             UnitOfWork unitOfWork,

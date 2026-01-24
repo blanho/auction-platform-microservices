@@ -1,6 +1,6 @@
 
 global using BuildingBlocks.Application.Abstractions;
-global using BuildingBlocks.Application.Abstractions.Logging;
+global using Microsoft.Extensions.Logging;
 global using BuildingBlocks.Application.Abstractions.Messaging;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.CQRS.Commands;

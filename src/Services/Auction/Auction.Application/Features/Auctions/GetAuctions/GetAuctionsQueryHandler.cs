@@ -1,7 +1,7 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,12 +11,12 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, Paginated
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetAuctionsQueryHandler> _logger;
+    private readonly ILogger<GetAuctionsQueryHandler> _logger;
 
     public GetAuctionsQueryHandler(
         IAuctionRepository repository,
         IMapper mapper,
-        IAppLogger<GetAuctionsQueryHandler> logger)
+        ILogger<GetAuctionsQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;

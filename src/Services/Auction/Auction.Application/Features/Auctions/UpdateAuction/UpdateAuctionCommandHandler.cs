@@ -1,7 +1,7 @@
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,7 +11,7 @@ namespace Auctions.Application.Commands.UpdateAuction;
 public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand, bool>
 {
     private readonly IAuctionRepository _repository;
-    private readonly IAppLogger<UpdateAuctionCommandHandler> _logger;
+    private readonly ILogger<UpdateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
@@ -22,7 +22,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
     public UpdateAuctionCommandHandler(
         IAuctionRepository repository,
-        IAppLogger<UpdateAuctionCommandHandler> logger,
+        ILogger<UpdateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher,

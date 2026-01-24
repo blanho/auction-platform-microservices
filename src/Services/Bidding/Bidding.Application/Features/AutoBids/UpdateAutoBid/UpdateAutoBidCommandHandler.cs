@@ -7,13 +7,13 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
     private readonly IAutoBidRepository _repository;
     private readonly UnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<UpdateAutoBidCommandHandler> _logger;
+    private readonly ILogger<UpdateAutoBidCommandHandler> _logger;
 
     public UpdateAutoBidCommandHandler(
         IAutoBidRepository repository,
         UnitOfWork unitOfWork,
         IMapper mapper,
-        IAppLogger<UpdateAutoBidCommandHandler> logger)
+        ILogger<UpdateAutoBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

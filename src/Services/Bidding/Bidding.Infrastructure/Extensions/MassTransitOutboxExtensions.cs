@@ -6,8 +6,8 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Bidding.Infrastructure.Messaging.Consumers;
-using Bidding.Infrastructure.Messaging;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Infrastructure.Messaging;
 
 namespace Bidding.Infrastructure.Extensions;
 
@@ -45,7 +45,7 @@ public static class MassTransitOutboxExtensions
                 cfg.ConfigureEndpoints(context);
             });
         });
-        services.AddScoped<IEventPublisher, OutboxEventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         return services;
     }
 }

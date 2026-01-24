@@ -12,6 +12,4 @@ public interface IDistributedLock
         string resourceKey, 
         TimeSpan? expiry = null, 
         CancellationToken cancellationToken = default);
-    
-    Task ReleaseAsync(string resourceKey, CancellationToken cancellationToken = default);
 }
