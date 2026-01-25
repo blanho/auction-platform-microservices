@@ -1,12 +1,14 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Identity.Api.DomainEvents;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.Profile;
 using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Identity.Api.Models;
-using IdentityService.Contracts.Events;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Api.Services;
@@ -15,20 +17,23 @@ public class ProfileService : IProfileService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserService _userService;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IMediator _mediator;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<ProfileService> _logger;
 
     public ProfileService(
         UserManager<ApplicationUser> userManager,
         IUserService userService,
-        IEventPublisher eventPublisher,
+        IMediator mediator,
+        IAuditPublisher auditPublisher,
         IMapper mapper,
         ILogger<ProfileService> logger)
     {
         _userManager = userManager;
         _userService = userService;
-        _eventPublisher = eventPublisher;
+        _mediator = mediator;
+        _auditPublisher = auditPublisher;
         _mapper = mapper;
         _logger = logger;
     }
@@ -51,6 +56,8 @@ public class ProfileService : IProfileService
         if (user == null)
             return Result.Failure<UserProfileDto>(IdentityErrors.User.NotFound);
 
+        var oldUserData = UserAuditData.FromUser(user, roles);
+
         user.FullName = request.FullName ?? user.FullName;
         user.Bio = request.Bio ?? user.Bio;
         user.Location = request.Location ?? user.Location;
@@ -68,15 +75,22 @@ public class ProfileService : IProfileService
         var profile = _mapper.Map<UserProfileDto>(user);
         profile.Roles = roles.ToList();
 
-        await _eventPublisher.PublishAsync(new UserUpdatedEvent
+        await _mediator.Publish(new UserUpdatedDomainEvent
         {
             UserId = profile.Id,
             Username = profile.Username,
             Email = profile.Email,
             FullName = profile.FullName,
-            PhoneNumber = profile.PhoneNumber,
-            UpdatedAt = DateTimeOffset.UtcNow
+            PhoneNumber = profile.PhoneNumber
         });
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
+            oldUserData,
+            new Dictionary<string, object> { ["action"] = "profile_update" },
+            cancellationToken);
 
         return Result.Success(profile);
     }
@@ -91,6 +105,26 @@ public class ProfileService : IProfileService
 
         if (!result.Succeeded)
             return Result.Failure(IdentityErrors.WithIdentityErrors("Failed to change password", result.Errors));
+
+        await _mediator.Publish(new PasswordChangedDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!
+        }, cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new AuthAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "PasswordChange",
+                Success = true
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "password_change" },
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("User {UserId} changed their password", userId);
 

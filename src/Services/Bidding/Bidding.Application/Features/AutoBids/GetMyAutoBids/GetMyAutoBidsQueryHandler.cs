@@ -4,12 +4,12 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
 {
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
-    private readonly IAppLogger<GetMyAutoBidsQueryHandler> _logger;
+    private readonly ILogger<GetMyAutoBidsQueryHandler> _logger;
 
     public GetMyAutoBidsQueryHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
-        IAppLogger<GetMyAutoBidsQueryHandler> logger)
+        ILogger<GetMyAutoBidsQueryHandler> logger)
     {
         _repository = repository;
         _bidRepository = bidRepository;

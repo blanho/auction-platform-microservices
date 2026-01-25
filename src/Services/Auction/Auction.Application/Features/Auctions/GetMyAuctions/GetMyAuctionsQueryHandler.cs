@@ -2,7 +2,7 @@ using Auctions.Application.DTOs;
 using Auctions.Application.Specifications;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -12,12 +12,12 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Pagin
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetMyAuctionsQueryHandler> _logger;
+    private readonly ILogger<GetMyAuctionsQueryHandler> _logger;
 
     public GetMyAuctionsQueryHandler(
         IAuctionRepository repository,
         IMapper mapper,
-        IAppLogger<GetMyAuctionsQueryHandler> logger)
+        ILogger<GetMyAuctionsQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;
@@ -41,7 +41,7 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Pagin
                 pageSize: request.PageSize,
                 cancellationToken: cancellationToken);
 
-            var dtos = _mapper.Map<List<AuctionDto>>(auctions);
+            var dtos = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
 
             var result = new PaginatedResult<AuctionDto>(dtos, totalCount, request.PageNumber, request.PageSize);
 

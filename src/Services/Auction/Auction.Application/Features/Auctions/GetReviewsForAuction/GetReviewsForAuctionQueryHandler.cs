@@ -16,7 +16,8 @@ public class GetReviewsForAuctionQueryHandler : IQueryHandler<GetReviewsForAucti
     public async Task<Result<List<ReviewDto>>> Handle(GetReviewsForAuctionQuery request, CancellationToken cancellationToken)
     {
         var reviews = await _reviewRepository.GetByAuctionIdAsync(request.AuctionId, cancellationToken);
-        return Result.Success(_mapper.Map<List<ReviewDto>>(reviews));
+        var dtos = reviews.Select(r => _mapper.Map<ReviewDto>(r)).ToList();
+        return Result.Success(dtos);
     }
 }
 

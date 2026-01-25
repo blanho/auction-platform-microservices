@@ -1,9 +1,8 @@
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Jobs;
 

@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,12 +11,12 @@ public class GetBrandsQueryHandler : IQueryHandler<GetBrandsQuery, List<BrandDto
 {
     private readonly IBrandRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetBrandsQueryHandler> _logger;
+    private readonly ILogger<GetBrandsQueryHandler> _logger;
 
     public GetBrandsQueryHandler(
         IBrandRepository repository,
         IMapper mapper,
-        IAppLogger<GetBrandsQueryHandler> logger)
+        ILogger<GetBrandsQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;
@@ -34,7 +34,7 @@ public class GetBrandsQueryHandler : IQueryHandler<GetBrandsQuery, List<BrandDto
                 ? await _repository.GetFeaturedBrandsAsync(request.Count ?? 10, cancellationToken)
                 : await _repository.GetAllAsync(!request.ActiveOnly, cancellationToken);
 
-            var dtos = _mapper.Map<List<BrandDto>>(brands);
+            var dtos = brands.Select(b => _mapper.Map<BrandDto>(b)).ToList();
 
             _logger.LogInformation("Successfully fetched {Count} brands", dtos.Count);
 

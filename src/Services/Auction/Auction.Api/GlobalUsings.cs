@@ -6,7 +6,7 @@ global using BuildingBlocks.Web.Middleware;
 global using BuildingBlocks.Web.OpenApi;
 global using BuildingBlocks.Web.Observability;
 
-global using BuildingBlocks.Application.Abstractions.Logging;
+global using Microsoft.Extensions.Logging;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.Implementations;
 global using BuildingBlocks.Application.Extensions;

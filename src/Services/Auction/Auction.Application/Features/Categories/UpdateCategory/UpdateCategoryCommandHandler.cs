@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,13 +11,13 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<UpdateCategoryCommandHandler> _logger;
+    private readonly ILogger<UpdateCategoryCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateCategoryCommandHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<UpdateCategoryCommandHandler> logger,
+        ILogger<UpdateCategoryCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -33,6 +33,10 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         try
         {
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            if (category == null)
+            {
+                return Result.Failure<CategoryDto>(Error.Create("Category.NotFound", $"Category with ID {request.Id} not found"));
+            }
 
             var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
             if (slugExists)

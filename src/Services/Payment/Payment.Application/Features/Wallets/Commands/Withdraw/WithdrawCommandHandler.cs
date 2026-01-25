@@ -87,6 +87,6 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
 
         _logger.LogInformation("Withdrawal of {Amount} initiated for user: {Username}", request.Amount, request.Username);
 
-        return Result.Success(_mapper.Map<WalletTransactionDto>(transaction));
+        return Result.Success(transaction.ToDto(_mapper));
     }
 }

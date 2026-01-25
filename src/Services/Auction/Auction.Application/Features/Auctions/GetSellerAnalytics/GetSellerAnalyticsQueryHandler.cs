@@ -1,11 +1,11 @@
 using Auctions.Application.DTOs;
+using BuildingBlocks.Application.CQRS.Queries;
 using BuildingBlocks.Domain.Enums;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Queries.GetSellerAnalytics;
 
-public class GetSellerAnalyticsQueryHandler : IRequestHandler<GetSellerAnalyticsQuery, Result<SellerAnalyticsDto>>
+public class GetSellerAnalyticsQueryHandler : IQueryHandler<GetSellerAnalyticsQuery, SellerAnalyticsDto>
 {
     private readonly IAuctionRepository _auctionRepository;
     private readonly ILogger<GetSellerAnalyticsQueryHandler> _logger;

@@ -23,6 +23,7 @@ public class UserAuctionBookmarkRepository : IUserAuctionBookmarkRepository
             .Where(b => !b.IsDeleted)
             .Include(b => b.Auction!)
                 .ThenInclude(a => a.Item)
+            .AsNoTracking()
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
@@ -30,6 +31,7 @@ public class UserAuctionBookmarkRepository : IUserAuctionBookmarkRepository
     {
         return await _context.UserAuctionBookmarks
             .Where(b => !b.IsDeleted)
+            .AsNoTracking()
             .FirstOrDefaultAsync(b => b.UserId == userId && b.AuctionId == auctionId && b.Type == type, cancellationToken);
     }
 
@@ -44,6 +46,7 @@ public class UserAuctionBookmarkRepository : IUserAuctionBookmarkRepository
         return await query
             .Include(b => b.Auction!)
             .ThenInclude(a => a.Item)
+            .AsNoTracking()
             .OrderByDescending(b => b.AddedAt)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -60,6 +63,7 @@ public class UserAuctionBookmarkRepository : IUserAuctionBookmarkRepository
         return await query
             .Include(b => b.Auction!)
             .ThenInclude(a => a.Item)
+            .AsNoTracking()
             .OrderByDescending(b => b.AddedAt)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -72,6 +76,7 @@ public class UserAuctionBookmarkRepository : IUserAuctionBookmarkRepository
                 && b.AuctionId == auctionId 
                 && b.Type == BookmarkType.Watchlist
                 && b.NotifyOnEnd == notifyOnEnd)
+            .AsNoTracking()
             .Select(b => b.Username)
             .ToListAsync(cancellationToken);
     }

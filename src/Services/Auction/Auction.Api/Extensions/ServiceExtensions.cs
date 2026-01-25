@@ -1,8 +1,8 @@
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
-using Auctions.Infrastructure.Grpc.Clients;
+using Auctions.Infrastructure.Grpc;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -46,17 +46,13 @@ namespace Auctions.Api.Extensions
                 options.UseNpgsql(dataSource));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
-            
-            services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
-            
             services.AddScoped<AuctionRepository>(); 
             services.AddScoped<IAuctionRepository>(sp =>
             {
                 var inner = sp.GetRequiredService<AuctionRepository>();
                 var cache = sp.GetRequiredService<ICacheService>();
-                var mapper = sp.GetRequiredService<IMapper>();
-                var logger = sp.GetRequiredService<IAppLogger<CachedAuctionRepository>>();
-                return new CachedAuctionRepository(inner, cache, mapper, logger);
+                var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
+                return new CachedAuctionRepository(inner, cache, logger);
             });
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();

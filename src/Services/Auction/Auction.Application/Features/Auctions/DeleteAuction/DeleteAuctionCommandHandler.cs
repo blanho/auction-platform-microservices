@@ -1,7 +1,7 @@
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,14 +11,14 @@ namespace Auctions.Application.Commands.DeleteAuction;
 public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand, bool>
 {
     private readonly IAuctionRepository _repository;
-    private readonly IAppLogger<DeleteAuctionCommandHandler> _logger;
+    private readonly ILogger<DeleteAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
     public DeleteAuctionCommandHandler(
         IAuctionRepository repository,
-        IAppLogger<DeleteAuctionCommandHandler> logger,
+        ILogger<DeleteAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)

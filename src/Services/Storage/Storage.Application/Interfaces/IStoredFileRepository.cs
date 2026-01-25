@@ -8,6 +8,8 @@ public interface IStoredFileRepository
 {
     Task<StoredFile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<StoredFile?> GetByIdReadOnlyAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<IEnumerable<StoredFile>> GetByIdsAsync(
         IEnumerable<Guid> ids,
         CancellationToken cancellationToken = default);

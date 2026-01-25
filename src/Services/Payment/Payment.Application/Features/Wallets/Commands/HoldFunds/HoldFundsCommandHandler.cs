@@ -88,6 +88,6 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         _logger.LogInformation("Held {Amount} for {ReferenceType} {ReferenceId} for user: {Username}",
             request.Amount, request.ReferenceType, request.ReferenceId, request.Username);
 
-        return Result.Success(_mapper.Map<WalletTransactionDto>(transaction));
+        return Result.Success(transaction.ToDto(_mapper));
     }
 }

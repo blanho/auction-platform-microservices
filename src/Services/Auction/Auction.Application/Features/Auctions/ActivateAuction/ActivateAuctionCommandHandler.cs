@@ -3,7 +3,7 @@ using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -14,7 +14,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<ActivateAuctionCommandHandler> _logger;
+    private readonly ILogger<ActivateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
@@ -22,7 +22,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
     public ActivateAuctionCommandHandler(
         IAuctionRepository repository,
         IMapper mapper,
-        IAppLogger<ActivateAuctionCommandHandler> logger,
+        ILogger<ActivateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
@@ -42,6 +42,10 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
         try
         {
             var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
+            if (auction == null)
+            {
+                return Result.Failure<AuctionDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found"));
+            }
 
             if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
             {

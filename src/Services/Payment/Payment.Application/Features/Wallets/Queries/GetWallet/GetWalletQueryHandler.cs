@@ -20,6 +20,6 @@ public class GetWalletQueryHandler : IQueryHandler<GetWalletQuery, WalletDto?>
     public async Task<Result<WalletDto?>> Handle(GetWalletQuery request, CancellationToken cancellationToken)
     {
         var wallet = await _walletRepository.GetByUsernameAsync(request.Username);
-        return wallet != null ? _mapper.Map<WalletDto>(wallet) : null;
+        return wallet?.ToDto(_mapper);
     }
 }

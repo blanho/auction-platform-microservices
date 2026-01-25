@@ -3,7 +3,7 @@ using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Locking;
 using BuildingBlocks.Infrastructure.Repository;
@@ -16,7 +16,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<BuyNowCommandHandler> _logger;
+    private readonly ILogger<BuyNowCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
@@ -25,7 +25,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     public BuyNowCommandHandler(
         IAuctionRepository repository,
         IMapper mapper,
-        IAppLogger<BuyNowCommandHandler> logger,
+        ILogger<BuyNowCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher,

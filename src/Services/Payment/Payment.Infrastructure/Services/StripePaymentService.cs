@@ -54,6 +54,8 @@ public class StripePaymentService : IStripePaymentService
         Dictionary<string, string> metadata = null,
         CancellationToken cancellationToken = default)
     {
+        var idempotencyKey = metadata?.GetValueOrDefault("orderId") ?? Guid.NewGuid().ToString();
+
         var options = new PaymentIntentCreateOptions
         {
             Amount = amountInCents,
@@ -66,11 +68,16 @@ public class StripePaymentService : IStripePaymentService
             Metadata = metadata,
         };
 
-        var service = new PaymentIntentService();
-        var paymentIntent = await service.CreateAsync(options, cancellationToken: cancellationToken);
+        var requestOptions = new RequestOptions
+        {
+            IdempotencyKey = $"pi-{idempotencyKey}"
+        };
 
-        _logger.LogInformation("Created PaymentIntent {PaymentIntentId} for {Amount} {Currency}",
-            paymentIntent.Id, amountInCents, currency);
+        var service = new PaymentIntentService();
+        var paymentIntent = await service.CreateAsync(options, requestOptions, cancellationToken);
+
+        _logger.LogInformation("Created PaymentIntent {PaymentIntentId} for {Amount} {Currency} with idempotency key {IdempotencyKey}",
+            paymentIntent.Id, amountInCents, currency, idempotencyKey);
 
         return paymentIntent;
     }
@@ -141,9 +148,15 @@ public class StripePaymentService : IStripePaymentService
         };
 
         var service = new SessionService();
-        var session = await service.CreateAsync(options, cancellationToken: cancellationToken);
+        var idempotencyKey = request.Metadata?.GetValueOrDefault("orderId") ?? Guid.NewGuid().ToString();
+        var requestOptions = new RequestOptions
+        {
+            IdempotencyKey = $"cs-{idempotencyKey}"
+        };
+        var session = await service.CreateAsync(options, requestOptions, cancellationToken);
 
-        _logger.LogInformation("Created Checkout Session {SessionId}", session.Id);
+        _logger.LogInformation("Created Checkout Session {SessionId} with idempotency key {IdempotencyKey}", 
+            session.Id, idempotencyKey);
 
         return session;
     }
@@ -193,10 +206,15 @@ public class StripePaymentService : IStripePaymentService
             Amount = amountInCents,
         };
 
-        var service = new RefundService();
-        var refund = await service.CreateAsync(options, cancellationToken: cancellationToken);
+        var requestOptions = new RequestOptions
+        {
+            IdempotencyKey = $"refund-{paymentIntentId}-{amountInCents ?? 0}"
+        };
 
-        _logger.LogInformation("Created Refund {RefundId} for PaymentIntent {PaymentIntentId}",
+        var service = new RefundService();
+        var refund = await service.CreateAsync(options, requestOptions, cancellationToken);
+
+        _logger.LogInformation("Created Refund {RefundId} for PaymentIntent {PaymentIntentId} with idempotency key",
             refund.Id, paymentIntentId);
 
         return refund;

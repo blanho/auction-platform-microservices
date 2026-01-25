@@ -1,4 +1,4 @@
-using Auctions.Infrastructure.Grpc.Clients;
+using Auctions.Infrastructure.Grpc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Auctions.Infrastructure.Extensions;

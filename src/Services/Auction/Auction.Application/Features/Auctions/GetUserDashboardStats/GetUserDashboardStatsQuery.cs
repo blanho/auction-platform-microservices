@@ -1,7 +1,7 @@
 using Auctions.Application.DTOs;
-using MediatR;
+using BuildingBlocks.Application.CQRS.Queries;
 
 namespace Auctions.Application.Queries.GetUserDashboardStats;
 
-public record GetUserDashboardStatsQuery(string Username) : IRequest<Result<UserDashboardStatsDto>>;
+public record GetUserDashboardStatsQuery(string Username) : IQuery<UserDashboardStatsDto>;
 

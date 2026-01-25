@@ -18,6 +18,6 @@ public class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, OrderDt
     public async Task<Result<OrderDto?>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
         var order = await _repository.GetByIdAsync(request.OrderId);
-        return order == null ? null : _mapper.Map<OrderDto>(order);
+        return order?.ToDto(_mapper);
     }
 }

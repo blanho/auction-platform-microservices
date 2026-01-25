@@ -3,7 +3,8 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
@@ -12,26 +13,39 @@ namespace Auctions.Infrastructure.Persistence.Repositories
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
+        private readonly IAuditContext _auditContext;
 
-        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime)
+        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
             _context = context;
             _dateTime = dateTime;
+            _auditContext = auditContext;
         }
 
-        public async Task<List<Auction>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
+                .AsNoTracking()
+                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
         }
 
-        public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
@@ -39,6 +53,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             
             return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
@@ -47,13 +62,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.CreatedAt = _dateTime.UtcNow;
-            auction.CreatedBy = SystemGuids.System;
+            auction.CreatedBy = _auditContext.UserId;
             auction.IsDeleted = false;
             
             if (auction.Item != null)
             {
                 auction.Item.CreatedAt = _dateTime.UtcNow;
-                auction.Item.CreatedBy = SystemGuids.System;
+                auction.Item.CreatedBy = _auditContext.UserId;
                 auction.Item.IsDeleted = false;
             }
             
@@ -65,7 +80,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.UpdatedAt = _dateTime.UtcNow;
-            auction.UpdatedBy = SystemGuids.System;
+            auction.UpdatedBy = _auditContext.UserId;
             
             _context.Auctions.Update(auction);
             await Task.CompletedTask;
@@ -78,7 +93,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             {
                 auction.IsDeleted = true;
                 auction.DeletedAt = _dateTime.UtcNow;
-                auction.DeletedBy = SystemGuids.System;
+                auction.DeletedBy = _auditContext.UserId;
                 
                 _context.Auctions.Update(auction);
             }
@@ -87,6 +102,54 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        }
+
+        public Task AddRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            foreach (var auction in auctions)
+            {
+                auction.CreatedAt = utcNow;
+                auction.CreatedBy = _auditContext.UserId;
+                auction.IsDeleted = false;
+
+                if (auction.Item != null)
+                {
+                    auction.Item.CreatedAt = utcNow;
+                    auction.Item.CreatedBy = _auditContext.UserId;
+                    auction.Item.IsDeleted = false;
+                }
+            }
+            _context.Auctions.AddRange(auctions);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            foreach (var auction in auctions)
+            {
+                auction.UpdatedAt = utcNow;
+                auction.UpdatedBy = _auditContext.UserId;
+            }
+            _context.Auctions.UpdateRange(auctions);
+            return Task.CompletedTask;
+        }
+
+        public async Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            var auctions = await _context.Auctions
+                .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            foreach (var auction in auctions)
+            {
+                auction.IsDeleted = true;
+                auction.DeletedAt = utcNow;
+                auction.DeletedBy = _auditContext.UserId;
+            }
+            _context.Auctions.UpdateRange(auctions);
         }
 
         public async Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
@@ -108,6 +171,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .AsSplitQuery()
                 .AsQueryable();
 
@@ -211,6 +275,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (status.HasValue)
@@ -310,6 +375,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)
@@ -328,6 +394,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
@@ -346,6 +413,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .OrderByDescending(x => x.SoldAmount)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
@@ -357,6 +425,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Where(x => !x.IsDeleted && x.Item != null && x.Item.CategoryId.HasValue)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
+                .AsNoTracking()
                 .GroupBy(x => new { x.Item!.CategoryId, CategoryName = x.Item.Category!.Name })
                 .Select(g => new CategoryStatDto(
                     g.Key.CategoryId!.Value,
@@ -376,6 +445,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
@@ -388,6 +458,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }

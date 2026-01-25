@@ -12,7 +12,7 @@ using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCommonServices();
+builder.Services.AddCommonUtilities();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 

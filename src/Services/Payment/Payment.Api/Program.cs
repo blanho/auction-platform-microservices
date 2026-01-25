@@ -1,5 +1,5 @@
 using Payment.Api.Extensions;
-using Payment.Api.Services;
+using Payment.Api.Grpc;
 using Payment.Infrastructure.Extensions;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
@@ -25,9 +25,10 @@ builder.AddApplicationLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 
-builder.Services.AddCommonServices();
+builder.Services.AddCommonUtilities();
 
 builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -99,8 +100,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAccessAuthorization();
 
-app.MapGrpcService<PaymentAnalyticsGrpcService>();
 app.MapCarter();
+app.MapGrpcService<Payment.Api.Grpc.PaymentAnalyticsGrpcService>();
+app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();
 app.UseCommonSwaggerUI("Payment Service");

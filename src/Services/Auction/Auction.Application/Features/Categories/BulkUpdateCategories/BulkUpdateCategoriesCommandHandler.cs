@@ -1,4 +1,4 @@
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -8,12 +8,12 @@ namespace Auctions.Application.Commands.BulkUpdateCategories;
 public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCategoriesCommand, int>
 {
     private readonly ICategoryRepository _repository;
-    private readonly IAppLogger<BulkUpdateCategoriesCommandHandler> _logger;
+    private readonly ILogger<BulkUpdateCategoriesCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public BulkUpdateCategoriesCommandHandler(
         ICategoryRepository repository,
-        IAppLogger<BulkUpdateCategoriesCommandHandler> logger,
+        ILogger<BulkUpdateCategoriesCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -35,13 +35,19 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
                 try
                 {
                     var category = await _repository.GetByIdAsync(categoryId, cancellationToken);
+                    if (category == null)
+                    {
+                        _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
+                        continue;
+                    }
+                    
                     category.IsActive = request.IsActive;
                     await _repository.UpdateAsync(category, cancellationToken);
                     updatedCount++;
                 }
-                catch (KeyNotFoundException)
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
+                    _logger.LogWarning(ex, "Error updating category {CategoryId} during bulk update", categoryId);
                 }
             }
 

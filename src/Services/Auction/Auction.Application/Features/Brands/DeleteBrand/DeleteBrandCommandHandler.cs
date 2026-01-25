@@ -1,4 +1,4 @@
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -8,12 +8,12 @@ namespace Auctions.Application.Commands.DeleteBrand;
 public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
 {
     private readonly IBrandRepository _repository;
-    private readonly IAppLogger<DeleteBrandCommandHandler> _logger;
+    private readonly ILogger<DeleteBrandCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteBrandCommandHandler(
         IBrandRepository repository,
-        IAppLogger<DeleteBrandCommandHandler> logger,
+        ILogger<DeleteBrandCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;

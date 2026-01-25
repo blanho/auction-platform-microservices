@@ -5,7 +5,7 @@ using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -16,7 +16,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 {
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateAuctionCommandHandler> _logger;
+    private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
@@ -26,7 +26,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     public CreateAuctionCommandHandler(
         IAuctionRepository repository,
         IMapper mapper,
-        IAppLogger<CreateAuctionCommandHandler> logger,
+        ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher,

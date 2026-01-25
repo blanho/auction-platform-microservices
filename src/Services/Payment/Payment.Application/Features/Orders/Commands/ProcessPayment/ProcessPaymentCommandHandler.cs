@@ -51,6 +51,6 @@ public class ProcessPaymentCommandHandler : ICommandHandler<ProcessPaymentComman
 
         _logger.LogInformation("Payment completed for order {OrderId}", updated.Id);
 
-        return _mapper.Map<OrderDto>(updated);
+        return updated.ToDto(_mapper);
     }
 }

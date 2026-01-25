@@ -1,11 +1,11 @@
 using Auctions.Application.DTOs;
+using BuildingBlocks.Application.CQRS.Queries;
 using BuildingBlocks.Domain.Enums;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Queries.GetUserDashboardStats;
 
-public class GetUserDashboardStatsQueryHandler : IRequestHandler<GetUserDashboardStatsQuery, Result<UserDashboardStatsDto>>
+public class GetUserDashboardStatsQueryHandler : IQueryHandler<GetUserDashboardStatsQuery, UserDashboardStatsDto>
 {
     private readonly IAuctionRepository _auctionRepository;
     private readonly ILogger<GetUserDashboardStatsQueryHandler> _logger;

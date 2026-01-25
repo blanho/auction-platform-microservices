@@ -31,7 +31,7 @@ public sealed class ReportService : IReportService
             queryParams,
             cancellationToken);
 
-        var dtos = pagedResult.Items.Select(MapToDto).ToList();
+        var dtos = pagedResult.Items.ToDtoList();
         
         return new PaginatedResult<ReportDto>(
             dtos,
@@ -44,7 +44,7 @@ public sealed class ReportService : IReportService
     public async Task<ReportDto?> GetReportByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var report = await _reportRepository.GetByIdAsync(id, cancellationToken);
-        return report is null ? null : MapToDto(report);
+        return report?.ToDto();
     }
 
     public async Task<ReportDto> CreateReportAsync(
@@ -74,7 +74,7 @@ public sealed class ReportService : IReportService
             "Report {ReportId} created by {Reporter} against {Reported}",
             report.Id, reporterUsername, dto.ReportedUsername);
 
-        return MapToDto(report);
+        return report.ToDto();
     }
 
     public async Task UpdateReportStatusAsync(
@@ -131,26 +131,6 @@ public sealed class ReportService : IReportService
             ReportType.Harassment => ReportPriority.Medium,
             ReportType.InappropriateContent => ReportPriority.Medium,
             _ => ReportPriority.Low
-        };
-    }
-
-    private static ReportDto MapToDto(Report report)
-    {
-        return new ReportDto
-        {
-            Id = report.Id,
-            ReporterUsername = report.ReporterUsername,
-            ReportedUsername = report.ReportedUsername,
-            AuctionId = report.AuctionId,
-            Type = report.Type.ToString(),
-            Priority = report.Priority.ToString(),
-            Reason = report.Reason,
-            Description = report.Description,
-            Status = report.Status.ToString(),
-            Resolution = report.Resolution,
-            ResolvedBy = report.ResolvedBy,
-            ResolvedAt = report.ResolvedAt,
-            CreatedAt = report.CreatedAt
         };
     }
 }

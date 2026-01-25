@@ -4,8 +4,9 @@
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Application.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bidding.Infrastructure.Repositories;
@@ -14,24 +15,38 @@ public class AutoBidRepository : IAutoBidRepository
 {
     private readonly BidDbContext _context;
     private readonly IDateTimeProvider _dateTime;
+    private readonly IAuditContext _auditContext;
 
-    public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime)
+    public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
         _context = context;
         _dateTime = dateTime;
+        _auditContext = auditContext;
     }
 
-    public async Task<List<AutoBid>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<AutoBid>> GetPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        return await _context.AutoBids
+        var query = _context.AutoBids
+            .AsNoTracking()
             .Where(x => !x.IsDeleted)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<AutoBid>(items, totalCount, page, pageSize);
     }
 
     public async Task<AutoBid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.AutoBids
+            .AsNoTracking()
             .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
@@ -59,15 +74,15 @@ public class AutoBidRepository : IAutoBidRepository
         return autoBids;
     }
 
-    public async Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
         autoBid.UpdatedAt = _dateTime.UtcNow;
         autoBid.UpdatedBy = autoBid.UserId;
         _context.AutoBids.Update(autoBid);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
+    public Task UpdateRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
     {
         var utcNow = _dateTime.UtcNow;
         foreach (var autoBid in autoBids)
@@ -76,7 +91,7 @@ public class AutoBidRepository : IAutoBidRepository
             autoBid.UpdatedBy = autoBid.UserId;
         }
         _context.AutoBids.UpdateRange(autoBids);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -86,7 +101,7 @@ public class AutoBidRepository : IAutoBidRepository
         {
             autoBid.IsDeleted = true;
             autoBid.DeletedAt = _dateTime.UtcNow;
-            autoBid.DeletedBy = SystemGuids.System;
+            autoBid.DeletedBy = _auditContext.UserId;
             _context.AutoBids.Update(autoBid);
         }
     }
@@ -102,7 +117,7 @@ public class AutoBidRepository : IAutoBidRepository
         {
             autoBid.IsDeleted = true;
             autoBid.DeletedAt = utcNow;
-            autoBid.DeletedBy = SystemGuids.System;
+            autoBid.DeletedBy = _auditContext.UserId;
         }
         _context.AutoBids.UpdateRange(autoBids);
     }
@@ -110,6 +125,7 @@ public class AutoBidRepository : IAutoBidRepository
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.AutoBids
+            .AsNoTracking()
             .Where(x => !x.IsDeleted)
             .AnyAsync(x => x.Id == id, cancellationToken);
     }
@@ -117,6 +133,7 @@ public class AutoBidRepository : IAutoBidRepository
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return await _context.AutoBids
+            .AsNoTracking()
             .Where(x => !x.IsDeleted)
             .CountAsync(cancellationToken);
     }
@@ -124,6 +141,7 @@ public class AutoBidRepository : IAutoBidRepository
     public async Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.AutoBids
+            .AsNoTracking()
             .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(ab => ab.AuctionId == auctionId 
                 && ab.UserId == userId 
@@ -133,6 +151,7 @@ public class AutoBidRepository : IAutoBidRepository
     public async Task<List<AutoBid>> GetActiveAutoBidsForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default)
     {
         return await _context.AutoBids
+            .AsNoTracking()
             .Where(ab => !ab.IsDeleted && ab.AuctionId == auctionId && ab.IsActive)
             .OrderByDescending(ab => ab.MaxAmount)
             .ToListAsync(cancellationToken);
@@ -140,7 +159,9 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task<List<AutoBid>> GetAutoBidsByUserAsync(Guid userId, bool? activeOnly, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.AutoBids.Where(ab => !ab.IsDeleted && ab.UserId == userId);
+        var query = _context.AutoBids
+            .AsNoTracking()
+            .Where(ab => !ab.IsDeleted && ab.UserId == userId);
         
         if (activeOnly.HasValue)
             query = query.Where(ab => ab.IsActive == activeOnly.Value);
@@ -154,7 +175,9 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task<int> GetAutoBidsCountForUserAsync(Guid userId, bool? activeOnly, CancellationToken cancellationToken = default)
     {
-        var query = _context.AutoBids.Where(ab => !ab.IsDeleted && ab.UserId == userId);
+        var query = _context.AutoBids
+            .AsNoTracking()
+            .Where(ab => !ab.IsDeleted && ab.UserId == userId);
         
         if (activeOnly.HasValue)
             query = query.Where(ab => ab.IsActive == activeOnly.Value);

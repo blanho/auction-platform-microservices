@@ -1,3 +1,4 @@
+using Bidding.Application.Errors;
 using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.CancelAutoBid;
@@ -6,12 +7,12 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
 {
     private readonly IAutoBidRepository _repository;
     private readonly UnitOfWork _unitOfWork;
-    private readonly IAppLogger<CancelAutoBidCommandHandler> _logger;
+    private readonly ILogger<CancelAutoBidCommandHandler> _logger;
 
     public CancelAutoBidCommandHandler(
         IAutoBidRepository repository,
         UnitOfWork unitOfWork,
-        IAppLogger<CancelAutoBidCommandHandler> logger)
+        ILogger<CancelAutoBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
@@ -26,19 +27,19 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
         var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
         {
-            return Result.Failure<CancelAutoBidResult>(Error.Create("AutoBid.NotFound", "Auto-bid not found"));
+            return Result.Failure<CancelAutoBidResult>(BiddingErrors.AutoBid.NotFound);
         }
 
         if (autoBid.UserId != request.UserId)
         {
             _logger.LogWarning("User {UserId} attempted to cancel auto-bid {AutoBidId} owned by {OwnerId}",
                 request.UserId, request.AutoBidId, autoBid.UserId);
-            return Result.Failure<CancelAutoBidResult>(Error.Create("AutoBid.Unauthorized", "You can only cancel your own auto-bids"));
+            return Result.Failure<CancelAutoBidResult>(BiddingErrors.AutoBid.Unauthorized);
         }
 
         if (!autoBid.IsActive)
         {
-            return Result.Failure<CancelAutoBidResult>(Error.Create("AutoBid.AlreadyCancelled", "This auto-bid is already cancelled"));
+            return Result.Failure<CancelAutoBidResult>(BiddingErrors.AutoBid.AlreadyCancelled);
         }
 
         autoBid.Deactivate();

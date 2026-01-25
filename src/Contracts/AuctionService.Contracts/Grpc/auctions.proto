@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "Auctions.Api.Grpc";
+
+package auctions;
+
+import "Grpc/auction_validation.proto";
+import "Grpc/auction_stats.proto";
+import "Grpc/user_analytics.proto";
+
+service AuctionGrpc {
+  rpc ValidateAuctionForBid (ValidateAuctionRequest) returns (ValidateAuctionResponse);
+  rpc GetAuctionDetails (GetAuctionDetailsRequest) returns (AuctionDetailsResponse);
+  rpc ExtendAuction (ExtendAuctionRequest) returns (ExtendAuctionResponse);
+  rpc GetAuctionStats (GetAuctionStatsRequest) returns (AuctionStatsResponse);
+  rpc GetAuctionAnalytics (GetAuctionAnalyticsRequest) returns (AuctionAnalyticsResponse);
+  rpc GetTopAuctions (GetTopAuctionsRequest) returns (TopAuctionsResponse);
+  rpc GetCategoryStats (GetCategoryStatsRequest) returns (CategoryStatsResponse);
+  rpc GetUserDashboardStats (GetUserDashboardStatsRequest) returns (UserDashboardStatsResponse);
+  rpc GetSellerAnalytics (GetSellerAnalyticsRequest) returns (SellerAnalyticsResponse);
+  rpc GetQuickStats (GetQuickStatsRequest) returns (QuickStatsResponse);
+  rpc GetTrendingSearches (GetTrendingSearchesRequest) returns (TrendingSearchesResponse);
+}

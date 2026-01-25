@@ -20,5 +20,6 @@ global using Payment.Domain.Entities;
 global using Payment.Domain.Enums;
 global using Payment.Domain.Events;
 global using Payment.Application.DTOs;
+global using Payment.Application.Extensions.Mappings;
 global using Payment.Application.Interfaces;
 global using Payment.Contracts;

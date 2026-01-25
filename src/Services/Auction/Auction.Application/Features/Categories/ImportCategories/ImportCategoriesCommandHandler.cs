@@ -1,5 +1,5 @@
 using Auctions.Domain.Entities;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -9,12 +9,12 @@ namespace Auctions.Application.Commands.ImportCategories;
 public class ImportCategoriesCommandHandler : ICommandHandler<ImportCategoriesCommand, ImportCategoriesResult>
 {
     private readonly ICategoryRepository _repository;
-    private readonly IAppLogger<ImportCategoriesCommandHandler> _logger;
+    private readonly ILogger<ImportCategoriesCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public ImportCategoriesCommandHandler(
         ICategoryRepository repository,
-        IAppLogger<ImportCategoriesCommandHandler> logger,
+        ILogger<ImportCategoriesCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;

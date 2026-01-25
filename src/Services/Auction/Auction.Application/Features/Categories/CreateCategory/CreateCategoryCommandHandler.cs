@@ -1,7 +1,7 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -12,13 +12,13 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateCategoryCommandHandler> _logger;
+    private readonly ILogger<CreateCategoryCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateCategoryCommandHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<CreateCategoryCommandHandler> logger,
+        ILogger<CreateCategoryCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;

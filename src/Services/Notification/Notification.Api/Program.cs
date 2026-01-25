@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCommonServices();
+builder.Services.AddCommonUtilities();
 
 var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);

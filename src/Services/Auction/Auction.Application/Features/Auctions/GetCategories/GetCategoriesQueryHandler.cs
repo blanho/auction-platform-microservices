@@ -1,9 +1,10 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
+using BuildingBlocks.Application.Constants;
 
 namespace Auctions.Application.Queries.GetCategories;
 
@@ -11,12 +12,13 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetCategoriesQueryHandler> _logger;
+    private readonly ILogger<GetCategoriesQueryHandler> _logger;
+    private const int MaxCategories = 100;
 
     public GetCategoriesQueryHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<GetCategoriesQueryHandler> logger)
+        ILogger<GetCategoriesQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;
@@ -30,13 +32,23 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
 
         try
         {
-            var categories = request.IncludeCount
-                ? await _repository.GetCategoriesWithCountAsync(cancellationToken)
-                : request.ActiveOnly
-                    ? await _repository.GetActiveCategoriesAsync(cancellationToken)
-                    : await _repository.GetAllAsync(cancellationToken);
+            List<Auctions.Domain.Entities.Category> categories;
+            
+            if (request.IncludeCount)
+            {
+                categories = await _repository.GetCategoriesWithCountAsync(cancellationToken);
+            }
+            else if (request.ActiveOnly)
+            {
+                categories = await _repository.GetActiveCategoriesAsync(cancellationToken);
+            }
+            else
+            {
+                var result = await _repository.GetPagedAsync(PaginationDefaults.DefaultPage, MaxCategories, cancellationToken);
+                categories = result.Items.ToList();
+            }
 
-            var dtos = _mapper.Map<List<CategoryDto>>(categories);
+            var dtos = categories.Select(c => _mapper.Map<CategoryDto>(c)).ToList();
 
             _logger.LogInformation("Successfully fetched {Count} categories", dtos.Count);
 

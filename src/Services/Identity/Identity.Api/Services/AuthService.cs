@@ -1,6 +1,8 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Identity.Api.DomainEvents;
+using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.External;
 using Identity.Api.DTOs.TwoFactor;
@@ -9,9 +11,8 @@ using Identity.Api.Errors;
 using Identity.Api.Helpers;
 using Identity.Api.Interfaces;
 using Identity.Api.Models;
-using IdentityService.Contracts.Events;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
-using NotificationService.Contracts.Events;
 using System.Net.Mail;
 using System.Web;
 
@@ -24,7 +25,8 @@ public class AuthService : IAuthService
     private readonly ITokenGenerationService _tokenService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IMediator _mediator;
+    private readonly IAuditPublisher _auditPublisher;
     private readonly IMapper _mapper;
     private const string ClientId = "nextApp";
 
@@ -34,7 +36,8 @@ public class AuthService : IAuthService
         ITokenGenerationService tokenService,
         IConfiguration configuration,
         ILogger<AuthService> logger,
-        IEventPublisher eventPublisher,
+        IMediator mediator,
+        IAuditPublisher auditPublisher,
         IMapper mapper)
     {
         _userService = userService;
@@ -42,7 +45,8 @@ public class AuthService : IAuthService
         _tokenService = tokenService;
         _configuration = configuration;
         _logger = logger;
-        _eventPublisher = eventPublisher;
+        _mediator = mediator;
+        _auditPublisher = auditPublisher;
         _mapper = mapper;
     }
 
@@ -78,9 +82,11 @@ public class AuthService : IAuthService
             _logger.LogWarning("Failed to assign default role to {Username}", dto.Username);
         }
 
-        await SendConfirmationEmailAsync(user);
+        var confirmationToken = await _userService.GenerateEmailConfirmationTokenAsync(user);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, confirmationToken);
 
-        await _eventPublisher.PublishAsync(new UserCreatedEvent
+        await _mediator.Publish(new UserCreatedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
@@ -88,8 +94,13 @@ public class AuthService : IAuthService
             EmailConfirmed = false,
             FullName = user.FullName,
             Role = AppRoles.User,
-            CreatedAt = DateTimeOffset.UtcNow
+            ConfirmationLink = confirmationLink
         });
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            UserAuditData.FromUser(user, [AppRoles.User]),
+            AuditAction.Created);
 
         _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
 
@@ -123,12 +134,11 @@ public class AuthService : IAuthService
             ["username"] = user.UserName!
         });
 
-        await _eventPublisher.PublishAsync(new UserEmailConfirmedEvent
+        await _mediator.Publish(new UserEmailConfirmedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
-            Email = user.Email!,
-            ConfirmedAt = DateTimeOffset.UtcNow
+            Email = user.Email!
         });
 
         _logger.LogInformation("Email confirmed for user {Username}", user.UserName);
@@ -144,16 +154,17 @@ public class AuthService : IAuthService
         if (user.EmailConfirmed)
             return Result.Failure(IdentityErrors.Auth.EmailAlreadyConfirmed);
 
-        try
+        var token = await _userService.GenerateEmailConfirmationTokenAsync(user);
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, token);
+
+        await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>
         {
-            await SendConfirmationEmailAsync(user);
-            _logger.LogInformation("Confirmation email resent to {Email}", email);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to resend confirmation email to {Email}", email);
-            return Result.Failure(IdentityErrors.Auth.SendEmailFailed);
-        }
+            ["username"] = user.UserName!,
+            ["confirmationLink"] = confirmationLink
+        });
+
+        _logger.LogInformation("Confirmation email resent to {Email}", email);
 
         return Result.Success();
     }
@@ -385,15 +396,14 @@ public class AuthService : IAuthService
 
             await _userService.AddToRoleAsync(user, AppRoles.User);
 
-            await _eventPublisher.PublishAsync(new UserCreatedEvent
+            await _mediator.Publish(new UserCreatedDomainEvent
             {
                 UserId = user.Id,
                 Username = user.UserName!,
                 Email = user.Email!,
                 EmailConfirmed = true,
                 FullName = user.FullName,
-                Role = AppRoles.User,
-                CreatedAt = DateTimeOffset.UtcNow
+                Role = AppRoles.User
             });
 
             await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
@@ -497,6 +507,27 @@ public class AuthService : IAuthService
         await Task.WhenAll(updateTask, rolesTask);
         var roles = rolesTask.Result;
 
+        await _mediator.Publish(new UserLoginDomainEvent
+        {
+            UserId = user.Id,
+            Username = user.UserName!,
+            Email = user.Email!,
+            IpAddress = ipAddress
+        });
+
+        await _auditPublisher.PublishAsync(
+            Guid.Parse(user.Id),
+            new AuthAuditData
+            {
+                UserId = user.Id,
+                Username = user.UserName,
+                Action = "Login",
+                IpAddress = ipAddress,
+                Success = true
+            },
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { ["action"] = "login" });
+
         _logger.LogInformation("User {Username} logged in successfully", user.UserName);
 
         return Result.Success(new LoginResponse
@@ -527,36 +558,17 @@ public class AuthService : IAuthService
         return username;
     }
 
-    private async Task SendConfirmationEmailAsync(ApplicationUser user)
-    {
-        var token = await _userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, token);
-
-        await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>
-        {
-            ["username"] = user.UserName!,
-            ["confirmationLink"] = confirmationLink
-        });
-
-        _logger.LogInformation("Confirmation email requested for {Email}", user.Email);
-    }
-
     private async Task PublishEmailEventAsync(string userId, string email, string name, string templateKey, string subject, Dictionary<string, string> data)
     {
-        var emailEvent = new EmailNotificationRequestedEvent
+        await _mediator.Publish(new EmailNotificationRequestedDomainEvent
         {
-            EventId = Guid.NewGuid().ToString("N"),
             UserId = userId,
             RecipientEmail = email,
             RecipientName = name,
             TemplateKey = templateKey,
             Subject = subject,
-            Data = data,
-            Source = "identity-service"
-        };
-
-        await _eventPublisher.PublishAsync(emailEvent);
+            Data = data
+        });
     }
 
     private async Task<ApplicationUser?> FindUserByUsernameOrEmailAsync(string usernameOrEmail)

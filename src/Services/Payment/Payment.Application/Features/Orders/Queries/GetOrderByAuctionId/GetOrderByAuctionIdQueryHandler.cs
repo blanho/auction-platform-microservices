@@ -18,6 +18,6 @@ public class GetOrderByAuctionIdQueryHandler : IQueryHandler<GetOrderByAuctionId
     public async Task<Result<OrderDto?>> Handle(GetOrderByAuctionIdQuery request, CancellationToken cancellationToken)
     {
         var order = await _repository.GetByAuctionIdAsync(request.AuctionId);
-        return order == null ? null : _mapper.Map<OrderDto>(order);
+        return order?.ToDto(_mapper);
     }
 }

@@ -23,7 +23,7 @@ public class GetWalletTransactionsQueryHandler : IQueryHandler<GetWalletTransact
         var totalCount = await _transactionRepository.GetCountByUsernameAsync(request.Username);
         
         return new GetWalletTransactionsResult(
-            _mapper.Map<IEnumerable<WalletTransactionDto>>(transactions),
+            transactions.ToDtoList(_mapper),
             totalCount);
     }
 }

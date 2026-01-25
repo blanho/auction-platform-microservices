@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
@@ -17,7 +18,9 @@ public class PlatformSettingRepository : IPlatformSettingRepository
 
     public async Task<PlatformSetting?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.PlatformSettings.FindAsync([id], cancellationToken);
+        return await _context.PlatformSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
     public async Task<PlatformSetting?> GetByKeyAsync(string key, CancellationToken cancellationToken = default)
@@ -27,13 +30,20 @@ public class PlatformSettingRepository : IPlatformSettingRepository
             .FirstOrDefaultAsync(s => s.Key == key, cancellationToken);
     }
 
-    public async Task<List<PlatformSetting>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<PlatformSetting>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return await _context.PlatformSettings
+        var query = _context.PlatformSettings
             .AsNoTracking()
             .OrderBy(s => s.Category)
-            .ThenBy(s => s.Key)
+            .ThenBy(s => s.Key);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<PlatformSetting>(items, totalCount, page, pageSize);
     }
 
     public async Task<List<PlatformSetting>> GetByCategoryAsync(SettingCategory category, CancellationToken cancellationToken = default)
@@ -70,6 +80,8 @@ public class PlatformSettingRepository : IPlatformSettingRepository
 
     public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
     {
-        return await _context.PlatformSettings.AnyAsync(s => s.Key == key, cancellationToken);
+        return await _context.PlatformSettings
+            .AsNoTracking()
+            .AnyAsync(s => s.Key == key, cancellationToken);
     }
 }

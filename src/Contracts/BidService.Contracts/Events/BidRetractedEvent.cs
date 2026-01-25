@@ -16,4 +16,5 @@ public record BidRetractedEvent : IVersionedEvent
     public Guid? NewHighestBidId { get; init; }
     public decimal? NewHighestAmount { get; init; }
     public Guid? NewHighestBidderId { get; init; }
+    public string? NewHighestBidderUsername { get; init; }
 }

@@ -20,6 +20,6 @@ public class GetTransactionByIdQueryHandler : IQueryHandler<GetTransactionByIdQu
     public async Task<Result<WalletTransactionDto?>> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionRepository.GetByIdAsync(request.TransactionId);
-        return transaction != null ? _mapper.Map<WalletTransactionDto>(transaction) : null;
+        return transaction?.ToDto(_mapper);
     }
 }

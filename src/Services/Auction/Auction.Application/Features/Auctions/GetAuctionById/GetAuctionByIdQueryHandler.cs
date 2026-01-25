@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -11,7 +11,7 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
     private readonly IAuctionRepository _repository;
     private readonly IMapper _mapper;
     private readonly ICacheService _cache;
-    private readonly IAppLogger<GetAuctionByIdQueryHandler> _logger;
+    private readonly ILogger<GetAuctionByIdQueryHandler> _logger;
     
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
     private const string CacheKeyPrefix = "auction:";
@@ -20,7 +20,7 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
         IAuctionRepository repository,
         IMapper mapper,
         ICacheService cache,
-        IAppLogger<GetAuctionByIdQueryHandler> logger)
+        ILogger<GetAuctionByIdQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;

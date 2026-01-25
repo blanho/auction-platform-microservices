@@ -88,6 +88,6 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
         _logger.LogInformation("Released {Amount} for reference {ReferenceId} for user: {Username}",
             request.Amount, request.ReferenceId, request.Username);
 
-        return Result.Success(_mapper.Map<WalletTransactionDto>(transaction));
+        return Result.Success(transaction.ToDto(_mapper));
     }
 }

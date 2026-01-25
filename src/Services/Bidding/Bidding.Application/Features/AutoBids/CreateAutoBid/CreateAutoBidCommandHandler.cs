@@ -8,14 +8,14 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
     private readonly IBidRepository _bidRepository;
     private readonly UnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateAutoBidCommandHandler> _logger;
+    private readonly ILogger<CreateAutoBidCommandHandler> _logger;
 
     public CreateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
         UnitOfWork unitOfWork,
         IMapper mapper,
-        IAppLogger<CreateAutoBidCommandHandler> logger)
+        ILogger<CreateAutoBidCommandHandler> logger)
     {
         _repository = repository;
         _bidRepository = bidRepository;
@@ -55,7 +55,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         _logger.LogInformation("Auto-bid {AutoBidId} created successfully for auction {AuctionId}",
             autoBid.Id, request.AuctionId);
 
-        var dto = _mapper.Map<AutoBidDto>(autoBid);
+        var dto = autoBid.ToDto();
         return Result<CreateAutoBidResult>.Success(CreateAutoBidResult.Succeeded(dto));
     }
 }

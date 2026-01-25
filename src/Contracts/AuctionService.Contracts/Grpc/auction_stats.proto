@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+option csharp_namespace = "Auctions.Api.Grpc";
+
+package auctions;
+
+message GetAuctionStatsRequest {
+}
+
+message AuctionStatsResponse {
+  int32 live_auctions = 1;
+  int32 total_auctions = 2;
+  int32 completed_auctions = 3;
+  double total_revenue = 4;
+}
+
+message GetAuctionAnalyticsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message AuctionAnalyticsResponse {
+  int32 live_auctions = 1;
+  int32 completed_auctions = 2;
+  int32 cancelled_auctions = 3;
+  int32 pending_auctions = 4;
+  double total_revenue = 5;
+  double average_final_price = 6;
+  double success_rate = 7;
+  int32 auctions_ending_today = 8;
+  int32 auctions_ending_this_week = 9;
+  repeated DailyAuctionStat daily_stats = 10;
+}
+
+message DailyAuctionStat {
+  string date = 1;
+  int32 created = 2;
+  int32 completed = 3;
+  double revenue = 4;
+}
+
+message GetTopAuctionsRequest {
+  int32 limit = 1;
+  string sort_by = 2;
+}
+
+message TopAuctionsResponse {
+  repeated TopAuction auctions = 1;
+}
+
+message TopAuction {
+  string id = 1;
+  string title = 2;
+  string seller = 3;
+  int32 current_bid = 4;
+  int32 bid_count = 5;
+  string end_time = 6;
+  string status = 7;
+}
+
+message GetCategoryStatsRequest {
+}
+
+message CategoryStatsResponse {
+  repeated CategoryStat categories = 1;
+}
+
+message CategoryStat {
+  string category_name = 1;
+  int32 active_auctions = 2;
+  int32 total_auctions = 3;
+  double total_value = 4;
+}
+
+message GetQuickStatsRequest {
+}
+
+message QuickStatsResponse {
+  int32 live_auctions = 1;
+  int32 ending_soon = 2;
+  int32 new_today = 3;
+}
+
+message GetTrendingSearchesRequest {
+  int32 limit = 1;
+}
+
+message TrendingSearchesResponse {
+  repeated TrendingSearch searches = 1;
+}
+
+message TrendingSearch {
+  string keyword = 1;
+  int32 search_count = 2;
+}

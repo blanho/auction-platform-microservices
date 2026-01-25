@@ -1,5 +1,5 @@
 using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Repository.Specifications;
@@ -9,13 +9,13 @@ namespace Auctions.Application.Commands.BulkUpdateAuctions;
 public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctionsCommand, int>
 {
     private readonly IAuctionRepository _repository;
-    private readonly IAppLogger<BulkUpdateAuctionsCommandHandler> _logger;
+    private readonly ILogger<BulkUpdateAuctionsCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
 
     public BulkUpdateAuctionsCommandHandler(
         IAuctionRepository repository,
-        IAppLogger<BulkUpdateAuctionsCommandHandler> logger,
+        ILogger<BulkUpdateAuctionsCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime)
     {
@@ -37,6 +37,11 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
             foreach (var auctionId in request.AuctionIds)
             {
                 var auction = await _repository.GetByIdAsync(auctionId, cancellationToken);
+                if (auction == null)
+                {
+                    _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
+                    continue;
+                }
 
                 if (request.Activate)
                 {
