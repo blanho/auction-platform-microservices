@@ -4,7 +4,7 @@ using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
@@ -13,11 +13,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
+        private readonly IAuditContext _auditContext;
 
-        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime)
+        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
             _context = context;
             _dateTime = dateTime;
+            _auditContext = auditContext;
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
@@ -60,13 +62,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.CreatedAt = _dateTime.UtcNow;
-            auction.CreatedBy = SystemGuids.System;
+            auction.CreatedBy = _auditContext.UserId;
             auction.IsDeleted = false;
             
             if (auction.Item != null)
             {
                 auction.Item.CreatedAt = _dateTime.UtcNow;
-                auction.Item.CreatedBy = SystemGuids.System;
+                auction.Item.CreatedBy = _auditContext.UserId;
                 auction.Item.IsDeleted = false;
             }
             
@@ -78,7 +80,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.UpdatedAt = _dateTime.UtcNow;
-            auction.UpdatedBy = SystemGuids.System;
+            auction.UpdatedBy = _auditContext.UserId;
             
             _context.Auctions.Update(auction);
             await Task.CompletedTask;
@@ -91,7 +93,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             {
                 auction.IsDeleted = true;
                 auction.DeletedAt = _dateTime.UtcNow;
-                auction.DeletedBy = SystemGuids.System;
+                auction.DeletedBy = _auditContext.UserId;
                 
                 _context.Auctions.Update(auction);
             }
@@ -108,13 +110,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             foreach (var auction in auctions)
             {
                 auction.CreatedAt = utcNow;
-                auction.CreatedBy = SystemGuids.System;
+                auction.CreatedBy = _auditContext.UserId;
                 auction.IsDeleted = false;
 
                 if (auction.Item != null)
                 {
                     auction.Item.CreatedAt = utcNow;
-                    auction.Item.CreatedBy = SystemGuids.System;
+                    auction.Item.CreatedBy = _auditContext.UserId;
                     auction.Item.IsDeleted = false;
                 }
             }
@@ -128,7 +130,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             foreach (var auction in auctions)
             {
                 auction.UpdatedAt = utcNow;
-                auction.UpdatedBy = SystemGuids.System;
+                auction.UpdatedBy = _auditContext.UserId;
             }
             _context.Auctions.UpdateRange(auctions);
             return Task.CompletedTask;
@@ -145,7 +147,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             {
                 auction.IsDeleted = true;
                 auction.DeletedAt = utcNow;
-                auction.DeletedBy = SystemGuids.System;
+                auction.DeletedBy = _auditContext.UserId;
             }
             _context.Auctions.UpdateRange(auctions);
         }

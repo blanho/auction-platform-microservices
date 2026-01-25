@@ -154,8 +154,9 @@ public class AzureBlobStorageProvider : IStorageProvider, IAzureBlobStorageProvi
 
             return await blobClient.ExistsAsync(cancellationToken);
         }
-        catch (RequestFailedException)
+        catch (RequestFailedException ex)
         {
+            _logger.LogWarning(ex, "Failed to check blob existence: {Path}", path);
             return false;
         }
     }
@@ -289,8 +290,9 @@ public class AzureBlobStorageProvider : IStorageProvider, IAzureBlobStorageProvi
 
             return null;
         }
-        catch (RequestFailedException)
+        catch (RequestFailedException ex)
         {
+            _logger.LogWarning(ex, "Failed to compute checksum for blob: {Path}", path);
             return null;
         }
     }

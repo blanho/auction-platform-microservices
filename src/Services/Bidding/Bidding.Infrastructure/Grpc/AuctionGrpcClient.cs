@@ -30,7 +30,7 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             {
                 AuctionId = auctionId.ToString(),
                 Bidder = bidderUsername,
-                BidAmount = (int)bidAmount
+                BidAmount = (int)(bidAmount * 100)
             };
 
             var response = await _client.ValidateAuctionForBidAsync(request, cancellationToken: cancellationToken);

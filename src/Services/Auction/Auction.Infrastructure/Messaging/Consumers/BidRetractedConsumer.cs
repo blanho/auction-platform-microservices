@@ -39,7 +39,7 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
             auction.UpdateHighBid(
                 message.NewHighestAmount.Value,
                 message.NewHighestBidderId.Value,
-                string.Empty);
+                message.NewHighestBidderUsername);
             
             _logger.LogInformation(
                 "Updated auction {AuctionId} with new high bid {Amount} after retraction",

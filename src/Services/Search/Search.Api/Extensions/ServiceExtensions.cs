@@ -68,6 +68,7 @@ public static class ServiceExtensions
             x.AddConsumer<AuctionDeletedConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BidPlacedConsumer>();
+            x.AddConsumer<BidRetractedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -108,6 +109,12 @@ public static class ServiceExtensions
                 {
                     e.ConfigureConsumer<BidPlacedConsumer>(context);
                     e.PrefetchCount = 64;
+                });
+
+                cfg.ReceiveEndpoint("search-bid-retracted", e =>
+                {
+                    e.ConfigureConsumer<BidRetractedConsumer>(context);
+                    e.PrefetchCount = 32;
                 });
 
                 cfg.ConfigureEndpoints(context);

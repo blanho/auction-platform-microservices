@@ -73,7 +73,8 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
                     RetractedAmount = bid.Amount,
                     NewHighestBidId = newHighestBid.Id,
                     NewHighestAmount = newHighestBid.Amount,
-                    NewHighestBidderId = newHighestBid.BidderId
+                    NewHighestBidderId = newHighestBid.BidderId,
+                    NewHighestBidderUsername = newHighestBid.BidderUsername
                 }, cancellationToken);
             }
         }

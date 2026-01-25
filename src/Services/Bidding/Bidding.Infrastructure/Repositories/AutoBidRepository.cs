@@ -5,8 +5,8 @@ using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Application.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bidding.Infrastructure.Repositories;
@@ -15,11 +15,13 @@ public class AutoBidRepository : IAutoBidRepository
 {
     private readonly BidDbContext _context;
     private readonly IDateTimeProvider _dateTime;
+    private readonly IAuditContext _auditContext;
 
-    public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime)
+    public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
         _context = context;
         _dateTime = dateTime;
+        _auditContext = auditContext;
     }
 
     public async Task<PaginatedResult<AutoBid>> GetPagedAsync(
@@ -99,7 +101,7 @@ public class AutoBidRepository : IAutoBidRepository
         {
             autoBid.IsDeleted = true;
             autoBid.DeletedAt = _dateTime.UtcNow;
-            autoBid.DeletedBy = SystemGuids.System;
+            autoBid.DeletedBy = _auditContext.UserId;
             _context.AutoBids.Update(autoBid);
         }
     }
@@ -115,7 +117,7 @@ public class AutoBidRepository : IAutoBidRepository
         {
             autoBid.IsDeleted = true;
             autoBid.DeletedAt = utcNow;
-            autoBid.DeletedBy = SystemGuids.System;
+            autoBid.DeletedBy = _auditContext.UserId;
         }
         _context.AutoBids.UpdateRange(autoBids);
     }

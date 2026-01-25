@@ -83,8 +83,8 @@ public partial class AuctionGrpcService
         return new ValidateAuctionResponse
         {
             IsValid = true,
-            CurrentHighBid = (int)(auction.CurrentHighBid ?? 0),
-            ReservePrice = (int)auction.ReservePrice,
+            CurrentHighBid = (int)((auction.CurrentHighBid ?? 0) * 100),
+            ReservePrice = (int)(auction.ReservePrice * 100),
             AuctionEnd = auction.AuctionEnd.ToString("O"),
             Seller = auction.SellerUsername,
             Status = auction.Status.ToString()
@@ -113,9 +113,9 @@ public partial class AuctionGrpcService
             Title = auction.Item?.Title ?? string.Empty,
             Seller = auction.SellerUsername,
             Winner = auction.WinnerUsername ?? string.Empty,
-            CurrentHighBid = (int)(auction.CurrentHighBid ?? 0),
-            ReservePrice = (int)auction.ReservePrice,
-            BuyNowPrice = (int)(auction.BuyNowPrice ?? 0),
+            CurrentHighBid = (int)((auction.CurrentHighBid ?? 0) * 100),
+            ReservePrice = (int)(auction.ReservePrice * 100),
+            BuyNowPrice = (int)((auction.BuyNowPrice ?? 0) * 100),
             AuctionEnd = auction.AuctionEnd.ToString("O"),
             Status = auction.Status.ToString(),
             IsBuyNowAvailable = auction.IsBuyNowAvailable

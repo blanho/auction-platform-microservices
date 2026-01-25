@@ -3,8 +3,8 @@ using Bidding.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Bidding.Application.DTOs;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Application.Constants;
 using Bidding.Domain.Enums;
 using Bidding.Domain.Entities;
 
@@ -14,11 +14,13 @@ namespace Bidding.Infrastructure.Repositories
     {
         private readonly BidDbContext _context;
         private readonly IDateTimeProvider _dateTime;
+        private readonly IAuditContext _auditContext;
 
-        public BidRepository(BidDbContext context, IDateTimeProvider dateTime)
+        public BidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
             _context = context;
             _dateTime = dateTime;
+            _auditContext = auditContext;
         }
 
         public async Task<PaginatedResult<Bid>> GetPagedAsync(
@@ -51,7 +53,7 @@ namespace Bidding.Infrastructure.Repositories
         public async Task<Bid> CreateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
             bid.CreatedAt = _dateTime.UtcNow;
-            bid.CreatedBy = SystemGuids.System;
+            bid.CreatedBy = _auditContext.UserId;
             bid.IsDeleted = false;
 
             await _context.Bids.AddAsync(bid, cancellationToken);
@@ -64,7 +66,7 @@ namespace Bidding.Infrastructure.Repositories
             foreach (var bid in bids)
             {
                 bid.CreatedAt = utcNow;
-                bid.CreatedBy = SystemGuids.System;
+                bid.CreatedBy = _auditContext.UserId;
                 bid.IsDeleted = false;
             }
             await _context.Bids.AddRangeAsync(bids, cancellationToken);
@@ -74,7 +76,7 @@ namespace Bidding.Infrastructure.Repositories
         public Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
             bid.UpdatedAt = _dateTime.UtcNow;
-            bid.UpdatedBy = SystemGuids.System;
+            bid.UpdatedBy = _auditContext.UserId;
             _context.Bids.Update(bid);
             return Task.CompletedTask;
         }
@@ -85,7 +87,7 @@ namespace Bidding.Infrastructure.Repositories
             foreach (var bid in bids)
             {
                 bid.UpdatedAt = utcNow;
-                bid.UpdatedBy = SystemGuids.System;
+                bid.UpdatedBy = _auditContext.UserId;
             }
             _context.Bids.UpdateRange(bids);
             return Task.CompletedTask;
@@ -98,7 +100,7 @@ namespace Bidding.Infrastructure.Repositories
             {
                 bid.IsDeleted = true;
                 bid.DeletedAt = _dateTime.UtcNow;
-                bid.DeletedBy = SystemGuids.System;
+                bid.DeletedBy = _auditContext.UserId;
                 _context.Bids.Update(bid);
             }
         }
@@ -114,7 +116,7 @@ namespace Bidding.Infrastructure.Repositories
             {
                 bid.IsDeleted = true;
                 bid.DeletedAt = utcNow;
-                bid.DeletedBy = SystemGuids.System;
+                bid.DeletedBy = _auditContext.UserId;
             }
             _context.Bids.UpdateRange(bids);
         }

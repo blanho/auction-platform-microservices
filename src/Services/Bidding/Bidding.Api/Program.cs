@@ -36,9 +36,17 @@ builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
         ?? "https://localhost:7001";
     options.Address = new Uri(auctionGrpcUrl);
 })
-.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+.ConfigurePrimaryHttpMessageHandler(() =>
 {
-    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    var handler = new HttpClientHandler();
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        handler.ServerCertificateCustomValidationCallback = 
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+    }
+    
+    return handler;
 });
 
 builder.Services.AddScoped<IAuctionGrpcClient, AuctionGrpcClient>();

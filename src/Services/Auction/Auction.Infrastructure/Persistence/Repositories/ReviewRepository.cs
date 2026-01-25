@@ -3,7 +3,7 @@ using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
@@ -11,11 +11,13 @@ public class ReviewRepository : IReviewRepository
 {
     private readonly AuctionDbContext _context;
     private readonly IDateTimeProvider _dateTime;
+    private readonly IAuditContext _auditContext;
 
-    public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime)
+    public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
         _context = context;
         _dateTime = dateTime;
+        _auditContext = auditContext;
     }
 
     public async Task<PaginatedResult<Review>> GetPagedAsync(
@@ -104,7 +106,7 @@ public class ReviewRepository : IReviewRepository
     public async Task<Review> CreateAsync(Review review, CancellationToken cancellationToken = default)
     {
         review.CreatedAt = _dateTime.UtcNow;
-        review.CreatedBy = SystemGuids.System;
+        review.CreatedBy = _auditContext.UserId;
         review.IsDeleted = false;
         
         await _context.Reviews.AddAsync(review, cancellationToken);

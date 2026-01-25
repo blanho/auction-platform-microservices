@@ -30,9 +30,6 @@ public partial class AuctionGrpcService
         GetAuctionAnalyticsRequest request,
         ServerCallContext context)
     {
-        var startDate = DateTime.TryParse(request.StartDate, out var start) ? start : DateTime.UtcNow.AddMonths(-1);
-        var endDate = DateTime.TryParse(request.EndDate, out var end) ? end : DateTime.UtcNow;
-
         var liveAuctions = await _auctionRepository.CountLiveAuctionsAsync(context.CancellationToken);
         var completedAuctions = await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Finished, context.CancellationToken);
         var pendingAuctions = await _auctionRepository.GetCountByStatusAsync(BuildingBlocks.Domain.Enums.Status.Draft, context.CancellationToken);
