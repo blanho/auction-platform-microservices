@@ -12,8 +12,8 @@ public partial class AuctionGrpcService
         ServerCallContext context)
     {
         _logger.LogInformation(
-            "Validating auction {AuctionId} for bid by {Bidder}, amount: {Amount}",
-            request.AuctionId, request.Bidder, request.BidAmount);
+            "Validating auction {AuctionId} for bid by {Bidder}, amount cents: {AmountCents}",
+            request.AuctionId, request.Bidder, request.BidAmountCents);
 
         if (!Guid.TryParse(request.AuctionId, out var auctionId))
         {
@@ -83,8 +83,8 @@ public partial class AuctionGrpcService
         return new ValidateAuctionResponse
         {
             IsValid = true,
-            CurrentHighBid = (int)((auction.CurrentHighBid ?? 0) * 100),
-            ReservePrice = (int)(auction.ReservePrice * 100),
+            CurrentHighBidCents = DecimalToCents(auction.CurrentHighBid ?? 0),
+            ReservePriceCents = DecimalToCents(auction.ReservePrice),
             AuctionEnd = auction.AuctionEnd.ToString("O"),
             Seller = auction.SellerUsername,
             Status = auction.Status.ToString()
@@ -113,9 +113,9 @@ public partial class AuctionGrpcService
             Title = auction.Item?.Title ?? string.Empty,
             Seller = auction.SellerUsername,
             Winner = auction.WinnerUsername ?? string.Empty,
-            CurrentHighBid = (int)((auction.CurrentHighBid ?? 0) * 100),
-            ReservePrice = (int)(auction.ReservePrice * 100),
-            BuyNowPrice = (int)((auction.BuyNowPrice ?? 0) * 100),
+            CurrentHighBidCents = DecimalToCents(auction.CurrentHighBid ?? 0),
+            ReservePriceCents = DecimalToCents(auction.ReservePrice),
+            BuyNowPriceCents = DecimalToCents(auction.BuyNowPrice ?? 0),
             AuctionEnd = auction.AuctionEnd.ToString("O"),
             Status = auction.Status.ToString(),
             IsBuyNowAvailable = auction.IsBuyNowAvailable
@@ -171,5 +171,10 @@ public partial class AuctionGrpcService
             Success = true,
             NewEndTime = auction.AuctionEnd.ToString("O")
         };
+    }
+
+    private static long DecimalToCents(decimal amount)
+    {
+        return (long)decimal.Round(amount * 100, MidpointRounding.AwayFromZero);
     }
 }

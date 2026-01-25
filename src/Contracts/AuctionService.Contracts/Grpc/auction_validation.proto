@@ -7,15 +7,15 @@ package auctions;
 message ValidateAuctionRequest {
   string auction_id = 1;
   string bidder = 2;
-  int32 bid_amount = 3;
+  int64 bid_amount_cents = 3;
 }
 
 message ValidateAuctionResponse {
   bool is_valid = 1;
   string error_code = 2;
   string error_message = 3;
-  int32 current_high_bid = 4;
-  int32 reserve_price = 5;
+  int64 current_high_bid_cents = 4;
+  int64 reserve_price_cents = 5;
   string auction_end = 6;
   string seller = 7;
   string status = 8;
@@ -30,9 +30,9 @@ message AuctionDetailsResponse {
   string title = 2;
   string seller = 3;
   string winner = 4;
-  int32 current_high_bid = 5;
-  int32 reserve_price = 6;
-  int32 buy_now_price = 7;
+  int64 current_high_bid_cents = 5;
+  int64 reserve_price_cents = 6;
+  int64 buy_now_price_cents = 7;
   string auction_end = 8;
   string status = 9;
   bool is_buy_now_available = 10;

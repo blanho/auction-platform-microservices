@@ -30,7 +30,7 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             {
                 AuctionId = auctionId.ToString(),
                 Bidder = bidderUsername,
-                BidAmount = (int)(bidAmount * 100)
+                BidAmountCents = DecimalToCents(bidAmount)
             };
 
             var response = await _client.ValidateAuctionForBidAsync(request, cancellationToken: cancellationToken);
@@ -110,5 +110,10 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             _logger.LogError(ex, "Failed to extend auction {AuctionId}", auctionId);
             return new ExtendAuctionResult(false, "Failed to extend auction");
         }
+    }
+
+    private static long DecimalToCents(decimal amount)
+    {
+        return (long)decimal.Round(amount * 100, MidpointRounding.AwayFromZero);
     }
 }
