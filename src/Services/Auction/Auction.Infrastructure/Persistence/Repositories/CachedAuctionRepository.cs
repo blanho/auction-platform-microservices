@@ -1,7 +1,6 @@
 #nullable enable
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
-using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Domain.Enums;
@@ -16,16 +15,14 @@ public class CachedAuctionRepository : IAuctionRepository
 {
     private readonly IAuctionRepository _inner;
     private readonly ICacheService _cache;
-    private readonly IMapper _mapper;
     private readonly ILogger<CachedAuctionRepository> _logger;
     private static readonly TimeSpan SingleAuctionTtl = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan AuctionListTtl = TimeSpan.FromMinutes(1);
 
-    public CachedAuctionRepository(IAuctionRepository inner, ICacheService cache, IMapper mapper, ILogger<CachedAuctionRepository> logger)
+    public CachedAuctionRepository(IAuctionRepository inner, ICacheService cache, ILogger<CachedAuctionRepository> logger)
     {
         _inner = inner;
         _cache = cache;
-        _mapper = mapper;
         _logger = logger;
     }
 
@@ -35,38 +32,34 @@ public class CachedAuctionRepository : IAuctionRepository
         CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.AuctionList($"page:{page}:size:{pageSize}");
-        var cached = await _cache.GetAsync<PaginatedResult<Application.DTOs.AuctionDto>>(key, cancellationToken);
+        var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
         if (cached != null)
         {
             _logger.LogInformation("Cache HIT for paged auctions (page {Page}, size {Size})", page, pageSize);
-            var mappedItems = _mapper.Map<List<Auction>>(cached.Items);
-            return new PaginatedResult<Auction>(mappedItems, cached.TotalCount, cached.Page, cached.PageSize);
+            return cached;
         }
 
         _logger.LogInformation("Cache MISS for paged auctions - fetching from database");
         var result = await _inner.GetPagedAsync(page, pageSize, cancellationToken);
-        var dtos = _mapper.Map<List<Application.DTOs.AuctionDto>>(result.Items);
-        var cachedResult = new PaginatedResult<Application.DTOs.AuctionDto>(dtos, result.TotalCount, result.Page, result.PageSize);
-        await _cache.SetAsync(key, cachedResult, AuctionListTtl, cancellationToken);
+        await _cache.SetAsync(key, result, AuctionListTtl, cancellationToken);
         return result;
     }
 
     public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.Auction(id);
-        var cachedDto = await _cache.GetAsync<Application.DTOs.AuctionDto>(key, cancellationToken);
-        if (cachedDto != null)
+        var cachedAuction = await _cache.GetAsync<Auction>(key, cancellationToken);
+        if (cachedAuction != null)
         {
             _logger.LogInformation("Cache HIT for auction {AuctionId}", id);
-            return _mapper.Map<Auction>(cachedDto);
+            return cachedAuction;
         }
 
         _logger.LogInformation("Cache MISS for auction {AuctionId} - fetching from database", id);
         var auction = await _inner.GetByIdAsync(id, cancellationToken);
         if (auction != null)
         {
-            var dto = _mapper.Map<Application.DTOs.AuctionDto>(auction);
-            await _cache.SetAsync(key, dto, SingleAuctionTtl, cancellationToken);
+            await _cache.SetAsync(key, auction, SingleAuctionTtl, cancellationToken);
             _logger.LogInformation("Cache SET for auction {AuctionId}", id);
         }
         return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");

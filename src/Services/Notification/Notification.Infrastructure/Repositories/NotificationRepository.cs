@@ -44,6 +44,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<List<NotificationEntity>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _context.Notifications
+            .AsNoTracking()
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -52,6 +53,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<List<NotificationEntity>> GetUnreadByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _context.Notifications
+            .AsNoTracking()
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -60,6 +62,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _context.Notifications
+            .AsNoTracking()
             .CountAsync(n => n.UserId == userId && n.Status == NotificationStatus.Unread, cancellationToken);
     }
 
@@ -71,20 +74,19 @@ public class NotificationRepository : INotificationRepository
 
     public async Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var unreadNotifications = await _context.Notifications
+        await _context.Notifications
             .Where(n => n.UserId == userId && n.Status == NotificationStatus.Unread)
-            .ToListAsync(cancellationToken);
-
-        foreach (var notification in unreadNotifications)
-        {
-            notification.MarkAsRead();
-        }
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(n => n.Status, NotificationStatus.Read)
+                      .SetProperty(n => n.ReadAt, DateTimeOffset.UtcNow),
+                cancellationToken);
     }
 
     public async Task<List<NotificationEntity>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default)
     {
         var cutoffDate = DateTimeOffset.UtcNow.AddDays(-retentionDays);
         return await _context.Notifications
+            .AsNoTracking()
             .Where(n => n.Status == NotificationStatus.Read && n.ReadAt < cutoffDate)
             .ToListAsync(cancellationToken);
     }
@@ -103,7 +105,9 @@ public class NotificationRepository : INotificationRepository
         NotificationStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Notifications.AsQueryable();
+        var query = _context.Notifications
+            .AsNoTracking()
+            .AsQueryable();
 
         if (!string.IsNullOrEmpty(userId))
             query = query.Where(n => n.UserId == userId);
@@ -129,11 +133,12 @@ public class NotificationRepository : INotificationRepository
     {
         var today = DateTimeOffset.UtcNow.Date;
 
-        var totalCount = await _context.Notifications.CountAsync(cancellationToken);
-        var unreadCount = await _context.Notifications.CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
-        var todayCount = await _context.Notifications.CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
+        var totalCount = await _context.Notifications.AsNoTracking().CountAsync(cancellationToken);
+        var unreadCount = await _context.Notifications.AsNoTracking().CountAsync(n => n.Status == NotificationStatus.Unread, cancellationToken);
+        var todayCount = await _context.Notifications.AsNoTracking().CountAsync(n => n.CreatedAt.Date == today, cancellationToken);
 
         var byType = await _context.Notifications
+            .AsNoTracking()
             .GroupBy(n => n.Type)
             .Select(g => new { Type = g.Key.ToString(), Count = g.Count() })
             .ToDictionaryAsync(x => x.Type, x => x.Count, cancellationToken);

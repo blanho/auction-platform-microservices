@@ -25,6 +25,7 @@ public class ReviewRepository : IReviewRepository
     {
         var query = _context.Reviews
             .Where(x => !x.IsDeleted)
+            .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt);
 
         var totalCount = await query.CountAsync(cancellationToken);
@@ -42,6 +43,7 @@ public class ReviewRepository : IReviewRepository
             .Where(x => !x.IsDeleted)
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -49,6 +51,7 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Reviews
             .Where(x => !x.IsDeleted)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.AuctionId == auctionId && x.ReviewerUsername == reviewerUsername, cancellationToken);
     }
 
@@ -58,6 +61,7 @@ public class ReviewRepository : IReviewRepository
             .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
+            .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -68,6 +72,7 @@ public class ReviewRepository : IReviewRepository
             .Where(x => !x.IsDeleted && x.ReviewedUsername == username)
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
+            .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -78,6 +83,7 @@ public class ReviewRepository : IReviewRepository
             .Where(x => !x.IsDeleted && x.ReviewerUsername == username)
             .Include(x => x.Auction)
                 .ThenInclude(a => a!.Item)
+            .AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -86,6 +92,7 @@ public class ReviewRepository : IReviewRepository
     {
         var reviews = await _context.Reviews
             .Where(x => !x.IsDeleted && x.ReviewedUsername == username)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         if (reviews.Count == 0)

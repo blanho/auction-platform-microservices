@@ -17,7 +17,9 @@ public class WalletTransactionRepository : IWalletTransactionRepository
 
     public async Task<WalletTransaction> GetByIdAsync(Guid id)
     {
-        return await _context.WalletTransactions.FindAsync(id);
+        return await _context.WalletTransactions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<WalletTransaction?> GetByReferenceIdAsync(string referenceId, TransactionType type, CancellationToken cancellationToken = default)
@@ -26,6 +28,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
             return null;
             
         return await _context.WalletTransactions
+            .AsNoTracking()
             .Where(t => t.ReferenceId == refGuid && t.Type == type)
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -33,6 +36,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
     public async Task<IEnumerable<WalletTransaction>> GetByUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.WalletTransactions
+            .AsNoTracking()
             .Where(t => t.Username == username)
             .OrderByDescending(t => t.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -54,12 +58,15 @@ public class WalletTransactionRepository : IWalletTransactionRepository
 
     public async Task<int> GetCountByUsernameAsync(string username)
     {
-        return await _context.WalletTransactions.CountAsync(t => t.Username == username);
+        return await _context.WalletTransactions
+            .AsNoTracking()
+            .CountAsync(t => t.Username == username);
     }
 
     public async Task<decimal> GetTotalByUsernameAndTypeAsync(string username, TransactionType type)
     {
         return await _context.WalletTransactions
+            .AsNoTracking()
             .Where(t => t.Username == username && t.Type == type && t.Status == TransactionStatus.Completed)
             .SumAsync(t => t.Amount);
     }

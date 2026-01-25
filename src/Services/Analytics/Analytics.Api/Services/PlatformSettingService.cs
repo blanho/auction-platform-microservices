@@ -35,19 +35,19 @@ public sealed class PlatformSettingService : IPlatformSettingService
             settings = result.Items.ToList();
         }
 
-        return settings.Select(MapToDto).ToList();
+        return settings.ToDtoList();
     }
 
     public async Task<PlatformSettingDto?> GetSettingByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var setting = await _settingRepository.GetByIdAsync(id, cancellationToken);
-        return setting is null ? null : MapToDto(setting);
+        return setting?.ToDto();
     }
 
     public async Task<PlatformSettingDto?> GetSettingByKeyAsync(string key, CancellationToken cancellationToken = default)
     {
         var setting = await _settingRepository.GetByKeyAsync(key, cancellationToken);
-        return setting is null ? null : MapToDto(setting);
+        return setting?.ToDto();
     }
 
     public async Task<PlatformSettingDto> CreateSettingAsync(
@@ -79,7 +79,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
 
         _logger.LogInformation("Platform setting '{Key}' created by {User}", dto.Key, modifiedBy);
 
-        return MapToDto(setting);
+        return setting.ToDto();
     }
 
     public async Task<PlatformSettingDto> UpdateSettingAsync(
@@ -99,7 +99,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
 
         _logger.LogInformation("Platform setting '{Key}' updated by {User}", setting.Key, modifiedBy);
 
-        return MapToDto(setting);
+        return setting.ToDto();
     }
 
     public async Task DeleteSettingAsync(Guid id, CancellationToken cancellationToken = default)
@@ -151,21 +151,5 @@ public sealed class PlatformSettingService : IPlatformSettingService
         }
 
         _logger.LogInformation("Bulk update of {Count} settings by {User}", settings.Count, modifiedBy);
-    }
-
-    private static PlatformSettingDto MapToDto(PlatformSetting setting)
-    {
-        return new PlatformSettingDto
-        {
-            Id = setting.Id,
-            Key = setting.Key,
-            Value = setting.Value,
-            Description = setting.Description,
-            Category = setting.Category.ToString(),
-            DataType = setting.DataType,
-            IsSystem = setting.IsSystem,
-            UpdatedAt = setting.UpdatedAt,
-            UpdatedBy = setting.LastModifiedBy
-        };
     }
 }

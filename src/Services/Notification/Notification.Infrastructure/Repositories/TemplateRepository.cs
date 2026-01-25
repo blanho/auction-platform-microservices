@@ -18,12 +18,14 @@ public class TemplateRepository : ITemplateRepository
     public async Task<NotificationTemplate?> GetByKeyAsync(string key, CancellationToken ct = default)
     {
         return await _context.Templates
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Key == key.ToLowerInvariant(), ct);
     }
 
     public async Task<List<NotificationTemplate>> GetAllActiveAsync(CancellationToken ct = default)
     {
         return await _context.Templates
+            .AsNoTracking()
             .Where(t => t.IsActive)
             .OrderBy(t => t.Name)
             .ToListAsync(ct);
@@ -31,7 +33,9 @@ public class TemplateRepository : ITemplateRepository
 
     public async Task<PaginatedResult<NotificationTemplate>> GetPagedAsync(int page, int pageSize, CancellationToken ct = default)
     {
-        var query = _context.Templates.OrderBy(t => t.Name);
+        var query = _context.Templates
+            .AsNoTracking()
+            .OrderBy(t => t.Name);
         var totalCount = await query.CountAsync(ct);
         var items = await query
             .Skip((page - 1) * pageSize)

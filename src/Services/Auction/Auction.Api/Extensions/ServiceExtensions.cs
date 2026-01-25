@@ -1,6 +1,6 @@
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
-using Auctions.Infrastructure.Grpc.Clients;
+using Auctions.Infrastructure.Grpc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -51,9 +51,8 @@ namespace Auctions.Api.Extensions
             {
                 var inner = sp.GetRequiredService<AuctionRepository>();
                 var cache = sp.GetRequiredService<ICacheService>();
-                var mapper = sp.GetRequiredService<IMapper>();
                 var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
-                return new CachedAuctionRepository(inner, cache, mapper, logger);
+                return new CachedAuctionRepository(inner, cache, logger);
             });
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();

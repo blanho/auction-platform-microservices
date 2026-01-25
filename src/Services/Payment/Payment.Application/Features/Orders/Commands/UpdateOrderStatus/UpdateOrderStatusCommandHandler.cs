@@ -64,6 +64,6 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
 
         _logger.LogInformation("Updated order {OrderId}", updated.Id);
 
-        return _mapper.Map<OrderDto>(updated);
+        return updated.ToDto(_mapper);
     }
 }

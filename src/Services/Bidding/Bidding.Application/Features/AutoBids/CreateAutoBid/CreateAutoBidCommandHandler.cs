@@ -55,7 +55,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         _logger.LogInformation("Auto-bid {AutoBidId} created successfully for auction {AuctionId}",
             autoBid.Id, request.AuctionId);
 
-        var dto = _mapper.Map<AutoBidDto>(autoBid);
+        var dto = autoBid.ToDto();
         return Result<CreateAutoBidResult>.Success(CreateAutoBidResult.Succeeded(dto));
     }
 }

@@ -59,7 +59,7 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
         _logger.LogInformation("Auto-bid {AutoBidId} updated successfully with new max {NewMaxAmount}",
             request.AutoBidId, request.NewMaxAmount);
 
-        var dto = _mapper.Map<AutoBidDto>(autoBid);
+        var dto = autoBid.ToDto();
         return Result<UpdateAutoBidResult>.Success(UpdateAutoBidResult.Succeeded(dto));
     }
 }

@@ -29,7 +29,9 @@ public class ReportRepository : IReportRepository
 
     public async Task<Report?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Reports.FindAsync(new object[] { id }, cancellationToken);
+        return await _context.Reports
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
     public async Task<PaginatedResult<Report>> GetPagedAsync(
@@ -122,6 +124,7 @@ public class ReportRepository : IReportRepository
         var cutoffTime = DateTimeOffset.UtcNow - unreviewedThreshold;
 
         return await _context.Reports
+            .AsNoTracking()
             .Where(IsPendingForEscalation)
             .Where(r => r.CreatedAt <= cutoffTime)
             .Where(r => r.EscalatedAt == null || r.EscalatedAt <= cutoffTime)
@@ -139,6 +142,7 @@ public class ReportRepository : IReportRepository
     public async Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Reports
+            .AsNoTracking()
             .CountAsync(r => r.Status == ReportStatus.Pending || r.Status == ReportStatus.UnderReview, cancellationToken);
     }
 }

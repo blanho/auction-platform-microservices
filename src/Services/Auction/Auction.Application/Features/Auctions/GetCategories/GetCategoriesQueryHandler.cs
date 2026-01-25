@@ -48,7 +48,7 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
                 categories = result.Items.ToList();
             }
 
-            var dtos = _mapper.Map<List<CategoryDto>>(categories);
+            var dtos = categories.Select(c => _mapper.Map<CategoryDto>(c)).ToList();
 
             _logger.LogInformation("Successfully fetched {Count} categories", dtos.Count);
 

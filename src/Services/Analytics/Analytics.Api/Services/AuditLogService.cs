@@ -18,7 +18,7 @@ public sealed class AuditLogService : IAuditLogService
     public async Task<AuditLogDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.AuditLogs.GetByIdAsync(id, cancellationToken);
-        return entity is null ? null : MapToDto(entity);
+        return entity?.ToDto();
     }
 
     public async Task<List<AuditLogDto>> GetEntityAuditHistoryAsync(
@@ -31,7 +31,7 @@ public sealed class AuditLogService : IAuditLogService
             entityId,
             cancellationToken);
 
-        return entities.Select(MapToDto).ToList();
+        return entities.ToDtoList();
     }
 
     public async Task<PaginatedResult<AuditLogDto>> GetPagedAuditLogsAsync(
@@ -42,34 +42,12 @@ public sealed class AuditLogService : IAuditLogService
             queryParams,
             cancellationToken);
 
-        var dtos = pagedResult.Items.Select(MapToDto).ToList();
+        var dtos = pagedResult.Items.ToDtoList();
 
         return new PaginatedResult<AuditLogDto>(
             dtos,
             pagedResult.TotalCount,
             pagedResult.Page,
             pagedResult.PageSize);
-    }
-
-    private static AuditLogDto MapToDto(AuditLog entity)
-    {
-        return new AuditLogDto
-        {
-            Id = entity.Id,
-            EntityId = entity.EntityId,
-            EntityType = entity.EntityType,
-            Action = entity.Action,
-            OldValues = entity.OldValues,
-            NewValues = entity.NewValues,
-            ChangedProperties = !string.IsNullOrEmpty(entity.ChangedProperties)
-                ? JsonSerializer.Deserialize<List<string>>(entity.ChangedProperties)
-                : null,
-            UserId = entity.UserId,
-            Username = entity.Username,
-            ServiceName = entity.ServiceName,
-            CorrelationId = entity.CorrelationId,
-            IpAddress = entity.IpAddress,
-            Timestamp = entity.Timestamp
-        };
     }
 }

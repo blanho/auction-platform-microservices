@@ -19,7 +19,9 @@ public class AuditLogRepository : IAuditLogRepository
 
     public async Task<AuditLog?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.AuditLogs.FindAsync([id], cancellationToken);
+        return await _context.AuditLogs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<AuditLog>> GetByEntityAsync(
@@ -86,7 +88,9 @@ public class AuditLogRepository : IAuditLogRepository
 
     public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.AuditLogs.CountAsync(cancellationToken);
+        return await _context.AuditLogs
+            .AsNoTracking()
+            .CountAsync(cancellationToken);
     }
 
     public async Task<List<AuditLog>> GetLogsOlderThanAsync(DateTimeOffset cutoffDate, CancellationToken cancellationToken = default)

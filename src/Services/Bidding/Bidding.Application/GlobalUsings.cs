@@ -24,6 +24,7 @@ global using BidService.Contracts.Events;
 global using MediatR;
 
 global using AutoMapper;
+global using Bidding.Application.Extensions.Mappings;
 
 global using FluentValidation;
 

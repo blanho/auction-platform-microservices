@@ -21,6 +21,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             return await _context.Brands
                 .Where(b => !b.IsDeleted)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
@@ -30,6 +31,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Where(b => !b.IsDeleted)
                 .Include(b => b.Items.Where(i => !i.IsDeleted))
                     .ThenInclude(i => i.Auction)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
@@ -37,6 +39,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             return await _context.Brands
                 .Where(b => !b.IsDeleted)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
         }
 
@@ -46,6 +49,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             if (!includeInactive)
                 query = query.Where(b => b.IsActive);
             return await query
+                .AsNoTracking()
                 .OrderBy(b => b.DisplayOrder)
                 .ThenBy(b => b.Name)
                 .ToListAsync(cancellationToken);
@@ -56,6 +60,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Brands
                 .Where(b => !b.IsDeleted && b.IsActive)
                 .Include(b => b.Items.Where(i => !i.IsDeleted && i.Auction != null && !i.Auction.IsDeleted))
+                .AsNoTracking()
                 .OrderBy(b => b.DisplayOrder)
                 .ThenBy(b => b.Name)
                 .ToListAsync(cancellationToken);
@@ -65,6 +70,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             return await _context.Brands
                 .Where(b => !b.IsDeleted && b.IsActive && b.IsFeatured)
+                .AsNoTracking()
                 .OrderBy(b => b.DisplayOrder)
                 .ThenBy(b => b.Name)
                 .Take(count)

@@ -50,7 +50,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
                 _logger.LogWarning(
                     "Duplicate payment attempt detected for ReferenceId {ReferenceId}, returning existing transaction {TransactionId}",
                     request.ReferenceId, existingTransaction.Id);
-                return Result.Success(_mapper.Map<WalletTransactionDto>(existingTransaction));
+                return Result.Success(existingTransaction.ToDto(_mapper));
             }
         }
 
@@ -107,6 +107,6 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         _logger.LogInformation("Payment of {Amount} processed for order {ReferenceId} for user: {Username}",
             request.Amount, request.ReferenceId, request.Username);
 
-        return Result.Success(_mapper.Map<WalletTransactionDto>(transaction));
+        return Result.Success(transaction.ToDto(_mapper));
     }
 }

@@ -16,7 +16,8 @@ public class GetReviewsForUserQueryHandler : IQueryHandler<GetReviewsForUserQuer
     public async Task<Result<List<ReviewDto>>> Handle(GetReviewsForUserQuery request, CancellationToken cancellationToken)
     {
         var reviews = await _reviewRepository.GetByReviewedUsernameAsync(request.Username, cancellationToken);
-        return Result.Success(_mapper.Map<List<ReviewDto>>(reviews));
+        var dtos = reviews.Select(r => _mapper.Map<ReviewDto>(r)).ToList();
+        return Result.Success(dtos);
     }
 }
 

@@ -38,6 +38,6 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
 
         _logger.LogInformation("Wallet created for user: {Username} ({UserId})", request.Username, request.UserId);
 
-        return Result.Success(_mapper.Map<WalletDto>(created));
+        return Result.Success(created.ToDto(_mapper));
     }
 }

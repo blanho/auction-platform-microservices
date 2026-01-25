@@ -51,7 +51,7 @@ namespace Notification.Application.Services
             await _repository.CreateAsync(notification, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var notificationDto = _mapper.Map<NotificationDto>(notification);
+            var notificationDto = notification.ToDto(_mapper);
             await _hubService.SendNotificationToUserAsync(dto.UserId, notificationDto);
 
             return notificationDto;
@@ -60,7 +60,7 @@ namespace Notification.Application.Services
         public async Task<List<NotificationDto>> GetUserNotificationsAsync(string userId, CancellationToken cancellationToken = default)
         {
             var notifications = await _repository.GetByUserIdAsync(userId, cancellationToken);
-            return _mapper.Map<List<NotificationDto>>(notifications);
+            return notifications.ToDtoList(_mapper);
         }
 
         public async Task<NotificationSummaryDto> GetNotificationSummaryAsync(string userId, CancellationToken cancellationToken = default)
@@ -72,7 +72,7 @@ namespace Notification.Application.Services
             {
                 UnreadCount = unreadCount,
                 TotalCount = allNotifications.Count,
-                RecentNotifications = _mapper.Map<List<NotificationDto>>(allNotifications.Take(10).ToList())
+                RecentNotifications = allNotifications.Take(10).ToList().ToDtoList(_mapper)
             };
         }
 
@@ -120,7 +120,7 @@ namespace Notification.Application.Services
                 cancellationToken);
 
             return new PaginatedResult<NotificationDto>(
-                _mapper.Map<List<NotificationDto>>(result.Items),
+                result.Items.ToDtoList(_mapper),
                 result.TotalCount,
                 result.Page,
                 result.PageSize
@@ -143,7 +143,7 @@ namespace Notification.Application.Services
             await _repository.CreateAsync(notification, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var notificationDto = _mapper.Map<NotificationDto>(notification);
+            var notificationDto = notification.ToDto(_mapper);
             await _hubService.SendNotificationToAllAsync(notificationDto);
         }
 

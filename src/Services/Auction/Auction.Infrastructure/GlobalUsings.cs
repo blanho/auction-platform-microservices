@@ -10,7 +10,7 @@ global using Auctions.Application.DTOs.Auctions;
 global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.DTOs.Categories;
 global using Auctions.Infrastructure.Persistence.Repositories;
-global using Auctions.Infrastructure.Grpc.Clients;
+global using Auctions.Infrastructure.Grpc;
 
 global using AuctionService.Contracts.Events;
 global using BidService.Contracts.Events;

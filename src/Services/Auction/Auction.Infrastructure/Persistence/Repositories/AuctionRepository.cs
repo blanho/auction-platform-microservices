@@ -31,6 +31,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -50,6 +51,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             
             return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
@@ -167,6 +169,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .AsSplitQuery()
                 .AsQueryable();
 
@@ -270,6 +273,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (status.HasValue)
@@ -369,6 +373,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)
@@ -387,6 +392,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
@@ -405,6 +411,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .OrderByDescending(x => x.SoldAmount)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
@@ -416,6 +423,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Where(x => !x.IsDeleted && x.Item != null && x.Item.CategoryId.HasValue)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
+                .AsNoTracking()
                 .GroupBy(x => new { x.Item!.CategoryId, CategoryName = x.Item.Category!.Name })
                 .Select(g => new CategoryStatDto(
                     g.Key.CategoryId!.Value,
@@ -435,6 +443,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
@@ -447,6 +456,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }

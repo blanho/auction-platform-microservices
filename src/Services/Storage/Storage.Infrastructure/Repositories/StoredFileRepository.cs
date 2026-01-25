@@ -25,11 +25,19 @@ public class StoredFileRepository : IStoredFileRepository
             .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
     }
 
+    public async Task<StoredFile?> GetByIdReadOnlyAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.StoredFiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+    }
+
     public async Task<IEnumerable<StoredFile>> GetByIdsAsync(
         IEnumerable<Guid> ids,
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => ids.Contains(f.Id))
             .ToListAsync(cancellationToken);
     }
@@ -40,6 +48,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.OwnerService == ownerService && f.OwnerId == ownerId)
             .ToListAsync(cancellationToken);
     }
@@ -49,6 +58,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.ExpiresAt != null && f.ExpiresAt < expiredBefore && f.Status != FileStatus.Removed)
             .ToListAsync(cancellationToken);
     }
@@ -58,6 +68,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.Status == status)
             .ToListAsync(cancellationToken);
     }
@@ -67,6 +78,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.Status == FileStatus.Removed)
             .OrderBy(f => f.DeletedAt)
             .Take(batchSize)
@@ -79,6 +91,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.ResourceId == resourceId 
                 && f.ResourceType == resourceType 
                 && f.Status != FileStatus.Removed
@@ -94,6 +107,7 @@ public class StoredFileRepository : IStoredFileRepository
     {
         var cutoff = _dateTime.UtcNowOffset - olderThan;
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.Status == FileStatus.Scanning && f.UpdatedAt < cutoff)
             .OrderBy(f => f.UpdatedAt)
             .Take(batchSize)
@@ -105,6 +119,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.Status == FileStatus.Infected)
             .OrderBy(f => f.UpdatedAt)
             .Take(batchSize)
@@ -118,6 +133,7 @@ public class StoredFileRepository : IStoredFileRepository
     {
         var cutoff = _dateTime.UtcNowOffset - olderThan;
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => (f.Status == FileStatus.InTemp || f.Status == FileStatus.Pending) 
                 && f.CreatedAt < cutoff)
             .OrderBy(f => f.CreatedAt)
@@ -130,6 +146,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .Where(f => f.ContentHash == contentHash 
                 && (f.Status == FileStatus.InMedia || f.Status == FileStatus.Confirmed))
             .FirstOrDefaultAsync(cancellationToken);
@@ -139,6 +156,7 @@ public class StoredFileRepository : IStoredFileRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.StoredFiles
+            .AsNoTracking()
             .GroupBy(f => f.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.Status, x => x.Count, cancellationToken);

@@ -4,19 +4,19 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Search.Contracts</RootNamespace>
-    <AssemblyName>Search.Contracts</AssemblyName>
+    <RootNamespace>SearchService.Contracts</RootNamespace>
+    <AssemblyName>SearchService.Contracts</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- 
-    Search.Contracts contains:
-    - Search service integration events (if any)
+    SearchService.Contracts contains:
+    - Search service integration events
     - Shared DTOs for search results consumed by other services
   -->
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
   </ItemGroup>
 
 </Project>

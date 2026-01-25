@@ -22,7 +22,7 @@ public class GetOrdersByBuyerQueryHandler : IQueryHandler<GetOrdersByBuyerQuery,
         var totalCount = await _repository.GetCountByBuyerUsernameAsync(request.BuyerUsername);
 
         var result = new PaginatedResult<OrderDto>(
-            _mapper.Map<List<OrderDto>>(orders),
+            orders.ToDtoList(_mapper),
             totalCount,
             request.Page,
             request.PageSize

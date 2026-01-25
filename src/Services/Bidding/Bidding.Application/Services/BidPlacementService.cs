@@ -264,7 +264,7 @@ namespace Bidding.Application.Services
             if (raceConditionResult != null)
                 return raceConditionResult;
 
-            return _mapper.Map<BidDto>(createdBid);
+            return createdBid.ToDto();
         }
 
         #endregion
@@ -273,14 +273,14 @@ namespace Bidding.Application.Services
         {
             _logger.LogInformation("Getting bids for auction {AuctionId}", auctionId);
             var bids = await _repository.GetBidsByAuctionIdAsync(auctionId, cancellationToken);
-            return _mapper.Map<List<BidDto>>(bids);
+            return bids.ToDtoList();
         }
 
         public async Task<List<BidDto>> GetBidsForBidderAsync(string bidderUsername, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Getting bids for bidder {Bidder}", bidderUsername);
             var bids = await _repository.GetBidsByBidderUsernameAsync(bidderUsername, cancellationToken);
-            return _mapper.Map<List<BidDto>>(bids);
+            return bids.ToDtoList();
         }
     }
 

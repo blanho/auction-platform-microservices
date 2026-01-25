@@ -1,4 +1,4 @@
-namespace Auctions.Infrastructure.Grpc.Clients;
+namespace Auctions.Infrastructure.Grpc;
 
 public sealed class FileConfirmationService : IFileConfirmationService
 {

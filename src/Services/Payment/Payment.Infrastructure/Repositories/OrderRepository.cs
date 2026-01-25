@@ -18,17 +18,22 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> GetByIdAsync(Guid id)
     {
-        return await _context.Orders.FindAsync(id);
+        return await _context.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id);
     }
 
     public async Task<Order> GetByAuctionIdAsync(Guid auctionId)
     {
-        return await _context.Orders.FirstOrDefaultAsync(o => o.AuctionId == auctionId);
+        return await _context.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.AuctionId == auctionId);
     }
 
     public async Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.Orders
+            .AsNoTracking()
             .Where(o => o.BuyerUsername == username)
             .OrderByDescending(o => o.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -39,6 +44,7 @@ public class OrderRepository : IOrderRepository
     public async Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
     {
         return await _context.Orders
+            .AsNoTracking()
             .Where(o => o.SellerUsername == username)
             .OrderByDescending(o => o.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -61,12 +67,16 @@ public class OrderRepository : IOrderRepository
 
     public async Task<int> GetCountByBuyerUsernameAsync(string username)
     {
-        return await _context.Orders.CountAsync(o => o.BuyerUsername == username);
+        return await _context.Orders
+            .AsNoTracking()
+            .CountAsync(o => o.BuyerUsername == username);
     }
 
     public async Task<int> GetCountBySellerUsernameAsync(string username)
     {
-        return await _context.Orders.CountAsync(o => o.SellerUsername == username);
+        return await _context.Orders
+            .AsNoTracking()
+            .CountAsync(o => o.SellerUsername == username);
     }
 
     public async Task<RevenueStatsDto> GetRevenueStatsAsync(
@@ -79,7 +89,7 @@ public class OrderRepository : IOrderRepository
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var query = _context.Orders.AsQueryable();
+        var query = _context.Orders.AsNoTracking().AsQueryable();
         
         if (startDate.HasValue)
             query = query.Where(o => o.CreatedAt >= startDate.Value);
@@ -119,6 +129,7 @@ public class OrderRepository : IOrderRepository
         var startDate = DateTimeOffset.UtcNow.AddDays(-days);
 
         var dailyStats = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => o.PaidAt.Value.Date)
             .Select(g => new DailyRevenueStatDto(
@@ -138,6 +149,7 @@ public class OrderRepository : IOrderRepository
         var startDate = GetPeriodStartDate(period);
 
         var topSellers = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.SellerId, o.SellerUsername })
             .Select(g => new TopSellerDto(
@@ -159,6 +171,7 @@ public class OrderRepository : IOrderRepository
         var startDate = GetPeriodStartDate(period);
 
         var topBuyers = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.BuyerId, o.BuyerUsername })
             .Select(g => new TopBuyerDto(

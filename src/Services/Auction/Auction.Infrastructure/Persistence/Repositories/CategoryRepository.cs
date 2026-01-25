@@ -25,6 +25,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             var query = _context.Categories
                 .Where(x => !x.IsDeleted)
+                .AsNoTracking()
                 .OrderBy(x => x.DisplayOrder)
                 .ThenBy(x => x.Name);
 
@@ -42,6 +43,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Categories
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Items.Where(i => !i.IsDeleted))
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -50,6 +52,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Categories
                 .Where(x => !x.IsDeleted && x.Slug == slug)
                 .Include(x => x.Items.Where(i => !i.IsDeleted))
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -57,6 +60,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             return await _context.Categories
                 .Where(x => !x.IsDeleted && x.IsActive)
+                .AsNoTracking()
                 .OrderBy(x => x.DisplayOrder)
                 .ThenBy(x => x.Name)
                 .ToListAsync(cancellationToken);
@@ -67,6 +71,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Categories
                 .Where(x => !x.IsDeleted && x.IsActive)
                 .Include(x => x.Items.Where(i => !i.IsDeleted && i.Auction != null && !i.Auction.IsDeleted))
+                .AsNoTracking()
                 .OrderBy(x => x.DisplayOrder)
                 .ThenBy(x => x.Name)
                 .ToListAsync(cancellationToken);

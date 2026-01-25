@@ -22,6 +22,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
     public async Task<List<NotificationRecord>> GetRecordsByUserIdAsync(Guid userId, int skip = 0, int take = 50, CancellationToken ct = default)
     {
         return await _context.Records
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .Skip(skip)
@@ -37,6 +38,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
     public async Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = 20, CancellationToken ct = default)
     {
         return await _context.UserNotifications
+            .AsNoTracking()
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
             .Skip(skip)
@@ -52,6 +54,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
     public async Task<int> GetUnreadCountAsync(string userId, CancellationToken ct = default)
     {
         return await _context.UserNotifications
+            .AsNoTracking()
             .CountAsync(n => n.UserId == userId && !n.IsRead, ct);
     }
 

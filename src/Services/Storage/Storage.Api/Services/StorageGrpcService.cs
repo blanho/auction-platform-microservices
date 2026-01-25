@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Storage.Api.Extensions.Mappings;
 using Storage.Api.Protos;
 using Storage.Application.DTOs;
 using Storage.Application.Interfaces;
@@ -90,7 +91,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
         return new ConfirmFileResponse
         {
             Success = true,
-            Metadata = MapToGrpc(result.Metadata)
+            Metadata = result.Metadata.ToGrpcResponse()
         };
     }
 
@@ -139,7 +140,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
             throw new RpcException(new Status(StatusCode.NotFound, "File not found"));
         }
 
-        return MapToGrpc(metadata);
+        return metadata.ToGrpcResponse();
     }
 
     public override async Task<FilesResponse> GetFilesByEntity(
@@ -152,7 +153,7 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
             context.CancellationToken);
 
         var response = new FilesResponse();
-        response.Files.AddRange(files.Select(MapToGrpc));
+        response.Files.AddRange(files.ToGrpcResponseList());
         return response;
     }
 
@@ -167,25 +168,5 @@ public class StorageGrpcService : StorageGrpc.StorageGrpcBase
 
         var result = await _fileStorageService.DeleteAsync(fileId, context.CancellationToken);
         return new DeleteFileResponse { Success = result, Error = result ? null : "File not found" };
-    }
-
-    private static FileMetadataResponse MapToGrpc(FileMetadataDto metadata)
-    {
-        return new FileMetadataResponse
-        {
-            Id = metadata.Id.ToString(),
-            FileName = metadata.FileName,
-            OriginalFileName = metadata.OriginalFileName,
-            ContentType = metadata.ContentType,
-            Size = metadata.Size,
-            Path = string.Empty,
-            Url = string.Empty,
-            Status = metadata.Status.ToString(),
-            EntityId = metadata.OwnerId ?? string.Empty,
-            EntityType = metadata.OwnerService,
-            UploadedBy = metadata.UploadedBy ?? string.Empty,
-            CreatedAt = metadata.CreatedAt.ToString("O"),
-            ConfirmedAt = metadata.ConfirmedAt?.ToString("O") ?? string.Empty
-        };
     }
 }

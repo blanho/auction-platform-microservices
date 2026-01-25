@@ -54,6 +54,6 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
 
         _logger.LogInformation("Deposit of {Amount} completed for user: {Username}", request.Amount, request.Username);
 
-        return Result.Success(_mapper.Map<WalletTransactionDto>(transaction));
+        return Result.Success(transaction.ToDto(_mapper));
     }
 }

@@ -4,6 +4,8 @@ using MassTransit;
 using Microsoft.Extensions.Options;
 using Storage.Application.Configuration;
 using Storage.Application.DTOs;
+using Storage.Application.Extensions.Mappings;
+using Storage.Application.Helpers;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
@@ -45,7 +47,7 @@ public class FileStorageService : IFileStorageService
         string? uploadedBy = null,
         CancellationToken cancellationToken = default)
     {
-        var validationError = ValidateFile(request.FileName, request.ContentType, request.Size);
+        var validationError = FileValidationHelper.ValidateFile(request.FileName, request.ContentType, request.Size, _options);
         if (validationError != null)
         {
             throw new ValidationAppException(validationError, new Dictionary<string, string[]>());
@@ -60,7 +62,7 @@ public class FileStorageService : IFileStorageService
             originalFileName: request.FileName,
             contentType: request.ContentType,
             size: request.Size,
-            provider: GetStorageProvider(),
+            provider: StoragePathHelper.GetStorageProvider(_options.DefaultProvider),
             storagePath: storagePath,
             ownerService: request.OwnerService,
             ownerId: null,
@@ -180,7 +182,7 @@ public class FileStorageService : IFileStorageService
             UploadedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
-        return FileUploadResult.Ok(MapToDto(storedFile));
+        return FileUploadResult.Ok(storedFile.ToDto());
     }
 
     public async Task<ScanStatusResponse> CheckScanStatusAsync(
@@ -311,7 +313,7 @@ public class FileStorageService : IFileStorageService
         return new SubmitFileResponse
         {
             Success = true,
-            File = MapToDto(storedFile),
+            File = storedFile.ToDto(),
             DownloadUrl = downloadUrl?.DownloadUrl
         };
     }
@@ -356,7 +358,7 @@ public class FileStorageService : IFileStorageService
         _unitOfWork.StoredFiles.Update(storedFile);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return FileUploadResult.Ok(MapToDto(storedFile));
+        return FileUploadResult.Ok(storedFile.ToDto());
     }
 
     public async Task<DownloadUrlResponse?> GetDownloadUrlAsync(
@@ -450,7 +452,7 @@ public class FileStorageService : IFileStorageService
             return null;
         }
 
-        return MapToDto(storedFile);
+        return storedFile.ToDto();
     }
 
     public async Task<IEnumerable<FileMetadataDto>> GetByOwnerAsync(
@@ -459,7 +461,7 @@ public class FileStorageService : IFileStorageService
         CancellationToken cancellationToken = default)
     {
         var files = await _unitOfWork.StoredFiles.GetByOwnerAsync(ownerService, ownerId, cancellationToken);
-        return files.Where(f => f.Status == FileStatus.Confirmed || f.Status == FileStatus.InMedia).Select(MapToDto);
+        return files.Where(f => f.Status == FileStatus.Confirmed || f.Status == FileStatus.InMedia).ToDtoList();
     }
 
     public async Task<IEnumerable<FileMetadataDto>> GetByResourceAsync(
@@ -468,7 +470,7 @@ public class FileStorageService : IFileStorageService
         CancellationToken cancellationToken = default)
     {
         var files = await _unitOfWork.StoredFiles.GetByResourceAsync(resourceId, resourceType, cancellationToken);
-        return files.Where(f => f.IsAvailableForDownload).Select(MapToDto);
+        return files.Where(f => f.IsAvailableForDownload).ToDtoList();
     }
 
     public async Task<FileUploadResult> DirectUploadAsync(
@@ -535,7 +537,7 @@ public class FileStorageService : IFileStorageService
             UploadedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
-        return FileUploadResult.Ok(MapToDto(storedFile));
+        return FileUploadResult.Ok(storedFile.ToDto());
     }
 
     #region Multipart Upload
@@ -706,7 +708,7 @@ public class FileStorageService : IFileStorageService
         _unitOfWork.StoredFiles.Update(storedFile);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return FileUploadResult.Ok(MapToDto(storedFile));
+        return FileUploadResult.Ok(storedFile.ToDto());
     }
 
     #endregion
@@ -715,31 +717,21 @@ public class FileStorageService : IFileStorageService
 
     private StorageProvider GetStorageProvider()
     {
-        return _options.DefaultProvider.ToLowerInvariant() switch
-        {
-            "azure" or "blob" => StorageProvider.AzureBlob,
-            _ => StorageProvider.Local
-        };
+        return StoragePathHelper.GetStorageProvider(_options.DefaultProvider);
+    }
+
+    private string? ValidateFile(string fileName, string contentType, long size)
+    {
+        return FileValidationHelper.ValidateFile(fileName, contentType, size, _options);
     }
 
     private bool ShouldScanFile(StoredFile file)
     {
-
-        if (file.Size == 0)
-            return false;
-
-        if (file.Size > _options.Scanning.MaxScanFileSize)
-        {
-            _logger.LogWarning(
-                "File {FileId} exceeds max scan size ({Size} > {Max}), skipping scan",
-                file.Id, file.Size, _options.Scanning.MaxScanFileSize);
-            return false;
-        }
-
-        if (_options.Scanning.ExemptContentTypes.Contains(file.ContentType))
-            return false;
-
-        return true;
+        return VirusScanHelper.ShouldScanFile(
+            file.Size,
+            file.ContentType,
+            _options.Scanning.MaxScanFileSize,
+            _options.Scanning.ExemptContentTypes);
     }
 
     private async Task TriggerVirusScanAsync(StoredFile file, CancellationToken cancellationToken)
@@ -757,7 +749,6 @@ public class FileStorageService : IFileStorageService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to trigger virus scan for file {FileId}", file.Id);
-
             file.MarkScanned(ScanResult.Error(ex.Message, "ScanTrigger"));
         }
     }
@@ -788,78 +779,12 @@ public class FileStorageService : IFileStorageService
 
     private static string GetScanStatusMessage(StoredFile file)
     {
-        return file.Status switch
-        {
-            FileStatus.Scanning => "Virus scan in progress",
-            FileStatus.Scanned => "Scan complete - file is clean",
-            FileStatus.Infected => $"File is infected: {file.ScanResult?.ThreatDetails ?? "Unknown threat"}",
-            FileStatus.InTemp => "File uploaded, awaiting scan",
-            _ => $"Status: {file.Status}"
-        };
-    }
-
-    private string? ValidateFile(string fileName, string contentType, long size)
-    {
-        var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
-
-        if (string.IsNullOrEmpty(extension) || !_options.AllowedExtensions.Contains(extension))
-        {
-            return $"File extension '{extension}' is not allowed";
-        }
-
-        if (!_options.AllowedContentTypes.Contains(contentType))
-        {
-            return $"Content type '{contentType}' is not allowed";
-        }
-
-        if (size > _options.MaxFileSize)
-        {
-            return $"File size exceeds maximum allowed size of {_options.MaxFileSize / 1024 / 1024}MB";
-        }
-
-        return null;
-    }
-
-    private static FileMetadataDto MapToDto(StoredFile file)
-    {
-        return new FileMetadataDto
-        {
-            Id = file.Id,
-            FileName = file.FileName,
-            OriginalFileName = file.OriginalFileName,
-            ContentType = file.ContentType,
-            Size = file.Size,
-            Checksum = file.Checksum,
-            Provider = file.Provider,
-            Status = file.Status,
-            OwnerService = file.OwnerService,
-            OwnerId = file.OwnerId,
-            UploadedBy = file.UploadedBy,
-            CreatedAt = file.CreatedAt,
-            ConfirmedAt = file.ConfirmedAt,
-            Metadata = file.Metadata,
-            ResourceId = file.ResourceId,
-            ResourceType = file.ResourceType,
-            PortalType = file.PortalType,
-            ScanResult = file.ScanResult
-        };
+        return VirusScanHelper.GetScanStatusMessage(file);
     }
 
     private (string containerName, string blobPath) ParseStoragePath(string path)
     {
-        var parts = path.Split('/', 2);
-        if (parts.Length == 2 &&
-            !path.StartsWith(_options.TempFolder) &&
-            !path.StartsWith(_options.PermanentFolder))
-        {
-            return (parts[0], parts[1]);
-        }
-
-        var container = path.StartsWith(_options.TempFolder)
-            ? _options.Azure.TempContainerName
-            : _options.Azure.MediaContainerName;
-
-        return (container, path);
+        return StoragePathHelper.ParseStoragePath(path, _options);
     }
 
     #endregion

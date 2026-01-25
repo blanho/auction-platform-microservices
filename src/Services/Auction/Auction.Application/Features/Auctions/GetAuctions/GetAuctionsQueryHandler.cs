@@ -43,7 +43,7 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, Paginated
                 pageSize: request.PageSize,
                 cancellationToken: cancellationToken);
 
-            var dtos = _mapper.Map<List<AuctionDto>>(items);
+            var dtos = items.Select(auction => _mapper.Map<AuctionDto>(auction)).ToList();
 
             var result = new PaginatedResult<AuctionDto>(dtos, totalCount, request.PageNumber, request.PageSize);
 

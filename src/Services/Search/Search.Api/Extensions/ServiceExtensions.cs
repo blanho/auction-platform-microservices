@@ -26,8 +26,6 @@ public static class ServiceExtensions
             options.InstanceName = "SearchService:";
         });
 
-        services.AddInfrastructureMessaging();
-
         services.AddSingleton<ElasticsearchClient>(sp =>
         {
             var options = configuration

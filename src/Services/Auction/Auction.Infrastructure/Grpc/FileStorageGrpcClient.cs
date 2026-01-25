@@ -2,7 +2,7 @@ using Grpc.Core;
 using Storage.Api.Protos;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Infrastructure.Grpc.Clients;
+namespace Auctions.Infrastructure.Grpc;
 
 public sealed class FileStorageGrpcClient : IFileStorageGrpcClient
 {

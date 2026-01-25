@@ -1,4 +1,4 @@
-namespace Search.Contracts;
+namespace SearchService.Contracts;
 
 public record SearchIndexRebuiltEvent
 {

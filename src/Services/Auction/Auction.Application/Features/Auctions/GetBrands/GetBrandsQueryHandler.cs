@@ -34,7 +34,7 @@ public class GetBrandsQueryHandler : IQueryHandler<GetBrandsQuery, List<BrandDto
                 ? await _repository.GetFeaturedBrandsAsync(request.Count ?? 10, cancellationToken)
                 : await _repository.GetAllAsync(!request.ActiveOnly, cancellationToken);
 
-            var dtos = _mapper.Map<List<BrandDto>>(brands);
+            var dtos = brands.Select(b => _mapper.Map<BrandDto>(b)).ToList();
 
             _logger.LogInformation("Successfully fetched {Count} brands", dtos.Count);
 

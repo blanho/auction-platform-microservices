@@ -1,7 +1,7 @@
 using Auctions.Application.DTOs;
-using MediatR;
+using BuildingBlocks.Application.CQRS.Queries;
 
 namespace Auctions.Application.Queries.GetSellerAnalytics;
 
-public record GetSellerAnalyticsQuery(string Username, string TimeRange) : IRequest<Result<SellerAnalyticsDto>>;
+public record GetSellerAnalyticsQuery(string Username, string TimeRange) : IQuery<SellerAnalyticsDto>;
 

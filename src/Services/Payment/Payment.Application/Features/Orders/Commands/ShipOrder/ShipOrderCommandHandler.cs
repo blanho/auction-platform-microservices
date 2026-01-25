@@ -62,6 +62,6 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
 
         _logger.LogInformation("Order {OrderId} marked as shipped", updated.Id);
 
-        return _mapper.Map<OrderDto>(updated);
+        return updated.ToDto(_mapper);
     }
 }

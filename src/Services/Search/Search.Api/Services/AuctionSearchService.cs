@@ -61,9 +61,7 @@ public class AuctionSearchService : IAuctionSearchService
                 return AuctionSearchResponse.Empty(request.Page, pageSize);
             }
 
-            var results = response.Documents
-                .Zip(response.Hits, (doc, hit) => MapToResult(doc, hit))
-                .ToList();
+            var results = response.Documents.ToResultList(response.Hits);
 
             var totalHits = response.Total;
 
@@ -74,7 +72,7 @@ public class AuctionSearchService : IAuctionSearchService
                 Page = request.Page,
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling((double)totalHits / pageSize),
-                Facets = MapFacets(response.Aggregations),
+                Facets = response.Aggregations.ToFacets(),
                 Took = response.Took
             };
         }
@@ -102,7 +100,7 @@ public class AuctionSearchService : IAuctionSearchService
                 return null;
             }
 
-            return MapToResult(response.Source, null);
+            return response.Source.ToResult();
         }
         catch (Exception ex)
         {
@@ -259,90 +257,6 @@ public class AuctionSearchService : IAuctionSearchService
         };
     }
 
-    private static AuctionSearchResult MapToResult(AuctionDocument doc, Hit<AuctionDocument>? hit)
-    {
-        return new AuctionSearchResult
-        {
-            Id = doc.Id,
-            Title = doc.Title,
-            Description = doc.Description?.Length > 200 ? doc.Description[..200] + "..." : doc.Description,
-            ThumbnailUrl = doc.ThumbnailUrl,
-            CurrentPrice = doc.CurrentPrice,
-            BuyNowPrice = doc.BuyNowPrice,
-            Currency = doc.Currency,
-            Status = doc.Status,
-            Condition = doc.Condition,
-            EndTime = doc.EndTime,
-            BidCount = doc.BidCount,
-            CategoryName = doc.CategoryName,
-            BrandName = doc.BrandName,
-            SellerId = doc.SellerId,
-            SellerUsername = doc.SellerUsername,
-            Score = hit?.Score,
-            Highlights = hit?.Highlight?.ToDictionary(
-                h => h.Key,
-                h => h.Value.ToList())
-        };
-    }
 
-    private static SearchFacets? MapFacets(Elastic.Clients.Elasticsearch.Aggregations.AggregateDictionary? aggregations)
-    {
-        if (aggregations == null)
-            return null;
 
-        var facets = new SearchFacets();
-
-        if (aggregations.TryGetValue("categories", out var catAgg) &&
-            catAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate catTerms)
-        {
-            facets.Categories = catTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("brands", out var brandAgg) &&
-            brandAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate brandTerms)
-        {
-            facets.Brands = brandTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("conditions", out var condAgg) &&
-            condAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate condTerms)
-        {
-            facets.Conditions = condTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("statuses", out var statusAgg) &&
-            statusAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate statusTerms)
-        {
-            facets.Statuses = statusTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("price_stats", out var priceAgg) &&
-            priceAgg is Elastic.Clients.Elasticsearch.Aggregations.StatsAggregate priceStats)
-        {
-            facets.PriceRange = new PriceRangeFacet
-            {
-                Min = (decimal)(priceStats.Min ?? 0),
-                Max = (decimal)(priceStats.Max ?? 0),
-                Avg = (decimal)(priceStats.Avg ?? 0)
-            };
-        }
-
-        return facets;
-    }
 }

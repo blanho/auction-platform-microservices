@@ -18,7 +18,9 @@ public class PlatformSettingRepository : IPlatformSettingRepository
 
     public async Task<PlatformSetting?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.PlatformSettings.FindAsync([id], cancellationToken);
+        return await _context.PlatformSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
     public async Task<PlatformSetting?> GetByKeyAsync(string key, CancellationToken cancellationToken = default)
@@ -78,6 +80,8 @@ public class PlatformSettingRepository : IPlatformSettingRepository
 
     public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
     {
-        return await _context.PlatformSettings.AnyAsync(s => s.Key == key, cancellationToken);
+        return await _context.PlatformSettings
+            .AsNoTracking()
+            .AnyAsync(s => s.Key == key, cancellationToken);
     }
 }
