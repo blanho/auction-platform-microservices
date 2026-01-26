@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 namespace Auctions.Application.Queries.GetReviewById;
@@ -22,7 +23,7 @@ public class GetReviewByIdQueryHandler : IQueryHandler<GetReviewByIdQuery, Revie
         }
         catch (KeyNotFoundException)
         {
-            return Result.Failure<ReviewDto>(Error.Create("Review.NotFound", "Review not found"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.NotFound);
         }
     }
 }

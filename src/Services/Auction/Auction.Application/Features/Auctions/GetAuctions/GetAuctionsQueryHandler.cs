@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
@@ -54,7 +55,7 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, Paginated
         catch (Exception ex)
         {
             _logger.LogError("Failed to fetch auctions: {Error}", ex.Message);
-            return Result.Failure<PaginatedResult<AuctionDto>>(Error.Create("Auction.FetchFailed", $"Failed to fetch auctions: {ex.Message}"));
+            return Result.Failure<PaginatedResult<AuctionDto>>(AuctionErrors.Auction.FetchFailed(ex.Message));
         }
     }
 }

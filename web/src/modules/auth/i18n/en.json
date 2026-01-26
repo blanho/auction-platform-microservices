@@ -1,0 +1,84 @@
+{
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "submit": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "orContinueWith": "Or continue with",
+    "google": "Continue with Google",
+    "facebook": "Continue with Facebook"
+  },
+
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Join our auction community",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
+    "submit": "Create Account",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign in"
+  },
+
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email to reset your password",
+    "email": "Email",
+    "submit": "Send Reset Link",
+    "backToLogin": "Back to login",
+    "successTitle": "Email Sent",
+    "successMessage": "Check your email for password reset instructions"
+  },
+
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Enter your new password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Reset Password",
+    "successTitle": "Password Reset",
+    "successMessage": "Your password has been reset successfully"
+  },
+
+  "confirmEmail": {
+    "title": "Confirm Email",
+    "verifying": "Verifying your email...",
+    "successTitle": "Email Confirmed",
+    "successMessage": "Your email has been verified successfully",
+    "errorTitle": "Verification Failed",
+    "errorMessage": "Unable to verify your email. The link may have expired.",
+    "resendLink": "Resend verification email"
+  },
+
+  "twoFactor": {
+    "title": "Two-Factor Authentication",
+    "subtitle": "Enter the 6-digit code from your authenticator app",
+    "code": "Verification Code",
+    "submit": "Verify",
+    "useBackupCode": "Use backup code instead"
+  },
+
+  "validation": {
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMatch": "Passwords do not match",
+    "termsRequired": "You must agree to the terms"
+  },
+
+  "errors": {
+    "invalidCredentials": "Invalid email or password",
+    "accountLocked": "Account is locked. Please try again later.",
+    "emailNotVerified": "Please verify your email first",
+    "tooManyAttempts": "Too many failed attempts. Please try again later."
+  }
+}

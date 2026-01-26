@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Application.Extensions;
 using Serilog;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Payment.Api.Extensions;
@@ -33,7 +34,17 @@ public static class ServiceExtensions
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower));
             });
+
+        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+        {
+            options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower));
+        });
 
         services.AddDbContext<PaymentDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using Payment.Domain.Enums;
 using Payment.Infrastructure.Persistence;
 
 namespace Payment.Infrastructure.Repositories;
@@ -185,6 +186,93 @@ public class OrderRepository : IOrderRepository
             .ToListAsync(cancellationToken);
 
         return topBuyers;
+    }
+
+    public async Task<IEnumerable<Order>> GetAllAsync(
+        int page, 
+        int pageSize, 
+        string? searchTerm = null, 
+        OrderStatus? status = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null)
+    {
+        var query = _context.Orders.AsNoTracking().AsQueryable();
+        
+        query = ApplyFilters(query, searchTerm, status, fromDate, toDate);
+
+        return await query
+            .OrderByDescending(o => o.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetAllCountAsync(
+        string? searchTerm = null, 
+        OrderStatus? status = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null)
+    {
+        var query = _context.Orders.AsNoTracking().AsQueryable();
+        
+        query = ApplyFilters(query, searchTerm, status, fromDate, toDate);
+
+        return await query.CountAsync();
+    }
+
+    public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
+    {
+        var orders = await _context.Orders
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var totalRevenue = orders.Where(o => o.PaymentStatus == PaymentStatus.Completed).Sum(o => o.TotalAmount);
+        var completedOrdersCount = orders.Count(o => o.PaymentStatus == PaymentStatus.Completed);
+        var averageOrderValue = completedOrdersCount > 0 ? totalRevenue / completedOrdersCount : 0;
+
+        return new OrderStatsDto(
+            orders.Count,
+            orders.Count(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.PaymentPending),
+            orders.Count(o => o.Status == OrderStatus.Paid),
+            orders.Count(o => o.Status == OrderStatus.Processing),
+            orders.Count(o => o.Status == OrderStatus.Shipped),
+            orders.Count(o => o.Status == OrderStatus.Delivered),
+            orders.Count(o => o.Status == OrderStatus.Completed),
+            orders.Count(o => o.Status == OrderStatus.Cancelled),
+            orders.Count(o => o.Status == OrderStatus.Disputed),
+            orders.Count(o => o.Status == OrderStatus.Refunded),
+            totalRevenue,
+            averageOrderValue
+        );
+    }
+
+    private static IQueryable<Order> ApplyFilters(
+        IQueryable<Order> query,
+        string? searchTerm,
+        OrderStatus? status,
+        DateTime? fromDate,
+        DateTime? toDate)
+    {
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+            query = query.Where(o => 
+                o.ItemTitle.ToLower().Contains(term) ||
+                o.BuyerUsername.ToLower().Contains(term) ||
+                o.SellerUsername.ToLower().Contains(term) ||
+                o.TrackingNumber != null && o.TrackingNumber.ToLower().Contains(term));
+        }
+
+        if (status.HasValue)
+            query = query.Where(o => o.Status == status.Value);
+
+        if (fromDate.HasValue)
+            query = query.Where(o => o.CreatedAt >= fromDate.Value);
+
+        if (toDate.HasValue)
+            query = query.Where(o => o.CreatedAt <= toDate.Value);
+
+        return query;
     }
 
     private static DateTimeOffset GetPeriodStartDate(string period)

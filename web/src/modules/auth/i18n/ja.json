@@ -1,0 +1,84 @@
+{
+  "login": {
+    "title": "おかえりなさい",
+    "subtitle": "アカウントにログイン",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "rememberMe": "ログイン状態を保持",
+    "forgotPassword": "パスワードを忘れた方",
+    "submit": "ログイン",
+    "noAccount": "アカウントをお持ちでない方",
+    "signUp": "新規登録",
+    "orContinueWith": "または以下でログイン",
+    "google": "Googleで続ける",
+    "facebook": "Facebookで続ける"
+  },
+
+  "register": {
+    "title": "アカウント作成",
+    "subtitle": "オークションコミュニティに参加",
+    "firstName": "名",
+    "lastName": "姓",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード（確認）",
+    "agreeTerms": "利用規約とプライバシーポリシーに同意します",
+    "submit": "アカウント作成",
+    "hasAccount": "すでにアカウントをお持ちの方",
+    "signIn": "ログイン"
+  },
+
+  "forgotPassword": {
+    "title": "パスワードをお忘れの方",
+    "subtitle": "パスワードリセット用のメールを送信します",
+    "email": "メールアドレス",
+    "submit": "リセットリンクを送信",
+    "backToLogin": "ログインに戻る",
+    "successTitle": "メール送信完了",
+    "successMessage": "パスワードリセットの手順をメールで送信しました"
+  },
+
+  "resetPassword": {
+    "title": "パスワードリセット",
+    "subtitle": "新しいパスワードを入力してください",
+    "newPassword": "新しいパスワード",
+    "confirmPassword": "パスワード（確認）",
+    "submit": "パスワードをリセット",
+    "successTitle": "パスワードリセット完了",
+    "successMessage": "パスワードが正常にリセットされました"
+  },
+
+  "confirmEmail": {
+    "title": "メール確認",
+    "verifying": "メールを確認中...",
+    "successTitle": "メール確認完了",
+    "successMessage": "メールアドレスが正常に確認されました",
+    "errorTitle": "確認に失敗しました",
+    "errorMessage": "メールを確認できませんでした。リンクの有効期限が切れている可能性があります。",
+    "resendLink": "確認メールを再送信"
+  },
+
+  "twoFactor": {
+    "title": "二要素認証",
+    "subtitle": "認証アプリの6桁のコードを入力してください",
+    "code": "認証コード",
+    "submit": "確認",
+    "useBackupCode": "バックアップコードを使用"
+  },
+
+  "validation": {
+    "emailRequired": "メールアドレスは必須です",
+    "emailInvalid": "有効なメールアドレスを入力してください",
+    "passwordRequired": "パスワードは必須です",
+    "passwordMinLength": "パスワードは8文字以上で入力してください",
+    "passwordMatch": "パスワードが一致しません",
+    "termsRequired": "利用規約に同意する必要があります"
+  },
+
+  "errors": {
+    "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+    "accountLocked": "アカウントがロックされています。しばらくしてからお試しください。",
+    "emailNotVerified": "まずメールアドレスを確認してください",
+    "tooManyAttempts": "ログイン試行回数が多すぎます。しばらくしてからお試しください。"
+  }
+}

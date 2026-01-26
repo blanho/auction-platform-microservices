@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
             var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (brand == null)
             {
-                return Result.Failure<BrandDto>(Error.Create("Brand.NotFound", $"Brand with ID '{request.Id}' was not found"));
+                return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
             }
 
             if (!string.IsNullOrWhiteSpace(request.Name) && request.Name != brand.Name)
@@ -43,7 +44,7 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
                 var existingBrand = await _repository.GetBySlugAsync(newSlug, cancellationToken);
                 if (existingBrand != null && existingBrand.Id != request.Id)
                 {
-                    return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{newSlug}' already exists"));
+                    return Result.Failure<BrandDto>(AuctionErrors.Brand.SlugExists(newSlug));
                 }
                 brand.Name = request.Name;
                 brand.Slug = newSlug;
@@ -75,7 +76,7 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
         catch (Exception ex)
         {
             _logger.LogError("Failed to update brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<BrandDto>(Error.Create("Brand.UpdateFailed", $"Failed to update brand: {ex.Message}"));
+            return Result.Failure<BrandDto>(AuctionErrors.Brand.UpdateFailed(ex.Message));
         }
     }
 }

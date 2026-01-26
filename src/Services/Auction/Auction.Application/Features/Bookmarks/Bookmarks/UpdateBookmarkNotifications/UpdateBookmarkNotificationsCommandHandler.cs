@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -25,7 +26,7 @@ public class UpdateBookmarkNotificationsCommandHandler : ICommandHandler<UpdateB
             request.UserId, request.AuctionId, BookmarkType.Watchlist, cancellationToken);
         
         if (bookmark == null)
-            return Result.Failure(Error.Create("Bookmark.NotFound", "Item not found in watchlist"));
+            return Result.Failure(AuctionErrors.Bookmark.NotFound);
 
         bookmark.UpdateNotificationSettings(request.NotifyOnBid, request.NotifyOnEnd);
 

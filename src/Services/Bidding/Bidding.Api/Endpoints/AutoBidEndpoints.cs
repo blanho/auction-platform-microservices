@@ -3,6 +3,7 @@ using Bidding.Application.Features.AutoBids.CancelAutoBid;
 using Bidding.Application.Features.AutoBids.CreateAutoBid;
 using Bidding.Application.Features.AutoBids.GetAutoBid;
 using Bidding.Application.Features.AutoBids.GetMyAutoBids;
+using Bidding.Application.Features.AutoBids.ToggleAutoBid;
 using Bidding.Application.Features.AutoBids.UpdateAutoBid;
 using Bidding.Domain.Constants;
 using BuildingBlocks.Web.Authorization;
@@ -43,6 +44,13 @@ public class AutoBidEndpoints : ICarterModule
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.Place))
             .Produces<UpdateAutoBidResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/{autoBidId:guid}/toggle", ToggleAutoBid)
+            .WithName("ToggleAutoBid")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.Place))
+            .Produces<ToggleAutoBidResult>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/{autoBidId:guid}/cancel", CancelAutoBid)
             .WithName("CancelAutoBid")
@@ -163,4 +171,27 @@ public class AutoBidEndpoints : ICarterModule
 
         return Results.Ok(result.Value);
     }
+
+    private static async Task<IResult> ToggleAutoBid(
+        Guid autoBidId,
+        [FromBody] ToggleAutoBidDto request,
+        HttpContext context,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(context.User);
+        var command = new ToggleAutoBidCommand(autoBidId, userId, request.Activate);
+        var result = await mediator.Send(command, ct);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error == BiddingErrors.AutoBid.NotFound)
+                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
+    }
 }
+
+public record ToggleAutoBidDto(bool Activate);

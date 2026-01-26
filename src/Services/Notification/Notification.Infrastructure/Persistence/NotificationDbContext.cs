@@ -15,6 +15,7 @@ public class NotificationDbContext : DbContext
     public DbSet<NotificationTemplate> Templates { get; set; }
     public DbSet<NotificationRecord> Records { get; set; }
     public DbSet<UserNotification> UserNotifications { get; set; }
+    public DbSet<NotificationPreference> NotificationPreferences { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +69,14 @@ public class NotificationDbContext : DbContext
             entity.Property(e => e.UserId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Message).IsRequired();
+        });
+
+        modelBuilder.Entity<NotificationPreference>(entity =>
+        {
+            entity.ToTable("notification_preferences");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.Property(e => e.UserId).HasMaxLength(100).IsRequired();
         });
 
         modelBuilder.AddInboxStateEntity();

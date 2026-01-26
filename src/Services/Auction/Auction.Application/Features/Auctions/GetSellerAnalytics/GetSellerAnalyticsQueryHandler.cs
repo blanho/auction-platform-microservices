@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.CQRS.Queries;
 using BuildingBlocks.Domain.Enums;
@@ -92,7 +93,7 @@ public class GetSellerAnalyticsQueryHandler : IQueryHandler<GetSellerAnalyticsQu
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting seller analytics for user {Username}", request.Username);
-            return Result.Failure<SellerAnalyticsDto>(Error.Create("Analytics.Error", "Failed to retrieve seller analytics"));
+            return Result.Failure<SellerAnalyticsDto>(AuctionErrors.Analytics.Error);
         }
     }
 

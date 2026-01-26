@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.CQRS.Queries;
 using BuildingBlocks.Domain.Enums;
@@ -84,7 +85,7 @@ public class GetUserDashboardStatsQueryHandler : IQueryHandler<GetUserDashboardS
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting dashboard stats for user {Username}", request.Username);
-            return Result.Failure<UserDashboardStatsDto>(Error.Create("Dashboard.Error", "Failed to retrieve dashboard statistics"));
+            return Result.Failure<UserDashboardStatsDto>(AuctionErrors.Dashboard.Error);
         }
     }
 }

@@ -46,6 +46,19 @@ public class NotificationEndpoints : ICarterModule
             .WithSummary("Delete a notification")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Notifications.View));
 
+        group.MapPost("/{id:guid}/archive", Archive)
+            .WithName("ArchiveNotification")
+            .WithSummary("Archive a notification")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Notifications.View));
+
+        group.MapGet("/preferences", GetPreferences)
+            .WithName("GetNotificationPreferences")
+            .WithSummary("Get notification preferences for the current user");
+
+        group.MapPut("/preferences", UpdatePreferences)
+            .WithName("UpdateNotificationPreferences")
+            .WithSummary("Update notification preferences for the current user");
+
         group.MapPost("/", Create)
             .WithName("CreateNotification")
             .WithSummary("Create a notification")
@@ -153,6 +166,46 @@ public class NotificationEndpoints : ICarterModule
 
         await notificationService.DeleteNotificationAsync(id, cancellationToken);
         return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> Archive(
+        Guid id,
+        ClaimsPrincipal user,
+        INotificationService notificationService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        var notifications = await notificationService.GetUserNotificationsAsync(userId, cancellationToken);
+        var notification = notifications.FirstOrDefault(n => n.Id == id);
+
+        if (notification == null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        await notificationService.ArchiveNotificationAsync(id, cancellationToken);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<Ok<NotificationPreferenceDto>> GetPreferences(
+        ClaimsPrincipal user,
+        INotificationService notificationService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        var preferences = await notificationService.GetPreferencesAsync(userId, cancellationToken);
+        return TypedResults.Ok(preferences);
+    }
+
+    private static async Task<Ok<NotificationPreferenceDto>> UpdatePreferences(
+        UpdateNotificationPreferenceDto dto,
+        ClaimsPrincipal user,
+        INotificationService notificationService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        var preferences = await notificationService.UpdatePreferencesAsync(userId, dto, cancellationToken);
+        return TypedResults.Ok(preferences);
     }
 
     private static async Task<Created<NotificationDto>> Create(

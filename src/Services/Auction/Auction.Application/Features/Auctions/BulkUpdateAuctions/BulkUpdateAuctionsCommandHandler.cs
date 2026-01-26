@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -74,7 +75,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to bulk update auctions");
-            return Result.Failure<int>(Error.Create("Auction.BulkUpdateFailed", $"Failed to bulk update auctions: {ex.Message}"));
+            return Result.Failure<int>(AuctionErrors.Auction.BulkUpdateFailed(ex.Message));
         }
     }
 }

@@ -88,3 +88,23 @@ public record DailyRevenueStatDto(DateOnly Date, decimal Revenue, decimal Platfo
 public record TopSellerDto(Guid SellerId, string Username, decimal TotalSales, int OrderCount, decimal AverageOrderValue);
 
 public record TopBuyerDto(Guid BuyerId, string Username, decimal TotalSpent, int OrderCount);
+
+public record OrderStatsDto(
+    int TotalOrders,
+    int PendingOrders,
+    int PaidOrders,
+    int ProcessingOrders,
+    int ShippedOrders,
+    int DeliveredOrders,
+    int CompletedOrders,
+    int CancelledOrders,
+    int DisputedOrders,
+    int RefundedOrders,
+    decimal TotalRevenue,
+    decimal AverageOrderValue
+);
+
+public class CancelOrderDto
+{
+    public string? Reason { get; set; }
+}

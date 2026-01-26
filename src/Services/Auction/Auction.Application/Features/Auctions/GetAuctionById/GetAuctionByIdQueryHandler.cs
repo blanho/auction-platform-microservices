@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -48,7 +49,7 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
             if (auction == null)
             {
                 _logger.LogWarning("Auction {AuctionId} not found", request.Id);
-                return Result.Failure<AuctionDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
+                return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.Id));
             }
 
             var dto = _mapper.Map<AuctionDto>(auction);
@@ -59,7 +60,7 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
         catch (Exception ex)
         {
             _logger.LogError("Failed to fetch auction {AuctionId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<AuctionDto>(Error.Create("Auction.FetchFailed", $"Failed to fetch auction: {ex.Message}"));
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.FetchFailed(ex.Message));
         }
     }
 }

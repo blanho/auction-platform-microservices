@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -40,7 +41,7 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
         if (auction == null)
         {
             _logger.LogWarning("Auction {AuctionId} not found for deletion", request.Id);
-            return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
+            return Result.Failure<bool>(AuctionErrors.Auction.NotFoundById(request.Id));
         }
 
         auction.RaiseDeletedEvent();

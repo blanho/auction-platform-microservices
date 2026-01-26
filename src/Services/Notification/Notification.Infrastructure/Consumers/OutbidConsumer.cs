@@ -1,7 +1,8 @@
 using BidService.Contracts.Events;
 using MassTransit;
+using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
-using NotificationService.Contracts.Enums;
+using Notification.Domain.Enums;
 
 namespace Notification.Infrastructure.Consumers;
 
@@ -29,19 +30,22 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
             "Processing Outbid event: {OutbidUser} was outbid by {NewBidder} on auction {AuctionId}",
             @event.OutbidBidderUsername, @event.NewHighBidderUsername, @event.AuctionId);
 
-        await _notificationService.SendNotificationAsync(
-            userId: @event.OutbidBidderId,
-            type: NotificationType.BidOutbid,
-            title: "You've Been Outbid!",
-            message: $"Your bid of {FormatCurrency(@event.PreviousBidAmount)} has been outbid. New high bid: {FormatCurrency(@event.NewHighBidAmount)}",
-            data: new Dictionary<string, string>
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
             {
-                ["AuctionId"] = @event.AuctionId.ToString(),
-                ["PreviousBidAmount"] = @event.PreviousBidAmount.ToString("F2"),
-                ["NewHighBidAmount"] = @event.NewHighBidAmount.ToString("F2")
+                UserId = @event.OutbidBidderId.ToString(),
+                Type = NotificationType.BidOutbid,
+                Title = "You've Been Outbid!",
+                Message = $"Your bid of {FormatCurrency(@event.PreviousBidAmount)} has been outbid. New high bid: {FormatCurrency(@event.NewHighBidAmount)}",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["AuctionId"] = @event.AuctionId.ToString(),
+                    ["PreviousBidAmount"] = @event.PreviousBidAmount.ToString("F2"),
+                    ["NewHighBidAmount"] = @event.NewHighBidAmount.ToString("F2")
+                }),
+                AuctionId = @event.AuctionId
             },
-            channels: NotificationChannel.Email | NotificationChannel.Push | NotificationChannel.InApp,
-            cancellationToken: context.CancellationToken);
+            context.CancellationToken);
 
         await _hubService.SendOutbidNotificationAsync(
             @event.OutbidBidderId.ToString(),

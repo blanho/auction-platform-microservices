@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
@@ -80,5 +81,80 @@ public class NotificationRecordRepository : INotificationRecordRepository
     {
         _context.UserNotifications.Update(notification);
         await Task.CompletedTask;
+    }
+
+    public async Task<NotificationRecord?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.Records
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == id, ct);
+    }
+
+    public async Task<PaginatedResult<NotificationRecord>> GetPagedAsync(
+        Guid? userId = null,
+        string? channel = null,
+        string? status = null,
+        string? templateKey = null,
+        DateTimeOffset? fromDate = null,
+        DateTimeOffset? toDate = null,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var query = _context.Records.AsNoTracking().AsQueryable();
+
+        if (userId.HasValue)
+            query = query.Where(r => r.UserId == userId.Value);
+
+        if (!string.IsNullOrWhiteSpace(channel))
+            query = query.Where(r => r.Channel == channel);
+
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<NotificationRecordStatus>(status, true, out var statusEnum))
+            query = query.Where(r => r.Status == statusEnum);
+
+        if (!string.IsNullOrWhiteSpace(templateKey))
+            query = query.Where(r => r.TemplateKey == templateKey);
+
+        if (fromDate.HasValue)
+            query = query.Where(r => r.CreatedAt >= fromDate.Value);
+
+        if (toDate.HasValue)
+            query = query.Where(r => r.CreatedAt <= toDate.Value);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return new PaginatedResult<NotificationRecord>(items, totalCount, page, pageSize);
+    }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
+    {
+        return await _context.Records.CountAsync(ct);
+    }
+
+    public async Task<int> GetCountByStatusAsync(NotificationRecordStatus status, CancellationToken ct = default)
+    {
+        return await _context.Records.CountAsync(r => r.Status == status, ct);
+    }
+
+    public async Task<Dictionary<string, int>> GetCountByChannelAsync(CancellationToken ct = default)
+    {
+        return await _context.Records
+            .GroupBy(r => r.Channel)
+            .Select(g => new { Channel = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Channel, x => x.Count, ct);
+    }
+
+    public async Task<Dictionary<string, int>> GetCountByTemplateAsync(CancellationToken ct = default)
+    {
+        return await _context.Records
+            .GroupBy(r => r.TemplateKey)
+            .Select(g => new { TemplateKey = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.TemplateKey, x => x.Count, ct);
     }
 }

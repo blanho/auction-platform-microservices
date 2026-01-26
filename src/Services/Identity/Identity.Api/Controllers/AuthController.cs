@@ -4,6 +4,7 @@ using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.External;
 using Identity.Api.DTOs.TwoFactor;
 using Identity.Api.DTOs.Users;
+using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -133,6 +134,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IResult> RefreshToken(CancellationToken cancellationToken)
     {
         var refreshToken = CookieHelper.GetRefreshTokenFromCookie(Request);
@@ -145,6 +147,12 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
         {
             CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
+            
+            if (result.Error == IdentityErrors.Auth.SecurityTermination)
+                return Results.Json(
+                    new { code = "security_termination", message = "Session terminated due to suspicious activity" },
+                    statusCode: StatusCodes.Status403Forbidden);
+            
             return Results.Unauthorized();
         }
 

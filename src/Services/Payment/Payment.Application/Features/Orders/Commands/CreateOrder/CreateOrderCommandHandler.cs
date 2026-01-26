@@ -1,5 +1,6 @@
 using AutoMapper;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -31,7 +32,7 @@ public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ord
         var existingOrder = await _repository.GetByAuctionIdAsync(request.AuctionId);
         if (existingOrder != null)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.AlreadyExists", $"Order for auction {request.AuctionId} already exists"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.AlreadyExistsForAuction(request.AuctionId));
         }
 
         var order = Order.Create(

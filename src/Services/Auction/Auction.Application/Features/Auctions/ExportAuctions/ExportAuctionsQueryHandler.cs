@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Domain.Enums;
@@ -69,8 +70,7 @@ public class ExportAuctionsQueryHandler : IQueryHandler<ExportAuctionsQuery, Lis
         catch (Exception ex)
         {
             _logger.LogError("Failed to export auctions: {Error}", ex.Message);
-            var error = Error.Create("Auction.ExportFailed", ex.Message);
-            return Result.Failure<List<ExportAuctionDto>>(error);
+            return Result.Failure<List<ExportAuctionDto>>(AuctionErrors.Auction.ExportFailed(ex.Message));
         }
     }
 }

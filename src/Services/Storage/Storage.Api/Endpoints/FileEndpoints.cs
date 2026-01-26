@@ -66,6 +66,29 @@ public class FileEndpoints : ICarterModule
             .WithName("DeleteFile")
             .WithSummary("Delete a file")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Delete));
+
+        group.MapGet("/{fileId:guid}/scan-status", GetScanStatus)
+            .WithName("GetScanStatus")
+            .WithSummary("Check virus scan status for a file");
+
+        group.MapPost("/{fileId:guid}/submit", SubmitFile)
+            .WithName("SubmitFile")
+            .WithSummary("Submit file to permanent storage")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Upload));
+
+        group.MapGet("/resource/{resourceType}/{resourceId:guid}", GetByResource)
+            .WithName("GetFilesByResource")
+            .WithSummary("Get files by resource");
+
+        group.MapPost("/multipart/initiate", InitiateMultipartUpload)
+            .WithName("InitiateMultipartUpload")
+            .WithSummary("Initiate a multipart upload for large files")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Upload));
+
+        group.MapPost("/multipart/complete", CompleteMultipartUpload)
+            .WithName("CompleteMultipartUpload")
+            .WithSummary("Complete a multipart upload")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Upload));
     }
 
     private static async Task<Results<Ok<UploadUrlResponse>, BadRequest<string>>> RequestUpload(
@@ -284,5 +307,93 @@ public class FileEndpoints : ICarterModule
         }
 
         return TypedResults.NoContent();
+    }
+
+    private static async Task<Ok<ScanStatusResponse>> GetScanStatus(
+        Guid fileId,
+        IFileStorageService fileStorageService,
+        CancellationToken cancellationToken)
+    {
+        var status = await fileStorageService.CheckScanStatusAsync(fileId, cancellationToken);
+        return TypedResults.Ok(status);
+    }
+
+    private static async Task<Results<Ok<SubmitFileResponse>, BadRequest<ProblemDetails>>> SubmitFile(
+        Guid fileId,
+        SubmitFileRequest request,
+        IFileStorageService fileStorageService,
+        ILogger<FileEndpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        var submitRequest = request with { FileId = fileId };
+        var result = await fileStorageService.SubmitFileAsync(submitRequest, cancellationToken);
+
+        if (!result.Success)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.Create(
+                "File.SubmitFailed",
+                result.Error ?? "Failed to submit file",
+                StatusCodes.Status400BadRequest));
+        }
+
+        logger.LogInformation("File submitted: {FileId}", fileId);
+        return TypedResults.Ok(result);
+    }
+
+    private static async Task<Ok<IEnumerable<FileMetadataDto>>> GetByResource(
+        string resourceType,
+        Guid resourceId,
+        IFileStorageService fileStorageService,
+        CancellationToken cancellationToken)
+    {
+        if (!Enum.TryParse<Storage.Domain.Enums.StorageResourceType>(resourceType, true, out var parsedResourceType))
+        {
+            return TypedResults.Ok<IEnumerable<FileMetadataDto>>(Array.Empty<FileMetadataDto>());
+        }
+
+        var files = await fileStorageService.GetByResourceAsync(resourceId, parsedResourceType, cancellationToken);
+        return TypedResults.Ok<IEnumerable<FileMetadataDto>>(files);
+    }
+
+    private static async Task<Results<Ok<MultipartUploadSession>, BadRequest<ProblemDetails>>> InitiateMultipartUpload(
+        InitiateMultipartUploadRequest request,
+        ClaimsPrincipal user,
+        IFileStorageService fileStorageService,
+        ILogger<FileEndpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        var uploadedBy = user.Identity?.Name;
+        var session = await fileStorageService.InitiateMultipartUploadAsync(request, uploadedBy, cancellationToken);
+
+        if (session == null)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.Create(
+                "File.MultipartInitFailed",
+                "Failed to initiate multipart upload",
+                StatusCodes.Status400BadRequest));
+        }
+
+        logger.LogInformation("Multipart upload initiated: {FileId}", session.FileId);
+        return TypedResults.Ok(session);
+    }
+
+    private static async Task<Results<Ok<FileMetadataDto>, BadRequest<ProblemDetails>>> CompleteMultipartUpload(
+        CompleteMultipartUploadRequest request,
+        IFileStorageService fileStorageService,
+        ILogger<FileEndpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        var result = await fileStorageService.CompleteMultipartUploadAsync(request, cancellationToken);
+
+        if (!result.Success)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.Create(
+                "File.MultipartCompleteFailed",
+                result.Error ?? "Failed to complete multipart upload",
+                StatusCodes.Status400BadRequest));
+        }
+
+        logger.LogInformation("Multipart upload completed: {FileId}", request.FileId);
+        return TypedResults.Ok(result.Metadata!);
     }
 }

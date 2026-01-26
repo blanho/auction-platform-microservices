@@ -114,8 +114,17 @@ public class Notification : BaseEntity
         Status = NotificationStatus.Dismissed;
     }
 
+    public void Archive()
+    {
+        if (Status == NotificationStatus.Pending)
+            throw new InvalidEntityStateException(nameof(Notification), nameof(NotificationStatus.Pending), "Cannot archive pending notification");
+
+        Status = NotificationStatus.Archived;
+    }
+
     public bool IsRead => Status == NotificationStatus.Read;
     public bool IsDismissed => Status == NotificationStatus.Dismissed;
+    public bool IsArchived => Status == NotificationStatus.Archived;
     public bool IsPending => Status == NotificationStatus.Pending;
 
     private static void ValidateUserId(string userId)

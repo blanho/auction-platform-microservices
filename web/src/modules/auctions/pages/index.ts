@@ -1,0 +1,6 @@
+export { AuctionsListPage } from './AuctionsListPage'
+export { AuctionListingPage } from './AuctionListingPage'
+export { AuctionDetailPage } from './AuctionDetailPage'
+export { AuctionFormPage } from './AuctionFormPage'
+export { CategoriesManagementPage } from './CategoriesManagementPage'
+export { BrandsManagementPage } from './BrandsManagementPage'

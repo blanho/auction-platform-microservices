@@ -1,0 +1,73 @@
+{
+  "hero": {
+    "title": "Discover Rare & Unique Items",
+    "subtitle": "Join thousands of collectors and enthusiasts in our premium auction marketplace",
+    "cta": "Start Exploring",
+    "secondaryCta": "How It Works"
+  },
+
+  "features": {
+    "title": "Why Choose Us",
+    "subtitle": "Experience the best auction platform",
+    "secure": {
+      "title": "Secure Transactions",
+      "description": "Your payments are protected with industry-leading security"
+    },
+    "verified": {
+      "title": "Verified Sellers",
+      "description": "All sellers are verified to ensure authenticity"
+    },
+    "support": {
+      "title": "24/7 Support",
+      "description": "Our team is here to help you anytime"
+    },
+    "global": {
+      "title": "Global Reach",
+      "description": "Buy and sell from anywhere in the world"
+    }
+  },
+
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Start bidding in just a few steps",
+    "step1": {
+      "title": "Create Account",
+      "description": "Sign up for free and verify your identity"
+    },
+    "step2": {
+      "title": "Find Items",
+      "description": "Browse thousands of unique items"
+    },
+    "step3": {
+      "title": "Place Bids",
+      "description": "Bid on items you love"
+    },
+    "step4": {
+      "title": "Win & Enjoy",
+      "description": "Win auctions and receive your items"
+    }
+  },
+
+  "categories": {
+    "title": "Popular Categories",
+    "viewAll": "View All Categories"
+  },
+
+  "testimonials": {
+    "title": "What Our Users Say",
+    "subtitle": "Trusted by thousands of collectors worldwide"
+  },
+
+  "cta": {
+    "title": "Ready to Start?",
+    "subtitle": "Join our community and discover amazing items",
+    "button": "Get Started Free"
+  },
+
+  "stats": {
+    "auctions": "Active Auctions",
+    "users": "Happy Users",
+    "items": "Items Sold",
+    "countries": "Countries"
+  }
+}
