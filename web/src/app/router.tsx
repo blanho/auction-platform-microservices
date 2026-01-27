@@ -6,7 +6,7 @@ import { LandingLayout } from '@/shared/components/layouts/LandingLayout'
 import { LoadingScreen } from '@/shared/ui/LoadingScreen'
 import { ProtectedRoute } from '@/shared/components/auth/ProtectedRoute'
 
-const LandingPage = lazy(() => import('@/modules/home/pages/LandingPage').then(m => ({ default: m.LandingPage })))
+const LandingPage = lazy(() => import('@/modules/home/pages/LandingPageEnhanced').then(m => ({ default: m.LandingPageEnhanced })))
 const HowItWorksPage = lazy(() => import('@/modules/home/pages/HowItWorksPage').then(m => ({ default: m.HowItWorksPage })))
 const AuctionsPage = lazy(() => import('@/modules/auctions/pages/AuctionsListPage').then(m => ({ default: m.AuctionsListPage })))
 const AuctionDetailPage = lazy(() => import('@/modules/auctions/pages/AuctionDetailPage').then(m => ({ default: m.AuctionDetailPage })))

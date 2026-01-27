@@ -42,6 +42,7 @@ import {
   useClearRecentSearches,
 } from '../hooks'
 import type { SearchFilters, SearchResult, SearchResultType } from '../types'
+import { palette } from '@/shared/theme/tokens'
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -53,11 +54,11 @@ const formatCurrency = (amount: number) => {
 const getResultIcon = (type: SearchResultType) => {
   switch (type) {
     case 'auction':
-      return <Gavel sx={{ color: '#CA8A04' }} />
+      return <Gavel sx={{ color: palette.brand.primary }} />
     case 'category':
-      return <Category sx={{ color: '#3B82F6' }} />
+      return <Category sx={{ color: palette.semantic.info }} />
     case 'seller':
-      return <Store sx={{ color: '#22C55E' }} />
+      return <Store sx={{ color: palette.semantic.success }} />
   }
 }
 

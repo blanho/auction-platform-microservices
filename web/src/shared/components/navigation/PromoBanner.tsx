@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Box, Typography, IconButton, Container } from '@mui/material'
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 
 interface Promotion {
   id: string
@@ -72,8 +73,8 @@ export const PromoBanner = ({
   return (
     <Box
       sx={{
-        bgcolor: currentPromo.bgColor || '#1C1917',
-        color: '#FAFAF9',
+        bgcolor: currentPromo.bgColor || palette.neutral[900],
+        color: palette.neutral[50],
         py: 1.25,
         position: 'relative',
       }}
@@ -95,7 +96,7 @@ export const PromoBanner = ({
               size="small"
               onClick={handlePrev}
               sx={{
-                color: '#FAFAF9',
+                color: palette.neutral[50],
                 opacity: 0.6,
                 p: 0.5,
                 '&:hover': { opacity: 1, bgcolor: 'transparent' },
@@ -131,14 +132,14 @@ export const PromoBanner = ({
                 component={Link}
                 to={currentPromo.link}
                 sx={{
-                  color: '#CA8A04',
+                  color: palette.brand.primary,
                   fontSize: '0.8rem',
                   fontWeight: 500,
                   textDecoration: 'underline',
                   textUnderlineOffset: 2,
                   whiteSpace: 'nowrap',
                   '&:hover': {
-                    color: '#EAB308',
+                    color: palette.brand.secondary,
                   },
                 }}
               >
@@ -152,7 +153,7 @@ export const PromoBanner = ({
               size="small"
               onClick={handleNext}
               sx={{
-                color: '#FAFAF9',
+                color: palette.neutral[50],
                 opacity: 0.6,
                 p: 0.5,
                 '&:hover': { opacity: 1, bgcolor: 'transparent' },
@@ -168,7 +169,7 @@ export const PromoBanner = ({
             sx={{
               position: 'absolute',
               right: 0,
-              color: '#FAFAF9',
+              color: palette.neutral[50],
               opacity: 0.5,
               p: 0.5,
               '&:hover': { opacity: 1, bgcolor: 'transparent' },
@@ -195,7 +196,7 @@ export const PromoBanner = ({
                   width: 5,
                   height: 5,
                   borderRadius: '50%',
-                  bgcolor: index === currentIndex ? '#CA8A04' : 'rgba(250,250,249,0.3)',
+                  bgcolor: index === currentIndex ? palette.brand.primary : 'rgba(250,250,249,0.3)',
                   cursor: 'pointer',
                   transition: 'background-color 0.2s ease',
                 }}

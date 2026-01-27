@@ -1,6 +1,7 @@
 import { Box, Typography, Button, Stack } from '@mui/material'
 import { Warning, Refresh, Home } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 
 interface ErrorStateProps {
   title?: string
@@ -32,21 +33,21 @@ export function ErrorState({
           width: 80,
           height: 80,
           borderRadius: '50%',
-          bgcolor: '#FEE2E2',
+          bgcolor: palette.semantic.errorLight,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           mb: 3,
         }}
       >
-        <Warning sx={{ fontSize: 40, color: '#DC2626' }} />
+        <Warning sx={{ fontSize: 40, color: palette.semantic.error }} />
       </Box>
 
       <Typography
         variant="h6"
         sx={{
           fontWeight: 600,
-          color: '#1C1917',
+          color: palette.neutral[900],
           mb: 1,
         }}
       >
@@ -55,7 +56,7 @@ export function ErrorState({
 
       <Typography
         sx={{
-          color: '#78716C',
+          color: palette.neutral[500],
           maxWidth: 360,
           mb: 3,
         }}
@@ -70,10 +71,10 @@ export function ErrorState({
             onClick={onRetry}
             startIcon={<Refresh />}
             sx={{
-              bgcolor: '#1C1917',
+              bgcolor: palette.neutral[900],
               textTransform: 'none',
               fontWeight: 600,
-              '&:hover': { bgcolor: '#44403C' },
+              '&:hover': { bgcolor: palette.neutral[700] },
             }}
           >
             Try Again
@@ -86,11 +87,11 @@ export function ErrorState({
             to="/"
             startIcon={<Home />}
             sx={{
-              borderColor: '#E5E5E5',
-              color: '#44403C',
+              borderColor: palette.neutral[200],
+              color: palette.neutral[700],
               textTransform: 'none',
               fontWeight: 600,
-              '&:hover': { borderColor: '#1C1917' },
+              '&:hover': { borderColor: palette.neutral[900] },
             }}
           >
             Go Home

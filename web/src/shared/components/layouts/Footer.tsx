@@ -22,6 +22,7 @@ import {
   KeyboardArrowUp,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 
 const footerLinks = {
   shop: {
@@ -98,7 +99,7 @@ export function Footer() {
     <Box
       component="footer"
       sx={{
-        bgcolor: '#1C1917',
+        bgcolor: palette.neutral[900],
         color: 'white',
         pt: 8,
         pb: 4,
@@ -120,7 +121,7 @@ export function Footer() {
             <Typography
               variant="body2"
               sx={{
-                color: '#A8A29E',
+                color: palette.neutral[400],
                 lineHeight: 1.8,
                 mb: 3,
                 maxWidth: 320,
@@ -188,13 +189,13 @@ export function Footer() {
                         borderColor: 'rgba(255,255,255,0.2)',
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: '#CA8A04',
+                        borderColor: palette.brand.primary,
                       },
                     },
                     '& .MuiOutlinedInput-input': {
                       color: 'white',
                       '&::placeholder': {
-                        color: '#78716C',
+                        color: palette.neutral[500],
                         opacity: 1,
                       },
                     },
@@ -204,12 +205,12 @@ export function Footer() {
                   type="submit"
                   variant="contained"
                   sx={{
-                    bgcolor: '#CA8A04',
+                    bgcolor: palette.brand.primary,
                     color: 'white',
                     minWidth: 48,
                     px: 2,
                     '&:hover': {
-                      bgcolor: '#A16207',
+                      bgcolor: palette.brand.secondary,
                     },
                   }}
                 >
@@ -228,7 +229,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label={social.label}
                   sx={{
-                    color: '#78716C',
+                    color: palette.neutral[500],
                     '&:hover': {
                       color: 'white',
                       bgcolor: 'rgba(255,255,255,0.1)',
@@ -265,7 +266,7 @@ export function Footer() {
                         component={Link}
                         to={link.href}
                         sx={{
-                          color: '#A8A29E',
+                          color: palette.neutral[400],
                           fontSize: '0.875rem',
                           textDecoration: 'none',
                           transition: 'color 0.2s ease',
@@ -296,7 +297,7 @@ export function Footer() {
             direction={{ xs: 'column', sm: 'row' }}
             spacing={{ xs: 1, sm: 3 }}
           >
-            <Typography variant="body2" sx={{ color: '#78716C' }}>
+            <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
               © {new Date().getFullYear()} Auction Platform. All rights reserved.
             </Typography>
             <Stack direction="row" spacing={2}>
@@ -304,7 +305,7 @@ export function Footer() {
                 component={Link}
                 to="/privacy"
                 sx={{
-                  color: '#78716C',
+                  color: palette.neutral[500],
                   fontSize: '0.875rem',
                   textDecoration: 'none',
                   '&:hover': { color: 'white' },
@@ -316,7 +317,7 @@ export function Footer() {
                 component={Link}
                 to="/terms"
                 sx={{
-                  color: '#78716C',
+                  color: palette.neutral[500],
                   fontSize: '0.875rem',
                   textDecoration: 'none',
                   '&:hover': { color: 'white' },
@@ -328,7 +329,7 @@ export function Footer() {
                 component={Link}
                 to="/cookies"
                 sx={{
-                  color: '#78716C',
+                  color: palette.neutral[500],
                   fontSize: '0.875rem',
                   textDecoration: 'none',
                   '&:hover': { color: 'white' },
@@ -343,7 +344,7 @@ export function Footer() {
             onClick={scrollToTop}
             endIcon={<KeyboardArrowUp />}
             sx={{
-              color: '#78716C',
+              color: palette.neutral[500],
               textTransform: 'none',
               '&:hover': {
                 color: 'white',

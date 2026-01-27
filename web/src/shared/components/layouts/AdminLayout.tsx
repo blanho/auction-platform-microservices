@@ -37,6 +37,7 @@ import {
   Logout,
 } from '@mui/icons-material'
 import { useAuth } from '@/app/hooks/useAuth'
+import { palette } from '@/shared/theme/tokens'
 
 const DRAWER_WIDTH = 280
 
@@ -90,7 +91,7 @@ export function AdminLayout() {
           borderColor: 'divider',
         }}
       >
-        <AdminPanelSettings sx={{ fontSize: 32, color: '#CA8A04' }} />
+        <AdminPanelSettings sx={{ fontSize: 32, color: palette.brand.primary }} />
         <Typography
           variant="h6"
           sx={{
@@ -118,13 +119,13 @@ export function AdminLayout() {
                 sx={{
                   borderRadius: 2,
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(202, 138, 4, 0.08)',
-                    color: '#CA8A04',
+                    bgcolor: palette.brand.muted,
+                    color: palette.brand.primary,
                     '& .MuiListItemIcon-root': {
-                      color: '#CA8A04',
+                      color: palette.brand.primary,
                     },
                     '&:hover': {
-                      bgcolor: 'rgba(202, 138, 4, 0.12)',
+                      bgcolor: palette.brand.muted,
                     },
                   },
                 }}

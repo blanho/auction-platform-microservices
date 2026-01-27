@@ -12,6 +12,7 @@ import {
   ClickAwayListener,
 } from '@mui/material'
 import { KeyboardArrowDown } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 
 interface CategoryItem {
   name: string
@@ -191,14 +192,14 @@ export const MegaMenu = () => {
             to={item.path}
             endIcon={item.megaMenu ? <KeyboardArrowDown sx={{ fontSize: 18 }} /> : undefined}
             sx={{
-              color: '#FAFAF9',
+              color: palette.neutral[50],
               textTransform: 'none',
               fontWeight: 500,
               px: 2,
               py: 1,
               borderRadius: 0,
               opacity: location.pathname.startsWith(item.path) ? 1 : 0.85,
-              borderBottom: activeMenu === item.label ? '2px solid #CA8A04' : '2px solid transparent',
+              borderBottom: activeMenu === item.label ? `2px solid ${palette.brand.primary}` : '2px solid transparent',
               '&:hover': {
                 bgcolor: 'transparent',
                 opacity: 1,
@@ -239,8 +240,8 @@ export const MegaMenu = () => {
                 left: '50%',
                 position: 'relative',
                 borderRadius: 0,
-                bgcolor: '#FAFAF9',
-                borderTop: '1px solid rgba(68,64,60,0.1)',
+                bgcolor: palette.neutral[50],
+                borderTop: `1px solid rgba(68,64,60,0.1)`,
                 boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
               }}
             >
@@ -253,7 +254,7 @@ export const MegaMenu = () => {
                           variant="subtitle2"
                           sx={{
                             fontWeight: 600,
-                            color: '#1C1917',
+                            color: palette.neutral[900],
                             textTransform: 'uppercase',
                             letterSpacing: 1,
                             fontSize: '0.7rem',
@@ -270,13 +271,13 @@ export const MegaMenu = () => {
                                 to={subItem.path}
                                 onClick={handleClose}
                                 sx={{
-                                  color: '#44403C',
+                                  color: palette.neutral[700],
                                   textDecoration: 'none',
                                   fontSize: '0.9rem',
                                   transition: 'color 0.2s ease',
                                   cursor: 'pointer',
                                   '&:hover': {
-                                    color: '#CA8A04',
+                                    color: palette.brand.primary,
                                   },
                                 }}
                               >
@@ -328,7 +329,7 @@ export const MegaMenu = () => {
                             <Typography
                               variant="subtitle1"
                               sx={{
-                                color: '#FAFAF9',
+                                color: palette.neutral[50],
                                 fontWeight: 500,
                               }}
                             >
@@ -337,7 +338,7 @@ export const MegaMenu = () => {
                             <Typography
                               variant="caption"
                               sx={{
-                                color: '#CA8A04',
+                                color: palette.brand.primary,
                                 textTransform: 'uppercase',
                                 letterSpacing: 1,
                               }}
@@ -364,11 +365,11 @@ export const MegaMenu = () => {
                       to={activeItem?.path || '/'}
                       onClick={handleClose}
                       sx={{
-                        color: '#1C1917',
+                        color: palette.neutral[900],
                         textDecoration: 'none',
                         fontWeight: 500,
                         fontSize: '0.85rem',
-                        '&:hover': { color: '#CA8A04' },
+                        '&:hover': { color: palette.brand.primary },
                       }}
                     >
                       View All {activeItem?.label} →

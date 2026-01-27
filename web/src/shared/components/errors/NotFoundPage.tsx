@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Box, Container, Typography, Button, Stack } from '@mui/material'
 import { Home, Search, ArrowBack } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 
 export const NotFoundPage = () => {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#FAFAF9', display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: palette.neutral[50], display: 'flex', alignItems: 'center' }}>
       <Container maxWidth="sm">
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography
@@ -12,7 +13,7 @@ export const NotFoundPage = () => {
               fontSize: { xs: '8rem', md: '12rem' },
               fontFamily: '"Playfair Display", serif',
               fontWeight: 700,
-              color: '#1C1917',
+              color: palette.neutral[900],
               lineHeight: 1,
               mb: 2,
             }}
@@ -24,7 +25,7 @@ export const NotFoundPage = () => {
             sx={{
               width: 120,
               height: 4,
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               mx: 'auto',
               mb: 4,
               borderRadius: 2,
@@ -36,7 +37,7 @@ export const NotFoundPage = () => {
             sx={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 600,
-              color: '#1C1917',
+              color: palette.neutral[900],
               mb: 2,
             }}
           >
@@ -45,7 +46,7 @@ export const NotFoundPage = () => {
           
           <Typography
             sx={{
-              color: '#78716C',
+              color: palette.neutral[500],
               fontSize: '1.125rem',
               mb: 4,
               maxWidth: 400,
@@ -67,12 +68,12 @@ export const NotFoundPage = () => {
               to="/"
               startIcon={<Home />}
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
               Go Home
@@ -83,15 +84,15 @@ export const NotFoundPage = () => {
               to="/auctions"
               startIcon={<Search />}
               sx={{
-                borderColor: '#CA8A04',
-                color: '#CA8A04',
+                borderColor: palette.brand.primary,
+                color: palette.brand.primary,
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
                 '&:hover': {
-                  borderColor: '#A16207',
-                  bgcolor: '#FEF3C7',
+                  borderColor: palette.brand.secondary,
+                  bgcolor: palette.brand.muted,
                 },
               }}
             >
@@ -104,9 +105,9 @@ export const NotFoundPage = () => {
             startIcon={<ArrowBack />}
             sx={{
               mt: 4,
-              color: '#78716C',
+              color: palette.neutral[500],
               textTransform: 'none',
-              '&:hover': { bgcolor: 'transparent', color: '#1C1917' },
+              '&:hover': { bgcolor: 'transparent', color: palette.neutral[900] },
             }}
           >
             Go Back

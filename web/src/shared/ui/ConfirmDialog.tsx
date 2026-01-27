@@ -10,6 +10,7 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { Warning, CheckCircle, Info, Error } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 
 type ConfirmDialogVariant = 'warning' | 'danger' | 'info' | 'success'
 
@@ -25,30 +26,34 @@ interface ConfirmDialogProps {
   loading?: boolean
 }
 
-const variantConfig: Record<ConfirmDialogVariant, { icon: React.ReactNode; color: string; bgColor: string; buttonColor: string }> = {
+const variantConfig: Record<ConfirmDialogVariant, { icon: React.ReactNode; color: string; bgColor: string; buttonColor: string; hoverColor: string }> = {
   warning: {
     icon: <Warning sx={{ fontSize: 32 }} />,
-    color: '#CA8A04',
-    bgColor: '#FEF3C7',
-    buttonColor: '#CA8A04',
+    color: palette.brand.primary,
+    bgColor: palette.brand.muted,
+    buttonColor: palette.brand.primary,
+    hoverColor: palette.brand.secondary,
   },
   danger: {
     icon: <Error sx={{ fontSize: 32 }} />,
-    color: '#DC2626',
-    bgColor: '#FEE2E2',
-    buttonColor: '#DC2626',
+    color: palette.semantic.error,
+    bgColor: palette.semantic.errorLight,
+    buttonColor: palette.semantic.error,
+    hoverColor: palette.semantic.errorHover,
   },
   info: {
     icon: <Info sx={{ fontSize: 32 }} />,
-    color: '#2563EB',
-    bgColor: '#DBEAFE',
-    buttonColor: '#2563EB',
+    color: palette.semantic.info,
+    bgColor: palette.semantic.infoLight,
+    buttonColor: palette.semantic.info,
+    hoverColor: palette.semantic.infoHover,
   },
   success: {
     icon: <CheckCircle sx={{ fontSize: 32 }} />,
-    color: '#16A34A',
-    bgColor: '#DCFCE7',
-    buttonColor: '#16A34A',
+    color: palette.semantic.success,
+    bgColor: palette.semantic.successLight,
+    buttonColor: palette.semantic.success,
+    hoverColor: palette.semantic.successHover,
   },
 }
 
@@ -95,13 +100,13 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
           >
             {config.icon}
           </Box>
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1C1917' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
             {title}
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography sx={{ color: '#78716C', pl: 8 }}>
+        <Typography sx={{ color: palette.neutral[500], pl: 8 }}>
           {message}
         </Typography>
       </DialogContent>
@@ -109,7 +114,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
         <Button
           onClick={onClose}
           disabled={loading}
-          sx={{ color: '#78716C', textTransform: 'none' }}
+          sx={{ color: palette.neutral[500], textTransform: 'none' }}
         >
           {cancelLabel}
         </Button>
@@ -123,7 +128,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
             fontWeight: 600,
             minWidth: 100,
             '&:hover': {
-              bgcolor: variant === 'danger' ? '#B91C1C' : variant === 'warning' ? '#A16207' : variant === 'success' ? '#15803D' : '#1D4ED8',
+              bgcolor: config.hoverColor,
             },
           }}
         >

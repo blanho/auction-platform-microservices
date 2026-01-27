@@ -1,6 +1,7 @@
 import { Box, Typography, Button } from '@mui/material'
 import { Add, Search, Gavel, Inbox, ShoppingBag, Notifications, FavoriteBorder } from '@mui/icons-material'
 import type { ReactNode } from 'react'
+import { palette } from '@/shared/theme/tokens'
 
 type EmptyStateVariant = 'default' | 'auctions' | 'bids' | 'notifications' | 'search' | 'favorites' | 'orders'
 
@@ -77,12 +78,12 @@ export function EmptyState({ variant = 'default', title, description, action, ic
           width: 120,
           height: 120,
           borderRadius: '50%',
-          bgcolor: '#F5F5F5',
+          bgcolor: palette.neutral[100],
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           mb: 3,
-          color: '#A1A1AA',
+          color: palette.neutral[400],
         }}
       >
         {displayIcon}
@@ -92,7 +93,7 @@ export function EmptyState({ variant = 'default', title, description, action, ic
         variant="h6"
         sx={{
           fontWeight: 600,
-          color: '#1C1917',
+          color: palette.neutral[900],
           mb: 1,
         }}
       >
@@ -101,7 +102,7 @@ export function EmptyState({ variant = 'default', title, description, action, ic
 
       <Typography
         sx={{
-          color: '#78716C',
+          color: palette.neutral[500],
           maxWidth: 320,
           mb: action ? 3 : 0,
         }}
@@ -116,13 +117,13 @@ export function EmptyState({ variant = 'default', title, description, action, ic
           onClick={action.onClick}
           startIcon={<Add />}
           sx={{
-            borderColor: '#CA8A04',
-            color: '#CA8A04',
+            borderColor: palette.brand.primary,
+            color: palette.brand.primary,
             textTransform: 'none',
             fontWeight: 600,
             '&:hover': {
-              borderColor: '#A16207',
-              bgcolor: '#FEF3C7',
+              borderColor: palette.brand.secondary,
+              bgcolor: palette.brand.muted,
             },
           }}
         >

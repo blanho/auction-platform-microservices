@@ -158,3 +158,4 @@ export const AnimatedList = ({ children, className }: AnimatedListProps) => {
 }
 
 export { AnimatePresence } from 'framer-motion'
+export { AnimatedCounter } from './AnimatedCounter'

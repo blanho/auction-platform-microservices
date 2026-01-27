@@ -1,4 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { palette } from '@/shared/theme/tokens'
 
 interface LoadingScreenProps {
   message?: string
@@ -15,7 +16,7 @@ export const LoadingScreen = ({ message = 'Loading...', fullScreen = true }: Loa
         justifyContent: 'center',
         minHeight: fullScreen ? '100vh' : '200px',
         gap: 3,
-        bgcolor: fullScreen ? '#FAFAF9' : 'transparent',
+        bgcolor: fullScreen ? palette.neutral[50] : 'transparent',
       }}
     >
       <Box sx={{ position: 'relative' }}>
@@ -23,14 +24,14 @@ export const LoadingScreen = ({ message = 'Loading...', fullScreen = true }: Loa
           size={56}
           thickness={2}
           sx={{
-            color: '#E5E5E5',
+            color: palette.neutral[200],
           }}
         />
         <CircularProgress
           size={56}
           thickness={2}
           sx={{
-            color: '#CA8A04',
+            color: palette.brand.primary,
             position: 'absolute',
             left: 0,
             animationDuration: '1.2s',
@@ -39,7 +40,7 @@ export const LoadingScreen = ({ message = 'Loading...', fullScreen = true }: Loa
       </Box>
       <Typography
         sx={{
-          color: '#78716C',
+          color: palette.neutral[500],
           fontSize: '0.9375rem',
           fontWeight: 500,
         }}

@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material'
 import { useAuth } from '@/app/providers'
 import { useNotificationSummary } from '@/modules/notifications/hooks'
+import { palette } from '@/shared/theme/tokens'
 
 const navLinks = [
   { label: 'Auctions', path: '/auctions' },
@@ -77,18 +78,18 @@ export const LandingHeader = () => {
     ? isScrolled
       ? 'rgba(28, 25, 23, 0.98)'
       : 'transparent'
-    : '#1C1917'
+    : palette.neutral[900]
 
   const drawer = (
-    <Box sx={{ width: '100vw', height: '100vh', bgcolor: '#1C1917' }}>
+    <Box sx={{ width: '100vw', height: '100vh', bgcolor: palette.neutral[900] }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Gavel sx={{ color: '#CA8A04', fontSize: 28 }} />
-          <Typography variant="h6" sx={{ color: '#FAFAF9', fontWeight: 600, letterSpacing: 1 }}>
+          <Gavel sx={{ color: palette.brand.primary, fontSize: 28 }} />
+          <Typography variant="h6" sx={{ color: palette.neutral[50], fontWeight: 600, letterSpacing: 1 }}>
             AUCTION
           </Typography>
         </Box>
-        <IconButton onClick={() => setMobileOpen(false)} sx={{ color: '#FAFAF9' }}>
+        <IconButton onClick={() => setMobileOpen(false)} sx={{ color: palette.neutral[50] }}>
           <CloseIcon />
         </IconButton>
       </Box>
@@ -110,7 +111,7 @@ export const LandingHeader = () => {
                 primary={item.label}
                 primaryTypographyProps={{
                   sx: {
-                    color: '#FAFAF9',
+                    color: palette.neutral[50],
                     fontSize: '1.25rem',
                     fontWeight: 400,
                   },
@@ -128,7 +129,7 @@ export const LandingHeader = () => {
             onClick={handleLogout}
             sx={{
               borderColor: 'rgba(250,250,249,0.3)',
-              color: '#FAFAF9',
+              color: palette.neutral[50],
               py: 1.5,
               textTransform: 'none',
               borderRadius: 0,
@@ -145,12 +146,12 @@ export const LandingHeader = () => {
               to="/register"
               onClick={() => setMobileOpen(false)}
               sx={{
-                bgcolor: '#CA8A04',
-                color: '#FAFAF9',
+                bgcolor: palette.brand.primary,
+                color: palette.neutral[50],
                 py: 1.5,
                 textTransform: 'none',
                 borderRadius: 0,
-                '&:hover': { bgcolor: '#A16207' },
+                '&:hover': { bgcolor: palette.brand.secondary },
               }}
             >
               Create Account
@@ -163,7 +164,7 @@ export const LandingHeader = () => {
               onClick={() => setMobileOpen(false)}
               sx={{
                 borderColor: 'rgba(250,250,249,0.3)',
-                color: '#FAFAF9',
+                color: palette.neutral[50],
                 py: 1.5,
                 textTransform: 'none',
                 borderRadius: 0,
@@ -193,7 +194,7 @@ export const LandingHeader = () => {
           <Toolbar disableGutters sx={{ height: 72 }}>
             <IconButton
               onClick={() => setMobileOpen(true)}
-              sx={{ display: { md: 'none' }, color: '#FAFAF9', mr: 1 }}
+              sx={{ display: { md: 'none' }, color: palette.neutral[50], mr: 1 }}
             >
               <MenuIcon />
             </IconButton>
@@ -209,11 +210,11 @@ export const LandingHeader = () => {
                 mr: { xs: 'auto', md: 4 },
               }}
             >
-              <Gavel sx={{ color: '#CA8A04', fontSize: 28 }} />
+              <Gavel sx={{ color: palette.brand.primary, fontSize: 28 }} />
               <Typography
                 variant="h6"
                 sx={{
-                  color: '#FAFAF9',
+                  color: palette.neutral[50],
                   fontWeight: 600,
                   letterSpacing: 1,
                   display: { xs: 'none', sm: 'block' },
@@ -230,7 +231,7 @@ export const LandingHeader = () => {
                   component={Link}
                   to={item.path}
                   sx={{
-                    color: '#FAFAF9',
+                    color: palette.neutral[50],
                     textTransform: 'none',
                     fontWeight: 500,
                     px: 2,
@@ -251,7 +252,7 @@ export const LandingHeader = () => {
                 <InputBase
                   placeholder="Search auctions..."
                   sx={{
-                    color: '#FAFAF9',
+                    color: palette.neutral[50],
                     bgcolor: 'rgba(250,250,249,0.1)',
                     px: 2,
                     py: 0.5,
@@ -266,7 +267,7 @@ export const LandingHeader = () => {
 
               <IconButton
                 onClick={() => setSearchOpen(!searchOpen)}
-                sx={{ color: '#FAFAF9', display: { xs: 'none', sm: 'flex' } }}
+                sx={{ color: palette.neutral[50], display: { xs: 'none', sm: 'flex' } }}
               >
                 <SearchIcon />
               </IconButton>
@@ -276,14 +277,14 @@ export const LandingHeader = () => {
                   <IconButton
                     component={Link}
                     to="/favorites"
-                    sx={{ color: '#FAFAF9', display: { xs: 'none', sm: 'flex' } }}
+                    sx={{ color: palette.neutral[50], display: { xs: 'none', sm: 'flex' } }}
                   >
                     <FavoriteBorder />
                   </IconButton>
                   <IconButton
                     component={Link}
                     to="/notifications"
-                    sx={{ color: '#FAFAF9', display: { xs: 'none', sm: 'flex' } }}
+                    sx={{ color: palette.neutral[50], display: { xs: 'none', sm: 'flex' } }}
                   >
                     <Badge badgeContent={notificationSummary?.unreadCount || 0} color="error">
                       <NotificationsOutlined />
@@ -300,7 +301,7 @@ export const LandingHeader = () => {
                       sx={{
                         width: 36,
                         height: 36,
-                        bgcolor: '#CA8A04',
+                        bgcolor: palette.brand.primary,
                         fontSize: '0.9rem',
                       }}
                     >
@@ -315,8 +316,8 @@ export const LandingHeader = () => {
                     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     PaperProps={{
                       sx: {
-                        bgcolor: '#1C1917',
-                        color: '#FAFAF9',
+                        bgcolor: palette.neutral[900],
+                        color: palette.neutral[50],
                         border: '1px solid rgba(250,250,249,0.1)',
                         mt: 1,
                         minWidth: 200,
@@ -378,7 +379,7 @@ export const LandingHeader = () => {
                     component={Link}
                     to="/login"
                     sx={{
-                      color: '#FAFAF9',
+                      color: palette.neutral[50],
                       textTransform: 'none',
                       fontWeight: 500,
                     }}
@@ -390,13 +391,13 @@ export const LandingHeader = () => {
                     to="/register"
                     variant="contained"
                     sx={{
-                      bgcolor: '#CA8A04',
-                      color: '#FAFAF9',
+                      bgcolor: palette.brand.primary,
+                      color: palette.neutral[50],
                       textTransform: 'none',
                       fontWeight: 500,
                       borderRadius: 0,
                       px: 3,
-                      '&:hover': { bgcolor: '#A16207' },
+                      '&:hover': { bgcolor: palette.brand.secondary },
                     }}
                   >
                     Create Account
