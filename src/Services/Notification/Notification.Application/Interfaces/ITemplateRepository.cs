@@ -14,6 +14,8 @@ public interface ITemplateRepository
     Task AddAsync(NotificationTemplate template, CancellationToken ct = default);
 
     Task UpdateAsync(NotificationTemplate template, CancellationToken ct = default);
+    
+    Task<NotificationTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }

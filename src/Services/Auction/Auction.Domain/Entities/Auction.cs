@@ -287,13 +287,14 @@ public class Auction : BaseEntity
         if (Status == Status.Finished)
             throw new InvalidOperationException("Cannot cancel finished auction");
 
+        var oldStatus = Status;
         Status = Status.Cancelled;
         UpdatedAt = DateTimeOffset.UtcNow;
         
         AddDomainEvent(new AuctionStatusChangedDomainEvent
         {
             AuctionId = Id,
-            OldStatus = Status,
+            OldStatus = oldStatus,
             NewStatus = Status.Cancelled,
             SellerId = SellerId,
             SellerUsername = SellerUsername,

@@ -56,6 +56,13 @@ public class TemplateRepository : ITemplateRepository
         await _context.SaveChangesAsync(ct);
     }
 
+    public async Task<NotificationTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.Templates
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var template = await _context.Templates.FindAsync(new object[] { id }, ct);

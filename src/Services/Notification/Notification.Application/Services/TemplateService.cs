@@ -27,8 +27,7 @@ public class TemplateService : ITemplateService
 
     public async Task<Result<TemplateDto>> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var templates = await _repository.GetAllActiveAsync(ct);
-        var template = templates.FirstOrDefault(t => t.Id == id);
+        var template = await _repository.GetByIdAsync(id, ct);
         if (template == null)
             return Result.Failure<TemplateDto>(NotificationErrors.Template.NotFound);
         return Result.Success(template.ToDto());
@@ -74,8 +73,7 @@ public class TemplateService : ITemplateService
 
     public async Task<Result<TemplateDto>> UpdateAsync(Guid id, UpdateTemplateDto dto, CancellationToken ct = default)
     {
-        var templates = await _repository.GetAllActiveAsync(ct);
-        var template = templates.FirstOrDefault(t => t.Id == id);
+        var template = await _repository.GetByIdAsync(id, ct);
         if (template == null)
             return Result.Failure<TemplateDto>(NotificationErrors.Template.NotFound);
 

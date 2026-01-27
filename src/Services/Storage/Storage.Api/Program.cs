@@ -102,7 +102,7 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     options.Authority = identityAuthority;
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     options.MapInboundClaims = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {

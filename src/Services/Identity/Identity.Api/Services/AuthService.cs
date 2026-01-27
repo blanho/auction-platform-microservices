@@ -501,15 +501,10 @@ public class AuthService : IAuthService
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
-        var updateTask = Task.Run(async () =>
-        {
-            user.LastLoginAt = DateTimeOffset.UtcNow;
-            await _userService.UpdateAsync(user);
-        });
-        var rolesTask = _userService.GetRolesAsync(user);
-
-        await Task.WhenAll(updateTask, rolesTask);
-        var roles = rolesTask.Result;
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+        await _userService.UpdateAsync(user);
+        
+        var roles = await _userService.GetRolesAsync(user);
 
         await _mediator.Publish(new UserLoginDomainEvent
         {
