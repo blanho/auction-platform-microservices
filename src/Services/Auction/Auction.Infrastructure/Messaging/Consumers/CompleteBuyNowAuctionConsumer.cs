@@ -2,7 +2,6 @@ using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;

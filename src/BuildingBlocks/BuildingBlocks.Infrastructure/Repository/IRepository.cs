@@ -1,5 +1,4 @@
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 
 namespace BuildingBlocks.Infrastructure.Repository;
 
@@ -25,13 +24,4 @@ public interface IRepository<T> where T : class
     
     Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         => throw new NotImplementedException("DeleteRangeAsync not implemented for this repository");
-    
-    Task<List<T>> ListAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
-        => throw new NotImplementedException("Specification pattern not implemented for this repository");
-    
-    Task<T?> FirstOrDefaultAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
-        => throw new NotImplementedException("Specification pattern not implemented for this repository");
-    
-    Task<int> CountAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
-        => throw new NotImplementedException("Specification pattern not implemented for this repository");
 }

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Locking;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Auctions.Application.Commands.BuyNow;

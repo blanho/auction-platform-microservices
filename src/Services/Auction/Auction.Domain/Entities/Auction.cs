@@ -40,17 +40,8 @@ public class Auction : BaseEntity
         decimal? buyNowPrice = null,
         bool isFeatured = false)
     {
-        if (string.IsNullOrWhiteSpace(sellerUsername))
-            throw new ArgumentException("Seller username is required", nameof(sellerUsername));
-
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
-
-        if (reservePrice < 0)
-            throw new ArgumentException("Reserve price cannot be negative", nameof(reservePrice));
-
         if (buyNowPrice.HasValue && buyNowPrice.Value <= reservePrice)
-            throw new ArgumentException("Buy now price must be greater than reserve price", nameof(buyNowPrice));
+            throw new InvalidOperationException("Buy now price must be greater than reserve price");
 
         return new Auction
         {
@@ -76,11 +67,6 @@ public class Auction : BaseEntity
         DateTimeOffset auctionEnd,
         string currency = "USD")
     {
-        if (string.IsNullOrWhiteSpace(sellerUsername))
-            throw new ArgumentException("Seller username is required", nameof(sellerUsername));
-
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
 
         return new Auction
         {
@@ -144,9 +130,6 @@ public class Auction : BaseEntity
         if (Status != Status.Live || CurrentHighBid.HasValue)
             throw new InvalidOperationException("Cannot change reserve price after bids have been placed");
 
-        if (newPrice < 0)
-            throw new ArgumentException("Reserve price cannot be negative", nameof(newPrice));
-
         ReservePrice = newPrice;
     }
 
@@ -156,7 +139,7 @@ public class Auction : BaseEntity
             throw new InvalidOperationException("Cannot change buy now price on finished auction");
 
         if (newPrice.HasValue && newPrice.Value <= ReservePrice)
-            throw new ArgumentException("Buy now price must be greater than reserve price", nameof(newPrice));
+            throw new InvalidOperationException("Buy now price must be greater than reserve price");
 
         BuyNowPrice = newPrice;
     }
@@ -306,8 +289,6 @@ public class Auction : BaseEntity
 
     public void UpdateSellerUsername(string newUsername)
     {
-        if (string.IsNullOrWhiteSpace(newUsername))
-            throw new ArgumentException("Username cannot be empty", nameof(newUsername));
 
         if (SellerUsername != newUsername)
         {
@@ -318,8 +299,6 @@ public class Auction : BaseEntity
 
     public void UpdateWinnerUsername(string newUsername)
     {
-        if (string.IsNullOrWhiteSpace(newUsername))
-            throw new ArgumentException("Username cannot be empty", nameof(newUsername));
 
         if (WinnerUsername != newUsername)
         {

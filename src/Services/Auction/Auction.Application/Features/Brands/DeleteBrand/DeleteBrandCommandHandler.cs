@@ -2,7 +2,6 @@ using Auction.Application.Errors;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 
 namespace Auctions.Application.Commands.DeleteBrand;
 

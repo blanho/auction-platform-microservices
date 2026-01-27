@@ -20,12 +20,7 @@ public class Review : BaseEntity
     public int Rating
     {
         get => _rating;
-        set
-        {
-            if (value < 1 || value > 5)
-                throw new ArgumentOutOfRangeException(nameof(value), "Rating must be between 1 and 5");
-            _rating = value;
-        }
+        set => _rating = value;
     }
 
     public string? Title { get; set; }
@@ -34,12 +29,6 @@ public class Review : BaseEntity
     public DateTimeOffset? SellerResponseAt { get; set; }
     public void AddSellerResponse(string response)
     {
-        if (string.IsNullOrWhiteSpace(response))
-            throw new ArgumentException("Seller response cannot be empty", nameof(response));
-
-        if (response.Length > 1000)
-            throw new ArgumentException("Seller response cannot exceed 1000 characters", nameof(response));
-
         SellerResponse = response;
         SellerResponseAt = DateTimeOffset.UtcNow;
     }

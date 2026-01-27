@@ -36,14 +36,6 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.AuctionId)
             .IsUnique();
 
-        builder.OwnsMany(x => x.Files, filesBuilder =>
-        {
-            filesBuilder.ToJson();
-        });
-
-        builder.Property(x => x.Attributes)
-            .HasColumnType("jsonb");
-
         builder.HasOne(x => x.Category)
             .WithMany(x => x.Items)
             .HasForeignKey(x => x.CategoryId)

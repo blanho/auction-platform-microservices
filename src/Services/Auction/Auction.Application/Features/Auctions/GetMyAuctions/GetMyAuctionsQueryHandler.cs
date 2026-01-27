@@ -1,12 +1,10 @@
 using Auction.Application.Errors;
 using Auctions.Application.DTOs;
-using Auctions.Application.Specifications;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 namespace Auctions.Application.Queries.GetMyAuctions;
 
 public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, PaginatedResult<AuctionDto>>

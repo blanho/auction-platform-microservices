@@ -10,7 +10,6 @@ global using BuildingBlocks.Application.CQRS.Queries;
 global using BuildingBlocks.Application.Helpers;
 global using BuildingBlocks.Infrastructure.Caching;
 global using BuildingBlocks.Infrastructure.Repository;
-global using BuildingBlocks.Infrastructure.Repository.Specifications;
 global using IUnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 global using AuctionService.Contracts.Events;

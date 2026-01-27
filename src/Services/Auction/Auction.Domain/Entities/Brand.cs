@@ -11,27 +11,13 @@ public class Brand : BaseEntity
     public string Name
     {
         get => _name;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Brand name cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Brand name cannot exceed 100 characters", nameof(value));
-            _name = value;
-        }
+        set => _name = value;
     }
 
     public string Slug
     {
         get => _slug;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Brand slug cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Brand slug cannot exceed 100 characters", nameof(value));
-            _slug = value.ToLowerInvariant();
-        }
+        set => _slug = value.ToLowerInvariant();
     }
 
     public string? LogoUrl { get; set; }

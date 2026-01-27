@@ -1,5 +1,6 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Auctions.Domain.Entities;
 
@@ -11,27 +12,13 @@ public class Item : BaseEntity
     public string Title
     {
         get => _title;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Title cannot be empty", nameof(value));
-            if (value.Length > 200)
-                throw new ArgumentException("Title cannot exceed 200 characters", nameof(value));
-            _title = value;
-        }
+        set => _title = value;
     }
 
     public string Description
     {
         get => _description;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Description cannot be empty", nameof(value));
-            if (value.Length > 4000)
-                throw new ArgumentException("Description cannot exceed 4000 characters", nameof(value));
-            _description = value;
-        }
+        set => _description = value;
     }
 
     public string? Condition { get; set; }
@@ -46,8 +33,12 @@ public class Item : BaseEntity
     public Auction? Auction { get; set; }
     public Guid AuctionId { get; set; }
 
+    [Column(TypeName = "jsonb")]
     public List<ItemFileInfo> Files { get; set; } = new();
+    
+    [Column(TypeName = "jsonb")]
     public Dictionary<string, string> Attributes { get; set; } = new();
+    
     public void UpdateDetails(string title, string description, string? condition = null, int? yearManufactured = null)
     {
         Title = title;
@@ -58,7 +49,6 @@ public class Item : BaseEntity
 
     public void AddFile(ItemFileInfo file)
     {
-        ArgumentNullException.ThrowIfNull(file);
         Files.Add(file);
     }
 
@@ -73,8 +63,6 @@ public class Item : BaseEntity
 
     public void SetAttribute(string key, string value)
     {
-        if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Attribute key cannot be empty", nameof(key));
         Attributes[key] = value;
     }
 

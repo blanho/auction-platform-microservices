@@ -4,7 +4,6 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using BuildingBlocks.Application.Constants;
 
 namespace Auctions.Application.Queries.GetCategories;
