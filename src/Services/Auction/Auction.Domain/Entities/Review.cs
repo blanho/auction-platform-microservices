@@ -5,8 +5,6 @@ namespace Auctions.Domain.Entities;
 
 public class Review : BaseEntity
 {
-    private int _rating;
-
     public Guid AuctionId { get; set; }
     public Auction? Auction { get; set; }
     public Guid? OrderId { get; set; }
@@ -17,11 +15,7 @@ public class Review : BaseEntity
     public Guid ReviewedUserId { get; set; }
     public string ReviewedUsername { get; set; } = string.Empty;
 
-    public int Rating
-    {
-        get => _rating;
-        set => _rating = value;
-    }
+    public int Rating { get; set; }
 
     public string? Title { get; set; }
     public string? Comment { get; set; }

@@ -33,18 +33,6 @@ public class NotificationTemplate : BaseEntity
         string? pushTitle = null,
         string? pushBody = null)
     {
-        if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Template key is required", nameof(key));
-
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Template name is required", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(subject))
-            throw new ArgumentException("Subject is required", nameof(subject));
-
-        if (string.IsNullOrWhiteSpace(body))
-            throw new ArgumentException("Body is required", nameof(body));
-
         return new NotificationTemplate
         {
             Id = Guid.NewGuid(),

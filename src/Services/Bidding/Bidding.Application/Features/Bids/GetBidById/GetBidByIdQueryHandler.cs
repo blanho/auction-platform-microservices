@@ -32,6 +32,8 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
         var isHighestBid = highestBid?.Id == bid.Id;
         var isWinningBid = isHighestBid && bid.Status == BidStatus.Accepted;
 
+        var nextMinimumBid = isHighestBid ? null : (decimal?)BidIncrementHelper.GetMinimumNextBid(highestBid!.Amount);
+        
         return Result.Success<BidDetailDto?>(new BidDetailDto
         {
             Id = bid.Id,
@@ -43,7 +45,7 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
             Status = bid.Status.ToString(),
             IsHighestBid = isHighestBid,
             IsWinningBid = isWinningBid,
-            NextMinimumBid = isHighestBid ? null : BidIncrement.GetMinimumNextBid(highestBid?.Amount ?? 0),
+            NextMinimumBid = nextMinimumBid,
             BidPosition = bidPosition,
             TotalBidsOnAuction = allBidsForAuction.Count,
             CreatedAt = bid.CreatedAt

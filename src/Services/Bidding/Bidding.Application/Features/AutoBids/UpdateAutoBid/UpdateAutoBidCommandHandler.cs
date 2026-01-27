@@ -1,18 +1,17 @@
 using Bidding.Application.Errors;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.UpdateAutoBid;
 
 public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand, UpdateAutoBidResult>
 {
     private readonly IAutoBidRepository _repository;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<UpdateAutoBidCommandHandler> _logger;
 
     public UpdateAutoBidCommandHandler(
         IAutoBidRepository repository,
-        UnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<UpdateAutoBidCommandHandler> logger)
     {

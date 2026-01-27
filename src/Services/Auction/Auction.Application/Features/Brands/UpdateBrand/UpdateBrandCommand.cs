@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.UpdateBrand;
+namespace Auctions.Application.Features.Brands.UpdateBrand;
 
 public record UpdateBrandCommand(
     Guid Id,

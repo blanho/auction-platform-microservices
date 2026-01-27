@@ -6,20 +6,8 @@ namespace Auctions.Domain.Entities;
 
 public class Item : BaseEntity
 {
-    private string _title = string.Empty;
-    private string _description = string.Empty;
-
-    public string Title
-    {
-        get => _title;
-        set => _title = value;
-    }
-
-    public string Description
-    {
-        get => _description;
-        set => _description = value;
-    }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 
     public string? Condition { get; set; }
     public int? YearManufactured { get; set; }
@@ -34,7 +22,7 @@ public class Item : BaseEntity
     public Guid AuctionId { get; set; }
 
     [Column(TypeName = "jsonb")]
-    public List<ItemFileInfo> Files { get; set; } = new();
+    public List<MediaFile> Files { get; set; } = new();
     
     [Column(TypeName = "jsonb")]
     public Dictionary<string, string> Attributes { get; set; } = new();
@@ -47,7 +35,7 @@ public class Item : BaseEntity
         YearManufactured = yearManufactured;
     }
 
-    public void AddFile(ItemFileInfo file)
+    public void AddFile(MediaFile file)
     {
         Files.Add(file);
     }
@@ -76,8 +64,8 @@ public class Item : BaseEntity
         return new Item
         {
             Id = source.Id,
-            _title = source._title,
-            _description = source._description,
+            Title = source.Title,
+            Description = source.Description,
             Condition = source.Condition,
             YearManufactured = source.YearManufactured,
             CategoryId = source.CategoryId,

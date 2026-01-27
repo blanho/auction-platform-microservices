@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Auctions.Application.Commands.ImportCategories;
+namespace Auctions.Application.Features.Categories.ImportCategories;
 
 public class ImportCategoriesCommandValidator : AbstractValidator<ImportCategoriesCommand>
 {

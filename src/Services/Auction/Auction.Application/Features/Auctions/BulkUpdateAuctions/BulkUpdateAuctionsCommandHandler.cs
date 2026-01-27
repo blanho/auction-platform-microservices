@@ -1,4 +1,4 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;

@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.CreateCategory;
+namespace Auctions.Application.Features.Categories.CreateCategory;
 
 public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
 {

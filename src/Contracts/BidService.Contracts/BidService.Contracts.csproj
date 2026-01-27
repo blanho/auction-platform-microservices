@@ -10,7 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.70.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MassTransit.Abstractions" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Grpc\bid_stats.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>

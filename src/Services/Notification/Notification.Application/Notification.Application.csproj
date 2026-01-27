@@ -18,9 +18,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Notification.Domain\Notification.Domain.csproj" />
-    <ProjectReference Include="..\Notification.Contracts\Notification.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\NotificationService.Contracts\NotificationService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />

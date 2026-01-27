@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
+using BuildingBlocks.Infrastructure.Repository;
 
 namespace Bidding.Application.Services
 {
     public class AutoBidService : IAutoBidService
     {
         private readonly IAutoBidRepository _autoBidRepository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBidService _bidService;
         private readonly IDistributedLock _distributedLock;
         private readonly IDateTimeProvider _dateTime;
@@ -15,7 +15,7 @@ namespace Bidding.Application.Services
 
         public AutoBidService(
             IAutoBidRepository autoBidRepository,
-            UnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork,
             IBidService bidService,
             IDistributedLock distributedLock,
             IDateTimeProvider dateTime,
@@ -268,12 +268,12 @@ namespace Bidding.Application.Services
         {
             var optimalBid = Math.Min(
                 maxAmount,
-                secondHighestMax + BidIncrement.GetIncrement(secondHighestMax)
+                secondHighestMax + BidIncrementHelper.GetIncrement(secondHighestMax)
             );
 
             if (optimalBid <= currentHighBid)
             {
-                optimalBid = currentHighBid + BidIncrement.GetIncrement(currentHighBid);
+                optimalBid = currentHighBid + BidIncrementHelper.GetIncrement(currentHighBid);
             }
 
             return optimalBid;

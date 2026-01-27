@@ -1,9 +1,9 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.DeleteBrand;
+namespace Auctions.Application.Features.Brands.DeleteBrand;
 
 public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
 {

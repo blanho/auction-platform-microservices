@@ -1,4 +1,4 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Domain.Enums;

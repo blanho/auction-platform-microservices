@@ -2,7 +2,16 @@ global using BuildingBlocks.Application.Abstractions;
 global using BuildingBlocks.Application.Abstractions.Messaging;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.Constants;
+global using BuildingBlocks.Application.CQRS.Commands;
+global using BuildingBlocks.Application.CQRS.Queries;
+
 global using Notification.Domain.Entities;
 global using Notification.Domain.Enums;
+
 global using Notification.Application.DTOs;
 global using Notification.Application.Extensions.Mappings;
+global using Notification.Application.Helpers;
+
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.Extensions.Logging;

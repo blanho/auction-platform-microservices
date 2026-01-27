@@ -6,6 +6,9 @@ using Notification.Infrastructure.Persistence;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Infrastructure.Extensions;
+using BuildingBlocks.Infrastructure.Caching;
+using BuildingBlocks.Application.Extensions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +20,17 @@ builder.Services.AddCommonUtilities();
 
 var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
+builder.Services.AddAutoMapper(applicationAssembly);
+
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+});
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddDistributedLocking(redisConnectionString);
+
+builder.Services.AddCQRS(typeof(Notification.Application.Features.Notifications.CreateNotification.CreateNotificationCommand).Assembly);
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();

@@ -4,7 +4,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-namespace Auctions.Application.Commands.CreateBrand;
+namespace Auctions.Application.Features.Brands.CreateBrand;
 
 public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, BrandDto>
 {
@@ -43,7 +43,6 @@ public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, Bra
             {
                 Name = request.Name,
                 Slug = slug,
-                LogoUrl = request.LogoUrl,
                 Description = request.Description,
                 DisplayOrder = request.DisplayOrder,
                 IsFeatured = request.IsFeatured,

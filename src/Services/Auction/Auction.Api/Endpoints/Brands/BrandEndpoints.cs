@@ -1,10 +1,10 @@
 #nullable enable
-using Auctions.Application.Commands.CreateBrand;
-using Auctions.Application.Commands.DeleteBrand;
-using Auctions.Application.Commands.UpdateBrand;
+using Auctions.Application.Features.Brands.CreateBrand;
+using Auctions.Application.Features.Brands.DeleteBrand;
+using Auctions.Application.Features.Brands.UpdateBrand;
+using Auctions.Application.Features.Brands.GetBrandById;
+using Auctions.Application.Features.Brands.GetBrands;
 using Auctions.Application.DTOs;
-using Auctions.Application.Queries.GetBrandById;
-using Auctions.Application.Queries.GetBrands;
 using BuildingBlocks.Web.Authorization;
 using Carter;
 using MediatR;

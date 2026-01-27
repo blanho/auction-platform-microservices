@@ -19,9 +19,6 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(x => x.LogoUrl)
-            .HasMaxLength(500);
-
         builder.Property(x => x.Description)
             .HasMaxLength(1000);
 

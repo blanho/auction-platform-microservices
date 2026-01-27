@@ -9,9 +9,12 @@ namespace Bidding.Application.Interfaces
         Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default);
         Task<List<Bid>> GetBidsByBidderUsernameAsync(string bidderUsername, CancellationToken cancellationToken = default);
         Task<Bid?> GetHighestBidForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default);
+        Task<Bid?> GetSecondHighestBidForAuctionAsync(Guid auctionId, Guid excludeBidId, CancellationToken cancellationToken = default);
         Task<BidStatsDto> GetBidStatsAsync(CancellationToken cancellationToken = default);
+        Task<UserBidStatsDto> GetUserBidStatsAsync(string username, CancellationToken cancellationToken = default);
         Task<List<DailyBidStatDto>> GetDailyBidStatsAsync(int days, CancellationToken cancellationToken = default);
         Task<List<TopBidderDto>> GetTopBiddersAsync(int limit, CancellationToken cancellationToken = default);
+        Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default);
 
         Task<List<Bid>> GetWinningBidsForUserAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default);
         Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default);

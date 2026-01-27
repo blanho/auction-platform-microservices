@@ -11,6 +11,7 @@
     <PackageReference Include="Carter" Version="8.2.1" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.70.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.70.0" />
     <PackageReference Include="Grpc.Tools" Version="2.70.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -30,8 +31,9 @@
   <ItemGroup>
     <Protobuf Include="Protos\auction_stats.proto" GrpcServices="Client" />
     <Protobuf Include="Protos\auction_analytics.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\bid_stats.proto" GrpcServices="Client" />
     <Protobuf Include="Protos\payment_analytics.proto" GrpcServices="Client" />
+    <Protobuf Include="..\..\..\Contracts\BidService.Contracts\Grpc\bid_stats.proto" GrpcServices="Client" ProtoRoot="..\..\..\Contracts\BidService.Contracts" />
+    <Protobuf Include="..\..\..\Contracts\IdentityService.Contracts\Grpc\user_stats.proto" GrpcServices="Client" ProtoRoot="..\..\..\Contracts\IdentityService.Contracts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +43,7 @@
     <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\IdentityService.Contracts\IdentityService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,27 +1,23 @@
 using Bidding.Application.Errors;
 using Bidding.Domain.Constants;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.Bids.RetractBid;
 
 public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, RetractBidResult>
 {
     private readonly IBidRepository _repository;
-    private readonly UnitOfWork _unitOfWork;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<RetractBidCommandHandler> _logger;
 
     public RetractBidCommandHandler(
         IBidRepository repository,
-        UnitOfWork unitOfWork,
-        IEventPublisher eventPublisher,
+        IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<RetractBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
-        _eventPublisher = eventPublisher;
         _dateTime = dateTime;
         _logger = logger;
     }
@@ -58,26 +54,21 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
         var wasHighestBid = highestBid?.Id == bid.Id;
 
-        bid.Reject($"Retracted by bidder: {request.Reason}");
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        Bid? newHighestBid = null;
         if (wasHighestBid)
         {
-            var newHighestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
-            if (newHighestBid != null)
-            {
-                await _eventPublisher.PublishAsync(new BidRetractedEvent
-                {
-                    BidId = bid.Id,
-                    AuctionId = bid.AuctionId,
-                    RetractedAmount = bid.Amount,
-                    NewHighestBidId = newHighestBid.Id,
-                    NewHighestAmount = newHighestBid.Amount,
-                    NewHighestBidderId = newHighestBid.BidderId,
-                    NewHighestBidderUsername = newHighestBid.BidderUsername
-                }, cancellationToken);
-            }
+            newHighestBid = await _repository.GetSecondHighestBidForAuctionAsync(bid.AuctionId, bid.Id, cancellationToken);
         }
+
+        bid.Retract(
+            $"Retracted by bidder: {request.Reason}",
+            wasHighestBid,
+            newHighestBid?.Id,
+            newHighestBid?.Amount,
+            newHighestBid?.BidderId,
+            newHighestBid?.BidderUsername);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Bid {BidId} successfully retracted. Was highest: {WasHighest}",
             request.BidId, wasHighestBid);

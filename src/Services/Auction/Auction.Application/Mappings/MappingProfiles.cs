@@ -42,7 +42,7 @@ namespace Auctions.Application.Mappings
                 .ForMember(d => d.Condition, o => o.MapFrom(s => s.Item.Condition))
                 .ForMember(d => d.YearManufactured, o => o.MapFrom(s => s.Item.YearManufactured));
 
-            CreateMap<ItemFileInfo, AuctionFileDto>()
+            CreateMap<MediaFile, AuctionFileDto>()
                 .ForMember(d => d.FileId, o => o.MapFrom(s => s.FileId));
 
             CreateMap<Category, CategoryDto>()

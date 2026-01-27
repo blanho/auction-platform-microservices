@@ -1,4 +1,5 @@
 using Bidding.Api.Extensions;
+using Bidding.Api.Grpc;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
 using Bidding.Infrastructure.Grpc;
@@ -8,10 +9,13 @@ using Carter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.OpenApi;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
+using BuildingBlocks.Infrastructure.Locking;
+using BuildingBlocks.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +23,18 @@ builder.AddApplicationLogging();
 
 builder.Services.AddCommonUtilities();
 
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "Bidding:";
+});
+builder.Services.AddDistributedLocking(redisConnectionString);
+
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+builder.Services.AddAuditServices(builder.Configuration, "bidding-service");
+builder.Services.AddCQRS(typeof(Bidding.Application.Interfaces.IBidRepository).Assembly);
 
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
@@ -108,6 +122,7 @@ app.UseAccessAuthorization();
 
 app.MapCarter();
 
+app.MapGrpcService<BidStatsGrpcService>();
 app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();

@@ -1,6 +1,6 @@
 using BuildingBlocks.Application.Abstractions;
 
-namespace Auction.Application.Errors;
+namespace Auctions.Application.Errors;
 
 public static class AuctionErrors
 {

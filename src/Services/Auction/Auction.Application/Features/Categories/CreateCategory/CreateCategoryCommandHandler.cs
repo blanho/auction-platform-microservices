@@ -1,4 +1,4 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.CreateCategory;
+namespace Auctions.Application.Features.Categories.CreateCategory;
 
 public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryCommand, CategoryDto>
 {
@@ -45,7 +45,6 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
                 Slug = request.Slug,
                 Icon = request.Icon,
                 Description = request.Description,
-                ImageUrl = request.ImageUrl,
                 DisplayOrder = request.DisplayOrder,
                 IsActive = request.IsActive,
                 ParentCategoryId = request.ParentCategoryId

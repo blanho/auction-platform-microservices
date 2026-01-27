@@ -3,6 +3,8 @@ using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Extensions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Infrastructure.Extensions;
+using BuildingBlocks.Application.Extensions;
+using Auctions.Api.Endpoints;
 
 using Carter;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +18,15 @@ builder.AddApplicationLogging();
 builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddCommonUtilities();
+builder.Services.AddSanitization();
 
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration = redisConnectionString;
 });
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddDistributedLocking(redisConnectionString);
 
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddGrpcClients();
@@ -30,8 +35,6 @@ builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddCQRS(typeof(Auctions.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
 
 builder.Services.AddAuditServices(builder.Configuration, "auction-service");
-
-builder.Services.AddSeeders();
 
 builder.Services.AddAuctionScheduling(builder.Configuration);
 
@@ -81,8 +84,6 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-await app.Services.SeedDatabaseAsync();
-
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))
 {
@@ -100,6 +101,7 @@ app.UseAuthorization();
 app.UseAccessAuthorization();
 
 app.MapCarter();
+app.MapViewsEndpoints();
 app.MapGrpcService<Auctions.Api.Grpc.AuctionGrpcService>();
 app.MapGrpcReflectionService();
 

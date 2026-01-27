@@ -14,9 +14,6 @@ public class NotificationPreference : BaseEntity
 
     public static NotificationPreference CreateDefault(string userId)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            throw new ArgumentException("User ID is required", nameof(userId));
-
         return new NotificationPreference
         {
             Id = Guid.NewGuid(),

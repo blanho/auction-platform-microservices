@@ -1,17 +1,16 @@
 using Bidding.Application.Errors;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.ToggleAutoBid;
 
 public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand, ToggleAutoBidResult>
 {
     private readonly IAutoBidRepository _repository;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ToggleAutoBidCommandHandler> _logger;
 
     public ToggleAutoBidCommandHandler(
         IAutoBidRepository repository,
-        UnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         ILogger<ToggleAutoBidCommandHandler> logger)
     {
         _repository = repository;

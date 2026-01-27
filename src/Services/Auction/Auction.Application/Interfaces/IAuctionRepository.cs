@@ -76,5 +76,7 @@ public interface IAuctionRepository : IRepository<Auction>
     Task<List<Auction>> GetAllBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetAuctionsWithWinnerIdAsync(Guid winnerId, CancellationToken cancellationToken = default);
+    
+    Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default);
 }
 

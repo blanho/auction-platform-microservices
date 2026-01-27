@@ -175,6 +175,9 @@ public class CachedAuctionRepository : IAuctionRepository
     public Task<List<Auction>> GetAuctionsWithWinnerIdAsync(Guid winnerId, CancellationToken cancellationToken = default)
         => _inner.GetAuctionsWithWinnerIdAsync(winnerId, cancellationToken);
 
+    public Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default)
+        => _inner.GetWatchlistCountByUsernameAsync(username, cancellationToken);
+
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {
         await _cache.RemoveAsync(CacheKeys.Auction(id), cancellationToken);

@@ -165,6 +165,16 @@ namespace Bidding.Infrastructure.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        public async Task<Bid?> GetSecondHighestBidForAuctionAsync(Guid auctionId, Guid excludeBidId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.AuctionId == auctionId && x.Status == BidStatus.Accepted && x.Id != excludeBidId)
+                .OrderByDescending(x => x.Amount)
+                .ThenByDescending(x => x.BidTime)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task<BidStatsDto> GetBidStatsAsync(CancellationToken cancellationToken = default)
         {
             var now = _dateTime.UtcNow;
@@ -268,6 +278,53 @@ namespace Bidding.Infrastructure.Repositories
                 .CountAsync(cancellationToken);
 
             return count;
+        }
+
+        public async Task<UserBidStatsDto> GetUserBidStatsAsync(string username, CancellationToken cancellationToken = default)
+        {
+            var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted && x.BidderUsername == username);
+
+            var totalBids = await query.CountAsync(cancellationToken);
+            var activeBids = await query.CountAsync(b => b.Status == BidStatus.Accepted, cancellationToken);
+            var totalAmountBid = await query.SumAsync(b => b.Amount, cancellationToken);
+
+            var winningBidsQuery = query
+                .Where(b => b.Status == BidStatus.Accepted)
+                .GroupBy(b => b.AuctionId)
+                .Select(g => g.OrderByDescending(b => b.Amount).First())
+                .Where(b => !_context.Bids.Any(ob =>
+                    !ob.IsDeleted &&
+                    ob.AuctionId == b.AuctionId &&
+                    ob.Status == BidStatus.Accepted &&
+                    ob.Amount > b.Amount));
+
+            var auctionsWon = await winningBidsQuery.CountAsync(cancellationToken);
+            var totalAmountWon = await winningBidsQuery.SumAsync(b => b.Amount, cancellationToken);
+
+            return new UserBidStatsDto(
+                totalBids,
+                activeBids,
+                auctionsWon,
+                totalAmountBid,
+                totalAmountWon
+            );
+        }
+
+        public async Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default)
+        {
+            var bidCounts = await _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && auctionIds.Contains(x.AuctionId))
+                .GroupBy(x => x.AuctionId)
+                .Select(g => new { AuctionId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.AuctionId, x => x.Count, cancellationToken);
+
+            foreach (var auctionId in auctionIds.Where(id => !bidCounts.ContainsKey(id)))
+            {
+                bidCounts[auctionId] = 0;
+            }
+
+            return bidCounts;
         }
 
         public async Task<(List<Bid> Bids, int TotalCount)> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default)

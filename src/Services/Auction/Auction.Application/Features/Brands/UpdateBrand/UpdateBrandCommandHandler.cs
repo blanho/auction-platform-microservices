@@ -1,10 +1,10 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-namespace Auctions.Application.Commands.UpdateBrand;
+namespace Auctions.Application.Features.Brands.UpdateBrand;
 
 public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, BrandDto>
 {
@@ -48,9 +48,6 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
                 brand.Name = request.Name;
                 brand.Slug = newSlug;
             }
-
-            if (request.LogoUrl != null)
-                brand.LogoUrl = request.LogoUrl;
 
             if (request.Description != null)
                 brand.Description = request.Description;

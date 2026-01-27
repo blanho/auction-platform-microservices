@@ -1,5 +1,4 @@
 using Bidding.Application.Errors;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.CreateAutoBid;
 
@@ -7,14 +6,14 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
 {
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateAutoBidCommandHandler> _logger;
 
     public CreateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
-        UnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<CreateAutoBidCommandHandler> logger)
     {

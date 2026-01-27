@@ -3,9 +3,9 @@ namespace Auctions.Application.Queries.Bookmarks.IsInWatchlist;
 
 public class IsInWatchlistQueryHandler : IQueryHandler<IsInWatchlistQuery, bool>
 {
-    private readonly IUserAuctionBookmarkRepository _bookmarkRepository;
+    private readonly IBookmarkRepository _bookmarkRepository;
 
-    public IsInWatchlistQueryHandler(IUserAuctionBookmarkRepository bookmarkRepository)
+    public IsInWatchlistQueryHandler(IBookmarkRepository bookmarkRepository)
     {
         _bookmarkRepository = bookmarkRepository;
     }

@@ -9,18 +9,18 @@ namespace Auctions.Api.Extensions;
 
 public static class BookmarkMappingExtensions
 {
-    public static BookmarkItemDto ToDto(this UserAuctionBookmark bookmark, IMapper mapper)
+    public static BookmarkItemDto ToDto(this Bookmark bookmark, IMapper mapper)
     {
         return mapper.Map<BookmarkItemDto>(bookmark);
     }
 
-    public static List<BookmarkItemDto> ToDtoList(this IEnumerable<UserAuctionBookmark> bookmarks, IMapper mapper)
+    public static List<BookmarkItemDto> ToDtoList(this IEnumerable<Bookmark> bookmarks, IMapper mapper)
     {
         return bookmarks.Select(b => mapper.Map<BookmarkItemDto>(b)).ToList();
     }
 
     public static PaginatedResult<BookmarkItemDto> ToPaginatedDto(
-        this PaginatedResult<UserAuctionBookmark> result,
+        this PaginatedResult<Bookmark> result,
         IMapper mapper)
     {
         var dtos = result.Items.ToDtoList(mapper);

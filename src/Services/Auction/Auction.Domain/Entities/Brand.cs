@@ -1,26 +1,17 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Auctions.Domain.Entities;
 
 public class Brand : BaseEntity
 {
-    private string _name = string.Empty;
-    private string _slug = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
 
-    public string Name
-    {
-        get => _name;
-        set => _name = value;
-    }
+    [Column(TypeName = "jsonb")]
+    public List<MediaFile> Files { get; set; } = new();
 
-    public string Slug
-    {
-        get => _slug;
-        set => _slug = value.ToLowerInvariant();
-    }
-
-    public string? LogoUrl { get; set; }
     public string? Description { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;

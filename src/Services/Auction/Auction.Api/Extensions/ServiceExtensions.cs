@@ -54,8 +54,15 @@ namespace Auctions.Api.Extensions
                 return new CachedAuctionRepository(inner, cache, logger);
             });
 
+            services.AddScoped<AuctionViewRepository>();
+            services.AddScoped<IAuctionViewRepository>(sp =>
+            {
+                var inner = sp.GetRequiredService<AuctionViewRepository>();
+                return new CachedAuctionViewRepository(inner);
+            });
+
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IUserAuctionBookmarkRepository, UserAuctionBookmarkRepository>();
+            services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
 

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Auctions.Application.Commands.BulkUpdateCategories;
+namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
 public class BulkUpdateCategoriesCommandValidator : AbstractValidator<BulkUpdateCategoriesCommand>
 {

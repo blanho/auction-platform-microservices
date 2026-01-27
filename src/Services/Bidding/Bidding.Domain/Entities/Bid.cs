@@ -93,6 +93,31 @@ public class Bid : BaseEntity
         });
     }
 
+    public void Retract(
+        string reason,
+        bool wasHighestBid,
+        Guid? newHighestBidId = null,
+        decimal? newHighestAmount = null,
+        Guid? newHighestBidderId = null,
+        string? newHighestBidderUsername = null)
+    {
+        Status = BidStatus.Rejected;
+        AddDomainEvent(new BidRetractedDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            BidderUsername = BidderUsername,
+            Amount = Amount,
+            Reason = reason,
+            WasHighestBid = wasHighestBid,
+            NewHighestBidId = newHighestBidId,
+            NewHighestAmount = newHighestAmount,
+            NewHighestBidderId = newHighestBidderId,
+            NewHighestBidderUsername = newHighestBidderUsername
+        });
+    }
+
     public void MarkAsTooLow()
     {
         Status = BidStatus.TooLow;

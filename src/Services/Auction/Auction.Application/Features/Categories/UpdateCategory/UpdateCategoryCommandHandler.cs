@@ -1,11 +1,11 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.UpdateCategory;
+namespace Auctions.Application.Features.Categories.UpdateCategory;
 
 public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryCommand, CategoryDto>
 {
@@ -53,7 +53,6 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
             category.Slug = request.Slug;
             category.Icon = request.Icon;
             category.Description = request.Description;
-            category.ImageUrl = request.ImageUrl;
             category.DisplayOrder = request.DisplayOrder;
             category.IsActive = request.IsActive;
             category.ParentCategoryId = request.ParentCategoryId;

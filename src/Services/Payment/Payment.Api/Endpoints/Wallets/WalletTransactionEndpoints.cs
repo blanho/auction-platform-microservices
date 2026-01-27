@@ -6,8 +6,8 @@ using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.DTOs;
-using Payment.Application.Features.Wallets.Queries.GetTransactionById;
-using Payment.Application.Features.Wallets.Queries.GetWalletTransactions;
+using Payment.Application.Features.Wallets.GetTransactionById;
+using Payment.Application.Features.Wallets.GetWalletTransactions;
 
 namespace Payment.Api.Endpoints.Wallets;
 

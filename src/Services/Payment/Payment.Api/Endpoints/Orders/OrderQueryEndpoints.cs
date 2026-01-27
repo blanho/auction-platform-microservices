@@ -6,12 +6,12 @@ using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.DTOs;
-using Payment.Application.Features.Orders.Queries.GetAllOrders;
-using Payment.Application.Features.Orders.Queries.GetOrderByAuctionId;
-using Payment.Application.Features.Orders.Queries.GetOrderById;
-using Payment.Application.Features.Orders.Queries.GetOrdersByBuyer;
-using Payment.Application.Features.Orders.Queries.GetOrdersBySeller;
-using Payment.Application.Features.Orders.Queries.GetOrderStats;
+using Payment.Application.Features.Orders.GetAllOrders;
+using Payment.Application.Features.Orders.GetOrderByAuctionId;
+using Payment.Application.Features.Orders.GetOrderById;
+using Payment.Application.Features.Orders.GetOrdersByBuyer;
+using Payment.Application.Features.Orders.GetOrdersBySeller;
+using Payment.Application.Features.Orders.GetOrderStats;
 using Payment.Domain.Enums;
 
 namespace Payment.Api.Endpoints.Orders;

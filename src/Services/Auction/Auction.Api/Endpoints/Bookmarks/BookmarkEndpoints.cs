@@ -1,9 +1,10 @@
 #nullable enable
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.Commands.Bookmarks.AddToWatchlist;
 using Auctions.Application.Commands.Bookmarks.RemoveFromWatchlist;
 using Auctions.Application.Commands.Bookmarks.UpdateBookmarkNotifications;
 using Auctions.Application.DTOs;
+using Auctions.Application.Features.Bookmarks.GetBookmark;
 using Auctions.Application.Queries.Bookmarks.GetWatchlist;
 using Auctions.Application.Queries.Bookmarks.GetWatchlistCount;
 using Auctions.Application.Queries.Bookmarks.IsInWatchlist;
@@ -35,6 +36,11 @@ public class BookmarkEndpoints : ICarterModule
             .WithName("IsInWatchlist")
             .Produces<bool>(StatusCodes.Status200OK);
 
+        group.MapGet("/watchlist/{auctionId:guid}", GetBookmark)
+            .WithName("GetBookmark")
+            .Produces<BookmarkItemDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+
         group.MapPost("/watchlist", AddToWatchlist)
             .WithName("AddToWatchlist")
             .Produces<BookmarkItemDto>(StatusCodes.Status201Created)
@@ -60,7 +66,7 @@ public class BookmarkEndpoints : ICarterModule
         var username = UserHelper.GetUsername(httpContext.User);
         var query = new GetWatchlistQuery(username);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : ProblemDetailsHelper.FromError(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
     }
 
     private static async Task<IResult> GetWatchlistCount(
@@ -71,7 +77,7 @@ public class BookmarkEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var query = new GetWatchlistCountQuery(userId);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : ProblemDetailsHelper.FromError(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
     }
 
     private static async Task<IResult> IsInWatchlist(
@@ -83,7 +89,26 @@ public class BookmarkEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var query = new IsInWatchlistQuery(userId, auctionId);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : ProblemDetailsHelper.FromError(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+    }
+
+    private static async Task<IResult> GetBookmark(
+        Guid auctionId,
+        HttpContext httpContext,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+        var query = new GetBookmarkQuery(auctionId, userId);
+        var result = await sender.Send(query, ct);
+
+        if (!result.IsSuccess)
+            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+
+        if (result.Value == null)
+            return Results.NotFound();
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> AddToWatchlist(
@@ -108,7 +133,7 @@ public class BookmarkEndpoints : ICarterModule
         {
             if (result.Error.Code == AuctionErrors.Auction.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return ProblemDetailsHelper.FromError(result.Error);
+            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.CreatedAtRoute("GetWatchlist", result.Value);
@@ -130,7 +155,7 @@ public class BookmarkEndpoints : ICarterModule
         {
             if (result.Error.Code == AuctionErrors.Bookmark.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return ProblemDetailsHelper.FromError(result.Error);
+            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.NoContent();
@@ -157,7 +182,7 @@ public class BookmarkEndpoints : ICarterModule
         {
             if (result.Error.Code == AuctionErrors.Bookmark.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return ProblemDetailsHelper.FromError(result.Error);
+            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
         }
 
         return Results.NoContent();

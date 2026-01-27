@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.CreateReview;
+namespace Auctions.Application.Features.Reviews.CreateReview;
 
 public class CreateReviewCommandValidator : AbstractValidator<CreateReviewCommand>
 {

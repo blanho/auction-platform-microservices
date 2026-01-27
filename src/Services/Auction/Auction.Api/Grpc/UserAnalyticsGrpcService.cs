@@ -1,7 +1,4 @@
 using Auctions.Api.Grpc;
-using Auctions.Application.Queries.GetUserDashboardStats;
-using Auctions.Application.Queries.GetSellerAnalytics;
-using Auctions.Application.Queries.GetQuickStats;
 using Auctions.Application.Queries.GetTrendingSearches;
 using Grpc.Core;
 
@@ -13,25 +10,28 @@ public partial class AuctionGrpcService
         GetUserDashboardStatsRequest request,
         ServerCallContext context)
     {
-        var query = new GetUserDashboardStatsQuery(request.Username);
-        var result = await _mediator.Send(query, context.CancellationToken);
+        var userAuctions = await _auctionRepository.GetBySellerUsernameAsync(request.Username, context.CancellationToken);
+        var wonAuctions = await _auctionRepository.GetWonByUsernameAsync(request.Username, context.CancellationToken);
+        var watchlistCount = await _auctionRepository.GetWatchlistCountByUsernameAsync(request.Username, context.CancellationToken);
 
-        if (!result.IsSuccess || result.Value is null)
-        {
-            return new UserDashboardStatsResponse();
-        }
+        var activeAuctions = userAuctions.Count(a => a.Status == BuildingBlocks.Domain.Enums.Status.Live);
+        var totalAuctions = userAuctions.Count;
+        var itemsWon = wonAuctions.Count;
+        var totalSpent = wonAuctions.Sum(a => a.SoldAmount ?? 0m);
+        var totalEarned = userAuctions
+            .Where(a => a.Status == BuildingBlocks.Domain.Enums.Status.Finished && a.SoldAmount.HasValue)
+            .Sum(a => a.SoldAmount ?? 0m);
 
-        var stats = result.Value;
         return new UserDashboardStatsResponse
         {
-            ActiveAuctions = stats.ActiveListings,
-            TotalAuctions = stats.TotalListings,
-            WonAuctions = stats.ItemsWon,
+            ActiveAuctions = activeAuctions,
+            TotalAuctions = totalAuctions,
+            WonAuctions = itemsWon,
             LostAuctions = 0,
-            TotalSpent = decimal.ToDouble(stats.TotalSpent),
-            TotalEarned = decimal.ToDouble(stats.TotalEarnings),
-            ActiveBids = stats.TotalBids,
-            WatchingCount = stats.WatchlistCount
+            TotalSpent = decimal.ToDouble(totalSpent),
+            TotalEarned = decimal.ToDouble(totalEarned),
+            ActiveBids = 0,
+            WatchingCount = watchlistCount
         };
     }
 
@@ -39,62 +39,47 @@ public partial class AuctionGrpcService
         GetSellerAnalyticsRequest request,
         ServerCallContext context)
     {
-        var query = new GetSellerAnalyticsQuery(request.Username, request.TimeRange);
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        if (!result.IsSuccess || result.Value is null)
+        var daysBack = request.TimeRange switch
         {
-            return new SellerAnalyticsResponse();
-        }
-
-        var analytics = result.Value;
-        var response = new SellerAnalyticsResponse
-        {
-            TotalAuctions = analytics.ItemsSold + analytics.ActiveListings,
-            ActiveAuctions = analytics.ActiveListings,
-            CompletedAuctions = analytics.ItemsSold,
-            CancelledAuctions = 0,
-            TotalRevenue = decimal.ToDouble(analytics.TotalRevenue),
-            AverageFinalPrice = analytics.ItemsSold > 0 ? decimal.ToDouble(analytics.TotalRevenue / analytics.ItemsSold) : 0,
-            TotalBidsReceived = 0,
-            SuccessRate = 0
+            "7d" => 7,
+            "30d" => 30,
+            "90d" => 90,
+            "1y" => 365,
+            _ => 30
         };
 
-        if (analytics.ChartData is not null)
+        var periodStart = DateTimeOffset.UtcNow.AddDays(-daysBack);
+        var previousPeriodStart = periodStart.AddDays(-daysBack);
+
+        var stats = await _auctionRepository.GetSellerStatsAsync(
+            request.Username,
+            periodStart,
+            previousPeriodStart,
+            context.CancellationToken);
+
+        var response = new SellerAnalyticsResponse
         {
-            foreach (var daily in analytics.ChartData)
+            TotalAuctions = stats.TotalListings,
+            ActiveAuctions = stats.ActiveListings,
+            CompletedAuctions = stats.ItemsSold,
+            CancelledAuctions = 0,
+            TotalRevenue = decimal.ToDouble(stats.TotalRevenue),
+            AverageFinalPrice = stats.ItemsSold > 0 ? decimal.ToDouble(stats.TotalRevenue / stats.ItemsSold) : 0,
+            TotalBidsReceived = 0,
+            SuccessRate = stats.TotalListings > 0 ? (double)stats.ItemsSold / stats.TotalListings * 100 : 0
+        };
+
+        foreach (var sale in stats.RecentSales)
+        {
+            response.DailyRevenue.Add(new DailyRevenue
             {
-                response.DailyRevenue.Add(new DailyRevenue
-                {
-                    Date = daily.Date,
-                    Revenue = decimal.ToDouble(daily.Revenue),
-                    AuctionsCompleted = daily.Bids
-                });
-            }
+                Date = sale.SoldAt?.ToString("yyyy-MM-dd") ?? string.Empty,
+                Revenue = decimal.ToDouble(sale.SoldAmount ?? 0),
+                AuctionsCompleted = 1
+            });
         }
 
         return response;
-    }
-
-    public override async Task<QuickStatsResponse> GetQuickStats(
-        GetQuickStatsRequest request,
-        ServerCallContext context)
-    {
-        var query = new GetQuickStatsQuery();
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        if (!result.IsSuccess || result.Value is null)
-        {
-            return new QuickStatsResponse();
-        }
-
-        var stats = result.Value;
-        return new QuickStatsResponse
-        {
-            LiveAuctions = stats.LiveAuctions,
-            EndingSoon = stats.EndingSoon,
-            NewToday = 0
-        };
     }
 
     public override async Task<TrendingSearchesResponse> GetTrendingSearches(

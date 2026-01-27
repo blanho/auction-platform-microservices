@@ -1,11 +1,12 @@
 #nullable enable
-using Auctions.Application.Commands.BulkUpdateCategories;
-using Auctions.Application.Commands.CreateCategory;
-using Auctions.Application.Commands.DeleteCategory;
-using Auctions.Application.Commands.ImportCategories;
-using Auctions.Application.Commands.UpdateCategory;
+using Auctions.Application.Features.Categories.BulkUpdateCategories;
+using Auctions.Application.Features.Categories.CreateCategory;
+using Auctions.Application.Features.Categories.DeleteCategory;
+using Auctions.Application.Features.Categories.ImportCategories;
+using Auctions.Application.Features.Categories.UpdateCategory;
+using Auctions.Application.Features.Categories.GetCategories;
+using Auctions.Application.Features.Categories.GetCategoryById;
 using Auctions.Application.DTOs;
-using Auctions.Application.Queries.GetCategories;
 using BuildingBlocks.Web.Authorization;
 using Carter;
 using MediatR;
@@ -25,6 +26,12 @@ public class CategoryEndpoints : ICarterModule
             .WithName("GetCategories")
             .AllowAnonymous()
             .Produces<List<CategoryDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/{id:guid}", GetCategoryById)
+            .WithName("GetCategoryById")
+            .AllowAnonymous()
+            .Produces<CategoryDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/", CreateCategory)
             .WithName("CreateCategory")
@@ -171,6 +178,24 @@ public class CategoryEndpoints : ICarterModule
             FailureCount = result.Value.FailureCount,
             Errors = result.Value.Errors
         });
+    }
+
+    private static async Task<IResult> GetCategoryById(
+        Guid id,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var query = new GetCategoryByIdQuery(id);
+        var result = await mediator.Send(query, ct);
+
+        if (!result.IsSuccess)
+        {
+            return result.Error?.Code == "Category.NotFound"
+                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
+                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
     }
 }
 

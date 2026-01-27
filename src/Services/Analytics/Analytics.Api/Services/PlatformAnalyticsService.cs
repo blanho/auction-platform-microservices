@@ -1,6 +1,7 @@
 using Analytics.Api.Models;
 using Analytics.Api.Grpc;
 using Analytics.Api.Interfaces;
+using BidService.Contracts.Grpc;
 
 namespace Analytics.Api.Services;
 

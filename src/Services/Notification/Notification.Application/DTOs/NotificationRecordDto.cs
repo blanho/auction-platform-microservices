@@ -36,3 +36,13 @@ public class NotificationRecordStatsDto
     public Dictionary<string, int> ByChannel { get; set; } = new();
     public Dictionary<string, int> ByTemplate { get; set; } = new();
 }
+
+public record NotificationRecordFilterRequest(
+    Guid? UserId,
+    string? Channel,
+    string? Status,
+    string? TemplateKey,
+    DateTimeOffset? FromDate,
+    DateTimeOffset? ToDate,
+    int? Page,
+    int? PageSize);

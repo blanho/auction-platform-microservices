@@ -63,7 +63,7 @@ public class FileUploadedConsumer : IConsumer<FileUploadedEvent>
         var isPrimary = !auction.Item.Files.Any(f => f.IsPrimary && f.FileType == fileType);
         var displayOrder = auction.Item.Files.Count(f => f.FileType == fileType);
 
-        auction.Item.Files.Add(new ItemFileInfo
+        auction.Item.Files.Add(new MediaFile
         {
             FileId = message.FileId,
             FileType = fileType,

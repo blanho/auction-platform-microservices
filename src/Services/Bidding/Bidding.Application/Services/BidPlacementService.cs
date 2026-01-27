@@ -1,5 +1,3 @@
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
-
 namespace Bidding.Application.Services
 {
     public class BidPlacementService : IBidService
@@ -8,8 +6,7 @@ namespace Bidding.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
-        private readonly IEventPublisher _eventPublisher;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedLock _distributedLock;
         private readonly IAuctionGrpcClient _auctionGrpcClient;
 
@@ -18,8 +15,7 @@ namespace Bidding.Application.Services
             IMapper mapper,
             ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
-            IEventPublisher eventPublisher,
-            UnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork,
             IDistributedLock distributedLock,
             IAuctionGrpcClient auctionGrpcClient)
         {
@@ -27,7 +23,6 @@ namespace Bidding.Application.Services
             _mapper = mapper;
             _logger = logger;
             _dateTime = dateTime;
-            _eventPublisher = eventPublisher;
             _unitOfWork = unitOfWork;
             _distributedLock = distributedLock;
             _auctionGrpcClient = auctionGrpcClient;
@@ -99,18 +94,34 @@ namespace Bidding.Application.Services
 
         private bool IsValidBidIncrement(decimal amount, decimal currentHighBid, out string errorMessage)
         {
-            if (BidIncrement.IsValidBidAmount(amount, currentHighBid))
+            if (currentHighBid == 0)
             {
-                errorMessage = string.Empty;
-                return true;
+                if (amount > 0)
+                {
+                    errorMessage = string.Empty;
+                    return true;
+                }
+            }
+            else
+            {
+                var increment = BidIncrementHelper.GetIncrement(currentHighBid);
+                var minimumNextBid = BidIncrementHelper.GetMinimumNextBid(currentHighBid);
+                
+                if (amount >= minimumNextBid)
+                {
+                    errorMessage = string.Empty;
+                    return true;
+                }
+                
+                _logger.LogWarning(
+                    "Bid amount {Amount} does not meet minimum increment. Current high: {CurrentHigh}, Minimum next: {MinimumNext}",
+                    amount, currentHighBid, minimumNextBid);
+                
+                errorMessage = $"Bid must be at least ${minimumNextBid:N2}. Minimum increment is ${increment:N2} for bids at this level.";
+                return false;
             }
 
-            var minimumNextBid = BidIncrement.GetMinimumNextBid(currentHighBid);
-            _logger.LogWarning(
-                "Bid amount {Amount} does not meet minimum increment. Current high: {CurrentHigh}, Minimum next: {MinimumNext}",
-                amount, currentHighBid, minimumNextBid);
-
-            errorMessage = BidIncrement.GetIncrementErrorMessage(amount, currentHighBid);
+            errorMessage = "Bid amount must be greater than zero.";
             return false;
         }
 

@@ -1,17 +1,16 @@
 using Bidding.Application.Errors;
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.CancelAutoBid;
 
 public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand, CancelAutoBidResult>
 {
     private readonly IAutoBidRepository _repository;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CancelAutoBidCommandHandler> _logger;
 
     public CancelAutoBidCommandHandler(
         IAutoBidRepository repository,
-        UnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         ILogger<CancelAutoBidCommandHandler> logger)
     {
         _repository = repository;

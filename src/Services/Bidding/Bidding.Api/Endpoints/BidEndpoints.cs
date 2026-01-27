@@ -7,9 +7,9 @@ using Bidding.Application.Features.Bids.Commands.PlaceBid;
 using Bidding.Application.Features.Bids.Queries.GetBidsForAuction;
 using Bidding.Application.Features.Bids.Queries.GetMyBids;
 using Bidding.Application.Features.Bids.RetractBid;
+using Bidding.Application.Helpers;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;
-using Bidding.Domain.ValueObjects;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Carter;
@@ -202,8 +202,8 @@ public class BidEndpoints : ICarterModule
 
     private static IResult GetBidIncrementInfo(decimal currentBid)
     {
-        var minimumIncrement = BidIncrement.GetMinimumIncrement(currentBid);
-        var minimumNextBid = BidIncrement.GetMinimumNextBid(currentBid);
+        var minimumIncrement = BidIncrementHelper.GetIncrement(currentBid);
+        var minimumNextBid = BidIncrementHelper.GetMinimumNextBid(currentBid);
 
         return Results.Ok(new BidIncrementInfoDto
         {

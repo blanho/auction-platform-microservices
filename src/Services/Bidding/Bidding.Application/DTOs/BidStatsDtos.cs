@@ -10,6 +10,14 @@ public record BidStatsDto(
     int BidsThisMonth
 );
 
+public record UserBidStatsDto(
+    int TotalBids,
+    int ActiveBids,
+    int AuctionsWon,
+    decimal TotalAmountBid,
+    decimal TotalAmountWon
+);
+
 public record DailyBidStatDto(DateOnly Date, int BidCount, decimal TotalAmount);
 
 public record TopBidderDto(

@@ -3,19 +3,19 @@ using Bidding.Application.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using AuctionService.Contracts.Events;
-using AppUnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
+using BuildingBlocks.Infrastructure.Repository;
 
 namespace Bidding.Infrastructure.Messaging.Consumers;
 
 public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 {
     private readonly IAutoBidRepository _autoBidRepository;
-    private readonly AppUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuctionFinishedConsumer> _logger;
 
     public AuctionFinishedConsumer(
         IAutoBidRepository autoBidRepository,
-        AppUnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         ILogger<AuctionFinishedConsumer> logger)
     {
         _autoBidRepository = autoBidRepository;

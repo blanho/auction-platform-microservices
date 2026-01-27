@@ -93,7 +93,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             YearManufactured = request.YearManufactured,
             Attributes = request.Attributes ?? new Dictionary<string, string>(),
             CategoryId = request.CategoryId,
-            Files = new List<ItemFileInfo>()
+            Files = new List<MediaFile>()
         };
 
         var auction = Auction.Create(
@@ -110,7 +110,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         {
             foreach (var file in request.Files)
             {
-                auction.Item.Files.Add(new ItemFileInfo
+                auction.Item.Files.Add(new MediaFile
                 {
                     FileId = file.FileId,
                     FileType = file.FileType,

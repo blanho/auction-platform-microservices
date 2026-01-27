@@ -41,7 +41,7 @@
     
     <!-- Contracts for events being orchestrated -->
     <ProjectReference Include="..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
-    <ProjectReference Include="..\..\Services\Payment\Payment.Contracts\Payment.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

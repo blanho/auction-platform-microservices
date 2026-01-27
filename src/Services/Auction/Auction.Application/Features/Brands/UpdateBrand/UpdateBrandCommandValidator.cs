@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.UpdateBrand;
+namespace Auctions.Application.Features.Brands.UpdateBrand;
 
 public class UpdateBrandCommandValidator : AbstractValidator<UpdateBrandCommand>
 {

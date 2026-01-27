@@ -29,7 +29,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
         CancellationToken cancellationToken)
     {
         var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
-        var bookmarkRepository = scopedProvider.GetRequiredService<IUserAuctionBookmarkRepository>();
+        var bookmarkRepository = scopedProvider.GetRequiredService<IBookmarkRepository>();
         var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 
         var utcNow = DateTime.UtcNow;

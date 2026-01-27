@@ -1,4 +1,4 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;

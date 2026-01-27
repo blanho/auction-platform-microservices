@@ -35,7 +35,8 @@ namespace Bidding.Api.Extensions
 
             services.AddScoped<IBidRepository, BidRepository>();
             services.AddScoped<IAutoBidRepository, AutoBidRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<UnitOfWork>();
+            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
             services.AddScoped<IBidService, BidPlacementService>();
             services.AddScoped<IAutoBidService, AutoBidService>();
 

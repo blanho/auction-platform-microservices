@@ -1,7 +1,7 @@
-using BuildingBlocks.Application.Abstractions.Persistence;
+using BuildingBlocks.Infrastructure.Repository;
 
 namespace Notification.Application.Interfaces;
 
-public interface IUnitOfWork : BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork
+public interface IUnitOfWork : BuildingBlocks.Infrastructure.Repository.IUnitOfWork
 {
 }

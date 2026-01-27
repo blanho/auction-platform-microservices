@@ -1,6 +1,7 @@
 using Carter;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Auctions.Api.Grpc;
+using Analytics.Api.Interfaces;
 using BuildingBlocks.Web.Authorization;
 
 namespace Analytics.Api.Endpoints;
@@ -15,17 +16,17 @@ public class UserAnalyticsEndpoints : ICarterModule
         group.MapGet("/dashboard", GetDashboardStats)
             .WithName("GetUserDashboardStats")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewOwn))
-            .Produces<UserDashboardStatsResponse>();
+            .Produces<UserDashboardStatsDto>();
 
         group.MapGet("/seller", GetSellerAnalytics)
             .WithName("GetUserSellerAnalytics")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewOwn))
-            .Produces<SellerAnalyticsResponse>();
+            .Produces<SellerAnalyticsDto>();
 
         group.MapGet("/quick-stats", GetQuickStats)
             .WithName("GetQuickStats")
             .AllowAnonymous()
-            .Produces<QuickStatsResponse>();
+            .Produces<QuickStatsDto>();
 
         group.MapGet("/trending-searches", GetTrendingSearches)
             .WithName("GetTrendingSearches")
@@ -33,52 +34,45 @@ public class UserAnalyticsEndpoints : ICarterModule
             .Produces<TrendingSearchesResponse>();
     }
 
-    private static async Task<Ok<UserDashboardStatsResponse>> GetDashboardStats(
+    private static async Task<Ok<UserDashboardStatsDto>> GetDashboardStats(
         HttpContext httpContext,
-        AuctionGrpc.AuctionGrpcClient auctionClient,
+        IUserAnalyticsAggregator aggregator,
         CancellationToken cancellationToken)
     {
         var username = httpContext.User.Identity?.Name
             ?? httpContext.User.FindFirst("username")?.Value
             ?? "Anonymous";
 
-        var response = await auctionClient.GetUserDashboardStatsAsync(
-            new GetUserDashboardStatsRequest { Username = username },
-            cancellationToken: cancellationToken);
+        var stats = await aggregator.GetUserDashboardStatsAsync(username, cancellationToken);
 
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(stats);
     }
 
-    private static async Task<Ok<SellerAnalyticsResponse>> GetSellerAnalytics(
+    private static async Task<Ok<SellerAnalyticsDto>> GetSellerAnalytics(
         string? timeRange,
         HttpContext httpContext,
-        AuctionGrpc.AuctionGrpcClient auctionClient,
+        IUserAnalyticsAggregator aggregator,
         CancellationToken cancellationToken)
     {
         var username = httpContext.User.Identity?.Name
             ?? httpContext.User.FindFirst("username")?.Value
             ?? "Anonymous";
 
-        var response = await auctionClient.GetSellerAnalyticsAsync(
-            new GetSellerAnalyticsRequest 
-            { 
-                Username = username, 
-                TimeRange = timeRange ?? "30d" 
-            },
-            cancellationToken: cancellationToken);
+        var analytics = await aggregator.GetSellerAnalyticsAsync(
+            username, 
+            timeRange ?? "30d", 
+            cancellationToken);
 
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(analytics);
     }
 
-    private static async Task<Ok<QuickStatsResponse>> GetQuickStats(
-        AuctionGrpc.AuctionGrpcClient auctionClient,
+    private static async Task<Ok<QuickStatsDto>> GetQuickStats(
+        IUserAnalyticsAggregator aggregator,
         CancellationToken cancellationToken)
     {
-        var response = await auctionClient.GetQuickStatsAsync(
-            new GetQuickStatsRequest(),
-            cancellationToken: cancellationToken);
+        var stats = await aggregator.GetQuickStatsAsync(cancellationToken);
 
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(stats);
     }
 
     private static async Task<Ok<TrendingSearchesResponse>> GetTrendingSearches(

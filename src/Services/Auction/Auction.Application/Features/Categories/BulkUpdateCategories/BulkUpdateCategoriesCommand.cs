@@ -1,4 +1,4 @@
-namespace Auctions.Application.Commands.BulkUpdateCategories;
+namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
 public record BulkUpdateCategoriesCommand(
     List<Guid> CategoryIds,

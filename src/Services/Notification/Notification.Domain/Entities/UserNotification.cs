@@ -35,15 +35,6 @@ public class UserNotification : BaseEntity
         Guid? orderId = null,
         string? type = null)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            throw new ArgumentException("User ID is required", nameof(userId));
-
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title is required", nameof(title));
-
-        if (string.IsNullOrWhiteSpace(message))
-            throw new ArgumentException("Message is required", nameof(message));
-
         return new UserNotification
         {
             Id = Guid.NewGuid(),

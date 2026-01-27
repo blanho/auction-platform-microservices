@@ -4,12 +4,12 @@ using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Payment.Application.Features.Orders.Commands.CancelOrder;
-using Payment.Application.Features.Orders.Commands.CreateOrder;
-using Payment.Application.Features.Orders.Commands.MarkDelivered;
-using Payment.Application.Features.Orders.Commands.ProcessPayment;
-using Payment.Application.Features.Orders.Commands.ShipOrder;
-using Payment.Application.Features.Orders.Commands.UpdateOrderStatus;
+using Payment.Application.Features.Orders.CancelOrder;
+using Payment.Application.Features.Orders.CreateOrder;
+using Payment.Application.Features.Orders.MarkDelivered;
+using Payment.Application.Features.Orders.ProcessPayment;
+using Payment.Application.Features.Orders.ShipOrder;
+using Payment.Application.Features.Orders.UpdateOrderStatus;
 using Payment.Application.DTOs;
 
 namespace Payment.Api.Endpoints.Orders;

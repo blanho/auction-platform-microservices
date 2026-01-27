@@ -18,6 +18,5 @@ service AuctionGrpc {
   rpc GetCategoryStats (GetCategoryStatsRequest) returns (CategoryStatsResponse);
   rpc GetUserDashboardStats (GetUserDashboardStatsRequest) returns (UserDashboardStatsResponse);
   rpc GetSellerAnalytics (GetSellerAnalyticsRequest) returns (SellerAnalyticsResponse);
-  rpc GetQuickStats (GetQuickStatsRequest) returns (QuickStatsResponse);
   rpc GetTrendingSearches (GetTrendingSearchesRequest) returns (TrendingSearchesResponse);
 }

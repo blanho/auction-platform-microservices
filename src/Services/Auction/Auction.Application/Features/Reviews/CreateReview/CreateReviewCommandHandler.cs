@@ -1,10 +1,13 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
+using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.CreateReview;
+namespace Auctions.Application.Features.Reviews.CreateReview;
 
 public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, ReviewDto>
 {

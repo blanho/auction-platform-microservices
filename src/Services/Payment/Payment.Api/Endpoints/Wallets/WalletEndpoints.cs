@@ -6,11 +6,11 @@ using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Payment.Application.Features.Wallets.Commands.CreateWallet;
-using Payment.Application.Features.Wallets.Commands.Deposit;
-using Payment.Application.Features.Wallets.Commands.Withdraw;
+using Payment.Application.Features.Wallets.CreateWallet;
+using Payment.Application.Features.Wallets.Deposit;
+using Payment.Application.Features.Wallets.Withdraw;
 using Payment.Application.DTOs;
-using Payment.Application.Features.Wallets.Queries.GetWallet;
+using Payment.Application.Features.Wallets.GetWallet;
 
 namespace Payment.Api.Endpoints.Wallets;
 

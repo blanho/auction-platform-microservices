@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.CreateBrand;
+namespace Auctions.Application.Features.Brands.CreateBrand;
 
 public record CreateBrandCommand(
     string Name,

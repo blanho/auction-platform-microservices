@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Auctions.Application.Commands.DeleteCategory;
+namespace Auctions.Application.Features.Categories.DeleteCategory;
 
 public class DeleteCategoryCommandValidator : AbstractValidator<DeleteCategoryCommand>
 {

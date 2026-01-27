@@ -1,9 +1,9 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.DeleteCategory;
+namespace Auctions.Application.Features.Categories.DeleteCategory;
 
 public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryCommand, bool>
 {

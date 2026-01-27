@@ -1,9 +1,15 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Web.Authorization;
 using Notification.Application.DTOs;
-using Notification.Application.Interfaces;
+using Notification.Application.Features.NotificationRecords.GetNotificationRecords;
+using Notification.Application.Features.NotificationRecords.GetNotificationRecordById;
+using Notification.Application.Features.NotificationRecords.GetNotificationRecordsByUser;
+using Notification.Application.Features.NotificationRecords.GetNotificationRecordStats;
 
 namespace Notification.Api.Endpoints;
 
@@ -32,60 +38,57 @@ public class NotificationRecordEndpoints : ICarterModule
             .WithSummary("Get notification record statistics");
     }
 
-    private static async Task<Ok<BuildingBlocks.Application.Abstractions.PaginatedResult<NotificationRecordDto>>> GetRecords(
-        Guid? userId,
-        string? channel,
-        string? status,
-        string? templateKey,
-        DateTimeOffset? fromDate,
-        DateTimeOffset? toDate,
-        int page,
-        int pageSize,
-        INotificationRecordService recordService,
+    private static async Task<Ok<PaginatedResult<NotificationRecordDto>>> GetRecords(
+        [AsParameters] NotificationRecordFilterRequest request,
+        ISender sender,
         CancellationToken ct)
     {
-        var filter = new NotificationRecordFilterDto
-        {
-            UserId = userId,
-            Channel = channel,
-            Status = status,
-            TemplateKey = templateKey,
-            FromDate = fromDate,
-            ToDate = toDate,
-            Page = page > 0 ? page : 1,
-            PageSize = pageSize > 0 ? pageSize : 20
-        };
+        var query = new GetNotificationRecordsQuery(
+            request.UserId,
+            request.Channel,
+            request.Status,
+            request.TemplateKey,
+            request.FromDate,
+            request.ToDate,
+            request.Page ?? 1,
+            request.PageSize ?? 20);
 
-        var result = await recordService.GetPagedAsync(filter, ct);
-        return TypedResults.Ok(result);
+        var result = await sender.Send(query, ct);
+        return TypedResults.Ok(result.Value);
     }
 
     private static async Task<Results<Ok<NotificationRecordDto>, NotFound>> GetRecordById(
         Guid id,
-        INotificationRecordService recordService,
+        ISender sender,
         CancellationToken ct)
     {
-        var record = await recordService.GetByIdAsync(id, ct);
-        return record is null
+        var query = new GetNotificationRecordByIdQuery(id);
+        var result = await sender.Send(query, ct);
+        
+        return result.Value is null
             ? TypedResults.NotFound()
-            : TypedResults.Ok(record);
+            : TypedResults.Ok(result.Value);
     }
 
     private static async Task<Ok<List<NotificationRecordDto>>> GetRecordsByUser(
         Guid userId,
         int? limit,
-        INotificationRecordService recordService,
+        ISender sender,
         CancellationToken ct)
     {
-        var records = await recordService.GetByUserIdAsync(userId, limit ?? 50, ct);
-        return TypedResults.Ok(records);
+        var query = new GetNotificationRecordsByUserQuery(userId, limit ?? 50);
+        var result = await sender.Send(query, ct);
+        
+        return TypedResults.Ok(result.Value);
     }
 
     private static async Task<Ok<NotificationRecordStatsDto>> GetRecordStats(
-        INotificationRecordService recordService,
+        ISender sender,
         CancellationToken ct)
     {
-        var stats = await recordService.GetStatsAsync(ct);
-        return TypedResults.Ok(stats);
+        var query = new GetNotificationRecordStatsQuery();
+        var result = await sender.Send(query, ct);
+        
+        return TypedResults.Ok(result.Value);
     }
 }

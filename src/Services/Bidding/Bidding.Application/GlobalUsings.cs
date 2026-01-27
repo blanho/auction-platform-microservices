@@ -5,18 +5,17 @@ global using BuildingBlocks.Application.Abstractions.Messaging;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.CQRS.Commands;
 global using BuildingBlocks.Application.CQRS.Queries;
-global using BuildingBlocks.Application.Abstractions.Persistence;
 global using BuildingBlocks.Infrastructure.Caching;
 global using BuildingBlocks.Infrastructure.Locking;
 global using BuildingBlocks.Infrastructure.Repository;
 
 global using Bidding.Domain.Entities;
 global using Bidding.Domain.Enums;
-global using Bidding.Domain.ValueObjects;
 global using Bidding.Domain.Events;
 global using Bidding.Domain.Constants;
 
 global using Bidding.Application.DTOs;
+global using Bidding.Application.Helpers;
 global using Bidding.Application.Interfaces;
 
 global using BidService.Contracts.Events;

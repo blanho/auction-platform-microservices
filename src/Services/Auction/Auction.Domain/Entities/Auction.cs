@@ -7,7 +7,6 @@ namespace Auctions.Domain.Entities;
 
 public class Auction : BaseEntity
 {
-
     private Auction() { }
     public decimal ReservePrice { get; private set; }
     public decimal? BuyNowPrice { get; private set; }
@@ -28,7 +27,7 @@ public class Auction : BaseEntity
     public Item Item { get; private set; } = null!;
 
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
-    public ICollection<UserAuctionBookmark> Bookmarks { get; private set; } = new List<UserAuctionBookmark>();
+    public ICollection<Bookmark> Bookmarks { get; private set; } = new List<Bookmark>();
 
     public static Auction Create(
         Guid sellerId,

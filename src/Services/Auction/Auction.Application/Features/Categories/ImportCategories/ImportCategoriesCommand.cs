@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.ImportCategories;
+namespace Auctions.Application.Features.Categories.ImportCategories;
 
 public record ImportCategoriesCommand(
     List<CreateCategoryDto> Categories

@@ -3,9 +3,9 @@ namespace Auctions.Application.Queries.Bookmarks.GetWatchlistCount;
 
 public class GetWatchlistCountQueryHandler : IQueryHandler<GetWatchlistCountQuery, int>
 {
-    private readonly IUserAuctionBookmarkRepository _bookmarkRepository;
+    private readonly IBookmarkRepository _bookmarkRepository;
 
-    public GetWatchlistCountQueryHandler(IUserAuctionBookmarkRepository bookmarkRepository)
+    public GetWatchlistCountQueryHandler(IBookmarkRepository bookmarkRepository)
     {
         _bookmarkRepository = bookmarkRepository;
     }

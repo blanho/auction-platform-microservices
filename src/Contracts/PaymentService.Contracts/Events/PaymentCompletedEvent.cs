@@ -1,9 +1,7 @@
 namespace PaymentService.Contracts.Events;
 
-public record PaymentCompletedEvent : IVersionedEvent
+public record PaymentCompletedEvent
 {
-    public int Version => 1;
-    
     public Guid OrderId { get; init; }
     public Guid AuctionId { get; init; }
     public Guid BuyerId { get; init; }
@@ -11,6 +9,6 @@ public record PaymentCompletedEvent : IVersionedEvent
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;
     public decimal Amount { get; init; }
-    public string? TransactionId { get; init; }
+    public string TransactionId { get; init; } = string.Empty;
     public DateTimeOffset PaidAt { get; init; }
 }

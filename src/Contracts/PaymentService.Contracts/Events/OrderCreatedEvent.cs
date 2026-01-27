@@ -1,9 +1,7 @@
 namespace PaymentService.Contracts.Events;
 
-public record OrderCreatedEvent : IVersionedEvent
+public record OrderCreatedEvent
 {
-    public int Version => 1;
-    
     public Guid OrderId { get; init; }
     public Guid AuctionId { get; init; }
     public Guid BuyerId { get; init; }

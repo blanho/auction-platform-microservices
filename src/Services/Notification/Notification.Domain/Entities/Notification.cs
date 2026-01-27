@@ -5,41 +5,15 @@ namespace Notification.Domain.Entities;
 
 public class Notification : BaseEntity
 {
-    private string _title = string.Empty;
-    private string _message = string.Empty;
-    private NotificationStatus _status = NotificationStatus.Unread;
-
     public string UserId { get; private set; } = string.Empty;
     public string Username { get; private set; } = string.Empty;
     public NotificationType Type { get; private set; }
-
-    public string Title
-    {
-        get => _title;
-        private set
-        {
-            ValidateTitle(value);
-            _title = value;
-        }
-    }
-
-    public string Message
-    {
-        get => _message;
-        private set
-        {
-            ValidateMessage(value);
-            _message = value;
-        }
-    }
+    public string Title { get; private set; } = string.Empty;
+    public string Message { get; private set; } = string.Empty;
 
     public string? HtmlContent { get; private set; }
     public string Data { get; private set; } = string.Empty;
-    public NotificationStatus Status 
-    { 
-        get => _status; 
-        private set => _status = value; 
-    }
+    public NotificationStatus Status { get; private set; } = NotificationStatus.Unread;
     public ChannelType Channels { get; private set; } = ChannelType.InApp;
     public DateTimeOffset? ReadAt { get; private set; }
     public Guid? AuctionId { get; private set; }
@@ -61,18 +35,14 @@ public class Notification : BaseEntity
         string? referenceId = null,
         string? htmlContent = null)
     {
-        ValidateUserId(userId);
-        ValidateTitle(title);
-        ValidateMessage(message);
-
         return new Notification
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Username = username ?? string.Empty,
             Type = type,
-            _title = title,
-            _message = message,
+            Title = title,
+            Message = message,
             Channels = channels,
             Data = data ?? string.Empty,
             HtmlContent = htmlContent,
@@ -126,28 +96,4 @@ public class Notification : BaseEntity
     public bool IsDismissed => Status == NotificationStatus.Dismissed;
     public bool IsArchived => Status == NotificationStatus.Archived;
     public bool IsPending => Status == NotificationStatus.Pending;
-
-    private static void ValidateUserId(string userId)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-            throw new ArgumentException("User ID cannot be empty", nameof(userId));
-    }
-
-    private static void ValidateTitle(string title)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty", nameof(title));
-
-        if (title.Length > 200)
-            throw new ArgumentException("Title cannot exceed 200 characters", nameof(title));
-    }
-
-    private static void ValidateMessage(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-            throw new ArgumentException("Message cannot be empty", nameof(message));
-
-        if (message.Length > 2000)
-            throw new ArgumentException("Message cannot exceed 2000 characters", nameof(message));
-    }
 }

@@ -15,6 +15,8 @@ using Analytics.Api.Interfaces;
 using Analytics.Api.Middleware;
 using Analytics.Api.Repositories;
 using Analytics.Api.Services;
+using BidService.Contracts.Grpc;
+using IdentityService.Contracts.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +55,12 @@ builder.Services.AddGrpcClient<BidStatsGrpc.BidStatsGrpcClient>(options =>
     options.Address = new Uri(bidServiceGrpcUrl);
 });
 
+var identityServiceGrpcUrl = builder.Configuration["GrpcServices:IdentityService"] ?? "http://localhost:7010";
+builder.Services.AddGrpcClient<UserStatsGrpc.UserStatsGrpcClient>(options =>
+{
+    options.Address = new Uri(identityServiceGrpcUrl);
+});
+
 var paymentServiceGrpcUrl = builder.Configuration["GrpcServices:PaymentService"] ?? "http://localhost:7008";
 builder.Services.AddGrpcClient<PaymentAnalyticsGrpc.PaymentAnalyticsGrpcClient>(options =>
 {
@@ -71,6 +79,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPlatformSettingService, PlatformSettingService>();
 builder.Services.AddScoped<IDashboardStatsService, DashboardStatsService>();
 builder.Services.AddScoped<IAnalyticsService, PlatformAnalyticsService>();
+builder.Services.AddScoped<IUserAnalyticsAggregator, UserAnalyticsAggregator>();
 
 builder.Services.AddUtilityScheduling(builder.Configuration);
 builder.Services.AddGrpc();

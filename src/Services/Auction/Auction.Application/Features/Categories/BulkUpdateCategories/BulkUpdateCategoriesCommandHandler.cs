@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.BulkUpdateCategories;
+namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
 public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCategoriesCommand, int>
 {

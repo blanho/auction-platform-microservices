@@ -2,6 +2,7 @@ using System.Globalization;
 using BuildingBlocks.Web.Extensions;
 using Identity.Api.Data;
 using Identity.Api.Extensions;
+using Identity.Api.Grpc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -24,6 +25,8 @@ internal static class HostingExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddControllers();
+        builder.Services.AddGrpc();
+        builder.Services.AddGrpcReflection();
 
         builder.Services
             .AddIdentityInfrastructure(builder.Configuration)
@@ -69,6 +72,8 @@ internal static class HostingExtensions
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapGrpcService<UserStatsGrpcService>();
+        app.MapGrpcReflectionService();
 
         return app;
     }

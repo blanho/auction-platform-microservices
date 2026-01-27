@@ -1,29 +1,21 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Auctions.Domain.Entities;
 
 public class Category : BaseEntity
 {
-    private string _name = string.Empty;
-    private string _slug = string.Empty;
-
-    public string Name
-    {
-        get => _name;
-        set => _name = value;
-    }
-
-    public string Slug
-    {
-        get => _slug;
-        set => _slug = value.ToLowerInvariant();
-    }
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
 
     public string Icon { get; set; } = "fa-box";
     public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public List<MediaFile> Files { get; set; } = new();
+
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
 

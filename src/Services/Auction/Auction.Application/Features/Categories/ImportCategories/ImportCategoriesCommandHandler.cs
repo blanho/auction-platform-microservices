@@ -1,10 +1,10 @@
-using Auction.Application.Errors;
+using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
-namespace Auctions.Application.Commands.ImportCategories;
+namespace Auctions.Application.Features.Categories.ImportCategories;
 
 public class ImportCategoriesCommandHandler : ICommandHandler<ImportCategoriesCommand, ImportCategoriesResult>
 {
@@ -50,7 +50,6 @@ public class ImportCategoriesCommandHandler : ICommandHandler<ImportCategoriesCo
                         Slug = dto.Slug,
                         Icon = dto.Icon,
                         Description = dto.Description,
-                        ImageUrl = dto.ImageUrl,
                         DisplayOrder = dto.DisplayOrder,
                         IsActive = dto.IsActive,
                         ParentCategoryId = dto.ParentCategoryId

@@ -542,6 +542,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bookmarks
+                .Where(b => b.Username == username && !b.IsDeleted)
+                .CountAsync(cancellationToken);
+        }
     }
 }
 
