@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -30,7 +31,7 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
             var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (brand == null)
             {
-                return Result.Failure(Error.Create("Brand.NotFound", $"Brand with ID '{request.Id}' was not found"));
+                return Result.Failure(AuctionErrors.Brand.NotFoundById(request.Id));
             }
 
             await _repository.DeleteAsync(request.Id, cancellationToken);
@@ -43,7 +44,7 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
         catch (Exception ex)
         {
             _logger.LogError("Failed to delete brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure(Error.Create("Brand.DeleteFailed", $"Failed to delete brand: {ex.Message}"));
+            return Result.Failure(AuctionErrors.Brand.DeleteFailed(ex.Message));
         }
     }
 }

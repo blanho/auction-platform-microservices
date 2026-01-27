@@ -1,0 +1,96 @@
+{
+  "appName": "オークションプラットフォーム",
+  "loading": "読み込み中...",
+  "error": "エラーが発生しました",
+  "retry": "再試行",
+  "cancel": "キャンセル",
+  "save": "保存",
+  "delete": "削除",
+  "edit": "編集",
+  "create": "作成",
+  "submit": "送信",
+  "confirm": "確認",
+  "back": "戻る",
+  "next": "次へ",
+  "close": "閉じる",
+  "search": "検索",
+  "filter": "フィルター",
+  "sort": "並べ替え",
+  "all": "すべて",
+  "none": "なし",
+  "yes": "はい",
+  "no": "いいえ",
+  "ok": "OK",
+  "viewAll": "すべて見る",
+  "viewMore": "もっと見る",
+  "learnMore": "詳細を見る",
+  "getStarted": "始める",
+  "noResults": "結果が見つかりませんでした",
+  "required": "必須",
+  "optional": "任意",
+
+  "nav": {
+    "home": "ホーム",
+    "auctions": "オークション",
+    "myBids": "入札履歴",
+    "watchlist": "ウォッチリスト",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "notifications": "通知",
+    "dashboard": "ダッシュボード",
+    "admin": "管理者",
+    "login": "ログイン",
+    "register": "新規登録",
+    "logout": "ログアウト"
+  },
+
+  "validation": {
+    "required": "この項目は必須です",
+    "email": "有効なメールアドレスを入力してください",
+    "minLength": "{{min}}文字以上で入力してください",
+    "maxLength": "{{max}}文字以内で入力してください",
+    "passwordMatch": "パスワードが一致しません",
+    "invalidFormat": "形式が正しくありません"
+  },
+
+  "time": {
+    "now": "たった今",
+    "seconds": "{{count}}秒",
+    "seconds_other": "{{count}}秒",
+    "minutes": "{{count}}分",
+    "minutes_other": "{{count}}分",
+    "hours": "{{count}}時間",
+    "hours_other": "{{count}}時間",
+    "days": "{{count}}日",
+    "days_other": "{{count}}日",
+    "ago": "{{time}}前",
+    "remaining": "残り{{time}}",
+    "ended": "終了"
+  },
+
+  "currency": {
+    "usd": "米ドル",
+    "eur": "ユーロ",
+    "gbp": "ポンド",
+    "jpy": "円",
+    "vnd": "ベトナムドン"
+  },
+
+  "status": {
+    "active": "有効",
+    "inactive": "無効",
+    "pending": "保留中",
+    "completed": "完了",
+    "cancelled": "キャンセル済み",
+    "failed": "失敗"
+  },
+
+  "footer": {
+    "copyright": "© {{year}} オークションプラットフォーム. 全著作権所有.",
+    "aboutUs": "会社概要",
+    "contact": "お問い合わせ",
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "help": "ヘルプセンター"
+  }
+}

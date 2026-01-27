@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -30,13 +31,13 @@ public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistComman
     {
         var auction = await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
         if (auction == null)
-            return Result.Failure<BookmarkItemDto>(Error.Create("Auction.NotFound", "Auction not found"));
+            return Result.Failure<BookmarkItemDto>(AuctionErrors.Auction.NotFound);
 
         var exists = await _bookmarkRepository.ExistsAsync(
             request.UserId, request.AuctionId, BookmarkType.Watchlist, cancellationToken);
         
         if (exists)
-            return Result.Failure<BookmarkItemDto>(Error.Create("Bookmark.AlreadyExists", "Auction is already in your watchlist"));
+            return Result.Failure<BookmarkItemDto>(AuctionErrors.Bookmark.AlreadyExists);
 
         var bookmark = new UserAuctionBookmark
         {

@@ -55,3 +55,25 @@ public class NotificationStatsDto
     public int TodayCount { get; set; }
     public Dictionary<string, int> ByType { get; set; } = new();
 }
+
+public class NotificationPreferenceDto
+{
+    public Guid Id { get; set; }
+    public string UserId { get; set; } = string.Empty;
+    public bool EmailEnabled { get; set; }
+    public bool PushEnabled { get; set; }
+    public bool BidUpdates { get; set; }
+    public bool AuctionUpdates { get; set; }
+    public bool PromotionalEmails { get; set; }
+    public bool SystemAlerts { get; set; }
+}
+
+public class UpdateNotificationPreferenceDto
+{
+    public bool? EmailEnabled { get; set; }
+    public bool? PushEnabled { get; set; }
+    public bool? BidUpdates { get; set; }
+    public bool? AuctionUpdates { get; set; }
+    public bool? PromotionalEmails { get; set; }
+    public bool? SystemAlerts { get; set; }
+}

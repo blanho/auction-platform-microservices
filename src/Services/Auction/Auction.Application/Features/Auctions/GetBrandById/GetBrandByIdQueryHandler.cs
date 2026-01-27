@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ public class GetBrandByIdQueryHandler : IQueryHandler<GetBrandByIdQuery, BrandDt
             var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (brand == null)
             {
-                return Result.Failure<BrandDto>(Error.Create("Brand.NotFound", $"Brand with ID '{request.Id}' was not found"));
+                return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
             }
 
             var dto = _mapper.Map<BrandDto>(brand);
@@ -44,7 +45,7 @@ public class GetBrandByIdQueryHandler : IQueryHandler<GetBrandByIdQuery, BrandDt
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching brand {BrandId}", request.Id);
-            return Result.Failure<BrandDto>(Error.Create("Brand.FetchError", $"Error fetching brand: {ex.Message}"));
+            return Result.Failure<BrandDto>(AuctionErrors.Brand.FetchError(ex.Message));
         }
     }
 }

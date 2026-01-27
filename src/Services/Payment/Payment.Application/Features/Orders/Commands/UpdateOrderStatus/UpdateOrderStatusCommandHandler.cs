@@ -1,5 +1,6 @@
 using AutoMapper;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -29,7 +30,7 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
         var order = await _repository.GetByIdAsync(request.OrderId);
         if (order == null)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.NotFound", $"Order {request.OrderId} not found"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
         if (request.PaymentStatus == PaymentStatus.Completed && order.PaymentStatus != PaymentStatus.Completed)

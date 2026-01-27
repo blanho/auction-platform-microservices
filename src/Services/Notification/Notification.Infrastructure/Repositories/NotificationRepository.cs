@@ -82,6 +82,12 @@ public class NotificationRepository : INotificationRepository
                 cancellationToken);
     }
 
+    public async Task ArchiveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var notification = await _context.Notifications.FindAsync([id], cancellationToken);
+        notification?.Archive();
+    }
+
     public async Task<List<NotificationEntity>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default)
     {
         var cutoffDate = DateTimeOffset.UtcNow.AddDays(-retentionDays);

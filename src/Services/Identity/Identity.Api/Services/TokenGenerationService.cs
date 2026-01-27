@@ -4,9 +4,12 @@ using System.Security.Cryptography;
 using System.Text;
 using BuildingBlocks.Web.Exceptions;
 using Identity.Api.Data;
+using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.Interfaces;
 using Identity.Api.Models;
+using IdentityService.Contracts.Events;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,6 +22,7 @@ public class TokenGenerationService : ITokenGenerationService
     private readonly ILogger<TokenGenerationService> _logger;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IMediator _mediator;
 
     private const int AccessTokenExpirationMinutes = 15;
     private const int RefreshTokenExpirationDays = 7;
@@ -28,12 +32,14 @@ public class TokenGenerationService : ITokenGenerationService
         UserManager<ApplicationUser> userManager,
         ILogger<TokenGenerationService> logger,
         ApplicationDbContext context,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IMediator mediator)
     {
         _userManager = userManager;
         _logger = logger;
         _context = context;
         _configuration = configuration;
+        _mediator = mediator;
     }
 
     public async Task<TokenResponse?> GenerateTokensForUserAsync(string userId, string clientId)
@@ -91,7 +97,7 @@ public class TokenGenerationService : ITokenGenerationService
         }
     }
 
-    public async Task<(string AccessToken, string RefreshToken, int ExpiresIn)?> RefreshTokenAsync(
+    public async Task<RefreshTokenResult> RefreshTokenAsync(
         string refreshToken,
         string clientId,
         string? ipAddress = null)
@@ -104,26 +110,48 @@ public class TokenGenerationService : ITokenGenerationService
 
             if (storedToken == null)
             {
-                _logger.LogWarning("Refresh token not found");
-                return null;
+                _logger.LogWarning("Refresh token not found - potential token theft attempt");
+                return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenNotFound);
+            }
+
+            if (storedToken.IsRevoked)
+            {
+                _logger.LogWarning(
+                    "SECURITY ALERT: Attempted reuse of revoked refresh token for user {UserId}. " +
+                    "This may indicate token theft. Revoking entire token family.",
+                    storedToken.UserId);
+
+                await RevokeEntireTokenFamilyAsync(storedToken, ipAddress);
+                await RevokeAllUserTokensAsync(storedToken.UserId, ipAddress);
+
+                var user = await _userManager.FindByIdAsync(storedToken.UserId);
+                if (user != null)
+                {
+                    await _mediator.Publish(new SecurityAlertDomainEvent
+                    {
+                        UserId = storedToken.UserId,
+                        Username = user.UserName ?? "Unknown",
+                        Email = user.Email ?? string.Empty,
+                        AlertType = SecurityAlertTypes.TokenTheftDetected,
+                        Description = "A previously used authentication token was reused, which may indicate your session credentials were stolen. " +
+                                      "All your sessions have been terminated for security. Please log in again and consider changing your password.",
+                        IpAddress = ipAddress
+                    });
+                }
+
+                return RefreshTokenResult.Failure(RefreshTokenFailureReason.SecurityTermination);
             }
 
             if (!storedToken.IsActive)
             {
-                _logger.LogWarning("Refresh token is not active for user {UserId}", storedToken.UserId);
-
-                if (storedToken.IsRevoked)
-                {
-                    await RevokeDescendantTokensAsync(storedToken, ipAddress, "Attempted reuse of revoked token");
-                }
-
-                return null;
+                _logger.LogWarning("Refresh token expired for user {UserId}", storedToken.UserId);
+                return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenExpired);
             }
 
             var newTokens = await GenerateTokenPairAsync(storedToken.UserId, clientId, ipAddress);
             if (newTokens == null)
             {
-                return null;
+                return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenNotFound);
             }
 
             storedToken.IsRevoked = true;
@@ -135,13 +163,48 @@ public class TokenGenerationService : ITokenGenerationService
 
             _logger.LogInformation("Refreshed tokens for user {UserId}", storedToken.UserId);
 
-            return newTokens;
+            return RefreshTokenResult.Success(
+                newTokens.Value.AccessToken,
+                newTokens.Value.RefreshToken,
+                newTokens.Value.ExpiresIn);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to refresh token");
-            return null;
+            return RefreshTokenResult.Failure(RefreshTokenFailureReason.TokenNotFound);
         }
+    }
+
+    private async Task RevokeEntireTokenFamilyAsync(RefreshToken compromisedToken, string? ipAddress)
+    {
+        var familyTokens = new List<RefreshToken> { compromisedToken };
+        var currentToken = compromisedToken;
+
+        while (!string.IsNullOrEmpty(currentToken.ReplacedByToken))
+        {
+            var nextToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == currentToken.ReplacedByToken);
+
+            if (nextToken == null) break;
+
+            familyTokens.Add(nextToken);
+            currentToken = nextToken;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var token in familyTokens.Where(t => !t.IsRevoked))
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = now;
+            token.RevokedByIp = ipAddress;
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogWarning(
+            "Revoked {Count} tokens in family for user {UserId} due to potential token theft",
+            familyTokens.Count,
+            compromisedToken.UserId);
     }
 
     public async Task<bool> RevokeTokenAsync(string refreshToken, string? ipAddress = null)

@@ -15,6 +15,8 @@ public enum NotificationType
     BidOutbid = 21,
     BidWon = 22,
     BidLost = 23,
+    BidAccepted = 24,
+    BidRejected = 25,
 
     PaymentReceived = 30,
     PaymentFailed = 31,

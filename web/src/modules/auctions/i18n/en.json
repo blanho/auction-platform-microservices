@@ -1,0 +1,144 @@
+{
+  "title": "Auctions",
+  "browse": "Browse Auctions",
+  "featured": "Featured Auctions",
+  "trending": "Trending Now",
+  "endingSoon": "Ending Soon",
+  "newArrivals": "New Arrivals",
+  "myAuctions": "My Auctions",
+  "createAuction": "Create Auction",
+  "editAuction": "Edit Auction",
+  "viewDetails": "View Details",
+
+  "search": {
+    "placeholder": "Search auctions...",
+    "noResults": "No auctions found",
+    "resultsCount": "{{count}} auction found",
+    "resultsCount_other": "{{count}} auctions found"
+  },
+
+  "filter": {
+    "category": "Category",
+    "priceRange": "Price Range",
+    "condition": "Condition",
+    "status": "Status",
+    "sortBy": "Sort By",
+    "minPrice": "Min Price",
+    "maxPrice": "Max Price"
+  },
+
+  "sort": {
+    "newest": "Newest First",
+    "endingSoon": "Ending Soon",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "mostBids": "Most Bids"
+  },
+
+  "status": {
+    "live": "Live",
+    "scheduled": "Scheduled",
+    "ended": "Ended",
+    "sold": "Sold",
+    "unsold": "Unsold",
+    "cancelled": "Cancelled"
+  },
+
+  "condition": {
+    "new": "Brand New",
+    "likeNew": "Like New",
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair"
+  },
+
+  "detail": {
+    "currentBid": "Current Bid",
+    "startingPrice": "Starting Price",
+    "buyNowPrice": "Buy Now Price",
+    "reservePrice": "Reserve Price",
+    "reserveMet": "Reserve Met",
+    "reserveNotMet": "Reserve Not Met",
+    "timeRemaining": "Time Remaining",
+    "auctionEnds": "Auction Ends",
+    "totalBids": "Total Bids",
+    "bidHistory": "Bid History",
+    "seller": "Seller",
+    "category": "Category",
+    "brand": "Brand",
+    "yearManufactured": "Year Manufactured",
+    "description": "Description",
+    "reviews": "Reviews"
+  },
+
+  "form": {
+    "title": "Title",
+    "titlePlaceholder": "Enter a descriptive title for your auction",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your item in detail...",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "brand": "Brand",
+    "selectBrand": "Select a brand",
+    "condition": "Condition",
+    "selectCondition": "Select condition",
+    "yearManufactured": "Year Manufactured",
+    "startingPrice": "Starting Price",
+    "buyNowPrice": "Buy Now Price",
+    "enableBuyNow": "Enable Buy Now",
+    "currency": "Currency",
+    "auctionDuration": "Auction Duration",
+    "auctionEnd": "Auction End Time",
+    "images": "Images",
+    "uploadImages": "Upload Images",
+    "dragDropImages": "Drag and drop images here"
+  },
+
+  "formSteps": {
+    "basicInfo": "Basic Info",
+    "itemDetails": "Item Details",
+    "pricingDuration": "Pricing & Duration",
+    "review": "Review"
+  },
+
+  "duration": {
+    "1day": "1 Day",
+    "3days": "3 Days",
+    "5days": "5 Days",
+    "7days": "7 Days",
+    "10days": "10 Days",
+    "14days": "14 Days"
+  },
+
+  "actions": {
+    "placeBid": "Place Bid",
+    "buyNow": "Buy Now",
+    "addToWatchlist": "Add to Watchlist",
+    "removeFromWatchlist": "Remove from Watchlist",
+    "share": "Share",
+    "report": "Report"
+  },
+
+  "messages": {
+    "createSuccess": "Auction created successfully",
+    "updateSuccess": "Auction updated successfully",
+    "deleteSuccess": "Auction deleted successfully",
+    "addedToWatchlist": "Added to watchlist",
+    "removedFromWatchlist": "Removed from watchlist"
+  },
+
+  "watchlist": {
+    "title": "Watchlist",
+    "empty": "Your watchlist is empty",
+    "emptyDescription": "Add auctions to your watchlist to track them"
+  },
+
+  "reviews": {
+    "title": "Reviews",
+    "writeReview": "Write a Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submitReview": "Submit Review",
+    "noReviews": "No reviews yet"
+  }
+}

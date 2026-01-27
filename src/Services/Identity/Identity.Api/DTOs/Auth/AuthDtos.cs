@@ -101,3 +101,37 @@ public record TokenResponse(
     string? RefreshToken,
     int ExpiresIn
 );
+
+public enum RefreshTokenFailureReason
+{
+    None = 0,
+    TokenNotFound = 1,
+    TokenExpired = 2,
+    SecurityTermination = 3
+}
+
+public record RefreshTokenResult
+{
+    public bool IsSuccess { get; init; }
+    public RefreshTokenFailureReason FailureReason { get; init; }
+    public string? AccessToken { get; init; }
+    public string? RefreshToken { get; init; }
+    public int ExpiresIn { get; init; }
+
+    public static RefreshTokenResult Success(string accessToken, string refreshToken, int expiresIn) =>
+        new()
+        {
+            IsSuccess = true,
+            FailureReason = RefreshTokenFailureReason.None,
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = expiresIn
+        };
+
+    public static RefreshTokenResult Failure(RefreshTokenFailureReason reason) =>
+        new()
+        {
+            IsSuccess = false,
+            FailureReason = reason
+        };
+}

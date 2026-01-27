@@ -1,0 +1,243 @@
+{
+  "title": "分析",
+  "adminDashboard": "管理者ダッシュボード",
+  "myDashboard": "マイダッシュボード",
+  "reports": "レポート管理",
+  "trackActivity": "オークション活動とパフォーマンスを追跡",
+  "reviewReports": "ユーザーレポートの確認と管理",
+
+  "stats": {
+    "totalRevenue": "総収益",
+    "revenueChange": "収益変動",
+    "activeUsers": "アクティブユーザー",
+    "liveAuctions": "開催中オークション",
+    "pendingReports": "保留中レポート",
+    "totalOrders": "総注文数",
+    "completedOrders": "完了注文数",
+    "completionRate": "完了率",
+    "vsLast": "前{{period}}比"
+  },
+
+  "orders": {
+    "title": "注文概要",
+    "total": "総注文数",
+    "completed": "完了注文数"
+  },
+
+  "health": {
+    "title": "プラットフォーム状態",
+    "apiStatus": "APIステータス",
+    "database": "データベース",
+    "cache": "キャッシュ",
+    "queue": "キュー",
+    "jobsInQueue": "キュー内ジョブ: {{count}}件",
+    "healthy": "正常",
+    "connected": "接続済み",
+    "degraded": "低下",
+    "unknown": "不明",
+    "disconnected": "切断"
+  },
+
+  "categories": {
+    "title": "トップカテゴリ",
+    "auctions": "{{count}}件のオークション"
+  },
+
+  "performers": {
+    "title": "トップパフォーマー",
+    "topSellers": "トップセラー",
+    "topBuyers": "トップバイヤー",
+    "orders": "{{count}}件の注文",
+    "won": "{{count}}件落札"
+  },
+
+  "activity": {
+    "title": "最近の活動",
+    "noActivity": "最近の活動はありません"
+  },
+
+  "metrics": {
+    "title": "指標",
+    "auctions": "オークション指標",
+    "bids": "入札指標",
+    "users": "ユーザー指標",
+    "liveAuctions": "開催中オークション",
+    "successRate": "成功率",
+    "avgFinalPrice": "平均落札価格",
+    "endingToday": "本日終了",
+    "totalBids": "総入札数",
+    "bidsToday": "本日の入札",
+    "uniqueBidders": "入札者数",
+    "avgBidAmount": "平均入札額",
+    "totalUsers": "総ユーザー数",
+    "newToday": "本日の新規",
+    "sellersBuyers": "セラー / バイヤー",
+    "retentionRate": "継続率"
+  },
+
+  "user": {
+    "title": "マイダッシュボード",
+    "activeAuctions": "アクティブオークション",
+    "auctionsWon": "落札したオークション",
+    "totalSpent": "総支出",
+    "totalEarned": "総収益",
+    "biddingSummary": "入札サマリー",
+    "activeBids": "アクティブ入札",
+    "wonAuctions": "落札オークション",
+    "lostAuctions": "落札失敗",
+    "watching": "ウォッチ中",
+    "viewAllBids": "すべての入札を見る",
+    "quickStats": "クイック統計",
+    "platformAuctions": "プラットフォーム総オークション数",
+    "activeAuctionsLabel": "アクティブオークション",
+    "totalBidsPlaced": "総入札数",
+    "platformUsers": "プラットフォームユーザー",
+    "browseAuctions": "オークションを探す",
+    "createAuction": "オークション作成"
+  },
+
+  "seller": {
+    "title": "セラー分析",
+    "totalAuctions": "総オークション数",
+    "totalRevenue": "総収益",
+    "successRate": "成功率",
+    "avgFinalPrice": "平均落札価格",
+    "auctionStatus": "オークション状態",
+    "active": "アクティブ",
+    "completed": "完了",
+    "cancelled": "キャンセル",
+    "categoryBreakdown": "カテゴリ内訳",
+    "category": "カテゴリ",
+    "auctions": "オークション",
+    "revenue": "収益"
+  },
+
+  "period": {
+    "day": "日",
+    "week": "週",
+    "month": "月",
+    "year": "年",
+    "7d": "7日",
+    "30d": "30日",
+    "90d": "90日",
+    "1y": "1年"
+  },
+
+  "reports": {
+    "title": "レポート管理",
+    "description": "ユーザーレポートの確認と管理",
+    "total": "合計",
+    "pending": "保留中",
+    "underReview": "審査中",
+    "resolved": "解決済み",
+    "dismissed": "却下",
+    "critical": "緊急",
+    "highPriority": "高優先度",
+    "reporter": "報告者",
+    "reportedUser": "報告対象ユーザー",
+    "type": "タイプ",
+    "priority": "優先度",
+    "reason": "理由",
+    "status": "ステータス",
+    "created": "作成日",
+    "actions": "操作",
+    "viewDetails": "詳細を見る",
+    "updateStatus": "ステータス更新",
+    "delete": "削除",
+    "noReports": "レポートが見つかりません",
+    "reportDetails": "レポート詳細",
+    "auctionId": "オークションID",
+    "description": "説明",
+    "resolution": "解決内容",
+    "resolutionNotes": "解決メモ",
+    "resolvedBy": "解決者",
+    "createdAt": "作成日時",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "update": "更新",
+    "updating": "更新中...",
+    "deleteReport": "レポートを削除",
+    "confirmDelete": "このレポートを削除してもよろしいですか？この操作は取り消せません。",
+    "deleting": "削除中...",
+    "failedToLoad": "レポート統計の読み込みに失敗しました"
+  },
+
+  "reportTypes": {
+    "Fraud": "詐欺",
+    "FakeItem": "偽物",
+    "NonPayment": "支払い不履行",
+    "Harassment": "嫌がらせ",
+    "InappropriateContent": "不適切なコンテンツ",
+    "SuspiciousActivity": "不審な活動",
+    "Other": "その他"
+  },
+
+  "reportStatus": {
+    "Pending": "保留中",
+    "UnderReview": "審査中",
+    "Resolved": "解決済み",
+    "Dismissed": "却下"
+  },
+
+  "reportPriority": {
+    "Low": "低",
+    "Medium": "中",
+    "High": "高",
+    "Critical": "緊急"
+  },
+
+  "errors": {
+    "loadFailed": "ダッシュボードデータの読み込みに失敗しました。後でもう一度お試しください。",
+    "statsLoadFailed": "ダッシュボード統計の読み込みに失敗しました。後でもう一度お試しください。"
+  },
+
+  "filter": {
+    "status": "ステータス",
+    "type": "タイプ",
+    "priority": "優先度",
+    "reportedUsername": "報告対象ユーザー名",
+    "all": "すべて",
+    "refresh": "更新"
+  },
+
+  "settings": {
+    "title": "プラットフォーム設定",
+    "description": "プラットフォームの構成と設定を管理",
+    "systemSettings": "システム設定",
+    "customSettings": "カスタム設定",
+    "protected": "保護",
+    "addSetting": "設定を追加",
+    "editSetting": "設定を編集",
+    "deleteSetting": "設定を削除",
+    "createSetting": "新しい設定を作成",
+    "key": "キー",
+    "value": "値",
+    "type": "タイプ",
+    "updated": "更新日時",
+    "noCustomSettings": "カスタム設定がありません",
+    "clickToCreate": "「設定を追加」をクリックして新しい構成を作成",
+    "deleteWarning": "この操作は元に戻せません。",
+    "deleteConfirm": "次の設定を削除してもよろしいですか",
+    "keyPlaceholder": "例: auction.max_duration_days",
+    "keyHelperText": "名前空間にはドットを使用した小文字",
+    "categories": {
+      "Platform": "プラットフォーム",
+      "Auction": "オークション",
+      "Notification": "通知",
+      "Security": "セキュリティ",
+      "Email": "メール"
+    },
+    "dataTypes": {
+      "string": "テキスト",
+      "number": "数値",
+      "boolean": "ブール値",
+      "json": "JSON",
+      "url": "URL",
+      "email": "メール",
+      "datetime": "日時",
+      "duration": "期間",
+      "percentage": "パーセント",
+      "currency": "通貨"
+    }
+  }
+}

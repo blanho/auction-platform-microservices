@@ -1,7 +1,8 @@
 using BidService.Contracts.Events;
 using MassTransit;
+using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
-using NotificationService.Contracts.Enums;
+using Notification.Domain.Enums;
 
 namespace Notification.Infrastructure.Consumers;
 
@@ -26,20 +27,24 @@ public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
             "Processing BidRejected event for bid {BidId} by {Bidder}",
             @event.BidId, @event.BidderUsername);
 
-        await _notificationService.SendNotificationAsync(
-            userId: @event.BidderId,
-            type: NotificationType.BidRejected,
-            title: "Bid Rejected",
-            message: $"Your bid of {FormatCurrency(@event.Amount)} was rejected. Reason: {@event.Reason}",
-            data: new Dictionary<string, string>
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
             {
-                ["AuctionId"] = @event.AuctionId.ToString(),
-                ["BidId"] = @event.BidId.ToString(),
-                ["Amount"] = @event.Amount.ToString("F2"),
-                ["Reason"] = @event.Reason
+                UserId = @event.BidderId.ToString(),
+                Type = NotificationType.BidRejected,
+                Title = "Bid Rejected",
+                Message = $"Your bid of {FormatCurrency(@event.Amount)} was rejected. Reason: {@event.Reason}",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["AuctionId"] = @event.AuctionId.ToString(),
+                    ["BidId"] = @event.BidId.ToString(),
+                    ["Amount"] = @event.Amount.ToString("F2"),
+                    ["Reason"] = @event.Reason
+                }),
+                AuctionId = @event.AuctionId,
+                BidId = @event.BidId
             },
-            channels: NotificationChannel.Email | NotificationChannel.Push | NotificationChannel.InApp,
-            cancellationToken: context.CancellationToken);
+            context.CancellationToken);
     }
 
     private static string FormatCurrency(decimal amount) => $"${amount:N2}";

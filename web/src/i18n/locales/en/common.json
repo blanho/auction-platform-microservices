@@ -1,0 +1,96 @@
+{
+  "appName": "Auction Platform",
+  "loading": "Loading...",
+  "error": "An error occurred",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "submit": "Submit",
+  "confirm": "Confirm",
+  "back": "Back",
+  "next": "Next",
+  "close": "Close",
+  "search": "Search",
+  "filter": "Filter",
+  "sort": "Sort",
+  "all": "All",
+  "none": "None",
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK",
+  "viewAll": "View All",
+  "viewMore": "View More",
+  "learnMore": "Learn More",
+  "getStarted": "Get Started",
+  "noResults": "No results found",
+  "required": "Required",
+  "optional": "Optional",
+
+  "nav": {
+    "home": "Home",
+    "auctions": "Auctions",
+    "myBids": "My Bids",
+    "watchlist": "Watchlist",
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Must be no more than {{max}} characters",
+    "passwordMatch": "Passwords do not match",
+    "invalidFormat": "Invalid format"
+  },
+
+  "time": {
+    "now": "Now",
+    "seconds": "{{count}} second",
+    "seconds_other": "{{count}} seconds",
+    "minutes": "{{count}} minute",
+    "minutes_other": "{{count}} minutes",
+    "hours": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "days": "{{count}} day",
+    "days_other": "{{count}} days",
+    "ago": "{{time}} ago",
+    "remaining": "{{time}} remaining",
+    "ended": "Ended"
+  },
+
+  "currency": {
+    "usd": "USD",
+    "eur": "EUR",
+    "gbp": "GBP",
+    "jpy": "JPY",
+    "vnd": "VND"
+  },
+
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "failed": "Failed"
+  },
+
+  "footer": {
+    "copyright": "© {{year}} Auction Platform. All rights reserved.",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "help": "Help Center"
+  }
+}

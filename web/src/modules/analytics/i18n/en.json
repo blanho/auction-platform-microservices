@@ -1,0 +1,309 @@
+{
+  "title": "Analytics",
+  "adminDashboard": "Admin Dashboard",
+  "myDashboard": "My Dashboard",
+  "reports": "Reports Management",
+  "trackActivity": "Track your auction activity and performance",
+  "reviewReports": "Review and manage user reports",
+
+  "stats": {
+    "totalRevenue": "Total Revenue",
+    "revenueChange": "Revenue Change",
+    "activeUsers": "Active Users",
+    "liveAuctions": "Live Auctions",
+    "pendingReports": "Pending Reports",
+    "totalOrders": "Total Orders",
+    "completedOrders": "Completed Orders",
+    "completionRate": "Completion Rate",
+    "vsLast": "vs last {{period}}"
+  },
+
+  "orders": {
+    "title": "Orders Overview",
+    "total": "Total Orders",
+    "completed": "Completed Orders"
+  },
+
+  "health": {
+    "title": "Platform Health",
+    "apiStatus": "API Status",
+    "database": "Database",
+    "cache": "Cache",
+    "queue": "Queue",
+    "jobsInQueue": "{{count}} jobs in queue",
+    "healthy": "healthy",
+    "connected": "connected",
+    "degraded": "degraded",
+    "unknown": "unknown",
+    "disconnected": "disconnected"
+  },
+
+  "categories": {
+    "title": "Top Categories",
+    "auctions": "{{count}} auctions"
+  },
+
+  "performers": {
+    "title": "Top Performers",
+    "topSellers": "Top Sellers",
+    "topBuyers": "Top Buyers",
+    "orders": "{{count}} orders",
+    "won": "{{count}} won"
+  },
+
+  "activity": {
+    "title": "Recent Activity",
+    "noActivity": "No recent activity"
+  },
+
+  "metrics": {
+    "title": "Metrics",
+    "auctions": "Auction Metrics",
+    "bids": "Bid Metrics",
+    "users": "User Metrics",
+    "liveAuctions": "Live Auctions",
+    "successRate": "Success Rate",
+    "avgFinalPrice": "Avg. Final Price",
+    "endingToday": "Ending Today",
+    "totalBids": "Total Bids",
+    "bidsToday": "Bids Today",
+    "uniqueBidders": "Unique Bidders",
+    "avgBidAmount": "Avg. Bid Amount",
+    "totalUsers": "Total Users",
+    "newToday": "New Today",
+    "sellersBuyers": "Sellers / Buyers",
+    "retentionRate": "Retention Rate"
+  },
+
+  "user": {
+    "title": "My Dashboard",
+    "activeAuctions": "Active Auctions",
+    "auctionsWon": "Auctions Won",
+    "totalSpent": "Total Spent",
+    "totalEarned": "Total Earned",
+    "biddingSummary": "Bidding Summary",
+    "activeBids": "Active Bids",
+    "wonAuctions": "Won Auctions",
+    "lostAuctions": "Lost Auctions",
+    "watching": "Watching",
+    "viewAllBids": "View All Bids",
+    "quickStats": "Quick Stats",
+    "platformAuctions": "Total Platform Auctions",
+    "activeAuctionsLabel": "Active Auctions",
+    "totalBidsPlaced": "Total Bids Placed",
+    "platformUsers": "Platform Users",
+    "browseAuctions": "Browse Auctions",
+    "createAuction": "Create Auction"
+  },
+
+  "seller": {
+    "title": "Seller Analytics",
+    "totalAuctions": "Total Auctions",
+    "totalRevenue": "Total Revenue",
+    "successRate": "Success Rate",
+    "avgFinalPrice": "Avg. Final Price",
+    "auctionStatus": "Auction Status",
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "categoryBreakdown": "Category Breakdown",
+    "category": "Category",
+    "auctions": "Auctions",
+    "revenue": "Revenue"
+  },
+
+  "period": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "7d": "7D",
+    "30d": "30D",
+    "90d": "90D",
+    "1y": "1Y"
+  },
+
+  "reports": {
+    "title": "Reports Management",
+    "description": "Review and manage user reports",
+    "total": "Total",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "resolved": "Resolved",
+    "dismissed": "Dismissed",
+    "critical": "Critical",
+    "highPriority": "High Priority",
+    "reporter": "Reporter",
+    "reportedUser": "Reported User",
+    "type": "Type",
+    "priority": "Priority",
+    "reason": "Reason",
+    "status": "Status",
+    "created": "Created",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "updateStatus": "Update Status",
+    "delete": "Delete",
+    "noReports": "No reports found",
+    "reportDetails": "Report Details",
+    "auctionId": "Auction ID",
+    "description": "Description",
+    "resolution": "Resolution",
+    "resolutionNotes": "Resolution Notes",
+    "resolvedBy": "Resolved By",
+    "createdAt": "Created At",
+    "close": "Close",
+    "cancel": "Cancel",
+    "update": "Update",
+    "updating": "Updating...",
+    "deleteReport": "Delete Report",
+    "confirmDelete": "Are you sure you want to delete this report? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "failedToLoad": "Failed to load report statistics"
+  },
+
+  "reportTypes": {
+    "Fraud": "Fraud",
+    "FakeItem": "Fake Item",
+    "NonPayment": "Non-Payment",
+    "Harassment": "Harassment",
+    "InappropriateContent": "Inappropriate Content",
+    "SuspiciousActivity": "Suspicious Activity",
+    "Other": "Other"
+  },
+
+  "reportStatus": {
+    "Pending": "Pending",
+    "UnderReview": "Under Review",
+    "Resolved": "Resolved",
+    "Dismissed": "Dismissed"
+  },
+
+  "reportPriority": {
+    "Low": "Low",
+    "Medium": "Medium",
+    "High": "High",
+    "Critical": "Critical"
+  },
+
+  "errors": {
+    "loadFailed": "Failed to load dashboard data. Please try again later.",
+    "statsLoadFailed": "Failed to load dashboard statistics. Please try again later."
+  },
+
+  "filter": {
+    "status": "Status",
+    "type": "Type",
+    "priority": "Priority",
+    "reportedUsername": "Reported Username",
+    "all": "All",
+    "refresh": "Refresh"
+  },
+
+  "auditLogs": {
+    "title": "Audit Logs",
+    "description": "Track all system activities and changes",
+    "timestamp": "Timestamp",
+    "action": "Action",
+    "entity": "Entity",
+    "user": "User",
+    "service": "Service",
+    "changes": "Changes",
+    "noLogs": "No audit logs found",
+    "adjustFilters": "Try adjusting your filters",
+    "logsWillAppear": "Audit logs will appear here",
+    "viewDetails": "View Details",
+    "clearFilters": "Clear Filters",
+    "entityType": "Entity Type",
+    "entityId": "Entity ID",
+    "userId": "User ID",
+    "ipAddress": "IP Address",
+    "correlationId": "Correlation ID",
+    "changedProperties": "Changed Properties",
+    "oldValues": "Old Values",
+    "newValues": "New Values",
+    "details": "Audit Log Details",
+    "close": "Close"
+  },
+
+  "auditActions": {
+    "Created": "Created",
+    "Updated": "Updated",
+    "Deleted": "Deleted",
+    "StatusChanged": "Status Changed",
+    "PriceChanged": "Price Changed",
+    "BidPlaced": "Bid Placed",
+    "AuctionEnded": "Auction Ended",
+    "PaymentProcessed": "Payment Processed",
+    "UserRegistered": "User Registered",
+    "UserLoggedIn": "User Logged In",
+    "UserLoggedOut": "User Logged Out",
+    "PermissionChanged": "Permission Changed",
+    "SettingChanged": "Setting Changed"
+  },
+
+  "entityTypes": {
+    "Auction": "Auction",
+    "Bid": "Bid",
+    "User": "User",
+    "Order": "Order",
+    "Payment": "Payment",
+    "Category": "Category",
+    "Brand": "Brand",
+    "Report": "Report",
+    "Notification": "Notification",
+    "Setting": "Setting"
+  },
+
+  "serviceNames": {
+    "AuctionService": "Auction Service",
+    "BidService": "Bid Service",
+    "IdentityService": "Identity Service",
+    "PaymentService": "Payment Service",
+    "NotificationService": "Notification Service",
+    "AnalyticsService": "Analytics Service",
+    "SearchService": "Search Service",
+    "StorageService": "Storage Service"
+  },
+
+  "settings": {
+    "title": "Platform Settings",
+    "description": "Manage platform configuration and preferences",
+    "systemSettings": "System Settings",
+    "customSettings": "Custom Settings",
+    "protected": "Protected",
+    "addSetting": "Add Setting",
+    "editSetting": "Edit Setting",
+    "deleteSetting": "Delete Setting",
+    "createSetting": "Create New Setting",
+    "key": "Key",
+    "value": "Value",
+    "type": "Type",
+    "updated": "Updated",
+    "noCustomSettings": "No custom settings",
+    "clickToCreate": "Click \"Add Setting\" to create a new configuration",
+    "deleteWarning": "This action cannot be undone.",
+    "deleteConfirm": "Are you sure you want to delete the setting",
+    "keyPlaceholder": "e.g., auction.max_duration_days",
+    "keyHelperText": "Use lowercase with dots for namespacing",
+    "categories": {
+      "Platform": "Platform",
+      "Auction": "Auction",
+      "Notification": "Notification",
+      "Security": "Security",
+      "Email": "Email"
+    },
+    "dataTypes": {
+      "string": "Text",
+      "number": "Number",
+      "boolean": "Boolean",
+      "json": "JSON",
+      "url": "URL",
+      "email": "Email",
+      "datetime": "Date/Time",
+      "duration": "Duration",
+      "percentage": "Percentage",
+      "currency": "Currency"
+    }
+  }
+}

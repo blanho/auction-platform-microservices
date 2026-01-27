@@ -25,6 +25,7 @@ public static class NotificationServiceExtensions
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<INotificationRecordRepository, NotificationRecordRepository>();
         services.AddScoped<ITemplateRepository, TemplateRepository>();
+        services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
 
         services.AddScoped<NotificationUnitOfWork, UnitOfWork>();
 
@@ -35,6 +36,8 @@ public static class NotificationServiceExtensions
     {
         services.AddScoped<INotificationService, NotificationServiceImpl>();
         services.AddScoped<INotificationSender, NotificationSender>();
+        services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<INotificationRecordService, NotificationRecordService>();
 
         return services;
     }

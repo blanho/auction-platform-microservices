@@ -1,5 +1,6 @@
 using System.Text;
 using BuildingBlocks.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,7 @@ internal static class AuthenticationExtensions
             ?? throw new BuildingBlocks.Web.Exceptions.ConfigurationException("Identity:SecretKey is not configured");
         var isLocalDevelopment = environment.IsDevelopment() || environment.EnvironmentName == "Local";
 
-        services.AddAuthentication(options =>
+        var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -42,43 +43,41 @@ internal static class AuthenticationExtensions
                 };
             });
 
-        AddExternalProviders(services, configuration);
+        AddExternalProviders(authBuilder, configuration);
         ConfigureCookies(services);
         AddAuthorizationPolicies(services);
 
         return services;
     }
 
-    private static void AddExternalProviders(IServiceCollection services, IConfiguration configuration)
+    private static void AddExternalProviders(AuthenticationBuilder authBuilder, IConfiguration configuration)
     {
         var googleClientId = configuration["Authentication:Google:ClientId"];
         var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
         if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
         {
-            services.AddAuthentication()
-                .AddGoogle("Google", options =>
-                {
-                    options.SignInScheme = IdentityConstants.ExternalScheme;
-                    options.ClientId = googleClientId;
-                    options.ClientSecret = googleClientSecret;
-                    options.Scope.Add("email");
-                    options.Scope.Add("profile");
-                });
+            authBuilder.AddGoogle("Google", options =>
+            {
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.ClientId = googleClientId;
+                options.ClientSecret = googleClientSecret;
+                options.Scope.Add("email");
+                options.Scope.Add("profile");
+            });
         }
 
         var facebookAppId = configuration["Authentication:Facebook:AppId"];
         var facebookAppSecret = configuration["Authentication:Facebook:AppSecret"];
         if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
         {
-            services.AddAuthentication()
-                .AddFacebook("Facebook", options =>
-                {
-                    options.SignInScheme = IdentityConstants.ExternalScheme;
-                    options.AppId = facebookAppId;
-                    options.AppSecret = facebookAppSecret;
-                    options.Scope.Add("email");
-                    options.Scope.Add("public_profile");
-                });
+            authBuilder.AddFacebook("Facebook", options =>
+            {
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+                options.AppId = facebookAppId;
+                options.AppSecret = facebookAppSecret;
+                options.Scope.Add("email");
+                options.Scope.Add("public_profile");
+            });
         }
     }
 

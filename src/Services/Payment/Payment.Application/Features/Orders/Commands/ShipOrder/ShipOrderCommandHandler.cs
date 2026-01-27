@@ -1,5 +1,6 @@
 using AutoMapper;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -29,22 +30,22 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
         var order = await _repository.GetByIdAsync(request.OrderId);
         if (order == null)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.NotFound", $"Order {request.OrderId} not found"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
         if (order.PaymentStatus != PaymentStatus.Completed)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.NotPaid", $"Order {request.OrderId} has not been paid yet"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotPaidById(request.OrderId));
         }
 
         if (order.Status == OrderStatus.Shipped || order.Status == OrderStatus.Delivered)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.AlreadyShipped", $"Order {request.OrderId} has already been shipped"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.AlreadyShippedById(request.OrderId));
         }
 
         if (order.Status == OrderStatus.Cancelled)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.Cancelled", $"Order {request.OrderId} has been cancelled"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.CancelledById(request.OrderId));
         }
 
         _logger.LogInformation("Shipping order {OrderId} via {Carrier} with tracking {TrackingNumber}", 

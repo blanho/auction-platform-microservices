@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 namespace Auctions.Application.Commands.AddSellerResponse;
@@ -28,14 +29,14 @@ public class AddSellerResponseCommandHandler : ICommandHandler<AddSellerResponse
             var review = await _reviewRepository.GetByIdAsync(request.ReviewId, cancellationToken);
             if (review == null)
             {
-                return Result.Failure<ReviewDto>(Error.Create("Review.NotFound", $"Review with ID {request.ReviewId} not found"));
+                return Result.Failure<ReviewDto>(AuctionErrors.Review.NotFoundById(request.ReviewId));
             }
 
             if (review.ReviewedUsername != request.SellerUsername)
-                return Result.Failure<ReviewDto>(Error.Create("Review.Forbidden", "Only the reviewed seller can respond to this review"));
+                return Result.Failure<ReviewDto>(AuctionErrors.Review.Forbidden);
 
             if (!string.IsNullOrEmpty(review.SellerResponse))
-                return Result.Failure<ReviewDto>(Error.Create("Review.AlreadyResponded", "Seller has already responded to this review"));
+                return Result.Failure<ReviewDto>(AuctionErrors.Review.AlreadyResponded);
 
             review.SellerResponse = request.Response;
             review.SellerResponseAt = _dateTime.UtcNow;
@@ -47,7 +48,7 @@ public class AddSellerResponseCommandHandler : ICommandHandler<AddSellerResponse
         }
         catch (KeyNotFoundException)
         {
-            return Result.Failure<ReviewDto>(Error.Create("Review.NotFound", "Review not found"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.NotFound);
         }
     }
 }

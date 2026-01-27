@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
@@ -36,7 +37,7 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
             var slugExists = await _repository.SlugExistsAsync(request.Slug, null, cancellationToken);
             if (slugExists)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SlugExists", $"A category with slug '{request.Slug}' already exists"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
             }
 
             var category = new Category
@@ -62,7 +63,7 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
         catch (Exception ex)
         {
             _logger.LogError("Failed to create category {Name}: {Error}", request.Name, ex.Message);
-            return Result.Failure<CategoryDto>(Error.Create("Category.CreateFailed", $"Failed to create category: {ex.Message}"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.CreateFailed(ex.Message));
         }
     }
 }

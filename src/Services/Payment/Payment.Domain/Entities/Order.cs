@@ -6,7 +6,7 @@ namespace Payment.Domain.Entities;
 
 public class Order : BaseEntity
 {
-    private OrderStatus _status = OrderStatus.PendingPayment;
+    private OrderStatus _status = OrderStatus.PaymentPending;
     private PaymentStatus _paymentStatus = PaymentStatus.Pending;
 
     public Guid AuctionId { get; private set; }
@@ -68,7 +68,7 @@ public class Order : BaseEntity
             WinningBid = winningBid,
             TotalAmount = winningBid,
             PlatformFee = platformFee,
-            Status = OrderStatus.PendingPayment,
+            Status = OrderStatus.PaymentPending,
             PaymentStatus = PaymentStatus.Pending,
             CreatedAt = DateTimeOffset.UtcNow
         };
@@ -134,7 +134,7 @@ public class Order : BaseEntity
         PaymentStatus = PaymentStatus.Completed;
         PaymentTransactionId = transactionId;
         PaidAt = DateTimeOffset.UtcNow;
-        Status = OrderStatus.PaymentReceived;
+        Status = OrderStatus.Paid;
 
         AddDomainEvent(new PaymentCompletedDomainEvent
         {
@@ -180,6 +180,29 @@ public class Order : BaseEntity
             BuyerUsername = BuyerUsername,
             SellerId = SellerId,
             SellerUsername = SellerUsername
+        });
+    }
+
+    public void Cancel(string? reason = null)
+    {
+        var oldStatus = Status;
+        Status = OrderStatus.Cancelled;
+
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            SellerNotes = string.IsNullOrWhiteSpace(SellerNotes)
+                ? $"Cancellation reason: {reason}"
+                : $"{SellerNotes}\nCancellation reason: {reason}";
+        }
+
+        AddDomainEvent(new OrderStatusChangedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            OldStatus = oldStatus,
+            NewStatus = OrderStatus.Cancelled
         });
     }
 }

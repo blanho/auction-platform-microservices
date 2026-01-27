@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -46,16 +47,15 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
         if (lockHandle == null)
         {
             _logger.LogWarning("Failed to acquire wallet lock for user {Username}", request.Username);
-            return Result.Failure<WalletTransactionDto>(
-                Error.Create("Wallet.Busy", "Wallet operation in progress. Please try again."));
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.Busy);
         }
 
         var wallet = await _walletRepository.GetByUsernameAsync(request.Username);
         if (wallet == null)
-            return Result.Failure<WalletTransactionDto>(Error.Create("Wallet.NotFound", "Wallet not found"));
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.NotFound);
 
         if (wallet.AvailableBalance < request.Amount)
-            return Result.Failure<WalletTransactionDto>(Error.Create("Wallet.InsufficientBalance", "Insufficient balance"));
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientBalance);
 
         var balanceAfter = wallet.Balance - request.Amount;
         
@@ -81,8 +81,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             _logger.LogWarning(ex,
                 "Concurrency conflict during withdrawal for user {Username}. Lock may have been released prematurely.",
                 request.Username);
-            return Result.Failure<WalletTransactionDto>(
-                Error.Create("Wallet.ConcurrencyConflict", "Wallet was modified concurrently. Please retry."));
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
 
         _logger.LogInformation("Withdrawal of {Amount} initiated for user: {Username}", request.Amount, request.Username);

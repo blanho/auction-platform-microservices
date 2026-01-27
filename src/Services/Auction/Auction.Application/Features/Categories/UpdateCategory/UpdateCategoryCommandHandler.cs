@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -35,18 +36,18 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (category == null)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.NotFound", $"Category with ID {request.Id} not found"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
             }
 
             var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
             if (slugExists)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SlugExists", $"A category with slug '{request.Slug}' already exists"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
             }
 
             if (request.ParentCategoryId == request.Id)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SelfParent", "A category cannot be its own parent"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SelfParent);
             }
 
             category.Name = request.Name;
@@ -68,12 +69,12 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         }
         catch (KeyNotFoundException)
         {
-            return Result.Failure<CategoryDto>(Error.Create("Category.NotFound", $"Category with ID '{request.Id}' not found"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
         }
         catch (Exception ex)
         {
             _logger.LogError("Failed to update category {CategoryId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<CategoryDto>(Error.Create("Category.UpdateFailed", $"Failed to update category: {ex.Message}"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.UpdateFailed(ex.Message));
         }
     }
 }

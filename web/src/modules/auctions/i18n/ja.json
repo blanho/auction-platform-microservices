@@ -1,0 +1,144 @@
+{
+  "title": "オークション",
+  "browse": "オークションを探す",
+  "featured": "注目のオークション",
+  "trending": "人気急上昇",
+  "endingSoon": "まもなく終了",
+  "newArrivals": "新着",
+  "myAuctions": "マイオークション",
+  "createAuction": "オークション作成",
+  "editAuction": "オークション編集",
+  "viewDetails": "詳細を見る",
+
+  "search": {
+    "placeholder": "オークションを検索...",
+    "noResults": "オークションが見つかりませんでした",
+    "resultsCount": "{{count}}件のオークション",
+    "resultsCount_other": "{{count}}件のオークション"
+  },
+
+  "filter": {
+    "category": "カテゴリー",
+    "priceRange": "価格帯",
+    "condition": "状態",
+    "status": "ステータス",
+    "sortBy": "並べ替え",
+    "minPrice": "最低価格",
+    "maxPrice": "最高価格"
+  },
+
+  "sort": {
+    "newest": "新着順",
+    "endingSoon": "終了間近",
+    "priceLowToHigh": "価格: 安い順",
+    "priceHighToLow": "価格: 高い順",
+    "mostBids": "入札数順"
+  },
+
+  "status": {
+    "live": "開催中",
+    "scheduled": "予定",
+    "ended": "終了",
+    "sold": "落札済み",
+    "unsold": "未落札",
+    "cancelled": "キャンセル"
+  },
+
+  "condition": {
+    "new": "新品",
+    "likeNew": "新品同様",
+    "excellent": "非常に良い",
+    "good": "良い",
+    "fair": "可"
+  },
+
+  "detail": {
+    "currentBid": "現在の入札額",
+    "startingPrice": "開始価格",
+    "buyNowPrice": "即決価格",
+    "reservePrice": "最低落札価格",
+    "reserveMet": "最低落札価格達成",
+    "reserveNotMet": "最低落札価格未達成",
+    "timeRemaining": "残り時間",
+    "auctionEnds": "終了日時",
+    "totalBids": "入札数",
+    "bidHistory": "入札履歴",
+    "seller": "出品者",
+    "category": "カテゴリー",
+    "brand": "ブランド",
+    "yearManufactured": "製造年",
+    "description": "商品説明",
+    "reviews": "レビュー"
+  },
+
+  "form": {
+    "title": "タイトル",
+    "titlePlaceholder": "オークションのタイトルを入力してください",
+    "description": "説明",
+    "descriptionPlaceholder": "商品の詳細を説明してください...",
+    "category": "カテゴリー",
+    "selectCategory": "カテゴリーを選択",
+    "brand": "ブランド",
+    "selectBrand": "ブランドを選択",
+    "condition": "状態",
+    "selectCondition": "状態を選択",
+    "yearManufactured": "製造年",
+    "startingPrice": "開始価格",
+    "buyNowPrice": "即決価格",
+    "enableBuyNow": "即決価格を有効にする",
+    "currency": "通貨",
+    "auctionDuration": "オークション期間",
+    "auctionEnd": "終了日時",
+    "images": "画像",
+    "uploadImages": "画像をアップロード",
+    "dragDropImages": "ここに画像をドラッグ＆ドロップ"
+  },
+
+  "formSteps": {
+    "basicInfo": "基本情報",
+    "itemDetails": "商品詳細",
+    "pricingDuration": "価格・期間",
+    "review": "確認"
+  },
+
+  "duration": {
+    "1day": "1日",
+    "3days": "3日",
+    "5days": "5日",
+    "7days": "7日",
+    "10days": "10日",
+    "14days": "14日"
+  },
+
+  "actions": {
+    "placeBid": "入札する",
+    "buyNow": "今すぐ購入",
+    "addToWatchlist": "ウォッチリストに追加",
+    "removeFromWatchlist": "ウォッチリストから削除",
+    "share": "共有",
+    "report": "報告"
+  },
+
+  "messages": {
+    "createSuccess": "オークションを作成しました",
+    "updateSuccess": "オークションを更新しました",
+    "deleteSuccess": "オークションを削除しました",
+    "addedToWatchlist": "ウォッチリストに追加しました",
+    "removedFromWatchlist": "ウォッチリストから削除しました"
+  },
+
+  "watchlist": {
+    "title": "ウォッチリスト",
+    "empty": "ウォッチリストは空です",
+    "emptyDescription": "気になるオークションを追加して追跡しましょう"
+  },
+
+  "reviews": {
+    "title": "レビュー",
+    "writeReview": "レビューを書く",
+    "rating": "評価",
+    "comment": "コメント",
+    "submitReview": "レビューを投稿",
+    "noReviews": "まだレビューはありません"
+  }
+}

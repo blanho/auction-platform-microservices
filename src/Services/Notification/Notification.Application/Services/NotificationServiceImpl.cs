@@ -3,6 +3,7 @@ using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
+using Notification.Domain.Entities;
 using Notification.Domain.Enums;
 using NotificationEntity = Notification.Domain.Entities.Notification;
 
@@ -11,6 +12,7 @@ namespace Notification.Application.Services
     public class NotificationServiceImpl : INotificationService
     {
         private readonly INotificationRepository _repository;
+        private readonly INotificationPreferenceRepository _preferenceRepository;
         private readonly Interfaces.IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly INotificationHubService _hubService;
@@ -18,12 +20,14 @@ namespace Notification.Application.Services
 
         public NotificationServiceImpl(
             INotificationRepository repository,
+            INotificationPreferenceRepository preferenceRepository,
             Interfaces.IUnitOfWork unitOfWork,
             IMapper mapper,
             INotificationHubService hubService,
             IDateTimeProvider dateTime)
         {
             _repository = repository;
+            _preferenceRepository = preferenceRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _hubService = hubService;
@@ -94,6 +98,12 @@ namespace Notification.Application.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task ArchiveNotificationAsync(Guid notificationId, CancellationToken cancellationToken = default)
+        {
+            await _repository.ArchiveAsync(notificationId, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<PaginatedResult<NotificationDto>> GetAllNotificationsAsync(
             int page,
             int pageSize,
@@ -157,6 +167,64 @@ namespace Notification.Application.Services
                 UnreadNotifications = stats.UnreadCount,
                 TodayCount = stats.TodayCount,
                 ByType = stats.ByType
+            };
+        }
+
+        public async Task<NotificationPreferenceDto> GetPreferencesAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var preference = await _preferenceRepository.GetByUserIdAsync(userId, cancellationToken);
+
+            if (preference == null)
+            {
+                preference = NotificationPreference.CreateDefault(userId);
+                await _preferenceRepository.CreateAsync(preference, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            return new NotificationPreferenceDto
+            {
+                Id = preference.Id,
+                UserId = preference.UserId,
+                EmailEnabled = preference.EmailEnabled,
+                PushEnabled = preference.PushEnabled,
+                BidUpdates = preference.BidUpdates,
+                AuctionUpdates = preference.AuctionUpdates,
+                PromotionalEmails = preference.PromotionalEmails,
+                SystemAlerts = preference.SystemAlerts
+            };
+        }
+
+        public async Task<NotificationPreferenceDto> UpdatePreferencesAsync(string userId, UpdateNotificationPreferenceDto dto, CancellationToken cancellationToken = default)
+        {
+            var preference = await _preferenceRepository.GetByUserIdAsync(userId, cancellationToken);
+
+            if (preference == null)
+            {
+                preference = NotificationPreference.CreateDefault(userId);
+                await _preferenceRepository.CreateAsync(preference, cancellationToken);
+            }
+
+            preference.Update(
+                dto.EmailEnabled,
+                dto.PushEnabled,
+                dto.BidUpdates,
+                dto.AuctionUpdates,
+                dto.PromotionalEmails,
+                dto.SystemAlerts);
+
+            await _preferenceRepository.UpdateAsync(preference, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return new NotificationPreferenceDto
+            {
+                Id = preference.Id,
+                UserId = preference.UserId,
+                EmailEnabled = preference.EmailEnabled,
+                PushEnabled = preference.PushEnabled,
+                BidUpdates = preference.BidUpdates,
+                AuctionUpdates = preference.AuctionUpdates,
+                PromotionalEmails = preference.PromotionalEmails,
+                SystemAlerts = preference.SystemAlerts
             };
         }
     }

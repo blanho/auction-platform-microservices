@@ -1,3 +1,4 @@
+using Bidding.Application.Errors;
 using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
 
 namespace Bidding.Application.Features.AutoBids.CreateAutoBid;
@@ -32,7 +33,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         var existingAutoBid = await _repository.GetActiveAutoBidAsync(request.AuctionId, request.UserId, cancellationToken);
         if (existingAutoBid != null)
         {
-            return Result.Failure<CreateAutoBidResult>(Error.Create("AutoBid.AlreadyExists", "You already have an active auto-bid for this auction. Please update or cancel it first."));
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.AutoBid.AlreadyExists);
         }
 
         var currentHighBid = await _bidRepository.GetHighestBidForAuctionAsync(request.AuctionId, cancellationToken);
@@ -40,7 +41,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
 
         if (request.MaxAmount <= currentHighAmount)
         {
-            return Result.Failure<CreateAutoBidResult>(Error.Create("AutoBid.MaxAmountTooLow", $"Max amount must be higher than current bid ({currentHighAmount:C})"));
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.AutoBid.MaxAmountTooLow(currentHighAmount));
         }
 
         var autoBid = AutoBid.Create(

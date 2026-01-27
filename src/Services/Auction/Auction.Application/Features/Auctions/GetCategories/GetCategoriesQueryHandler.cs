@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,7 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching categories");
-            return Result.Failure<List<CategoryDto>>(Error.Create("Categories.FetchError", $"Error fetching categories: {ex.Message}"));
+            return Result.Failure<List<CategoryDto>>(AuctionErrors.Category.FetchError(ex.Message));
         }
     }
 }

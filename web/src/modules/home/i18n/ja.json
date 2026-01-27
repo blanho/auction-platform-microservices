@@ -1,0 +1,73 @@
+{
+  "hero": {
+    "title": "希少でユニークなアイテムを発見",
+    "subtitle": "プレミアムオークションマーケットプレイスで何千ものコレクターや愛好家と繋がりましょう",
+    "cta": "探索を始める",
+    "secondaryCta": "使い方"
+  },
+
+  "features": {
+    "title": "選ばれる理由",
+    "subtitle": "最高のオークションプラットフォームを体験",
+    "secure": {
+      "title": "安全な取引",
+      "description": "業界最高水準のセキュリティで決済を保護"
+    },
+    "verified": {
+      "title": "認証済み出品者",
+      "description": "全ての出品者は信頼性を確保するため認証されています"
+    },
+    "support": {
+      "title": "24時間サポート",
+      "description": "いつでもチームがサポートいたします"
+    },
+    "global": {
+      "title": "グローバル展開",
+      "description": "世界中どこからでも売買可能"
+    }
+  },
+
+  "howItWorks": {
+    "title": "使い方",
+    "subtitle": "数ステップで入札開始",
+    "step1": {
+      "title": "アカウント作成",
+      "description": "無料で登録し本人確認を完了"
+    },
+    "step2": {
+      "title": "アイテムを探す",
+      "description": "何千ものユニークなアイテムを閲覧"
+    },
+    "step3": {
+      "title": "入札する",
+      "description": "気に入ったアイテムに入札"
+    },
+    "step4": {
+      "title": "落札して楽しむ",
+      "description": "オークションに勝ってアイテムを受け取る"
+    }
+  },
+
+  "categories": {
+    "title": "人気カテゴリー",
+    "viewAll": "すべてのカテゴリーを見る"
+  },
+
+  "testimonials": {
+    "title": "ユーザーの声",
+    "subtitle": "世界中の何千ものコレクターに信頼されています"
+  },
+
+  "cta": {
+    "title": "始める準備はできましたか？",
+    "subtitle": "コミュニティに参加して素晴らしいアイテムを発見しましょう",
+    "button": "無料で始める"
+  },
+
+  "stats": {
+    "auctions": "開催中のオークション",
+    "users": "満足したユーザー",
+    "items": "販売済みアイテム",
+    "countries": "対応国"
+  }
+}

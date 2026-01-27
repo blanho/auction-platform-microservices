@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -76,7 +77,7 @@ public class ImportCategoriesCommandHandler : ICommandHandler<ImportCategoriesCo
         catch (Exception ex)
         {
             _logger.LogError("Failed to import categories: {Error}", ex.Message);
-            return Result.Failure<ImportCategoriesResult>(Error.Create("Category.ImportFailed", $"Failed to import categories: {ex.Message}"));
+            return Result.Failure<ImportCategoriesResult>(AuctionErrors.Category.ImportFailed(ex.Message));
         }
     }
 }

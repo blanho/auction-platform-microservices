@@ -4,7 +4,9 @@ using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Payment.Application.Features.Orders.Commands.CancelOrder;
 using Payment.Application.Features.Orders.Commands.CreateOrder;
+using Payment.Application.Features.Orders.Commands.MarkDelivered;
 using Payment.Application.Features.Orders.Commands.ProcessPayment;
 using Payment.Application.Features.Orders.Commands.ShipOrder;
 using Payment.Application.Features.Orders.Commands.UpdateOrderStatus;
@@ -38,6 +40,16 @@ public class OrderCommandEndpoints : ICarterModule
         group.MapPost("/{id:guid}/ship", ShipOrder)
             .WithName("ShipOrder")
             .WithSummary("Mark order as shipped")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
+
+        group.MapPost("/{id:guid}/cancel", CancelOrder)
+            .WithName("CancelOrder")
+            .WithSummary("Cancel an order")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
+
+        group.MapPost("/{id:guid}/deliver", MarkDelivered)
+            .WithName("MarkOrderDelivered")
+            .WithSummary("Mark order as delivered")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
     }
 
@@ -132,6 +144,41 @@ public class OrderCommandEndpoints : ICarterModule
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
         logger.LogInformation("Order shipped: {OrderId}", result.Value.Id);
+
+        return TypedResults.Ok(result.Value);
+    }
+
+    private static async Task<Results<Ok<OrderDto>, BadRequest<ProblemDetails>>> CancelOrder(
+        Guid id,
+        CancelOrderDto dto,
+        IMediator mediator,
+        ILogger<OrderCommandEndpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        var command = new CancelOrderCommand(id, dto.Reason);
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        logger.LogInformation("Order cancelled: {OrderId}", result.Value.Id);
+
+        return TypedResults.Ok(result.Value);
+    }
+
+    private static async Task<Results<Ok<OrderDto>, BadRequest<ProblemDetails>>> MarkDelivered(
+        Guid id,
+        IMediator mediator,
+        ILogger<OrderCommandEndpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        var command = new MarkDeliveredCommand(id);
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        logger.LogInformation("Order marked as delivered: {OrderId}", result.Value.Id);
 
         return TypedResults.Ok(result.Value);
     }

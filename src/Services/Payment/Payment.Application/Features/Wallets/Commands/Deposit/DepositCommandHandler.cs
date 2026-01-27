@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -32,7 +33,7 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
     {
         var wallet = await _walletRepository.GetByUsernameAsync(request.Username);
         if (wallet == null)
-            return Result.Failure<WalletTransactionDto>(Error.Create("Wallet.NotFound", "Wallet not found"));
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.NotFound);
 
         var balanceAfter = wallet.Balance + request.Amount;
         

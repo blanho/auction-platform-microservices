@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,7 @@ public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery,
         catch (Exception ex)
         {
             _logger.LogError("Failed to fetch auctions by IDs: {Error}", ex.Message);
-            return Result.Failure<IEnumerable<AuctionDto>>(Error.Create("Auctions.FetchFailed", $"Failed to fetch auctions: {ex.Message}"));
+            return Result.Failure<IEnumerable<AuctionDto>>(AuctionErrors.Auction.FetchFailed(ex.Message));
         }
     }
 }

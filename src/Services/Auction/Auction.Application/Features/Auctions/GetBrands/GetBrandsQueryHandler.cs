@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,7 @@ public class GetBrandsQueryHandler : IQueryHandler<GetBrandsQuery, List<BrandDto
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching brands");
-            return Result.Failure<List<BrandDto>>(Error.Create("Brands.FetchError", $"Error fetching brands: {ex.Message}"));
+            return Result.Failure<List<BrandDto>>(AuctionErrors.Brand.FetchError(ex.Message));
         }
     }
 }

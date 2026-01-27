@@ -1,5 +1,6 @@
 using AutoMapper;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -29,17 +30,17 @@ public class ProcessPaymentCommandHandler : ICommandHandler<ProcessPaymentComman
         var order = await _repository.GetByIdAsync(request.OrderId);
         if (order == null)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.NotFound", $"Order {request.OrderId} not found"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
         if (order.PaymentStatus == PaymentStatus.Completed)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.AlreadyPaid", $"Order {request.OrderId} has already been paid"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.AlreadyPaidById(request.OrderId));
         }
 
         if (order.Status == OrderStatus.Cancelled)
         {
-            return Result.Failure<OrderDto>(Error.Create("Order.Cancelled", $"Order {request.OrderId} has been cancelled"));
+            return Result.Failure<OrderDto>(PaymentErrors.Order.CancelledById(request.OrderId));
         }
 
         _logger.LogInformation("Processing payment for order {OrderId} via {PaymentMethod}", request.OrderId, request.PaymentMethod);

@@ -1,9 +1,9 @@
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;
+using Analytics.Api.Errors;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Web.Exceptions;
 
 namespace Analytics.Api.Services;
 
@@ -23,31 +23,31 @@ public sealed class ReportService : IReportService
         _logger = logger;
     }
 
-    public async Task<PaginatedResult<ReportDto>> GetReportsAsync(
+    public async Task<Result<PaginatedResult<ReportDto>>> GetReportsAsync(
         ReportQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var pagedResult = await _reportRepository.GetPagedAsync(
-            queryParams,
-            cancellationToken);
-
+        var pagedResult = await _reportRepository.GetPagedAsync(queryParams, cancellationToken);
         var dtos = pagedResult.Items.ToDtoList();
         
-        return new PaginatedResult<ReportDto>(
+        return Result<PaginatedResult<ReportDto>>.Success(new PaginatedResult<ReportDto>(
             dtos,
             pagedResult.TotalCount,
             pagedResult.Page,
             pagedResult.PageSize
-        );
+        ));
     }
 
-    public async Task<ReportDto?> GetReportByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<ReportDto>> GetReportByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var report = await _reportRepository.GetByIdAsync(id, cancellationToken);
-        return report?.ToDto();
+        if (report == null)
+            return Result.Failure<ReportDto>(AnalyticsErrors.Report.NotFound);
+
+        return Result<ReportDto>.Success(report.ToDto());
     }
 
-    public async Task<ReportDto> CreateReportAsync(
+    public async Task<Result<ReportDto>> CreateReportAsync(
         string reporterUsername,
         CreateReportDto dto,
         CancellationToken cancellationToken = default)
@@ -74,17 +74,18 @@ public sealed class ReportService : IReportService
             "Report {ReportId} created by {Reporter} against {Reported}",
             report.Id, reporterUsername, dto.ReportedUsername);
 
-        return report.ToDto();
+        return Result<ReportDto>.Success(report.ToDto());
     }
 
-    public async Task UpdateReportStatusAsync(
+    public async Task<Result> UpdateReportStatusAsync(
         Guid id,
         UpdateReportStatusDto dto,
         string resolvedBy,
         CancellationToken cancellationToken = default)
     {
-        var report = await _reportRepository.GetByIdAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Report not found");
+        var report = await _reportRepository.GetByIdAsync(id, cancellationToken);
+        if (report == null)
+            return Result.Failure(AnalyticsErrors.Report.NotFound);
 
         report.Status = dto.Status;
         report.Resolution = dto.Resolution;
@@ -102,22 +103,28 @@ public sealed class ReportService : IReportService
         _logger.LogInformation(
             "Report {ReportId} status updated to {Status} by {ResolvedBy}",
             id, dto.Status, resolvedBy);
+
+        return Result.Success();
     }
 
-    public async Task DeleteReportAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteReportAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var report = await _reportRepository.GetByIdAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Report not found");
+        var report = await _reportRepository.GetByIdAsync(id, cancellationToken);
+        if (report == null)
+            return Result.Failure(AnalyticsErrors.Report.NotFound);
 
         _reportRepository.Delete(report);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Report {ReportId} deleted", id);
+
+        return Result.Success();
     }
 
-    public async Task<ReportStatsDto> GetReportStatsAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<ReportStatsDto>> GetReportStatsAsync(CancellationToken cancellationToken = default)
     {
-        return await _reportRepository.GetStatsAsync(cancellationToken);
+        var stats = await _reportRepository.GetStatsAsync(cancellationToken);
+        return Result<ReportStatsDto>.Success(stats);
     }
 
     private static ReportPriority DeterminePriority(ReportType type)

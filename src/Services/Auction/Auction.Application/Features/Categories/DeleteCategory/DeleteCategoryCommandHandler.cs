@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -30,12 +31,12 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (category == null)
             {
-                return Result.Failure<bool>(Error.Create("Category.NotFound", $"Category with ID {request.Id} not found"));
+                return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.Id));
             }
 
             if (category.Items.Any())
             {
-                return Result.Failure<bool>(Error.Create("Category.HasItems", "Cannot delete category that has associated items. Please reassign or delete the items first."));
+                return Result.Failure<bool>(AuctionErrors.Category.HasItems);
             }
 
             await _repository.DeleteAsync(request.Id, cancellationToken);
@@ -47,12 +48,12 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
         }
         catch (KeyNotFoundException)
         {
-            return Result.Failure<bool>(Error.Create("Category.NotFound", $"Category with ID '{request.Id}' not found"));
+            return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.Id));
         }
         catch (Exception ex)
         {
             _logger.LogError("Failed to delete category {CategoryId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<bool>(Error.Create("Category.DeleteFailed", $"Failed to delete category: {ex.Message}"));
+            return Result.Failure<bool>(AuctionErrors.Category.DeleteFailed(ex.Message));
         }
     }
 }

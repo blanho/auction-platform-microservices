@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
@@ -33,16 +34,16 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
             request.AuctionId, request.ReviewerUsername, cancellationToken);
         
         if (existingReview != null)
-            return Result.Failure<ReviewDto>(Error.Create("Review.AlreadyExists", "Review already exists for this auction"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.AlreadyExists);
 
         var auction = await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
         if (auction == null)
         {
-            return Result.Failure<ReviewDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
         }
 
         if (request.Rating < 1 || request.Rating > 5)
-            return Result.Failure<ReviewDto>(Error.Create("Review.InvalidRating", "Rating must be between 1 and 5"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.InvalidRating);
 
         var review = new Review
         {

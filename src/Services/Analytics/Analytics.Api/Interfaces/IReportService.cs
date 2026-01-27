@@ -5,10 +5,10 @@ namespace Analytics.Api.Interfaces;
 
 public interface IReportService
 {
-    Task<PaginatedResult<ReportDto>> GetReportsAsync(ReportQueryParams queryParams, CancellationToken cancellationToken = default);
-    Task<ReportDto?> GetReportByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ReportDto> CreateReportAsync(string reporterUsername, CreateReportDto dto, CancellationToken cancellationToken = default);
-    Task UpdateReportStatusAsync(Guid id, UpdateReportStatusDto dto, string resolvedBy, CancellationToken cancellationToken = default);
-    Task DeleteReportAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<ReportStatsDto> GetReportStatsAsync(CancellationToken cancellationToken = default);
+    Task<Result<PaginatedResult<ReportDto>>> GetReportsAsync(ReportQueryParams queryParams, CancellationToken cancellationToken = default);
+    Task<Result<ReportDto>> GetReportByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<ReportDto>> CreateReportAsync(string reporterUsername, CreateReportDto dto, CancellationToken cancellationToken = default);
+    Task<Result> UpdateReportStatusAsync(Guid id, UpdateReportStatusDto dto, string resolvedBy, CancellationToken cancellationToken = default);
+    Task<Result> DeleteReportAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<ReportStatsDto>> GetReportStatsAsync(CancellationToken cancellationToken = default);
 }

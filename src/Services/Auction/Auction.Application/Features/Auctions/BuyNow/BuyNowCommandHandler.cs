@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -55,8 +56,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         if (lockHandle == null)
         {
             _logger.LogWarning("Failed to acquire lock for BuyNow on auction {AuctionId}", request.AuctionId);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Conflict", "Another buyer is currently processing this purchase. Please try again."));
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Conflict);
         }
 
         try
@@ -65,26 +65,22 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
             if (auction == null)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("Auction.NotFound", "Auction not found"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.Auction.NotFound);
             }
 
             if (!auction.IsBuyNowAvailable)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.NotAvailable", "Buy Now is not available for this auction"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.NotAvailable);
             }
 
             if (auction.SellerUsername == request.BuyerUsername)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.OwnAuction", "You cannot buy your own auction"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.OwnAuction);
             }
 
             if (auction.Status != Status.Live)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.AuctionNotLive);
             }
 
             auction.ExecuteBuyNow(request.BuyerId, request.BuyerUsername);
@@ -116,14 +112,12 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         {
             _logger.LogWarning("Concurrency conflict in BuyNow for auction {AuctionId}: {Error}",
                 request.AuctionId, ex.Message);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Conflict", "This item was just purchased by someone else. Please try another auction."));
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);
         }
         catch (Exception ex)
         {
             _logger.LogError("Buy Now failed for auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Failed", $"Failed to process Buy Now: {ex.Message}"));
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Failed(ex.Message));
         }
     }
 }

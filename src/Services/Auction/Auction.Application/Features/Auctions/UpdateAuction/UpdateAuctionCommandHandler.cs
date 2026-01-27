@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -48,7 +49,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         if (auction == null)
         {
             _logger.LogWarning("Auction {AuctionId} not found for update", request.Id);
-            return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
+            return Result.Failure<bool>(AuctionErrors.Auction.NotFoundById(request.Id));
         }
 
         var oldAuction = Auction.CreateSnapshot(auction);

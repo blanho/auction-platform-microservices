@@ -1,3 +1,4 @@
+using Auction.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
@@ -45,14 +46,12 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
             var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
             if (auction == null)
             {
-                return Result.Failure<AuctionDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found"));
+                return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
             }
             
             if (auction.Status != Status.Live && auction.Status != Status.Scheduled)
             {
-                var error = Error.Create("Auction.InvalidStatus", 
-                    $"Cannot deactivate auction with status {auction.Status}. Only Live or Scheduled auctions can be deactivated.");
-                return Result.Failure<AuctionDto>(error);
+                return Result.Failure<AuctionDto>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
             }
 
             var previousStatus = auction.Status;
@@ -75,14 +74,12 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
         }
         catch (KeyNotFoundException)
         {
-            var error = Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found");
-            return Result.Failure<AuctionDto>(error);
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
         }
         catch (Exception ex)
         {
             _logger.LogError("Failed to deactivate auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            var error = Error.Create("Auction.DeactivationFailed", ex.Message);
-            return Result.Failure<AuctionDto>(error);
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.DeactivationFailed(ex.Message));
         }
     }
 }

@@ -1,7 +1,8 @@
 using BidService.Contracts.Events;
 using MassTransit;
+using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
-using NotificationService.Contracts.Enums;
+using Notification.Domain.Enums;
 
 namespace Notification.Infrastructure.Consumers;
 
@@ -26,19 +27,23 @@ public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
             "Processing BidAccepted event for bid {BidId} by {Bidder}",
             @event.BidId, @event.BidderUsername);
 
-        await _notificationService.SendNotificationAsync(
-            userId: @event.BidderId,
-            type: NotificationType.BidAccepted,
-            title: "Bid Accepted",
-            message: $"Congratulations! Your bid of {FormatCurrency(@event.Amount)} has been accepted.",
-            data: new Dictionary<string, string>
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
             {
-                ["AuctionId"] = @event.AuctionId.ToString(),
-                ["BidId"] = @event.BidId.ToString(),
-                ["Amount"] = @event.Amount.ToString("F2")
+                UserId = @event.BidderId.ToString(),
+                Type = NotificationType.BidAccepted,
+                Title = "Bid Accepted",
+                Message = $"Congratulations! Your bid of {FormatCurrency(@event.Amount)} has been accepted.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["AuctionId"] = @event.AuctionId.ToString(),
+                    ["BidId"] = @event.BidId.ToString(),
+                    ["Amount"] = @event.Amount.ToString("F2")
+                }),
+                AuctionId = @event.AuctionId,
+                BidId = @event.BidId
             },
-            channels: NotificationChannel.Email | NotificationChannel.Push | NotificationChannel.InApp,
-            cancellationToken: context.CancellationToken);
+            context.CancellationToken);
     }
 
     private static string FormatCurrency(decimal amount) => $"${amount:N2}";

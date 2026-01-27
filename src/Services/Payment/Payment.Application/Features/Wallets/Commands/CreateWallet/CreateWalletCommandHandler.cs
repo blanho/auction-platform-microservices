@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 
@@ -29,7 +30,7 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
     {
         var exists = await _walletRepository.ExistsAsync(request.Username);
         if (exists)
-            return Result.Failure<WalletDto>(Error.Create("Wallet.AlreadyExists", "Wallet already exists for this user"));
+            return Result.Failure<WalletDto>(PaymentErrors.Wallet.AlreadyExists);
 
         var wallet = Wallet.Create(request.UserId, request.Username, "USD");
 

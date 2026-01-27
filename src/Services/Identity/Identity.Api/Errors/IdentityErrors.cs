@@ -23,6 +23,7 @@ public static class IdentityErrors
         public static Error ResetFailed => Error.Create("Auth.ResetFailed", "Password reset failed. The link may have expired.");
         public static Error RegistrationFailed => Error.Create("Auth.RegistrationFailed", "Registration failed");
         public static Error InvalidRefreshToken => Error.Create("Auth.InvalidRefreshToken", "Invalid or expired refresh token");
+        public static Error SecurityTermination => Error.Create("Auth.SecurityTermination", "Session terminated due to security concerns");
         public static Error SendEmailFailed => Error.Create("Auth.SendEmailFailed", "Failed to send email. Please try again later.");
         public static Error InvalidAuthCode => Error.Create("Auth.InvalidAuthCode", "Invalid or expired authorization code");
         public static Error AuthCodeExchangeFailed => Error.Create("Auth.AuthCodeExchangeFailed", "Failed to exchange authorization code");

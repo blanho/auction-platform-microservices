@@ -296,20 +296,24 @@ public class AuthService : IAuthService
 
     public async Task<Result<TokenResponse>> RefreshTokenAsync(string refreshToken, string ipAddress)
     {
-        var tokens = await _tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
+        var result = await _tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
 
-        if (tokens == null)
+        if (!result.IsSuccess)
         {
-            _logger.LogWarning("Invalid refresh token attempt from {IpAddress}", ipAddress);
-            return Result.Failure<TokenResponse>(IdentityErrors.Auth.InvalidRefreshToken);
+            _logger.LogWarning("Invalid refresh token attempt from {IpAddress}, reason: {Reason}", 
+                ipAddress, result.FailureReason);
+            
+            return result.FailureReason == RefreshTokenFailureReason.SecurityTermination
+                ? Result.Failure<TokenResponse>(IdentityErrors.Auth.SecurityTermination)
+                : Result.Failure<TokenResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
         _logger.LogInformation("Token refreshed successfully from {IpAddress}", ipAddress);
 
         return Result.Success(new TokenResponse(
-            tokens.Value.AccessToken,
-            tokens.Value.RefreshToken,
-            tokens.Value.ExpiresIn
+            result.AccessToken!,
+            result.RefreshToken,
+            result.ExpiresIn
         ));
     }
 

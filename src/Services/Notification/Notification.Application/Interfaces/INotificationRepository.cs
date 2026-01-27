@@ -16,6 +16,7 @@ public interface INotificationRepository
     Task<int> GetUnreadCountByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     Task MarkAsReadAsync(Guid id, CancellationToken cancellationToken = default);
     Task MarkAllAsReadAsync(string userId, CancellationToken cancellationToken = default);
+    Task ArchiveAsync(Guid id, CancellationToken cancellationToken = default);
     Task<List<NotificationEntity>> GetOldReadNotificationsAsync(int retentionDays, CancellationToken cancellationToken = default);
     Task DeleteRangeAsync(List<NotificationEntity> notifications, CancellationToken cancellationToken = default);
 

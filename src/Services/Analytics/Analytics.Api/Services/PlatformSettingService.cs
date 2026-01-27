@@ -1,8 +1,9 @@
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;
+using Analytics.Api.Errors;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
-using BuildingBlocks.Web.Exceptions;
+using BuildingBlocks.Application.Abstractions;
 
 namespace Analytics.Api.Services;
 
@@ -20,7 +21,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
         _logger = logger;
     }
 
-    public async Task<List<PlatformSettingDto>> GetSettingsAsync(
+    public async Task<Result<List<PlatformSettingDto>>> GetSettingsAsync(
         SettingCategory? category,
         CancellationToken cancellationToken = default)
     {
@@ -35,30 +36,34 @@ public sealed class PlatformSettingService : IPlatformSettingService
             settings = result.Items.ToList();
         }
 
-        return settings.ToDtoList();
+        return Result<List<PlatformSettingDto>>.Success(settings.ToDtoList());
     }
 
-    public async Task<PlatformSettingDto?> GetSettingByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<PlatformSettingDto>> GetSettingByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var setting = await _settingRepository.GetByIdAsync(id, cancellationToken);
-        return setting?.ToDto();
+        if (setting == null)
+            return Result.Failure<PlatformSettingDto>(AnalyticsErrors.Setting.NotFound);
+
+        return Result<PlatformSettingDto>.Success(setting.ToDto());
     }
 
-    public async Task<PlatformSettingDto?> GetSettingByKeyAsync(string key, CancellationToken cancellationToken = default)
+    public async Task<Result<PlatformSettingDto>> GetSettingByKeyAsync(string key, CancellationToken cancellationToken = default)
     {
         var setting = await _settingRepository.GetByKeyAsync(key, cancellationToken);
-        return setting?.ToDto();
+        if (setting == null)
+            return Result.Failure<PlatformSettingDto>(AnalyticsErrors.Setting.NotFound);
+
+        return Result<PlatformSettingDto>.Success(setting.ToDto());
     }
 
-    public async Task<PlatformSettingDto> CreateSettingAsync(
+    public async Task<Result<PlatformSettingDto>> CreateSettingAsync(
         CreateSettingDto dto,
         string? modifiedBy,
         CancellationToken cancellationToken = default)
     {
         if (await _settingRepository.ExistsAsync(dto.Key, cancellationToken))
-        {
-            throw new ConflictException($"Setting with key '{dto.Key}' already exists.");
-        }
+            return Result.Failure<PlatformSettingDto>(AnalyticsErrors.Setting.KeyExists);
 
         var setting = new PlatformSetting
         {
@@ -79,17 +84,18 @@ public sealed class PlatformSettingService : IPlatformSettingService
 
         _logger.LogInformation("Platform setting '{Key}' created by {User}", dto.Key, modifiedBy);
 
-        return setting.ToDto();
+        return Result<PlatformSettingDto>.Success(setting.ToDto());
     }
 
-    public async Task<PlatformSettingDto> UpdateSettingAsync(
+    public async Task<Result<PlatformSettingDto>> UpdateSettingAsync(
         Guid id,
         UpdateSettingDto dto,
         string? modifiedBy,
         CancellationToken cancellationToken = default)
     {
-        var setting = await _settingRepository.GetByIdAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Setting not found");
+        var setting = await _settingRepository.GetByIdAsync(id, cancellationToken);
+        if (setting == null)
+            return Result.Failure<PlatformSettingDto>(AnalyticsErrors.Setting.NotFound);
 
         setting.Value = dto.Value;
         setting.LastModifiedBy = modifiedBy;
@@ -99,25 +105,26 @@ public sealed class PlatformSettingService : IPlatformSettingService
 
         _logger.LogInformation("Platform setting '{Key}' updated by {User}", setting.Key, modifiedBy);
 
-        return setting.ToDto();
+        return Result<PlatformSettingDto>.Success(setting.ToDto());
     }
 
-    public async Task DeleteSettingAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteSettingAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var setting = await _settingRepository.GetByIdAsync(id, cancellationToken)
-            ?? throw new NotFoundException("Setting not found");
+        var setting = await _settingRepository.GetByIdAsync(id, cancellationToken);
+        if (setting == null)
+            return Result.Failure(AnalyticsErrors.Setting.NotFound);
 
         if (setting.IsSystem)
-        {
-            throw new ConflictException("System settings cannot be deleted.");
-        }
+            return Result.Failure(AnalyticsErrors.Setting.SystemSettingReadOnly);
 
         await _settingRepository.DeleteAsync(id, cancellationToken);
 
         _logger.LogInformation("Platform setting '{Key}' deleted", setting.Key);
+
+        return Result.Success();
     }
 
-    public async Task BulkUpdateSettingsAsync(
+    public async Task<Result> BulkUpdateSettingsAsync(
         List<SettingKeyValue> settings,
         string? modifiedBy,
         CancellationToken cancellationToken = default)
@@ -151,5 +158,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
         }
 
         _logger.LogInformation("Bulk update of {Count} settings by {User}", settings.Count, modifiedBy);
+
+        return Result.Success();
     }
 }
