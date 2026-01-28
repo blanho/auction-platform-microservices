@@ -22,9 +22,6 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.1" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="Protos\payment_analytics.proto" GrpcServices="Server" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Payment.Application\Payment.Application.csproj" />
     <ProjectReference Include="..\Payment.Infrastructure\Payment.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />

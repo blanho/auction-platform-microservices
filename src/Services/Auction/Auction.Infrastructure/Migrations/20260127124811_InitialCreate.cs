@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Auctions.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -8,10 +8,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Auctions.Infrastructure.Migrations
 {
-    /// <inheritdoc />
+
     public partial class InitialCreate : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -536,7 +536,6 @@ namespace Auctions.Infrastructure.Migrations
                 column: "ReviewerUsername");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

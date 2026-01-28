@@ -1,5 +1,4 @@
 using Payment.Api.Extensions;
-using Payment.Api.Grpc;
 using Payment.Infrastructure.Extensions;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
@@ -101,7 +100,6 @@ app.UseAuthorization();
 app.UseAccessAuthorization();
 
 app.MapCarter();
-app.MapGrpcService<Payment.Api.Grpc.PaymentAnalyticsGrpcService>();
 app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();

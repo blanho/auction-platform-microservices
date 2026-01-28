@@ -64,6 +64,7 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<AuctionCreatedAnalyticsConsumer>();
     x.AddConsumer<AuctionFinishedAnalyticsConsumer>();
     x.AddConsumer<BidPlacedAnalyticsConsumer>();
+    x.AddConsumer<BidPlacedBatchConsumer>();
     x.AddConsumer<PaymentCompletedAnalyticsConsumer>();
     x.AddConsumer<OrderCreatedAnalyticsConsumer>();
     x.AddConsumer<OrderShippedAnalyticsConsumer>();
@@ -80,20 +81,50 @@ builder.Services.AddMassTransit(x =>
         cfg.ReceiveEndpoint("audit-event-queue", e =>
         {
             e.ConfigureConsumer<AuditEventConsumer>(context);
-            e.UseMessageRetry(r => r.Intervals(100, 500, 1000));
+
+            e.UseMessageRetry(r => r.Exponential(
+                retryLimit: 5,
+                minInterval: TimeSpan.FromMilliseconds(100),
+                maxInterval: TimeSpan.FromSeconds(30),
+                intervalDelta: TimeSpan.FromMilliseconds(200)));
+
+            e.PrefetchCount = 16;
+            e.ConcurrentMessageLimit = 8;
         });
 
         cfg.ReceiveEndpoint("analytics-auction-events", e =>
         {
             e.ConfigureConsumer<AuctionCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<AuctionFinishedAnalyticsConsumer>(context);
-            e.UseMessageRetry(r => r.Intervals(100, 500, 1000));
+
+            e.UseMessageRetry(r => r.Exponential(
+                retryLimit: 5,
+                minInterval: TimeSpan.FromMilliseconds(100),
+                maxInterval: TimeSpan.FromSeconds(30),
+                intervalDelta: TimeSpan.FromMilliseconds(200)));
+
+            e.PrefetchCount = 16;
+            e.ConcurrentMessageLimit = 8;
         });
 
         cfg.ReceiveEndpoint("analytics-bid-events", e =>
         {
-            e.ConfigureConsumer<BidPlacedAnalyticsConsumer>(context);
-            e.UseMessageRetry(r => r.Intervals(100, 500, 1000));
+
+            e.ConfigureConsumer<BidPlacedBatchConsumer>(context, c =>
+            {
+                c.Options<BatchOptions>(o => o
+                    .SetMessageLimit(100)
+                    .SetTimeLimit(TimeSpan.FromSeconds(1)));
+            });
+
+            e.UseMessageRetry(r => r.Exponential(
+                retryLimit: 5,
+                minInterval: TimeSpan.FromMilliseconds(100),
+                maxInterval: TimeSpan.FromSeconds(30),
+                intervalDelta: TimeSpan.FromMilliseconds(200)));
+
+            e.PrefetchCount = 128;
+            e.ConcurrentMessageLimit = 32;
         });
 
         cfg.ReceiveEndpoint("analytics-payment-events", e =>
@@ -102,7 +133,15 @@ builder.Services.AddMassTransit(x =>
             e.ConfigureConsumer<OrderCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderShippedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderDeliveredAnalyticsConsumer>(context);
-            e.UseMessageRetry(r => r.Intervals(100, 500, 1000));
+
+            e.UseMessageRetry(r => r.Exponential(
+                retryLimit: 5,
+                minInterval: TimeSpan.FromMilliseconds(100),
+                maxInterval: TimeSpan.FromSeconds(30),
+                intervalDelta: TimeSpan.FromMilliseconds(200)));
+
+            e.PrefetchCount = 16;
+            e.ConcurrentMessageLimit = 8;
         });
 
         cfg.ConfigureEndpoints(context);

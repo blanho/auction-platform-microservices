@@ -1,5 +1,4 @@
 using Bidding.Api.Extensions;
-using Bidding.Api.Grpc;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
 using Bidding.Infrastructure.Grpc;
@@ -122,7 +121,6 @@ app.UseAccessAuthorization();
 
 app.MapCarter();
 
-app.MapGrpcService<BidStatsGrpcService>();
 app.MapGrpcReflectionService();
 
 app.UseCommonOpenApi();

@@ -2,7 +2,7 @@ using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Consumers;
 
@@ -22,6 +22,17 @@ public class BidPlacedAnalyticsConsumer : IConsumer<BidPlacedEvent>
     public async Task Consume(ConsumeContext<BidPlacedEvent> context)
     {
         var @event = context.Message;
+
+        var exists = await _context.FactBids
+            .AnyAsync(f => f.EventId == @event.Id, context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate BidPlaced event {EventId} skipped for Auction {AuctionId}",
+                @event.Id, @event.AuctionId);
+            return;
+        }
 
         var fact = new FactBid
         {

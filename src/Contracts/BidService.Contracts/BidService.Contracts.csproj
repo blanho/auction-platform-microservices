@@ -18,8 +18,4 @@
     <PackageReference Include="MassTransit.Abstractions" Version="8.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Protobuf Include="Grpc\bid_stats.proto" GrpcServices="None" />
-  </ItemGroup>
-
 </Project>

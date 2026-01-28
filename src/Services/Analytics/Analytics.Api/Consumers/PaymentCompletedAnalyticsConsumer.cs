@@ -1,7 +1,7 @@
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore;
 using PaymentService.Contracts.Events;
 
 namespace Analytics.Api.Consumers;
@@ -9,22 +9,31 @@ namespace Analytics.Api.Consumers;
 public class PaymentCompletedAnalyticsConsumer : IConsumer<PaymentCompletedEvent>
 {
     private readonly AnalyticsDbContext _context;
-    private readonly IDistributedCache _cache;
     private readonly ILogger<PaymentCompletedAnalyticsConsumer> _logger;
 
     public PaymentCompletedAnalyticsConsumer(
         AnalyticsDbContext context,
-        IDistributedCache cache,
         ILogger<PaymentCompletedAnalyticsConsumer> logger)
     {
         _context = context;
-        _cache = cache;
         _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<PaymentCompletedEvent> context)
     {
         var @event = context.Message;
+
+        var exists = await _context.FactPayments
+            .AnyAsync(f => f.OrderId == @event.OrderId && f.EventType == "PaymentCompleted",
+                context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate PaymentCompleted event skipped for Order {OrderId}",
+                @event.OrderId);
+            return;
+        }
 
         var now = DateTimeOffset.UtcNow;
 

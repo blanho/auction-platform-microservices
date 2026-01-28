@@ -33,10 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\..\Contracts\BidService.Contracts\Grpc\bid_stats.proto" GrpcServices="Server" ProtoRoot="..\..\..\Contracts\BidService.Contracts" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Bidding.Application\Bidding.Application.csproj" />
     <ProjectReference Include="..\Bidding.Infrastructure\Bidding.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />

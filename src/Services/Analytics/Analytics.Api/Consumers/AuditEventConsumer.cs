@@ -23,6 +23,16 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
     {
         var auditEvent = context.Message;
 
+        var exists = await _unitOfWork.AuditLogs.ExistsAsync(auditEvent.Id, context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate audit event {EventId} skipped for {EntityType} ({EntityId})",
+                auditEvent.Id, auditEvent.EntityType, auditEvent.EntityId);
+            return;
+        }
+
         _logger.LogInformation(
             "Received audit event: {Action} on {EntityType} ({EntityId}) from {ServiceName}",
             auditEvent.Action,
@@ -38,8 +48,8 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
             Action = auditEvent.Action,
             OldValues = auditEvent.OldValues,
             NewValues = auditEvent.NewValues,
-            ChangedProperties = auditEvent.ChangedProperties.Count > 0 
-                ? JsonSerializer.Serialize(auditEvent.ChangedProperties) 
+            ChangedProperties = auditEvent.ChangedProperties.Count > 0
+                ? JsonSerializer.Serialize(auditEvent.ChangedProperties)
                 : null,
             UserId = auditEvent.UserId,
             Username = auditEvent.Username,
@@ -47,8 +57,8 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
             CorrelationId = auditEvent.CorrelationId,
             IpAddress = auditEvent.IpAddress,
             Timestamp = auditEvent.Timestamp,
-            Metadata = auditEvent.Metadata != null 
-                ? JsonSerializer.Serialize(auditEvent.Metadata) 
+            Metadata = auditEvent.Metadata != null
+                ? JsonSerializer.Serialize(auditEvent.Metadata)
                 : null,
             CreatedAt = DateTimeOffset.UtcNow
         };

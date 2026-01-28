@@ -15,7 +15,7 @@ namespace Identity.Api.Migrations
     [Migration("20260122163332_InitialCreate")]
     partial class InitialCreate
     {
-        /// <inheritdoc />
+
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
