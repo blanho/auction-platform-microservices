@@ -327,7 +327,7 @@ namespace Bidding.Infrastructure.Repositories
             return bidCounts;
         }
 
-        public async Task<(List<Bid> Bids, int TotalCount)> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default)
         {
             var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted);
 
@@ -354,7 +354,7 @@ namespace Bidding.Infrastructure.Repositories
                 .Take(filter.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return (bids, totalCount);
+            return new PaginatedResult<Bid>(bids, totalCount, filter.Page, filter.PageSize);
         }
     }
 }

@@ -29,9 +29,9 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
             PageSize = request.PageSize
         };
 
-        var (bids, totalCount) = await _repository.GetBidHistoryAsync(filter, cancellationToken);
+        var result = await _repository.GetBidHistoryAsync(filter, cancellationToken);
 
-        var items = bids.Select(b => new BidHistoryItemDto
+        var items = result.Items.Select(b => new BidHistoryItemDto
         {
             Id = b.Id,
             AuctionId = b.AuctionId,
@@ -48,9 +48,9 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
         return Result<BidHistoryResult>.Success(new BidHistoryResult
         {
             Items = items,
-            TotalCount = totalCount,
-            Page = request.Page,
-            PageSize = request.PageSize,
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
             Summary = summary
         });
     }

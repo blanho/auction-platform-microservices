@@ -13,24 +13,15 @@ public record UserDashboardStatsDto
 {
     public int TotalBids { get; init; }
     public int ItemsWon { get; init; }
-    public int WatchlistCount { get; init; }
+    public int? WatchlistCount { get; init; }
     public int ActiveListings { get; init; }
     public int TotalListings { get; init; }
     public decimal TotalSpent { get; init; }
     public decimal TotalEarnings { get; init; }
     public decimal Balance { get; init; }
-    public decimal SellerRating { get; init; }
-    public int ReviewCount { get; init; }
+    public decimal? SellerRating { get; init; }
+    public int? ReviewCount { get; init; }
     public List<RecentActivityDto> RecentActivity { get; init; } = [];
-}
-
-public record RecentActivityDto
-{
-    public string Type { get; init; } = string.Empty;
-    public string Description { get; init; } = string.Empty;
-    public DateTimeOffset Timestamp { get; init; }
-    public Guid RelatedEntityId { get; init; }
-    public string RelatedEntityType { get; init; } = string.Empty;
 }
 
 public record SellerAnalyticsDto
@@ -41,8 +32,8 @@ public record SellerAnalyticsDto
     public decimal ItemsSoldChange { get; init; }
     public decimal AveragePrice { get; init; }
     public decimal AveragePriceChange { get; init; }
-    public int TotalViews { get; init; }
-    public decimal ViewsChange { get; init; }
+    public int? TotalViews { get; init; }
+    public decimal? ViewsChange { get; init; }
     public List<TopListingDto> TopListings { get; init; } = [];
     public List<SalesChartDataDto> SalesChart { get; init; } = [];
 }
@@ -52,7 +43,7 @@ public record TopListingDto
     public string Id { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
     public decimal CurrentBid { get; init; }
-    public int Views { get; init; }
+    public int? Views { get; init; }
     public int Bids { get; init; }
 }
 

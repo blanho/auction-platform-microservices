@@ -26,14 +26,4 @@ public static class AuctionMappingExtensions
         var dtos = result.Items.ToDtoList(mapper);
         return new PaginatedResult<AuctionDto>(dtos, result.TotalCount, result.Page, result.PageSize);
     }
-
-    public static PaginatedResult<AuctionDto> ToPaginatedDto(
-        this (List<Auction> Items, int TotalCount) result,
-        int page,
-        int pageSize,
-        IMapper mapper)
-    {
-        var dtos = result.Items.ToDtoList(mapper);
-        return new PaginatedResult<AuctionDto>(dtos, result.TotalCount, page, pageSize);
-    }
 }

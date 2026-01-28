@@ -157,5 +157,6 @@ public class RecentActivityDto
     public string Type { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; }
-    public Dictionary<string, string> Metadata { get; set; } = new();
+    public Guid RelatedEntityId { get; set; }
+    public string RelatedEntityType { get; set; } = string.Empty;
 }

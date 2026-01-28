@@ -30,26 +30,29 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, Paginated
 
         try
         {
-            var (items, totalCount) = await _repository.GetPagedAsync(
-                status: request.Status,
-                seller: request.Seller,
-                winner: request.Winner,
-                searchTerm: request.SearchTerm,
-                category: request.Category,
-                isFeatured: request.IsFeatured,
-                orderBy: request.OrderBy,
-                descending: request.Descending,
-                pageNumber: request.PageNumber,
-                pageSize: request.PageSize,
-                cancellationToken: cancellationToken);
+            var filter = new AuctionFilterDto
+            {
+                Status = request.Status,
+                Seller = request.Seller,
+                Winner = request.Winner,
+                SearchTerm = request.SearchTerm,
+                Category = request.Category,
+                IsFeatured = request.IsFeatured,
+                OrderBy = request.OrderBy,
+                Descending = request.Descending,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
 
-            var dtos = items.Select(auction => _mapper.Map<AuctionDto>(auction)).ToList();
+            var result = await _repository.GetPagedAsync(filter, cancellationToken);
 
-            var result = new PaginatedResult<AuctionDto>(dtos, totalCount, request.PageNumber, request.PageSize);
+            var dtos = result.Items.Select(auction => _mapper.Map<AuctionDto>(auction)).ToList();
 
-            _logger.LogInformation("Retrieved {Count} auctions out of {Total}", dtos.Count, totalCount);
+            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.PageNumber, request.PageSize);
 
-            return Result.Success(result);
+            _logger.LogInformation("Retrieved {Count} auctions out of {Total}", dtos.Count, result.TotalCount);
+
+            return Result.Success(paginatedResult);
         }
         catch (Exception ex)
         {

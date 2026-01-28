@@ -53,7 +53,7 @@ public class PaymentCompletedAnalyticsConsumer : IConsumer<PaymentCompletedEvent
             IsRefunded = false,
 
             EventType = "PaymentCompleted",
-            EventVersion = (short)@event.Version
+            EventVersion = 1
         };
 
         _context.FactPayments.Add(fact);

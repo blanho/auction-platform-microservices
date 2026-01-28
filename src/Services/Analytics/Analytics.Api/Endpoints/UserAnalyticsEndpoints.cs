@@ -1,6 +1,5 @@
 using Carter;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Auctions.Api.Grpc;
 using Analytics.Api.Interfaces;
 using BuildingBlocks.Web.Authorization;
 
@@ -27,11 +26,6 @@ public class UserAnalyticsEndpoints : ICarterModule
             .WithName("GetQuickStats")
             .AllowAnonymous()
             .Produces<QuickStatsDto>();
-
-        group.MapGet("/trending-searches", GetTrendingSearches)
-            .WithName("GetTrendingSearches")
-            .AllowAnonymous()
-            .Produces<TrendingSearchesResponse>();
     }
 
     private static async Task<Ok<UserDashboardStatsDto>> GetDashboardStats(
@@ -73,17 +67,5 @@ public class UserAnalyticsEndpoints : ICarterModule
         var stats = await aggregator.GetQuickStatsAsync(cancellationToken);
 
         return TypedResults.Ok(stats);
-    }
-
-    private static async Task<Ok<TrendingSearchesResponse>> GetTrendingSearches(
-        int? limit,
-        AuctionGrpc.AuctionGrpcClient auctionClient,
-        CancellationToken cancellationToken)
-    {
-        var response = await auctionClient.GetTrendingSearchesAsync(
-            new GetTrendingSearchesRequest { Limit = limit ?? 6 },
-            cancellationToken: cancellationToken);
-
-        return TypedResults.Ok(response);
     }
 }

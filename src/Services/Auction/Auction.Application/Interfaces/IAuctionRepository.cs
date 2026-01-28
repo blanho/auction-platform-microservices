@@ -1,5 +1,6 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -10,29 +11,20 @@ namespace Auctions.Application.Interfaces;
 
 public interface IAuctionRepository : IRepository<Auction>
 {
-    Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
-        string? status = null,
-        string? seller = null,
-        string? winner = null,
-        string? searchTerm = null,
-        string? category = null,
-        bool? isFeatured = null,
-        string? orderBy = null,
-        bool descending = true,
-        int pageNumber = PaginationDefaults.DefaultPage,
-        int pageSize = PaginationDefaults.DefaultPageSize,
-        CancellationToken cancellationToken = default);
-    
-    Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default);
-    
-    Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default);
-    
-    Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default);
-    
-    Task<List<Auction>> GetAuctionsEndingBetweenAsync(
-        DateTime startTime, 
-        DateTime endTime, 
-        CancellationToken cancellationToken = default);
+    Task<PaginatedResult<Auction>> GetPagedAsync(
+            AuctionFilterDto filter,
+            CancellationToken cancellationToken = default);
+        
+        Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default);
+        
+        Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default);
+        
+        Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default);
+        
+        Task<List<Auction>> GetAuctionsEndingBetweenAsync(
+            DateTime startTime, 
+            DateTime endTime, 
+            CancellationToken cancellationToken = default);
     
     Task<List<Auction>> GetAuctionsForExportAsync(
         Status? status = null,

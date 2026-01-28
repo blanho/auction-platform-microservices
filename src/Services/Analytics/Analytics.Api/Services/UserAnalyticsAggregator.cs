@@ -1,69 +1,52 @@
+using Analytics.Api.Helpers;
 using Analytics.Api.Interfaces;
-using Auctions.Api.Grpc;
-using BidService.Contracts.Grpc;
-using IdentityService.Contracts.Grpc;
-using BuildingBlocks.Application.Abstractions.Caching;
 
 namespace Analytics.Api.Services;
 
-public class UserAnalyticsAggregator(
-    AuctionGrpc.AuctionGrpcClient auctionClient,
-    BidStatsGrpc.BidStatsGrpcClient bidStatsClient,
-    UserStatsGrpc.UserStatsGrpcClient userStatsClient,
-    ICacheService cacheService,
-    ILogger<UserAnalyticsAggregator> logger)
-    : IUserAnalyticsAggregator
+public class UserAnalyticsAggregator : IUserAnalyticsAggregator
 {
-    private readonly AuctionGrpc.AuctionGrpcClient _auctionClient = auctionClient;
-    private readonly BidStatsGrpc.BidStatsGrpcClient _bidStatsClient = bidStatsClient;
-    private readonly UserStatsGrpc.UserStatsGrpcClient _userStatsClient = userStatsClient;
-    private readonly ICacheService _cacheService = cacheService;
-    private readonly ILogger<UserAnalyticsAggregator> _logger = logger;
+    private readonly IFactAuctionRepository _auctionRepository;
+    private readonly IFactBidRepository _bidRepository;
+    private readonly ILogger<UserAnalyticsAggregator> _logger;
 
-    private const int CacheDurationMinutes = 5;
+    public UserAnalyticsAggregator(
+        IFactAuctionRepository auctionRepository,
+        IFactBidRepository bidRepository,
+        ILogger<UserAnalyticsAggregator> logger)
+    {
+        _auctionRepository = auctionRepository;
+        _bidRepository = bidRepository;
+        _logger = logger;
+    }
 
     public async Task<UserDashboardStatsDto> GetUserDashboardStatsAsync(
         string username,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"user-dashboard:{username}";
-        
-        var cached = await _cacheService.GetAsync<UserDashboardStatsDto>(cacheKey, cancellationToken);
-        if (cached != null)
-        {
-            _logger.LogDebug("Cache hit for user dashboard stats: {Username}", username);
-            return cached;
-        }
+        var auctionStatsTask = _auctionRepository.GetUserAuctionStatsAsync(username, cancellationToken);
+        var bidStatsTask = _bidRepository.GetUserBidStatsAsync(username, cancellationToken);
+        var recentActivityTask = _auctionRepository.GetRecentActivityAsync(username, 10, cancellationToken);
 
-        var auctionStats = await _auctionClient.GetUserDashboardStatsAsync(
-            new GetUserDashboardStatsRequest { Username = username },
-            cancellationToken: cancellationToken);
+        await Task.WhenAll(auctionStatsTask, bidStatsTask, recentActivityTask);
 
-        var bidStats = await _bidStatsClient.GetUserBidStatsAsync(
-            new GetUserBidStatsRequest { Username = username },
-            cancellationToken: cancellationToken);
-
-        var userStats = await _userStatsClient.GetUserStatsAsync(
-            new GetUserStatsRequest { Username = username },
-            cancellationToken: cancellationToken);
+        var auctionStats = await auctionStatsTask;
+        var bidStats = await bidStatsTask;
+        var recentActivity = await recentActivityTask;
 
         var result = new UserDashboardStatsDto
         {
             TotalBids = bidStats.TotalBids,
             ItemsWon = bidStats.AuctionsWon,
-            WatchlistCount = auctionStats.WatchingCount,
+            WatchlistCount = null,
             ActiveListings = auctionStats.ActiveAuctions,
             TotalListings = auctionStats.TotalAuctions,
-            TotalSpent = (decimal)auctionStats.TotalSpent,
-            TotalEarnings = (decimal)auctionStats.TotalEarned,
-            Balance = (decimal)(auctionStats.TotalEarned - auctionStats.TotalSpent),
-            SellerRating = (decimal)userStats.SellerRating,
-            ReviewCount = userStats.ReviewCount,
-            RecentActivity = []
+            TotalSpent = auctionStats.TotalSpent,
+            TotalEarnings = auctionStats.TotalEarned,
+            Balance = auctionStats.TotalEarned - auctionStats.TotalSpent,
+            SellerRating = null,
+            ReviewCount = null,
+            RecentActivity = recentActivity
         };
-
-        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CacheDurationMinutes), cancellationToken);
-        _logger.LogDebug("Cached user dashboard stats: {Username}", username);
 
         return result;
     }
@@ -73,67 +56,60 @@ public class UserAnalyticsAggregator(
         string timeRange,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"seller-analytics:{username}:{timeRange}";
-        
-        var cached = await _cacheService.GetAsync<SellerAnalyticsDto>(cacheKey, cancellationToken);
-        if (cached != null)
-        {
-            _logger.LogDebug("Cache hit for seller analytics: {Username}, {TimeRange}", username, timeRange);
-            return cached;
-        }
+        var (startDate, endDate) = AnalyticsHelper.GetDateRange(timeRange);
+        var (previousStartDate, previousEndDate) = AnalyticsHelper.GetPreviousPeriod(startDate, endDate);
 
-        var sellerStats = await _auctionClient.GetSellerAnalyticsAsync(
-            new GetSellerAnalyticsRequest { Username = username, TimeRange = timeRange },
-            cancellationToken: cancellationToken);
+        var currentStatsTask = _auctionRepository.GetSellerAnalyticsAsync(
+            username, startDate, endDate, cancellationToken);
+        var previousStatsTask = _auctionRepository.GetSellerAnalyticsAsync(
+            username, previousStartDate, previousEndDate, cancellationToken);
+        var topListingsTask = _auctionRepository.GetTopListingsAsync(username, 5, cancellationToken);
 
-        var bidStats = await _bidStatsClient.GetUserBidStatsAsync(
-            new GetUserBidStatsRequest { Username = username },
-            cancellationToken: cancellationToken);
+        await Task.WhenAll(currentStatsTask, previousStatsTask, topListingsTask);
 
-        var salesChart = sellerStats.DailyRevenue
+        var currentStats = await currentStatsTask;
+        var previousStats = await previousStatsTask;
+        var topListings = await topListingsTask;
+
+        var revenueChange = AnalyticsHelper.CalculatePercentageChange(previousStats.TotalRevenue, currentStats.TotalRevenue);
+        var itemsSoldChange = AnalyticsHelper.CalculatePercentageChange(previousStats.CompletedAuctions, currentStats.CompletedAuctions);
+        var avgPriceChange = AnalyticsHelper.CalculatePercentageChange(previousStats.AverageFinalPrice, currentStats.AverageFinalPrice);
+
+        var salesChart = currentStats.DailyRevenue
             .Select(d => new SalesChartDataDto
             {
-                Date = d.Date,
-                Amount = (decimal)d.Revenue,
+                Date = d.Date.ToString("yyyy-MM-dd"),
+                Amount = d.Revenue,
                 Count = d.AuctionsCompleted
             })
             .ToList();
 
         var result = new SellerAnalyticsDto
         {
-            TotalRevenue = (decimal)sellerStats.TotalRevenue,
-            RevenueChange = 0,
-            ItemsSold = sellerStats.CompletedAuctions,
-            ItemsSoldChange = 0,
-            AveragePrice = (decimal)sellerStats.AverageFinalPrice,
-            AveragePriceChange = 0,
-            TotalViews = 0,
-            ViewsChange = 0,
-            TopListings = [],
+            TotalRevenue = currentStats.TotalRevenue,
+            RevenueChange = revenueChange,
+            ItemsSold = currentStats.CompletedAuctions,
+            ItemsSoldChange = itemsSoldChange,
+            AveragePrice = currentStats.AverageFinalPrice,
+            AveragePriceChange = avgPriceChange,
+            TotalViews = null,
+            ViewsChange = null,
+            TopListings = topListings,
             SalesChart = salesChart
         };
-
-        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(CacheDurationMinutes), cancellationToken);
-        _logger.LogDebug("Cached seller analytics: {Username}, {TimeRange}", username, timeRange);
 
         return result;
     }
 
     public async Task<QuickStatsDto> GetQuickStatsAsync(CancellationToken cancellationToken = default)
     {
-        var auctionStats = await _auctionClient.GetAuctionStatsAsync(
-            new GetAuctionStatsRequest(),
-            cancellationToken: cancellationToken);
-
-        var userStats = await _userStatsClient.GetPlatformUserStatsAsync(
-            new GetPlatformUserStatsRequest(),
-            cancellationToken: cancellationToken);
+        var liveAuctions = await _auctionRepository.GetLiveAuctionsCountAsync(cancellationToken);
 
         return new QuickStatsDto
         {
-            LiveAuctions = auctionStats.LiveAuctions,
+            LiveAuctions = liveAuctions,
             LiveAuctionsChange = null,
-            ActiveUsers = userStats.ActiveUsers,
+            ActiveUsers = 0,
             ActiveUsersChange = null,
             EndingSoon = 0,
             EndingSoonChange = null

@@ -6,9 +6,6 @@ namespace Payment.Domain.Entities;
 
 public class Order : BaseEntity
 {
-    private OrderStatus _status = OrderStatus.PaymentPending;
-    private PaymentStatus _paymentStatus = PaymentStatus.Pending;
-
     public Guid AuctionId { get; private set; }
     public Guid BuyerId { get; private set; }
     public string BuyerUsername { get; private set; } = string.Empty;
@@ -20,17 +17,9 @@ public class Order : BaseEntity
     public decimal? ShippingCost { get; private set; }
     public decimal? PlatformFee { get; private set; }
 
-    public OrderStatus Status
-    {
-        get => _status;
-        private set => _status = value;
-    }
+    public OrderStatus Status { get; private set; } = OrderStatus.PaymentPending;
 
-    public PaymentStatus PaymentStatus
-    {
-        get => _paymentStatus;
-        private set => _paymentStatus = value;
-    }
+    public PaymentStatus PaymentStatus { get; private set; } = PaymentStatus.Pending;
 
     public string? PaymentTransactionId { get; private set; }
     public string? ShippingAddress { get; private set; }
@@ -74,30 +63,17 @@ public class Order : BaseEntity
         };
     }
 
-    public void SetShippingAddress(string address)
-    {
-        if (string.IsNullOrWhiteSpace(address))
-            throw new ArgumentException("Shipping address cannot be empty");
-        ShippingAddress = address;
-    }
+    public void SetShippingAddress(string address) => ShippingAddress = address;
 
     public void SetShippingCost(decimal cost)
     {
-        if (cost < 0)
-            throw new ArgumentOutOfRangeException(nameof(cost), "Shipping cost cannot be negative");
         ShippingCost = cost;
         TotalAmount = WinningBid + cost;
     }
 
-    public void AddBuyerNotes(string notes)
-    {
-        BuyerNotes = notes;
-    }
+    public void AddBuyerNotes(string notes) => BuyerNotes = notes;
 
-    public void AddSellerNotes(string notes)
-    {
-        SellerNotes = notes;
-    }
+    public void AddSellerNotes(string notes) => SellerNotes = notes;
 
     public void RaiseCreatedEvent()
     {
@@ -188,11 +164,11 @@ public class Order : BaseEntity
         var oldStatus = Status;
         Status = OrderStatus.Cancelled;
 
-        if (!string.IsNullOrWhiteSpace(reason))
+        if (reason != null)
         {
-            SellerNotes = string.IsNullOrWhiteSpace(SellerNotes)
-                ? $"Cancellation reason: {reason}"
-                : $"{SellerNotes}\nCancellation reason: {reason}";
+            SellerNotes = SellerNotes != null
+                ? $"{SellerNotes}\nCancellation reason: {reason}"
+                : $"Cancellation reason: {reason}";
         }
 
         AddDomainEvent(new OrderStatusChangedDomainEvent

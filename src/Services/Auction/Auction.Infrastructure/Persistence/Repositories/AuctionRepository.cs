@@ -152,17 +152,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             _context.Auctions.UpdateRange(auctions);
         }
 
-        public async Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
-            string? status = null,
-            string? seller = null,
-            string? winner = null,
-            string? searchTerm = null,
-            string? category = null,
-            bool? isFeatured = null,
-            string? orderBy = null,
-            bool descending = true,
-            int pageNumber = PaginationDefaults.DefaultPage,
-            int pageSize = PaginationDefaults.DefaultPageSize,
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            AuctionFilterDto filter,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Auctions
@@ -175,24 +166,24 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .AsSplitQuery()
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Status>(status, true, out var statusEnum))
+            if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<Status>(filter.Status, true, out var statusEnum))
             {
                 query = query.Where(x => x.Status == statusEnum);
             }
 
-            if (!string.IsNullOrEmpty(seller))
+            if (!string.IsNullOrEmpty(filter.Seller))
             {
-                query = query.Where(x => x.SellerUsername == seller);
+                query = query.Where(x => x.SellerUsername == filter.Seller);
             }
 
-            if (!string.IsNullOrEmpty(winner))
+            if (!string.IsNullOrEmpty(filter.Winner))
             {
-                query = query.Where(x => x.WinnerUsername == winner);
+                query = query.Where(x => x.WinnerUsername == filter.Winner);
             }
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
             {
-                var term = searchTerm.ToLower();
+                var term = filter.SearchTerm.ToLower();
                 query = query.Where(x => 
                     x.Item != null && (
                         x.Item.Title.ToLower().Contains(term) ||
@@ -200,43 +191,43 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     ));
             }
 
-            if (!string.IsNullOrEmpty(category))
+            if (!string.IsNullOrEmpty(filter.Category))
             {
-                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == category);
+                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filter.Category);
             }
 
-            if (isFeatured.HasValue)
+            if (filter.IsFeatured.HasValue)
             {
-                query = query.Where(x => x.IsFeatured == isFeatured.Value);
+                query = query.Where(x => x.IsFeatured == filter.IsFeatured.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = orderBy?.ToLower() switch
+            query = filter.OrderBy?.ToLower() switch
             {
-                "price" => descending 
+                "price" => filter.Descending 
                     ? query.OrderByDescending(x => x.CurrentHighBid ?? x.ReservePrice)
                     : query.OrderBy(x => x.CurrentHighBid ?? x.ReservePrice),
-                "enddate" => descending 
+                "enddate" => filter.Descending 
                     ? query.OrderByDescending(x => x.AuctionEnd)
                     : query.OrderBy(x => x.AuctionEnd),
-                "createdat" => descending 
+                "createdat" => filter.Descending 
                     ? query.OrderByDescending(x => x.CreatedAt)
                     : query.OrderBy(x => x.CreatedAt),
-                "title" => descending 
+                "title" => filter.Descending 
                     ? query.OrderByDescending(x => x.Item != null ? x.Item.Title : string.Empty)
                     : query.OrderBy(x => x.Item != null ? x.Item.Title : string.Empty),
-                _ => descending 
+                _ => filter.Descending 
                     ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                     : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt)
             };
 
             var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return (items, totalCount);
+            return new PaginatedResult<Auction>(items, totalCount, filter.PageNumber, filter.PageSize);
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)

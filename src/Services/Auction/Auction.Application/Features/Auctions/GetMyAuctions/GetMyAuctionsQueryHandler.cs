@@ -30,24 +30,27 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Pagin
 
         try
         {
-            var (auctions, totalCount) = await _repository.GetPagedAsync(
-                status: request.Status,
-                seller: request.Username,
-                searchTerm: request.SearchTerm,
-                orderBy: request.OrderBy,
-                descending: request.Descending,
-                pageNumber: request.PageNumber,
-                pageSize: request.PageSize,
-                cancellationToken: cancellationToken);
+            var filter = new AuctionFilterDto
+            {
+                Status = request.Status,
+                Seller = request.Username,
+                SearchTerm = request.SearchTerm,
+                OrderBy = request.OrderBy,
+                Descending = request.Descending,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
 
-            var dtos = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
+            var result = await _repository.GetPagedAsync(filter, cancellationToken);
 
-            var result = new PaginatedResult<AuctionDto>(dtos, totalCount, request.PageNumber, request.PageSize);
+            var dtos = result.Items.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
+
+            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.PageNumber, request.PageSize);
 
             _logger.LogInformation("Retrieved {Count} auctions for user {Username} out of {Total}", 
-                dtos.Count, request.Username, totalCount);
+                dtos.Count, request.Username, result.TotalCount);
 
-            return Result.Success(result);
+            return Result.Success(paginatedResult);
         }
         catch (Exception ex)
         {

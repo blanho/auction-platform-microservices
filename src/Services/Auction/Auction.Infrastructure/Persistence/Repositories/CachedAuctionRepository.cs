@@ -44,6 +44,24 @@ public class CachedAuctionRepository : IAuctionRepository
         return result;
     }
 
+    public async Task<PaginatedResult<Auction>> GetPagedAsync(
+        AuctionFilterDto filter,
+        CancellationToken cancellationToken = default)
+    {
+        var key = CacheKeys.AuctionList($"page:{filter.PageNumber}:size:{filter.PageSize}:status:{filter.Status}:seller:{filter.Seller}");
+        var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
+        if (cached != null)
+        {
+            _logger.LogInformation("Cache HIT for paged auctions (page {Page}, size {Size})", filter.PageNumber, filter.PageSize);
+            return cached;
+        }
+
+        _logger.LogInformation("Cache MISS for paged auctions - fetching from database");
+        var result = await _inner.GetPagedAsync(filter, cancellationToken);
+        await _cache.SetAsync(key, result, AuctionListTtl, cancellationToken);
+        return result;
+    }
+
     public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.Auction(id);
@@ -129,20 +147,6 @@ public class CachedAuctionRepository : IAuctionRepository
 
     public Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         => _inner.GetByIdsAsync(ids, cancellationToken);
-
-    public Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
-        string? status = null,
-        string? seller = null,
-        string? winner = null,
-        string? searchTerm = null,
-        string? category = null,
-        bool? isFeatured = null,
-        string? orderBy = null,
-        bool descending = true,
-        int pageNumber = PaginationDefaults.DefaultPage,
-        int pageSize = PaginationDefaults.DefaultPageSize,
-        CancellationToken cancellationToken = default)
-        => _inner.GetPagedAsync(status, seller, winner, searchTerm, category, isFeatured, orderBy, descending, pageNumber, pageSize, cancellationToken);
 
     public Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
         => _inner.GetCountEndingBetweenAsync(start, end, cancellationToken);

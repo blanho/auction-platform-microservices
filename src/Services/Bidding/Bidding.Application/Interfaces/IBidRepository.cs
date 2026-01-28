@@ -1,5 +1,6 @@
 using Bidding.Domain.Entities;
 using Bidding.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Application.Interfaces
@@ -19,7 +20,7 @@ namespace Bidding.Application.Interfaces
         Task<List<Bid>> GetWinningBidsForUserAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default);
         Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
-        Task<(List<Bid> Bids, int TotalCount)> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default);
     }
 
     public class BidHistoryFilter

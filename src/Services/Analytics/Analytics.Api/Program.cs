@@ -10,13 +10,10 @@ using Serilog;
 using Analytics.Api.Consumers;
 using Analytics.Api.Data;
 using Analytics.Api.Extensions;
-using Analytics.Api.Grpc;
 using Analytics.Api.Interfaces;
 using Analytics.Api.Middleware;
 using Analytics.Api.Repositories;
 using Analytics.Api.Services;
-using BidService.Contracts.Grpc;
-using IdentityService.Contracts.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,33 +40,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "AnalyticsService:";
 });
 
-var auctionServiceGrpcUrl = builder.Configuration["GrpcServices:AuctionService"] ?? "http://localhost:7002";
-builder.Services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
-{
-    options.Address = new Uri(auctionServiceGrpcUrl);
-});
-
-var bidServiceGrpcUrl = builder.Configuration["GrpcServices:BidService"] ?? "http://localhost:7004";
-builder.Services.AddGrpcClient<BidStatsGrpc.BidStatsGrpcClient>(options =>
-{
-    options.Address = new Uri(bidServiceGrpcUrl);
-});
-
-var identityServiceGrpcUrl = builder.Configuration["GrpcServices:IdentityService"] ?? "http://localhost:7010";
-builder.Services.AddGrpcClient<UserStatsGrpc.UserStatsGrpcClient>(options =>
-{
-    options.Address = new Uri(identityServiceGrpcUrl);
-});
-
-var paymentServiceGrpcUrl = builder.Configuration["GrpcServices:PaymentService"] ?? "http://localhost:7008";
-builder.Services.AddGrpcClient<PaymentAnalyticsGrpc.PaymentAnalyticsGrpcClient>(options =>
-{
-    options.Address = new Uri(paymentServiceGrpcUrl);
-});
-
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository>();
+builder.Services.AddScoped<IFactAuctionRepository, FactAuctionRepository>();
+builder.Services.AddScoped<IFactBidRepository, FactBidRepository>();
+builder.Services.AddScoped<IFactPaymentRepository, FactPaymentRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddDomainEvents(typeof(UnitOfWork).Assembly);
@@ -82,7 +58,6 @@ builder.Services.AddScoped<IAnalyticsService, PlatformAnalyticsService>();
 builder.Services.AddScoped<IUserAnalyticsAggregator, UserAnalyticsAggregator>();
 
 builder.Services.AddUtilityScheduling(builder.Configuration);
-builder.Services.AddGrpc();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<AuditEventConsumer>();

@@ -36,8 +36,6 @@
     <Protobuf Include="Protos\bids.proto" GrpcServices="Client" />
     <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auctions.proto" GrpcServices="Server" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
     <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auction_validation.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
-    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\auction_stats.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
-    <Protobuf Include="..\..\..\Contracts\AuctionService.Contracts\Grpc\user_analytics.proto" GrpcServices="None" ProtoRoot="..\..\..\Contracts\AuctionService.Contracts" />
   </ItemGroup>
 
   <ItemGroup>
