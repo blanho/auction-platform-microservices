@@ -1,8 +1,6 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.Logging;
@@ -19,7 +17,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
     private readonly IDateTimeProvider _dateTime;
     private readonly IEventPublisher _eventPublisher;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
 
     public ImportAuctionsCommandHandler(
         IAuctionRepository repository,
@@ -27,8 +24,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         ILogger<ImportAuctionsCommandHandler> logger,
         IDateTimeProvider dateTime,
         IEventPublisher eventPublisher,
-        IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher)
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _mapper = mapper;
@@ -36,7 +32,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         _dateTime = dateTime;
         _eventPublisher = eventPublisher;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<ImportAuctionsResultDto>> Handle(ImportAuctionsCommand request, CancellationToken cancellationToken)
@@ -103,15 +98,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 .ToList();
             
             await _eventPublisher.PublishBatchAsync(auctionCreatedEvents, cancellationToken);
-
-            var auditEntities = createdAuctions
-                .Select(auction => (auction.Id, auction))
-                .ToList();
-            
-            await _auditPublisher.PublishBatchAsync(
-                auditEntities,
-                AuditAction.Created,
-                cancellationToken: cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }

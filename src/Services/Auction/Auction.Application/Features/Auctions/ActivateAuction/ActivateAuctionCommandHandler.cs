@@ -1,7 +1,5 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -16,22 +14,19 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
     private readonly ILogger<ActivateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
 
     public ActivateAuctionCommandHandler(
         IAuctionRepository repository,
         IMapper mapper,
         ILogger<ActivateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher)
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<AuctionDto>> Handle(ActivateAuctionCommand request, CancellationToken cancellationToken)
@@ -64,12 +59,6 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
             auction.ChangeStatus(Status.Live);
 
             await _repository.UpdateAsync(auction, cancellationToken);
-
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                auction,
-                AuditAction.Updated,
-                cancellationToken: cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

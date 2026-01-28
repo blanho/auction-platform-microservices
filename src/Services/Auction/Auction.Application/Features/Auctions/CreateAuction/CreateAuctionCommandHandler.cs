@@ -2,8 +2,6 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -18,7 +16,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
     private readonly IFileConfirmationService _fileConfirmationService;
     private readonly ISanitizationService _sanitizationService;
 
@@ -28,7 +25,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
         IFileConfirmationService fileConfirmationService,
         ISanitizationService sanitizationService)
     {
@@ -37,7 +33,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
         _fileConfirmationService = fileConfirmationService;
         _sanitizationService = sanitizationService;
     }
@@ -68,12 +63,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             _logger.LogInformation("Confirmed {FileCount} files for auction {AuctionId}", 
                 fileIds.Count, createdAuction.Id);
         }
-
-        await _auditPublisher.PublishAsync(
-            createdAuction.Id,
-            createdAuction,
-            AuditAction.Created,
-            cancellationToken: cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

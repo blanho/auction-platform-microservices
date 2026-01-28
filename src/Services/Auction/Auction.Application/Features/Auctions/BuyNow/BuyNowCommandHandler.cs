@@ -1,8 +1,6 @@
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -19,7 +17,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     private readonly ILogger<BuyNowCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
     private readonly IDistributedLock _distributedLock;
 
     public BuyNowCommandHandler(
@@ -28,7 +25,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         ILogger<BuyNowCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
         IDistributedLock distributedLock)
     {
         _repository = repository;
@@ -36,7 +32,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
         _distributedLock = distributedLock;
     }
 
@@ -85,12 +80,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
             auction.ExecuteBuyNow(request.BuyerId, request.BuyerUsername);
 
             await _repository.UpdateAsync(auction, cancellationToken);
-
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                auction,
-                AuditAction.Updated,
-                cancellationToken: cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -1,7 +1,6 @@
 using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -14,7 +13,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly ILogger<UpdateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
     private readonly ICacheService _cache;
     private readonly ISanitizationService _sanitizationService;
     
@@ -25,7 +23,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         ILogger<UpdateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
         ICacheService cache,
         ISanitizationService sanitizationService)
     {
@@ -33,7 +30,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
         _cache = cache;
         _sanitizationService = sanitizationService;
     }
@@ -51,7 +47,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
             return Result.Failure<bool>(AuctionErrors.Auction.NotFoundById(request.Id));
         }
 
-        var oldAuction = Auction.CreateSnapshot(auction);
         var modifiedFields = new List<string>();
         
         if (request.Title != null && request.Title != auction.Item.Title)
@@ -90,13 +85,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         auction.RaiseUpdatedEvent(modifiedFields);
         
         await _repository.UpdateAsync(auction, cancellationToken);
-
-        await _auditPublisher.PublishAsync(
-            auction.Id,
-            auction,
-            AuditAction.Updated,
-            oldAuction,
-            cancellationToken: cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _cache.RemoveAsync($"{CacheKeyPrefix}{request.Id}", cancellationToken);

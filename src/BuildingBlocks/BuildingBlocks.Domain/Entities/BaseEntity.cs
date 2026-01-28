@@ -3,7 +3,7 @@ using BuildingBlocks.Domain.Events;
 
 namespace BuildingBlocks.Domain.Entities;
 
-public abstract class BaseEntity
+public abstract class BaseEntity : IAuditableEntity
 {
     public Guid Id { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

@@ -1,7 +1,5 @@
 using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -14,20 +12,17 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
     private readonly ILogger<DeleteAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
 
     public DeleteAuctionCommandHandler(
         IAuctionRepository repository,
         ILogger<DeleteAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher)
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(DeleteAuctionCommand request, CancellationToken cancellationToken)
@@ -46,12 +41,6 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
         auction.RaiseDeletedEvent();
 
         await _repository.DeleteAsync(request.Id, cancellationToken);
-
-        await _auditPublisher.PublishAsync(
-            auction.Id,
-            auction,
-            AuditAction.Deleted,
-            cancellationToken: cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

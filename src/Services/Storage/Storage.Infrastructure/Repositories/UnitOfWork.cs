@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using MediatR;
 using Storage.Application.Interfaces;
 using Storage.Infrastructure.Persistence;
@@ -10,8 +11,8 @@ public class UnitOfWork : BaseUnitOfWork<StorageDbContext>, global::Storage.Appl
     private IStoredFileRepository? _storedFiles;
     private readonly IDateTimeProvider _dateTime;
 
-    public UnitOfWork(StorageDbContext context, IMediator mediator, IDateTimeProvider dateTime)
-        : base(context, mediator)
+    public UnitOfWork(StorageDbContext context, IMediator mediator, IDateTimeProvider dateTime, IAuditPublisher? auditPublisher = null)
+        : base(context, mediator, auditPublisher)
     {
         _dateTime = dateTime;
     }

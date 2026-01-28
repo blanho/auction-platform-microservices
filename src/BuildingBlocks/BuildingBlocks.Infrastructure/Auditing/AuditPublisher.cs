@@ -15,6 +15,11 @@ public class AuditPublisher : IAuditPublisher
     private readonly IAuditContext _auditContext;
     private readonly ILogger<AuditPublisher> _logger;
     private readonly string _serviceName;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     public AuditPublisher(
         IPublishEndpoint publishEndpoint,
@@ -94,6 +99,40 @@ public class AuditPublisher : IAuditPublisher
             auditEvents.Count, typeof(T).Name, _auditContext.UserId);
     }
 
+    public async Task PublishEntriesAsync(
+        IEnumerable<AuditEntry> entries,
+        CancellationToken cancellationToken = default)
+    {
+        var auditEntries = entries.ToList();
+        if (auditEntries.Count == 0)
+            return;
+
+        var timestamp = DateTimeOffset.UtcNow;
+        var auditEvents = auditEntries.Select(entry => new AuditEvent
+        {
+            Id = Guid.NewGuid(),
+            EntityId = entry.EntityId,
+            EntityType = entry.EntityType,
+            Action = MapToContractAction(entry.Action),
+            OldValues = SerializeObject(entry.OldValues),
+            NewValues = SerializeObject(entry.NewValues),
+            ChangedProperties = entry.ChangedProperties,
+            UserId = _auditContext.UserId,
+            Username = _auditContext.Username,
+            ServiceName = _serviceName,
+            CorrelationId = _auditContext.CorrelationId,
+            IpAddress = _auditContext.IpAddress,
+            Timestamp = timestamp,
+            Metadata = entry.Metadata
+        }).ToList();
+
+        await _publishEndpoint.PublishBatch(auditEvents, cancellationToken);
+
+        _logger.LogDebug(
+            "Auto-published {Count} audit events by user {UserId}",
+            auditEvents.Count, _auditContext.UserId);
+    }
+
     private static ContractAuditAction MapToContractAction(AppAuditAction action)
     {
         return action switch
@@ -111,11 +150,22 @@ public class AuditPublisher : IAuditPublisher
     {
         try
         {
-            return JsonSerializer.Serialize(entity, new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            return JsonSerializer.Serialize(entity, JsonOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? SerializeObject(object? obj)
+    {
+        if (obj == null)
+            return null;
+
+        try
+        {
+            return JsonSerializer.Serialize(obj, JsonOptions);
         }
         catch
         {
