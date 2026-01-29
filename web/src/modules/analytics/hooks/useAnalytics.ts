@@ -1,6 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
-import { dashboardApi, analyticsApi, userAnalyticsApi, reportsApi, auditLogsApi, settingsApi } from '../api'
-import type { AnalyticsQueryParams, TrendsQueryParams, ReportQueryParams, AuditLogQueryParams, SettingCategory } from '../types'
+import {
+  dashboardApi,
+  analyticsApi,
+  userAnalyticsApi,
+  reportsApi,
+  auditLogsApi,
+  settingsApi,
+} from '../api'
+import type {
+  AnalyticsQueryParams,
+  TrendsQueryParams,
+  ReportQueryParams,
+  AuditLogQueryParams,
+  SettingCategory,
+} from '../types'
 
 export const analyticsKeys = {
   all: ['analytics'] as const,
@@ -10,30 +23,43 @@ export const analyticsKeys = {
   dashboardHealth: () => [...analyticsKeys.dashboard(), 'health'] as const,
   platform: (params?: AnalyticsQueryParams) => [...analyticsKeys.all, 'platform', params] as const,
   realtime: () => [...analyticsKeys.all, 'realtime'] as const,
-  topPerformers: (limit?: number, period?: string) => [...analyticsKeys.all, 'top-performers', limit, period] as const,
+  topPerformers: (limit?: number, period?: string) =>
+    [...analyticsKeys.all, 'top-performers', limit, period] as const,
   trends: () => [...analyticsKeys.all, 'trends'] as const,
-  revenueTrends: (params?: TrendsQueryParams) => [...analyticsKeys.trends(), 'revenue', params] as const,
-  auctionTrends: (params?: TrendsQueryParams) => [...analyticsKeys.trends(), 'auctions', params] as const,
-  categories: (startDate?: string, endDate?: string) => [...analyticsKeys.all, 'categories', startDate, endDate] as const,
+  revenueTrends: (params?: TrendsQueryParams) =>
+    [...analyticsKeys.trends(), 'revenue', params] as const,
+  auctionTrends: (params?: TrendsQueryParams) =>
+    [...analyticsKeys.trends(), 'auctions', params] as const,
+  categories: (startDate?: string, endDate?: string) =>
+    [...analyticsKeys.all, 'categories', startDate, endDate] as const,
   metrics: () => [...analyticsKeys.all, 'metrics'] as const,
-  auctionMetrics: (params?: AnalyticsQueryParams) => [...analyticsKeys.metrics(), 'auctions', params] as const,
-  bidMetrics: (params?: AnalyticsQueryParams) => [...analyticsKeys.metrics(), 'bids', params] as const,
-  revenueMetrics: (params?: AnalyticsQueryParams) => [...analyticsKeys.metrics(), 'revenue', params] as const,
+  auctionMetrics: (params?: AnalyticsQueryParams) =>
+    [...analyticsKeys.metrics(), 'auctions', params] as const,
+  bidMetrics: (params?: AnalyticsQueryParams) =>
+    [...analyticsKeys.metrics(), 'bids', params] as const,
+  revenueMetrics: (params?: AnalyticsQueryParams) =>
+    [...analyticsKeys.metrics(), 'revenue', params] as const,
+  dailyStats: (startDate?: string, endDate?: string) =>
+    [...analyticsKeys.all, 'daily-stats', startDate, endDate] as const,
   user: () => [...analyticsKeys.all, 'user'] as const,
   userDashboard: () => [...analyticsKeys.user(), 'dashboard'] as const,
   sellerAnalytics: (timeRange?: string) => [...analyticsKeys.user(), 'seller', timeRange] as const,
   quickStats: () => [...analyticsKeys.user(), 'quick-stats'] as const,
-  trendingSearches: (limit?: number) => [...analyticsKeys.user(), 'trending-searches', limit] as const,
+  trendingSearches: (limit?: number) =>
+    [...analyticsKeys.user(), 'trending-searches', limit] as const,
   reports: () => [...analyticsKeys.all, 'reports'] as const,
   reportList: (params?: ReportQueryParams) => [...analyticsKeys.reports(), 'list', params] as const,
   reportDetail: (id: string) => [...analyticsKeys.reports(), 'detail', id] as const,
   reportStats: () => [...analyticsKeys.reports(), 'stats'] as const,
   auditLogs: () => [...analyticsKeys.all, 'audit-logs'] as const,
-  auditLogList: (params?: AuditLogQueryParams) => [...analyticsKeys.auditLogs(), 'list', params] as const,
+  auditLogList: (params?: AuditLogQueryParams) =>
+    [...analyticsKeys.auditLogs(), 'list', params] as const,
   auditLogDetail: (id: string) => [...analyticsKeys.auditLogs(), 'detail', id] as const,
-  auditLogEntity: (entityType: string, entityId: string) => [...analyticsKeys.auditLogs(), 'entity', entityType, entityId] as const,
+  auditLogEntity: (entityType: string, entityId: string) =>
+    [...analyticsKeys.auditLogs(), 'entity', entityType, entityId] as const,
   settings: () => [...analyticsKeys.all, 'settings'] as const,
-  settingsList: (category?: SettingCategory) => [...analyticsKeys.settings(), 'list', category] as const,
+  settingsList: (category?: SettingCategory) =>
+    [...analyticsKeys.settings(), 'list', category] as const,
   settingDetail: (id: string) => [...analyticsKeys.settings(), 'detail', id] as const,
   settingByKey: (key: string) => [...analyticsKeys.settings(), 'key', key] as const,
 }
@@ -130,6 +156,14 @@ export const useRevenueMetrics = (params?: AnalyticsQueryParams) => {
   return useQuery({
     queryKey: analyticsKeys.revenueMetrics(params),
     queryFn: () => analyticsApi.getRevenueMetrics(params),
+    staleTime: 60000,
+  })
+}
+
+export const useDailyStats = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: analyticsKeys.dailyStats(startDate, endDate),
+    queryFn: () => analyticsApi.getDailyStats(startDate, endDate),
     staleTime: 60000,
   })
 }

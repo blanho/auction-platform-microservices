@@ -23,12 +23,12 @@ export function clearAccessToken(): void {
 }
 
 export function isAccessTokenExpired(): boolean {
-  if (!inMemoryAccessToken || !tokenExpiresAt) return true
+  if (!inMemoryAccessToken || !tokenExpiresAt) {return true}
   return Date.now() >= tokenExpiresAt
 }
 
 export function shouldRefreshToken(thresholdMs = 60 * 1000): boolean {
-  if (!inMemoryAccessToken || !tokenExpiresAt) return true
+  if (!inMemoryAccessToken || !tokenExpiresAt) {return true}
   return Date.now() >= tokenExpiresAt - thresholdMs
 }
 
@@ -43,7 +43,7 @@ export function getTokenExpirationTime(token: string): number | null {
 
 export function isTokenExpired(token: string): boolean {
   const exp = getTokenExpirationTime(token)
-  if (!exp) return true
+  if (!exp) {return true}
   return Date.now() >= exp
 }
 
@@ -58,9 +58,9 @@ export function getTokenPayload<T = Record<string, unknown>>(token: string): T |
 const AUTH_USER_KEY = 'auction_user'
 
 export function getStoredUser(): AuthUser | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') {return null}
   const userJson = sessionStorage.getItem(AUTH_USER_KEY)
-  if (!userJson) return null
+  if (!userJson) {return null}
   try {
     return JSON.parse(userJson) as AuthUser
   } catch {
@@ -69,12 +69,12 @@ export function getStoredUser(): AuthUser | null {
 }
 
 export function setStoredUser(user: AuthUser): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') {return}
   sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
 }
 
 export function removeStoredUser(): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') {return}
   sessionStorage.removeItem(AUTH_USER_KEY)
 }
 

@@ -11,7 +11,6 @@ import {
   Chip,
   Divider,
   Skeleton,
-  Alert,
   Snackbar,
   Dialog,
   DialogTitle,
@@ -42,8 +41,11 @@ import {
   LocationOn,
   Pending,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useOrderById, useShipOrder, useCancelOrder, useMarkDelivered } from '../hooks'
-import type { OrderStatus } from '../types'
+import { InlineAlert } from '@/shared/ui'
+import { getOrderStatusConfig, getOrderActiveStep } from '../utils'
+import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
@@ -52,18 +54,18 @@ const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   },
   [`&.${stepConnectorClasses.active}`]: {
     [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: 'linear-gradient(95deg, #CA8A04 0%, #A16207 100%)',
+      backgroundImage: `linear-gradient(95deg, ${palette.brand.primary} 0%, #A16207 100%)`,
     },
   },
   [`&.${stepConnectorClasses.completed}`]: {
     [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: 'linear-gradient(95deg, #22C55E 0%, #16A34A 100%)',
+      backgroundImage: `linear-gradient(95deg, ${palette.semantic.success} 0%, #16A34A 100%)`,
     },
   },
   [`& .${stepConnectorClasses.line}`]: {
     height: 3,
     border: 0,
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#E7E5E4',
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : palette.neutral[200],
     borderRadius: 1,
   },
 }))
@@ -71,9 +73,9 @@ const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
 const ColorlibStepIconRoot = styled('div')<{
   ownerState: { completed?: boolean; active?: boolean; error?: boolean }
 }>(({ ownerState }) => ({
-  backgroundColor: '#E7E5E4',
+  backgroundColor: palette.neutral[200],
   zIndex: 1,
-  color: '#78716C',
+  color: palette.neutral[500],
   width: 50,
   height: 50,
   display: 'flex',
@@ -81,16 +83,16 @@ const ColorlibStepIconRoot = styled('div')<{
   justifyContent: 'center',
   alignItems: 'center',
   ...(ownerState.active && {
-    backgroundImage: 'linear-gradient(136deg, #CA8A04 0%, #A16207 100%)',
-    boxShadow: '0 4px 10px 0 rgba(202, 138, 4, .25)',
+    backgroundImage: `linear-gradient(136deg, ${palette.brand.primary} 0%, #A16207 100%)`,
+    boxShadow: `0 4px 10px 0 ${palette.brand.muted}`,
     color: 'white',
   }),
   ...(ownerState.completed && {
-    backgroundImage: 'linear-gradient(136deg, #22C55E 0%, #16A34A 100%)',
+    backgroundImage: `linear-gradient(136deg, ${palette.semantic.success} 0%, #16A34A 100%)`,
     color: 'white',
   }),
   ...(ownerState.error && {
-    backgroundImage: 'linear-gradient(136deg, #EF4444 0%, #DC2626 100%)',
+    backgroundImage: `linear-gradient(136deg, ${palette.semantic.error} 0%, #DC2626 100%)`,
     color: 'white',
   }),
 }))
@@ -109,55 +111,6 @@ function ColorlibStepIcon(props: {
       {icon}
     </ColorlibStepIconRoot>
   )
-}
-
-const getStatusConfig = (status: OrderStatus) => {
-  const config: Record<
-    OrderStatus,
-    { label: string; color: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' }
-  > = {
-    pending: { label: 'Pending', color: 'warning' },
-    payment_pending: { label: 'Awaiting Payment', color: 'warning' },
-    paid: { label: 'Paid', color: 'info' },
-    shipped: { label: 'Shipped', color: 'primary' },
-    delivered: { label: 'Delivered', color: 'success' },
-    completed: { label: 'Completed', color: 'success' },
-    cancelled: { label: 'Cancelled', color: 'error' },
-    refunded: { label: 'Refunded', color: 'default' },
-  }
-  return config[status]
-}
-
-const getActiveStep = (status: OrderStatus) => {
-  const stepMap: Record<OrderStatus, number> = {
-    pending: 0,
-    payment_pending: 0,
-    paid: 1,
-    shipped: 2,
-    delivered: 3,
-    completed: 4,
-    cancelled: -1,
-    refunded: -1,
-  }
-  return stepMap[status]
-}
-
-const formatDate = (dateString?: string) => {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
 }
 
 export function OrderDetailPage() {
@@ -185,7 +138,7 @@ export function OrderDetailPage() {
   }
 
   const handleShipOrder = async () => {
-    if (!trackingNumber || !shippingCarrier) return
+    if (!trackingNumber || !shippingCarrier) {return}
     try {
       await shipOrder.mutateAsync({
         id: orderId!,
@@ -230,9 +183,9 @@ export function OrderDetailPage() {
   if (error || !order) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
           Order not found or you don't have permission to view it.
-        </Alert>
+        </InlineAlert>
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/orders')}>
           Back to Orders
         </Button>
@@ -248,7 +201,7 @@ export function OrderDetailPage() {
     { label: 'Completed', icon: <CheckCircle fontSize="small" />, date: order.completedAt },
   ]
 
-  const activeStep = getActiveStep(order.status)
+  const activeStep = getOrderActiveStep(order.status)
   const isCancelled = order.status === 'cancelled' || order.status === 'refunded'
   const canShip = order.status === 'paid'
   const canMarkDelivered = order.status === 'shipped'
@@ -261,7 +214,7 @@ export function OrderDetailPage() {
       : order.shippingAddress
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="lg" sx={{ pt: 4 }}>
         <motion.div variants={staggerContainer} initial="initial" animate="animate">
           <motion.div variants={fadeInUp}>
@@ -269,7 +222,11 @@ export function OrderDetailPage() {
               startIcon={<ArrowBack />}
               component={Link}
               to="/orders"
-              sx={{ mb: 3, color: '#78716C', '&:hover': { bgcolor: '#F5F5F4' } }}
+              sx={{
+                mb: 3,
+                color: palette.neutral[500],
+                '&:hover': { bgcolor: palette.neutral[100] },
+              }}
             >
               Back to Orders
             </Button>
@@ -292,7 +249,7 @@ export function OrderDetailPage() {
                   sx={{
                     fontFamily: '"Playfair Display", serif',
                     fontWeight: 700,
-                    color: '#1C1917',
+                    color: palette.neutral[900],
                     mb: 1,
                   }}
                 >
@@ -309,7 +266,7 @@ export function OrderDetailPage() {
                     sx={{
                       minWidth: 'auto',
                       px: 1,
-                      color: '#78716C',
+                      color: palette.neutral[500],
                       textTransform: 'none',
                       fontSize: '0.75rem',
                     }}
@@ -319,8 +276,8 @@ export function OrderDetailPage() {
                 </Stack>
               </Box>
               <Chip
-                label={getStatusConfig(order.status).label}
-                color={getStatusConfig(order.status).color}
+                label={getOrderStatusConfig(order.status).label}
+                color={getOrderStatusConfig(order.status).color}
                 sx={{ fontWeight: 600 }}
               />
             </Box>
@@ -329,11 +286,7 @@ export function OrderDetailPage() {
           {!isCancelled && (
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-                <Stepper
-                  alternativeLabel
-                  activeStep={activeStep}
-                  connector={<ColorlibConnector />}
-                >
+                <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
                   {steps.map((step, index) => (
                     <Step key={step.label}>
                       <StepLabel
@@ -349,7 +302,8 @@ export function OrderDetailPage() {
                         <Typography
                           sx={{
                             fontWeight: index <= activeStep ? 600 : 400,
-                            color: index <= activeStep ? '#1C1917' : '#78716C',
+                            color:
+                              index <= activeStep ? palette.neutral[900] : palette.neutral[500],
                           }}
                         >
                           {step.label}
@@ -369,14 +323,9 @@ export function OrderDetailPage() {
 
           {isCancelled && (
             <motion.div variants={staggerItem}>
-              <Alert
-                severity="error"
-                icon={<Cancel />}
-                sx={{ mb: 4, borderRadius: 2 }}
-              >
-                This order has been{' '}
-                {order.status === 'refunded' ? 'refunded' : 'cancelled'}.
-              </Alert>
+              <InlineAlert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
+                This order has been {order.status === 'refunded' ? 'refunded' : 'cancelled'}.
+              </InlineAlert>
             </motion.div>
           )}
 
@@ -384,7 +333,13 @@ export function OrderDetailPage() {
             <Grid size={{ xs: 12, md: 8 }}>
               <motion.div variants={staggerItem}>
                 <Card sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
-                  <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: palette.neutral[50],
+                      borderBottom: `1px solid ${palette.neutral[200]}`,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Item Details
                     </Typography>
@@ -405,9 +360,9 @@ export function OrderDetailPage() {
                           to={`/auctions/${order.auctionId}`}
                           sx={{
                             fontWeight: 600,
-                            color: '#1C1917',
+                            color: palette.neutral[900],
                             textDecoration: 'none',
-                            '&:hover': { color: '#CA8A04' },
+                            '&:hover': { color: palette.brand.primary },
                             display: 'flex',
                             alignItems: 'center',
                             gap: 0.5,
@@ -421,7 +376,7 @@ export function OrderDetailPage() {
                         </Typography>
                         <Typography
                           variant="h5"
-                          sx={{ fontWeight: 700, color: '#CA8A04', mt: 2 }}
+                          sx={{ fontWeight: 700, color: palette.brand.primary, mt: 2 }}
                         >
                           {formatCurrency(order.winningBid || order.winningBidAmount || 0)}
                         </Typography>
@@ -436,7 +391,13 @@ export function OrderDetailPage() {
 
               <motion.div variants={staggerItem}>
                 <Card sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
-                  <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: palette.neutral[50],
+                      borderBottom: `1px solid ${palette.neutral[200]}`,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Shipping Information
                     </Typography>
@@ -446,7 +407,7 @@ export function OrderDetailPage() {
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <Stack spacing={2}>
                           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                            <LocationOn sx={{ color: '#78716C', mt: 0.3 }} />
+                            <LocationOn sx={{ color: palette.neutral[500], mt: 0.3 }} />
                             <Box>
                               <Typography variant="subtitle2" fontWeight={600}>
                                 Delivery Address
@@ -487,7 +448,7 @@ export function OrderDetailPage() {
                         {order.trackingNumber ? (
                           <Stack spacing={2}>
                             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                              <LocalShipping sx={{ color: '#78716C', mt: 0.3 }} />
+                              <LocalShipping sx={{ color: palette.neutral[500], mt: 0.3 }} />
                               <Box>
                                 <Typography variant="subtitle2" fontWeight={600}>
                                   Tracking Information
@@ -498,7 +459,7 @@ export function OrderDetailPage() {
                                 <Typography
                                   variant="body2"
                                   sx={{
-                                    color: '#CA8A04',
+                                    color: palette.brand.primary,
                                     fontWeight: 500,
                                     display: 'flex',
                                     alignItems: 'center',
@@ -523,7 +484,7 @@ export function OrderDetailPage() {
                           </Stack>
                         ) : (
                           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                            <Pending sx={{ color: '#78716C', mt: 0.3 }} />
+                            <Pending sx={{ color: palette.neutral[500], mt: 0.3 }} />
                             <Box>
                               <Typography variant="subtitle2" fontWeight={600}>
                                 Tracking Information
@@ -542,7 +503,13 @@ export function OrderDetailPage() {
 
               <motion.div variants={staggerItem}>
                 <Card sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                  <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: palette.neutral[50],
+                      borderBottom: `1px solid ${palette.neutral[200]}`,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Order Timeline
                     </Typography>
@@ -551,21 +518,21 @@ export function OrderDetailPage() {
                     <Stack spacing={2}>
                       {order.completedAt && (
                         <TimelineItem
-                          icon={<CheckCircle sx={{ color: '#22C55E' }} />}
+                          icon={<CheckCircle sx={{ color: palette.semantic.success }} />}
                           title="Order Completed"
                           date={order.completedAt}
                         />
                       )}
                       {order.deliveredAt && (
                         <TimelineItem
-                          icon={<Inventory sx={{ color: '#22C55E' }} />}
+                          icon={<Inventory sx={{ color: palette.semantic.success }} />}
                           title="Delivered"
                           date={order.deliveredAt}
                         />
                       )}
                       {order.shippedAt && (
                         <TimelineItem
-                          icon={<LocalShipping sx={{ color: '#3B82F6' }} />}
+                          icon={<LocalShipping sx={{ color: palette.semantic.info }} />}
                           title={`Shipped via ${order.shippingCarrier || 'Carrier'}`}
                           date={order.shippedAt}
                           subtitle={order.trackingNumber && `Tracking: ${order.trackingNumber}`}
@@ -573,13 +540,13 @@ export function OrderDetailPage() {
                       )}
                       {order.paidAt && (
                         <TimelineItem
-                          icon={<Payment sx={{ color: '#22C55E' }} />}
+                          icon={<Payment sx={{ color: palette.semantic.success }} />}
                           title="Payment Confirmed"
                           date={order.paidAt}
                         />
                       )}
                       <TimelineItem
-                        icon={<ShoppingBag sx={{ color: '#CA8A04' }} />}
+                        icon={<ShoppingBag sx={{ color: palette.brand.primary }} />}
                         title="Order Created"
                         date={order.createdAt}
                       />
@@ -592,7 +559,13 @@ export function OrderDetailPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <motion.div variants={staggerItem}>
                 <Card sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
-                  <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: palette.neutral[50],
+                      borderBottom: `1px solid ${palette.neutral[200]}`,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Order Summary
                     </Typography>
@@ -624,7 +597,7 @@ export function OrderDetailPage() {
                       <Divider />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography fontWeight={600}>Total</Typography>
-                        <Typography fontWeight={700} color="#CA8A04" variant="h6">
+                        <Typography fontWeight={700} color={palette.brand.primary} variant="h6">
                           {formatCurrency(order.totalAmount)}
                         </Typography>
                       </Box>
@@ -635,7 +608,13 @@ export function OrderDetailPage() {
 
               <motion.div variants={staggerItem}>
                 <Card sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
-                  <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      bgcolor: palette.neutral[50],
+                      borderBottom: `1px solid ${palette.neutral[200]}`,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600}>
                       Parties
                     </Typography>
@@ -643,8 +622,8 @@ export function OrderDetailPage() {
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={3}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: '#E7E5E4' }}>
-                          <Person sx={{ color: '#78716C' }} />
+                        <Avatar sx={{ bgcolor: palette.neutral[200] }}>
+                          <Person sx={{ color: palette.neutral[500] }} />
                         </Avatar>
                         <Box>
                           <Typography variant="caption" color="text.secondary">
@@ -656,8 +635,8 @@ export function OrderDetailPage() {
                         </Box>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: '#FEF3C7' }}>
-                          <Person sx={{ color: '#CA8A04' }} />
+                        <Avatar sx={{ bgcolor: palette.semantic.warningLight }}>
+                          <Person sx={{ color: palette.brand.primary }} />
                         </Avatar>
                         <Box>
                           <Typography variant="caption" color="text.secondary">
@@ -676,7 +655,13 @@ export function OrderDetailPage() {
               {!isCancelled && (canShip || canMarkDelivered || canCancel) && (
                 <motion.div variants={staggerItem}>
                   <Card sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                    <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderBottom: '1px solid #E7E5E4' }}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        bgcolor: palette.neutral[50],
+                        borderBottom: `1px solid ${palette.neutral[200]}`,
+                      }}
+                    >
                       <Typography variant="h6" fontWeight={600}>
                         Actions
                       </Typography>
@@ -690,7 +675,7 @@ export function OrderDetailPage() {
                             startIcon={<LocalShipping />}
                             onClick={() => setShowShipDialog(true)}
                             sx={{
-                              bgcolor: '#CA8A04',
+                              bgcolor: palette.brand.primary,
                               textTransform: 'none',
                               fontWeight: 600,
                               '&:hover': { bgcolor: '#A16207' },
@@ -707,7 +692,7 @@ export function OrderDetailPage() {
                             onClick={handleMarkDelivered}
                             disabled={markDelivered.isPending}
                             sx={{
-                              bgcolor: '#22C55E',
+                              bgcolor: palette.semantic.success,
                               textTransform: 'none',
                               fontWeight: 600,
                               '&:hover': { bgcolor: '#16A34A' },
@@ -727,11 +712,14 @@ export function OrderDetailPage() {
                             startIcon={<Cancel />}
                             onClick={() => setShowCancelDialog(true)}
                             sx={{
-                              borderColor: '#EF4444',
-                              color: '#EF4444',
+                              borderColor: palette.semantic.error,
+                              color: palette.semantic.error,
                               textTransform: 'none',
                               fontWeight: 600,
-                              '&:hover': { borderColor: '#DC2626', bgcolor: '#FEF2F2' },
+                              '&:hover': {
+                                borderColor: palette.semantic.errorHover,
+                                bgcolor: palette.semantic.errorLight,
+                              },
                             }}
                           >
                             Cancel Order
@@ -747,7 +735,12 @@ export function OrderDetailPage() {
         </motion.div>
       </Container>
 
-      <Dialog open={showShipDialog} onClose={() => setShowShipDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showShipDialog}
+        onClose={() => setShowShipDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Ship Order</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -772,7 +765,7 @@ export function OrderDetailPage() {
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button
             onClick={() => setShowShipDialog(false)}
-            sx={{ color: '#78716C', textTransform: 'none' }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -781,22 +774,33 @@ export function OrderDetailPage() {
             onClick={handleShipOrder}
             disabled={!trackingNumber || !shippingCarrier || shipOrder.isPending}
             sx={{
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               textTransform: 'none',
               '&:hover': { bgcolor: '#A16207' },
             }}
           >
-            {shipOrder.isPending ? <CircularProgress size={20} color="inherit" /> : 'Confirm Shipment'}
+            {shipOrder.isPending ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              'Confirm Shipment'
+            )}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, color: '#EF4444' }}>Cancel Order</DialogTitle>
+      <Dialog
+        open={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, color: palette.semantic.error }}>
+          Cancel Order
+        </DialogTitle>
         <DialogContent>
-          <Alert severity="warning" sx={{ mb: 3 }}>
+          <InlineAlert severity="warning" sx={{ mb: 3 }}>
             Are you sure you want to cancel this order? This action cannot be undone.
-          </Alert>
+          </InlineAlert>
           <TextField
             fullWidth
             label="Reason for Cancellation (Optional)"
@@ -810,7 +814,7 @@ export function OrderDetailPage() {
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button
             onClick={() => setShowCancelDialog(false)}
-            sx={{ color: '#78716C', textTransform: 'none' }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
             Keep Order
           </Button>
@@ -819,9 +823,9 @@ export function OrderDetailPage() {
             onClick={handleCancelOrder}
             disabled={cancelOrder.isPending}
             sx={{
-              bgcolor: '#EF4444',
+              bgcolor: palette.semantic.error,
               textTransform: 'none',
-              '&:hover': { bgcolor: '#DC2626' },
+              '&:hover': { bgcolor: palette.semantic.errorHover },
             }}
           >
             {cancelOrder.isPending ? (
@@ -873,7 +877,7 @@ function TimelineItem({
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary">
-          {formatDate(date)}
+          {date ? formatDateTime(date) : '-'}
         </Typography>
       </Box>
     </Box>
@@ -882,7 +886,7 @@ function TimelineItem({
 
 function OrderDetailPageSkeleton() {
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="lg" sx={{ pt: 4 }}>
         <Skeleton width={120} height={36} sx={{ mb: 3 }} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>

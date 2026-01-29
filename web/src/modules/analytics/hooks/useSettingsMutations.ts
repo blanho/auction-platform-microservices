@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { settingsApi } from '../api'
-import type { CreateSettingRequest, UpdateSettingRequest, BulkUpdateSettingsRequest } from '../types'
+import type {
+  CreateSettingRequest,
+  UpdateSettingRequest,
+  BulkUpdateSettingsRequest,
+} from '../types'
 import { analyticsKeys } from './useAnalytics'
 
 export const useCreateSetting = () => {

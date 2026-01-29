@@ -2,7 +2,7 @@ const CSRF_COOKIE_NAME = 'XSRF-TOKEN'
 const CSRF_HEADER_NAME = 'X-XSRF-TOKEN'
 
 export function getCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null
+  if (typeof document === 'undefined') {return null}
 
   const cookies = document.cookie.split(';')
   for (const cookie of cookies) {
@@ -16,7 +16,7 @@ export function getCsrfToken(): string | null {
 
 export function getCsrfHeader(): Record<string, string> {
   const token = getCsrfToken()
-  if (!token) return {}
+  if (!token) {return {}}
   return { [CSRF_HEADER_NAME]: token }
 }
 

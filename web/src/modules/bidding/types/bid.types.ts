@@ -6,7 +6,7 @@ export const BidStatus = {
   Outbid: 'Outbid',
 } as const
 
-export type BidStatus = typeof BidStatus[keyof typeof BidStatus]
+export type BidStatus = (typeof BidStatus)[keyof typeof BidStatus]
 
 export interface Bid {
   id: string

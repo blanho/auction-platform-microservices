@@ -1,10 +1,20 @@
 import { Link } from 'react-router-dom'
-import { Box, ListItem, ListItemIcon, ListItemText, Typography, IconButton, Menu, MenuItem } from '@mui/material'
+import {
+  Box,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+} from '@mui/material'
 import { MoreVert, Delete, Archive, Circle } from '@mui/icons-material'
 import { useState } from 'react'
 import type { Notification } from '../types'
 import { formatTimeAgo, getNotificationLink } from '../utils'
 import { NotificationIcon } from './NotificationIcon'
+import { palette } from '@/shared/theme/tokens'
 
 interface NotificationItemProps {
   notification: Notification
@@ -13,7 +23,12 @@ interface NotificationItemProps {
   onArchive?: (id: string) => void
 }
 
-export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchive }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  onMarkAsRead,
+  onDelete,
+  onArchive,
+}: NotificationItemProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const link = getNotificationLink(notification)
   const isUnread = notification.status === 'unread'
@@ -34,12 +49,12 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchi
   }
 
   const handleDelete = () => {
-    if (onDelete) onDelete(notification.id)
+    if (onDelete) {onDelete(notification.id)}
     handleMenuClose()
   }
 
   const handleArchive = () => {
-    if (onArchive) onArchive(notification.id)
+    if (onArchive) {onArchive(notification.id)}
     handleMenuClose()
   }
 
@@ -50,7 +65,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchi
           py: 2,
           px: 3,
           bgcolor: isUnread ? '#FFFBEB' : 'transparent',
-          '&:hover': { bgcolor: isUnread ? '#FEF3C7' : '#FAFAF9' },
+          '&:hover': { bgcolor: isUnread ? '#FEF3C7' : palette.neutral[50] },
           cursor: link ? 'pointer' : 'default',
         }}
         onClick={handleClick}
@@ -79,9 +94,9 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchi
                   to={link}
                   sx={{
                     fontWeight: isUnread ? 600 : 500,
-                    color: '#1C1917',
+                    color: palette.neutral[900],
                     textDecoration: 'none',
-                    '&:hover': { color: '#CA8A04' },
+                    '&:hover': { color: palette.brand.primary },
                   }}
                 >
                   {notification.title}
@@ -90,18 +105,21 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchi
                 <Typography
                   sx={{
                     fontWeight: isUnread ? 600 : 500,
-                    color: '#1C1917',
+                    color: palette.neutral[900],
                   }}
                 >
                   {notification.title}
                 </Typography>
               )}
-              {isUnread && <Circle sx={{ fontSize: 8, color: '#CA8A04' }} />}
+              {isUnread && <Circle sx={{ fontSize: 8, color: palette.brand.primary }} />}
             </Box>
           }
           secondary={
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography component="span" sx={{ fontSize: '0.875rem', color: '#78716C' }}>
+              <Typography
+                component="span"
+                sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}
+              >
                 {notification.message}
               </Typography>
               <Typography component="span" sx={{ fontSize: '0.75rem', color: '#A1A1AA' }}>
@@ -123,7 +141,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete, onArchi
           <Archive sx={{ mr: 1, fontSize: 20 }} />
           Archive
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: '#EF4444' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: palette.semantic.error }}>
           <Delete sx={{ mr: 1, fontSize: 20 }} />
           Delete
         </MenuItem>

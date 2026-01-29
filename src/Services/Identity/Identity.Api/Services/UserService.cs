@@ -77,25 +77,19 @@ public class UserService : IUserService
         GetUsersQuery query,
         CancellationToken cancellationToken = default)
     {
-        var roleId = await GetRoleIdAsync(query.Role, cancellationToken);
-
-        var filters = new IFilter<ApplicationUser>[]
-        {
-            new SearchUserFilter(query.Search),
-            new StatusUserFilter(query.IsActive, query.IsSuspended),
-            new RoleUserFilter(roleId)
-        };
+        var roleId = await GetRoleIdAsync(query.Filter.Role, cancellationToken);
 
         var dbQuery = _userManager.Users
             .AsNoTracking()
             .Include(u => u.UserRoles)
-            .ApplyFilters(filters)
-            .ApplySorting(query.Sorts, UserSortMap.Map, u => u.CreatedAt, defaultDesc: true);
+            .ApplyUserFilters(query.Filter.Search, query.Filter.IsActive, query.Filter.IsSuspended)
+            .ApplyRoleFilter(roleId)
+            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 
         var users = await dbQuery
-            .ApplyPaging(query.Page, query.PageSize)
+            .ApplyPaging(query)
             .ToListAsync(cancellationToken);
 
         var rolesDictionary = await GetRolesDictionaryAsync(users, cancellationToken);

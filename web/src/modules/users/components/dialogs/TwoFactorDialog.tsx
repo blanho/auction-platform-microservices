@@ -5,15 +5,14 @@ import {
   DialogActions,
   Button,
   Stack,
-  Alert,
   Box,
-  Chip,
   Typography,
   Skeleton,
   Divider,
 } from '@mui/material'
 import { Security, PhonelinkLock, Key, Refresh, Block } from '@mui/icons-material'
-import { getAdminUserDisplayName, get2FAStatusColor, getRecoveryCodesColor } from '../../utils'
+import { getAdminUserDisplayName } from '../../utils'
+import { InlineAlert, StatusBadge } from '@/shared/ui'
 import type { AdminUser, User2FAStatus } from '../../types'
 
 interface TwoFactorDialogProps {
@@ -72,10 +71,8 @@ export function TwoFactorDialog({
                   />
                   <Typography>2FA Status</Typography>
                 </Box>
-                <Chip
-                  label={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                  color={get2FAStatusColor(status?.twoFactorEnabled || false)}
-                  size="small"
+                <StatusBadge
+                  status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                 />
               </Box>
 
@@ -101,9 +98,9 @@ export function TwoFactorDialog({
 
                   <Divider />
 
-                  <Alert severity="warning">
+                  <InlineAlert severity="warning">
                     These actions will affect the user&apos;s account security. Use with caution.
-                  </Alert>
+                  </InlineAlert>
 
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button
@@ -131,9 +128,7 @@ export function TwoFactorDialog({
               )}
 
               {!status?.twoFactorEnabled && (
-                <Alert severity="info">
-                  This user has not enabled two-factor authentication.
-                </Alert>
+                <InlineAlert severity="info">This user has not enabled two-factor authentication.</InlineAlert>
               )}
             </>
           )}

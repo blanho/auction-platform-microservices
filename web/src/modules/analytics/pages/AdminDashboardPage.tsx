@@ -15,7 +15,6 @@ import {
   Skeleton,
   ToggleButton,
   ToggleButtonGroup,
-  Alert,
   Divider,
 } from '@mui/material'
 import {
@@ -26,37 +25,35 @@ import {
   TrendingUp,
   TrendingDown,
   CheckCircle,
-  Warning,
-  Error as ErrorIcon,
   ShoppingCart,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
 import {
   useAdminDashboardStats,
   useDashboardActivity,
   usePlatformHealth,
   usePlatformAnalytics,
   useCategoryPerformance,
-  useTopPerformers,
 } from '../hooks/useAnalytics'
+import {
+  RealTimeStatsCard,
+  TrendChart,
+  BidMetricsCard,
+  TopPerformersTable,
+  DailyStatsChart,
+} from '../components'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
-import type { AdminDashboardStats, CategoryBreakdown } from '../types'
-
-interface StatCardConfig {
-  key: keyof AdminDashboardStats
-  label: string
-  icon: React.ReactNode
-  color: string
-  format: 'currency' | 'number'
-  changeKey: keyof AdminDashboardStats
-}
+import { getHealthIcon, getHealthColor } from '../utils'
+import type { StatCardConfig } from '../types'
 
 const statCards: StatCardConfig[] = [
   {
     key: 'totalRevenue',
     label: 'Total Revenue',
     icon: <AttachMoney />,
-    color: '#10B981',
+    color: palette.semantic.success,
     format: 'currency',
     changeKey: 'revenueChange',
   },
@@ -64,7 +61,7 @@ const statCards: StatCardConfig[] = [
     key: 'activeUsers',
     label: 'Active Users',
     icon: <People />,
-    color: '#3B82F6',
+    color: palette.semantic.info,
     format: 'number',
     changeKey: 'activeUsersChange',
   },
@@ -72,7 +69,7 @@ const statCards: StatCardConfig[] = [
     key: 'liveAuctions',
     label: 'Live Auctions',
     icon: <Gavel />,
-    color: '#CA8A04',
+    color: palette.brand.primary,
     format: 'number',
     changeKey: 'liveAuctionsChange',
   },
@@ -80,37 +77,11 @@ const statCards: StatCardConfig[] = [
     key: 'pendingReports',
     label: 'Pending Reports',
     icon: <ReportIcon />,
-    color: '#EF4444',
+    color: palette.semantic.error,
     format: 'number',
     changeKey: 'pendingReportsChange',
   },
 ]
-
-const getHealthIcon = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'healthy':
-    case 'connected':
-      return <CheckCircle sx={{ color: 'success.main', fontSize: 20 }} />
-    case 'degraded':
-    case 'unknown':
-      return <Warning sx={{ color: 'warning.main', fontSize: 20 }} />
-    default:
-      return <ErrorIcon sx={{ color: 'error.main', fontSize: 20 }} />
-  }
-}
-
-const getHealthColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'healthy':
-    case 'connected':
-      return 'success.main'
-    case 'degraded':
-    case 'unknown':
-      return 'warning.main'
-    default:
-      return 'error.main'
-  }
-}
 
 export function AdminDashboardPage() {
   const [period, setPeriod] = useState<string>('week')
@@ -119,7 +90,6 @@ export function AdminDashboardPage() {
   const { data: health, isLoading: healthLoading } = usePlatformHealth()
   const { data: analytics } = usePlatformAnalytics({ period })
   const { data: categories, isLoading: categoriesLoading } = useCategoryPerformance()
-  const { data: topPerformers, isLoading: performersLoading } = useTopPerformers(5, period)
 
   const handlePeriodChange = (_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
     if (newPeriod) {
@@ -131,7 +101,9 @@ export function AdminDashboardPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -158,15 +130,21 @@ export function AdminDashboardPage() {
         </motion.div>
 
         {statsError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <InlineAlert severity="error" sx={{ mb: 3 }}>
             Failed to load dashboard statistics. Please try again later.
-          </Alert>
+          </InlineAlert>
         )}
+
+        <Box sx={{ mb: 4 }}>
+          <motion.div variants={staggerItem}>
+            <RealTimeStatsCard />
+          </motion.div>
+        </Box>
 
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {statCards.map((card) => {
-            const value = stats?.[card.key] as number ?? 0
-            const change = stats?.[card.changeKey] as number ?? 0
+            const value = (stats?.[card.key] as number) ?? 0
+            const change = (stats?.[card.changeKey] as number) ?? 0
             return (
               <Grid key={card.key} size={{ xs: 12, sm: 6, md: 3 }}>
                 <motion.div variants={staggerItem}>
@@ -179,13 +157,21 @@ export function AdminDashboardPage() {
                       </Box>
                     ) : (
                       <>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                          }}
+                        >
                           <Box>
                             <Typography variant="body2" color="text.secondary" gutterBottom>
                               {card.label}
                             </Typography>
                             <Typography variant="h4" fontWeight={700}>
-                              {card.format === 'currency' ? formatCurrency(value) : formatNumber(value)}
+                              {card.format === 'currency'
+                                ? formatCurrency(value)
+                                : formatNumber(value)}
                             </Typography>
                           </Box>
                           <Box
@@ -246,7 +232,13 @@ export function AdminDashboardPage() {
                   </Stack>
                 ) : (
                   <Stack spacing={2} sx={{ mt: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <ShoppingCart color="primary" />
                         <Typography>Total Orders</Typography>
@@ -256,7 +248,13 @@ export function AdminDashboardPage() {
                       </Typography>
                     </Box>
                     <Divider />
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <CheckCircle color="success" />
                         <Typography>Completed Orders</Typography>
@@ -272,9 +270,7 @@ export function AdminDashboardPage() {
                       <LinearProgress
                         variant="determinate"
                         value={
-                          stats?.totalOrders
-                            ? (stats.completedOrders / stats.totalOrders) * 100
-                            : 0
+                          stats?.totalOrders ? (stats.completedOrders / stats.totalOrders) * 100 : 0
                         }
                         sx={{ height: 8, borderRadius: 1 }}
                       />
@@ -296,13 +292,14 @@ export function AdminDashboardPage() {
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Platform Health
                 </Typography>
-                {healthLoading ? (
+                {healthLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {[1, 2, 3, 4].map((i) => (
                       <Skeleton key={i} height={32} />
                     ))}
                   </Stack>
-                ) : health ? (
+                )}
+                {!healthLoading && health && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {[
                       { label: 'API Status', status: health.apiStatus },
@@ -312,7 +309,11 @@ export function AdminDashboardPage() {
                     ].map((item) => (
                       <Box
                         key={item.label}
-                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
                       >
                         <Typography variant="body2">{item.label}</Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -327,15 +328,42 @@ export function AdminDashboardPage() {
                       </Box>
                     ))}
                     {health.queueJobCount > 0 && (
-                      <Alert severity="info" sx={{ mt: 1 }}>
+                      <InlineAlert severity="info" sx={{ mt: 1 }}>
                         {health.queueJobCount} jobs in queue
-                      </Alert>
+                      </InlineAlert>
                     )}
                   </Stack>
-                ) : (
+                )}
+                {!healthLoading && !health && (
                   <Typography color="text.secondary">Unable to load health status</Typography>
                 )}
               </Card>
+            </motion.div>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, lg: 8 }}>
+            <motion.div variants={staggerItem}>
+              <TrendChart />
+            </motion.div>
+          </Grid>
+          <Grid size={{ xs: 12, lg: 4 }}>
+            <motion.div variants={staggerItem}>
+              <TopPerformersTable />
+            </motion.div>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <motion.div variants={staggerItem}>
+              <BidMetricsCard />
+            </motion.div>
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <motion.div variants={staggerItem}>
+              <DailyStatsChart />
             </motion.div>
           </Grid>
         </Grid>
@@ -347,7 +375,7 @@ export function AdminDashboardPage() {
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Top Categories
                 </Typography>
-                {categoriesLoading ? (
+                {categoriesLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Box key={i}>
@@ -356,7 +384,8 @@ export function AdminDashboardPage() {
                       </Box>
                     ))}
                   </Stack>
-                ) : categories && categories.length > 0 ? (
+                )}
+                {!categoriesLoading && categories && categories.length > 0 && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {categories.slice(0, 5).map((category: CategoryBreakdown) => (
                       <Box key={category.categoryId}>
@@ -379,12 +408,14 @@ export function AdminDashboardPage() {
                           }}
                         />
                         <Typography variant="caption" color="text.secondary">
-                          {formatNumber(category.auctionCount)} auctions • {formatCurrency(category.revenue)}
+                          {formatNumber(category.auctionCount)} auctions •{' '}
+                          {formatCurrency(category.revenue)}
                         </Typography>
                       </Box>
                     ))}
                   </Stack>
-                ) : (
+                )}
+                {!categoriesLoading && (!categories || categories.length === 0) && (
                   <Typography color="text.secondary" sx={{ mt: 2 }}>
                     No category data available
                   </Typography>
@@ -393,74 +424,13 @@ export function AdminDashboardPage() {
             </motion.div>
           </Grid>
 
-          <Grid size={{ xs: 12, lg: 4 }}>
-            <motion.div variants={staggerItem}>
-              <Card sx={{ p: 3, height: 400, overflow: 'auto' }}>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Top Performers
-                </Typography>
-                {performersLoading ? (
-                  <Stack spacing={2} sx={{ mt: 2 }}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Skeleton key={i} height={40} />
-                    ))}
-                  </Stack>
-                ) : topPerformers ? (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Top Sellers
-                    </Typography>
-                    <List dense disablePadding>
-                      {topPerformers.topSellers.slice(0, 3).map((seller, index) => (
-                        <ListItem key={seller.sellerId} disablePadding sx={{ py: 0.5 }}>
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Chip label={index + 1} size="small" color="primary" sx={{ minWidth: 24 }} />
-                                <Typography variant="body2">{seller.username}</Typography>
-                              </Box>
-                            }
-                            secondary={`${formatCurrency(seller.totalSales)} • ${seller.orderCount} orders`}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Top Buyers
-                    </Typography>
-                    <List dense disablePadding>
-                      {topPerformers.topBuyers.slice(0, 3).map((buyer, index) => (
-                        <ListItem key={buyer.buyerId} disablePadding sx={{ py: 0.5 }}>
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Chip label={index + 1} size="small" color="secondary" sx={{ minWidth: 24 }} />
-                                <Typography variant="body2">{buyer.username}</Typography>
-                              </Box>
-                            }
-                            secondary={`${formatCurrency(buyer.totalSpent)} • ${buyer.auctionsWon} won`}
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                ) : (
-                  <Typography color="text.secondary" sx={{ mt: 2 }}>
-                    No performer data available
-                  </Typography>
-                )}
-              </Card>
-            </motion.div>
-          </Grid>
-
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, height: 400, overflow: 'auto' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Recent Activity
                 </Typography>
-                {activityLoading ? (
+                {activityLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Box key={i} sx={{ display: 'flex', gap: 2 }}>
@@ -472,7 +442,8 @@ export function AdminDashboardPage() {
                       </Box>
                     ))}
                   </Stack>
-                ) : activityData && activityData.length > 0 ? (
+                )}
+                {!activityLoading && activityData && activityData.length > 0 && (
                   <List dense disablePadding sx={{ mt: 1 }}>
                     {activityData.map((activity) => (
                       <ListItem key={activity.id} disablePadding sx={{ py: 1 }}>
@@ -495,7 +466,8 @@ export function AdminDashboardPage() {
                       </ListItem>
                     ))}
                   </List>
-                ) : (
+                )}
+                {!activityLoading && (!activityData || activityData.length === 0) && (
                   <Typography color="text.secondary" sx={{ mt: 2 }}>
                     No recent activity
                   </Typography>
@@ -623,7 +595,8 @@ export function AdminDashboardPage() {
                         Sellers / Buyers
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
-                        {formatNumber(analytics.users.totalSellers)} / {formatNumber(analytics.users.totalBuyers)}
+                        {formatNumber(analytics.users.totalSellers)} /{' '}
+                        {formatNumber(analytics.users.totalBuyers)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

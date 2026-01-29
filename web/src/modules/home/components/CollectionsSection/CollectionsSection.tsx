@@ -112,12 +112,22 @@ export const CollectionsSection = () => {
                       {collection.name}
                     </Typography>
                     <Box
-                      sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
                     >
                       <Typography variant="caption" sx={{ color: colors.text.subtle }}>
                         {collection.itemCount} items
                       </Typography>
-                      <Typography variant="caption" sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.semibold }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: colors.gold.primary,
+                          fontWeight: typography.fontWeight.semibold,
+                        }}
+                      >
                         {collection.totalValue}
                       </Typography>
                     </Box>

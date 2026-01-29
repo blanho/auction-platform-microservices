@@ -33,10 +33,12 @@ import {
   Person as PersonIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material'
 import { useAuth, useThemeMode } from '@/app/providers'
 import { useNotificationSummary } from '@/modules/notifications/hooks'
 import { LanguageSwitcher } from '../inputs'
+import { SearchAutocomplete } from '@/modules/search/components/SearchAutocomplete'
 
 export const MainLayout = () => {
   const { t } = useTranslation()
@@ -144,7 +146,29 @@ export const MainLayout = () => {
               ))}
             </Box>
 
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: { xs: 'none', md: 'flex' },
+                justifyContent: 'center',
+                maxWidth: 400,
+                mx: 2,
+              }}
+            >
+              <SearchAutocomplete
+                placeholder={t('search.placeholder') || 'Search auctions...'}
+                onSearch={(query) => navigate(`/auctions?search=${encodeURIComponent(query)}`)}
+              />
+            </Box>
+
             <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton
+                color="inherit"
+                sx={{ display: { xs: 'flex', md: 'none' } }}
+                onClick={() => navigate('/search')}
+              >
+                <SearchIcon />
+              </IconButton>
               <LanguageSwitcher />
               <IconButton color="inherit" onClick={toggleTheme}>
                 {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
@@ -153,11 +177,7 @@ export const MainLayout = () => {
               {isAuthenticated ? (
                 <>
                   <Tooltip title={t('nav.notifications') || 'Notifications'}>
-                    <IconButton
-                      color="inherit"
-                      component={Link}
-                      to="/notifications"
-                    >
+                    <IconButton color="inherit" component={Link} to="/notifications">
                       <Badge badgeContent={notificationSummary?.unreadCount || 0} color="error">
                         <NotificationsIcon />
                       </Badge>
@@ -225,12 +245,7 @@ export const MainLayout = () => {
                   <Button color="inherit" component={Link} to="/login">
                     Login
                   </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    component={Link}
-                    to="/register"
-                  >
+                  <Button variant="contained" color="secondary" component={Link} to="/register">
                     Sign Up
                   </Button>
                 </>
@@ -266,9 +281,7 @@ export const MainLayout = () => {
           px: 2,
           mt: 'auto',
           backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
+            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
         }}
       >
         <Container maxWidth="xl">

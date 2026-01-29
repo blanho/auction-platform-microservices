@@ -23,17 +23,7 @@ import {
   Alert,
   Paper,
 } from '@mui/material'
-import {
-  Search,
-  FilterList,
-  Close,
-  TrendingUp,
-  History,
-  Clear,
-  Gavel,
-  Category,
-  Store,
-} from '@mui/icons-material'
+import { Search, FilterList, Close, TrendingUp, History, Clear } from '@mui/icons-material'
 import {
   useSearch,
   useSearchSuggestions,
@@ -41,26 +31,10 @@ import {
   useRecentSearches,
   useClearRecentSearches,
 } from '../hooks'
-import type { SearchFilters, SearchResult, SearchResultType } from '../types'
+import type { SearchFilters, SearchResult } from '../types'
+import { getResultIcon } from '../utils'
+import { formatCurrency } from '@/shared/utils/formatters'
 import { palette } from '@/shared/theme/tokens'
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
-}
-
-const getResultIcon = (type: SearchResultType) => {
-  switch (type) {
-    case 'auction':
-      return <Gavel sx={{ color: palette.brand.primary }} />
-    case 'category':
-      return <Category sx={{ color: palette.semantic.info }} />
-    case 'seller':
-      return <Store sx={{ color: palette.semantic.success }} />
-  }
-}
 
 const SearchResultCard = ({ result }: { result: SearchResult }) => (
   <Card
@@ -84,7 +58,7 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
         width: 100,
         height: 100,
         borderRadius: 1,
-        bgcolor: '#F5F5F5',
+        bgcolor: palette.neutral[100],
         backgroundImage: result.imageUrl ? `url(${result.imageUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -113,7 +87,7 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
       <Typography
         sx={{
           fontWeight: 600,
-          color: '#1C1917',
+          color: palette.neutral[900],
           mb: 0.5,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -125,7 +99,7 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
       <Typography
         sx={{
           fontSize: '0.875rem',
-          color: '#78716C',
+          color: palette.neutral[500],
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: '-webkit-box',
@@ -137,7 +111,7 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
         {result.description}
       </Typography>
       {result.price !== undefined && (
-        <Typography sx={{ fontWeight: 700, color: '#CA8A04' }}>
+        <Typography sx={{ fontWeight: 700, color: palette.brand.primary }}>
           {formatCurrency(result.price)}
         </Typography>
       )}
@@ -153,7 +127,7 @@ export function SearchPage() {
 
   const [filters, setFilters] = useState<SearchFilters>({
     query: searchParams.get('q') || '',
-    types: searchParams.get('types')?.split(',') as SearchResultType[] || undefined,
+    types: (searchParams.get('types')?.split(',') as SearchResultType[]) || undefined,
     categoryId: searchParams.get('category') || undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
@@ -168,33 +142,43 @@ export function SearchPage() {
   ])
 
   const { data: searchResults, isLoading, error } = useSearch(filters, !!filters.query)
-  const { data: suggestions } = useSearchSuggestions(inputValue, inputValue.length >= 2 && inputValue !== filters.query)
+  const { data: suggestions } = useSearchSuggestions(
+    inputValue,
+    inputValue.length >= 2 && inputValue !== filters.query
+  )
   const { data: popularSearches } = usePopularSearches()
   const { data: recentSearches } = useRecentSearches()
   const clearRecentSearches = useClearRecentSearches()
 
-  const updateSearchParams = useCallback((newFilters: SearchFilters) => {
-    const params = new URLSearchParams()
-    if (newFilters.query) params.set('q', newFilters.query)
-    if (newFilters.types?.length) params.set('types', newFilters.types.join(','))
-    if (newFilters.categoryId) params.set('category', newFilters.categoryId)
-    if (newFilters.minPrice) params.set('minPrice', newFilters.minPrice.toString())
-    if (newFilters.maxPrice) params.set('maxPrice', newFilters.maxPrice.toString())
-    if (newFilters.sortBy && newFilters.sortBy !== 'relevance') params.set('sortBy', newFilters.sortBy)
-    if (newFilters.page && newFilters.page > 1) params.set('page', newFilters.page.toString())
-    setSearchParams(params)
-  }, [setSearchParams])
+  const updateSearchParams = useCallback(
+    (newFilters: SearchFilters) => {
+      const params = new URLSearchParams()
+      if (newFilters.query) {params.set('q', newFilters.query)}
+      if (newFilters.types?.length) {params.set('types', newFilters.types.join(','))}
+      if (newFilters.categoryId) {params.set('category', newFilters.categoryId)}
+      if (newFilters.minPrice) {params.set('minPrice', newFilters.minPrice.toString())}
+      if (newFilters.maxPrice) {params.set('maxPrice', newFilters.maxPrice.toString())}
+      if (newFilters.sortBy && newFilters.sortBy !== 'relevance')
+        {params.set('sortBy', newFilters.sortBy)}
+      if (newFilters.page && newFilters.page > 1) {params.set('page', newFilters.page.toString())}
+      setSearchParams(params)
+    },
+    [setSearchParams]
+  )
 
-  const debouncedSearch = useCallback((query: string) => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-    }
-    debounceTimerRef.current = setTimeout(() => {
-      const newFilters = { ...filters, query, page: 1 }
-      setFilters(newFilters)
-      updateSearchParams(newFilters)
-    }, 500)
-  }, [filters, updateSearchParams])
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        const newFilters = { ...filters, query, page: 1 }
+        setFilters(newFilters)
+        updateSearchParams(newFilters)
+      }, 500)
+    },
+    [filters, updateSearchParams]
+  )
 
   useEffect(() => {
     return () => {
@@ -275,7 +259,7 @@ export function SearchPage() {
                 ...params.InputProps,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: '#78716C' }} />
+                    <Search sx={{ color: palette.neutral[500] }} />
                   </InputAdornment>
                 ),
                 endAdornment: inputValue && (
@@ -291,10 +275,10 @@ export function SearchPage() {
                   bgcolor: 'white',
                   borderRadius: 2,
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#CA8A04',
+                    borderColor: palette.brand.primary,
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#CA8A04',
+                    borderColor: palette.brand.primary,
                   },
                 },
               }}
@@ -312,16 +296,25 @@ export function SearchPage() {
         <Box sx={{ mb: 4 }}>
           {recentSearches && recentSearches.length > 0 && (
             <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1.5,
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <History sx={{ fontSize: 20, color: '#78716C' }} />
-                  <Typography sx={{ fontWeight: 500, color: '#44403C' }}>Recent Searches</Typography>
+                  <History sx={{ fontSize: 20, color: palette.neutral[500] }} />
+                  <Typography sx={{ fontWeight: 500, color: palette.neutral[700] }}>
+                    Recent Searches
+                  </Typography>
                 </Box>
                 <Button
                   size="small"
                   startIcon={<Clear />}
                   onClick={() => clearRecentSearches.mutate()}
-                  sx={{ color: '#78716C', textTransform: 'none' }}
+                  sx={{ color: palette.neutral[500], textTransform: 'none' }}
                 >
                   Clear
                 </Button>
@@ -333,7 +326,7 @@ export function SearchPage() {
                     label={search}
                     onClick={() => handleSearch(search)}
                     sx={{
-                      bgcolor: '#F5F5F5',
+                      bgcolor: palette.neutral[100],
                       '&:hover': { bgcolor: '#E5E5E5' },
                     }}
                   />
@@ -345,8 +338,10 @@ export function SearchPage() {
           {popularSearches && popularSearches.length > 0 && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <TrendingUp sx={{ fontSize: 20, color: '#CA8A04' }} />
-                <Typography sx={{ fontWeight: 500, color: '#44403C' }}>Trending Searches</Typography>
+                <TrendingUp sx={{ fontSize: 20, color: palette.brand.primary }} />
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[700] }}>
+                  Trending Searches
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {popularSearches.map((search) => (
@@ -379,16 +374,25 @@ export function SearchPage() {
                 top: { md: 90 },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 3,
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FilterList sx={{ color: '#CA8A04' }} />
-                  <Typography sx={{ fontWeight: 600, color: '#1C1917' }}>Filters</Typography>
+                  <FilterList sx={{ color: palette.brand.primary }} />
+                  <Typography sx={{ fontWeight: 600, color: palette.neutral[900] }}>
+                    Filters
+                  </Typography>
                 </Box>
                 {hasActiveFilters && (
                   <Button
                     size="small"
                     onClick={clearFilters}
-                    sx={{ color: '#78716C', textTransform: 'none' }}
+                    sx={{ color: palette.neutral[500], textTransform: 'none' }}
                   >
                     Clear all
                   </Button>
@@ -396,7 +400,9 @@ export function SearchPage() {
               </Box>
 
               <Box sx={{ mb: 3 }}>
-                <Typography sx={{ fontWeight: 500, color: '#44403C', mb: 1.5 }}>Type</Typography>
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[700], mb: 1.5 }}>
+                  Type
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {['auction', 'category', 'seller'].map((type) => (
                     <Chip
@@ -411,10 +417,16 @@ export function SearchPage() {
                       }}
                       sx={{
                         textTransform: 'capitalize',
-                        bgcolor: filters.types?.includes(type as SearchResultType) ? '#1C1917' : '#F5F5F5',
-                        color: filters.types?.includes(type as SearchResultType) ? 'white' : '#44403C',
+                        bgcolor: filters.types?.includes(type as SearchResultType)
+                          ? palette.neutral[900]
+                          : palette.neutral[100],
+                        color: filters.types?.includes(type as SearchResultType)
+                          ? 'white'
+                          : palette.neutral[700],
                         '&:hover': {
-                          bgcolor: filters.types?.includes(type as SearchResultType) ? '#44403C' : '#E5E5E5',
+                          bgcolor: filters.types?.includes(type as SearchResultType)
+                            ? palette.neutral[700]
+                            : '#E5E5E5',
                         },
                       }}
                     />
@@ -425,7 +437,9 @@ export function SearchPage() {
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ mb: 3 }}>
-                <Typography sx={{ fontWeight: 500, color: '#44403C', mb: 2 }}>Price Range</Typography>
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[700], mb: 2 }}>
+                  Price Range
+                </Typography>
                 <Slider
                   value={priceRange}
                   onChange={(_, value) => setPriceRange(value as number[])}
@@ -436,18 +450,18 @@ export function SearchPage() {
                   max={10000}
                   step={100}
                   sx={{
-                    color: '#CA8A04',
+                    color: palette.brand.primary,
                     '& .MuiSlider-thumb': {
                       bgcolor: 'white',
-                      border: '2px solid #CA8A04',
+                      border: `2px solid ${palette.brand.primary}`,
                     },
                   }}
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontSize: '0.875rem', color: '#78716C' }}>
+                  <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
                     {formatCurrency(priceRange[0])}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.875rem', color: '#78716C' }}>
+                  <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
                     {priceRange[1] >= 10000 ? '$10,000+' : formatCurrency(priceRange[1])}
                   </Typography>
                 </Box>
@@ -474,31 +488,35 @@ export function SearchPage() {
 
           <Grid size={{ xs: 12, md: 9 }}>
             {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
+              <InlineAlert severity="error" sx={{ mb: 3 }}>
                 Failed to load search results. Please try again.
-              </Alert>
+              </InlineAlert>
             )}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography sx={{ color: '#78716C' }}>
-                {isLoading ? (
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
+            >
+              <Typography sx={{ color: palette.neutral[500] }}>
+                {isLoading && (
                   <Skeleton width={200} />
-                ) : (
+                )}
+                {!isLoading && (
                   `${searchResults?.totalCount || 0} results for "${filters.query}"`
                 )}
               </Typography>
             </Box>
 
-            {isLoading ? (
+            {isLoading && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
                 ))}
               </Box>
-            ) : searchResults?.results?.length === 0 ? (
+            )}
+            {!isLoading && searchResults?.results?.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Search sx={{ fontSize: 64, color: '#D4D4D4', mb: 2 }} />
-                <Typography variant="h6" sx={{ color: '#78716C', mb: 1 }}>
+                <Typography variant="h6" sx={{ color: palette.neutral[500], mb: 1 }}>
                   No results found
                 </Typography>
                 <Typography sx={{ color: '#A1A1AA', mb: 3 }}>
@@ -509,15 +527,16 @@ export function SearchPage() {
                   onClick={clearFilters}
                   sx={{
                     borderColor: '#E5E5E5',
-                    color: '#44403C',
+                    color: palette.neutral[700],
                     textTransform: 'none',
-                    '&:hover': { borderColor: '#1C1917' },
+                    '&:hover': { borderColor: palette.neutral[900] },
                   }}
                 >
                   Clear filters
                 </Button>
               </Box>
-            ) : (
+            )}
+            {!isSearching && searchResults?.results && searchResults.results.length > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {searchResults?.results?.map((result) => (
                   <SearchResultCard key={result.id} result={result} />

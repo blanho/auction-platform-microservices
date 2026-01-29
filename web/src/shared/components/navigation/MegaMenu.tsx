@@ -199,7 +199,10 @@ export const MegaMenu = () => {
               py: 1,
               borderRadius: 0,
               opacity: location.pathname.startsWith(item.path) ? 1 : 0.85,
-              borderBottom: activeMenu === item.label ? `2px solid ${palette.brand.primary}` : '2px solid transparent',
+              borderBottom:
+                activeMenu === item.label
+                  ? `2px solid ${palette.brand.primary}`
+                  : '2px solid transparent',
               '&:hover': {
                 bgcolor: 'transparent',
                 opacity: 1,
@@ -249,7 +252,10 @@ export const MegaMenu = () => {
                 <Container maxWidth="xl" sx={{ py: 5 }}>
                   <Grid container spacing={4}>
                     {activeItem?.megaMenu?.categories.map((category, idx) => (
-                      <Grid size={{ xs: 12, sm: 6, md: activeItem.megaMenu?.featured ? 2.4 : 3 }} key={idx}>
+                      <Grid
+                        size={{ xs: 12, sm: 6, md: activeItem.megaMenu?.featured ? 2.4 : 3 }}
+                        key={idx}
+                      >
                         <Typography
                           variant="subtitle2"
                           sx={{

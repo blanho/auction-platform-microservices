@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
+import { palette } from '@/shared/theme/tokens'
 import {
   Container,
   Typography,
@@ -51,10 +52,22 @@ const sellerSchema = z.object({
 type SellerFormData = z.infer<typeof sellerSchema>
 
 const benefits = [
-  { icon: <TrendingUp />, title: 'Grow Your Business', description: 'Reach thousands of collectors and buyers' },
-  { icon: <Security />, title: 'Secure Transactions', description: 'Protected payments and buyer verification' },
+  {
+    icon: <TrendingUp />,
+    title: 'Grow Your Business',
+    description: 'Reach thousands of collectors and buyers',
+  },
+  {
+    icon: <Security />,
+    title: 'Secure Transactions',
+    description: 'Protected payments and buyer verification',
+  },
   { icon: <Support />, title: 'Dedicated Support', description: '24/7 seller support team' },
-  { icon: <Gavel />, title: 'Professional Tools', description: 'Analytics, inventory management, and more' },
+  {
+    icon: <Gavel />,
+    title: 'Professional Tools',
+    description: 'Analytics, inventory management, and more',
+  },
 ]
 
 export function SellerApplyPage() {
@@ -95,11 +108,7 @@ export function SellerApplyPage() {
   if (success) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
-        <motion.div
-          variants={scaleIn}
-          initial="initial"
-          animate="animate"
-        >
+        <motion.div variants={scaleIn} initial="initial" animate="animate">
           <Card sx={{ p: 6, textAlign: 'center' }}>
             <motion.div
               initial={{ scale: 0 }}
@@ -135,7 +144,8 @@ export function SellerApplyPage() {
               Application Submitted!
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Thank you for applying to become a seller. We'll review your application and get back to you within 2-3 business days.
+              Thank you for applying to become a seller. We'll review your application and get back
+              to you within 2-3 business days.
             </Typography>
 
             <Stack direction="row" spacing={2} justifyContent="center">
@@ -246,7 +256,10 @@ export function SellerApplyPage() {
                           label="Business Type"
                           fullWidth
                           error={!!errors.businessType}
-                          helperText={errors.businessType?.message || 'e.g., Antique Dealer, Art Gallery, Individual Collector'}
+                          helperText={
+                            errors.businessType?.message ||
+                            'e.g., Antique Dealer, Art Gallery, Individual Collector'
+                          }
                         />
                       )}
                     />
@@ -307,7 +320,10 @@ export function SellerApplyPage() {
                           multiline
                           rows={4}
                           error={!!errors.description}
-                          helperText={errors.description?.message || 'Describe what you sell, your expertise, and why you want to join our marketplace'}
+                          helperText={
+                            errors.description?.message ||
+                            'Describe what you sell, your expertise, and why you want to join our marketplace'
+                          }
                         />
                       )}
                     />
@@ -320,19 +336,24 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <FormControlLabel
                           control={
-                            <Checkbox
-                              checked={Boolean(field.value)}
-                              onChange={field.onChange}
-                            />
+                            <Checkbox checked={Boolean(field.value)} onChange={field.onChange} />
                           }
                           label={
                             <Typography variant="body2">
                               I agree to the{' '}
-                              <Button component="a" href="/terms" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                              <Button
+                                component="a"
+                                href="/terms"
+                                sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
+                              >
                                 Seller Terms of Service
                               </Button>{' '}
                               and{' '}
-                              <Button component="a" href="/fees" sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                              <Button
+                                component="a"
+                                href="/fees"
+                                sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
+                              >
                                 Fee Schedule
                               </Button>
                             </Typography>
@@ -341,15 +362,15 @@ export function SellerApplyPage() {
                       )}
                     />
                     {errors.agreedToTerms && (
-                      <Alert severity="error" sx={{ mt: -2 }}>
+                      <InlineAlert severity="error" sx={{ mt: -2 }}>
                         {errors.agreedToTerms.message}
-                      </Alert>
+                      </InlineAlert>
                     )}
 
                     {applyMutation.error && (
-                      <Alert severity="error">
+                      <InlineAlert severity="error">
                         Failed to submit application. Please try again.
-                      </Alert>
+                      </InlineAlert>
                     )}
 
                     <Button
@@ -359,7 +380,7 @@ export function SellerApplyPage() {
                       disabled={applyMutation.isPending}
                       sx={{
                         py: 1.5,
-                        bgcolor: '#CA8A04',
+                        bgcolor: palette.brand.primary,
                         '&:hover': { bgcolor: '#A16207' },
                       }}
                     >

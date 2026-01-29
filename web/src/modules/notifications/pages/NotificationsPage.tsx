@@ -1,6 +1,19 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Box, Container, Typography, Card, Tabs, Tab, Chip, Button, Pagination, Alert, Tooltip, IconButton } from '@mui/material'
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  Tabs,
+  Tab,
+  Chip,
+  Button,
+  Pagination,
+  Alert,
+  Tooltip,
+  IconButton,
+} from '@mui/material'
 import { Settings, DoneAll } from '@mui/icons-material'
 import {
   useNotifications,
@@ -13,17 +26,28 @@ import {
 import type { NotificationFilters } from '../types'
 import { NotificationList } from '../components'
 import { NOTIFICATION_CONFIG } from '../constants'
+import { palette } from '@/shared/theme/tokens'
 
 export function NotificationsPage() {
   const [activeTab, setActiveTab] = useState(0)
-  const [filters, setFilters] = useState<NotificationFilters>({ 
-    page: 1, 
-    pageSize: NOTIFICATION_CONFIG.DEFAULT_PAGE_SIZE 
+  const [filters, setFilters] = useState<NotificationFilters>({
+    page: 1,
+    pageSize: NOTIFICATION_CONFIG.DEFAULT_PAGE_SIZE,
   })
 
-  const { data: notifications, isLoading, error } = useNotifications({
+  const getStatusFilter = () => {
+    if (activeTab === 1) {return 'unread'}
+    if (activeTab === 2) {return 'archived'}
+    return undefined
+  }
+
+  const {
+    data: notifications,
+    isLoading,
+    error,
+  } = useNotifications({
     ...filters,
-    status: activeTab === 1 ? 'unread' : activeTab === 2 ? 'archived' : undefined,
+    status: getStatusFilter(),
   })
   const { data: summary } = useNotificationSummary()
   const markAsRead = useMarkAsRead()
@@ -75,32 +99,38 @@ export function NotificationsPage() {
   }
 
   const getEmptyDescription = () => {
-    return activeTab === 0 ? "You'll see notifications about your bids and auctions here" : undefined
+    return activeTab === 0
+      ? "You'll see notifications about your bids and auctions here"
+      : undefined
   }
 
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">Failed to load notifications. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load notifications. Please try again.</InlineAlert>
       </Container>
     )
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}
+      >
         <Box>
           <Typography
             variant="h4"
             sx={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 600,
-              color: '#1C1917',
+              color: palette.neutral[900],
             }}
           >
             Notifications
           </Typography>
-          <Typography sx={{ color: '#78716C' }}>Stay updated with your auction activity</Typography>
+          <Typography sx={{ color: palette.neutral[500] }}>
+            Stay updated with your auction activity
+          </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -112,9 +142,9 @@ export function NotificationsPage() {
               disabled={markAllAsRead.isPending}
               sx={{
                 borderColor: '#E5E5E5',
-                color: '#44403C',
+                color: palette.neutral[700],
                 textTransform: 'none',
-                '&:hover': { borderColor: '#1C1917' },
+                '&:hover': { borderColor: palette.neutral[900] },
               }}
             >
               Mark all as read
@@ -125,7 +155,7 @@ export function NotificationsPage() {
               component={Link}
               to="/settings"
               sx={{
-                bgcolor: '#F5F5F5',
+                bgcolor: palette.neutral[100],
                 '&:hover': { bgcolor: '#E5E5E5' },
               }}
             >
@@ -156,10 +186,10 @@ export function NotificationsPage() {
                 minHeight: 56,
               },
               '& .Mui-selected': {
-                color: '#CA8A04',
+                color: palette.brand.primary,
               },
               '& .MuiTabs-indicator': {
-                bgcolor: '#CA8A04',
+                bgcolor: palette.brand.primary,
               },
             }}
           >
@@ -205,7 +235,9 @@ export function NotificationsPage() {
         />
 
         {notifications && notifications.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}
+          >
             <Pagination
               count={notifications.totalPages}
               page={filters.page || 1}

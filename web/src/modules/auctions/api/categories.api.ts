@@ -80,9 +80,13 @@ export const categoriesApi = {
   async importCategories(file: File): Promise<{ imported: number; failed: number }> {
     const formData = new FormData()
     formData.append('file', file)
-    const response = await http.post<{ imported: number; failed: number }>('/categories/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await http.post<{ imported: number; failed: number }>(
+      '/categories/import',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    )
     return response.data
   },
 }

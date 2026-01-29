@@ -20,7 +20,7 @@ export const useAuctions = (filters: AuctionFilters) => {
   })
 }
 
-export const useFeaturedAuctions = (pageSize: number = 8) => {
+export const useFeaturedAuctions = (pageSize = 8) => {
   return useQuery({
     queryKey: auctionKeys.featured(pageSize),
     queryFn: () => auctionsApi.getFeaturedAuctions(pageSize),

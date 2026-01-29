@@ -4,38 +4,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Filters;
 
-public sealed class SearchUserFilter(string? search) : IFilter<ApplicationUser>
+public static class UserFilterExtensions
 {
-    public IQueryable<ApplicationUser> Apply(IQueryable<ApplicationUser> query)
+    public static IQueryable<ApplicationUser> ApplyUserFilters(
+        this IQueryable<ApplicationUser> query,
+        string? search,
+        bool? isActive,
+        bool? isSuspended)
     {
-        if (string.IsNullOrWhiteSpace(search))
-            return query;
+        var filterBuilder = FilterBuilder<ApplicationUser>.Create()
+            .WhenNotEmpty(search, u =>
+                EF.Functions.ILike(u.UserName!, $"%{search}%") ||
+                EF.Functions.ILike(u.Email!, $"%{search}%") ||
+                (u.FullName != null && EF.Functions.ILike(u.FullName, $"%{search}%")))
+            .WhenHasValue(isActive, u => u.IsActive == isActive!.Value)
+            .WhenHasValue(isSuspended, u => u.IsSuspended == isSuspended!.Value);
 
-        var pattern = $"%{search}%";
-        return query.Where(u =>
-            EF.Functions.ILike(u.UserName!, pattern) ||
-            EF.Functions.ILike(u.Email!, pattern) ||
-            (u.FullName != null && EF.Functions.ILike(u.FullName, pattern)));
+        return filterBuilder.Apply(query);
     }
-}
 
-public sealed class StatusUserFilter(bool? isActive, bool? isSuspended) : IFilter<ApplicationUser>
-{
-    public IQueryable<ApplicationUser> Apply(IQueryable<ApplicationUser> query)
-    {
-        if (isActive.HasValue)
-            query = query.Where(u => u.IsActive == isActive.Value);
-
-        if (isSuspended.HasValue)
-            query = query.Where(u => u.IsSuspended == isSuspended.Value);
-
-        return query;
-    }
-}
-
-public sealed class RoleUserFilter(string? roleId) : IFilter<ApplicationUser>
-{
-    public IQueryable<ApplicationUser> Apply(IQueryable<ApplicationUser> query)
+    public static IQueryable<ApplicationUser> ApplyRoleFilter(
+        this IQueryable<ApplicationUser> query,
+        string? roleId)
     {
         if (string.IsNullOrWhiteSpace(roleId))
             return query;

@@ -106,9 +106,10 @@ export function AdminLayout() {
 
       <List component="nav" sx={{ flex: 1, px: 2, py: 1 }}>
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path || 
+          const isActive =
+            location.pathname === item.path ||
             (item.path !== '/admin' && location.pathname.startsWith(item.path))
-          
+
           return (
             <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
@@ -130,9 +131,7 @@ export function AdminLayout() {
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 44 }}>
-                  {item.icon}
-                </ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 44 }}>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.label} />
               </ListItemButton>
             </ListItem>
@@ -143,11 +142,7 @@ export function AdminLayout() {
       <Divider />
 
       <Box sx={{ p: 2 }}>
-        <ListItemButton
-          component={Link}
-          to="/"
-          sx={{ borderRadius: 2 }}
-        >
+        <ListItemButton component={Link} to="/" sx={{ borderRadius: 2 }}>
           <ListItemIcon sx={{ minWidth: 44 }}>
             <Gavel />
           </ListItemIcon>
@@ -189,10 +184,7 @@ export function AdminLayout() {
           </IconButton>
 
           <IconButton onClick={(e) => setUserMenuAnchor(e.currentTarget)}>
-            <Avatar
-              src={user?.avatarUrl}
-              sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}
-            >
+            <Avatar src={user?.avatarUrl} sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
               {user?.displayName?.[0]}
             </Avatar>
           </IconButton>
@@ -204,10 +196,20 @@ export function AdminLayout() {
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
           >
-            <MenuItem onClick={() => { setUserMenuAnchor(null); navigate('/profile') }}>
+            <MenuItem
+              onClick={() => {
+                setUserMenuAnchor(null)
+                navigate('/profile')
+              }}
+            >
               Profile
             </MenuItem>
-            <MenuItem onClick={() => { setUserMenuAnchor(null); navigate('/settings') }}>
+            <MenuItem
+              onClick={() => {
+                setUserMenuAnchor(null)
+                navigate('/settings')
+              }}
+            >
               Settings
             </MenuItem>
             <Divider />
@@ -219,10 +221,7 @@ export function AdminLayout() {
         </Toolbar>
       </AppBar>
 
-      <Box
-        component="nav"
-        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
-      >
+      <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
         <Drawer
           variant="temporary"
           open={mobileOpen}

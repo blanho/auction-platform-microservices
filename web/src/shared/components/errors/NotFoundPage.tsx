@@ -5,7 +5,14 @@ import { palette } from '@/shared/theme/tokens'
 
 export const NotFoundPage = () => {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: palette.neutral[50], display: 'flex', alignItems: 'center' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: palette.neutral[50],
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
       <Container maxWidth="sm">
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography
@@ -20,7 +27,7 @@ export const NotFoundPage = () => {
           >
             404
           </Typography>
-          
+
           <Box
             sx={{
               width: 120,
@@ -43,7 +50,7 @@ export const NotFoundPage = () => {
           >
             Page Not Found
           </Typography>
-          
+
           <Typography
             sx={{
               color: palette.neutral[500],
@@ -53,15 +60,11 @@ export const NotFoundPage = () => {
               mx: 'auto',
             }}
           >
-            The page you're looking for seems to have gone to auction. 
-            It might have been sold, moved, or never existed.
+            The page you're looking for seems to have gone to auction. It might have been sold,
+            moved, or never existed.
           </Typography>
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-          >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
             <Button
               variant="contained"
               component={Link}

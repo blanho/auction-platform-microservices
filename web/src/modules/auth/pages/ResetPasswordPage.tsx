@@ -6,16 +6,14 @@ import {
   Box,
   Container,
   Typography,
-  TextField,
   Button,
-  Alert,
   CircularProgress,
-  IconButton,
-  InputAdornment,
 } from '@mui/material'
-import { Visibility, VisibilityOff, CheckCircle, ArrowBack } from '@mui/icons-material'
+import { InlineAlert, FormField } from '@/shared/ui'
+import { CheckCircle, ArrowBack } from '@mui/icons-material'
 import { z } from 'zod'
 import { useResetPassword } from '../hooks'
+import { palette } from '@/shared/theme/tokens'
 
 const resetPasswordSchema = z
   .object({
@@ -40,8 +38,6 @@ export function ResetPasswordPage() {
   const token = searchParams.get('token')
   const email = searchParams.get('email')
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
 
   const resetPassword = useResetPassword()
@@ -59,7 +55,7 @@ export function ResetPasswordPage() {
   })
 
   const onSubmit = async (data: ResetPasswordForm) => {
-    if (!token || !email) return
+    if (!token || !email) {return}
 
     try {
       await resetPassword.mutateAsync({
@@ -81,7 +77,7 @@ export function ResetPasswordPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          bgcolor: '#FAFAF9',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Container maxWidth="sm">
@@ -99,14 +95,14 @@ export function ResetPasswordPage() {
               sx={{
                 fontFamily: '"Playfair Display", serif',
                 fontWeight: 600,
-                color: '#1C1917',
+                color: palette.neutral[900],
                 mb: 2,
               }}
             >
               Invalid Link
             </Typography>
 
-            <Typography sx={{ color: '#78716C', mb: 4 }}>
+            <Typography sx={{ color: palette.neutral[500], mb: 4 }}>
               This password reset link is invalid or has expired. Please request a new one.
             </Typography>
 
@@ -116,11 +112,11 @@ export function ResetPasswordPage() {
               component={Link}
               to="/forgot-password"
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 py: 1.5,
                 fontWeight: 600,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
               Request New Link
@@ -138,7 +134,7 @@ export function ResetPasswordPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          bgcolor: '#FAFAF9',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Container maxWidth="sm">
@@ -151,21 +147,21 @@ export function ResetPasswordPage() {
               textAlign: 'center',
             }}
           >
-            <CheckCircle sx={{ fontSize: 64, color: '#22C55E', mb: 2 }} />
+            <CheckCircle sx={{ fontSize: 64, color: palette.semantic.success, mb: 2 }} />
 
             <Typography
               variant="h4"
               sx={{
                 fontFamily: '"Playfair Display", serif',
                 fontWeight: 600,
-                color: '#1C1917',
+                color: palette.neutral[900],
                 mb: 1,
               }}
             >
               Password Reset Successfully
             </Typography>
 
-            <Typography sx={{ color: '#78716C', mb: 4 }}>
+            <Typography sx={{ color: palette.neutral[500], mb: 4 }}>
               Your password has been reset. You can now sign in with your new password.
             </Typography>
 
@@ -174,11 +170,11 @@ export function ResetPasswordPage() {
               variant="contained"
               onClick={() => navigate('/login')}
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 py: 1.5,
                 fontWeight: 600,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
               Sign In
@@ -195,7 +191,7 @@ export function ResetPasswordPage() {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        bgcolor: '#FAFAF9',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Container maxWidth="sm">
@@ -205,9 +201,9 @@ export function ResetPasswordPage() {
             to="/login"
             startIcon={<ArrowBack />}
             sx={{
-              color: '#44403C',
+              color: palette.neutral[700],
               textTransform: 'none',
-              '&:hover': { bgcolor: 'transparent', color: '#1C1917' },
+              '&:hover': { bgcolor: 'transparent', color: palette.neutral[900] },
             }}
           >
             Back to login
@@ -246,60 +242,36 @@ export function ResetPasswordPage() {
           </Typography>
 
           {resetPassword.isError && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <InlineAlert severity="error" sx={{ mb: 3 }}>
               Failed to reset password. The link may have expired.
-            </Alert>
+            </InlineAlert>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
+            <FormField
+              name="password"
+              register={register}
+              errors={errors}
               fullWidth
               label="New Password"
-              type={showPassword ? 'text' : 'password'}
-              {...register('password')}
-              error={!!errors.password}
-              helperText={errors.password?.message}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              type="password"
+              showPasswordToggle
               sx={{ mb: 2.5 }}
             />
 
-            <TextField
+            <FormField
+              name="confirmPassword"
+              register={register}
+              errors={errors}
               fullWidth
               label="Confirm New Password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              {...register('confirmPassword')}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              type="password"
+              showPasswordToggle
               sx={{ mb: 3 }}
             />
 
             <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontSize: '0.875rem', color: '#78716C', mb: 1 }}>
+              <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500], mb: 1 }}>
                 Password requirements:
               </Typography>
               <Typography sx={{ fontSize: '0.8125rem', color: '#A1A1AA' }}>
@@ -311,9 +283,7 @@ export function ResetPasswordPage() {
               <Typography sx={{ fontSize: '0.8125rem', color: '#A1A1AA' }}>
                 • One lowercase letter
               </Typography>
-              <Typography sx={{ fontSize: '0.8125rem', color: '#A1A1AA' }}>
-                • One number
-              </Typography>
+              <Typography sx={{ fontSize: '0.8125rem', color: '#A1A1AA' }}>• One number</Typography>
             </Box>
 
             <Button
@@ -322,12 +292,12 @@ export function ResetPasswordPage() {
               variant="contained"
               disabled={isSubmitting || resetPassword.isPending}
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 py: 1.5,
                 fontSize: '1rem',
                 fontWeight: 600,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
                 '&.Mui-disabled': { bgcolor: '#E5E5E5' },
               }}
             >

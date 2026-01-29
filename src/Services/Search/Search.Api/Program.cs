@@ -1,5 +1,6 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Observability;
 using Carter;
 using Search.Api.Extensions;
 
@@ -9,6 +10,8 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddCarter();
 
@@ -43,6 +46,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseRequestTracing();
 app.UseExceptionHandler();
 
 app.UseAuthentication();

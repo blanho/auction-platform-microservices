@@ -8,15 +8,19 @@ interface SkeletonCardProps {
   height?: number
 }
 
-export function SkeletonCard({ hasImage = true, hasActions = false, height = 200 }: SkeletonCardProps) {
+export function SkeletonCard({
+  hasImage = true,
+  hasActions = false,
+  height = 200,
+}: SkeletonCardProps) {
   const prefersReducedMotion = useReducedMotion()
-  
+
   const content = (
     <Card>
       {hasImage && (
-        <Skeleton 
-          variant="rectangular" 
-          height={height} 
+        <Skeleton
+          variant="rectangular"
+          height={height}
           animation={prefersReducedMotion ? false : 'wave'}
         />
       )}
@@ -39,11 +43,7 @@ export function SkeletonCard({ hasImage = true, hasActions = false, height = 200
   }
 
   return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      variants={shimmer}
-    >
+    <motion.div initial="initial" animate="animate" variants={shimmer}>
       {content}
     </motion.div>
   )
@@ -55,10 +55,10 @@ interface SkeletonGridProps {
   cardHeight?: number
 }
 
-export function SkeletonGrid({ 
-  count = 8, 
+export function SkeletonGrid({
+  count = 8,
   columns = { xs: 12, sm: 6, md: 4, lg: 3 },
-  cardHeight = 200 
+  cardHeight = 200,
 }: SkeletonGridProps) {
   return (
     <Grid container spacing={3}>
@@ -73,17 +73,17 @@ export function SkeletonGrid({
 
 export function SkeletonList({ count = 5 }: { count?: number }) {
   const prefersReducedMotion = useReducedMotion()
-  
+
   return (
     <Stack spacing={2}>
       {Array.from({ length: count }).map((_, index) => (
         <Card key={index}>
           <CardContent>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Skeleton 
-                variant="circular" 
-                width={48} 
-                height={48} 
+              <Skeleton
+                variant="circular"
+                width={48}
+                height={48}
                 animation={prefersReducedMotion ? false : 'wave'}
               />
               <Box sx={{ flex: 1 }}>
@@ -106,27 +106,30 @@ interface SkeletonTableProps {
 
 export function SkeletonTable({ rows = 5, columns = 5 }: SkeletonTableProps) {
   const prefersReducedMotion = useReducedMotion()
-  
+
   return (
     <Box>
       <Box sx={{ display: 'flex', gap: 2, py: 2, borderBottom: 1, borderColor: 'divider' }}>
         {Array.from({ length: columns }).map((_, i) => (
-          <Skeleton 
-            key={i} 
-            variant="text" 
-            width={`${100 / columns}%`} 
+          <Skeleton
+            key={i}
+            variant="text"
+            width={`${100 / columns}%`}
             height={24}
             animation={prefersReducedMotion ? false : 'wave'}
           />
         ))}
       </Box>
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <Box key={rowIndex} sx={{ display: 'flex', gap: 2, py: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Box
+          key={rowIndex}
+          sx={{ display: 'flex', gap: 2, py: 2, borderBottom: 1, borderColor: 'divider' }}
+        >
           {Array.from({ length: columns }).map((_, colIndex) => (
-            <Skeleton 
-              key={colIndex} 
-              variant="text" 
-              width={`${100 / columns}%`} 
+            <Skeleton
+              key={colIndex}
+              variant="text"
+              width={`${100 / columns}%`}
               height={20}
               animation={prefersReducedMotion ? false : 'wave'}
             />
@@ -139,19 +142,25 @@ export function SkeletonTable({ rows = 5, columns = 5 }: SkeletonTableProps) {
 
 export function SkeletonDetail() {
   const prefersReducedMotion = useReducedMotion()
-  
+
   return (
     <Grid container spacing={4}>
       <Grid size={{ xs: 12, md: 6 }}>
-        <Skeleton 
-          variant="rectangular" 
-          height={400} 
+        <Skeleton
+          variant="rectangular"
+          height={400}
           sx={{ borderRadius: 2 }}
           animation={prefersReducedMotion ? false : 'wave'}
         />
         <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} variant="rectangular" width={80} height={80} sx={{ borderRadius: 1 }} />
+            <Skeleton
+              key={i}
+              variant="rectangular"
+              width={80}
+              height={80}
+              sx={{ borderRadius: 1 }}
+            />
           ))}
         </Box>
       </Grid>
@@ -177,13 +186,13 @@ export function SkeletonDetail() {
 
 export function SkeletonProfile() {
   const prefersReducedMotion = useReducedMotion()
-  
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
-        <Skeleton 
-          variant="circular" 
-          width={120} 
+        <Skeleton
+          variant="circular"
+          width={120}
           height={120}
           animation={prefersReducedMotion ? false : 'wave'}
         />

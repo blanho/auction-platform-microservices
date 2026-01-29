@@ -2,10 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { biddingApi } from '../api'
 import { BID_CONSTANTS } from '../constants'
 import { createAutoBidSchema, updateAutoBidSchema } from '../schemas'
-import type {
-  CreateAutoBidRequest,
-  UpdateAutoBidRequest,
-} from '../types'
+import type { CreateAutoBidRequest, UpdateAutoBidRequest } from '../types'
 
 const QUERY_KEYS = BID_CONSTANTS.QUERY_KEYS
 
@@ -34,10 +31,18 @@ export const useAutoBidById = (autoBidId: string) => {
   })
 }
 
-export const useMyAutoBids = (activeOnly?: boolean, page: number = 1, pageSize: number = 20) => {
+export const useMyAutoBids = (activeOnly?: boolean, page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: QUERY_KEYS.myAutoBids(activeOnly, page, pageSize),
     queryFn: () => biddingApi.getMyAutoBids(activeOnly, page, pageSize),
+  })
+}
+
+export const useAutoBidForAuction = (auctionId: string | undefined, enabled = true) => {
+  return useQuery({
+    queryKey: ['autobid', 'auction', auctionId],
+    queryFn: () => biddingApi.getAutoBidForAuction(auctionId!),
+    enabled: enabled && !!auctionId,
   })
 }
 

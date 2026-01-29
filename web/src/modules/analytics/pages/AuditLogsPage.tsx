@@ -7,7 +7,6 @@ import {
   Typography,
   Box,
   TextField,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -17,28 +16,17 @@ import {
   TablePagination,
   Chip,
   IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Stack,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Skeleton,
-  Alert,
   Tooltip,
   Paper,
 } from '@mui/material'
-import {
-  Search,
-  Visibility,
-  Refresh,
-  History,
-  Close,
-} from '@mui/icons-material'
+import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, TableToolbar } from '@/shared/ui'
+import type { FilterConfig } from '@/shared/ui'
+import { Visibility, History, Close } from '@mui/icons-material'
 import { useAuditLogs } from '../hooks/useAnalytics'
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import type { AuditLog, AuditAction, AuditLogQueryParams } from '../types'
@@ -53,7 +41,7 @@ import {
 } from '../utils'
 import { AUDIT_ACTION } from '../constants'
 
-const ENTITY_TYPES = [
+const ENTITY_TYPE_OPTIONS = [
   'Auction',
   'Bid',
   'User',
@@ -63,16 +51,21 @@ const ENTITY_TYPES = [
   'Brand',
   'Report',
   'Notification',
-]
+].map((type) => ({ value: type, label: type }))
 
-const SERVICE_NAMES = [
+const SERVICE_NAME_OPTIONS = [
   'AuctionService',
   'BidService',
   'IdentityService',
   'PaymentService',
   'NotificationService',
   'AnalyticsService',
-]
+].map((name) => ({ value: name, label: name.replace('Service', '') }))
+
+const ACTION_OPTIONS = Object.values(AUDIT_ACTION).map((act) => ({
+  value: act,
+  label: act.replace(/([A-Z])/g, ' $1').trim(),
+}))
 
 export function AuditLogsPage() {
   const [page, setPage] = useState(0)
@@ -84,20 +77,56 @@ export function AuditLogsPage() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
 
-  const queryParams = useMemo<AuditLogQueryParams>(() => ({
-    entityType: entityType || undefined,
-    serviceName: serviceName || undefined,
-    action: action || undefined,
-    page: page + 1,
-    pageSize: rowsPerPage,
-  }), [entityType, serviceName, action, page, rowsPerPage])
+  const filters: FilterConfig[] = useMemo(
+    () => [
+      { key: 'entityType', label: 'Entity Type', options: ENTITY_TYPE_OPTIONS, minWidth: 160 },
+      { key: 'serviceName', label: 'Service', options: SERVICE_NAME_OPTIONS, minWidth: 160 },
+      { key: 'action', label: 'Action', options: ACTION_OPTIONS, minWidth: 160 },
+    ],
+    []
+  )
+
+  const filterValues = useMemo(
+    () => ({
+      entityType,
+      serviceName,
+      action,
+    }),
+    [entityType, serviceName, action]
+  )
+
+  const handleFilterChange = (key: string, value: string) => {
+    switch (key) {
+      case 'entityType':
+        setEntityType(value)
+        break
+      case 'serviceName':
+        setServiceName(value)
+        break
+      case 'action':
+        setAction(value as AuditAction | '')
+        break
+    }
+    setPage(0)
+  }
+
+  const queryParams = useMemo<AuditLogQueryParams>(
+    () => ({
+      entityType: entityType || undefined,
+      serviceName: serviceName || undefined,
+      action: action || undefined,
+      page: page + 1,
+      pageSize: rowsPerPage,
+    }),
+    [entityType, serviceName, action, page, rowsPerPage]
+  )
 
   const { data, isLoading, isError, refetch } = useAuditLogs(queryParams)
 
   const items = data?.items
   const filteredItems = useMemo(() => {
-    if (!items) return []
-    if (!search) return items
+    if (!items) {return []}
+    if (!search) {return items}
     const searchLower = search.toLowerCase()
     return items.filter(
       (log) =>
@@ -132,7 +161,9 @@ export function AuditLogsPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}
+          >
             <Box>
               <Typography
                 variant="h4"
@@ -148,91 +179,22 @@ export function AuditLogsPage() {
                 Track all system activities and changes
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {hasFilters && (
-                <Button
-                  variant="outlined"
-                  startIcon={<Close />}
-                  onClick={handleClearFilters}
-                  size="small"
-                >
-                  Clear Filters
-                </Button>
-              )}
-              <IconButton onClick={() => refetch()} color="primary">
-                <Refresh />
-              </IconButton>
-            </Box>
           </Box>
         </motion.div>
 
         <motion.div variants={fadeInUp}>
           <Card sx={{ mb: 3 }}>
             <CardContent>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <TextField
-                  placeholder="Search by entity, user, service..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  size="small"
-                  sx={{ minWidth: 280 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search sx={{ color: 'text.secondary' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <FormControl size="small" sx={{ minWidth: 160 }}>
-                  <InputLabel>Entity Type</InputLabel>
-                  <Select
-                    value={entityType}
-                    onChange={(e) => setEntityType(e.target.value)}
-                    label="Entity Type"
-                  >
-                    <MenuItem value="">All</MenuItem>
-                    {ENTITY_TYPES.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {getEntityTypeLabel(type)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl size="small" sx={{ minWidth: 160 }}>
-                  <InputLabel>Service</InputLabel>
-                  <Select
-                    value={serviceName}
-                    onChange={(e) => setServiceName(e.target.value)}
-                    label="Service"
-                  >
-                    <MenuItem value="">All</MenuItem>
-                    {SERVICE_NAMES.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        {getServiceNameLabel(name)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl size="small" sx={{ minWidth: 160 }}>
-                  <InputLabel>Action</InputLabel>
-                  <Select
-                    value={action}
-                    onChange={(e) => setAction(e.target.value as AuditAction | '')}
-                    label="Action"
-                  >
-                    <MenuItem value="">All</MenuItem>
-                    {Object.values(AUDIT_ACTION).map((act) => (
-                      <MenuItem key={act} value={act}>
-                        {getAuditActionLabel(act as AuditAction)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Stack>
+              <TableToolbar
+                searchValue={search}
+                searchPlaceholder="Search by entity, user, service..."
+                onSearchChange={setSearch}
+                filters={filters}
+                filterValues={filterValues}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                onRefresh={() => refetch()}
+              />
             </CardContent>
           </Card>
         </motion.div>
@@ -240,9 +202,9 @@ export function AuditLogsPage() {
         <motion.div variants={fadeInUp}>
           <Card>
             {isError && (
-              <Alert severity="error" sx={{ m: 2 }}>
+              <InlineAlert severity="error" sx={{ m: 2 }}>
                 Failed to load audit logs. Please try again.
-              </Alert>
+              </InlineAlert>
             )}
 
             <TableContainer>
@@ -259,31 +221,19 @@ export function AuditLogsPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {isLoading ? (
-                    Array.from({ length: 10 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell><Skeleton variant="text" width={140} /></TableCell>
-                        <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={100} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={100} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={120} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={80} /></TableCell>
-                        <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : filteredItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                        <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No audit logs found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {hasFilters ? 'Try adjusting your filters' : 'Audit logs will appear here'}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
+                  {isLoading && <TableSkeletonRows rows={10} columns={7} />}
+                  {!isLoading && filteredItems.length === 0 && (
+                    <TableEmptyStateRow
+                      colSpan={7}
+                      title="No audit logs found"
+                      description={
+                        hasFilters ? 'Try adjusting your filters' : 'Audit logs will appear here'
+                      }
+                      icon={<History sx={{ fontSize: 48, color: 'text.secondary' }} />}
+                      cellSx={{ py: 8 }}
+                    />
+                  )}
+                  {!isLoading && filteredItems.length > 0 && (
                     filteredItems.map((log) => (
                       <TableRow
                         key={log.id}
@@ -307,14 +257,16 @@ export function AuditLogsPage() {
                           <Typography variant="body2" fontWeight={500}>
                             {getEntityTypeLabel(log.entityType)}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontFamily: 'monospace' }}
+                          >
                             {log.entityId.substring(0, 8)}...
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {log.username || '-'}
-                          </Typography>
+                          <Typography variant="body2">{log.username || '-'}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
@@ -362,13 +314,10 @@ export function AuditLogsPage() {
         </motion.div>
       </motion.div>
 
-      <Dialog
-        open={detailsOpen}
-        onClose={handleCloseDetails}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Dialog open={detailsOpen} onClose={handleCloseDetails} maxWidth="md" fullWidth>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <History />
             Audit Log Details
@@ -382,40 +331,66 @@ export function AuditLogsPage() {
         <DialogContent dividers>
           {selectedLog && (
             <Stack spacing={3}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}
+              >
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Timestamp</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Timestamp
+                  </Typography>
                   <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                     {formatAuditTimestamp(selectedLog.timestamp)}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Entity Type</Typography>
-                  <Typography variant="body2">{getEntityTypeLabel(selectedLog.entityType)}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Entity Type
+                  </Typography>
+                  <Typography variant="body2">
+                    {getEntityTypeLabel(selectedLog.entityType)}
+                  </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Entity ID</Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Entity ID
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+                  >
                     {selectedLog.entityId}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Service</Typography>
-                  <Typography variant="body2">{getServiceNameLabel(selectedLog.serviceName)}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Service
+                  </Typography>
+                  <Typography variant="body2">
+                    {getServiceNameLabel(selectedLog.serviceName)}
+                  </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">User</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    User
+                  </Typography>
                   <Typography variant="body2">{selectedLog.username || '-'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">User ID</Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    User ID
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+                  >
                     {selectedLog.userId}
                   </Typography>
                 </Box>
                 {selectedLog.ipAddress && (
                   <Box>
-                    <Typography variant="caption" color="text.secondary">IP Address</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      IP Address
+                    </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {selectedLog.ipAddress}
                     </Typography>
@@ -423,8 +398,13 @@ export function AuditLogsPage() {
                 )}
                 {selectedLog.correlationId && (
                   <Box>
-                    <Typography variant="caption" color="text.secondary">Correlation ID</Typography>
-                    <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Correlation ID
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+                    >
                       {selectedLog.correlationId}
                     </Typography>
                   </Box>
@@ -433,7 +413,11 @@ export function AuditLogsPage() {
 
               {selectedLog.changedProperties && selectedLog.changedProperties.length > 0 && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
                     Changed Properties
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -446,14 +430,26 @@ export function AuditLogsPage() {
 
               {selectedLog.oldValues && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
                     Old Values
                   </Typography>
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'error.50', maxHeight: 200, overflow: 'auto' }}>
+                  <Paper
+                    variant="outlined"
+                    sx={{ p: 2, bgcolor: 'error.50', maxHeight: 200, overflow: 'auto' }}
+                  >
                     <Typography
                       component="pre"
                       variant="body2"
-                      sx={{ fontFamily: 'monospace', fontSize: '0.75rem', m: 0, whiteSpace: 'pre-wrap' }}
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.75rem',
+                        m: 0,
+                        whiteSpace: 'pre-wrap',
+                      }}
                     >
                       {JSON.stringify(parseJsonSafely(selectedLog.oldValues), null, 2)}
                     </Typography>
@@ -463,14 +459,26 @@ export function AuditLogsPage() {
 
               {selectedLog.newValues && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
                     New Values
                   </Typography>
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'success.50', maxHeight: 200, overflow: 'auto' }}>
+                  <Paper
+                    variant="outlined"
+                    sx={{ p: 2, bgcolor: 'success.50', maxHeight: 200, overflow: 'auto' }}
+                  >
                     <Typography
                       component="pre"
                       variant="body2"
-                      sx={{ fontFamily: 'monospace', fontSize: '0.75rem', m: 0, whiteSpace: 'pre-wrap' }}
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.75rem',
+                        m: 0,
+                        whiteSpace: 'pre-wrap',
+                      }}
                     >
                       {JSON.stringify(parseJsonSafely(selectedLog.newValues), null, 2)}
                     </Typography>

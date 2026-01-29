@@ -38,9 +38,11 @@ import {
   OpenInNew,
 } from '@mui/icons-material'
 import { useMyBids, useMyAutoBids, useCancelAutoBid } from '../hooks'
+import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 import { useUpdateAutoBid } from '../hooks/useAutoBids'
 import { formatCurrency } from '@/shared/utils'
 import type { AutoBid } from '../types'
+import { palette } from '@/shared/theme/tokens'
 
 const getStatusChip = (status: string, isWinning: boolean) => {
   if (isWinning) {
@@ -94,6 +96,14 @@ export function MyBidsPage() {
   const cancelAutoBid = useCancelAutoBid()
   const updateAutoBid = useUpdateAutoBid()
 
+  let emptyMessage = "You haven't placed any bids yet"
+  if (activeTab === 1) {
+    emptyMessage = 'No winning bids'
+  }
+  if (activeTab === 2) {
+    emptyMessage = 'No outbid auctions'
+  }
+
   const handleCancelAutoBid = async (autoBidId: string) => {
     try {
       await cancelAutoBid.mutateAsync(autoBidId)
@@ -103,7 +113,7 @@ export function MyBidsPage() {
   }
 
   const handleUpdateAutoBid = async () => {
-    if (!editAutoBid || !newMaxAmount) return
+    if (!editAutoBid || !newMaxAmount) {return}
     try {
       await updateAutoBid.mutateAsync({
         autoBidId: editAutoBid.id,
@@ -125,7 +135,7 @@ export function MyBidsPage() {
   if (bidsError) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">Failed to load your bids. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load your bids. Please try again.</InlineAlert>
       </Container>
     )
   }
@@ -138,12 +148,12 @@ export function MyBidsPage() {
           sx={{
             fontFamily: '"Playfair Display", serif',
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
           }}
         >
           My Bids
         </Typography>
-        <Typography sx={{ color: '#78716C' }}>Track your bidding activity</Typography>
+        <Typography sx={{ color: palette.neutral[500] }}>Track your bidding activity</Typography>
       </Box>
 
       {autoBids && autoBids.autoBids && autoBids.autoBids.length > 0 && (
@@ -158,8 +168,8 @@ export function MyBidsPage() {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <AutoMode sx={{ color: '#CA8A04' }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1C1917' }}>
+            <AutoMode sx={{ color: palette.brand.primary }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
               Active Auto-Bids
             </Typography>
           </Box>
@@ -168,49 +178,52 @@ export function MyBidsPage() {
             {autoBidsLoading ? (
               <Skeleton variant="rectangular" height={60} />
             ) : (
-              autoBids.autoBids.filter((ab: AutoBid) => ab.isActive).map((autoBid: AutoBid) => (
-                <Box
-                  key={autoBid.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 2,
-                    bgcolor: 'white',
-                    borderRadius: 1,
-                  }}
-                >
-                  <Box>
-                    <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
-                      Auction #{autoBid.auctionId.slice(0, 8)}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.875rem', color: '#78716C' }}>
-                      Max: {formatCurrency(autoBid.maxAmount)} · Current: {formatCurrency(autoBid.currentBidAmount)}
-                    </Typography>
+              autoBids.autoBids
+                .filter((ab: AutoBid) => ab.isActive)
+                .map((autoBid: AutoBid) => (
+                  <Box
+                    key={autoBid.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      bgcolor: 'white',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box>
+                      <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
+                        Auction #{autoBid.auctionId.slice(0, 8)}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
+                        Max: {formatCurrency(autoBid.maxAmount)} · Current:{' '}
+                        {formatCurrency(autoBid.currentBidAmount)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Tooltip title="Edit Auto-Bid">
+                        <IconButton
+                          size="small"
+                          onClick={() => openEditDialog(autoBid)}
+                          sx={{ color: palette.brand.primary }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Cancel Auto-Bid">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleCancelAutoBid(autoBid.id)}
+                          disabled={cancelAutoBid.isPending}
+                          sx={{ color: palette.semantic.error }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title="Edit Auto-Bid">
-                      <IconButton
-                        size="small"
-                        onClick={() => openEditDialog(autoBid)}
-                        sx={{ color: '#CA8A04' }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Cancel Auto-Bid">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleCancelAutoBid(autoBid.id)}
-                        disabled={cancelAutoBid.isPending}
-                        sx={{ color: '#EF4444' }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              ))
+                ))
             )}
           </Box>
         </Card>
@@ -234,16 +247,24 @@ export function MyBidsPage() {
                 minHeight: 56,
               },
               '& .Mui-selected': {
-                color: '#CA8A04',
+                color: palette.brand.primary,
               },
               '& .MuiTabs-indicator': {
-                bgcolor: '#CA8A04',
+                bgcolor: palette.brand.primary,
               },
             }}
           >
             <Tab icon={<Gavel sx={{ fontSize: 20 }} />} iconPosition="start" label="All Bids" />
-            <Tab icon={<EmojiEvents sx={{ fontSize: 20 }} />} iconPosition="start" label="Winning" />
-            <Tab icon={<TrendingDown sx={{ fontSize: 20 }} />} iconPosition="start" label="Outbid" />
+            <Tab
+              icon={<EmojiEvents sx={{ fontSize: 20 }} />}
+              iconPosition="start"
+              label="Winning"
+            />
+            <Tab
+              icon={<TrendingDown sx={{ fontSize: 20 }} />}
+              iconPosition="start"
+              label="Outbid"
+            />
           </Tabs>
         </Box>
 
@@ -255,46 +276,36 @@ export function MyBidsPage() {
                 <TableCell sx={{ fontWeight: 600 }}>Your Bid</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
+                <TableCell sx={{ fontWeight: 600 }} align="right">
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {bidsLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                  </TableRow>
-                ))
-              ) : myBids && myBids.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
-                    <Gavel sx={{ fontSize: 48, color: '#D4D4D4', mb: 2 }} />
-                    <Typography sx={{ color: '#78716C', mb: 2 }}>
-                      {activeTab === 0
-                        ? "You haven't placed any bids yet"
-                        : activeTab === 1
-                        ? 'No winning bids'
-                        : 'No outbid auctions'}
-                    </Typography>
+              {bidsLoading && <TableSkeletonRows rows={5} columns={5} />}
+              {!bidsLoading && myBids && myBids.length === 0 && (
+                <TableEmptyStateRow
+                  colSpan={5}
+                  title={emptyMessage}
+                  icon={<Gavel sx={{ fontSize: 48, color: '#D4D4D4' }} />}
+                  actions={
                     <Button
                       component={Link}
                       to="/auctions"
                       variant="contained"
                       sx={{
-                        bgcolor: '#1C1917',
+                        bgcolor: palette.neutral[900],
                         textTransform: 'none',
-                        '&:hover': { bgcolor: '#44403C' },
+                        '&:hover': { bgcolor: palette.neutral[700] },
                       }}
                     >
                       Browse Auctions
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ) : (
+                  }
+                  cellSx={{ py: 8 }}
+                />
+              )}
+              {!isLoading && myBids && myBids.length > 0 && (
                 myBids?.map((bid) => (
                   <TableRow key={bid.id} hover>
                     <TableCell>
@@ -310,7 +321,7 @@ export function MyBidsPage() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Gavel sx={{ color: '#78716C' }} />
+                          <Gavel sx={{ color: palette.neutral[500] }} />
                         </Box>
                         <Box>
                           <Typography
@@ -318,9 +329,9 @@ export function MyBidsPage() {
                             to={`/auctions/${bid.auctionId}`}
                             sx={{
                               fontWeight: 500,
-                              color: '#1C1917',
+                              color: palette.neutral[900],
                               textDecoration: 'none',
-                              '&:hover': { color: '#CA8A04' },
+                              '&:hover': { color: palette.brand.primary },
                             }}
                           >
                             Auction #{bid.auctionId.slice(0, 8)}
@@ -332,15 +343,15 @@ export function MyBidsPage() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography sx={{ fontWeight: 600, color: '#1C1917' }}>
+                      <Typography sx={{ fontWeight: 600, color: palette.neutral[900] }}>
                         {formatCurrency(bid.amount)}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography sx={{ color: '#44403C' }}>
+                      <Typography sx={{ color: palette.neutral[700] }}>
                         {new Date(bid.createdAt).toLocaleDateString()}
                       </Typography>
-                      <Typography sx={{ fontSize: '0.8125rem', color: '#78716C' }}>
+                      <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500] }}>
                         {new Date(bid.createdAt).toLocaleTimeString()}
                       </Typography>
                     </TableCell>
@@ -368,7 +379,7 @@ export function MyBidsPage() {
       <Dialog open={!!editAutoBid} onClose={() => setEditAutoBid(null)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 600 }}>Edit Auto-Bid</DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: '#78716C', mb: 3 }}>
+          <Typography sx={{ color: palette.neutral[500], mb: 3 }}>
             Update your maximum bid amount for automatic bidding.
           </Typography>
 
@@ -385,7 +396,10 @@ export function MyBidsPage() {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={() => setEditAutoBid(null)} sx={{ color: '#78716C', textTransform: 'none' }}>
+          <Button
+            onClick={() => setEditAutoBid(null)}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
             Cancel
           </Button>
           <Button
@@ -393,7 +407,7 @@ export function MyBidsPage() {
             onClick={handleUpdateAutoBid}
             disabled={!newMaxAmount || updateAutoBid.isPending}
             sx={{
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               textTransform: 'none',
               '&:hover': { bgcolor: '#A16207' },
             }}

@@ -75,13 +75,9 @@ export function BroadcastNotificationPage() {
       </Box>
 
       {success && (
-        <Alert
-          icon={<CheckCircle />}
-          severity="success"
-          sx={{ mb: 3, borderRadius: 2 }}
-        >
+        <InlineAlert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
           Notification broadcast successfully!
-        </Alert>
+        </InlineAlert>
       )}
 
       <Card sx={{ p: 4, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
@@ -145,12 +141,14 @@ export function BroadcastNotificationPage() {
                 <Button
                   type="button"
                   variant="outlined"
-                  onClick={() => setFormData({
-                    type: 'system',
-                    title: '',
-                    message: '',
-                    targetRole: undefined,
-                  })}
+                  onClick={() =>
+                    setFormData({
+                      type: 'system',
+                      title: '',
+                      message: '',
+                      targetRole: undefined,
+                    })
+                  }
                   disabled={isPending}
                   sx={{
                     borderColor: '#7C3AED',

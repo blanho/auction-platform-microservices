@@ -1,10 +1,6 @@
 import axios from 'axios'
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
-import {
-  getAccessToken,
-  setAccessToken,
-  clearAuthStorage,
-} from '@/modules/auth/utils/token.utils'
+import { getAccessToken, setAccessToken, clearAuthStorage } from '@/modules/auth/utils/token.utils'
 import { getCsrfToken } from '@/modules/auth/utils/csrf.utils'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
@@ -24,7 +20,7 @@ function onTokenRefreshed(token: string | null) {
 }
 
 function isRetryableError(error: AxiosError): boolean {
-  if (!error.response) return true
+  if (!error.response) {return true}
   const status = error.response.status
   return status >= 500 || status === 408 || status === 429
 }
@@ -80,7 +76,10 @@ class HttpService {
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean; _retryCount?: number }
+        const originalRequest = error.config as InternalAxiosRequestConfig & {
+          _retry?: boolean
+          _retryCount?: number
+        }
 
         if (!originalRequest) {
           return Promise.reject(error)
@@ -130,15 +129,17 @@ class HttpService {
           } catch (refreshError) {
             onTokenRefreshed(null)
             clearAuthStorage()
-            
+
             const axiosRefreshError = refreshError as AxiosError<{ code?: string }>
-            if (axiosRefreshError.response?.status === 403 && 
-                axiosRefreshError.response?.data?.code === 'security_termination') {
+            if (
+              axiosRefreshError.response?.status === 403 &&
+              axiosRefreshError.response?.data?.code === 'security_termination'
+            ) {
               window.location.href = '/login?session=security'
             } else {
               window.location.href = '/login?session=expired'
             }
-            
+
             return Promise.reject(error)
           } finally {
             isRefreshing = false

@@ -1,16 +1,22 @@
 import { http } from '@/services/http'
-import type { 
-  NotificationTemplate, 
-  CreateTemplateDto, 
-  UpdateTemplateDto 
+import type {
+  NotificationTemplate,
+  CreateTemplateDto,
+  UpdateTemplateDto,
 } from '../types/template.types'
 import type { PaginatedResponse } from '@/shared/types'
 
 export const templatesApi = {
-  async getTemplates(page: number = 1, pageSize: number = 20): Promise<PaginatedResponse<NotificationTemplate>> {
-    const response = await http.get<PaginatedResponse<NotificationTemplate>>('/notifications/templates', {
-      params: { page, pageSize }
-    })
+  async getTemplates(
+    page = 1,
+    pageSize = 20
+  ): Promise<PaginatedResponse<NotificationTemplate>> {
+    const response = await http.get<PaginatedResponse<NotificationTemplate>>(
+      '/notifications/templates',
+      {
+        params: { page, pageSize },
+      }
+    )
     return response.data
   },
 

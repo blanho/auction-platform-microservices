@@ -11,7 +11,6 @@ import {
   Button,
   TextField,
   Divider,
-  Alert,
   CircularProgress,
   Skeleton,
   Stepper,
@@ -28,7 +27,9 @@ import {
   ShoppingCart,
   Lock,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useForm, Controller } from 'react-hook-form'
+import { InlineAlert } from '@/shared/ui'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ordersApi } from '../api'
@@ -233,11 +234,7 @@ export function CheckoutPage() {
                           name="addressLine2"
                           control={control}
                           render={({ field }) => (
-                            <TextField
-                              {...field}
-                              label="Address Line 2 (Optional)"
-                              fullWidth
-                            />
+                            <TextField {...field} label="Address Line 2 (Optional)" fullWidth />
                           )}
                         />
                       </Grid>
@@ -323,9 +320,9 @@ export function CheckoutPage() {
                     </Grid>
 
                     {createOrderMutation.error && (
-                      <Alert severity="error" sx={{ mt: 3 }}>
+                      <InlineAlert severity="error" sx={{ mt: 3 }}>
                         Failed to create order. Please try again.
-                      </Alert>
+                      </InlineAlert>
                     )}
 
                     <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
@@ -360,9 +357,9 @@ export function CheckoutPage() {
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
-                  <Alert severity="info" sx={{ mb: 3 }}>
+                  <InlineAlert severity="info" sx={{ mb: 3 }}>
                     You will be redirected to our secure payment provider to complete your purchase.
-                  </Alert>
+                  </InlineAlert>
 
                   <Box
                     sx={{
@@ -381,9 +378,9 @@ export function CheckoutPage() {
                     </Typography>
 
                     {processPaymentMutation.error && (
-                      <Alert severity="error" sx={{ mb: 3 }}>
+                      <InlineAlert severity="error" sx={{ mb: 3 }}>
                         Payment failed. Please try again.
-                      </Alert>
+                      </InlineAlert>
                     )}
 
                     <Button
@@ -394,7 +391,7 @@ export function CheckoutPage() {
                       sx={{
                         px: 6,
                         py: 1.5,
-                        bgcolor: '#CA8A04',
+                        bgcolor: palette.brand.primary,
                         '&:hover': { bgcolor: '#A16207' },
                       }}
                     >
@@ -474,13 +471,14 @@ export function CheckoutPage() {
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
 
-                {checkingOrder ? (
+                {checkingOrder && (
                   <Stack spacing={2}>
                     <Skeleton variant="rectangular" height={80} />
                     <Skeleton width="60%" />
                     <Skeleton width="40%" />
                   </Stack>
-                ) : existingOrder ? (
+                )}
+                {!checkingOrder && existingOrder && (
                   <>
                     <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                       <Box
@@ -509,7 +507,12 @@ export function CheckoutPage() {
                           Winning Bid
                         </Typography>
                         <Typography variant="body2">
-                          ${(existingOrder.winningBidAmount || existingOrder.winningBid || 0).toLocaleString()}
+                          $
+                          {(
+                            existingOrder.winningBidAmount ||
+                            existingOrder.winningBid ||
+                            0
+                          ).toLocaleString()}
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -533,17 +536,14 @@ export function CheckoutPage() {
                         <Typography variant="subtitle1" fontWeight={600}>
                           Total
                         </Typography>
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight={700}
-                          color="primary.main"
-                        >
+                        <Typography variant="subtitle1" fontWeight={700} color="primary.main">
                           ${existingOrder.totalAmount.toLocaleString()}
                         </Typography>
                       </Box>
                     </Stack>
                   </>
-                ) : (
+                )}
+                {!existingOrderLoading && !existingOrder && (
                   <Box sx={{ py: 4, textAlign: 'center' }}>
                     <ShoppingCart sx={{ fontSize: 48, color: 'grey.300', mb: 2 }} />
                     <Typography variant="body2" color="text.secondary">

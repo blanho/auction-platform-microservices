@@ -1,14 +1,23 @@
 import { http } from '@/services/http'
-import type { Notification, NotificationSummary, NotificationFilters, NotificationPreferences, CreateNotificationDto, BroadcastNotificationDto, AdminNotificationFilters, NotificationStatsDto } from '../types/notification.types'
+import type {
+  Notification,
+  NotificationSummary,
+  NotificationFilters,
+  NotificationPreferences,
+  CreateNotificationDto,
+  BroadcastNotificationDto,
+  AdminNotificationFilters,
+  NotificationStatsDto,
+} from '../types/notification.types'
 import type { PaginatedResponse } from '@/shared/types'
 
 export const notificationsApi = {
   async getNotifications(filters: NotificationFilters): Promise<Notification[]> {
-    const response = await http.get<Notification[]>('/notifications', { 
+    const response = await http.get<Notification[]>('/notifications', {
       params: {
         type: filters.type,
         status: filters.status,
-      } 
+      },
     })
     return response.data
   },
@@ -44,8 +53,13 @@ export const notificationsApi = {
     return response.data
   },
 
-  async updatePreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const response = await http.put<NotificationPreferences>('/notifications/preferences', preferences)
+  async updatePreferences(
+    preferences: Partial<NotificationPreferences>
+  ): Promise<NotificationPreferences> {
+    const response = await http.put<NotificationPreferences>(
+      '/notifications/preferences',
+      preferences
+    )
     return response.data
   },
 
@@ -54,7 +68,11 @@ export const notificationsApi = {
     return response.data
   },
 
-  async getAllNotifications(page: number, pageSize: number, filters?: AdminNotificationFilters): Promise<PaginatedResponse<Notification>> {
+  async getAllNotifications(
+    page: number,
+    pageSize: number,
+    filters?: AdminNotificationFilters
+  ): Promise<PaginatedResponse<Notification>> {
     const response = await http.get<PaginatedResponse<Notification>>('/notifications/admin/all', {
       params: {
         page,

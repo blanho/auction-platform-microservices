@@ -32,7 +32,10 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   SettingChanged: 'Setting Changed',
 }
 
-export const AUDIT_ACTION_COLORS: Record<AuditAction, 'success' | 'info' | 'warning' | 'error' | 'default'> = {
+export const AUDIT_ACTION_COLORS: Record<
+  AuditAction,
+  'success' | 'info' | 'warning' | 'error' | 'default'
+> = {
   Created: 'success',
   Updated: 'info',
   Deleted: 'error',

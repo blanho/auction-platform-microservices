@@ -18,15 +18,13 @@ import {
   TableHead,
   TableRow,
   Pagination,
-  Skeleton,
-  Alert,
   IconButton,
 } from '@mui/material'
 import { AccessTime, FilterList, Close } from '@mui/icons-material'
 import { useBidHistory } from '../hooks/useBids'
 import { BidStatus, type BidHistoryFilters } from '../types'
-import { getBidStatusColor } from '../utils'
 import { formatCurrency, formatDateTime } from '@/shared/utils'
+import { TableEmptyStateRow, TableSkeletonRows, InlineAlert, StatusBadge } from '@/shared/ui'
 
 export const BidHistoryPage = () => {
   const navigate = useNavigate()
@@ -36,6 +34,7 @@ export const BidHistoryPage = () => {
   })
 
   const { data, isLoading, error } = useBidHistory(filters)
+  const bidCount = data?.items?.length ?? 0
 
   const handleFilterChange = (key: keyof BidHistoryFilters, value: string | number | undefined) => {
     setFilters((prev: BidHistoryFilters) => ({
@@ -57,7 +56,7 @@ export const BidHistoryPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">Failed to load bid history. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load bid history. Please try again.</InlineAlert>
       </Container>
     )
   }
@@ -85,7 +84,10 @@ export const BidHistoryPage = () => {
         >
           <Stack direction="row" alignItems="center" spacing={2} mb={1}>
             <AccessTime sx={{ width: 40, height: 40, color: '#2563EB' }} />
-            <Typography variant="h3" sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}>
+            <Typography
+              variant="h3"
+              sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
+            >
               Bid History
             </Typography>
           </Stack>
@@ -221,17 +223,9 @@ export const BidHistoryPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
-                  [...Array(10)].map((_, index) => (
-                    <TableRow key={index}>
-                      <TableCell colSpan={5}>
-                        <Skeleton height={40} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : data?.items && data.items.length > 0 ? (
-                  data.items.map((bid) => {
-                    const statusColors = getBidStatusColor(bid.status)
+                {isLoading && <TableSkeletonRows rows={10} columns={5} />}
+                {!isLoading && bidCount > 0 && (
+                  data?.items.map((bid) => {
                     return (
                       <TableRow
                         key={bid.id}
@@ -269,12 +263,9 @@ export const BidHistoryPage = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={bid.status.toUpperCase()}
-                            size="small"
+                          <StatusBadge
+                            status={bid.status}
                             sx={{
-                              background: statusColors.bg,
-                              color: statusColors.color,
                               fontFamily: 'Chakra Petch',
                               fontWeight: 600,
                               fontSize: '0.7rem',
@@ -295,27 +286,32 @@ export const BidHistoryPage = () => {
                               }}
                             />
                           ) : (
-                            <Typography variant="body2" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
+                            >
                               -
                             </Typography>
                           )}
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
+                          >
                             {formatDateTime(bid.bidTime)}
                           </Typography>
                         </TableCell>
                       </TableRow>
                     )
                   })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
-                      <Typography variant="body1" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
-                        No bid history found
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                )}
+                {!isLoading && bidCount === 0 && (
+                  <TableEmptyStateRow
+                    colSpan={5}
+                    title="No bid history found"
+                    cellSx={{ py: 8 }}
+                  />
                 )}
               </TableBody>
             </Table>

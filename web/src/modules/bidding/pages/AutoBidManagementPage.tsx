@@ -22,16 +22,17 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material'
+import { FlashOn, Edit, Delete, Add } from '@mui/icons-material'
 import {
-  FlashOn,
-  Edit,
-  Delete,
-  Add,
-} from '@mui/icons-material'
-import { useMyAutoBids, useToggleAutoBid, useCancelAutoBid, useUpdateAutoBid } from '../hooks/useAutoBids'
+  useMyAutoBids,
+  useToggleAutoBid,
+  useCancelAutoBid,
+  useUpdateAutoBid,
+} from '../hooks/useAutoBids'
 import { BID_CONSTANTS } from '../constants'
 import { formatCurrency, formatDateTime } from '@/shared/utils'
 import type { AutoBid, UpdateAutoBidRequest } from '../types'
+import { palette } from '@/shared/theme/tokens'
 
 export const AutoBidManagementPage = () => {
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ export const AutoBidManagementPage = () => {
   }
 
   const handleSaveEdit = async () => {
-    if (!selectedAutoBid) return
+    if (!selectedAutoBid) {return}
 
     try {
       await updateMutation.mutateAsync({
@@ -89,7 +90,7 @@ export const AutoBidManagementPage = () => {
   }
 
   const confirmDelete = async () => {
-    if (!selectedAutoBid) return
+    if (!selectedAutoBid) {return}
 
     try {
       await cancelMutation.mutateAsync(selectedAutoBid.id)
@@ -103,7 +104,7 @@ export const AutoBidManagementPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">Failed to load auto bids. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load auto bids. Please try again.</InlineAlert>
       </Container>
     )
   }
@@ -133,7 +134,10 @@ export const AutoBidManagementPage = () => {
             <Box>
               <Stack direction="row" alignItems="center" spacing={2} mb={1}>
                 <FlashOn sx={{ width: 40, height: 40, color: '#2563EB' }} />
-                <Typography variant="h3" sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}>
+                <Typography
+                  variant="h3"
+                  sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
+                >
                   Auto Bid Manager
                 </Typography>
               </Stack>
@@ -172,7 +176,10 @@ export const AutoBidManagementPage = () => {
           }}
         >
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography variant="body2" sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, color: '#64748B' }}>
+            <Typography
+              variant="body2"
+              sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, color: '#64748B' }}
+            >
               Show:
             </Typography>
             <Button
@@ -220,7 +227,7 @@ export const AutoBidManagementPage = () => {
           </Stack>
         </Card>
 
-        {isLoading ? (
+        {isLoading && (
           <Grid container spacing={3}>
             {[...Array(6)].map((_, index) => (
               <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -228,7 +235,8 @@ export const AutoBidManagementPage = () => {
               </Grid>
             ))}
           </Grid>
-        ) : data?.autoBids && data.autoBids.length > 0 ? (
+        )}
+        {!isLoading && data?.autoBids && data.autoBids.length > 0 && (
           <>
             <Grid container spacing={3} mb={4}>
               {data.autoBids.map((autoBid: AutoBid) => (
@@ -250,13 +258,18 @@ export const AutoBidManagementPage = () => {
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
-                      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        mb={2}
+                      >
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <FlashOn
                             sx={{
                               width: 24,
                               height: 24,
-                              color: autoBid.isActive ? '#22C55E' : '#94A3B8',
+                              color: autoBid.isActive ? palette.semantic.success : '#94A3B8',
                             }}
                           />
                           <Chip
@@ -308,7 +321,10 @@ export const AutoBidManagementPage = () => {
 
                       <Stack spacing={2} mb={3}>
                         <Box>
-                          <Typography variant="caption" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
+                          >
                             Max Amount
                           </Typography>
                           <Typography
@@ -324,29 +340,47 @@ export const AutoBidManagementPage = () => {
                         </Box>
 
                         <Box>
-                          <Typography variant="caption" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
+                          >
                             Current Bid
                           </Typography>
-                          <Typography variant="body2" sx={{ color: '#1E293B', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: '#1E293B', fontFamily: 'Chakra Petch' }}
+                          >
                             {formatCurrency(autoBid.currentBidAmount)}
                           </Typography>
                         </Box>
 
                         <Box>
-                          <Typography variant="caption" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
+                          >
                             Created
                           </Typography>
-                          <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
+                          >
                             {formatDateTime(autoBid.createdAt)}
                           </Typography>
                         </Box>
 
                         {autoBid.lastBidAt && (
                           <Box>
-                            <Typography variant="caption" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+                            <Typography
+                              variant="caption"
+                              sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
+                            >
                               Last Bid
                             </Typography>
-                            <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
+                            >
                               {formatDateTime(autoBid.lastBidAt)}
                             </Typography>
                           </Box>
@@ -415,7 +449,8 @@ export const AutoBidManagementPage = () => {
               </Box>
             )}
           </>
-        ) : (
+        )}
+        {!isLoading && (!data || data.length === 0) && (
           <Card
             sx={{
               p: 6,
@@ -544,7 +579,7 @@ export const AutoBidManagementPage = () => {
               fontFamily: 'Chakra Petch',
               fontWeight: 600,
               '&:hover': {
-                background: '#B91C1C',
+                background: palette.semantic.errorHover,
               },
             }}
           >

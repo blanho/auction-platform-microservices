@@ -1,12 +1,8 @@
 import { RouterProvider } from 'react-router-dom'
 import { router } from './router'
-import {
-  QueryProvider,
-  ThemeProvider,
-  AuthProvider,
-  PermissionProvider,
-} from './providers'
+import { QueryProvider, ThemeProvider, AuthProvider, PermissionProvider } from './providers'
 import { useSignalRNotifications } from '@/modules/notifications/hooks'
+import { ErrorBoundary } from '@/shared/components/errors'
 
 function AppContent() {
   useSignalRNotifications()
@@ -16,14 +12,16 @@ function AppContent() {
 
 export function App() {
   return (
-    <QueryProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <PermissionProvider>
-            <AppContent />
-          </PermissionProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <PermissionProvider>
+              <AppContent />
+            </PermissionProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryProvider>
+    </ErrorBoundary>
   )
 }

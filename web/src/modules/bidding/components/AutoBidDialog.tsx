@@ -10,19 +10,20 @@ import {
   Box,
   Stack,
   InputAdornment,
-  Alert,
   Slider,
   Divider,
   FormControlLabel,
   Switch,
   IconButton,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import { Close, AutoMode, TrendingUp } from '@mui/icons-material'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { http } from '@/services/http'
 import { formatCurrency } from '@/shared/utils/formatters'
 import { scaleIn } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
 
 interface AutoBidDialogProps {
   open: boolean
@@ -53,7 +54,9 @@ export function AutoBidDialog({
   existingAutoBid,
 }: AutoBidDialogProps) {
   const queryClient = useQueryClient()
-  const [maxAmount, setMaxAmount] = useState(existingAutoBid?.maxAmount || currentBid + minBidIncrement * 5)
+  const [maxAmount, setMaxAmount] = useState(
+    existingAutoBid?.maxAmount || currentBid + minBidIncrement * 5
+  )
   const [incrementAmount, setIncrementAmount] = useState(minBidIncrement)
   const [stopOnOutbid, setStopOnOutbid] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -114,7 +117,7 @@ export function AutoBidDialog({
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AutoMode sx={{ color: '#CA8A04' }} />
+            <AutoMode sx={{ color: palette.brand.primary }} />
             <Typography variant="h6" fontWeight={600}>
               Auto-Bid Setup
             </Typography>
@@ -188,7 +191,11 @@ export function AutoBidDialog({
                   <Typography variant="subtitle2" gutterBottom fontWeight={600}>
                     Maximum Bid Amount
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
                     We'll bid on your behalf up to this amount
                   </Typography>
                   <TextField
@@ -202,7 +209,9 @@ export function AutoBidDialog({
                       },
                     }}
                     error={maxAmount < minMaxAmount}
-                    helperText={maxAmount < minMaxAmount ? `Minimum ${formatCurrency(minMaxAmount)}` : ''}
+                    helperText={
+                      maxAmount < minMaxAmount ? `Minimum ${formatCurrency(minMaxAmount)}` : ''
+                    }
                   />
                   <Slider
                     value={maxAmount}
@@ -210,7 +219,7 @@ export function AutoBidDialog({
                     min={minMaxAmount}
                     max={minMaxAmount * 10}
                     step={minBidIncrement}
-                    sx={{ mt: 2, color: '#CA8A04' }}
+                    sx={{ mt: 2, color: palette.brand.primary }}
                   />
                 </Box>
 
@@ -218,13 +227,19 @@ export function AutoBidDialog({
                   <Typography variant="subtitle2" gutterBottom fontWeight={600}>
                     Bid Increment
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                  >
                     Amount to increase each automatic bid
                   </Typography>
                   <TextField
                     type="number"
                     value={incrementAmount}
-                    onChange={(e) => setIncrementAmount(Math.max(minBidIncrement, Number(e.target.value)))}
+                    onChange={(e) =>
+                      setIncrementAmount(Math.max(minBidIncrement, Number(e.target.value)))
+                    }
                     fullWidth
                     slotProps={{
                       input: {
@@ -261,14 +276,14 @@ export function AutoBidDialog({
                     Summary
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Auto-bid will place up to <strong>{potentialBids}</strong> bids, incrementing by {formatCurrency(incrementAmount)} each time, up to your maximum of {formatCurrency(maxAmount)}.
+                    Auto-bid will place up to <strong>{potentialBids}</strong> bids, incrementing by{' '}
+                    {formatCurrency(incrementAmount)} each time, up to your maximum of{' '}
+                    {formatCurrency(maxAmount)}.
                   </Typography>
                 </Box>
 
                 {createAutoBidMutation.error && (
-                  <Alert severity="error">
-                    Failed to set up auto-bid. Please try again.
-                  </Alert>
+                  <InlineAlert severity="error">Failed to set up auto-bid. Please try again.</InlineAlert>
                 )}
               </Stack>
             </motion.div>
@@ -296,7 +311,7 @@ export function AutoBidDialog({
             variant="contained"
             disabled={createAutoBidMutation.isPending || maxAmount < minMaxAmount}
             sx={{
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               '&:hover': { bgcolor: '#A16207' },
             }}
           >

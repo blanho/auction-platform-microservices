@@ -1,6 +1,10 @@
 import { Link, Outlet } from 'react-router-dom'
 import { Box, Container, Paper, Typography, IconButton } from '@mui/material'
-import { Gavel as GavelIcon, DarkMode as DarkModeIcon, LightMode as LightModeIcon } from '@mui/icons-material'
+import {
+  Gavel as GavelIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
+} from '@mui/icons-material'
 import { useThemeMode } from '@/app/providers'
 
 export const AuthLayout = () => {

@@ -15,14 +15,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   CircularProgress,
-  Alert,
   Skeleton,
   IconButton,
   Menu,
@@ -35,50 +33,18 @@ import {
 } from '@mui/material'
 import {
   AccountBalanceWallet,
-  ArrowUpward,
-  ArrowDownward,
   Add,
   CreditCard,
   AccountBalance,
   TrendingUp,
-  History,
   FilterList,
 } from '@mui/icons-material'
+import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, StatusBadge } from '@/shared/ui'
+import { palette } from '@/shared/theme/tokens'
 import { useWallet, useTransactions, useDeposit, useWithdraw, usePaymentMethods } from '../hooks'
-import type { TransactionFilters, TransactionType, TransactionStatus } from '../types'
-
-const formatCurrency = (amount: number, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount)
-}
-
-const getTransactionIcon = (type: TransactionType) => {
-  switch (type) {
-    case 'deposit':
-      return <ArrowDownward sx={{ color: '#22C55E' }} />
-    case 'withdrawal':
-      return <ArrowUpward sx={{ color: '#EF4444' }} />
-    case 'payment':
-      return <ArrowUpward sx={{ color: '#EF4444' }} />
-    case 'refund':
-      return <ArrowDownward sx={{ color: '#22C55E' }} />
-    default:
-      return <History sx={{ color: '#78716C' }} />
-  }
-}
-
-const getStatusChip = (status: TransactionStatus) => {
-  const config: Record<TransactionStatus, { color: 'success' | 'warning' | 'error' | 'default'; label: string }> = {
-    completed: { color: 'success', label: 'Completed' },
-    pending: { color: 'warning', label: 'Pending' },
-    failed: { color: 'error', label: 'Failed' },
-    cancelled: { color: 'default', label: 'Cancelled' },
-  }
-  const { color, label } = config[status] || { color: 'default', label: status }
-  return <Chip size="small" color={color} label={label} />
-}
+import type { TransactionFilters } from '../types'
+import { getTransactionIcon } from '../utils'
+import { formatCurrency } from '@/shared/utils/formatters'
 
 export function WalletPage() {
   const navigate = useNavigate()
@@ -98,7 +64,7 @@ export function WalletPage() {
   const withdraw = useWithdraw()
 
   const handleDeposit = async () => {
-    if (!depositAmount || !selectedPaymentMethod) return
+    if (!depositAmount || !selectedPaymentMethod) {return}
     try {
       await deposit.mutateAsync({
         amount: parseFloat(depositAmount),
@@ -113,7 +79,7 @@ export function WalletPage() {
   }
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !selectedPaymentMethod) return
+    if (!withdrawAmount || !selectedPaymentMethod) {return}
     try {
       await withdraw.mutateAsync({
         amount: parseFloat(withdrawAmount),
@@ -153,12 +119,12 @@ export function WalletPage() {
           sx={{
             fontFamily: '"Playfair Display", serif',
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
           }}
         >
           My Wallet
         </Typography>
-        <Typography sx={{ color: '#78716C' }}>
+        <Typography sx={{ color: palette.neutral[500] }}>
           Manage your balance and transactions
         </Typography>
       </Box>
@@ -170,15 +136,13 @@ export function WalletPage() {
               p: 3,
               borderRadius: 2,
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              background: 'linear-gradient(135deg, #1C1917 0%, #44403C 100%)',
+              background: `linear-gradient(135deg, ${palette.neutral[900]} 0%, ${palette.neutral[700]} 100%)`,
               color: 'white',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <AccountBalanceWallet />
-              <Typography sx={{ fontSize: '0.875rem', opacity: 0.8 }}>
-                Available Balance
-              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', opacity: 0.8 }}>Available Balance</Typography>
             </Box>
             <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
               {formatCurrency(wallet?.availableBalance || 0, wallet?.currency)}
@@ -198,15 +162,15 @@ export function WalletPage() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <TrendingUp sx={{ color: '#CA8A04' }} />
-              <Typography sx={{ fontSize: '0.875rem', color: '#78716C' }}>
+              <TrendingUp sx={{ color: palette.brand.primary }} />
+              <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
                 Total Balance
               </Typography>
             </Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1C1917' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: palette.neutral[900] }}>
               {formatCurrency(wallet?.balance || 0, wallet?.currency)}
             </Typography>
-            <Typography sx={{ fontSize: '0.875rem', color: '#78716C', mt: 1 }}>
+            <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500], mt: 1 }}>
               Includes held funds
             </Typography>
           </Card>
@@ -221,15 +185,15 @@ export function WalletPage() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <History sx={{ color: '#CA8A04' }} />
-              <Typography sx={{ fontSize: '0.875rem', color: '#78716C' }}>
+              <History sx={{ color: palette.brand.primary }} />
+              <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
                 Held Amount
               </Typography>
             </Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1C1917' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: palette.neutral[900] }}>
               {formatCurrency(wallet?.heldAmount || 0, wallet?.currency)}
             </Typography>
-            <Typography sx={{ fontSize: '0.875rem', color: '#78716C', mt: 1 }}>
+            <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500], mt: 1 }}>
               Pending transactions
             </Typography>
           </Card>
@@ -242,7 +206,7 @@ export function WalletPage() {
           startIcon={<Add />}
           onClick={() => setShowDepositDialog(true)}
           sx={{
-            bgcolor: '#CA8A04',
+            bgcolor: palette.brand.primary,
             textTransform: 'none',
             fontWeight: 600,
             px: 3,
@@ -257,12 +221,12 @@ export function WalletPage() {
           onClick={() => setShowWithdrawDialog(true)}
           disabled={(wallet?.availableBalance || 0) <= 0}
           sx={{
-            borderColor: '#1C1917',
-            color: '#1C1917',
+            borderColor: palette.neutral[900],
+            color: palette.neutral[900],
             textTransform: 'none',
             fontWeight: 600,
             px: 3,
-            '&:hover': { borderColor: '#44403C', bgcolor: '#FAFAF9' },
+            '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[50] },
           }}
         >
           Withdraw
@@ -272,12 +236,12 @@ export function WalletPage() {
           startIcon={<CreditCard />}
           onClick={() => navigate('/wallet/payment-methods')}
           sx={{
-            borderColor: '#78716C',
-            color: '#78716C',
+            borderColor: palette.neutral[500],
+            color: palette.neutral[500],
             textTransform: 'none',
             fontWeight: 600,
             px: 3,
-            '&:hover': { borderColor: '#44403C', bgcolor: '#FAFAF9' },
+            '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[50] },
           }}
         >
           Payment Methods
@@ -290,7 +254,7 @@ export function WalletPage() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         }}
       >
-        <Box sx={{ borderBottom: '1px solid #F5F5F5' }}>
+        <Box sx={{ borderBottom: `1px solid ${palette.neutral[100]}` }}>
           <Tabs
             value={activeTab}
             onChange={(_, v) => setActiveTab(v)}
@@ -301,10 +265,10 @@ export function WalletPage() {
                 fontWeight: 500,
               },
               '& .Mui-selected': {
-                color: '#CA8A04',
+                color: palette.brand.primary,
               },
               '& .MuiTabs-indicator': {
-                bgcolor: '#CA8A04',
+                bgcolor: palette.brand.primary,
               },
             }}
           >
@@ -318,18 +282,29 @@ export function WalletPage() {
           <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
             <FilterList />
           </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-          >
-            <MenuItem onClick={() => { setFilters({ ...filters, status: undefined }); setAnchorEl(null) }}>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+            <MenuItem
+              onClick={() => {
+                setFilters({ ...filters, status: undefined })
+                setAnchorEl(null)
+              }}
+            >
               All Status
             </MenuItem>
-            <MenuItem onClick={() => { setFilters({ ...filters, status: 'completed' }); setAnchorEl(null) }}>
+            <MenuItem
+              onClick={() => {
+                setFilters({ ...filters, status: 'completed' })
+                setAnchorEl(null)
+              }}
+            >
               Completed
             </MenuItem>
-            <MenuItem onClick={() => { setFilters({ ...filters, status: 'pending' }); setAnchorEl(null) }}>
+            <MenuItem
+              onClick={() => {
+                setFilters({ ...filters, status: 'pending' })
+                setAnchorEl(null)
+              }}
+            >
               Pending
             </MenuItem>
           </Menu>
@@ -347,74 +322,85 @@ export function WalletPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactionsLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                  </TableRow>
-                ))
-              ) : transactions?.items?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
-                    <Typography sx={{ color: '#78716C' }}>No transactions yet</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                transactions?.items?.filter((t) => {
-                  if (activeTab === 1) return t.type === 'deposit'
-                  if (activeTab === 2) return t.type === 'withdrawal'
-                  return true
-                }).map((transaction) => (
-                  <TableRow
-                    key={transaction.id}
-                    hover
-                    onClick={() => navigate(`/wallet/transactions/${transaction.id}`)}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        {getTransactionIcon(transaction.type)}
-                        <Box>
-                          <Typography sx={{ fontWeight: 500, color: '#1C1917', textTransform: 'capitalize' }}>
-                            {transaction.type.replace('_', ' ')}
-                          </Typography>
-                          <Typography sx={{ fontSize: '0.8125rem', color: '#78716C' }}>
-                            {transaction.description || `${transaction.type.replace('_', ' ')} transaction`}
-                          </Typography>
+              {transactionsLoading && <TableSkeletonRows rows={5} columns={5} />}
+              {!transactionsLoading && transactions?.items?.length === 0 && (
+                <TableEmptyStateRow
+                  colSpan={5}
+                  title="No transactions yet"
+                  cellSx={{ py: 6 }}
+                />
+              )}
+              {!transactionsLoading && transactions?.items?.length !== 0 && (
+                transactions?.items
+                  ?.filter((t) => {
+                    if (activeTab === 1) {return t.type === 'deposit'}
+                    if (activeTab === 2) {return t.type === 'withdrawal'}
+                    return true
+                  })
+                  .map((transaction) => (
+                    <TableRow
+                      key={transaction.id}
+                      hover
+                      onClick={() => navigate(`/wallet/transactions/${transaction.id}`)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          {getTransactionIcon(transaction.type)}
+                          <Box>
+                            <Typography
+                              sx={{
+                                fontWeight: 500,
+                                color: palette.neutral[900],
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {transaction.type.replace('_', ' ')}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500] }}>
+                              {transaction.description ||
+                                `${transaction.type.replace('_', ' ')} transaction`}
+                            </Typography>
+                          </Box>
                         </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography sx={{ color: '#44403C' }}>
-                        {new Date(transaction.createdAt).toLocaleDateString()}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.8125rem', color: '#78716C' }}>
-                        {new Date(transaction.createdAt).toLocaleTimeString()}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography
-                        sx={{
-                          fontWeight: 600,
-                          color: ['deposit', 'refund', 'release', 'escrow_release'].includes(transaction.type) ? '#22C55E' : '#EF4444',
-                        }}
-                      >
-                        {['deposit', 'refund', 'release', 'escrow_release'].includes(transaction.type) ? '+' : '-'}
-                        {formatCurrency(transaction.amount, wallet?.currency)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{getStatusChip(transaction.status)}</TableCell>
-                    <TableCell>
-                      <Typography sx={{ color: '#44403C' }}>
-                        {formatCurrency(transaction.balance, wallet?.currency)}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ color: palette.neutral[700] }}>
+                          {new Date(transaction.createdAt).toLocaleDateString()}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500] }}>
+                          {new Date(transaction.createdAt).toLocaleTimeString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            color: ['deposit', 'refund', 'release', 'escrow_release'].includes(
+                              transaction.type
+                            )
+                              ? palette.semantic.success
+                              : palette.semantic.error,
+                          }}
+                        >
+                          {['deposit', 'refund', 'release', 'escrow_release'].includes(
+                            transaction.type
+                          )
+                            ? '+'
+                            : '-'}
+                          {formatCurrency(transaction.amount, wallet?.currency)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={transaction.status} />
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ color: palette.neutral[700] }}>
+                          {formatCurrency(transaction.balance, wallet?.currency)}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))
               )}
             </TableBody>
           </Table>
@@ -432,13 +418,18 @@ export function WalletPage() {
         )}
       </Card>
 
-      <Dialog open={showDepositDialog} onClose={() => setShowDepositDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showDepositDialog}
+        onClose={() => setShowDepositDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Add Funds</DialogTitle>
         <DialogContent>
           {deposit.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <InlineAlert severity="error" sx={{ mb: 2 }}>
               Failed to process deposit. Please try again.
-            </Alert>
+            </InlineAlert>
           )}
 
           <TextField
@@ -474,7 +465,10 @@ export function WalletPage() {
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={() => setShowDepositDialog(false)} sx={{ color: '#78716C', textTransform: 'none' }}>
+          <Button
+            onClick={() => setShowDepositDialog(false)}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
             Cancel
           </Button>
           <Button
@@ -482,7 +476,7 @@ export function WalletPage() {
             onClick={handleDeposit}
             disabled={!depositAmount || !selectedPaymentMethod || deposit.isPending}
             sx={{
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               textTransform: 'none',
               '&:hover': { bgcolor: '#A16207' },
             }}
@@ -492,18 +486,23 @@ export function WalletPage() {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={showWithdrawDialog} onClose={() => setShowWithdrawDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showWithdrawDialog}
+        onClose={() => setShowWithdrawDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Withdraw Funds</DialogTitle>
         <DialogContent>
           {withdraw.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <InlineAlert severity="error" sx={{ mb: 2 }}>
               Failed to process withdrawal. Please try again.
-            </Alert>
+            </InlineAlert>
           )}
 
-          <Alert severity="info" sx={{ mb: 2, mt: 1 }}>
+          <InlineAlert severity="info" sx={{ mb: 2, mt: 1 }}>
             Available balance: {formatCurrency(wallet?.availableBalance || 0, wallet?.currency)}
-          </Alert>
+          </InlineAlert>
 
           <TextField
             fullWidth
@@ -524,19 +523,24 @@ export function WalletPage() {
               onChange={(e) => setSelectedPaymentMethod(e.target.value)}
               label="Withdraw To"
             >
-              {paymentMethods?.filter((m) => m.type === 'bank_account').map((method) => (
-                <MenuItem key={method.id} value={method.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AccountBalance />
-                    Bank •••• {method.last4}
-                  </Box>
-                </MenuItem>
-              ))}
+              {paymentMethods
+                ?.filter((m) => m.type === 'bank_account')
+                .map((method) => (
+                  <MenuItem key={method.id} value={method.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AccountBalance />
+                      Bank •••• {method.last4}
+                    </Box>
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={() => setShowWithdrawDialog(false)} sx={{ color: '#78716C', textTransform: 'none' }}>
+          <Button
+            onClick={() => setShowWithdrawDialog(false)}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
             Cancel
           </Button>
           <Button
@@ -549,9 +553,9 @@ export function WalletPage() {
               parseFloat(withdrawAmount) > (wallet?.availableBalance || 0)
             }
             sx={{
-              bgcolor: '#1C1917',
+              bgcolor: palette.neutral[900],
               textTransform: 'none',
-              '&:hover': { bgcolor: '#44403C' },
+              '&:hover': { bgcolor: palette.neutral[700] },
             }}
           >
             {withdraw.isPending ? <CircularProgress size={20} color="inherit" /> : 'Withdraw'}

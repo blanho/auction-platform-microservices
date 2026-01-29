@@ -93,7 +93,8 @@ export const PLATFORM_FEATURES = [
   {
     icon: 'Shield',
     title: 'Expert Authentication',
-    description: 'Every item verified by certified specialists. Full provenance documentation included.',
+    description:
+      'Every item verified by certified specialists. Full provenance documentation included.',
     gradient: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
   },
   {

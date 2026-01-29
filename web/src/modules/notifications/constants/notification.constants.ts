@@ -1,3 +1,5 @@
+import { palette } from '@/shared/theme/tokens'
+
 export const NOTIFICATION_TYPES = {
   BID_PLACED: 'bid_placed',
   BID_OUTBID: 'bid_outbid',
@@ -18,16 +20,16 @@ export const NOTIFICATION_STATUS = {
 } as const
 
 export const NOTIFICATION_COLORS = {
-  bid_placed: '#3B82F6',
-  bid_outbid: '#F59E0B',
-  auction_won: '#22C55E',
-  auction_lost: '#EF4444',
-  auction_ending: '#F59E0B',
-  auction_ended: '#78716C',
-  payment_received: '#22C55E',
-  payment_failed: '#EF4444',
-  promotional: '#CA8A04',
-  system: '#78716C',
+  bid_placed: palette.semantic.info,
+  bid_outbid: palette.semantic.warning,
+  auction_won: palette.semantic.success,
+  auction_lost: palette.semantic.error,
+  auction_ending: palette.semantic.warning,
+  auction_ended: palette.neutral[500],
+  payment_received: palette.semantic.success,
+  payment_failed: palette.semantic.error,
+  promotional: palette.brand.primary,
+  system: palette.neutral[500],
 } as const
 
 export const NOTIFICATION_ROUTES = {

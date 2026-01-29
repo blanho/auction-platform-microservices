@@ -1,12 +1,12 @@
 import type { AdminUser } from '../types'
 
 export function getAdminUserDisplayName(user: AdminUser | null | undefined): string {
-  if (!user) return ''
+  if (!user) {return ''}
   return user.displayName || user.username || 'Unknown User'
 }
 
 export function getAdminUserInitial(user: AdminUser | null | undefined): string {
-  if (!user) return '?'
+  if (!user) {return '?'}
   return user.displayName?.[0] || user.username?.[0] || '?'
 }
 

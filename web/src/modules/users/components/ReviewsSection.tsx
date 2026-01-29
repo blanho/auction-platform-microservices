@@ -15,56 +15,19 @@ import {
   LinearProgress,
   Pagination,
 } from '@mui/material'
-import {
-  ThumbUp,
-  ThumbDown,
-  MoreVert,
-  Flag,
-  VerifiedUser,
-  Sort,
-} from '@mui/icons-material'
+import { ThumbUp, ThumbDown, MoreVert, Flag, VerifiedUser, Sort } from '@mui/icons-material'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { http } from '@/services/http'
 import { formatRelativeTime } from '@/shared/utils/formatters'
 import { useAuth } from '@/app/hooks/useAuth'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-
-interface Review {
-  id: string
-  rating: number
-  title: string
-  content: string
-  createdAt: string
-  reviewer: {
-    id: string
-    name: string
-    avatarUrl?: string
-    isVerifiedBuyer: boolean
-    totalReviews: number
-  }
-  helpfulCount: number
-  notHelpfulCount: number
-  userVote?: 'helpful' | 'not_helpful'
-  sellerResponse?: {
-    content: string
-    createdAt: string
-  }
-}
-
-interface ReviewsResponse {
-  data: Review[]
-  totalCount: number
-  averageRating: number
-  ratingDistribution: Record<number, number>
-}
+import type { Review, ReviewsResponse, SortOption } from '../types'
 
 interface ReviewsSectionProps {
   sellerId: string
   auctionId?: string
 }
-
-type SortOption = 'newest' | 'highest' | 'lowest' | 'helpful'
 
 export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
   const { user } = useAuth()
@@ -89,7 +52,13 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
   })
 
   const voteMutation = useMutation({
-    mutationFn: async ({ reviewId, vote }: { reviewId: string; vote: 'helpful' | 'not_helpful' }) => {
+    mutationFn: async ({
+      reviewId,
+      vote,
+    }: {
+      reviewId: string
+      vote: 'helpful' | 'not_helpful'
+    }) => {
       const response = await http.post(`/reviews/${reviewId}/vote`, { vote })
       return response.data
     },
@@ -105,9 +74,7 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
     { value: 'helpful', label: 'Most Helpful' },
   ]
 
-  const totalPages = reviewsQuery.data
-    ? Math.ceil(reviewsQuery.data.totalCount / pageSize)
-    : 0
+  const totalPages = reviewsQuery.data ? Math.ceil(reviewsQuery.data.totalCount / pageSize) : 0
 
   const ratingDistribution = reviewsQuery.data?.ratingDistribution || {}
   const totalReviews = reviewsQuery.data?.totalCount || 0
@@ -116,7 +83,9 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
     <motion.div variants={staggerContainer} initial="initial" animate="animate">
       <Card sx={{ p: 3 }}>
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}
+          >
             <Typography variant="h6" fontWeight={600}>
               Reviews & Ratings
             </Typography>
@@ -126,7 +95,7 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
               variant="outlined"
               size="small"
             >
-              {sortOptions.find(o => o.value === sortBy)?.label}
+              {sortOptions.find((o) => o.value === sortBy)?.label}
             </Button>
             <Menu
               anchorEl={sortAnchor}
@@ -176,7 +145,10 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
                   const count = ratingDistribution[rating] || 0
                   const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0
                   return (
-                    <Box key={rating} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Box
+                      key={rating}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}
+                    >
                       <Typography variant="body2" sx={{ width: 20 }}>
                         {rating}
                       </Typography>
@@ -206,15 +178,17 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
 
         <Divider sx={{ mb: 3 }} />
 
-        {reviewsQuery.isLoading ? (
+        {reviewsQuery.isLoading && (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography color="text.secondary">Loading reviews...</Typography>
           </Box>
-        ) : reviewsQuery.data?.data.length === 0 ? (
+        )}
+        {!reviewsQuery.isLoading && reviewsQuery.data?.data.length === 0 && (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography color="text.secondary">No reviews yet</Typography>
           </Box>
-        ) : (
+        )}
+        {!reviewsQuery.isLoading && reviewsQuery.data?.data.length > 0 && (
           <AnimatePresence mode="wait">
             <Stack spacing={3}>
               {reviewsQuery.data?.data.map((review) => (
@@ -281,10 +255,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
                 />
               )}
               <Box sx={{ flex: 1 }} />
-              <IconButton
-                size="small"
-                onClick={(e) => setMenuAnchor(e.currentTarget)}
-              >
+              <IconButton size="small" onClick={(e) => setMenuAnchor(e.currentTarget)}>
                 <MoreVert fontSize="small" />
               </IconButton>
               <Menu
@@ -300,12 +271,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Rating
-                value={review.rating}
-                readOnly
-                size="small"
-                sx={{ color: '#CA8A04' }}
-              />
+              <Rating value={review.rating} readOnly size="small" sx={{ color: '#CA8A04' }} />
               <Typography variant="caption" color="text.secondary">
                 {formatRelativeTime(review.createdAt)}
               </Typography>

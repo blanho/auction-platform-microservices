@@ -67,7 +67,17 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'ja'],
     defaultNS: 'common',
-    ns: ['common', 'auctions', 'auth', 'bidding', 'home', 'users', 'notifications', 'payments', 'analytics'],
+    ns: [
+      'common',
+      'auctions',
+      'auth',
+      'bidding',
+      'home',
+      'users',
+      'notifications',
+      'payments',
+      'analytics',
+    ],
 
     interpolation: {
       escapeValue: false,

@@ -36,7 +36,10 @@ export function isNegativeTransaction(type: TransactionType): boolean {
   return type === 'withdrawal' || type === 'payment' || type === 'hold'
 }
 
-export function formatWalletBalance(amount: number, currency: string = PAYMENT_DEFAULT_CURRENCY): string {
+export function formatWalletBalance(
+  amount: number,
+  currency: string = PAYMENT_DEFAULT_CURRENCY
+): string {
   const symbol = CURRENCY_SYMBOLS[currency] || '$'
   return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }

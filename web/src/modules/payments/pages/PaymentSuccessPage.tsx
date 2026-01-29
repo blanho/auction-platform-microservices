@@ -10,25 +10,14 @@ import {
   CircularProgress,
   Stack,
   Divider,
-  Alert,
 } from '@mui/material'
-import {
-  CheckCircle,
-  Receipt,
-  LocalShipping,
-  ArrowForward,
-  Home,
-} from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
+import { CheckCircle, Receipt, LocalShipping, ArrowForward, Home } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useQuery } from '@tanstack/react-query'
 import { ordersApi } from '../api'
+import { formatCurrency } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
-}
 
 export function PaymentSuccessPage() {
   const [searchParams] = useSearchParams()
@@ -37,7 +26,11 @@ export function PaymentSuccessPage() {
   const sessionId = searchParams.get('session_id')
   const [countdown, setCountdown] = useState(10)
 
-  const { data: order, isLoading, error } = useQuery({
+  const {
+    data: order,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => ordersApi.getOrderById(orderId!),
     enabled: !!orderId,
@@ -69,7 +62,7 @@ export function PaymentSuccessPage() {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card sx={{ p: 6, textAlign: 'center' }}>
-          <CircularProgress size={48} sx={{ color: '#CA8A04', mb: 3 }} />
+          <CircularProgress size={48} sx={{ color: palette.brand.primary, mb: 3 }} />
           <Typography variant="h6">Confirming your payment...</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             Please wait while we verify your transaction
@@ -83,14 +76,14 @@ export function PaymentSuccessPage() {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card sx={{ p: 6, textAlign: 'center' }}>
-          <Alert severity="warning" sx={{ mb: 3 }}>
+          <InlineAlert severity="warning" sx={{ mb: 3 }}>
             We couldn't retrieve your order details, but your payment may have been processed.
-          </Alert>
+          </InlineAlert>
           <Button
             variant="contained"
             component={Link}
             to="/orders"
-            sx={{ bgcolor: '#CA8A04', '&:hover': { bgcolor: '#A16207' } }}
+            sx={{ bgcolor: palette.brand.primary, '&:hover': { bgcolor: '#A16207' } }}
           >
             View My Orders
           </Button>
@@ -100,7 +93,7 @@ export function PaymentSuccessPage() {
   }
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', py: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', py: 8 }}>
       <Container maxWidth="sm">
         <motion.div variants={staggerContainer} initial="initial" animate="animate">
           <motion.div variants={fadeInUp}>
@@ -122,7 +115,7 @@ export function PaymentSuccessPage() {
                     width: 80,
                     height: 80,
                     borderRadius: '50%',
-                    bgcolor: '#DCFCE7',
+                    bgcolor: palette.semantic.successLight,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -130,7 +123,7 @@ export function PaymentSuccessPage() {
                     mb: 3,
                   }}
                 >
-                  <CheckCircle sx={{ fontSize: 48, color: '#22C55E' }} />
+                  <CheckCircle sx={{ fontSize: 48, color: palette.semantic.success }} />
                 </Box>
               </motion.div>
 
@@ -139,7 +132,7 @@ export function PaymentSuccessPage() {
                 sx={{
                   fontFamily: '"Playfair Display", serif',
                   fontWeight: 700,
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   mb: 1,
                 }}
               >
@@ -157,8 +150,8 @@ export function PaymentSuccessPage() {
                     sx={{
                       p: 3,
                       mb: 4,
-                      bgcolor: '#FAFAF9',
-                      borderColor: '#E7E5E4',
+                      bgcolor: palette.neutral[50],
+                      borderColor: palette.neutral[200],
                       textAlign: 'left',
                     }}
                   >
@@ -175,7 +168,11 @@ export function PaymentSuccessPage() {
                         <Typography variant="body2" color="text.secondary">
                           Item
                         </Typography>
-                        <Typography variant="body2" fontWeight={500} sx={{ maxWidth: 200, textAlign: 'right' }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={500}
+                          sx={{ maxWidth: 200, textAlign: 'right' }}
+                        >
                           {order.auctionTitle || order.itemTitle}
                         </Typography>
                       </Box>
@@ -184,7 +181,7 @@ export function PaymentSuccessPage() {
                         <Typography variant="body2" color="text.secondary">
                           Total Paid
                         </Typography>
-                        <Typography variant="h6" fontWeight={700} color="#CA8A04">
+                        <Typography variant="h6" fontWeight={700} color={palette.brand.primary}>
                           {formatCurrency(order.totalAmount)}
                         </Typography>
                       </Box>
@@ -197,7 +194,7 @@ export function PaymentSuccessPage() {
                 <Box
                   sx={{
                     p: 3,
-                    bgcolor: '#FEF3C7',
+                    bgcolor: palette.semantic.warningLight,
                     borderRadius: 2,
                     display: 'flex',
                     alignItems: 'center',
@@ -205,7 +202,7 @@ export function PaymentSuccessPage() {
                     mb: 4,
                   }}
                 >
-                  <LocalShipping sx={{ color: '#CA8A04' }} />
+                  <LocalShipping sx={{ color: palette.brand.primary }} />
                   <Box sx={{ textAlign: 'left' }}>
                     <Typography variant="subtitle2" fontWeight={600}>
                       What happens next?
@@ -224,7 +221,7 @@ export function PaymentSuccessPage() {
                   to={orderId ? `/orders/${orderId}` : '/orders'}
                   startIcon={<Receipt />}
                   sx={{
-                    bgcolor: '#CA8A04',
+                    bgcolor: palette.brand.primary,
                     px: 4,
                     py: 1.5,
                     fontWeight: 600,
@@ -239,12 +236,12 @@ export function PaymentSuccessPage() {
                   to="/auctions"
                   endIcon={<ArrowForward />}
                   sx={{
-                    borderColor: '#1C1917',
-                    color: '#1C1917',
+                    borderColor: palette.neutral[900],
+                    color: palette.neutral[900],
                     px: 4,
                     py: 1.5,
                     fontWeight: 600,
-                    '&:hover': { borderColor: '#44403C', bgcolor: '#F5F5F4' },
+                    '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[100] },
                   }}
                 >
                   Continue Shopping
@@ -252,7 +249,11 @@ export function PaymentSuccessPage() {
               </Stack>
 
               {countdown > 0 && (
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 3 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mt: 3 }}
+                >
                   Redirecting to order details in {countdown}s...
                 </Typography>
               )}
@@ -265,7 +266,7 @@ export function PaymentSuccessPage() {
                 component={Link}
                 to="/"
                 startIcon={<Home />}
-                sx={{ color: '#78716C' }}
+                sx={{ color: palette.neutral[500] }}
               >
                 Back to Home
               </Button>

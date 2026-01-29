@@ -23,15 +23,10 @@ import {
   Avatar,
   InputAdornment,
 } from '@mui/material'
-import {
-  Add,
-  Edit,
-  Delete,
-  Search,
-  Image as ImageIcon,
-} from '@mui/icons-material'
+import { Add, Edit, Delete, Search, Image as ImageIcon } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { palette } from '@/shared/theme/tokens'
 import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand } from '../hooks'
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import type { Brand } from '../api/brands.api'
@@ -60,7 +55,11 @@ export function BrandsManagementPage() {
     },
   })
 
-  const { data: brandsData } = useBrands({ page: page + 1, pageSize: rowsPerPage, search: search || undefined })
+  const { data: brandsData } = useBrands({
+    page: page + 1,
+    pageSize: rowsPerPage,
+    search: search || undefined,
+  })
   const brands = brandsData?.items || []
   const totalCount = brandsData?.totalCount || 0
 
@@ -120,7 +119,9 @@ export function BrandsManagementPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -136,8 +137,8 @@ export function BrandsManagementPage() {
               startIcon={<Add />}
               onClick={() => handleOpenDialog()}
               sx={{
-                bgcolor: '#CA8A04',
-                '&:hover': { bgcolor: '#A16207' },
+                bgcolor: palette.brand.primary,
+                '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
               Add Brand
@@ -152,7 +153,10 @@ export function BrandsManagementPage() {
                 placeholder="Search brands..."
                 size="small"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(0) }}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(0)
+                }}
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -194,7 +198,12 @@ export function BrandsManagementPage() {
                               {brand.name}
                             </Typography>
                             {brand.description && (
-                              <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 200, display: 'block' }}>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                noWrap
+                                sx={{ maxWidth: 200, display: 'block' }}
+                              >
                                 {brand.description}
                               </Typography>
                             )}
@@ -247,16 +256,17 @@ export function BrandsManagementPage() {
               page={page}
               onPageChange={(_, p) => setPage(p)}
               rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value)); setPage(0) }}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value))
+                setPage(0)
+              }}
             />
           </Card>
         </motion.div>
       </motion.div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingBrand ? 'Edit Brand' : 'Add Brand'}
-        </DialogTitle>
+        <DialogTitle>{editingBrand ? 'Edit Brand' : 'Add Brand'}</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 1 }}>
@@ -292,13 +302,7 @@ export function BrandsManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Description"
-                    fullWidth
-                    multiline
-                    rows={3}
-                  />
+                  <TextField {...field} label="Description" fullWidth multiline rows={3} />
                 )}
               />
 
@@ -325,8 +329,8 @@ export function BrandsManagementPage() {
               variant="contained"
               disabled={createMutation.isPending || updateMutation.isPending}
               sx={{
-                bgcolor: '#CA8A04',
-                '&:hover': { bgcolor: '#A16207' },
+                bgcolor: palette.brand.primary,
+                '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
               {editingBrand ? 'Update' : 'Create'}

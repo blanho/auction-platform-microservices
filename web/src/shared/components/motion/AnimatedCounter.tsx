@@ -34,7 +34,7 @@ export const AnimatedCounter = ({
   }, [value, duration])
 
   useEffect(() => {
-    if (hasAnimated || !ref.current) return
+    if (hasAnimated || !ref.current) {return}
 
     const observer = new IntersectionObserver(
       ([entry]) => {

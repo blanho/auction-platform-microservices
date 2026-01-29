@@ -10,12 +10,8 @@ import {
   Divider,
   LinearProgress,
 } from '@mui/material'
-import {
-  Star,
-  Reply,
-  ExpandMore,
-  ExpandLess,
-} from '@mui/icons-material'
+import { Star, Reply, ExpandMore, ExpandLess } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
 import { formatTimeAgo } from '../utils'
 
@@ -34,9 +30,9 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
     <Box
       sx={{
         p: 3,
-        bgcolor: '#FAFAF9',
+        bgcolor: palette.neutral[50],
         borderRadius: 2,
-        border: '1px solid #E5E5E5',
+        border: `1px solid ${palette.neutral[100]}`,
         mb: 3,
       }}
     >
@@ -46,7 +42,7 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
             sx={{
               fontSize: '3rem',
               fontWeight: 700,
-              color: '#1C1917',
+              color: palette.neutral[900],
               lineHeight: 1,
             }}
           >
@@ -57,26 +53,20 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
             precision={0.1}
             size="small"
             readOnly
-            sx={{ color: '#CA8A04', mt: 1 }}
+            sx={{ color: palette.brand.primary, mt: 1 }}
           />
-          <Typography sx={{ color: '#78716C', fontSize: '0.875rem', mt: 0.5 }}>
+          <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mt: 0.5 }}>
             {summary.totalReviews} reviews
           </Typography>
         </Box>
 
         <Box sx={{ flex: 1 }}>
           {[5, 4, 3, 2, 1].map((rating) => (
-            <Stack
-              key={rating}
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ mb: 0.5 }}
-            >
-              <Typography sx={{ width: 20, fontSize: '0.875rem', color: '#78716C' }}>
+            <Stack key={rating} direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <Typography sx={{ width: 20, fontSize: '0.875rem', color: palette.neutral[500] }}>
                 {rating}
               </Typography>
-              <Star sx={{ fontSize: 16, color: '#CA8A04' }} />
+              <Star sx={{ fontSize: 16, color: palette.brand.primary }} />
               <LinearProgress
                 variant="determinate"
                 value={((distribution[rating] || 0) / maxCount) * 100}
@@ -84,14 +74,21 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
                   flex: 1,
                   height: 8,
                   borderRadius: 4,
-                  bgcolor: '#E5E5E5',
+                  bgcolor: palette.neutral[100],
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: '#CA8A04',
+                    bgcolor: palette.brand.primary,
                     borderRadius: 4,
                   },
                 }}
               />
-              <Typography sx={{ width: 30, fontSize: '0.875rem', color: '#78716C', textAlign: 'right' }}>
+              <Typography
+                sx={{
+                  width: 30,
+                  fontSize: '0.875rem',
+                  color: palette.neutral[500],
+                  textAlign: 'right',
+                }}
+              >
                 {distribution[rating] || 0}
               </Typography>
             </Stack>
@@ -114,7 +111,7 @@ function ReviewItem({ review }: { review: Review }) {
           sx={{
             width: 44,
             height: 44,
-            bgcolor: '#CA8A04',
+            bgcolor: palette.brand.primary,
             fontSize: '1rem',
           }}
         >
@@ -123,16 +120,16 @@ function ReviewItem({ review }: { review: Review }) {
 
         <Box sx={{ flex: 1 }}>
           <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-            <Typography sx={{ fontWeight: 600, color: '#1C1917' }}>
+            <Typography sx={{ fontWeight: 600, color: palette.neutral[900] }}>
               {review.reviewerUsername}
             </Typography>
             <Rating
               value={review.rating}
               size="small"
               readOnly
-              sx={{ color: '#CA8A04' }}
+              sx={{ color: palette.brand.primary }}
             />
-            <Typography sx={{ color: '#78716C', fontSize: '0.8125rem' }}>
+            <Typography sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
               {formatTimeAgo(review.createdAt)}
             </Typography>
           </Stack>
@@ -141,7 +138,7 @@ function ReviewItem({ review }: { review: Review }) {
             <Typography
               sx={{
                 fontWeight: 600,
-                color: '#1C1917',
+                color: palette.neutral[900],
                 mt: 1,
                 fontSize: '0.9375rem',
               }}
@@ -152,15 +149,16 @@ function ReviewItem({ review }: { review: Review }) {
 
           <Typography
             sx={{
-              color: '#44403C',
+              color: palette.neutral[700],
               mt: 1,
               lineHeight: 1.6,
-              ...(isLongComment && !expanded && {
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }),
+              ...(isLongComment &&
+                !expanded && {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }),
             }}
           >
             {review.comment}
@@ -172,7 +170,7 @@ function ReviewItem({ review }: { review: Review }) {
               onClick={() => setExpanded(!expanded)}
               endIcon={expanded ? <ExpandLess /> : <ExpandMore />}
               sx={{
-                color: '#CA8A04',
+                color: palette.brand.primary,
                 textTransform: 'none',
                 mt: 0.5,
                 p: 0,
@@ -188,18 +186,24 @@ function ReviewItem({ review }: { review: Review }) {
               sx={{
                 mt: 2,
                 p: 2,
-                bgcolor: '#F5F5F4',
+                bgcolor: palette.neutral[100],
                 borderRadius: 1,
-                borderLeft: '3px solid #CA8A04',
+                borderLeft: `3px solid ${palette.brand.primary}`,
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                <Reply sx={{ fontSize: 18, color: '#78716C', transform: 'scaleX(-1)' }} />
-                <Typography sx={{ fontWeight: 600, color: '#1C1917', fontSize: '0.875rem' }}>
+                <Reply
+                  sx={{ fontSize: 18, color: palette.neutral[500], transform: 'scaleX(-1)' }}
+                />
+                <Typography
+                  sx={{ fontWeight: 600, color: palette.neutral[900], fontSize: '0.875rem' }}
+                >
                   Seller Response
                 </Typography>
               </Stack>
-              <Typography sx={{ color: '#44403C', fontSize: '0.875rem', lineHeight: 1.6 }}>
+              <Typography
+                sx={{ color: palette.neutral[700], fontSize: '0.875rem', lineHeight: 1.6 }}
+              >
                 {review.sellerResponse}
               </Typography>
             </Box>
@@ -220,7 +224,7 @@ export function ReviewsList({
     return (
       <Box>
         {showSummary && (
-          <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderRadius: 2, mb: 3 }}>
+          <Box sx={{ p: 3, bgcolor: palette.neutral[50], borderRadius: 2, mb: 3 }}>
             <Stack direction="row" spacing={4}>
               <Box sx={{ textAlign: 'center', minWidth: 120 }}>
                 <Skeleton variant="text" width={60} height={60} />
@@ -228,7 +232,12 @@ export function ReviewsList({
               </Box>
               <Box sx={{ flex: 1 }}>
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} variant="rectangular" height={8} sx={{ mb: 1, borderRadius: 4 }} />
+                  <Skeleton
+                    key={i}
+                    variant="rectangular"
+                    height={8}
+                    sx={{ mb: 1, borderRadius: 4 }}
+                  />
                 ))}
               </Box>
             </Stack>
@@ -253,9 +262,9 @@ export function ReviewsList({
   if (reviews.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Star sx={{ fontSize: 48, color: '#D6D3D1', mb: 2 }} />
-        <Typography sx={{ color: '#78716C', mb: 1 }}>No reviews yet</Typography>
-        <Typography sx={{ color: '#A8A29E', fontSize: '0.875rem' }}>
+        <Star sx={{ fontSize: 48, color: palette.neutral[300], mb: 2 }} />
+        <Typography sx={{ color: palette.neutral[500], mb: 1 }}>No reviews yet</Typography>
+        <Typography sx={{ color: palette.neutral[400], fontSize: '0.875rem' }}>
           Be the first to leave a review after your purchase
         </Typography>
       </Box>
@@ -278,7 +287,7 @@ export function ReviewsList({
 export function ReviewsListSkeleton() {
   return (
     <Box>
-      <Box sx={{ p: 3, bgcolor: '#FAFAF9', borderRadius: 2, mb: 3 }}>
+      <Box sx={{ p: 3, bgcolor: palette.neutral[50], borderRadius: 2, mb: 3 }}>
         <Stack direction="row" spacing={4}>
           <Box sx={{ textAlign: 'center', minWidth: 120 }}>
             <Skeleton variant="text" width={60} height={60} />

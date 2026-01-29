@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoriesApi } from '../api/categories.api'
-import type { CategoryFilters, CreateCategoryRequest, UpdateCategoryRequest, Category } from '../api/categories.api'
+import type {
+  CategoryFilters,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+  Category,
+} from '../api/categories.api'
 
 export type { Category, CategoryFilters, CreateCategoryRequest, UpdateCategoryRequest }
 

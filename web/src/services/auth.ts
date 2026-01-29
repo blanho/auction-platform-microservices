@@ -1,5 +1,5 @@
 import { http } from './http'
-import { Permission } from '@/shared/permissions'
+import type { Permission } from '@/shared/permissions'
 
 export interface User {
   id: string

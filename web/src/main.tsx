@@ -17,5 +17,5 @@ createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </ThemeProvider>
     </QueryProvider>
-  </StrictMode>,
+  </StrictMode>
 )

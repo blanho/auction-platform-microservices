@@ -1,4 +1,12 @@
-import { Box, List, Typography, Skeleton, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import {
+  Box,
+  List,
+  Typography,
+  Skeleton,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material'
 import { NotificationsOff } from '@mui/icons-material'
 import type { Notification } from '../types'
 import { NotificationItem } from './NotificationItem'
@@ -43,7 +51,9 @@ export function NotificationList({
         <NotificationsOff sx={{ fontSize: 48, color: '#D4D4D4', mb: 2 }} />
         <Typography sx={{ color: '#78716C', mb: 1 }}>{emptyMessage}</Typography>
         {emptyDescription && (
-          <Typography sx={{ fontSize: '0.875rem', color: '#A1A1AA' }}>{emptyDescription}</Typography>
+          <Typography sx={{ fontSize: '0.875rem', color: '#A1A1AA' }}>
+            {emptyDescription}
+          </Typography>
         )}
       </Box>
     )
@@ -59,7 +69,9 @@ export function NotificationList({
             onDelete={onDelete}
             onArchive={onArchive}
           />
-          {index < notifications.length - 1 && <Box component="hr" sx={{ border: 'none', borderTop: '1px solid #F5F5F5', m: 0 }} />}
+          {index < notifications.length - 1 && (
+            <Box component="hr" sx={{ border: 'none', borderTop: '1px solid #F5F5F5', m: 0 }} />
+          )}
         </Box>
       ))}
     </List>

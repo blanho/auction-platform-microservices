@@ -17,7 +17,11 @@ interface NotificationIconProps {
   showBackground?: boolean
 }
 
-export function NotificationIcon({ type, size = 24, showBackground = false }: NotificationIconProps) {
+export function NotificationIcon({
+  type,
+  size = 24,
+  showBackground = false,
+}: NotificationIconProps) {
   const color = getNotificationColor(type)
   const iconStyle = { fontSize: size, color }
 

@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert, FormField } from '@/shared/ui'
 import {
   Box,
   Container,
@@ -10,7 +12,6 @@ import {
   Avatar,
   Card,
   Grid,
-  Alert,
   CircularProgress,
   Chip,
   Divider,
@@ -22,14 +23,7 @@ import {
   DialogActions,
   Stack,
 } from '@mui/material'
-import {
-  CameraAlt,
-  Verified,
-  Store,
-  CheckCircle,
-  Pending,
-  Cancel,
-} from '@mui/icons-material'
+import { CameraAlt, Verified, Store, CheckCircle, Pending, Cancel } from '@mui/icons-material'
 import { useProfile, useUpdateProfile, useSellerStatus, useApplyForSeller } from '../hooks'
 import { updateProfileSchema } from '../schemas'
 import type { UpdateProfileRequest } from '../types'
@@ -77,7 +71,7 @@ export function ProfilePage() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {return}
 
     setUploadingAvatar(true)
     try {
@@ -99,18 +93,11 @@ export function ProfilePage() {
   }
 
   const getSellerStatusChip = () => {
-    if (sellerLoading) return null
-    if (!sellerStatus) return null
+    if (sellerLoading) {return null}
+    if (!sellerStatus) {return null}
 
     if (sellerStatus.isSeller) {
-      return (
-        <Chip
-          icon={<Store />}
-          label="Verified Seller"
-          color="success"
-          size="small"
-        />
-      )
+      return <Chip icon={<Store />} label="Verified Seller" color="success" size="small" />
     }
 
     switch (sellerStatus.applicationStatus) {
@@ -124,14 +111,7 @@ export function ProfilePage() {
           />
         )
       case 'rejected':
-        return (
-          <Chip
-            icon={<Cancel />}
-            label="Application Rejected"
-            color="error"
-            size="small"
-          />
-        )
+        return <Chip icon={<Cancel />} label="Application Rejected" color="error" size="small" />
       default:
         return null
     }
@@ -162,7 +142,7 @@ export function ProfilePage() {
   if (profileError) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">Failed to load profile. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load profile. Please try again.</InlineAlert>
       </Container>
     )
   }
@@ -175,12 +155,12 @@ export function ProfilePage() {
           sx={{
             fontFamily: '"Playfair Display", serif',
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
           }}
         >
           My Profile
         </Typography>
-        <Typography sx={{ color: '#78716C' }}>
+        <Typography sx={{ color: palette.neutral[500] }}>
           Manage your account information
         </Typography>
       </Box>
@@ -202,7 +182,7 @@ export function ProfilePage() {
                   width: 120,
                   height: 120,
                   fontSize: '3rem',
-                  bgcolor: '#1C1917',
+                  bgcolor: palette.neutral[900],
                 }}
               >
                 {profile?.displayName?.[0]?.toUpperCase()}
@@ -214,7 +194,7 @@ export function ProfilePage() {
                   position: 'absolute',
                   bottom: 0,
                   right: 0,
-                  bgcolor: '#CA8A04',
+                  bgcolor: palette.brand.primary,
                   color: 'white',
                   '&:hover': { bgcolor: '#A16207' },
                   width: 36,
@@ -236,11 +216,13 @@ export function ProfilePage() {
               />
             </Box>
 
-            <Typography variant="h5" sx={{ fontWeight: 600, color: '#1C1917', mb: 0.5 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: palette.neutral[900], mb: 0.5 }}>
               {profile?.displayName}
             </Typography>
 
-            <Typography sx={{ color: '#78716C', mb: 2 }}>@{profile?.username}</Typography>
+            <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
+              @{profile?.username}
+            </Typography>
 
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
               {profile?.isVerified && (
@@ -248,7 +230,7 @@ export function ProfilePage() {
                   icon={<Verified />}
                   label="Verified"
                   size="small"
-                  sx={{ bgcolor: '#DBEAFE', color: '#1D4ED8' }}
+                  sx={{ bgcolor: palette.semantic.infoLight, color: '#1D4ED8' }}
                 />
               )}
               {getSellerStatusChip()}
@@ -262,12 +244,12 @@ export function ProfilePage() {
                   startIcon={<Store />}
                   onClick={() => setShowSellerDialog(true)}
                   sx={{
-                    borderColor: '#CA8A04',
-                    color: '#CA8A04',
+                    borderColor: palette.brand.primary,
+                    color: palette.brand.primary,
                     textTransform: 'none',
                     '&:hover': {
                       borderColor: '#A16207',
-                      bgcolor: '#FEF3C7',
+                      bgcolor: palette.brand.muted,
                     },
                   }}
                 >
@@ -279,10 +261,10 @@ export function ProfilePage() {
             <Divider sx={{ my: 3 }} />
 
             <Box sx={{ textAlign: 'left' }}>
-              <Typography sx={{ fontSize: '0.875rem', color: '#78716C', mb: 0.5 }}>
+              <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500], mb: 0.5 }}>
                 Member since
               </Typography>
-              <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+              <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                 {profile?.createdAt
                   ? new Date(profile.createdAt).toLocaleDateString('en-US', {
                       month: 'long',
@@ -302,8 +284,10 @@ export function ProfilePage() {
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1C1917' }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
                 Personal Information
               </Typography>
               {!isEditing && (
@@ -319,7 +303,7 @@ export function ProfilePage() {
                     setIsEditing(true)
                   }}
                   sx={{
-                    color: '#CA8A04',
+                    color: palette.brand.primary,
                     textTransform: 'none',
                     fontWeight: 600,
                   }}
@@ -330,45 +314,45 @@ export function ProfilePage() {
             </Box>
 
             {updateProfile.isSuccess && (
-              <Alert severity="success" sx={{ mb: 3 }}>
+              <InlineAlert severity="success" sx={{ mb: 3 }}>
                 Profile updated successfully!
-              </Alert>
+              </InlineAlert>
             )}
 
             {updateProfile.isError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
+              <InlineAlert severity="error" sx={{ mb: 3 }}>
                 Failed to update profile. Please try again.
-              </Alert>
+              </InlineAlert>
             )}
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <Stack spacing={2.5}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                  <TextField
+                  <FormField
+                    name="firstName"
+                    register={register}
+                    errors={errors}
                     fullWidth
                     label="First Name"
-                    {...register('firstName')}
-                    error={!!errors.firstName}
-                    helperText={errors.firstName?.message}
                     disabled={!isEditing}
                     InputLabelProps={{ shrink: true }}
                   />
-                  <TextField
+                  <FormField
+                    name="lastName"
+                    register={register}
+                    errors={errors}
                     fullWidth
                     label="Last Name"
-                    {...register('lastName')}
-                    error={!!errors.lastName}
-                    helperText={errors.lastName?.message}
                     disabled={!isEditing}
                     InputLabelProps={{ shrink: true }}
                   />
                 </Stack>
-                <TextField
+                <FormField
+                  name="displayName"
+                  register={register}
+                  errors={errors}
                   fullWidth
                   label="Display Name"
-                  {...register('displayName')}
-                  error={!!errors.displayName}
-                  helperText={errors.displayName?.message}
                   disabled={!isEditing}
                   InputLabelProps={{ shrink: true }}
                 />
@@ -380,23 +364,24 @@ export function ProfilePage() {
                   InputLabelProps={{ shrink: true }}
                   helperText="Contact support to change your email"
                 />
-                <TextField
+                <FormField
+                  name="phoneNumber"
+                  register={register}
+                  errors={errors}
                   fullWidth
                   label="Phone Number"
-                  {...register('phoneNumber')}
-                  error={!!errors.phoneNumber}
-                  helperText={errors.phoneNumber?.message}
                   disabled={!isEditing}
                   InputLabelProps={{ shrink: true }}
                 />
-                <TextField
+                <FormField
+                  name="bio"
+                  register={register}
+                  errors={errors}
                   fullWidth
                   label="Bio"
                   multiline
                   rows={4}
-                  {...register('bio')}
-                  error={!!errors.bio}
-                  helperText={errors.bio?.message || `${profile?.bio?.length || 0}/500 characters`}
+                  helperText={`${profile?.bio?.length || 0}/500 characters`}
                   disabled={!isEditing}
                   InputLabelProps={{ shrink: true }}
                 />
@@ -409,11 +394,11 @@ export function ProfilePage() {
                     variant="contained"
                     disabled={!isDirty || updateProfile.isPending}
                     sx={{
-                      bgcolor: '#1C1917',
+                      bgcolor: palette.neutral[900],
                       textTransform: 'none',
                       fontWeight: 600,
                       px: 4,
-                      '&:hover': { bgcolor: '#44403C' },
+                      '&:hover': { bgcolor: palette.neutral[700] },
                     }}
                   >
                     {updateProfile.isPending ? (
@@ -430,9 +415,9 @@ export function ProfilePage() {
                     }}
                     sx={{
                       borderColor: '#D4D4D4',
-                      color: '#44403C',
+                      color: palette.neutral[700],
                       textTransform: 'none',
-                      '&:hover': { borderColor: '#1C1917' },
+                      '&:hover': { borderColor: palette.neutral[900] },
                     }}
                   >
                     Cancel
@@ -444,16 +429,21 @@ export function ProfilePage() {
         </Grid>
       </Grid>
 
-      <Dialog open={showSellerDialog} onClose={() => setShowSellerDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showSellerDialog}
+        onClose={() => setShowSellerDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Become a Seller</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
             As a seller, you can list your own items for auction and reach thousands of collectors.
           </Typography>
-          <Typography sx={{ color: '#78716C', fontSize: '0.875rem' }}>
+          <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem' }}>
             By applying, you agree to our seller terms and conditions, including:
           </Typography>
-          <Box component="ul" sx={{ color: '#78716C', fontSize: '0.875rem', pl: 3 }}>
+          <Box component="ul" sx={{ color: palette.neutral[500], fontSize: '0.875rem', pl: 3 }}>
             <li>Maintain accurate item descriptions</li>
             <li>Ship items within the specified timeframe</li>
             <li>Respond to buyer inquiries promptly</li>
@@ -463,7 +453,7 @@ export function ProfilePage() {
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button
             onClick={() => setShowSellerDialog(false)}
-            sx={{ color: '#78716C', textTransform: 'none' }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -471,9 +461,15 @@ export function ProfilePage() {
             variant="contained"
             onClick={handleApplyForSeller}
             disabled={applyForSeller.isPending}
-            startIcon={applyForSeller.isPending ? <CircularProgress size={16} color="inherit" /> : <CheckCircle />}
+            startIcon={
+              applyForSeller.isPending ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <CheckCircle />
+              )
+            }
             sx={{
-              bgcolor: '#CA8A04',
+              bgcolor: palette.brand.primary,
               textTransform: 'none',
               '&:hover': { bgcolor: '#A16207' },
             }}

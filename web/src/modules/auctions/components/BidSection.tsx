@@ -8,20 +8,17 @@ import {
   Stack,
   Chip,
   Collapse,
-  Alert,
   CircularProgress,
   Skeleton,
 } from '@mui/material'
-import {
-  Gavel,
-  Timer,
-  TrendingUp,
-  LocalOffer,
-  InfoOutlined,
-} from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
+import { Gavel, Timer, TrendingUp, LocalOffer, InfoOutlined, AutoMode } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
+import { AutoBidDialog } from '@/modules/bidding/components/AutoBidDialog'
 
 interface BidSectionProps {
   auctionId: string
+  auctionTitle: string
   currentBid: number
   startingPrice: number
   reservePrice?: number
@@ -29,22 +26,31 @@ interface BidSectionProps {
   bidCount: number
   endTime: string
   status: string
+  minBidIncrement?: number
   userBid?: {
     amount: number
     isWinning: boolean
+  }
+  existingAutoBid?: {
+    maxAmount: number
+    isActive: boolean
   }
   onPlaceBid: (amount: number) => Promise<void>
   onBuyNow?: () => Promise<void>
 }
 
 export function BidSection({
+  auctionId,
+  auctionTitle,
   currentBid,
   startingPrice,
   bidCount,
   endTime,
   status,
+  minBidIncrement = 1,
   userBid,
   buyNowPrice,
+  existingAutoBid,
   onPlaceBid,
   onBuyNow,
 }: BidSectionProps) {
@@ -54,16 +60,32 @@ export function BidSection({
   const [success, setSuccess] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState('')
   const [isUrgent, setIsUrgent] = useState(false)
+  const [autoBidDialogOpen, setAutoBidDialogOpen] = useState(false)
 
   const minimumBid = useMemo(() => {
     const base = currentBid > 0 ? currentBid : startingPrice
-    const increment = base < 100 ? 1 : base < 1000 ? 5 : base < 5000 ? 25 : 100
-    return base + increment
+
+    const getIncrement = (amount: number): number => {
+      if (amount < 100) {return 1}
+      if (amount < 1000) {return 5}
+      if (amount < 5000) {return 25}
+      return 100
+    }
+
+    return base + getIncrement(base)
   }, [currentBid, startingPrice])
 
   const suggestedBids = useMemo(() => {
     const base = minimumBid
-    const increment = base < 100 ? 5 : base < 1000 ? 25 : base < 5000 ? 100 : 500
+
+    const getSuggestedIncrement = (amount: number): number => {
+      if (amount < 100) {return 5}
+      if (amount < 1000) {return 25}
+      if (amount < 5000) {return 100}
+      return 500
+    }
+
+    const increment = getSuggestedIncrement(base)
     return [base, base + increment, base + increment * 2]
   }, [minimumBid])
 
@@ -134,7 +156,7 @@ export function BidSection({
       sx={{
         bgcolor: 'white',
         borderRadius: 2,
-        border: '1px solid #E5E5E5',
+        border: `1px solid ${palette.neutral[100]}`,
         p: 3,
       }}
     >
@@ -144,7 +166,7 @@ export function BidSection({
           alignItems: 'center',
           gap: 1,
           mb: 1,
-          color: isUrgent ? '#DC2626' : '#44403C',
+          color: isUrgent ? palette.semantic.error : palette.neutral[700],
         }}
       >
         <Timer fontSize="small" />
@@ -168,7 +190,7 @@ export function BidSection({
         sx={{
           fontFamily: '"Playfair Display", serif',
           fontWeight: 600,
-          color: '#1C1917',
+          color: palette.neutral[900],
           mb: 0.5,
         }}
       >
@@ -176,7 +198,7 @@ export function BidSection({
       </Typography>
 
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-        <Typography variant="body2" sx={{ color: '#78716C' }}>
+        <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
           {bidCount} {bidCount === 1 ? 'bid' : 'bids'}
         </Typography>
         {currentBid === 0 && (
@@ -184,8 +206,8 @@ export function BidSection({
             label="No bids yet"
             size="small"
             sx={{
-              bgcolor: '#FEF3C7',
-              color: '#92400E',
+              bgcolor: palette.brand.muted,
+              color: palette.brand.dark,
               fontSize: '0.75rem',
             }}
           />
@@ -193,27 +215,26 @@ export function BidSection({
       </Stack>
 
       {userBid && (
-        <Alert
+        <InlineAlert
           severity={userBid.isWinning ? 'success' : 'warning'}
-          icon={userBid.isWinning ? <TrendingUp /> : <InfoOutlined />}
           sx={{ mb: 2 }}
         >
           {userBid.isWinning
             ? `You're the highest bidder at $${userBid.amount.toLocaleString()}`
             : `You've been outbid. Your bid: $${userBid.amount.toLocaleString()}`}
-        </Alert>
+        </InlineAlert>
       )}
 
       <Collapse in={!!error}>
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+        <InlineAlert severity="error" sx={{ mb: 2 }}>
           {error}
-        </Alert>
+        </InlineAlert>
       </Collapse>
 
       <Collapse in={!!success}>
-        <Alert severity="success" onClose={() => setSuccess(null)} sx={{ mb: 2 }}>
+        <InlineAlert severity="success" sx={{ mb: 2 }}>
           {success}
-        </Alert>
+        </InlineAlert>
       </Collapse>
 
       {isAuctionActive && (
@@ -232,10 +253,10 @@ export function BidSection({
               mb: 1.5,
               '& .MuiOutlinedInput-root': {
                 '&:hover fieldset': {
-                  borderColor: '#1C1917',
+                  borderColor: palette.neutral[900],
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#1C1917',
+                  borderColor: palette.neutral[900],
                 },
               },
             }}
@@ -250,16 +271,16 @@ export function BidSection({
                 variant={bidAmount === amount.toString() ? 'filled' : 'outlined'}
                 sx={{
                   cursor: 'pointer',
-                  borderColor: '#D4D4D4',
+                  borderColor: palette.neutral[100],
                   '&:hover': {
-                    bgcolor: '#FAFAF9',
-                    borderColor: '#1C1917',
+                    bgcolor: palette.neutral[50],
+                    borderColor: palette.neutral[900],
                   },
                   ...(bidAmount === amount.toString() && {
-                    bgcolor: '#1C1917',
+                    bgcolor: palette.neutral[900],
                     color: 'white',
                     '&:hover': {
-                      bgcolor: '#44403C',
+                      bgcolor: palette.neutral[700],
                     },
                   }),
                 }}
@@ -275,7 +296,7 @@ export function BidSection({
             disabled={isSubmitting || !bidAmount}
             startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Gavel />}
             sx={{
-              bgcolor: '#1C1917',
+              bgcolor: palette.neutral[900],
               color: 'white',
               py: 1.5,
               fontSize: '1rem',
@@ -283,11 +304,11 @@ export function BidSection({
               textTransform: 'none',
               borderRadius: 1,
               '&:hover': {
-                bgcolor: '#44403C',
+                bgcolor: palette.neutral[700],
               },
               '&.Mui-disabled': {
-                bgcolor: '#E5E5E5',
-                color: '#A3A3A3',
+                bgcolor: palette.neutral[100],
+                color: palette.neutral[500],
               },
             }}
           >
@@ -308,34 +329,69 @@ export function BidSection({
                 fontWeight: 600,
                 textTransform: 'none',
                 borderRadius: 1,
-                borderColor: '#CA8A04',
-                color: '#CA8A04',
+                borderColor: palette.brand.primary,
+                color: palette.brand.primary,
                 '&:hover': {
-                  borderColor: '#A16207',
-                  bgcolor: '#FFFBEB',
+                  borderColor: palette.brand.hover,
+                  bgcolor: palette.brand.muted,
                 },
               }}
             >
               Buy Now — ${buyNowPrice.toLocaleString()}
             </Button>
           )}
+
+          <Button
+            fullWidth
+            variant="outlined"
+            size="large"
+            onClick={() => setAutoBidDialogOpen(true)}
+            startIcon={<AutoMode />}
+            sx={{
+              mt: 1.5,
+              py: 1.5,
+              fontSize: '1rem',
+              fontWeight: 600,
+              textTransform: 'none',
+              borderRadius: 1,
+              borderColor: existingAutoBid?.isActive
+                ? palette.semantic.success
+                : palette.neutral[100],
+              color: existingAutoBid?.isActive ? palette.semantic.success : palette.neutral[700],
+              bgcolor: existingAutoBid?.isActive ? palette.semantic.successLight : 'transparent',
+              '&:hover': {
+                borderColor: palette.neutral[900],
+                bgcolor: palette.neutral[50],
+              },
+            }}
+          >
+            {existingAutoBid?.isActive
+              ? `Auto-Bid Active (Max: $${existingAutoBid.maxAmount.toLocaleString()})`
+              : 'Set Up Auto-Bid'}
+          </Button>
+
+          <AutoBidDialog
+            open={autoBidDialogOpen}
+            onClose={() => setAutoBidDialogOpen(false)}
+            auctionId={auctionId}
+            auctionTitle={auctionTitle}
+            currentBid={currentBid || startingPrice}
+            minBidIncrement={minBidIncrement}
+            existingAutoBid={existingAutoBid}
+          />
         </>
       )}
 
-      {!isAuctionActive && (
-        <Alert severity="info">
-          This auction has ended.
-        </Alert>
-      )}
+      {!isAuctionActive && <InlineAlert severity="info">This auction has ended.</InlineAlert>}
 
       <Box
         sx={{
           mt: 3,
           pt: 2,
-          borderTop: '1px solid #E5E5E5',
+          borderTop: `1px solid ${palette.neutral[100]}`,
         }}
       >
-        <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.8125rem' }}>
+        <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
           By placing a bid, you agree to our terms of service. All bids are binding.
         </Typography>
       </Box>

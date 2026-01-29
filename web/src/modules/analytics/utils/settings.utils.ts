@@ -18,7 +18,7 @@ export function getSettingDataTypeLabel(dataType: string): string {
 }
 
 export function formatSettingValue(value: string, dataType?: string): string {
-  if (!dataType) return value
+  if (!dataType) {return value}
 
   switch (dataType) {
     case 'boolean':
@@ -42,7 +42,7 @@ export function formatSettingValue(value: string, dataType?: string): string {
 }
 
 export function parseSettingValue(value: string, dataType?: string): unknown {
-  if (!dataType) return value
+  if (!dataType) {return value}
 
   switch (dataType) {
     case 'number':
@@ -63,7 +63,7 @@ export function parseSettingValue(value: string, dataType?: string): unknown {
 }
 
 export function validateSettingValue(value: string, dataType?: string): string | null {
-  if (!dataType) return null
+  if (!dataType) {return null}
 
   switch (dataType) {
     case 'number':

@@ -9,13 +9,13 @@ import {
   Chip,
   Button,
   Skeleton,
-  Alert,
   Pagination,
   Stack,
   Container,
 } from '@mui/material'
 import { EmojiEvents, AccessTime, AttachMoney, Whatshot } from '@mui/icons-material'
 import { useWinningBids } from '../hooks/useBids'
+import { InlineAlert } from '@/shared/ui'
 import { BID_CONSTANTS } from '../constants'
 import { formatCurrency, formatRelativeTime } from '@/shared/utils'
 
@@ -28,7 +28,7 @@ export const WinningBidsPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">Failed to load winning bids. Please try again.</Alert>
+        <InlineAlert severity="error">Failed to load winning bids. Please try again.</InlineAlert>
       </Container>
     )
   }
@@ -56,7 +56,10 @@ export const WinningBidsPage = () => {
         >
           <Stack direction="row" alignItems="center" spacing={2} mb={1}>
             <EmojiEvents sx={{ width: 40, height: 40, color: '#2563EB' }} />
-            <Typography variant="h3" sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}>
+            <Typography
+              variant="h3"
+              sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
+            >
               Winning Bids
             </Typography>
           </Stack>
@@ -65,7 +68,7 @@ export const WinningBidsPage = () => {
           </Typography>
         </Box>
 
-        {isLoading ? (
+        {isLoading && (
           <Grid container spacing={3}>
             {[...Array(6)].map((_, index) => (
               <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -73,7 +76,8 @@ export const WinningBidsPage = () => {
               </Grid>
             ))}
           </Grid>
-        ) : data?.items && data.items.length > 0 ? (
+        )}
+        {!isLoading && data?.items && data.items.length > 0 && (
           <>
             <Grid container spacing={3} mb={4}>
               {data.items.map((bid) => (
@@ -171,7 +175,10 @@ export const WinningBidsPage = () => {
 
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <AccessTime sx={{ width: 18, height: 18, color: '#94A3B8' }} />
-                          <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
+                          >
                             Ends {formatRelativeTime(bid.auctionEndTime)}
                           </Typography>
                         </Stack>
@@ -233,7 +240,8 @@ export const WinningBidsPage = () => {
               </Box>
             )}
           </>
-        ) : (
+        )}
+        {!isLoading && (!data || data.length === 0) && (
           <Card
             sx={{
               p: 6,

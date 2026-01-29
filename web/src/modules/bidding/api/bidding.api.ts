@@ -1,9 +1,9 @@
 import { http } from '@/services/http'
-import type { 
-  Bid, 
-  PlaceBidRequest, 
+import type {
+  Bid,
+  PlaceBidRequest,
   BidDetail,
-  BidHistory, 
+  BidHistory,
   BidIncrementInfo,
   RetractBidResult,
   WinningBid,
@@ -15,7 +15,7 @@ import type {
   CreateAutoBidResult,
   UpdateAutoBidResult,
   ToggleAutoBidResult,
-  CancelAutoBidResult
+  CancelAutoBidResult,
 } from '../types'
 import type { PaginatedResponse } from '@/shared/types'
 
@@ -40,7 +40,10 @@ export const biddingApi = {
     return response.data
   },
 
-  async getWinningBids(page: number = 1, pageSize: number = 20): Promise<PaginatedResponse<WinningBid>> {
+  async getWinningBids(
+    page = 1,
+    pageSize = 20
+  ): Promise<PaginatedResponse<WinningBid>> {
     const response = await http.get<PaginatedResponse<WinningBid>>('/bids/winning', {
       params: { page, pageSize },
     })
@@ -74,10 +77,19 @@ export const biddingApi = {
     return response.data
   },
 
-  async getMyAutoBids(activeOnly?: boolean, page: number = 1, pageSize: number = 20): Promise<AutoBidsResult> {
+  async getMyAutoBids(
+    activeOnly?: boolean,
+    page = 1,
+    pageSize = 20
+  ): Promise<AutoBidsResult> {
     const response = await http.get<AutoBidsResult>('/autobids/my', {
       params: { activeOnly, page, pageSize },
     })
+    return response.data
+  },
+
+  async getAutoBidForAuction(auctionId: string): Promise<AutoBidDetail | null> {
+    const response = await http.get<AutoBidDetail | null>(`/autobids/auction/${auctionId}`)
     return response.data
   },
 
@@ -87,7 +99,9 @@ export const biddingApi = {
   },
 
   async toggleAutoBid(autoBidId: string, activate: boolean): Promise<ToggleAutoBidResult> {
-    const response = await http.post<ToggleAutoBidResult>(`/autobids/${autoBidId}/toggle`, { activate })
+    const response = await http.post<ToggleAutoBidResult>(`/autobids/${autoBidId}/toggle`, {
+      activate,
+    })
     return response.data
   },
 

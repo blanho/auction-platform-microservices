@@ -20,7 +20,10 @@ export const AUCTION_STATUS_LABELS: Record<AuctionStatus, string> = {
   cancelled: 'Cancelled',
 }
 
-export const AUCTION_STATUS_COLORS: Record<AuctionStatus, 'success' | 'warning' | 'info' | 'error' | 'default'> = {
+export const AUCTION_STATUS_COLORS: Record<
+  AuctionStatus,
+  'success' | 'warning' | 'info' | 'error' | 'default'
+> = {
   active: 'success',
   'ending-soon': 'warning',
   pending: 'info',

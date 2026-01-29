@@ -69,7 +69,12 @@ export const Footer = () => {
             <Grid size={{ xs: 6, sm: 3, md: 2 }} key={category}>
               <Typography
                 variant="subtitle2"
-                sx={{ fontWeight: typography.fontWeight.semibold, mb: 2.5, color: colors.text.primary, textTransform: 'capitalize' }}
+                sx={{
+                  fontWeight: typography.fontWeight.semibold,
+                  mb: 2.5,
+                  color: colors.text.primary,
+                  textTransform: 'capitalize',
+                }}
               >
                 {category}
               </Typography>

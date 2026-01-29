@@ -6,8 +6,6 @@ import {
   Card,
   Typography,
   Box,
-  TextField,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -30,133 +28,34 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
   CircularProgress,
-  Select,
-  FormControl,
-  InputLabel,
+  TextField,
 } from '@mui/material'
+import { InlineAlert, TableEmptyStateRow, TableToolbar, StatCard } from '@/shared/ui'
+import type { FilterConfig } from '@/shared/ui'
 import {
-  Search,
   Refresh,
   Visibility,
   MoreVert,
   LocalShipping,
   Cancel,
-  CheckCircle,
   Receipt,
-  AttachMoney,
   TrendingUp,
   Pending,
-  Inventory,
-  FilterList,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ordersApi } from '../api'
 import type { Order, OrderStatus, OrderStats } from '../types'
+import { getAdminOrderStatusConfig } from '../utils'
+import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-
-const STATUS_CONFIG: Record<
-  OrderStatus,
-  { label: string; color: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info'; icon: React.ReactElement }
-> = {
-  pending: { label: 'Pending', color: 'warning', icon: <Pending fontSize="small" /> },
-  payment_pending: { label: 'Awaiting Payment', color: 'warning', icon: <Pending fontSize="small" /> },
-  paid: { label: 'Paid', color: 'info', icon: <AttachMoney fontSize="small" /> },
-  processing: { label: 'Processing', color: 'info', icon: <LocalShipping fontSize="small" /> },
-  shipped: { label: 'Shipped', color: 'primary', icon: <LocalShipping fontSize="small" /> },
-  delivered: { label: 'Delivered', color: 'success', icon: <Inventory fontSize="small" /> },
-  completed: { label: 'Completed', color: 'success', icon: <CheckCircle fontSize="small" /> },
-  cancelled: { label: 'Cancelled', color: 'error', icon: <Cancel fontSize="small" /> },
-  disputed: { label: 'Disputed', color: 'error', icon: <Cancel fontSize="small" /> },
-  refunded: { label: 'Refunded', color: 'default', icon: <Receipt fontSize="small" /> },
-}
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function StatsCard({
-  title,
-  value,
-  icon,
-  color,
-  loading,
-}: {
-  title: string
-  value: string | number
-  icon: React.ReactNode
-  color: string
-  loading?: boolean
-}) {
-  if (loading) {
-    return (
-      <Card sx={{ p: 3 }}>
-        <Skeleton variant="circular" width={48} height={48} />
-        <Skeleton width={80} sx={{ mt: 2 }} />
-        <Skeleton width={60} />
-      </Card>
-    )
-  }
-
-  return (
-    <Card
-      sx={{
-        p: 3,
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 2,
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-        },
-      }}
-    >
-      <Box
-        sx={{
-          width: 48,
-          height: 48,
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: `${color}15`,
-          color: color,
-        }}
-      >
-        {icon}
-      </Box>
-      <Box>
-        <Typography variant="body2" color="text.secondary">
-          {title}
-        </Typography>
-        <Typography variant="h5" fontWeight={700}>
-          {value}
-        </Typography>
-      </Box>
-    </Card>
-  )
-}
 
 function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boolean }) {
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatsCard
+        <StatCard
           title="Total Orders"
           value={stats?.totalOrders.toLocaleString() ?? '0'}
           icon={<Receipt />}
@@ -165,29 +64,29 @@ function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boole
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatsCard
+        <StatCard
           title="Pending"
           value={stats?.pendingOrders ?? 0}
           icon={<Pending />}
-          color="#F59E0B"
+          color={palette.semantic.warning}
           loading={loading}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatsCard
+        <StatCard
           title="Processing"
           value={(stats?.processingOrders ?? 0) + (stats?.shippedOrders ?? 0)}
           icon={<LocalShipping />}
-          color="#3B82F6"
+          color={palette.semantic.info}
           loading={loading}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatsCard
+        <StatCard
           title="Revenue"
           value={formatCurrency(stats?.totalRevenue ?? 0)}
           icon={<TrendingUp />}
-          color="#10B981"
+          color={palette.semantic.success}
           loading={loading}
         />
       </Grid>
@@ -209,12 +108,24 @@ function OrderTableSkeleton() {
               </Box>
             </Box>
           </TableCell>
-          <TableCell><Skeleton width={100} /></TableCell>
-          <TableCell><Skeleton width={100} /></TableCell>
-          <TableCell><Skeleton width={80} /></TableCell>
-          <TableCell><Skeleton width={80} /></TableCell>
-          <TableCell><Skeleton width={120} /></TableCell>
-          <TableCell><Skeleton width={40} /></TableCell>
+          <TableCell>
+            <Skeleton width={100} />
+          </TableCell>
+          <TableCell>
+            <Skeleton width={100} />
+          </TableCell>
+          <TableCell>
+            <Skeleton width={80} />
+          </TableCell>
+          <TableCell>
+            <Skeleton width={80} />
+          </TableCell>
+          <TableCell>
+            <Skeleton width={120} />
+          </TableCell>
+          <TableCell>
+            <Skeleton width={40} />
+          </TableCell>
         </TableRow>
       ))}
     </TableBody>
@@ -228,7 +139,7 @@ function OrderTableRow({
   order: Order
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, order: Order) => void
 }) {
-  const statusConfig = STATUS_CONFIG[order.status]
+  const statusConfig = getAdminOrderStatusConfig(order.status)
 
   return (
     <TableRow
@@ -241,11 +152,7 @@ function OrderTableRow({
     >
       <TableCell>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar
-            variant="rounded"
-            src={order.auctionImageUrl}
-            sx={{ width: 48, height: 48 }}
-          >
+          <Avatar variant="rounded" src={order.auctionImageUrl} sx={{ width: 48, height: 48 }}>
             <Receipt />
           </Avatar>
           <Box>
@@ -262,7 +169,12 @@ function OrderTableRow({
             >
               #{order.id.slice(0, 8).toUpperCase()}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 200, display: 'block' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{ maxWidth: 200, display: 'block' }}
+            >
               {order.auctionTitle || order.itemTitle}
             </Typography>
           </Box>
@@ -290,7 +202,7 @@ function OrderTableRow({
       </TableCell>
       <TableCell>
         <Typography variant="body2" color="text.secondary">
-          {formatDate(order.createdAt)}
+          {formatDateTime(order.createdAt)}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -304,6 +216,17 @@ function OrderTableRow({
   )
 }
 
+const STATUS_FILTER_OPTIONS = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'payment_pending', label: 'Payment Pending' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'shipped', label: 'Shipped' },
+  { value: 'delivered', label: 'Delivered' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'refunded', label: 'Refunded' },
+]
+
 export function AdminOrdersPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
@@ -315,6 +238,29 @@ export function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
+
+  const filters: FilterConfig[] = useMemo(
+    () => [{ key: 'status', label: 'Status', options: STATUS_FILTER_OPTIONS, minWidth: 150 }],
+    []
+  )
+
+  const filterValues = useMemo(
+    () => ({ status: statusFilter }),
+    [statusFilter]
+  )
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    if (key === 'status') {
+      setStatusFilter(value as OrderStatus | '')
+      setPage(0)
+    }
+  }, [])
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('')
+    setStatusFilter('')
+    setPage(0)
+  }, [])
 
   const statusFromTab = useMemo(() => {
     const tabStatuses: (OrderStatus | undefined)[] = [
@@ -328,7 +274,11 @@ export function AdminOrdersPage() {
     return tabStatuses[tabValue]
   }, [tabValue])
 
-  const { data: ordersData, isLoading, refetch } = useQuery({
+  const {
+    data: ordersData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['admin', 'orders', page, rowsPerPage, search, statusFromTab, statusFilter],
     queryFn: async () => {
       const response = await ordersApi.getAllOrders({
@@ -377,7 +327,7 @@ export function AdminOrdersPage() {
   }, [handleMenuClose])
 
   const handleCancelOrder = useCallback(() => {
-    if (!selectedOrder) return
+    if (!selectedOrder) {return}
     cancelMutation.mutate({ id: selectedOrder.id, reason: cancelReason })
   }, [selectedOrder, cancelReason, cancelMutation])
 
@@ -385,11 +335,6 @@ export function AdminOrdersPage() {
     setTabValue(value)
     setPage(0)
     setStatusFilter('')
-  }, [])
-
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value)
-    setPage(0)
   }, [])
 
   return (
@@ -442,43 +387,18 @@ export function AdminOrdersPage() {
               </Tabs>
             </Box>
 
-            <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <TextField
-                placeholder="Search orders by ID, buyer, or seller..."
-                size="small"
-                value={search}
-                onChange={handleSearchChange}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{ width: 350 }}
+            <Box sx={{ p: 2 }}>
+              <TableToolbar
+                searchValue={search}
+                searchPlaceholder="Search orders by ID, buyer, or seller..."
+                onSearchChange={setSearch}
+                filters={filters}
+                filterValues={filterValues}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                onRefresh={() => refetch()}
+                showRefreshButton={false}
               />
-
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={statusFilter}
-                  label="Status"
-                  onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}
-                  startAdornment={<FilterList sx={{ mr: 1, color: 'text.secondary' }} />}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="payment_pending">Payment Pending</MenuItem>
-                  <MenuItem value="paid">Paid</MenuItem>
-                  <MenuItem value="shipped">Shipped</MenuItem>
-                  <MenuItem value="delivered">Delivered</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="cancelled">Cancelled</MenuItem>
-                  <MenuItem value="refunded">Refunded</MenuItem>
-                </Select>
-              </FormControl>
             </Box>
 
             <TableContainer>
@@ -491,26 +411,24 @@ export function AdminOrdersPage() {
                     <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHead>
-                {isLoading ? (
-                  <OrderTableSkeleton />
-                ) : ordersData?.items.length === 0 ? (
+                {isLoading && <OrderTableSkeleton />}
+                {!isLoading && ordersData?.items.length === 0 && (
                   <TableBody>
-                    <TableRow>
-                      <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                        <Receipt sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No orders found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Orders will appear here when customers make purchases
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
+                    <TableEmptyStateRow
+                      colSpan={7}
+                      title="No orders found"
+                      description="Orders will appear here when customers make purchases"
+                      icon={<Receipt sx={{ fontSize: 64, color: 'grey.300' }} />}
+                      cellSx={{ py: 8 }}
+                    />
                   </TableBody>
-                ) : (
+                )}
+                {!isLoading && ordersData?.items.length > 0 && (
                   <TableBody
                     component={motion.tbody}
                     variants={staggerContainer}
@@ -518,11 +436,7 @@ export function AdminOrdersPage() {
                     animate="animate"
                   >
                     {ordersData?.items.map((order) => (
-                      <OrderTableRow
-                        key={order.id}
-                        order={order}
-                        onMenuOpen={handleMenuOpen}
-                      />
+                      <OrderTableRow key={order.id} order={order} onMenuOpen={handleMenuOpen} />
                     ))}
                   </TableBody>
                 )}
@@ -576,9 +490,10 @@ export function AdminOrdersPage() {
       >
         <DialogTitle sx={{ fontWeight: 600, color: 'error.main' }}>Cancel Order</DialogTitle>
         <DialogContent>
-          <Alert severity="warning" sx={{ mb: 3 }}>
-            This will cancel order #{selectedOrder?.id.slice(0, 8).toUpperCase()}. This action cannot be undone.
-          </Alert>
+          <InlineAlert severity="warning" sx={{ mb: 3 }}>
+            This will cancel order #{selectedOrder?.id.slice(0, 8).toUpperCase()}. This action
+            cannot be undone.
+          </InlineAlert>
           <TextField
             fullWidth
             label="Cancellation Reason"

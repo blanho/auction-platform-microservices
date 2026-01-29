@@ -12,6 +12,7 @@ import { MoreVert, Security, CheckCircle, Block } from '@mui/icons-material'
 import { formatDate } from '@/shared/utils/formatters'
 import { ROLE_COLORS } from '../constants'
 import { getUserStatus, getAdminUserInitial } from '../utils'
+import { StatusBadge } from '@/shared/ui'
 import type { AdminUser } from '../types'
 
 interface UserTableRowProps {
@@ -51,7 +52,7 @@ export function UserTableRow({ user, onMenuOpen }: UserTableRowProps) {
         </Box>
       </TableCell>
       <TableCell>
-        <Chip label={status.label} size="small" color={status.color} />
+        <StatusBadge status={status.label} />
       </TableCell>
       <TableCell>
         {user.twoFactorEnabled ? (

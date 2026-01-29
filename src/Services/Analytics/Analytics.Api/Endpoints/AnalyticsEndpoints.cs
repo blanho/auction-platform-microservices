@@ -55,6 +55,10 @@ public class AnalyticsEndpoints : ICarterModule
             .WithName("GetRevenueMetrics")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewRevenue))
             .Produces<RevenueMetrics>();
+
+        group.MapGet("/daily-stats", GetAggregatedDailyStats)
+            .WithName("GetAggregatedDailyStats")
+            .Produces<AggregatedDailyStatsDto>();
     }
 
     private static async Task<Ok<PlatformAnalyticsDto>> GetAnalytics(
@@ -184,5 +188,15 @@ public class AnalyticsEndpoints : ICarterModule
 
         var metrics = await analyticsService.GetRevenueMetricsAsync(query, cancellationToken);
         return TypedResults.Ok(metrics);
+    }
+
+    private static async Task<Ok<AggregatedDailyStatsDto>> GetAggregatedDailyStats(
+        DateOnly? startDate,
+        DateOnly? endDate,
+        IAnalyticsService analyticsService,
+        CancellationToken cancellationToken)
+    {
+        var stats = await analyticsService.GetAggregatedDailyStatsAsync(startDate, endDate, cancellationToken);
+        return TypedResults.Ok(stats);
     }
 }

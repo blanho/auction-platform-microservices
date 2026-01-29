@@ -1,6 +1,5 @@
 export * from './dialogs'
 export * from './ReviewsSection'
-export * from './StatCard'
 export * from './UserStatsGrid'
 export * from './UserTableRow'
 export * from './UserTableSkeleton'

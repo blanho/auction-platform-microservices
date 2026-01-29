@@ -26,13 +26,13 @@ import {
   DialogActions,
   Button,
   Skeleton,
-  Alert,
   Tooltip,
   Tabs,
   Tab,
   Switch,
   FormControlLabel,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import {
   Edit,
   Add,
@@ -48,6 +48,7 @@ import {
 import { useSettings } from '../hooks/useAnalytics'
 import { useCreateSetting, useUpdateSetting, useDeleteSetting } from '../hooks/useSettingsMutations'
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { TableEmptyStateRow } from '@/shared/ui'
 import type { PlatformSetting, SettingCategory, CreateSettingRequest } from '../types'
 import {
   getSettingCategoryLabel,
@@ -92,7 +93,7 @@ export function PlatformSettingsPage() {
   const deleteMutation = useDeleteSetting()
 
   const groupedSettings = useMemo(() => {
-    if (!settings) return { system: [], custom: [] }
+    if (!settings) {return { system: [], custom: [] }}
     return {
       system: settings.filter((s) => s.isSystem),
       custom: settings.filter((s) => !s.isSystem),
@@ -107,7 +108,7 @@ export function PlatformSettingsPage() {
   }
 
   const handleEditSave = () => {
-    if (!selectedSetting) return
+    if (!selectedSetting) {return}
 
     const error = validateSettingValue(editValue, selectedSetting.dataType)
     if (error) {
@@ -133,7 +134,7 @@ export function PlatformSettingsPage() {
   }
 
   const handleDeleteConfirm = () => {
-    if (!selectedSetting) return
+    if (!selectedSetting) {return}
 
     deleteMutation.mutate(selectedSetting.id, {
       onSuccess: () => {
@@ -164,13 +165,7 @@ export function PlatformSettingsPage() {
 
   const renderSettingValue = (setting: PlatformSetting) => {
     if (setting.dataType === 'boolean') {
-      return (
-        <Switch
-          checked={setting.value === 'true'}
-          disabled
-          size="small"
-        />
-      )
+      return <Switch checked={setting.value === 'true'} disabled size="small" />
     }
     return (
       <Typography
@@ -189,7 +184,7 @@ export function PlatformSettingsPage() {
   }
 
   const renderEditField = () => {
-    if (!selectedSetting) return null
+    if (!selectedSetting) {return null}
 
     if (selectedSetting.dataType === 'boolean') {
       return (
@@ -233,7 +228,13 @@ export function PlatformSettingsPage() {
         }}
         error={!!editError}
         helperText={editError}
-        type={selectedSetting.dataType === 'number' || selectedSetting.dataType === 'percentage' || selectedSetting.dataType === 'currency' ? 'number' : 'text'}
+        type={
+          selectedSetting.dataType === 'number' ||
+          selectedSetting.dataType === 'percentage' ||
+          selectedSetting.dataType === 'currency'
+            ? 'number'
+            : 'text'
+        }
       />
     )
   }
@@ -242,7 +243,9 @@ export function PlatformSettingsPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}
+          >
             <Box>
               <Typography
                 variant="h4"
@@ -300,9 +303,9 @@ export function PlatformSettingsPage() {
 
         <motion.div variants={fadeInUp}>
           {isError && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <InlineAlert severity="error" sx={{ mb: 3 }}>
               Failed to load settings. Please try again.
-            </Alert>
+            </InlineAlert>
           )}
 
           {groupedSettings.system.length > 0 && (
@@ -328,49 +331,61 @@ export function PlatformSettingsPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton variant="text" width={150} /></TableCell>
-                          <TableCell><Skeleton variant="text" width={200} /></TableCell>
-                          <TableCell><Skeleton variant="text" width={80} /></TableCell>
-                          <TableCell><Skeleton variant="text" width={120} /></TableCell>
-                          <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      groupedSettings.system.map((setting) => (
-                        <TableRow key={setting.id} hover sx={{ cursor: 'pointer' }}>
-                          <TableCell>
-                            <Tooltip title={setting.description || ''}>
-                              <Typography variant="body2" fontWeight={500} sx={{ fontFamily: 'monospace' }}>
-                                {setting.key}
+                    {isLoading
+                      ? Array.from({ length: 3 }).map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell>
+                              <Skeleton variant="text" width={150} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width={200} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width={80} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="text" width={120} />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton variant="circular" width={32} height={32} />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : groupedSettings.system.map((setting) => (
+                          <TableRow key={setting.id} hover sx={{ cursor: 'pointer' }}>
+                            <TableCell>
+                              <Tooltip title={setting.description || ''}>
+                                <Typography
+                                  variant="body2"
+                                  fontWeight={500}
+                                  sx={{ fontFamily: 'monospace' }}
+                                >
+                                  {setting.key}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell>{renderSettingValue(setting)}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={getSettingDataTypeLabel(setting.dataType || 'string')}
+                                size="small"
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatSettingTimestamp(setting.updatedAt)}
                               </Typography>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell>{renderSettingValue(setting)}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={getSettingDataTypeLabel(setting.dataType || 'string')}
-                              size="small"
-                              variant="outlined"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="caption" color="text.secondary">
-                              {formatSettingTimestamp(setting.updatedAt)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Tooltip title="Edit">
-                              <IconButton size="small" onClick={() => handleEditClick(setting)}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
+                            </TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="Edit">
+                                <IconButton size="small" onClick={() => handleEditClick(setting)}>
+                                  <Edit fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -396,34 +411,48 @@ export function PlatformSettingsPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {isLoading ? (
+                  {isLoading && (
                     Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
-                        <TableCell><Skeleton variant="text" width={150} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={200} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={80} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={150} /></TableCell>
-                        <TableCell><Skeleton variant="text" width={120} /></TableCell>
-                        <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={150} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={200} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={80} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={150} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={120} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="circular" width={32} height={32} />
+                        </TableCell>
                       </TableRow>
                     ))
-                  ) : groupedSettings.custom.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                        <Settings sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                        <Typography variant="h6" color="text.secondary">
-                          No custom settings
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Click "Add Setting" to create a new configuration
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
+                  )}
+                  {!isLoading && groupedSettings.custom.length === 0 && (
+                    <TableEmptyStateRow
+                      colSpan={6}
+                      title="No custom settings"
+                      description='Click "Add Setting" to create a new configuration'
+                      icon={<Settings sx={{ fontSize: 48, color: 'text.secondary' }} />}
+                      cellSx={{ py: 8 }}
+                    />
+                  )}
+                  {!isLoading && groupedSettings.custom.length > 0 && (
                     groupedSettings.custom.map((setting) => (
                       <TableRow key={setting.id} hover sx={{ cursor: 'pointer' }}>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500} sx={{ fontFamily: 'monospace' }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{ fontFamily: 'monospace' }}
+                          >
                             {setting.key}
                           </Typography>
                         </TableCell>
@@ -436,7 +465,12 @@ export function PlatformSettingsPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 200 }} noWrap>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ maxWidth: 200 }}
+                            noWrap
+                          >
                             {setting.description || '-'}
                           </Typography>
                         </TableCell>
@@ -471,19 +505,28 @@ export function PlatformSettingsPage() {
         </motion.div>
       </motion.div>
 
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Edit Setting</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <Box>
-              <Typography variant="caption" color="text.secondary">Key</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Key
+              </Typography>
               <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
                 {selectedSetting?.key}
               </Typography>
             </Box>
             {selectedSetting?.description && (
               <Box>
-                <Typography variant="caption" color="text.secondary">Description</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Description
+                </Typography>
                 <Typography variant="body2">{selectedSetting.description}</Typography>
               </Box>
             )}
@@ -497,17 +540,18 @@ export function PlatformSettingsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleEditSave}
-            disabled={updateMutation.isPending}
-          >
+          <Button variant="contained" onClick={handleEditSave} disabled={updateMutation.isPending}>
             {updateMutation.isPending ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Create New Setting</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
@@ -553,7 +597,12 @@ export function PlatformSettingsPage() {
               <InputLabel>Category</InputLabel>
               <Select
                 value={newSetting.category}
-                onChange={(e) => setNewSetting((prev) => ({ ...prev, category: e.target.value as SettingCategory }))}
+                onChange={(e) =>
+                  setNewSetting((prev) => ({
+                    ...prev,
+                    category: e.target.value as SettingCategory,
+                  }))
+                }
                 label="Category"
               >
                 {CATEGORIES.map((cat) => (
@@ -580,9 +629,9 @@ export function PlatformSettingsPage() {
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Delete Setting</DialogTitle>
         <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <InlineAlert severity="warning" sx={{ mb: 2 }}>
             This action cannot be undone.
-          </Alert>
+          </InlineAlert>
           <Typography>
             Are you sure you want to delete the setting <strong>{selectedSetting?.key}</strong>?
           </Typography>

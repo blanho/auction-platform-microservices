@@ -48,7 +48,10 @@ export const FloatingCards = () => {
             <Typography variant="caption" sx={{ color: colors.text.disabled }}>
               Contemporary Art
             </Typography>
-            <Typography variant="subtitle1" sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, my: 1 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, my: 1 }}
+            >
               Abstract Composition No. 47
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -56,7 +59,10 @@ export const FloatingCards = () => {
                 <Typography variant="caption" sx={{ color: colors.text.disabled }}>
                   Current Bid
                 </Typography>
-                <Typography variant="h6" sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold }}>
+                <Typography
+                  variant="h6"
+                  sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold }}
+                >
                   $12,400
                 </Typography>
               </Box>
@@ -95,10 +101,20 @@ export const FloatingCards = () => {
             <Typography variant="caption" sx={{ color: colors.text.disabled }}>
               Luxury Watches
             </Typography>
-            <Typography variant="subtitle2" sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, mt: 0.5 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: colors.text.primary,
+                fontWeight: typography.fontWeight.semibold,
+                mt: 0.5,
+              }}
+            >
               Vintage Patek Philippe
             </Typography>
-            <Typography variant="h6" sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold, mt: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold, mt: 1 }}
+            >
               $45,800
             </Typography>
           </Box>
@@ -135,10 +151,16 @@ export const FloatingCards = () => {
             <Typography variant="caption" sx={{ color: colors.text.disabled }}>
               Just Sold
             </Typography>
-            <Typography variant="subtitle2" sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold }}
+            >
               Rare Ming Vase
             </Typography>
-            <Typography variant="body2" sx={{ color: colors.success, fontWeight: typography.fontWeight.bold }}>
+            <Typography
+              variant="body2"
+              sx={{ color: colors.success, fontWeight: typography.fontWeight.bold }}
+            >
               $128,500
             </Typography>
           </Box>

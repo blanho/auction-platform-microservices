@@ -32,4 +32,11 @@ export interface User2FAStatus {
   lastVerifiedAt?: string
 }
 
-export type UserActionDialog = 'suspend' | 'delete' | 'roles' | '2fa' | 'activate' | 'deactivate' | null
+export type UserActionDialog =
+  | 'suspend'
+  | 'delete'
+  | 'roles'
+  | '2fa'
+  | 'activate'
+  | 'deactivate'
+  | null

@@ -10,7 +10,6 @@ import {
   IconButton,
   Chip,
   Skeleton,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -20,6 +19,7 @@ import {
   Divider,
   Grid,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import {
   ArrowBack,
   CreditCard,
@@ -31,19 +31,16 @@ import {
   CheckCircle,
   Lock,
 } from '@mui/icons-material'
-import { usePaymentMethods, useAddPaymentMethod, useRemovePaymentMethod, useSetDefaultPaymentMethod } from '../hooks'
+import { palette } from '@/shared/theme/tokens'
+import {
+  usePaymentMethods,
+  useAddPaymentMethod,
+  useRemovePaymentMethod,
+  useSetDefaultPaymentMethod,
+} from '../hooks'
 import type { PaymentMethod } from '../types'
+import { getCardBrandIcon, formatCardExpiry } from '../utils'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-
-const getCardBrandIcon = (brand?: string) => {
-  console.debug('Card brand:', brand)
-  return <CreditCard sx={{ fontSize: 32, color: '#78716C' }} />
-}
-
-const formatExpiry = (month?: number, year?: number) => {
-  if (!month || !year) return ''
-  return `${month.toString().padStart(2, '0')}/${year.toString().slice(-2)}`
-}
 
 function PaymentMethodCard({
   method,
@@ -63,7 +60,9 @@ function PaymentMethodCard({
       sx={{
         p: 3,
         borderRadius: 2,
-        border: method.isDefault ? '2px solid #CA8A04' : '1px solid #E7E5E4',
+        border: method.isDefault
+          ? `2px solid ${palette.brand.primary}`
+          : `1px solid ${palette.neutral[200]}`,
         position: 'relative',
         '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.08)' },
       }}
@@ -77,10 +76,10 @@ function PaymentMethodCard({
             position: 'absolute',
             top: 12,
             right: 12,
-            bgcolor: '#FEF3C7',
+            bgcolor: palette.semantic.warningLight,
             color: '#92400E',
             fontWeight: 600,
-            '& .MuiChip-icon': { color: '#CA8A04' },
+            '& .MuiChip-icon': { color: palette.brand.primary },
           }}
         />
       )}
@@ -91,7 +90,7 @@ function PaymentMethodCard({
             width: 56,
             height: 56,
             borderRadius: 2,
-            bgcolor: method.type === 'card' ? '#F5F5F4' : '#EFF6FF',
+            bgcolor: method.type === 'card' ? palette.neutral[100] : palette.semantic.infoLight,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -100,7 +99,7 @@ function PaymentMethodCard({
           {method.type === 'card' ? (
             getCardBrandIcon(method.brand)
           ) : (
-            <AccountBalance sx={{ fontSize: 32, color: '#3B82F6' }} />
+            <AccountBalance sx={{ fontSize: 32, color: palette.semantic.info }} />
           )}
         </Box>
 
@@ -112,7 +111,7 @@ function PaymentMethodCard({
           </Typography>
           {method.type === 'card' && method.expiryMonth && method.expiryYear && (
             <Typography variant="body2" color="text.secondary">
-              Expires {formatExpiry(method.expiryMonth, method.expiryYear)}
+              Expires {formatCardExpiry(method.expiryMonth, method.expiryYear)}
             </Typography>
           )}
         </Box>
@@ -126,13 +125,13 @@ function PaymentMethodCard({
             size="small"
             startIcon={<StarBorder />}
             onClick={onSetDefault}
-            sx={{ color: '#78716C', textTransform: 'none' }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
             Set as default
           </Button>
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Star sx={{ fontSize: 16, color: '#CA8A04' }} />
+            <Star sx={{ fontSize: 16, color: palette.brand.primary }} />
             <Typography variant="body2" color="text.secondary">
               Default payment method
             </Typography>
@@ -142,7 +141,10 @@ function PaymentMethodCard({
         <IconButton
           onClick={onDelete}
           disabled={isDeleting}
-          sx={{ color: '#EF4444', '&:hover': { bgcolor: '#FEE2E2' } }}
+          sx={{
+            color: palette.semantic.error,
+            '&:hover': { bgcolor: palette.semantic.errorLight },
+          }}
         >
           <Delete fontSize="small" />
         </IconButton>
@@ -185,7 +187,7 @@ function AddPaymentMethodDialog({
   const formatExpiryDate = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
     if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4)
+      return `${v.substring(0, 2)  }/${  v.substring(2, 4)}`
     }
     return v
   }
@@ -195,12 +197,12 @@ function AddPaymentMethodDialog({
       <DialogTitle sx={{ fontWeight: 600 }}>Add Payment Method</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 1 }}>
-          <Alert severity="info" sx={{ mb: 3 }}>
+          <InlineAlert severity="info" sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Lock fontSize="small" />
               Your payment information is securely encrypted
             </Box>
-          </Alert>
+          </InlineAlert>
 
           <Stack spacing={2.5}>
             <TextField
@@ -219,7 +221,7 @@ function AddPaymentMethodDialog({
               placeholder="4242 4242 4242 4242"
               inputProps={{ maxLength: 19 }}
               InputProps={{
-                endAdornment: <CreditCard sx={{ color: '#78716C' }} />,
+                endAdornment: <CreditCard sx={{ color: palette.neutral[500] }} />,
               }}
             />
 
@@ -249,7 +251,7 @@ function AddPaymentMethodDialog({
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button onClick={onClose} sx={{ color: '#78716C', textTransform: 'none' }}>
+        <Button onClick={onClose} sx={{ color: palette.neutral[500], textTransform: 'none' }}>
           Cancel
         </Button>
         <Button
@@ -257,7 +259,7 @@ function AddPaymentMethodDialog({
           onClick={handleSubmit}
           disabled={isLoading || !cardNumber || !expiry || !cvc || !name}
           sx={{
-            bgcolor: '#CA8A04',
+            bgcolor: palette.brand.primary,
             textTransform: 'none',
             '&:hover': { bgcolor: '#A16207' },
           }}
@@ -328,7 +330,7 @@ export function PaymentMethodsPage() {
   }
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="md" sx={{ pt: 4 }}>
         <motion.div variants={staggerContainer} initial="initial" animate="animate">
           <motion.div variants={fadeInUp}>
@@ -336,7 +338,11 @@ export function PaymentMethodsPage() {
               startIcon={<ArrowBack />}
               component={Link}
               to="/wallet"
-              sx={{ mb: 3, color: '#78716C', '&:hover': { bgcolor: '#F5F5F4' } }}
+              sx={{
+                mb: 3,
+                color: palette.neutral[500],
+                '&:hover': { bgcolor: palette.neutral[100] },
+              }}
             >
               Back to Wallet
             </Button>
@@ -349,7 +355,7 @@ export function PaymentMethodsPage() {
                 sx={{
                   fontFamily: '"Playfair Display", serif',
                   fontWeight: 700,
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   mb: 1,
                 }}
               >
@@ -368,7 +374,7 @@ export function PaymentMethodsPage() {
               onClick={() => setShowAddDialog(true)}
               sx={{
                 mb: 4,
-                bgcolor: '#CA8A04',
+                bgcolor: palette.brand.primary,
                 textTransform: 'none',
                 fontWeight: 600,
                 '&:hover': { bgcolor: '#A16207' },
@@ -381,7 +387,7 @@ export function PaymentMethodsPage() {
           {!paymentMethods || paymentMethods.length === 0 ? (
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 6, textAlign: 'center', borderRadius: 2 }}>
-                <CreditCard sx={{ fontSize: 64, color: '#D6D3D1', mb: 2 }} />
+                <CreditCard sx={{ fontSize: 64, color: palette.neutral[200], mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   No payment methods saved
                 </Typography>
@@ -393,10 +399,10 @@ export function PaymentMethodsPage() {
                   startIcon={<Add />}
                   onClick={() => setShowAddDialog(true)}
                   sx={{
-                    borderColor: '#CA8A04',
-                    color: '#CA8A04',
+                    borderColor: palette.brand.primary,
+                    color: palette.brand.primary,
                     textTransform: 'none',
-                    '&:hover': { borderColor: '#A16207', bgcolor: '#FEF3C7' },
+                    '&:hover': { borderColor: '#A16207', bgcolor: palette.semantic.warningLight },
                   }}
                 >
                   Add Payment Method
@@ -419,16 +425,16 @@ export function PaymentMethodsPage() {
           )}
 
           <motion.div variants={staggerItem}>
-            <Card sx={{ p: 3, mt: 4, borderRadius: 2, bgcolor: '#F5F5F4' }}>
+            <Card sx={{ p: 3, mt: 4, borderRadius: 2, bgcolor: palette.neutral[100] }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                <Lock sx={{ color: '#78716C', mt: 0.5 }} />
+                <Lock sx={{ color: palette.neutral[500], mt: 0.5 }} />
                 <Box>
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                     Your payment information is secure
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    We use industry-standard encryption to protect your data. Your card details
-                    are never stored on our servers and are processed securely through Stripe.
+                    We use industry-standard encryption to protect your data. Your card details are
+                    never stored on our servers and are processed securely through Stripe.
                   </Typography>
                 </Box>
               </Box>

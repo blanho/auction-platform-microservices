@@ -1,7 +1,13 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { Permission, hasPermission, hasAnyPermission, hasAllPermissions, getPermissionsForRoles } from '@/shared/permissions'
+import {
+  type Permission,
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+  getPermissionsForRoles,
+} from '@/shared/permissions'
 import { PermissionContext } from '../context/PermissionContext'
 
 interface PermissionProviderProps {
@@ -14,7 +20,7 @@ export function PermissionProvider({ children }: PermissionProviderProps) {
 
   const value = useMemo(() => {
     const permissions = userRoles ? getPermissionsForRoles(userRoles) : []
-    
+
     return {
       permissions,
       can: (permission: Permission) => hasPermission(permissions, permission),
@@ -23,9 +29,5 @@ export function PermissionProvider({ children }: PermissionProviderProps) {
     }
   }, [userRoles])
 
-  return (
-    <PermissionContext.Provider value={value}>
-      {children}
-    </PermissionContext.Provider>
-  )
+  return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>
 }

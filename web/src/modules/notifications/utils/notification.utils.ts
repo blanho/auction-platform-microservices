@@ -10,10 +10,10 @@ export function formatTimeAgo(dateString: string): string {
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
 
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
+  if (minutes < 1) {return 'Just now'}
+  if (minutes < 60) {return `${minutes}m ago`}
+  if (hours < 24) {return `${hours}h ago`}
+  if (days < 7) {return `${days}d ago`}
   return date.toLocaleDateString()
 }
 
@@ -39,7 +39,9 @@ export function isUnread(notification: Notification): boolean {
   return notification.status === 'unread'
 }
 
-export function groupNotificationsByDate(notifications: Notification[]): Map<string, Notification[]> {
+export function groupNotificationsByDate(
+  notifications: Notification[]
+): Map<string, Notification[]> {
   const groups = new Map<string, Notification[]>()
   const today = new Date()
   const yesterday = new Date(today)
@@ -77,8 +79,8 @@ export function filterNotifications(
   }
 ): Notification[] {
   return notifications.filter((notification) => {
-    if (filters.type && notification.type !== filters.type) return false
-    if (filters.unreadOnly && !isUnread(notification)) return false
+    if (filters.type && notification.type !== filters.type) {return false}
+    if (filters.unreadOnly && !isUnread(notification)) {return false}
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
       return (

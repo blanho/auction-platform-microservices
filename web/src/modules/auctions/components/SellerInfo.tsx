@@ -1,14 +1,7 @@
-import {
-  Box,
-  Typography,
-  Avatar,
-  Stack,
-  Button,
-  Rating,
-  Skeleton,
-} from '@mui/material'
+import { Box, Typography, Avatar, Stack, Button, Rating, Skeleton } from '@mui/material'
 import { Verified, Storefront, Chat } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 import type { AuctionSellerInfo } from '../types'
 
 interface SellerInfoProps {
@@ -24,14 +17,14 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
       sx={{
         bgcolor: 'white',
         borderRadius: 2,
-        border: '1px solid #E5E5E5',
+        border: `1px solid ${palette.neutral[100]}`,
         p: 3,
       }}
     >
       <Typography
         variant="overline"
         sx={{
-          color: '#78716C',
+          color: palette.neutral[500],
           fontWeight: 600,
           letterSpacing: 1.5,
           fontSize: '0.6875rem',
@@ -66,7 +59,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
               to={`/sellers/${seller.id}`}
               sx={{
                 fontWeight: 600,
-                color: '#1C1917',
+                color: palette.neutral[900],
                 textDecoration: 'none',
                 '&:hover': {
                   textDecoration: 'underline',
@@ -75,12 +68,10 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             >
               {seller.displayName}
             </Typography>
-            {isVerified && (
-              <Verified sx={{ fontSize: 18, color: '#2563EB' }} />
-            )}
+            {isVerified && <Verified sx={{ fontSize: 18, color: palette.semantic.info }} />}
           </Stack>
 
-          <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.8125rem' }}>
+          <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
             @{seller.username}
           </Typography>
 
@@ -91,14 +82,15 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
               size="small"
               readOnly
               sx={{
-                color: '#CA8A04',
+                color: palette.brand.primary,
                 '& .MuiRating-iconEmpty': {
-                  color: '#E5E5E5',
+                  color: palette.neutral[100],
                 },
               }}
             />
-            <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.8125rem' }}>
-              ({seller.rating.toFixed(1)}{seller.reviewCount !== undefined && ` • ${seller.reviewCount} reviews`})
+            <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
+              ({seller.rating.toFixed(1)}
+              {seller.reviewCount !== undefined && ` • ${seller.reviewCount} reviews`})
             </Typography>
           </Stack>
         </Box>
@@ -110,7 +102,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
         sx={{
           mt: 2,
           pt: 2,
-          borderTop: '1px solid #F5F5F4',
+          borderTop: `1px solid ${palette.neutral[100]}`,
         }}
       >
         <Box>
@@ -118,13 +110,13 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             variant="h6"
             sx={{
               fontWeight: 600,
-              color: '#1C1917',
+              color: palette.neutral[900],
               fontSize: '1.125rem',
             }}
           >
             {seller.totalSales.toLocaleString()}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.75rem' }}>
+          <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
             Total Sales
           </Typography>
         </Box>
@@ -133,13 +125,13 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             variant="h6"
             sx={{
               fontWeight: 600,
-              color: '#1C1917',
+              color: palette.neutral[900],
               fontSize: '1.125rem',
             }}
           >
             {Math.round(seller.rating * 20)}%
           </Typography>
-          <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.75rem' }}>
+          <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
             Positive Feedback
           </Typography>
         </Box>
@@ -155,11 +147,11 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
           sx={{
             flex: 1,
             textTransform: 'none',
-            borderColor: '#D4D4D4',
-            color: '#1C1917',
+            borderColor: palette.neutral[100],
+            color: palette.neutral[900],
             '&:hover': {
-              borderColor: '#1C1917',
-              bgcolor: '#FAFAF9',
+              borderColor: palette.neutral[900],
+              bgcolor: palette.neutral[50],
             },
           }}
         >
@@ -174,11 +166,11 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             sx={{
               flex: 1,
               textTransform: 'none',
-              borderColor: '#D4D4D4',
-              color: '#1C1917',
+              borderColor: palette.neutral[100],
+              color: palette.neutral[900],
               '&:hover': {
-                borderColor: '#1C1917',
-                bgcolor: '#FAFAF9',
+                borderColor: palette.neutral[900],
+                bgcolor: palette.neutral[50],
               },
             }}
           >

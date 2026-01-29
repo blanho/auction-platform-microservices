@@ -24,7 +24,10 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   fee: 'Platform Fee',
 }
 
-export const TRANSACTION_TYPE_COLORS: Record<TransactionType, 'success' | 'warning' | 'info' | 'error' | 'default'> = {
+export const TRANSACTION_TYPE_COLORS: Record<
+  TransactionType,
+  'success' | 'warning' | 'info' | 'error' | 'default'
+> = {
   deposit: 'success',
   withdrawal: 'warning',
   payment: 'info',
@@ -50,7 +53,10 @@ export const TRANSACTION_STATUS_LABELS: Record<TransactionStatus, string> = {
   cancelled: 'Cancelled',
 }
 
-export const TRANSACTION_STATUS_COLORS: Record<TransactionStatus, 'success' | 'warning' | 'info' | 'error' | 'default'> = {
+export const TRANSACTION_STATUS_COLORS: Record<
+  TransactionStatus,
+  'success' | 'warning' | 'info' | 'error' | 'default'
+> = {
   pending: 'warning',
   completed: 'success',
   failed: 'error',

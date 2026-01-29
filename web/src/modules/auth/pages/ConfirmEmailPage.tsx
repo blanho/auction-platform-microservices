@@ -9,15 +9,9 @@ import {
   Stack,
   Button,
   CircularProgress,
-  Alert,
 } from '@mui/material'
-import {
-  CheckCircle,
-  Error as ErrorIcon,
-  Email,
-  ArrowForward,
-  Refresh,
-} from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
+import { CheckCircle, Error as ErrorIcon, Email, ArrowForward, Refresh } from '@mui/icons-material'
 import { useMutation } from '@tanstack/react-query'
 import { http } from '@/services/http'
 import { fadeInUp, staggerContainer, staggerItem, scaleIn } from '@/shared/lib/animations'
@@ -60,7 +54,12 @@ export function ConfirmEmailPage() {
   })
 
   useEffect(() => {
-    if (token && !confirmMutation.isPending && !confirmMutation.isSuccess && !confirmMutation.isError) {
+    if (
+      token &&
+      !confirmMutation.isPending &&
+      !confirmMutation.isSuccess &&
+      !confirmMutation.isError
+    ) {
       confirmMutation.mutate(token)
     }
   }, [token, confirmMutation])
@@ -182,13 +181,15 @@ export function ConfirmEmailPage() {
 
                   {email && (
                     <>
-                      <Alert severity="info" sx={{ width: '100%', textAlign: 'left' }}>
+                      <InlineAlert severity="info" sx={{ width: '100%', textAlign: 'left' }}>
                         If you need a new verification link, click the button below to resend.
-                      </Alert>
+                      </InlineAlert>
 
                       <Button
                         variant="contained"
-                        startIcon={resendMutation.isPending ? <CircularProgress size={20} /> : <Refresh />}
+                        startIcon={
+                          resendMutation.isPending ? <CircularProgress size={20} /> : <Refresh />
+                        }
                         onClick={handleResend}
                         disabled={resendMutation.isPending || resendMutation.isSuccess}
                         sx={{
@@ -196,23 +197,27 @@ export function ConfirmEmailPage() {
                           '&:hover': { bgcolor: 'primary.dark' },
                         }}
                       >
-                        {resendMutation.isPending
-                          ? 'Sending...'
-                          : resendMutation.isSuccess
-                            ? 'Email Sent!'
-                            : 'Resend Verification Email'}
+                        {(() => {
+                          if (resendMutation.isPending) {
+                            return 'Sending...'
+                          }
+                          if (resendMutation.isSuccess) {
+                            return 'Email Sent!'
+                          }
+                          return 'Resend Verification Email'
+                        })()}
                       </Button>
 
                       {resendMutation.isSuccess && (
-                        <Alert severity="success" sx={{ width: '100%' }}>
+                        <InlineAlert severity="success" sx={{ width: '100%' }}>
                           A new verification email has been sent to {email}
-                        </Alert>
+                        </InlineAlert>
                       )}
 
                       {resendMutation.isError && (
-                        <Alert severity="error" sx={{ width: '100%' }}>
+                        <InlineAlert severity="error" sx={{ width: '100%' }}>
                           Failed to resend verification email. Please try again.
-                        </Alert>
+                        </InlineAlert>
                       )}
                     </>
                   )}
@@ -246,11 +251,12 @@ export function ConfirmEmailPage() {
                       Check Your Email
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                      We've sent you a verification link. Please check your inbox and click the link to verify your email.
+                      We've sent you a verification link. Please check your inbox and click the link
+                      to verify your email.
                     </Typography>
                   </Box>
 
-                  <Alert severity="info" sx={{ width: '100%', textAlign: 'left' }}>
+                  <InlineAlert severity="info" sx={{ width: '100%', textAlign: 'left' }}>
                     <Typography variant="body2">
                       <strong>Didn't receive the email?</strong>
                     </Typography>
@@ -258,10 +264,9 @@ export function ConfirmEmailPage() {
                       • Check your spam folder
                       <br />
                       • Make sure you entered the correct email
-                      <br />
-                      • Wait a few minutes and try again
+                      <br />• Wait a few minutes and try again
                     </Typography>
-                  </Alert>
+                  </InlineAlert>
 
                   <Stack direction="row" spacing={2}>
                     <Button variant="outlined" component={Link} to="/login">

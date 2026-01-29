@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Container,
   Typography,
   Box,
   Card,
   Grid,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -25,28 +24,28 @@ import {
   FormControl,
   InputLabel,
   Skeleton,
-  Alert,
   Pagination,
   Tooltip,
+  Stack,
 } from '@mui/material'
-import {
-  Visibility,
-  Delete,
-  CheckCircle,
-  FilterList,
-  Refresh,
-} from '@mui/icons-material'
+import { InlineAlert, StatusBadge, TableEmptyStateRow, TableToolbar } from '@/shared/ui'
+import type { FilterConfig } from '@/shared/ui'
+import { Visibility, Delete, CheckCircle } from '@mui/icons-material'
 import { useReportList, useReportStats, useReportDetail } from '../hooks/useAnalytics'
 import { useUpdateReportStatus, useDeleteReport } from '../hooks/useReportMutations'
 import { formatNumber } from '@/shared/utils/formatters'
 import type { ReportStatus, ReportType, ReportPriority, ReportQueryParams, Report } from '../types'
 
-const REPORT_STATUS_OPTIONS: { value: ReportStatus; label: string; color: 'default' | 'warning' | 'success' | 'error' }[] = [
-  { value: 'Pending', label: 'Pending', color: 'warning' },
-  { value: 'UnderReview', label: 'Under Review', color: 'default' },
-  { value: 'Resolved', label: 'Resolved', color: 'success' },
-  { value: 'Dismissed', label: 'Dismissed', color: 'error' },
-]
+const REPORT_STATUS_OPTIONS: {
+  value: ReportStatus
+  label: string
+  color: 'default' | 'warning' | 'success' | 'error'
+}[] = [
+    { value: 'Pending', label: 'Pending', color: 'warning' },
+    { value: 'UnderReview', label: 'Under Review', color: 'default' },
+    { value: 'Resolved', label: 'Resolved', color: 'success' },
+    { value: 'Dismissed', label: 'Dismissed', color: 'error' },
+  ]
 
 const REPORT_TYPE_OPTIONS: { value: ReportType; label: string }[] = [
   { value: 'Fraud', label: 'Fraud' },
@@ -58,21 +57,31 @@ const REPORT_TYPE_OPTIONS: { value: ReportType; label: string }[] = [
   { value: 'Other', label: 'Other' },
 ]
 
-const REPORT_PRIORITY_OPTIONS: { value: ReportPriority; label: string; color: 'default' | 'info' | 'warning' | 'error' }[] = [
-  { value: 'Low', label: 'Low', color: 'default' },
-  { value: 'Medium', label: 'Medium', color: 'info' },
-  { value: 'High', label: 'High', color: 'warning' },
-  { value: 'Critical', label: 'Critical', color: 'error' },
-]
+const REPORT_PRIORITY_OPTIONS: {
+  value: ReportPriority
+  label: string
+  color: 'default' | 'info' | 'warning' | 'error'
+}[] = [
+    { value: 'Low', label: 'Low', color: 'default' },
+    { value: 'Medium', label: 'Medium', color: 'info' },
+    { value: 'High', label: 'High', color: 'warning' },
+    { value: 'Critical', label: 'Critical', color: 'error' },
+  ]
 
 const getStatusChip = (status: ReportStatus) => {
-  const option = REPORT_STATUS_OPTIONS.find((o) => o.value === status)
-  return <Chip label={option?.label ?? status} color={option?.color ?? 'default'} size="small" />
+  return <StatusBadge status={status} />
 }
 
 const getPriorityChip = (priority: ReportPriority) => {
   const option = REPORT_PRIORITY_OPTIONS.find((o) => o.value === priority)
-  return <Chip label={option?.label ?? priority} color={option?.color ?? 'default'} size="small" variant="outlined" />
+  return (
+    <Chip
+      label={option?.label ?? priority}
+      color={option?.color ?? 'default'}
+      size="small"
+      variant="outlined"
+    />
+  )
 }
 
 const getTypeLabel = (type: ReportType) => {
@@ -92,9 +101,37 @@ export const ReportsPage = () => {
   const [updateStatus, setUpdateStatus] = useState<ReportStatus>('UnderReview')
   const [updateResolution, setUpdateResolution] = useState('')
 
+  const toolbarFilters: FilterConfig[] = useMemo(
+    () => [
+      { key: 'status', label: 'Status', options: REPORT_STATUS_OPTIONS, minWidth: 120 },
+      { key: 'type', label: 'Type', options: REPORT_TYPE_OPTIONS, minWidth: 150 },
+      { key: 'priority', label: 'Priority', options: REPORT_PRIORITY_OPTIONS, minWidth: 120 },
+    ],
+    []
+  )
+
+  const toolbarFilterValues = useMemo(
+    () => ({
+      status: filters.status ?? '',
+      type: filters.type ?? '',
+      priority: filters.priority ?? '',
+    }),
+    [filters.status, filters.type, filters.priority]
+  )
+
+  const handleToolbarFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value || undefined, page: 1 }))
+  }
+
+  const handleClearFilters = () => {
+    setFilters({ page: 1, pageSize: 10 })
+  }
+
   const { data: reportsData, isLoading: reportsLoading, refetch } = useReportList(filters)
   const { data: stats, isLoading: statsLoading } = useReportStats()
-  const { data: selectedReport, isLoading: reportDetailLoading } = useReportDetail(selectedReportId ?? '')
+  const { data: selectedReport, isLoading: reportDetailLoading } = useReportDetail(
+    selectedReportId ?? ''
+  )
   const updateMutation = useUpdateReportStatus()
   const deleteMutation = useDeleteReport()
 
@@ -119,7 +156,7 @@ export const ReportsPage = () => {
   }
 
   const handleUpdateStatus = async () => {
-    if (!selectedReportId) return
+    if (!selectedReportId) { return }
     try {
       await updateMutation.mutateAsync({
         id: selectedReportId,
@@ -133,7 +170,7 @@ export const ReportsPage = () => {
   }
 
   const handleDeleteReport = async () => {
-    if (!selectedReportId) return
+    if (!selectedReportId) { return }
     try {
       await deleteMutation.mutateAsync(selectedReportId)
       setDeleteDialogOpen(false)
@@ -162,19 +199,18 @@ export const ReportsPage = () => {
         >
           Reports Management
         </Typography>
-        <Typography color="text.secondary">
-          Review and manage user reports
-        </Typography>
+        <Typography color="text.secondary">Review and manage user reports</Typography>
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statsLoading ? (
+        {statsLoading && (
           [1, 2, 3, 4, 5, 6, 7].map((i) => (
             <Grid key={i} size={{ xs: 6, sm: 4, md: 'auto' }}>
               <Skeleton height={80} width={120} />
             </Grid>
           ))
-        ) : stats ? (
+        )}
+        {!statsLoading && stats && (
           <>
             <Grid size={{ xs: 6, sm: 4, md: 'auto' }}>
               <Card sx={{ p: 2, textAlign: 'center', minWidth: 120 }}>
@@ -247,61 +283,22 @@ export const ReportsPage = () => {
               </Card>
             </Grid>
           </>
-        ) : (
+        )}
+        {!statsLoading && !stats && (
           <Grid size={{ xs: 12 }}>
-            <Alert severity="error">Failed to load report statistics</Alert>
+            <InlineAlert severity="error">Failed to load report statistics</InlineAlert>
           </Grid>
         )}
       </Grid>
 
       <Card sx={{ mb: 3, p: 2 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-          <FilterList color="action" />
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={filters.status ?? ''}
-              label="Status"
-              onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-            >
-              <MenuItem value="">All</MenuItem>
-              {REPORT_STATUS_OPTIONS.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Type</InputLabel>
-            <Select
-              value={filters.type ?? ''}
-              label="Type"
-              onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
-            >
-              <MenuItem value="">All</MenuItem>
-              {REPORT_TYPE_OPTIONS.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Priority</InputLabel>
-            <Select
-              value={filters.priority ?? ''}
-              label="Priority"
-              onChange={(e) => handleFilterChange('priority', e.target.value || undefined)}
-            >
-              <MenuItem value="">All</MenuItem>
-              {REPORT_PRIORITY_OPTIONS.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <TableToolbar
+          filters={toolbarFilters}
+          filterValues={toolbarFilterValues}
+          onFilterChange={handleToolbarFilterChange}
+          onClearFilters={handleClearFilters}
+          onRefresh={() => refetch()}
+        >
           <TextField
             size="small"
             placeholder="Reported Username"
@@ -309,13 +306,7 @@ export const ReportsPage = () => {
             onChange={(e) => handleFilterChange('reportedUsername', e.target.value || undefined)}
             sx={{ minWidth: 180 }}
           />
-          <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title="Refresh">
-            <IconButton onClick={() => refetch()}>
-              <Refresh />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        </TableToolbar>
       </Card>
 
       <Card>
@@ -334,7 +325,7 @@ export const ReportsPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {reportsLoading ? (
+              {reportsLoading && (
                 [1, 2, 3, 4, 5].map((i) => (
                   <TableRow key={i}>
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((j) => (
@@ -344,7 +335,8 @@ export const ReportsPage = () => {
                     ))}
                   </TableRow>
                 ))
-              ) : reportsData?.items && reportsData.items.length > 0 ? (
+              )}
+              {!reportsLoading && reportsData?.items && reportsData.items.length > 0 && (
                 reportsData.items.map((report) => (
                   <TableRow key={report.id} hover>
                     <TableCell>{report.reporterUsername}</TableCell>
@@ -385,14 +377,9 @@ export const ReportsPage = () => {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8} align="center">
-                    <Typography color="text.secondary" sx={{ py: 4 }}>
-                      No reports found
-                    </Typography>
-                  </TableCell>
-                </TableRow>
+              )}
+              {!reportsLoading && (!reportsData?.items || reportsData.items.length === 0) && (
+                <TableEmptyStateRow colSpan={8} title="No reports found" cellSx={{ py: 4 }} />
               )}
             </TableBody>
           </Table>
@@ -409,16 +396,22 @@ export const ReportsPage = () => {
         )}
       </Card>
 
-      <Dialog open={viewDialogOpen} onClose={() => setViewDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Report Details</DialogTitle>
         <DialogContent>
-          {reportDetailLoading ? (
+          {reportDetailLoading && (
             <Stack spacing={2} sx={{ py: 2 }}>
               {[1, 2, 3, 4, 5].map((i) => (
                 <Skeleton key={i} height={40} />
               ))}
             </Stack>
-          ) : selectedReport ? (
+          )}
+          {!reportDetailLoading && selectedReport && (
             <Stack spacing={2} sx={{ pt: 1 }}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
@@ -500,7 +493,8 @@ export const ReportsPage = () => {
                 <Typography>{new Date(selectedReport.createdAt).toLocaleString()}</Typography>
               </Box>
             </Stack>
-          ) : (
+          )}
+          {!reportDetailLoading && !selectedReport && (
             <Typography color="text.secondary">Report not found</Typography>
           )}
         </DialogContent>
@@ -509,7 +503,12 @@ export const ReportsPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={updateDialogOpen} onClose={() => setUpdateDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={updateDialogOpen}
+        onClose={() => setUpdateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Update Report Status</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>

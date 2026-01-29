@@ -14,6 +14,7 @@ using Analytics.Api.Interfaces;
 using Analytics.Api.Middleware;
 using Analytics.Api.Repositories;
 using Analytics.Api.Services;
+using BuildingBlocks.Web.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,8 @@ builder.Host.UseSerilog((context, loggerConfig) =>
         .WriteTo.Console();
 });
 
+builder.Services.AddObservability(builder.Configuration);
+
 builder.Services.AddDbContext<AnalyticsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -46,6 +49,7 @@ builder.Services.AddScoped<IPlatformSettingRepository, PlatformSettingRepository
 builder.Services.AddScoped<IFactAuctionRepository, FactAuctionRepository>();
 builder.Services.AddScoped<IFactBidRepository, FactBidRepository>();
 builder.Services.AddScoped<IFactPaymentRepository, FactPaymentRepository>();
+builder.Services.AddScoped<IDailyStatsRepository, DailyStatsRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddDomainEvents(typeof(UnitOfWork).Assembly);
@@ -197,6 +201,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRequestTracing();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();

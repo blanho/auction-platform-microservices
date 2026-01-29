@@ -36,9 +36,9 @@ export function SuspendUserDialog({
       <DialogTitle>Suspend User</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <Alert severity="warning">
+          <InlineAlert severity="warning">
             This will prevent the user from logging in and participating in auctions.
-          </Alert>
+          </InlineAlert>
           <Typography>
             Are you sure you want to suspend <strong>{getAdminUserDisplayName(user)}</strong>?
           </Typography>

@@ -8,9 +8,7 @@ import {
   Card,
   Button,
   IconButton,
-  Chip,
   Skeleton,
-  Alert,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -20,6 +18,7 @@ import {
   Select,
   Divider,
 } from '@mui/material'
+import { InlineAlert, StatusBadge } from '@/shared/ui'
 import {
   Favorite,
   FavoriteBorder,
@@ -39,7 +38,7 @@ import { useWatchlist, useRemoveFromWatchlist } from '../hooks'
 import type { WatchlistItem } from '../api/bookmarks.api'
 import type { AuctionStatus } from '../types'
 import { fadeInUp, staggerContainer, staggerItem, cardHover } from '@/shared/lib/animations'
-import { formatTimeLeft, getStatusColor } from '../utils'
+import { formatTimeLeft } from '../utils'
 
 interface WatchlistCardProps {
   item: WatchlistItem
@@ -61,7 +60,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
   }
 
   const toggleNotifications = () => {
-    setNotificationsEnabled(prev => !prev)
+    setNotificationsEnabled((prev) => !prev)
     handleMenuClose()
   }
 
@@ -103,7 +102,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
 
           <IconButton
             size="small"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               onRemove(auction.id)
             }}
@@ -120,10 +119,8 @@ function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
             <Favorite sx={{ color: 'error.main' }} fontSize="small" />
           </IconButton>
 
-          <Chip
-            label={auction.status.replace('-', ' ')}
-            color={getStatusColor(auction.status as AuctionStatus)}
-            size="small"
+          <StatusBadge
+            status={auction.status.replace('-', ' ')}
             sx={{
               position: 'absolute',
               top: 8,
@@ -193,7 +190,9 @@ function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
 
         <Divider />
 
-        <Box sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        >
           <Button
             size="small"
             variant="contained"
@@ -246,7 +245,9 @@ function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
 }
 
 export function WatchlistPage() {
-  const [sortBy, setSortBy] = useState<'ending-soon' | 'newest' | 'price-low' | 'price-high'>('ending-soon')
+  const [sortBy, setSortBy] = useState<'ending-soon' | 'newest' | 'price-low' | 'price-high'>(
+    'ending-soon'
+  )
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const { data, isLoading, error } = useWatchlist()
@@ -281,14 +282,22 @@ export function WatchlistPage() {
 
         <motion.div variants={staggerItem}>
           <Card sx={{ p: 2, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 2,
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <FormControl size="small" sx={{ minWidth: 160 }}>
                   <InputLabel>Sort By</InputLabel>
                   <Select
                     value={sortBy}
                     label="Sort By"
-                    onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                     startAdornment={<Sort sx={{ mr: 1, color: 'action.active' }} />}
                   >
                     <MenuItem value="ending-soon">Ending Soon</MenuItem>
@@ -324,13 +333,13 @@ export function WatchlistPage() {
 
         {error && (
           <motion.div variants={staggerItem}>
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <InlineAlert severity="error" sx={{ mb: 3 }}>
               Failed to load watchlist. Please try again.
-            </Alert>
+            </InlineAlert>
           </motion.div>
         )}
 
-        {isLoading ? (
+        {isLoading && (
           <Grid container spacing={3}>
             {[...Array(6)].map((_, i) => (
               <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -345,7 +354,8 @@ export function WatchlistPage() {
               </Grid>
             ))}
           </Grid>
-        ) : data?.length === 0 ? (
+        )}
+        {!isLoading && data?.length === 0 && (
           <motion.div variants={staggerItem}>
             <Card sx={{ p: 6, textAlign: 'center' }}>
               <FavoriteBorder sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
@@ -360,7 +370,8 @@ export function WatchlistPage() {
               </Button>
             </Card>
           </motion.div>
-        ) : (
+        )}
+        {!isLoading && data && data.length > 0 && (
           <>
             <AnimatePresence mode="popLayout">
               <Grid container spacing={3}>

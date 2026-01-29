@@ -1,8 +1,9 @@
-import { Box, Card, CardContent, CardMedia, Typography, Chip, Button } from '@mui/material'
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Timer, Gavel } from '@mui/icons-material'
 import type { AuctionListItem } from '../types'
-import { formatTimeLeft, getStatusColor, capitalizeStatus, formatCurrency } from '../utils'
+import { StatusBadge } from '@/shared/ui'
+import { formatTimeLeft, capitalizeStatus, formatCurrency } from '../utils'
 
 interface AuctionCardProps {
   auction: AuctionListItem
@@ -31,17 +32,17 @@ export const AuctionCard = ({ auction }: AuctionCardProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundImage: auction.primaryImageUrl ? `url(${auction.primaryImageUrl})` : undefined,
+            backgroundImage: auction.primaryImageUrl
+              ? `url(${auction.primaryImageUrl})`
+              : undefined,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
         >
           {!auction.primaryImageUrl && <Gavel sx={{ fontSize: 64, color: 'grey.400' }} />}
         </CardMedia>
-        <Chip
-          label={capitalizeStatus(auction.status)}
-          color={getStatusColor(auction.status)}
-          size="small"
+        <StatusBadge
+          status={capitalizeStatus(auction.status)}
           sx={{
             position: 'absolute',
             top: 8,

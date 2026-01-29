@@ -25,7 +25,10 @@ export const AUCTION_DURATIONS = [
 ] as const
 
 const currentYear = new Date().getFullYear()
-export const YEAR_OPTIONS = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i)
+export const YEAR_OPTIONS = Array.from(
+  { length: currentYear - 1900 + 1 },
+  (_, i) => currentYear - i
+)
 
 export type ItemCondition = (typeof ITEM_CONDITIONS)[number]['value']
 export type Currency = (typeof CURRENCIES)[number]['value']

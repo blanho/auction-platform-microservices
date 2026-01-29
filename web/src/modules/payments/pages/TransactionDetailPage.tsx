@@ -8,36 +8,26 @@ import {
   Button,
   Chip,
   Skeleton,
-  Alert,
   Stack,
   Divider,
   Grid,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import {
   ArrowBack,
-  ArrowUpward,
-  ArrowDownward,
   Receipt,
   AccessTime,
   AccountBalanceWallet,
   ContentCopy,
-  CheckCircle,
-  Pending,
-  Cancel,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useQuery } from '@tanstack/react-query'
 import { walletsApi } from '../api'
-import type { TransactionType, TransactionStatus } from '../types'
+import { getTransactionTypeConfig, getTransactionStatusConfig } from '../utils'
+import { formatCurrency } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
-const formatCurrency = (amount: number, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount)
-}
-
-const formatDate = (dateString: string) => {
+const formatDateLong = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -48,81 +38,15 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getTransactionTypeConfig = (type: TransactionType) => {
-  const configs: Record<TransactionType, { label: string; icon: React.ReactNode; color: string; bgColor: string }> = {
-    deposit: {
-      label: 'Deposit',
-      icon: <ArrowDownward />,
-      color: '#22C55E',
-      bgColor: '#DCFCE7',
-    },
-    withdrawal: {
-      label: 'Withdrawal',
-      icon: <ArrowUpward />,
-      color: '#EF4444',
-      bgColor: '#FEE2E2',
-    },
-    payment: {
-      label: 'Payment',
-      icon: <ArrowUpward />,
-      color: '#EF4444',
-      bgColor: '#FEE2E2',
-    },
-    refund: {
-      label: 'Refund',
-      icon: <ArrowDownward />,
-      color: '#22C55E',
-      bgColor: '#DCFCE7',
-    },
-    hold: {
-      label: 'Hold',
-      icon: <Pending />,
-      color: '#F59E0B',
-      bgColor: '#FEF3C7',
-    },
-    release: {
-      label: 'Release',
-      icon: <CheckCircle />,
-      color: '#22C55E',
-      bgColor: '#DCFCE7',
-    },
-    escrow_hold: {
-      label: 'Escrow Hold',
-      icon: <Pending />,
-      color: '#F59E0B',
-      bgColor: '#FEF3C7',
-    },
-    escrow_release: {
-      label: 'Escrow Release',
-      icon: <CheckCircle />,
-      color: '#22C55E',
-      bgColor: '#DCFCE7',
-    },
-    fee: {
-      label: 'Platform Fee',
-      icon: <Receipt />,
-      color: '#78716C',
-      bgColor: '#F5F5F4',
-    },
-  }
-  return configs[type] || { label: type, icon: <Receipt />, color: '#78716C', bgColor: '#F5F5F4' }
-}
-
-const getStatusConfig = (status: TransactionStatus) => {
-  const configs: Record<TransactionStatus, { label: string; color: 'success' | 'warning' | 'error' | 'default'; icon: React.ReactElement }> = {
-    completed: { label: 'Completed', color: 'success', icon: <CheckCircle fontSize="small" /> },
-    pending: { label: 'Pending', color: 'warning', icon: <Pending fontSize="small" /> },
-    failed: { label: 'Failed', color: 'error', icon: <Cancel fontSize="small" /> },
-    cancelled: { label: 'Cancelled', color: 'default', icon: <Cancel fontSize="small" /> },
-  }
-  return configs[status]
-}
-
 export function TransactionDetailPage() {
   const { transactionId } = useParams<{ transactionId: string }>()
   const navigate = useNavigate()
 
-  const { data: transaction, isLoading, error } = useQuery({
+  const {
+    data: transaction,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['transaction', transactionId],
     queryFn: () => walletsApi.getTransactionById(transactionId!),
     enabled: !!transactionId,
@@ -153,9 +77,9 @@ export function TransactionDetailPage() {
   if (error || !transaction) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
           Transaction not found or you don't have permission to view it.
-        </Alert>
+        </InlineAlert>
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/wallet')}>
           Back to Wallet
         </Button>
@@ -164,11 +88,11 @@ export function TransactionDetailPage() {
   }
 
   const typeConfig = getTransactionTypeConfig(transaction.type)
-  const statusConfig = getStatusConfig(transaction.status)
+  const statusConfig = getTransactionStatusConfig(transaction.status)
   const isPositive = ['deposit', 'refund', 'escrow_release'].includes(transaction.type)
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="md" sx={{ pt: 4 }}>
         <motion.div variants={staggerContainer} initial="initial" animate="animate">
           <motion.div variants={fadeInUp}>
@@ -176,7 +100,11 @@ export function TransactionDetailPage() {
               startIcon={<ArrowBack />}
               component={Link}
               to="/wallet"
-              sx={{ mb: 3, color: '#78716C', '&:hover': { bgcolor: '#F5F5F4' } }}
+              sx={{
+                mb: 3,
+                color: palette.neutral[500],
+                '&:hover': { bgcolor: palette.neutral[100] },
+              }}
             >
               Back to Wallet
             </Button>
@@ -187,8 +115,8 @@ export function TransactionDetailPage() {
               <Box
                 sx={{
                   p: 4,
-                  background: `linear-gradient(135deg, ${typeConfig.bgColor} 0%, #FFFFFF 100%)`,
-                  borderBottom: '1px solid #E7E5E4',
+                  background: `linear-gradient(135deg, ${typeConfig.bgColor} 0%, ${palette.neutral[0]} 100%)`,
+                  borderBottom: `1px solid ${palette.neutral[200]}`,
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -208,7 +136,7 @@ export function TransactionDetailPage() {
                     {typeConfig.icon}
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="h5" fontWeight={700} color="#1C1917">
+                    <Typography variant="h5" fontWeight={700} color={palette.neutral[900]}>
                       {typeConfig.label}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
@@ -218,7 +146,7 @@ export function TransactionDetailPage() {
                       <Button
                         size="small"
                         onClick={handleCopyId}
-                        sx={{ minWidth: 'auto', p: 0.5, color: '#78716C' }}
+                        sx={{ minWidth: 'auto', p: 0.5, color: palette.neutral[500] }}
                       >
                         <ContentCopy sx={{ fontSize: 16 }} />
                       </Button>
@@ -239,7 +167,7 @@ export function TransactionDetailPage() {
                     variant="h3"
                     sx={{
                       fontWeight: 700,
-                      color: isPositive ? '#22C55E' : '#EF4444',
+                      color: isPositive ? palette.semantic.success : palette.semantic.error,
                     }}
                   >
                     {isPositive ? '+' : '-'}
@@ -255,14 +183,14 @@ export function TransactionDetailPage() {
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <DetailItem
-                      icon={<AccessTime sx={{ color: '#78716C' }} />}
+                      icon={<AccessTime sx={{ color: palette.neutral[500] }} />}
                       label="Date & Time"
-                      value={formatDate(transaction.createdAt)}
+                      value={formatDateLong(transaction.createdAt)}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <DetailItem
-                      icon={<AccountBalanceWallet sx={{ color: '#78716C' }} />}
+                      icon={<AccountBalanceWallet sx={{ color: palette.neutral[500] }} />}
                       label="Wallet Balance"
                       value={formatCurrency(transaction.balance)}
                     />
@@ -270,7 +198,7 @@ export function TransactionDetailPage() {
                   {transaction.description && (
                     <Grid size={{ xs: 12 }}>
                       <DetailItem
-                        icon={<Receipt sx={{ color: '#78716C' }} />}
+                        icon={<Receipt sx={{ color: palette.neutral[500] }} />}
                         label="Description"
                         value={transaction.description}
                       />
@@ -279,7 +207,7 @@ export function TransactionDetailPage() {
                   {transaction.reference && (
                     <Grid size={{ xs: 12 }}>
                       <DetailItem
-                        icon={<Receipt sx={{ color: '#78716C' }} />}
+                        icon={<Receipt sx={{ color: palette.neutral[500] }} />}
                         label="Reference"
                         value={transaction.reference}
                       />
@@ -302,7 +230,7 @@ export function TransactionDetailPage() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     p: 2,
-                    bgcolor: '#F5F5F4',
+                    bgcolor: palette.neutral[100],
                     borderRadius: 1,
                   }}
                 >
@@ -313,7 +241,7 @@ export function TransactionDetailPage() {
                     component={Link}
                     to={`/orders/${transaction.relatedOrderId}`}
                     size="small"
-                    sx={{ color: '#CA8A04', fontWeight: 600 }}
+                    sx={{ color: palette.brand.primary, fontWeight: 600 }}
                   >
                     View Order
                   </Button>

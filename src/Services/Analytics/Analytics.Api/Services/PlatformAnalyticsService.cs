@@ -8,17 +8,20 @@ public sealed class PlatformAnalyticsService : IAnalyticsService
     private readonly IFactAuctionRepository _auctionRepository;
     private readonly IFactBidRepository _bidRepository;
     private readonly IFactPaymentRepository _paymentRepository;
+    private readonly IDailyStatsRepository _dailyStatsRepository;
     private readonly ILogger<PlatformAnalyticsService> _logger;
 
     public PlatformAnalyticsService(
         IFactAuctionRepository auctionRepository,
         IFactBidRepository bidRepository,
         IFactPaymentRepository paymentRepository,
+        IDailyStatsRepository dailyStatsRepository,
         ILogger<PlatformAnalyticsService> logger)
     {
         _auctionRepository = auctionRepository;
         _bidRepository = bidRepository;
         _paymentRepository = paymentRepository;
+        _dailyStatsRepository = dailyStatsRepository;
         _logger = logger;
     }
 
@@ -145,6 +148,14 @@ public sealed class PlatformAnalyticsService : IAnalyticsService
             query.StartDate,
             query.EndDate,
             cancellationToken);
+    }
+
+    public async Task<AggregatedDailyStatsDto> GetAggregatedDailyStatsAsync(
+        DateOnly? startDate,
+        DateOnly? endDate,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dailyStatsRepository.GetAggregatedStatsAsync(startDate, endDate, cancellationToken);
     }
 
     private static DateTimeOffset? GetPeriodStartDate(string period)

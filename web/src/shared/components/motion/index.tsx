@@ -16,7 +16,14 @@ import {
   getReducedMotionVariants,
 } from '@/shared/lib/animations'
 
-type AnimationType = 'fadeIn' | 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'scaleIn' | 'page'
+type AnimationType =
+  | 'fadeIn'
+  | 'fadeInUp'
+  | 'fadeInDown'
+  | 'fadeInLeft'
+  | 'fadeInRight'
+  | 'scaleIn'
+  | 'page'
 
 const variantMap: Record<AnimationType, Variants> = {
   fadeIn,
@@ -37,9 +44,7 @@ interface MotionBoxProps extends HTMLMotionProps<'div'> {
 export const MotionBox = forwardRef<HTMLDivElement, MotionBoxProps>(
   ({ animation = 'fadeInUp', delay = 0, children, ...props }, ref) => {
     const prefersReducedMotion = useReducedMotion()
-    const variants = prefersReducedMotion 
-      ? getReducedMotionVariants()
-      : variantMap[animation]
+    const variants = prefersReducedMotion ? getReducedMotionVariants() : variantMap[animation]
 
     return (
       <motion.div
@@ -65,9 +70,13 @@ interface StaggerContainerProps extends HTMLMotionProps<'div'> {
   staggerDelay?: number
 }
 
-export const StaggerContainer = ({ children, staggerDelay = 0.1, ...props }: StaggerContainerProps) => {
+export const StaggerContainer = ({
+  children,
+  staggerDelay = 0.1,
+  ...props
+}: StaggerContainerProps) => {
   const prefersReducedMotion = useReducedMotion()
-  
+
   if (prefersReducedMotion) {
     return <div {...(props as ComponentProps<'div'>)}>{children}</div>
   }

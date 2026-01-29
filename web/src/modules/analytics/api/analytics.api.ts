@@ -30,6 +30,7 @@ import type {
   UpdateSettingRequest,
   SettingCategory,
   BulkUpdateSettingsRequest,
+  AggregatedDailyStats,
 } from '../types'
 
 export const dashboardApi = {
@@ -100,6 +101,13 @@ export const analyticsApi = {
     const response = await http.get<RevenueMetrics>('/analytics/revenue', { params })
     return response.data
   },
+
+  async getDailyStats(startDate?: string, endDate?: string): Promise<AggregatedDailyStats> {
+    const response = await http.get<AggregatedDailyStats>('/analytics/daily-stats', {
+      params: { startDate, endDate },
+    })
+    return response.data
+  },
 }
 
 export const userAnalyticsApi = {
@@ -121,9 +129,12 @@ export const userAnalyticsApi = {
   },
 
   async getTrendingSearches(limit?: number): Promise<TrendingSearch[]> {
-    const response = await http.get<{ searches: TrendingSearch[] }>('/analytics/user/trending-searches', {
-      params: { limit },
-    })
+    const response = await http.get<{ searches: TrendingSearch[] }>(
+      '/analytics/user/trending-searches',
+      {
+        params: { limit },
+      }
+    )
     return response.data.searches
   },
 }

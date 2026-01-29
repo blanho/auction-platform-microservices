@@ -97,7 +97,9 @@ export const authApi = {
   },
 
   enable2FA: async (code: string): Promise<string[]> => {
-    const response = await http.post<{ recoveryCodes: string[] }>(`${BASE_URL}/2fa/enable`, { code })
+    const response = await http.post<{ recoveryCodes: string[] }>(`${BASE_URL}/2fa/enable`, {
+      code,
+    })
     return response.data.recoveryCodes
   },
 

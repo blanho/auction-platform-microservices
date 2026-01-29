@@ -37,7 +37,7 @@ export function formatAuditTimestamp(timestamp: string): string {
 }
 
 export function parseJsonSafely(json: string | undefined | null): Record<string, unknown> | null {
-  if (!json) return null
+  if (!json) {return null}
   try {
     return JSON.parse(json)
   } catch {
@@ -46,6 +46,6 @@ export function parseJsonSafely(json: string | undefined | null): Record<string,
 }
 
 export function formatChangedProperties(properties: string[] | undefined): string {
-  if (!properties || properties.length === 0) return '-'
+  if (!properties || properties.length === 0) {return '-'}
   return properties.join(', ')
 }

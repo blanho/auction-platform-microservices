@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -24,12 +24,12 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
 
-    --color-primary: #1C1917;
-    --color-secondary: #44403C;
-    --color-cta: #CA8A04;
-    --color-cta-hover: #A16207;
-    --color-background: #FAFAF9;
-    --color-text: #0C0A09;
+    --color-primary: #1c1917;
+    --color-secondary: #44403c;
+    --color-cta: #ca8a04;
+    --color-cta-hover: #a16207;
+    --color-background: #fafaf9;
+    --color-text: #0c0a09;
   }
 
   .dark {
@@ -62,7 +62,7 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: "DM Sans", "Roboto", "Helvetica", "Arial", sans-serif;
+  font-family: 'DM Sans', 'Roboto', 'Helvetica', 'Arial', sans-serif;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

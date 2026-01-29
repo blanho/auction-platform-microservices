@@ -49,7 +49,7 @@ export const PromoBanner = ({
   const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (!autoRotate || isPaused || promotions.length <= 1) return
+    if (!autoRotate || isPaused || promotions.length <= 1) {return}
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % promotions.length)
@@ -66,7 +66,7 @@ export const PromoBanner = ({
     setCurrentIndex((prev) => (prev + 1) % promotions.length)
   }
 
-  if (!isVisible || promotions.length === 0) return null
+  if (!isVisible || promotions.length === 0) {return null}
 
   const currentPromo = promotions[currentIndex]
 

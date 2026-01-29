@@ -4,7 +4,7 @@ export * from './forms'
 export * from './hooks'
 export * from './pages'
 export * from './schemas'
-export type * from './types'
+export type * from './types/index'
 export * from './permissions'
 export {
   formatTimeLeft,

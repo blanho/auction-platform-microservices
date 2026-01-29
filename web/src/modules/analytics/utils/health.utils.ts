@@ -7,7 +7,9 @@ export function getHealthStatusLabel(status: string): string {
 
 export function getHealthStatusColor(status: string): string {
   const normalizedStatus = status.toLowerCase()
-  return HEALTH_STATUS_COLORS[normalizedStatus as keyof typeof HEALTH_STATUS_COLORS] ?? 'text.secondary'
+  return (
+    HEALTH_STATUS_COLORS[normalizedStatus as keyof typeof HEALTH_STATUS_COLORS] ?? 'text.secondary'
+  )
 }
 
 export function isHealthy(status: string): boolean {

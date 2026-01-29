@@ -1,7 +1,4 @@
-import {
-  palette,
-  gradients as newGradients,
-} from './tokens/colors'
+import { palette, gradients as newGradients } from './tokens/colors'
 import { spacing, space, radius } from './tokens/spacing'
 import {
   fontFamily,

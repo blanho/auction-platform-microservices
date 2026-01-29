@@ -9,6 +9,7 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Application.Extensions;
+using BuildingBlocks.Web.Observability;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +18,8 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCommonUtilities();
+
+builder.Services.AddObservability(builder.Configuration);
 
 var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
@@ -132,6 +135,7 @@ if (!string.IsNullOrWhiteSpace(pathBase))
     app.UsePathBase(pathBase);
 }
 
+app.UseRequestTracing();
 app.UseAppExceptionHandling();
 app.MapCustomHealthChecks();
 

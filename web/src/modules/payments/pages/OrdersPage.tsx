@@ -28,41 +28,12 @@ import {
   MenuItem,
   Stack,
 } from '@mui/material'
-import {
-  ShoppingBag,
-  Store,
-  Visibility,
-  LocalShipping,
-  CheckCircle,
-  Pending,
-  Cancel,
-  Inventory,
-} from '@mui/icons-material'
+import { ShoppingBag, Store, Visibility } from '@mui/icons-material'
 import { ordersApi } from '../api'
 import type { Order, OrderStatus } from '../types'
+import { getOrderStatusConfig } from '../utils'
+import { formatDate } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-
-const getStatusConfig = (status: OrderStatus) => {
-  const config: Record<OrderStatus, { icon: React.ReactElement; color: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' }> = {
-    pending: { icon: <Pending fontSize="small" />, color: 'warning' },
-    payment_pending: { icon: <Pending fontSize="small" />, color: 'warning' },
-    paid: { icon: <CheckCircle fontSize="small" />, color: 'info' },
-    shipped: { icon: <LocalShipping fontSize="small" />, color: 'primary' },
-    delivered: { icon: <Inventory fontSize="small" />, color: 'success' },
-    completed: { icon: <CheckCircle fontSize="small" />, color: 'success' },
-    cancelled: { icon: <Cancel fontSize="small" />, color: 'error' },
-    refunded: { icon: <Cancel fontSize="small" />, color: 'default' },
-  }
-  return config[status]
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -90,11 +61,7 @@ function OrderRow({ order, role }: { order: Order; role: 'buyer' | 'seller' }) {
     >
       <TableCell>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar
-            variant="rounded"
-            src={order.auctionImageUrl}
-            sx={{ width: 56, height: 56 }}
-          >
+          <Avatar variant="rounded" src={order.auctionImageUrl} sx={{ width: 56, height: 56 }}>
             <ShoppingBag />
           </Avatar>
           <Box>
@@ -119,9 +86,9 @@ function OrderRow({ order, role }: { order: Order; role: 'buyer' | 'seller' }) {
       </TableCell>
       <TableCell>
         <Chip
-          icon={getStatusConfig(order.status).icon}
+          icon={getOrderStatusConfig(order.status).icon}
           label={order.status.replace('_', ' ')}
-          color={getStatusConfig(order.status).color}
+          color={getOrderStatusConfig(order.status).color}
           size="small"
           sx={{ textTransform: 'capitalize' }}
         />
@@ -178,11 +145,21 @@ function OrdersTable({ role, status }: { role: 'buyer' | 'seller'; status?: Orde
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell><Skeleton width={100} /></TableCell>
-                <TableCell><Skeleton width={80} /></TableCell>
-                <TableCell><Skeleton width={80} /></TableCell>
-                <TableCell><Skeleton width={100} /></TableCell>
-                <TableCell><Skeleton width={40} /></TableCell>
+                <TableCell>
+                  <Skeleton width={100} />
+                </TableCell>
+                <TableCell>
+                  <Skeleton width={80} />
+                </TableCell>
+                <TableCell>
+                  <Skeleton width={80} />
+                </TableCell>
+                <TableCell>
+                  <Skeleton width={100} />
+                </TableCell>
+                <TableCell>
+                  <Skeleton width={40} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -192,11 +169,7 @@ function OrdersTable({ role, status }: { role: 'buyer' | 'seller'; status?: Orde
   }
 
   if (error) {
-    return (
-      <Alert severity="error">
-        Failed to load orders. Please try again.
-      </Alert>
-    )
+    return <InlineAlert severity="error">Failed to load orders. Please try again.</InlineAlert>
   }
 
   if (!data || data.items.length === 0) {
@@ -242,7 +215,7 @@ function OrdersTable({ role, status }: { role: 'buyer' | 'seller'; status?: Orde
             initial="initial"
             animate="animate"
           >
-            {data.items.map(order => (
+            {data.items.map((order) => (
               <OrderRow key={order.id} order={order} role={role} />
             ))}
           </TableBody>
@@ -301,16 +274,8 @@ export function OrdersPage() {
           <Card sx={{ mb: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={tabValue} onChange={handleTabChange}>
-                <Tab
-                  icon={<ShoppingBag />}
-                  iconPosition="start"
-                  label="My Purchases"
-                />
-                <Tab
-                  icon={<Store />}
-                  iconPosition="start"
-                  label="My Sales"
-                />
+                <Tab icon={<ShoppingBag />} iconPosition="start" label="My Purchases" />
+                <Tab icon={<Store />} iconPosition="start" label="My Sales" />
               </Tabs>
             </Box>
           </Card>
@@ -323,7 +288,7 @@ export function OrdersPage() {
               <Select
                 value={statusFilter}
                 label="Status"
-                onChange={e => setStatusFilter(e.target.value as OrderStatus | '')}
+                onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}
               >
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="pending">Pending</MenuItem>
@@ -341,17 +306,11 @@ export function OrdersPage() {
 
         <motion.div variants={staggerItem}>
           <TabPanel value={tabValue} index={0}>
-            <OrdersTable
-              role="buyer"
-              status={statusFilter || undefined}
-            />
+            <OrdersTable role="buyer" status={statusFilter || undefined} />
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <OrdersTable
-              role="seller"
-              status={statusFilter || undefined}
-            />
+            <OrdersTable role="seller" status={statusFilter || undefined} />
           </TabPanel>
         </motion.div>
       </motion.div>

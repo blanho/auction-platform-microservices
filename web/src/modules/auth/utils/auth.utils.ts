@@ -6,7 +6,7 @@ export function isAuthenticated(user: AuthUser | null): boolean {
 }
 
 export function hasRole(user: AuthUser | null, role: string): boolean {
-  if (!user) return false
+  if (!user) {return false}
   return user.roles.some((r) => r.toLowerCase() === role.toLowerCase())
 }
 
@@ -35,17 +35,17 @@ export function isAuthRoute(pathname: string): boolean {
 }
 
 export function canAccessRoute(user: AuthUser | null, pathname: string): boolean {
-  if (isAuthRoute(pathname)) return true
-  if (!isAuthenticated(user)) return !isProtectedRoute(pathname)
-  if (isAdminRoute(pathname)) return isAdmin(user)
-  if (isSellerRoute(pathname)) return isSeller(user)
+  if (isAuthRoute(pathname)) {return true}
+  if (!isAuthenticated(user)) {return !isProtectedRoute(pathname)}
+  if (isAdminRoute(pathname)) {return isAdmin(user)}
+  if (isSellerRoute(pathname)) {return isSeller(user)}
   return true
 }
 
 export function getDefaultRedirect(user: AuthUser | null): string {
-  if (!user) return AUTH_ROUTES.LOGIN
-  if (isAdmin(user)) return '/admin'
-  if (isSeller(user)) return '/seller/dashboard'
+  if (!user) {return AUTH_ROUTES.LOGIN}
+  if (isAdmin(user)) {return '/admin'}
+  if (isSeller(user)) {return '/seller/dashboard'}
   return '/'
 }
 

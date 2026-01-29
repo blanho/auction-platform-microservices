@@ -81,7 +81,14 @@ export const HeroSection = () => {
                 transition={{ duration: transitions.duration.slow, ease: [0.16, 1, 0.3, 1] }}
               >
                 <GlassCard
-                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2, py: 0.75, mb: 4 }}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 2,
+                    py: 0.75,
+                    mb: 4,
+                  }}
                 >
                   <Box
                     sx={{
@@ -94,7 +101,11 @@ export const HeroSection = () => {
                   />
                   <Typography
                     variant="caption"
-                    sx={{ color: colors.text.muted, fontWeight: typography.fontWeight.medium, letterSpacing: 1 }}
+                    sx={{
+                      color: colors.text.muted,
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: 1,
+                    }}
                   >
                     {LIVE_STATS[1].value} LIVE AUCTIONS NOW
                   </Typography>

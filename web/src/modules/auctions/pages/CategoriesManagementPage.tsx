@@ -22,16 +22,10 @@ import {
   Chip,
   Avatar,
 } from '@mui/material'
-import {
-  Add,
-  Edit,
-  Delete,
-  DragIndicator,
-  ExpandMore,
-  ExpandLess,
-} from '@mui/icons-material'
+import { Add, Edit, Delete, DragIndicator, ExpandMore, ExpandLess } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { palette } from '@/shared/theme/tokens'
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../hooks'
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import type { Category } from '../api/categories.api'
@@ -146,7 +140,11 @@ export function CategoriesManagementPage() {
             </Box>
           </TableCell>
           <TableCell>
-            <Chip label={`${category.auctionCount ?? 0} auctions`} size="small" variant="outlined" />
+            <Chip
+              label={`${category.auctionCount ?? 0} auctions`}
+              size="small"
+              variant="outlined"
+            />
           </TableCell>
           <TableCell>
             <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 300 }}>
@@ -166,7 +164,9 @@ export function CategoriesManagementPage() {
             </IconButton>
           </TableCell>
         </TableRow>
-        {hasChildren && isExpanded && category.children?.map((child) => renderCategoryRow(child, depth + 1))}
+        {hasChildren &&
+          isExpanded &&
+          category.children?.map((child) => renderCategoryRow(child, depth + 1))}
       </>
     )
   }
@@ -175,7 +175,9 @@ export function CategoriesManagementPage() {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}
+          >
             <Typography
               variant="h4"
               sx={{
@@ -191,8 +193,8 @@ export function CategoriesManagementPage() {
               startIcon={<Add />}
               onClick={() => handleOpenDialog()}
               sx={{
-                bgcolor: '#CA8A04',
-                '&:hover': { bgcolor: '#A16207' },
+                bgcolor: palette.brand.primary,
+                '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
               Add Category
@@ -213,7 +215,9 @@ export function CategoriesManagementPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {categories.filter((c: Category) => !c.parentId).map((category: Category) => renderCategoryRow(category))}
+                  {categories
+                    .filter((c: Category) => !c.parentId)
+                    .map((category: Category) => renderCategoryRow(category))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -222,9 +226,7 @@ export function CategoriesManagementPage() {
       </motion.div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingCategory ? 'Edit Category' : 'Add Category'}
-        </DialogTitle>
+        <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 1 }}>
@@ -260,13 +262,7 @@ export function CategoriesManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Description"
-                    fullWidth
-                    multiline
-                    rows={3}
-                  />
+                  <TextField {...field} label="Description" fullWidth multiline rows={3} />
                 )}
               />
             </Stack>
@@ -278,8 +274,8 @@ export function CategoriesManagementPage() {
               variant="contained"
               disabled={createMutation.isPending || updateMutation.isPending}
               sx={{
-                bgcolor: '#CA8A04',
-                '&:hover': { bgcolor: '#A16207' },
+                bgcolor: palette.brand.primary,
+                '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
               {editingCategory ? 'Update' : 'Create'}

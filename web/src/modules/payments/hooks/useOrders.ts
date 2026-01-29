@@ -35,7 +35,7 @@ export const useOrderByAuctionId = (auctionId: string) => {
   })
 }
 
-export const useOrdersByBuyer = (username: string, page: number = 1, pageSize: number = 20) => {
+export const useOrdersByBuyer = (username: string, page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: orderKeys.byBuyer(username, page, pageSize),
     queryFn: () => ordersApi.getOrdersByBuyer(username, page, pageSize),
@@ -43,7 +43,7 @@ export const useOrdersByBuyer = (username: string, page: number = 1, pageSize: n
   })
 }
 
-export const useOrdersBySeller = (username: string, page: number = 1, pageSize: number = 20) => {
+export const useOrdersBySeller = (username: string, page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: orderKeys.bySeller(username, page, pageSize),
     queryFn: () => ordersApi.getOrdersBySeller(username, page, pageSize),

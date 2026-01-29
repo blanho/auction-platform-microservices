@@ -5,7 +5,6 @@ import {
   Button,
   TextField,
   Stack,
-  Alert,
   CircularProgress,
   Paper,
   Stepper,
@@ -17,17 +16,13 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
-import {
-  Security,
-  QrCode2,
-  CheckCircle,
-  ContentCopy,
-  Refresh,
-} from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
+import { Security, QrCode2, CheckCircle, ContentCopy, Refresh } from '@mui/icons-material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { http } from '@/services/http'
 import { fadeInUp, scaleIn } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
 
 interface TwoFactorSetupProps {
   isEnabled: boolean
@@ -128,12 +123,13 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
           >
             <CheckCircle sx={{ fontSize: 36, color: 'success.main' }} />
           </Box>
-          
+
           <Typography variant="h5" fontWeight={600} gutterBottom>
             Two-Factor Authentication Enabled
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Save these recovery codes in a secure place. You can use them to access your account if you lose your device.
+            Save these recovery codes in a secure place. You can use them to access your account if
+            you lose your device.
           </Typography>
 
           <Paper
@@ -167,7 +163,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               variant="contained"
               onClick={onComplete}
               sx={{
-                bgcolor: '#CA8A04',
+                bgcolor: palette.brand.primary,
                 '&:hover': { bgcolor: '#A16207' },
               }}
             >
@@ -207,9 +203,10 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             </Box>
           </Box>
 
-          <Alert severity="warning" sx={{ mb: 3 }}>
-            Disabling 2FA will make your account less secure. Make sure you have other security measures in place.
-          </Alert>
+          <InlineAlert severity="warning" sx={{ mb: 3 }}>
+            Disabling 2FA will make your account less secure. Make sure you have other security
+            measures in place.
+          </InlineAlert>
 
           <Stack spacing={2}>
             <TextField
@@ -229,9 +226,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             />
 
             {disableMutation.error && (
-              <Alert severity="error">
-                Invalid verification code. Please try again.
-              </Alert>
+              <InlineAlert severity="error">Invalid verification code. Please try again.</InlineAlert>
             )}
 
             <Button
@@ -310,7 +305,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                 disabled={setupQuery.isLoading}
                 sx={{
                   mt: 2,
-                  bgcolor: '#CA8A04',
+                  bgcolor: palette.brand.primary,
                   '&:hover': { bgcolor: '#A16207' },
                 }}
               >
@@ -347,7 +342,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               <Typography variant="body2" color="text.secondary" textAlign="center" gutterBottom>
                 Can't scan? Enter this key manually:
               </Typography>
-              
+
               <Paper
                 variant="outlined"
                 sx={{
@@ -359,18 +354,10 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   mb: 3,
                 }}
               >
-                <Typography
-                  variant="body1"
-                  fontFamily="monospace"
-                  sx={{ letterSpacing: 2 }}
-                >
+                <Typography variant="body1" fontFamily="monospace" sx={{ letterSpacing: 2 }}>
                   {setupQuery.data.manualEntryKey}
                 </Typography>
-                <Button
-                  size="small"
-                  startIcon={<ContentCopy />}
-                  onClick={handleCopyKey}
-                >
+                <Button size="small" startIcon={<ContentCopy />} onClick={handleCopyKey}>
                   {copied ? 'Copied!' : 'Copy'}
                 </Button>
               </Paper>
@@ -383,7 +370,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   variant="contained"
                   onClick={() => setActiveStep(2)}
                   sx={{
-                    bgcolor: '#CA8A04',
+                    bgcolor: palette.brand.primary,
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >
@@ -426,9 +413,9 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               />
 
               {verifyMutation.error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
+                <InlineAlert severity="error" sx={{ mb: 3 }}>
                   Invalid verification code. Please try again.
-                </Alert>
+                </InlineAlert>
               )}
 
               <Stack direction="row" spacing={2} justifyContent="center">
@@ -440,7 +427,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   onClick={handleVerify}
                   disabled={verificationCode.length !== 6 || verifyMutation.isPending}
                   sx={{
-                    bgcolor: '#CA8A04',
+                    bgcolor: palette.brand.primary,
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >

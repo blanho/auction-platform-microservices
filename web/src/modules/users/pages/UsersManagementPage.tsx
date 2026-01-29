@@ -120,7 +120,7 @@ export function UsersManagementPage() {
   }, [handleMenuClose])
 
   const handleSuspend = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     suspendMutation.mutate(
       { id: selectedUser.id, reason: suspendReason || 'Suspended by admin' },
       {
@@ -133,7 +133,7 @@ export function UsersManagementPage() {
   }, [selectedUser, suspendReason, suspendMutation, invalidateUsers, closeDialogAndReset])
 
   const handleUnsuspend = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     unsuspendMutation.mutate(selectedUser.id, {
       onSuccess: () => {
         invalidateUsers()
@@ -143,7 +143,7 @@ export function UsersManagementPage() {
   }, [selectedUser, unsuspendMutation, invalidateUsers, handleMenuClose])
 
   const handleActivate = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     activateMutation.mutate(selectedUser.id, {
       onSuccess: () => {
         invalidateUsers()
@@ -153,7 +153,7 @@ export function UsersManagementPage() {
   }, [selectedUser, activateMutation, invalidateUsers, closeDialogAndReset])
 
   const handleDeactivate = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     deactivateMutation.mutate(selectedUser.id, {
       onSuccess: () => {
         invalidateUsers()
@@ -163,7 +163,7 @@ export function UsersManagementPage() {
   }, [selectedUser, deactivateMutation, invalidateUsers, closeDialogAndReset])
 
   const handleUpdateRoles = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     updateRolesMutation.mutate(
       { id: selectedUser.id, data: { roles: selectedRoles } },
       {
@@ -176,7 +176,7 @@ export function UsersManagementPage() {
   }, [selectedUser, selectedRoles, updateRolesMutation, invalidateUsers, closeDialogAndReset])
 
   const handleDelete = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     deleteMutation.mutate(selectedUser.id, {
       onSuccess: () => {
         invalidateUsers()
@@ -186,14 +186,14 @@ export function UsersManagementPage() {
   }, [selectedUser, deleteMutation, invalidateUsers, closeDialogAndReset])
 
   const handleReset2FA = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     resetUser2FAMutation.mutate(selectedUser.id, {
       onSuccess: invalidateUsers,
     })
   }, [selectedUser, resetUser2FAMutation, invalidateUsers])
 
   const handleDisable2FA = useCallback(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {return}
     disableUser2FAMutation.mutate(selectedUser.id, {
       onSuccess: () => {
         invalidateUsers()

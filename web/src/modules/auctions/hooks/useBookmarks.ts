@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { bookmarksApi } from '../api/bookmarks.api'
-import type { AddToWatchlistRequest, UpdateWatchlistRequest, WatchlistFilters } from '../api/bookmarks.api'
+import type {
+  AddToWatchlistRequest,
+  UpdateWatchlistRequest,
+  WatchlistFilters,
+} from '../api/bookmarks.api'
 
 export const bookmarkKeys = {
   all: ['bookmarks'] as const,
   watchlist: () => [...bookmarkKeys.all, 'watchlist'] as const,
-  watchlistFiltered: (filters: WatchlistFilters) =>
-    [...bookmarkKeys.watchlist(), filters] as const,
+  watchlistFiltered: (filters: WatchlistFilters) => [...bookmarkKeys.watchlist(), filters] as const,
   check: (auctionId: string) => [...bookmarkKeys.all, 'check', auctionId] as const,
   count: () => [...bookmarkKeys.all, 'count'] as const,
 }
@@ -63,7 +66,13 @@ export const useToggleWatchlist = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ auctionId, isInWatchlist }: { auctionId: string; isInWatchlist: boolean }) => {
+    mutationFn: async ({
+      auctionId,
+      isInWatchlist,
+    }: {
+      auctionId: string
+      isInWatchlist: boolean
+    }) => {
       if (isInWatchlist) {
         return bookmarksApi.removeFromWatchlist(auctionId)
       }

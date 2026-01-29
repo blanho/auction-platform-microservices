@@ -18,7 +18,6 @@ import {
   Select,
   MenuItem,
   Pagination,
-  Skeleton,
 } from '@mui/material'
 import {
   TrendingUp,
@@ -32,8 +31,13 @@ import {
   Send,
 } from '@mui/icons-material'
 import { useRecords, useRecordStats } from '../hooks'
-import type { NotificationChannel, RecordStatus, NotificationRecordFilterDto } from '../types/template.types'
+import type {
+  NotificationChannel,
+  RecordStatus,
+  NotificationRecordFilterDto,
+} from '../types/template.types'
 import { formatTimeAgo } from '../utils'
+import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 
 const CHANNEL_ICONS: Record<NotificationChannel, React.ReactElement> = {
   email: <Email />,
@@ -42,7 +46,10 @@ const CHANNEL_ICONS: Record<NotificationChannel, React.ReactElement> = {
   in_app: <Notifications />,
 }
 
-const STATUS_CONFIG: Record<RecordStatus, { color: string; bgcolor: string; icon: React.ReactElement }> = {
+const STATUS_CONFIG: Record<
+  RecordStatus,
+  { color: string; bgcolor: string; icon: React.ReactElement }
+> = {
   pending: { color: '#F59E0B', bgcolor: '#FEF3C7', icon: <PendingActions /> },
   sent: { color: '#3B82F6', bgcolor: '#DBEAFE', icon: <Send /> },
   delivered: { color: '#10B981', bgcolor: '#D1FAE5', icon: <CheckCircle /> },
@@ -59,7 +66,10 @@ export function RecordsDashboardPage() {
   const { data: recordsData, isLoading } = useRecords(filters)
   const { data: stats } = useRecordStats()
 
-  const handleFilterChange = (key: keyof NotificationRecordFilterDto, value: string | undefined) => {
+  const handleFilterChange = (
+    key: keyof NotificationRecordFilterDto,
+    value: string | undefined
+  ) => {
     setFilters({ ...filters, [key]: value, page: 1 })
   }
 
@@ -126,7 +136,9 @@ export function RecordsDashboardPage() {
                 border: `1px solid ${stat.bgcolor}`,
               }}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Box
+                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+              >
                 <Box>
                   <Typography sx={{ color: '#78716C', fontSize: '0.875rem', mb: 1 }}>
                     {stat.title}
@@ -244,24 +256,11 @@ export function RecordsDashboardPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
-                Array.from({ length: 10 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                  </TableRow>
-                ))
-              ) : recordsData?.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                    <Typography sx={{ color: '#78716C' }}>No records found</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
+              {isLoading && <TableSkeletonRows rows={10} columns={6} />}
+              {!isLoading && recordsData?.items.length === 0 && (
+                <TableEmptyStateRow colSpan={6} title="No records found" cellSx={{ py: 8 }} />
+              )}
+              {!isLoading && recordsData?.items.length > 0 && (
                 recordsData?.items.map((record) => (
                   <TableRow
                     key={record.id}
@@ -328,7 +327,9 @@ export function RecordsDashboardPage() {
         </TableContainer>
 
         {recordsData && recordsData.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}
+          >
             <Pagination
               count={recordsData.totalPages}
               page={filters.page || 1}

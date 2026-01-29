@@ -11,7 +11,7 @@ export const templateKeys = {
   byId: (id: string) => [...templateKeys.all, 'by-id', id] as const,
 }
 
-export const useTemplates = (page: number = 1, pageSize: number = 20) => {
+export const useTemplates = (page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: templateKeys.list(page, pageSize),
     queryFn: () => templatesApi.getTemplates(page, pageSize),

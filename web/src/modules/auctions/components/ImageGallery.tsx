@@ -18,6 +18,7 @@ import {
   FavoriteBorder,
   Share,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import type { AuctionImage } from '../types'
 
 interface ImageGalleryProps {
@@ -63,7 +64,7 @@ export function ImageGallery({
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isZoomed) return
+    if (!isZoomed) {return}
     const rect = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
@@ -73,9 +74,9 @@ export function ImageGallery({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLightboxOpen) {
-        if (e.key === 'ArrowLeft') handlePrevious()
-        if (e.key === 'ArrowRight') handleNext()
-        if (e.key === 'Escape') setIsLightboxOpen(false)
+        if (e.key === 'ArrowLeft') {handlePrevious()}
+        if (e.key === 'ArrowRight') {handleNext()}
+        if (e.key === 'Escape') {setIsLightboxOpen(false)}
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -92,7 +93,7 @@ export function ImageGallery({
             aspectRatio: '1/1',
             borderRadius: 2,
             overflow: 'hidden',
-            bgcolor: '#FAFAF9',
+            bgcolor: palette.neutral[50],
             cursor: isZoomed ? 'zoom-out' : 'zoom-in',
           }}
           onClick={handleMainImageClick}
@@ -172,7 +173,7 @@ export function ImageGallery({
                   width: idx === selectedIndex ? 24 : 8,
                   height: 8,
                   borderRadius: 4,
-                  bgcolor: idx === selectedIndex ? '#1C1917' : 'rgba(255,255,255,0.8)',
+                  bgcolor: idx === selectedIndex ? palette.neutral[900] : 'rgba(255,255,255,0.8)',
                   transition: 'all 0.2s ease',
                 }}
               />
@@ -217,7 +218,7 @@ export function ImageGallery({
               }}
             >
               {isFavorite ? (
-                <Favorite sx={{ color: '#DC2626' }} />
+                <Favorite sx={{ color: palette.semantic.error }} />
               ) : (
                 <FavoriteBorder />
               )}
@@ -250,7 +251,7 @@ export function ImageGallery({
               height: 4,
             },
             '&::-webkit-scrollbar-thumb': {
-              bgcolor: '#D4D4D4',
+              bgcolor: palette.neutral[100],
               borderRadius: 2,
             },
           }}
@@ -266,12 +267,15 @@ export function ImageGallery({
                 borderRadius: 1,
                 overflow: 'hidden',
                 cursor: 'pointer',
-                border: idx === selectedIndex ? '2px solid #1C1917' : '2px solid transparent',
+                border:
+                  idx === selectedIndex
+                    ? `2px solid ${palette.neutral[900]}`
+                    : '2px solid transparent',
                 opacity: idx === selectedIndex ? 1 : 0.7,
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   opacity: 1,
-                  borderColor: '#44403C',
+                  borderColor: palette.neutral[700],
                 },
               }}
             >
@@ -290,11 +294,7 @@ export function ImageGallery({
         </Stack>
       </Box>
 
-      <Modal
-        open={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-        closeAfterTransition
-      >
+      <Modal open={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} closeAfterTransition>
         <Fade in={isLightboxOpen}>
           <Box
             sx={{
@@ -402,11 +402,7 @@ export function ImageGallerySkeleton() {
       />
       <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton
-            key={i}
-            variant="rectangular"
-            sx={{ width: 80, height: 80, borderRadius: 1 }}
-          />
+          <Skeleton key={i} variant="rectangular" sx={{ width: 80, height: 80, borderRadius: 1 }} />
         ))}
       </Stack>
     </Box>

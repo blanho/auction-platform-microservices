@@ -2,10 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { biddingApi } from '../api'
 import { BID_CONSTANTS } from '../constants'
 import { placeBidSchema, retractBidSchema } from '../schemas'
-import type {
-  PlaceBidRequest,
-  BidHistoryFilters,
-} from '../types'
+import type { PlaceBidRequest, BidHistoryFilters } from '../types'
 
 const QUERY_KEYS = BID_CONSTANTS.QUERY_KEYS
 
@@ -51,7 +48,7 @@ export const useMyBids = () => {
   })
 }
 
-export const useWinningBids = (page: number = 1, pageSize: number = 20) => {
+export const useWinningBids = (page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: QUERY_KEYS.winningBids({ page, pageSize }),
     queryFn: () => biddingApi.getWinningBids(page, pageSize),

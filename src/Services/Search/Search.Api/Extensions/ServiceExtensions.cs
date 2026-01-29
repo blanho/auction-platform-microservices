@@ -87,34 +87,54 @@ public static class ServiceExtensions
                 {
                     e.ConfigureConsumer<AuctionCreatedConsumer>(context);
                     e.PrefetchCount = 16;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30),
+                        TimeSpan.FromMinutes(2)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-updated", e =>
                 {
                     e.ConfigureConsumer<AuctionUpdatedConsumer>(context);
                     e.PrefetchCount = 32;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30),
+                        TimeSpan.FromMinutes(2)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-deleted", e =>
                 {
                     e.ConfigureConsumer<AuctionDeletedConsumer>(context);
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-finished", e =>
                 {
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
                 });
 
                 cfg.ReceiveEndpoint("search-bid-placed", e =>
                 {
                     e.ConfigureConsumer<BidPlacedConsumer>(context);
                     e.PrefetchCount = 64;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
                 });
 
                 cfg.ReceiveEndpoint("search-bid-retracted", e =>
                 {
                     e.ConfigureConsumer<BidRetractedConsumer>(context);
                     e.PrefetchCount = 32;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
                 });
 
                 cfg.ConfigureEndpoints(context);

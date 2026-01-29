@@ -13,8 +13,6 @@ import {
   TextField,
   Button,
   Divider,
-  Alert,
-  IconButton,
   InputAdornment,
   Checkbox,
   FormControlLabel,
@@ -22,9 +20,11 @@ import {
   Stack,
   FormHelperText,
 } from '@mui/material'
-import { Visibility, VisibilityOff, Google, GitHub, CheckCircle } from '@mui/icons-material'
+import { InlineAlert, FormField } from '@/shared/ui'
+import { Google, GitHub, CheckCircle } from '@mui/icons-material'
 import { registerSchema } from '../schemas'
 import { useRegister, useCheckUsername } from '../hooks'
+import { palette } from '@/shared/theme/tokens'
 
 interface RegisterFormData {
   email: string
@@ -35,8 +35,6 @@ interface RegisterFormData {
 
 export function RegisterPage() {
   const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState('')
@@ -48,11 +46,12 @@ export function RegisterPage() {
   const [usernameValue, setUsernameValue] = useState('')
 
   const debouncedSetUsername = useMemo(
-    () => debounce((value: string) => {
-      if (value.length >= 3) {
-        setDebouncedUsername(value)
-      }
-    }, 500),
+    () =>
+      debounce((value: string) => {
+        if (value.length >= 3) {
+          setDebouncedUsername(value)
+        }
+      }, 500),
     []
   )
 
@@ -119,96 +118,92 @@ export function RegisterPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          bgcolor: '#FAFAF9',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Container maxWidth="sm">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={fadeInUp}
-          >
-          <Box
-            sx={{
-              bgcolor: 'white',
-              borderRadius: 2,
-              p: { xs: 3, sm: 5 },
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              textAlign: 'center',
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.2 }}
-            >
-              <CheckCircle sx={{ fontSize: 64, color: '#22C55E', mb: 2 }} />
-            </motion.div>
-
-            <Typography
-              variant="h4"
+          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
+            <Box
               sx={{
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 600,
-                color: '#1C1917',
-                mb: 1,
+                bgcolor: 'white',
+                borderRadius: 2,
+                p: { xs: 3, sm: 5 },
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                textAlign: 'center',
               }}
             >
-              Check Your Email
-            </Typography>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.2 }}
+              >
+                <CheckCircle sx={{ fontSize: 64, color: palette.semantic.success, mb: 2 }} />
+              </motion.div>
 
-            <Typography sx={{ color: '#78716C', mb: 3 }}>
-              We've sent a confirmation link to
-            </Typography>
-
-            <Typography
-              sx={{
-                color: '#1C1917',
-                fontWeight: 600,
-                fontSize: '1.125rem',
-                mb: 4,
-              }}
-            >
-              {registeredEmail}
-            </Typography>
-
-            <Typography sx={{ color: '#78716C', fontSize: '0.875rem', mb: 4 }}>
-              Click the link in the email to verify your account and complete your registration.
-            </Typography>
-
-            <Stack spacing={2}>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={() => navigate('/login')}
+              <Typography
+                variant="h4"
                 sx={{
-                  bgcolor: '#1C1917',
-                  py: 1.5,
+                  fontFamily: '"Playfair Display", serif',
                   fontWeight: 600,
-                  textTransform: 'none',
-                  '&:hover': { bgcolor: '#44403C' },
+                  color: palette.neutral[900],
+                  mb: 1,
                 }}
               >
-                Go to Login
-              </Button>
+                Check Your Email
+              </Typography>
 
-              <Typography sx={{ color: '#78716C', fontSize: '0.875rem' }}>
-                Didn't receive the email?{' '}
-                <Typography
-                  component={Link}
-                  to="/resend-confirmation"
+              <Typography sx={{ color: palette.neutral[500], mb: 3 }}>
+                We've sent a confirmation link to
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: palette.neutral[900],
+                  fontWeight: 600,
+                  fontSize: '1.125rem',
+                  mb: 4,
+                }}
+              >
+                {registeredEmail}
+              </Typography>
+
+              <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mb: 4 }}>
+                Click the link in the email to verify your account and complete your registration.
+              </Typography>
+
+              <Stack spacing={2}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={() => navigate('/login')}
                   sx={{
-                    color: '#CA8A04',
-                    textDecoration: 'none',
+                    bgcolor: palette.neutral[900],
+                    py: 1.5,
                     fontWeight: 600,
-                    '&:hover': { textDecoration: 'underline' },
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: palette.neutral[700] },
                   }}
                 >
-                  Resend confirmation
+                  Go to Login
+                </Button>
+
+                <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem' }}>
+                  Didn't receive the email?{' '}
+                  <Typography
+                    component={Link}
+                    to="/resend-confirmation"
+                    sx={{
+                      color: palette.brand.primary,
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    Resend confirmation
+                  </Typography>
                 </Typography>
-              </Typography>
-            </Stack>
-          </Box>
+              </Stack>
+            </Box>
           </motion.div>
         </Container>
       </Box>
@@ -220,14 +215,14 @@ export function RegisterPage() {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        bgcolor: '#FAFAF9',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Box
         sx={{
           display: { xs: 'none', lg: 'flex' },
           width: '50%',
-          bgcolor: '#1C1917',
+          bgcolor: palette.neutral[900],
           position: 'relative',
           alignItems: 'center',
           justifyContent: 'center',
@@ -238,7 +233,8 @@ export function RegisterPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=1200)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=1200)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             opacity: 0.4,
@@ -285,285 +281,269 @@ export function RegisterPage() {
         }}
       >
         <Container maxWidth="sm">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={staggerContainer}
-          >
-          <Box sx={{ mb: 3, textAlign: 'center' }}>
-            <Typography
-              component={Link}
-              to="/"
-              sx={{
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 700,
-                fontSize: '1.5rem',
-                color: '#1C1917',
-                textDecoration: 'none',
-                display: { lg: 'none' },
-              }}
-            >
-              AUCTION
-            </Typography>
-          </Box>
-
-          <motion.div variants={staggerItem}>
-          <Box
-            sx={{
-              bgcolor: 'white',
-              borderRadius: 2,
-              p: { xs: 3, sm: 5 },
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-            }}
-          >
-            <Typography
-              variant="h4"
-              sx={{
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 600,
-                color: '#1C1917',
-                textAlign: 'center',
-                mb: 1,
-              }}
-            >
-              Create Account
-            </Typography>
-
-            <Typography
-              sx={{
-                color: '#78716C',
-                textAlign: 'center',
-                mb: 4,
-              }}
-            >
-              Sign up to start bidding on exclusive items
-            </Typography>
-
-            {registerMutation.isError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                Registration failed. Please check your information and try again.
-              </Alert>
-            )}
-
-            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<Google />}
-                onClick={() => handleSocialLogin('google')}
-                sx={{
-                  py: 1.25,
-                  borderColor: '#E5E5E5',
-                  color: '#44403C',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  '&:hover': {
-                    borderColor: '#1C1917',
-                    bgcolor: '#FAFAF9',
-                  },
-                }}
-              >
-                Google
-              </Button>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<GitHub />}
-                onClick={() => handleSocialLogin('github')}
-                sx={{
-                  py: 1.25,
-                  borderColor: '#E5E5E5',
-                  color: '#44403C',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  '&:hover': {
-                    borderColor: '#1C1917',
-                    bgcolor: '#FAFAF9',
-                  },
-                }}
-              >
-                GitHub
-              </Button>
-            </Stack>
-
-            <Divider sx={{ my: 3 }}>
-              <Typography sx={{ color: '#78716C', fontSize: '0.875rem' }}>
-                or register with email
-              </Typography>
-            </Divider>
-
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Controller
-                name="username"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Username"
-                    onChange={(e) => {
-                      field.onChange(e)
-                      setUsernameValue(e.target.value)
-                    }}
-                    error={!!errors.username}
-                    helperText={errors.username?.message}
-                    InputProps={{
-                      endAdornment: usernameQuery.isLoading ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={20} />
-                        </InputAdornment>
-                      ) : usernameValue && !errors.username && debouncedUsername === usernameValue ? (
-                        <InputAdornment position="end">
-                          <CheckCircle sx={{ color: '#22C55E' }} />
-                        </InputAdornment>
-                      ) : null,
-                    }}
-                    sx={{ mb: 2 }}
-                  />
-                )}
-              />
-
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                {...register('email')}
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                {...register('password')}
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type={showConfirmPassword ? 'text' : 'password'}
-                {...register('confirmPassword')}
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword?.message}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-
-              <Box sx={{ mb: 3 }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      size="small"
-                      sx={{ color: '#78716C' }}
-                    />
-                  }
-                  label={
-                    <Typography sx={{ fontSize: '0.875rem', color: '#44403C' }}>
-                      I agree to the{' '}
-                      <Typography
-                        component={Link}
-                        to="/terms"
-                        sx={{ color: '#CA8A04', textDecoration: 'none' }}
-                      >
-                        Terms of Service
-                      </Typography>{' '}
-                      and{' '}
-                      <Typography
-                        component={Link}
-                        to="/privacy"
-                        sx={{ color: '#CA8A04', textDecoration: 'none' }}
-                      >
-                        Privacy Policy
-                      </Typography>
-                    </Typography>
-                  }
-                />
-                {!agreedToTerms && isSubmitting && (
-                  <FormHelperText error>
-                    You must agree to the terms and conditions
-                  </FormHelperText>
-                )}
-              </Box>
-
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                disabled={isSubmitting || registerMutation.isPending || !agreedToTerms}
-                sx={{
-                  bgcolor: '#1C1917',
-                  py: 1.5,
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  '&:hover': { bgcolor: '#44403C' },
-                  '&.Mui-disabled': { bgcolor: '#E5E5E5' },
-                }}
-              >
-                {isSubmitting || registerMutation.isPending ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </form>
-
-            <Typography
-              sx={{
-                mt: 3,
-                textAlign: 'center',
-                color: '#78716C',
-                fontSize: '0.9375rem',
-              }}
-            >
-              Already have an account?{' '}
+          <motion.div initial="initial" animate="animate" variants={staggerContainer}>
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
               <Typography
                 component={Link}
-                to="/login"
+                to="/"
                 sx={{
-                  color: '#CA8A04',
+                  fontFamily: '"Playfair Display", serif',
+                  fontWeight: 700,
+                  fontSize: '1.5rem',
+                  color: palette.neutral[900],
                   textDecoration: 'none',
-                  fontWeight: 600,
-                  '&:hover': { textDecoration: 'underline' },
+                  display: { lg: 'none' },
                 }}
               >
-                Sign in
+                AUCTION
               </Typography>
-            </Typography>
-          </Box>
-          </motion.div>
+            </Box>
+
+            <motion.div variants={staggerItem}>
+              <Box
+                sx={{
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                  p: { xs: 3, sm: 5 },
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontFamily: '"Playfair Display", serif',
+                    fontWeight: 600,
+                    color: palette.neutral[900],
+                    textAlign: 'center',
+                    mb: 1,
+                  }}
+                >
+                  Create Account
+                </Typography>
+
+                <Typography
+                  sx={{
+                    color: palette.neutral[500],
+                    textAlign: 'center',
+                    mb: 4,
+                  }}
+                >
+                  Sign up to start bidding on exclusive items
+                </Typography>
+
+                {registerMutation.isError && (
+                  <InlineAlert severity="error" sx={{ mb: 3 }}>
+                    Registration failed. Please check your information and try again.
+                  </InlineAlert>
+                )}
+
+                <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<Google />}
+                    onClick={() => handleSocialLogin('google')}
+                    sx={{
+                      py: 1.25,
+                      borderColor: '#E5E5E5',
+                      color: palette.neutral[700],
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      '&:hover': {
+                        borderColor: palette.neutral[900],
+                        bgcolor: palette.neutral[50],
+                      },
+                    }}
+                  >
+                    Google
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<GitHub />}
+                    onClick={() => handleSocialLogin('github')}
+                    sx={{
+                      py: 1.25,
+                      borderColor: '#E5E5E5',
+                      color: palette.neutral[700],
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      '&:hover': {
+                        borderColor: palette.neutral[900],
+                        bgcolor: palette.neutral[50],
+                      },
+                    }}
+                  >
+                    GitHub
+                  </Button>
+                </Stack>
+
+                <Divider sx={{ my: 3 }}>
+                  <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem' }}>
+                    or register with email
+                  </Typography>
+                </Divider>
+
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Controller
+                    name="username"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Username"
+                        onChange={(e) => {
+                          field.onChange(e)
+                          setUsernameValue(e.target.value)
+                        }}
+                        error={!!errors.username}
+                        helperText={errors.username?.message}
+                        InputProps={{
+                          endAdornment: (() => {
+                            if (usernameQuery.isLoading) {
+                              return (
+                                <InputAdornment position="end">
+                                  <CircularProgress size={20} />
+                                </InputAdornment>
+                              )
+                            }
+                            if (
+                              usernameValue &&
+                              !errors.username &&
+                              debouncedUsername === usernameValue
+                            ) {
+                              return (
+                                <InputAdornment position="end">
+                                  <CheckCircle sx={{ color: palette.semantic.success }} />
+                                </InputAdornment>
+                              )
+                            }
+                            return null
+                          })(),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  <FormField
+                    name="email"
+                    register={register}
+                    errors={errors}
+                    fullWidth
+                    label="Email Address"
+                    type="email"
+                    sx={{ mb: 2 }}
+                  />
+
+                  <FormField
+                    name="password"
+                    register={register}
+                    errors={errors}
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    showPasswordToggle
+                    sx={{ mb: 2 }}
+                  />
+
+                  <FormField
+                    name="confirmPassword"
+                    register={register}
+                    errors={errors}
+                    fullWidth
+                    label="Confirm Password"
+                    type="password"
+                    showPasswordToggle
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Box sx={{ mb: 3 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={agreedToTerms}
+                          onChange={(e) => setAgreedToTerms(e.target.checked)}
+                          size="small"
+                          sx={{ color: palette.neutral[500] }}
+                        />
+                      }
+                      label={
+                        <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[700] }}>
+                          I agree to the{' '}
+                          <Typography
+                            component={Link}
+                            to="/terms"
+                            sx={{ color: palette.brand.primary, textDecoration: 'none' }}
+                          >
+                            Terms of Service
+                          </Typography>{' '}
+                          and{' '}
+                          <Typography
+                            component={Link}
+                            to="/privacy"
+                            sx={{ color: palette.brand.primary, textDecoration: 'none' }}
+                          >
+                            Privacy Policy
+                          </Typography>
+                        </Typography>
+                      }
+                    />
+                    {!agreedToTerms && isSubmitting && (
+                      <FormHelperText error>
+                        You must agree to the terms and conditions
+                      </FormHelperText>
+                    )}
+                  </Box>
+
+                  <Button
+                    fullWidth
+                    type="submit"
+                    variant="contained"
+                    disabled={isSubmitting || registerMutation.isPending || !agreedToTerms}
+                    sx={{
+                      bgcolor: palette.neutral[900],
+                      py: 1.5,
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: palette.neutral[700] },
+                      '&.Mui-disabled': { bgcolor: '#E5E5E5' },
+                    }}
+                  >
+                    {isSubmitting || registerMutation.isPending ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
+                </form>
+
+                <Typography
+                  sx={{
+                    mt: 3,
+                    textAlign: 'center',
+                    color: palette.neutral[500],
+                    fontSize: '0.9375rem',
+                  }}
+                >
+                  Already have an account?{' '}
+                  <Typography
+                    component={Link}
+                    to="/login"
+                    sx={{
+                      color: palette.brand.primary,
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    Sign in
+                  </Typography>
+                </Typography>
+              </Box>
+            </motion.div>
           </motion.div>
         </Container>
       </Box>

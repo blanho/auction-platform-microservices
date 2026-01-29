@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material'
 import { Person, TrendingUp, VerifiedUser, Warning } from '@mui/icons-material'
-import { StatCard } from './StatCard'
+import { StatCard } from '@/shared/ui'
 import { STAT_COLORS } from '../constants'
 import type { UserStats } from '../types'
 

@@ -9,10 +9,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using MassTransit;
+using BuildingBlocks.Web.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCommonUtilities();
+
+builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -36,6 +39,18 @@ builder.Services.AddMassTransit(x =>
         {
             h.Username(rabbitMqSettings["Username"]);
             h.Password(rabbitMqSettings["Password"]);
+        });
+
+        cfg.UseMessageRetry(r => r.Exponential(
+            retryLimit: 5,
+            minInterval: TimeSpan.FromSeconds(1),
+            maxInterval: TimeSpan.FromMinutes(5),
+            intervalDelta: TimeSpan.FromSeconds(5)));
+
+        cfg.ReceiveEndpoint("storage-auction-deleted", e =>
+        {
+            e.ConfigureConsumer<AuctionDeletedConsumer>(context);
+            e.PrefetchCount = 16;
         });
 
         cfg.ConfigureEndpoints(context);
@@ -133,6 +148,7 @@ if (!string.IsNullOrWhiteSpace(pathBase))
     app.UsePathBase(pathBase);
 }
 
+app.UseRequestTracing();
 app.UseExceptionHandler(app => app.Run(async context =>
 {
     context.Response.StatusCode = 500;

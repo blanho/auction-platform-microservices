@@ -74,18 +74,23 @@ export const LandingHeader = () => {
 
   const isLandingPage = location.pathname === '/'
 
-  const headerBg = isLandingPage
-    ? isScrolled
-      ? 'rgba(28, 25, 23, 0.98)'
-      : 'transparent'
-    : palette.neutral[900]
+  const getHeaderBg = () => {
+    if (!isLandingPage) {
+      return palette.neutral[900]
+    }
+    return isScrolled ? 'rgba(28, 25, 23, 0.98)' : 'transparent'
+  }
+  const headerBg = getHeaderBg()
 
   const drawer = (
     <Box sx={{ width: '100vw', height: '100vh', bgcolor: palette.neutral[900] }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Gavel sx={{ color: palette.brand.primary, fontSize: 28 }} />
-          <Typography variant="h6" sx={{ color: palette.neutral[50], fontWeight: 600, letterSpacing: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{ color: palette.neutral[50], fontWeight: 600, letterSpacing: 1 }}
+          >
             AUCTION
           </Typography>
         </Box>

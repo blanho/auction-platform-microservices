@@ -4,6 +4,8 @@ export const palette = {
     secondary: '#EAB308',
     accent: '#FCD34D',
     muted: 'rgba(202, 138, 4, 0.15)',
+    hover: '#A16207',
+    dark: '#92400E',
   },
 
   purple: {
@@ -112,7 +114,8 @@ export const gradients = {
   heroGlow: `radial-gradient(ellipse 80% 50% at 50% -20%, ${palette.brand.muted}, transparent)`,
   purpleGlow: `radial-gradient(ellipse 60% 40% at 100% 100%, ${palette.purple.light}, transparent)`,
   cardOverlay: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
-  cardOverlayHover: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+  cardOverlayHover:
+    'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
   divider: `linear-gradient(90deg, transparent, rgba(202, 138, 4, 0.3), transparent)`,
 } as const
 

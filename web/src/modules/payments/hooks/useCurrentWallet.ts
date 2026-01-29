@@ -6,7 +6,8 @@ import type { DepositRequest, WithdrawRequest, TransactionFilters, PaymentMethod
 export const currentWalletKeys = {
   all: ['current-wallet'] as const,
   wallet: () => [...currentWalletKeys.all, 'wallet'] as const,
-  transactions: (filters: TransactionFilters) => [...currentWalletKeys.all, 'transactions', filters] as const,
+  transactions: (filters: TransactionFilters) =>
+    [...currentWalletKeys.all, 'transactions', filters] as const,
 }
 
 export const useWallet = () => {

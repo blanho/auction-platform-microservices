@@ -1,22 +1,9 @@
 import { useEffect } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import {
-  Container,
-  Card,
-  Typography,
-  Box,
-  Button,
-  Stack,
-  Alert,
-} from '@mui/material'
-import {
-  Cancel,
-  Refresh,
-  SupportAgent,
-  Home,
-  ShoppingCart,
-} from '@mui/icons-material'
+import { Container, Card, Typography, Box, Button, Stack } from '@mui/material'
+import { Cancel, Refresh, SupportAgent, Home, ShoppingCart } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function PaymentCancelPage() {
@@ -35,7 +22,7 @@ export function PaymentCancelPage() {
   }, [orderId, auctionId, navigate])
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', py: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', py: 8 }}>
       <Container maxWidth="sm">
         <motion.div variants={staggerContainer} initial="initial" animate="animate">
           <motion.div variants={fadeInUp}>
@@ -57,7 +44,7 @@ export function PaymentCancelPage() {
                     width: 80,
                     height: 80,
                     borderRadius: '50%',
-                    bgcolor: '#FEE2E2',
+                    bgcolor: palette.semantic.errorLight,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -65,7 +52,7 @@ export function PaymentCancelPage() {
                     mb: 3,
                   }}
                 >
-                  <Cancel sx={{ fontSize: 48, color: '#EF4444' }} />
+                  <Cancel sx={{ fontSize: 48, color: palette.semantic.error }} />
                 </Box>
               </motion.div>
 
@@ -74,7 +61,7 @@ export function PaymentCancelPage() {
                 sx={{
                   fontFamily: '"Playfair Display", serif',
                   fontWeight: 700,
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   mb: 1,
                 }}
               >
@@ -97,15 +84,17 @@ export function PaymentCancelPage() {
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                     Why was my payment cancelled?
                   </Typography>
-                  <Typography variant="body2">
-                    This could happen if you:
-                  </Typography>
+                  <Typography variant="body2">This could happen if you:</Typography>
                   <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
                     <li>
-                      <Typography variant="body2">Clicked the back button or closed the payment page</Typography>
+                      <Typography variant="body2">
+                        Clicked the back button or closed the payment page
+                      </Typography>
                     </li>
                     <li>
-                      <Typography variant="body2">The payment session expired (usually after 30 minutes)</Typography>
+                      <Typography variant="body2">
+                        The payment session expired (usually after 30 minutes)
+                      </Typography>
                     </li>
                     <li>
                       <Typography variant="body2">Your bank declined the transaction</Typography>
@@ -118,7 +107,7 @@ export function PaymentCancelPage() {
                 <Box
                   sx={{
                     p: 3,
-                    bgcolor: '#F5F5F4',
+                    bgcolor: palette.neutral[100],
                     borderRadius: 2,
                     mb: 4,
                   }}
@@ -127,7 +116,8 @@ export function PaymentCancelPage() {
                     Your item is still available!
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Don't worry - your winning bid is still valid. You can try the payment again at any time.
+                    Don't worry - your winning bid is still valid. You can try the payment again at
+                    any time.
                   </Typography>
                 </Box>
               </motion.div>
@@ -140,7 +130,7 @@ export function PaymentCancelPage() {
                     to={auctionId ? `/checkout/${auctionId}` : `/orders`}
                     startIcon={<Refresh />}
                     sx={{
-                      bgcolor: '#CA8A04',
+                      bgcolor: palette.brand.primary,
                       px: 4,
                       py: 1.5,
                       fontWeight: 600,
@@ -156,12 +146,12 @@ export function PaymentCancelPage() {
                   to="/auctions"
                   startIcon={<ShoppingCart />}
                   sx={{
-                    borderColor: '#1C1917',
-                    color: '#1C1917',
+                    borderColor: palette.neutral[900],
+                    color: palette.neutral[900],
                     px: 4,
                     py: 1.5,
                     fontWeight: 600,
-                    '&:hover': { borderColor: '#44403C', bgcolor: '#F5F5F4' },
+                    '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[100] },
                   }}
                 >
                   Browse Auctions
@@ -181,7 +171,7 @@ export function PaymentCancelPage() {
                 gap: 2,
               }}
             >
-              <SupportAgent sx={{ color: '#CA8A04', fontSize: 32 }} />
+              <SupportAgent sx={{ color: palette.brand.primary, fontSize: 32 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle2" fontWeight={600}>
                   Need help?
@@ -190,10 +180,7 @@ export function PaymentCancelPage() {
                   If you're experiencing issues with payments, our support team is here to help.
                 </Typography>
               </Box>
-              <Button
-                variant="text"
-                sx={{ color: '#CA8A04', fontWeight: 600 }}
-              >
+              <Button variant="text" sx={{ color: palette.brand.primary, fontWeight: 600 }}>
                 Contact Support
               </Button>
             </Card>
@@ -205,7 +192,7 @@ export function PaymentCancelPage() {
                 component={Link}
                 to="/"
                 startIcon={<Home />}
-                sx={{ color: '#78716C' }}
+                sx={{ color: palette.neutral[500] }}
               >
                 Back to Home
               </Button>

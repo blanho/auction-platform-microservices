@@ -1,5 +1,6 @@
 import * as signalR from '@microsoft/signalr'
 import { getAccessToken } from '@/modules/auth/utils/token.utils'
+import { signalRLogger } from '@/shared/lib/logger'
 
 const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5000/notificationHub'
 
@@ -16,14 +17,15 @@ class SignalRService {
 
     const token = getAccessToken()
     if (!token) {
-      console.warn('No access token available for SignalR connection')
+      signalRLogger.warn('No access token available for SignalR connection')
       return
     }
 
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(SIGNALR_URL, {
         accessTokenFactory: () => token,
-        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents,
+        transport:
+          signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents,
       })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
@@ -33,7 +35,7 @@ class SignalRService {
           return null
         },
       })
-      .configureLogging(signalR.LogLevel.Information)
+      .configureLogging(signalR.LogLevel.Warning)
       .build()
 
     this.setupEventHandlers()
@@ -42,9 +44,9 @@ class SignalRService {
       this.isIntentionalDisconnect = false
       await this.connection.start()
       this.reconnectAttempts = 0
-      console.log('✅ SignalR connected')
+      signalRLogger.info('✅ Connected')
     } catch (error) {
-      console.error('❌ SignalR connection failed:', error)
+      signalRLogger.error('❌ Connection failed:', error)
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++
         setTimeout(() => this.connect(), 5000)
@@ -53,19 +55,19 @@ class SignalRService {
   }
 
   private setupEventHandlers(): void {
-    if (!this.connection) return
+    if (!this.connection) {return}
 
     this.connection.onreconnecting((error) => {
-      console.warn('🔄 SignalR reconnecting...', error)
+      signalRLogger.warn('🔄 Reconnecting...', error)
     })
 
     this.connection.onreconnected((connectionId) => {
-      console.log('✅ SignalR reconnected:', connectionId)
+      signalRLogger.info('✅ Reconnected:', connectionId)
       this.reconnectAttempts = 0
     })
 
     this.connection.onclose((error) => {
-      console.log('🔌 SignalR disconnected', error)
+      signalRLogger.info('🔌 Disconnected', error)
       if (!this.isIntentionalDisconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++
         setTimeout(() => this.connect(), 5000)
@@ -78,9 +80,9 @@ class SignalRService {
       this.isIntentionalDisconnect = true
       try {
         await this.connection.stop()
-        console.log('SignalR disconnected')
+        signalRLogger.info('Disconnected')
       } catch (error) {
-        console.error('Error disconnecting SignalR:', error)
+        signalRLogger.error('Error disconnecting:', error)
       }
       this.connection = null
     }
@@ -88,14 +90,14 @@ class SignalRService {
 
   on<T = unknown>(eventName: string, callback: (data: T) => void): void {
     if (!this.connection) {
-      console.warn(`Cannot register event "${eventName}" - connection not initialized`)
+      signalRLogger.warn(`Cannot register event "${eventName}" - connection not initialized`)
       return
     }
     this.connection.on(eventName, callback)
   }
 
   off<T = unknown>(eventName: string, callback?: (data: T) => void): void {
-    if (!this.connection) return
+    if (!this.connection) {return}
     if (callback) {
       this.connection.off(eventName, callback)
     } else {
@@ -113,18 +115,18 @@ class SignalRService {
   async joinAuctionRoom(auctionId: string): Promise<void> {
     try {
       await this.invoke('JoinAuctionRoom', auctionId)
-      console.log(`📍 Joined auction room: ${auctionId}`)
+      signalRLogger.info(`📍 Joined auction room: ${auctionId}`)
     } catch (error) {
-      console.error('Failed to join auction room:', error)
+      signalRLogger.error('Failed to join auction room:', error)
     }
   }
 
   async leaveAuctionRoom(auctionId: string): Promise<void> {
     try {
       await this.invoke('LeaveAuctionRoom', auctionId)
-      console.log(`📍 Left auction room: ${auctionId}`)
+      signalRLogger.info(`📍 Left auction room: ${auctionId}`)
     } catch (error) {
-      console.error('Failed to leave auction room:', error)
+      signalRLogger.error('Failed to leave auction room:', error)
     }
   }
 

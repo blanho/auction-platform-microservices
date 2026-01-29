@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Typography, IconButton, Chip, Skeleton } from '@mui/material'
 import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { formatTimeLeft, formatCurrency } from '../utils'
 
 interface AuctionProductCardProps {
@@ -54,7 +55,7 @@ export const AuctionProductCard = ({
   }, [endTime])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (images.length <= 1) return
+    if (images.length <= 1) {return}
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const segmentWidth = rect.width / images.length
@@ -93,7 +94,7 @@ export const AuctionProductCard = ({
             position: 'relative',
             aspectRatio: '4/5',
             overflow: 'hidden',
-            bgcolor: '#F5F5F4',
+            bgcolor: palette.neutral[100],
             mb: 2,
           }}
           onMouseMove={handleMouseMove}
@@ -104,7 +105,7 @@ export const AuctionProductCard = ({
               sx={{
                 position: 'absolute',
                 inset: 0,
-                bgcolor: '#E7E5E4',
+                bgcolor: palette.neutral[100],
               }}
               animation="wave"
             />
@@ -143,7 +144,8 @@ export const AuctionProductCard = ({
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    bgcolor: index === currentImageIndex ? '#1C1917' : 'rgba(255,255,255,0.7)',
+                    bgcolor:
+                      index === currentImageIndex ? palette.neutral[900] : 'rgba(255,255,255,0.7)',
                     transition: 'background-color 0.2s ease',
                   }}
                 />
@@ -166,8 +168,8 @@ export const AuctionProductCard = ({
                 label="NEW"
                 size="small"
                 sx={{
-                  bgcolor: '#1C1917',
-                  color: '#FAFAF9',
+                  bgcolor: palette.neutral[900],
+                  color: palette.neutral[50],
                   fontWeight: 600,
                   fontSize: '0.65rem',
                   height: 22,
@@ -180,8 +182,8 @@ export const AuctionProductCard = ({
                 label="FEATURED"
                 size="small"
                 sx={{
-                  bgcolor: '#CA8A04',
-                  color: '#FAFAF9',
+                  bgcolor: palette.brand.primary,
+                  color: palette.neutral[50],
                   fontWeight: 600,
                   fontSize: '0.65rem',
                   height: 22,
@@ -199,11 +201,13 @@ export const AuctionProductCard = ({
               position: 'absolute',
               bottom: 12,
               left: 12,
-              bgcolor: isEndingSoon ? '#DC2626' : 'rgba(28,25,23,0.85)',
-              color: '#FAFAF9',
+              bgcolor: isEndingSoon ? palette.semantic.error : 'rgba(28,25,23,0.85)',
+              color: palette.neutral[50],
               fontWeight: 500,
               fontSize: '0.75rem',
-              '& .MuiChip-icon': { color: isEndingSoon ? '#FAFAF9' : '#CA8A04' },
+              '& .MuiChip-icon': {
+                color: isEndingSoon ? palette.neutral[50] : palette.brand.primary,
+              },
               animation: isEndingSoon ? 'pulse 2s infinite' : 'none',
               '@keyframes pulse': {
                 '0%, 100%': { opacity: 1 },
@@ -218,7 +222,7 @@ export const AuctionProductCard = ({
             <Typography
               variant="caption"
               sx={{
-                color: '#78716C',
+                color: palette.neutral[500],
                 fontSize: '0.7rem',
                 textTransform: 'uppercase',
                 letterSpacing: 0.5,
@@ -226,13 +230,13 @@ export const AuctionProductCard = ({
             >
               {seller.name}
             </Typography>
-            {seller.verified && <Verified sx={{ fontSize: 12, color: '#CA8A04' }} />}
+            {seller.verified && <Verified sx={{ fontSize: 12, color: palette.brand.primary }} />}
           </Box>
 
           <Typography
             variant="body1"
             sx={{
-              color: '#1C1917',
+              color: palette.neutral[900],
               fontWeight: 400,
               fontSize: '0.95rem',
               lineHeight: 1.4,
@@ -243,7 +247,7 @@ export const AuctionProductCard = ({
               overflow: 'hidden',
               minHeight: '2.6em',
               transition: 'color 0.2s ease',
-              '&:hover': { color: '#CA8A04' },
+              '&:hover': { color: palette.brand.primary },
             }}
           >
             {title}
@@ -254,7 +258,7 @@ export const AuctionProductCard = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: '#78716C',
+                  color: palette.neutral[500],
                   fontSize: '0.65rem',
                   textTransform: 'uppercase',
                   letterSpacing: 0.5,
@@ -267,7 +271,7 @@ export const AuctionProductCard = ({
               <Typography
                 variant="h6"
                 sx={{
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   fontWeight: 600,
                   fontSize: '1.1rem',
                   fontFamily: '"Playfair Display", serif',
@@ -279,7 +283,7 @@ export const AuctionProductCard = ({
             <Typography
               variant="caption"
               sx={{
-                color: '#78716C',
+                color: palette.neutral[500],
                 fontSize: '0.75rem',
               }}
             >
@@ -304,14 +308,14 @@ export const AuctionProductCard = ({
           opacity: { xs: 1, md: 0 },
           transition: 'opacity 0.2s ease, background-color 0.2s ease',
           '&:hover': {
-            bgcolor: '#FFFFFF',
+            bgcolor: palette.neutral[0],
           },
         }}
       >
         {isFavorited ? (
-          <Favorite sx={{ color: '#DC2626', fontSize: 20 }} />
+          <Favorite sx={{ color: palette.semantic.error, fontSize: 20 }} />
         ) : (
-          <FavoriteBorder sx={{ color: '#44403C', fontSize: 20 }} />
+          <FavoriteBorder sx={{ color: palette.neutral[700], fontSize: 20 }} />
         )}
       </IconButton>
     </Box>
@@ -322,7 +326,7 @@ export const AuctionProductCardSkeleton = () => (
   <Box>
     <Skeleton
       variant="rectangular"
-      sx={{ aspectRatio: '4/5', mb: 2, bgcolor: '#E7E5E4' }}
+      sx={{ aspectRatio: '4/5', mb: 2, bgcolor: palette.neutral[100] }}
       animation="wave"
     />
     <Skeleton variant="text" sx={{ width: '40%', height: 16, mb: 0.5 }} animation="wave" />

@@ -57,8 +57,8 @@ export const useWithdraw = () => {
 
 export const useWalletTransactions = (
   username: string,
-  page: number = 1,
-  pageSize: number = 20
+  page = 1,
+  pageSize = 20
 ) => {
   return useQuery({
     queryKey: walletKeys.transactions(username, page, pageSize),

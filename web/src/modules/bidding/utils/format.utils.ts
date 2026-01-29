@@ -21,7 +21,7 @@ export const formatBidHistorySummary = (bid: BidHistory): string => {
 }
 
 export const getBidStatusLabel = (status: string, isWinning?: boolean): string => {
-  if (isWinning) return 'Winning'
+  if (isWinning) {return 'Winning'}
   return status
 }
 

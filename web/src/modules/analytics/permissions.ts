@@ -1,4 +1,4 @@
-import { Permission } from '@/shared/permissions'
+import type { Permission } from '@/shared/permissions'
 
 export const ANALYTICS_PERMISSIONS = {
   VIEW: 'reports:view' as Permission,

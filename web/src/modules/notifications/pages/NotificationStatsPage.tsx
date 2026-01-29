@@ -1,16 +1,5 @@
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  Grid,
-} from '@mui/material'
-import {
-  Notifications,
-  MarkEmailUnread,
-  Today,
-  TrendingUp,
-} from '@mui/icons-material'
+import { Box, Container, Typography, Card, Grid } from '@mui/material'
+import { Notifications, MarkEmailUnread, Today, TrendingUp } from '@mui/icons-material'
 import { useNotificationStats } from '../hooks'
 import { Skeleton } from '@mui/material'
 
@@ -42,7 +31,7 @@ export function NotificationStatsPage() {
     {
       title: 'Engagement Rate',
       value: stats?.totalNotifications
-        ? `${((1 - (stats.unreadNotifications / stats.totalNotifications)) * 100).toFixed(1)}%`
+        ? `${((1 - stats.unreadNotifications / stats.totalNotifications) * 100).toFixed(1)}%`
         : '0%',
       icon: <TrendingUp sx={{ fontSize: 32, color: '#F97316' }} />,
       color: '#F97316',
@@ -86,7 +75,13 @@ export function NotificationStatsPage() {
                   <Skeleton width={80} height={40} sx={{ my: 1 }} />
                 </Box>
               ) : (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                  }}
+                >
                   <Box>
                     <Typography sx={{ color: '#78716C', fontSize: '0.875rem', mb: 1 }}>
                       {stat.title}
@@ -135,54 +130,56 @@ export function NotificationStatsPage() {
         </Typography>
 
         <Grid container spacing={2}>
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Skeleton height={60} />
-              </Grid>
-            ))
-          ) : (
-            Object.entries(stats?.byType || {}).map(([type, count]) => (
-              <Grid key={type} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card
-                  sx={{
-                    p: 2,
-                    bgcolor: '#FAF5FF',
-                    border: '1px solid #E9D5FF',
-                    borderRadius: 1,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Skeleton height={60} />
+                </Grid>
+              ))
+            : Object.entries(stats?.byType || {}).map(([type, count]) => (
+                <Grid key={type} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card
+                    sx={{
+                      p: 2,
+                      bgcolor: '#FAF5FF',
+                      border: '1px solid #E9D5FF',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box
                       sx={{
-                        fontSize: '0.875rem',
-                        color: '#78716C',
-                        textTransform: 'capitalize',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      {type.replace('_', ' ')}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontWeight: 700,
-                        color: '#7C3AED',
-                        fontSize: '1.25rem',
-                      }}
-                    >
-                      {count as number}
-                    </Typography>
-                  </Box>
-                </Card>
-              </Grid>
-            ))
-          )}
+                      <Typography
+                        sx={{
+                          fontSize: '0.875rem',
+                          color: '#78716C',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {type.replace('_', ' ')}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontWeight: 700,
+                          color: '#7C3AED',
+                          fontSize: '1.25rem',
+                        }}
+                      >
+                        {count as number}
+                      </Typography>
+                    </Box>
+                  </Card>
+                </Grid>
+              ))}
         </Grid>
 
         {!isLoading && Object.keys(stats?.byType || {}).length === 0 && (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography sx={{ color: '#78716C' }}>
-              No notification data available
-            </Typography>
+            <Typography sx={{ color: '#78716C' }}>No notification data available</Typography>
           </Box>
         )}
       </Card>

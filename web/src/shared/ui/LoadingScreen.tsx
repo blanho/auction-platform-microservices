@@ -6,7 +6,10 @@ interface LoadingScreenProps {
   fullScreen?: boolean
 }
 
-export const LoadingScreen = ({ message = 'Loading...', fullScreen = true }: LoadingScreenProps) => {
+export const LoadingScreen = ({
+  message = 'Loading...',
+  fullScreen = true,
+}: LoadingScreenProps) => {
   return (
     <Box
       sx={{

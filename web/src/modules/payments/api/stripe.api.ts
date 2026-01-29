@@ -18,7 +18,9 @@ export const stripeApi = {
   },
 
   async getPaymentIntent(paymentIntentId: string): Promise<PaymentIntentDetails> {
-    const response = await http.get<PaymentIntentDetails>(`/payments/payment-intent/${paymentIntentId}`)
+    const response = await http.get<PaymentIntentDetails>(
+      `/payments/payment-intent/${paymentIntentId}`
+    )
     return response.data
   },
 

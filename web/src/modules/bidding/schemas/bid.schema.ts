@@ -5,7 +5,10 @@ export const placeBidSchema = z.object({
   auctionId: z.string().min(1, 'Auction ID is required').uuid('Invalid auction ID'),
   amount: z
     .number()
-    .min(BID_CONSTANTS.MIN_BID_AMOUNT, `Bid amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`)
+    .min(
+      BID_CONSTANTS.MIN_BID_AMOUNT,
+      `Bid amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
+    )
     .finite('Bid amount must be a valid number'),
 })
 
@@ -14,32 +17,41 @@ export const createAutoBidSchema = z
     auctionId: z.string().min(1, 'Auction ID is required').uuid('Invalid auction ID'),
     maxAmount: z
       .number()
-      .min(BID_CONSTANTS.MIN_BID_AMOUNT, `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`)
+      .min(
+        BID_CONSTANTS.MIN_BID_AMOUNT,
+        `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
+      )
       .finite('Maximum amount must be a valid number'),
     bidIncrement: z
       .number()
-      .min(BID_CONSTANTS.MIN_BID_AMOUNT, `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`)
+      .min(
+        BID_CONSTANTS.MIN_BID_AMOUNT,
+        `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
+      )
       .finite('Increment must be a valid number')
       .optional(),
   })
-  .refine(
-    (data) => !data.bidIncrement || data.bidIncrement < data.maxAmount,
-    {
-      message: 'Increment must be less than maximum amount',
-      path: ['bidIncrement'],
-    }
-  )
+  .refine((data) => !data.bidIncrement || data.bidIncrement < data.maxAmount, {
+    message: 'Increment must be less than maximum amount',
+    path: ['bidIncrement'],
+  })
 
 export const updateAutoBidSchema = z
   .object({
     maxAmount: z
       .number()
-      .min(BID_CONSTANTS.MIN_BID_AMOUNT, `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`)
+      .min(
+        BID_CONSTANTS.MIN_BID_AMOUNT,
+        `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
+      )
       .finite('Maximum amount must be a valid number')
       .optional(),
     bidIncrement: z
       .number()
-      .min(BID_CONSTANTS.MIN_BID_AMOUNT, `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`)
+      .min(
+        BID_CONSTANTS.MIN_BID_AMOUNT,
+        `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
+      )
       .finite('Increment must be a valid number')
       .optional(),
   })

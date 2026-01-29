@@ -21,14 +21,9 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import {
-  FilterList,
-  Close,
-  KeyboardArrowDown,
-  GridView,
-  ViewList,
-} from '@mui/icons-material'
+import { FilterList, Close, KeyboardArrowDown, GridView, ViewList } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 import { AuctionProductCard, AuctionProductCardSkeleton } from '../components/AuctionProductCard'
 import { useAuctions, useActiveCategories } from '../hooks'
 
@@ -75,18 +70,18 @@ export const AuctionListingPage = () => {
 
   const activeFiltersCount = useMemo(() => {
     let count = 0
-    if (selectedCategories.length) count++
-    if (selectedConditions.length) count++
-    if (priceRange[0] > 0 || priceRange[1] < 20000) count++
-    if (verifiedOnly) count++
+    if (selectedCategories.length) {count++}
+    if (selectedConditions.length) {count++}
+    if (priceRange[0] > 0 || priceRange[1] < 20000) {count++}
+    if (verifiedOnly) {count++}
     return count
   }, [selectedCategories, selectedConditions, priceRange, verifiedOnly])
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(id)) {next.delete(id)}
+      else {next.add(id)}
       return next
     })
   }
@@ -101,7 +96,7 @@ export const AuctionListingPage = () => {
   const filterContent = (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 500, color: '#1C1917' }}>
+        <Typography variant="h6" sx={{ fontWeight: 500, color: palette.neutral[900] }}>
           Filters
         </Typography>
         {isMobile && (
@@ -116,7 +111,7 @@ export const AuctionListingPage = () => {
           size="small"
           onClick={clearAllFilters}
           sx={{
-            color: '#CA8A04',
+            color: palette.brand.primary,
             textTransform: 'none',
             mb: 2,
             p: 0,
@@ -132,7 +127,7 @@ export const AuctionListingPage = () => {
           variant="subtitle2"
           sx={{
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
             mb: 2,
             textTransform: 'uppercase',
             letterSpacing: 1,
@@ -157,17 +152,17 @@ export const AuctionListingPage = () => {
                     }
                   }}
                   sx={{
-                    color: '#A8A29E',
-                    '&.Mui-checked': { color: '#CA8A04' },
+                    color: palette.neutral[500],
+                    '&.Mui-checked': { color: palette.brand.primary },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <Typography variant="body2" sx={{ color: '#44403C' }}>
+                  <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
                     {category.name}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#A8A29E' }}>
+                  <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
                     ({category.count})
                   </Typography>
                 </Box>
@@ -185,7 +180,7 @@ export const AuctionListingPage = () => {
           variant="subtitle2"
           sx={{
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
             mb: 2,
             textTransform: 'uppercase',
             letterSpacing: 1,
@@ -203,18 +198,18 @@ export const AuctionListingPage = () => {
           valueLabelDisplay="auto"
           valueLabelFormat={(value) => `$${value.toLocaleString()}`}
           sx={{
-            color: '#CA8A04',
+            color: palette.brand.primary,
             '& .MuiSlider-thumb': {
-              bgcolor: '#FAFAF9',
-              border: '2px solid #CA8A04',
+              bgcolor: palette.neutral[50],
+              border: `2px solid ${palette.brand.primary}`,
             },
           }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography variant="caption" sx={{ color: '#78716C' }}>
+          <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
             ${priceRange[0].toLocaleString()}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#78716C' }}>
+          <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
             ${priceRange[1].toLocaleString()}
           </Typography>
         </Box>
@@ -227,7 +222,7 @@ export const AuctionListingPage = () => {
           variant="subtitle2"
           sx={{
             fontWeight: 600,
-            color: '#1C1917',
+            color: palette.neutral[900],
             mb: 2,
             textTransform: 'uppercase',
             letterSpacing: 1,
@@ -252,13 +247,13 @@ export const AuctionListingPage = () => {
                     }
                   }}
                   sx={{
-                    color: '#A8A29E',
-                    '&.Mui-checked': { color: '#CA8A04' },
+                    color: palette.neutral[500],
+                    '&.Mui-checked': { color: palette.brand.primary },
                   }}
                 />
               }
               label={
-                <Typography variant="body2" sx={{ color: '#44403C' }}>
+                <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
                   {condition.label}
                 </Typography>
               }
@@ -276,13 +271,13 @@ export const AuctionListingPage = () => {
             checked={verifiedOnly}
             onChange={(e) => setVerifiedOnly(e.target.checked)}
             sx={{
-              color: '#A8A29E',
-              '&.Mui-checked': { color: '#CA8A04' },
+              color: palette.neutral[500],
+              '&.Mui-checked': { color: palette.brand.primary },
             }}
           />
         }
         label={
-          <Typography variant="body2" sx={{ color: '#44403C' }}>
+          <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
             Verified Sellers Only
           </Typography>
         }
@@ -291,27 +286,31 @@ export const AuctionListingPage = () => {
   )
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pt: 4, pb: 10 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pt: 4, pb: 10 }}>
       <Container maxWidth="xl">
         <Breadcrumbs
           sx={{ mb: 3 }}
-          separator={<Typography sx={{ color: '#A8A29E', mx: 1 }}>/</Typography>}
+          separator={<Typography sx={{ color: palette.neutral[500], mx: 1 }}>/</Typography>}
         >
           <MuiLink
             component={Link}
             to="/"
-            sx={{ color: '#78716C', textDecoration: 'none', '&:hover': { color: '#1C1917' } }}
+            sx={{
+              color: palette.neutral[500],
+              textDecoration: 'none',
+              '&:hover': { color: palette.neutral[900] },
+            }}
           >
             Home
           </MuiLink>
-          <Typography sx={{ color: '#1C1917' }}>All Auctions</Typography>
+          <Typography sx={{ color: palette.neutral[900] }}>All Auctions</Typography>
         </Breadcrumbs>
 
         <Box sx={{ mb: 6 }}>
           <Typography
             variant="h2"
             sx={{
-              color: '#1C1917',
+              color: palette.neutral[900],
               fontWeight: 300,
               fontSize: { xs: '2rem', md: '2.75rem' },
               fontFamily: '"Playfair Display", serif',
@@ -320,7 +319,7 @@ export const AuctionListingPage = () => {
           >
             All Auctions
           </Typography>
-          <Typography variant="body1" sx={{ color: '#78716C' }}>
+          <Typography variant="body1" sx={{ color: palette.neutral[500] }}>
             {data?.totalCount || 0} items available
           </Typography>
         </Box>
@@ -336,7 +335,7 @@ export const AuctionListingPage = () => {
               sx={{
                 position: 'sticky',
                 top: 100,
-                bgcolor: '#FFFFFF',
+                bgcolor: palette.neutral[0],
                 border: '1px solid rgba(68,64,60,0.1)',
               }}
             >
@@ -361,7 +360,7 @@ export const AuctionListingPage = () => {
                   onClick={() => setFilterDrawerOpen(true)}
                   sx={{
                     display: { md: 'none' },
-                    color: '#1C1917',
+                    color: palette.neutral[900],
                     borderColor: 'rgba(68,64,60,0.2)',
                     textTransform: 'none',
                   }}
@@ -383,9 +382,9 @@ export const AuctionListingPage = () => {
                             setSelectedCategories(selectedCategories.filter((c) => c !== catId))
                           }
                           sx={{
-                            bgcolor: 'rgba(202,138,4,0.1)',
-                            color: '#CA8A04',
-                            '& .MuiChip-deleteIcon': { color: '#CA8A04' },
+                            bgcolor: palette.brand.muted,
+                            color: palette.brand.primary,
+                            '& .MuiChip-deleteIcon': { color: palette.brand.primary },
                           }}
                         />
                       )
@@ -396,9 +395,9 @@ export const AuctionListingPage = () => {
                         size="small"
                         onDelete={() => setVerifiedOnly(false)}
                         sx={{
-                          bgcolor: 'rgba(202,138,4,0.1)',
-                          color: '#CA8A04',
-                          '& .MuiChip-deleteIcon': { color: '#CA8A04' },
+                          bgcolor: palette.brand.muted,
+                          color: palette.brand.primary,
+                          '& .MuiChip-deleteIcon': { color: palette.brand.primary },
                         }}
                       />
                     )}
@@ -412,7 +411,7 @@ export const AuctionListingPage = () => {
                     size="small"
                     onClick={() => setViewMode('grid')}
                     sx={{
-                      color: viewMode === 'grid' ? '#1C1917' : '#A8A29E',
+                      color: viewMode === 'grid' ? palette.neutral[900] : palette.neutral[500],
                     }}
                   >
                     <GridView fontSize="small" />
@@ -421,7 +420,7 @@ export const AuctionListingPage = () => {
                     size="small"
                     onClick={() => setViewMode('list')}
                     sx={{
-                      color: viewMode === 'list' ? '#1C1917' : '#A8A29E',
+                      color: viewMode === 'list' ? palette.neutral[900] : palette.neutral[500],
                     }}
                   >
                     <ViewList fontSize="small" />
@@ -434,7 +433,7 @@ export const AuctionListingPage = () => {
                     onChange={(e) => setSortBy(e.target.value)}
                     IconComponent={KeyboardArrowDown}
                     sx={{
-                      color: '#1C1917',
+                      color: palette.neutral[900],
                       '& .MuiOutlinedInput-notchedOutline': {
                         borderColor: 'rgba(68,64,60,0.2)',
                       },
@@ -490,15 +489,15 @@ export const AuctionListingPage = () => {
                 variant="outlined"
                 size="large"
                 sx={{
-                  borderColor: '#1C1917',
-                  color: '#1C1917',
+                  borderColor: palette.neutral[900],
+                  color: palette.neutral[900],
                   px: 6,
                   py: 1.5,
                   textTransform: 'none',
                   borderRadius: 0,
                   fontWeight: 500,
                   '&:hover': {
-                    borderColor: '#1C1917',
+                    borderColor: palette.neutral[900],
                     bgcolor: 'rgba(28,25,23,0.05)',
                   },
                 }}
@@ -515,7 +514,7 @@ export const AuctionListingPage = () => {
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         PaperProps={{
-          sx: { width: 320, bgcolor: '#FAFAF9' },
+          sx: { width: 320, bgcolor: palette.neutral[50] },
         }}
       >
         {filterContent}
@@ -525,12 +524,12 @@ export const AuctionListingPage = () => {
             variant="contained"
             onClick={() => setFilterDrawerOpen(false)}
             sx={{
-              bgcolor: '#1C1917',
-              color: '#FAFAF9',
+              bgcolor: palette.neutral[900],
+              color: palette.neutral[50],
               py: 1.5,
               textTransform: 'none',
               borderRadius: 0,
-              '&:hover': { bgcolor: '#44403C' },
+              '&:hover': { bgcolor: palette.neutral[700] },
             }}
           >
             Apply Filters

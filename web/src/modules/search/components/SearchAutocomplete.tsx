@@ -98,7 +98,7 @@ export function SearchAutocomplete({
 
   const getOptions = useCallback((): GroupedOption[] => {
     if (debouncedQuery.length >= 2 && suggestions.length > 0) {
-      return suggestions.map(s => ({
+      return suggestions.map((s) => ({
         type: 'suggestion' as const,
         label: s.text,
         suggestion: s,
@@ -108,13 +108,13 @@ export function SearchAutocomplete({
     const options: GroupedOption[] = []
 
     if (recentSearches.length > 0) {
-      recentSearches.slice(0, 3).forEach(search => {
+      recentSearches.slice(0, 3).forEach((search) => {
         options.push({ type: 'recent', label: search })
       })
     }
 
     if (popularSearches.length > 0) {
-      popularSearches.slice(0, 5).forEach(search => {
+      popularSearches.slice(0, 5).forEach((search) => {
         options.push({ type: 'trending', label: search })
       })
     }
@@ -122,29 +122,38 @@ export function SearchAutocomplete({
     return options
   }, [debouncedQuery, suggestions, recentSearches, popularSearches])
 
-  const handleSearch = useCallback((query: string) => {
-    if (!query.trim()) return
-    
-    if (onSearch) {
-      onSearch(query)
-    } else {
-      navigate(`/search?q=${encodeURIComponent(query)}`)
-    }
-    setIsOpen(false)
-  }, [navigate, onSearch])
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (!query.trim()) {return}
 
-  const handleOptionSelect = useCallback((_: unknown, option: GroupedOption | string | null) => {
-    if (!option) return
-    
-    const query = typeof option === 'string' ? option : option.label
-    handleSearch(query)
-  }, [handleSearch])
+      if (onSearch) {
+        onSearch(query)
+      } else {
+        navigate(`/search?q=${encodeURIComponent(query)}`)
+      }
+      setIsOpen(false)
+    },
+    [navigate, onSearch]
+  )
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && inputValue.trim()) {
-      handleSearch(inputValue)
-    }
-  }, [inputValue, handleSearch])
+  const handleOptionSelect = useCallback(
+    (_: unknown, option: GroupedOption | string | null) => {
+      if (!option) {return}
+
+      const query = typeof option === 'string' ? option : option.label
+      handleSearch(query)
+    },
+    [handleSearch]
+  )
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' && inputValue.trim()) {
+        handleSearch(inputValue)
+      }
+    },
+    [inputValue, handleSearch]
+  )
 
   const getOptionIcon = (option: GroupedOption) => {
     if (option.type === 'recent') {
@@ -163,8 +172,8 @@ export function SearchAutocomplete({
   }
 
   const groupBy = (option: GroupedOption) => {
-    if (option.type === 'recent') return 'Recent Searches'
-    if (option.type === 'trending') return 'Trending'
+    if (option.type === 'recent') {return 'Recent Searches'}
+    if (option.type === 'trending') {return 'Trending'}
     return 'Suggestions'
   }
 
@@ -175,7 +184,7 @@ export function SearchAutocomplete({
       onOpen={() => setIsOpen(true)}
       onClose={() => setIsOpen(false)}
       options={getOptions()}
-      getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+      getOptionLabel={(option) => (typeof option === 'string' ? option : option.label)}
       groupBy={groupBy}
       onChange={handleOptionSelect}
       inputValue={inputValue}
@@ -230,9 +239,7 @@ export function SearchAutocomplete({
             },
           }}
         >
-          <Box sx={{ color: 'text.secondary', display: 'flex' }}>
-            {getOptionIcon(option)}
-          </Box>
+          <Box sx={{ color: 'text.secondary', display: 'flex' }}>{getOptionIcon(option)}</Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2">{option.label}</Typography>
             {option.suggestion?.type === 'category' && (
@@ -283,10 +290,10 @@ export function SearchAutocomplete({
                       <IconButton
                         size="small"
                         onClick={() => setInputValue('')}
-                        sx={{ 
+                        sx={{
                           cursor: 'pointer',
                           '&:hover': { color: 'error.main' },
-                          transition: 'color 0.15s ease-out'
+                          transition: 'color 0.15s ease-out',
                         }}
                       >
                         <ClearIcon fontSize="small" />

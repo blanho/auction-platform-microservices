@@ -12,6 +12,7 @@ import {
   MenuItem,
   FormHelperText,
 } from '@mui/material'
+import { FormField } from '@/shared/ui'
 import { createAuctionSchema, type CreateAuctionFormData } from '../schemas'
 import { useActiveCategories } from '../hooks'
 import { ITEM_CONDITIONS, CURRENCIES } from '../constants'
@@ -40,23 +41,23 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12 }}>
-          <TextField
+          <FormField
+            name="title"
+            register={register}
+            errors={errors}
             fullWidth
             label="Title"
-            {...register('title')}
-            error={!!errors.title}
-            helperText={errors.title?.message}
           />
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <TextField
+          <FormField
+            name="description"
+            register={register}
+            errors={errors}
             fullWidth
             label="Description"
             multiline
             rows={4}
-            {...register('description')}
-            error={!!errors.description}
-            helperText={errors.description?.message}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
@@ -73,9 +74,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.categoryId && (
-                  <FormHelperText>{errors.categoryId.message}</FormHelperText>
-                )}
+                {errors.categoryId && <FormHelperText>{errors.categoryId.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -158,13 +157,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
           />
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            fullWidth
-            disabled={isLoading}
-          >
+          <Button type="submit" variant="contained" size="large" fullWidth disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Create Auction'}
           </Button>
         </Grid>

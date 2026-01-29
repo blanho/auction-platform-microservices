@@ -6,58 +6,184 @@ import { LandingLayout } from '@/shared/components/layouts/LandingLayout'
 import { LoadingScreen } from '@/shared/ui/LoadingScreen'
 import { ProtectedRoute } from '@/shared/components/auth/ProtectedRoute'
 
-const LandingPage = lazy(() => import('@/modules/home/pages/LandingPageEnhanced').then(m => ({ default: m.LandingPageEnhanced })))
-const HowItWorksPage = lazy(() => import('@/modules/home/pages/HowItWorksPage').then(m => ({ default: m.HowItWorksPage })))
-const AuctionsPage = lazy(() => import('@/modules/auctions/pages/AuctionsListPage').then(m => ({ default: m.AuctionsListPage })))
-const AuctionDetailPage = lazy(() => import('@/modules/auctions/pages/AuctionDetailPage').then(m => ({ default: m.AuctionDetailPage })))
-const AuctionFormPage = lazy(() => import('@/modules/auctions/pages/AuctionFormPage').then(m => ({ default: m.AuctionFormPage })))
-const WatchlistPage = lazy(() => import('@/modules/auctions/pages/WatchlistPage').then(m => ({ default: m.WatchlistPage })))
+const LandingPage = lazy(() =>
+  import('@/modules/home/pages/LandingPageEnhanced').then((m) => ({
+    default: m.LandingPageEnhanced,
+  }))
+)
+const HowItWorksPage = lazy(() =>
+  import('@/modules/home/pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage }))
+)
+const AuctionsPage = lazy(() =>
+  import('@/modules/auctions/pages/AuctionsListPage').then((m) => ({ default: m.AuctionsListPage }))
+)
+const AuctionDetailPage = lazy(() =>
+  import('@/modules/auctions/pages/AuctionDetailPage').then((m) => ({
+    default: m.AuctionDetailPage,
+  }))
+)
+const AuctionFormPage = lazy(() =>
+  import('@/modules/auctions/pages/AuctionFormPage').then((m) => ({ default: m.AuctionFormPage }))
+)
+const WatchlistPage = lazy(() =>
+  import('@/modules/auctions/pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage }))
+)
 
-const LoginPage = lazy(() => import('@/modules/auth/pages/LoginPage').then(m => ({ default: m.LoginPage })))
-const RegisterPage = lazy(() => import('@/modules/auth/pages/RegisterPage').then(m => ({ default: m.RegisterPage })))
-const ForgotPasswordPage = lazy(() => import('@/modules/auth/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })))
-const ResetPasswordPage = lazy(() => import('@/modules/auth/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })))
-const ConfirmEmailPage = lazy(() => import('@/modules/auth/pages/ConfirmEmailPage').then(m => ({ default: m.ConfirmEmailPage })))
+const LoginPage = lazy(() =>
+  import('@/modules/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage }))
+)
+const RegisterPage = lazy(() =>
+  import('@/modules/auth/pages/RegisterPage').then((m) => ({ default: m.RegisterPage }))
+)
+const ForgotPasswordPage = lazy(() =>
+  import('@/modules/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage }))
+)
+const ResetPasswordPage = lazy(() =>
+  import('@/modules/auth/pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage }))
+)
+const ConfirmEmailPage = lazy(() =>
+  import('@/modules/auth/pages/ConfirmEmailPage').then((m) => ({ default: m.ConfirmEmailPage }))
+)
 
-const DashboardPage = lazy(() => import('@/modules/analytics/pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
-const ReportsPage = lazy(() => import('@/modules/analytics/pages/ReportsPage').then(m => ({ default: m.ReportsPage })))
-const AdminDashboardPage = lazy(() => import('@/modules/analytics/pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
-const AuditLogsPage = lazy(() => import('@/modules/analytics/pages/AuditLogsPage').then(m => ({ default: m.AuditLogsPage })))
-const PlatformSettingsPage = lazy(() => import('@/modules/analytics/pages/PlatformSettingsPage').then(m => ({ default: m.PlatformSettingsPage })))
+const DashboardPage = lazy(() =>
+  import('@/modules/analytics/pages/UserDashboardPage').then((m) => ({
+    default: m.UserDashboardPage,
+  }))
+)
+const ReportsPage = lazy(() =>
+  import('@/modules/analytics/pages/ReportsPage').then((m) => ({ default: m.ReportsPage }))
+)
+const AdminDashboardPage = lazy(() =>
+  import('@/modules/analytics/pages/AdminDashboardPage').then((m) => ({
+    default: m.AdminDashboardPage,
+  }))
+)
+const AuditLogsPage = lazy(() =>
+  import('@/modules/analytics/pages/AuditLogsPage').then((m) => ({ default: m.AuditLogsPage }))
+)
+const PlatformSettingsPage = lazy(() =>
+  import('@/modules/analytics/pages/PlatformSettingsPage').then((m) => ({
+    default: m.PlatformSettingsPage,
+  }))
+)
 
-const ProfilePage = lazy(() => import('@/modules/users/pages/ProfilePage').then(m => ({ default: m.ProfilePage })))
-const SettingsPage = lazy(() => import('@/modules/users/pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
-const MyAuctionsPage = lazy(() => import('@/modules/users/pages/MyAuctionsPage').then(m => ({ default: m.MyAuctionsPage })))
-const UsersManagementPage = lazy(() => import('@/modules/users/pages/UsersManagementPage').then(m => ({ default: m.UsersManagementPage })))
-const SellerApplyPage = lazy(() => import('@/modules/users/pages/SellerApplyPage').then(m => ({ default: m.SellerApplyPage })))
+const ProfilePage = lazy(() =>
+  import('@/modules/users/pages/ProfilePage').then((m) => ({ default: m.ProfilePage }))
+)
+const SettingsPage = lazy(() =>
+  import('@/modules/users/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+)
+const MyAuctionsPage = lazy(() =>
+  import('@/modules/users/pages/MyAuctionsPage').then((m) => ({ default: m.MyAuctionsPage }))
+)
+const UsersManagementPage = lazy(() =>
+  import('@/modules/users/pages/UsersManagementPage').then((m) => ({
+    default: m.UsersManagementPage,
+  }))
+)
+const SellerApplyPage = lazy(() =>
+  import('@/modules/users/pages/SellerApplyPage').then((m) => ({ default: m.SellerApplyPage }))
+)
 
-const MyBidsPage = lazy(() => import('@/modules/bidding/pages/MyBidsPage').then(m => ({ default: m.MyBidsPage })))
-const WinningBidsPage = lazy(() => import('@/modules/bidding/pages/WinningBidsPage').then(m => ({ default: m.WinningBidsPage })))
-const BidHistoryPage = lazy(() => import('@/modules/bidding/pages/BidHistoryPage').then(m => ({ default: m.BidHistoryPage })))
-const AutoBidManagementPage = lazy(() => import('@/modules/bidding/pages/AutoBidManagementPage').then(m => ({ default: m.AutoBidManagementPage })))
+const MyBidsPage = lazy(() =>
+  import('@/modules/bidding/pages/MyBidsPage').then((m) => ({ default: m.MyBidsPage }))
+)
+const WinningBidsPage = lazy(() =>
+  import('@/modules/bidding/pages/WinningBidsPage').then((m) => ({ default: m.WinningBidsPage }))
+)
+const BidHistoryPage = lazy(() =>
+  import('@/modules/bidding/pages/BidHistoryPage').then((m) => ({ default: m.BidHistoryPage }))
+)
+const AutoBidManagementPage = lazy(() =>
+  import('@/modules/bidding/pages/AutoBidManagementPage').then((m) => ({
+    default: m.AutoBidManagementPage,
+  }))
+)
 
-const SearchPage = lazy(() => import('@/modules/search/pages/SearchPage').then(m => ({ default: m.SearchPage })))
-const NotificationsPage = lazy(() => import('@/modules/notifications/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
-const TemplatesManagementPage = lazy(() => import('@/modules/notifications/pages/TemplatesManagementPage').then(m => ({ default: m.TemplatesManagementPage })))
-const RecordsDashboardPage = lazy(() => import('@/modules/notifications/pages/RecordsDashboardPage').then(m => ({ default: m.RecordsDashboardPage })))
-const BroadcastNotificationPage = lazy(() => import('@/modules/notifications/pages/BroadcastNotificationPage').then(m => ({ default: m.BroadcastNotificationPage })))
-const AllNotificationsPage = lazy(() => import('@/modules/notifications/pages/AllNotificationsPage').then(m => ({ default: m.AllNotificationsPage })))
-const NotificationStatsPage = lazy(() => import('@/modules/notifications/pages/NotificationStatsPage').then(m => ({ default: m.NotificationStatsPage })))
+const SearchPage = lazy(() =>
+  import('@/modules/search/pages/SearchPage').then((m) => ({ default: m.SearchPage }))
+)
+const NotificationsPage = lazy(() =>
+  import('@/modules/notifications/pages/NotificationsPage').then((m) => ({
+    default: m.NotificationsPage,
+  }))
+)
+const TemplatesManagementPage = lazy(() =>
+  import('@/modules/notifications/pages/TemplatesManagementPage').then((m) => ({
+    default: m.TemplatesManagementPage,
+  }))
+)
+const RecordsDashboardPage = lazy(() =>
+  import('@/modules/notifications/pages/RecordsDashboardPage').then((m) => ({
+    default: m.RecordsDashboardPage,
+  }))
+)
+const BroadcastNotificationPage = lazy(() =>
+  import('@/modules/notifications/pages/BroadcastNotificationPage').then((m) => ({
+    default: m.BroadcastNotificationPage,
+  }))
+)
+const AllNotificationsPage = lazy(() =>
+  import('@/modules/notifications/pages/AllNotificationsPage').then((m) => ({
+    default: m.AllNotificationsPage,
+  }))
+)
+const NotificationStatsPage = lazy(() =>
+  import('@/modules/notifications/pages/NotificationStatsPage').then((m) => ({
+    default: m.NotificationStatsPage,
+  }))
+)
 
-const WalletPage = lazy(() => import('@/modules/payments/pages/WalletPage').then(m => ({ default: m.WalletPage })))
-const OrdersPage = lazy(() => import('@/modules/payments/pages/OrdersPage').then(m => ({ default: m.OrdersPage })))
-const OrderDetailPage = lazy(() => import('@/modules/payments/pages/OrderDetailPage').then(m => ({ default: m.OrderDetailPage })))
-const CheckoutPage = lazy(() => import('@/modules/payments/pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })))
-const AdminOrdersPage = lazy(() => import('@/modules/payments/pages/AdminOrdersPage').then(m => ({ default: m.AdminOrdersPage })))
-const PaymentSuccessPage = lazy(() => import('@/modules/payments/pages/PaymentSuccessPage').then(m => ({ default: m.PaymentSuccessPage })))
-const PaymentCancelPage = lazy(() => import('@/modules/payments/pages/PaymentCancelPage').then(m => ({ default: m.PaymentCancelPage })))
-const TransactionDetailPage = lazy(() => import('@/modules/payments/pages/TransactionDetailPage').then(m => ({ default: m.TransactionDetailPage })))
-const PaymentMethodsPage = lazy(() => import('@/modules/payments/pages/PaymentMethodsPage').then(m => ({ default: m.PaymentMethodsPage })))
+const WalletPage = lazy(() =>
+  import('@/modules/payments/pages/WalletPage').then((m) => ({ default: m.WalletPage }))
+)
+const OrdersPage = lazy(() =>
+  import('@/modules/payments/pages/OrdersPage').then((m) => ({ default: m.OrdersPage }))
+)
+const OrderDetailPage = lazy(() =>
+  import('@/modules/payments/pages/OrderDetailPage').then((m) => ({ default: m.OrderDetailPage }))
+)
+const CheckoutPage = lazy(() =>
+  import('@/modules/payments/pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
+)
+const AdminOrdersPage = lazy(() =>
+  import('@/modules/payments/pages/AdminOrdersPage').then((m) => ({ default: m.AdminOrdersPage }))
+)
+const PaymentSuccessPage = lazy(() =>
+  import('@/modules/payments/pages/PaymentSuccessPage').then((m) => ({
+    default: m.PaymentSuccessPage,
+  }))
+)
+const PaymentCancelPage = lazy(() =>
+  import('@/modules/payments/pages/PaymentCancelPage').then((m) => ({
+    default: m.PaymentCancelPage,
+  }))
+)
+const TransactionDetailPage = lazy(() =>
+  import('@/modules/payments/pages/TransactionDetailPage').then((m) => ({
+    default: m.TransactionDetailPage,
+  }))
+)
+const PaymentMethodsPage = lazy(() =>
+  import('@/modules/payments/pages/PaymentMethodsPage').then((m) => ({
+    default: m.PaymentMethodsPage,
+  }))
+)
 
-const CategoriesManagementPage = lazy(() => import('@/modules/auctions/pages/CategoriesManagementPage').then(m => ({ default: m.CategoriesManagementPage })))
-const BrandsManagementPage = lazy(() => import('@/modules/auctions/pages/BrandsManagementPage').then(m => ({ default: m.BrandsManagementPage })))
+const CategoriesManagementPage = lazy(() =>
+  import('@/modules/auctions/pages/CategoriesManagementPage').then((m) => ({
+    default: m.CategoriesManagementPage,
+  }))
+)
+const BrandsManagementPage = lazy(() =>
+  import('@/modules/auctions/pages/BrandsManagementPage').then((m) => ({
+    default: m.BrandsManagementPage,
+  }))
+)
 
-const NotFoundPage = lazy(() => import('@/shared/components/errors/NotFoundPage').then(m => ({ default: m.NotFoundPage })))
+const NotFoundPage = lazy(() =>
+  import('@/shared/components/errors/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+)
 
 const withSuspense = (Component: React.LazyExoticComponent<ComponentType<object>>) => (
   <Suspense fallback={<LoadingScreen />}>
@@ -91,179 +217,91 @@ export const router = createBrowserRouter([
       { path: '/search', element: withSuspense(SearchPage) },
       {
         path: '/auctions/create',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(AuctionFormPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(AuctionFormPage)}</ProtectedRoute>,
       },
       {
         path: '/auctions/:id/edit',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(AuctionFormPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(AuctionFormPage)}</ProtectedRoute>,
       },
       {
         path: '/watchlist',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(WatchlistPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(WatchlistPage)}</ProtectedRoute>,
       },
       {
         path: '/dashboard',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(DashboardPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(DashboardPage)}</ProtectedRoute>,
       },
       {
         path: '/reports',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(ReportsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(ReportsPage)}</ProtectedRoute>,
       },
       {
         path: '/profile',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(ProfilePage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(ProfilePage)}</ProtectedRoute>,
       },
       {
         path: '/settings',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(SettingsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(SettingsPage)}</ProtectedRoute>,
       },
       {
         path: '/my-auctions',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(MyAuctionsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(MyAuctionsPage)}</ProtectedRoute>,
       },
       {
         path: '/my-bids',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(MyBidsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(MyBidsPage)}</ProtectedRoute>,
       },
       {
         path: '/winning-bids',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(WinningBidsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(WinningBidsPage)}</ProtectedRoute>,
       },
       {
         path: '/bid-history',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(BidHistoryPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(BidHistoryPage)}</ProtectedRoute>,
       },
       {
         path: '/auto-bids',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(AutoBidManagementPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(AutoBidManagementPage)}</ProtectedRoute>,
       },
       {
         path: '/notifications',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(NotificationsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(NotificationsPage)}</ProtectedRoute>,
       },
       {
         path: '/wallet',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(WalletPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(WalletPage)}</ProtectedRoute>,
       },
       {
         path: '/orders',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(OrdersPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(OrdersPage)}</ProtectedRoute>,
       },
       {
         path: '/orders/:orderId',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(OrderDetailPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(OrderDetailPage)}</ProtectedRoute>,
       },
       {
         path: '/checkout/:auctionId',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(CheckoutPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(CheckoutPage)}</ProtectedRoute>,
       },
       {
         path: '/payment/success',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(PaymentSuccessPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(PaymentSuccessPage)}</ProtectedRoute>,
       },
       {
         path: '/payment/cancel',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(PaymentCancelPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(PaymentCancelPage)}</ProtectedRoute>,
       },
       {
         path: '/wallet/transactions/:transactionId',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(TransactionDetailPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(TransactionDetailPage)}</ProtectedRoute>,
       },
       {
         path: '/wallet/payment-methods',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(PaymentMethodsPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(PaymentMethodsPage)}</ProtectedRoute>,
       },
       {
         path: '/become-seller',
-        element: (
-          <ProtectedRoute>
-            {withSuspense(SellerApplyPage)}
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(SellerApplyPage)}</ProtectedRoute>,
       },
       {
         path: '/admin/dashboard',

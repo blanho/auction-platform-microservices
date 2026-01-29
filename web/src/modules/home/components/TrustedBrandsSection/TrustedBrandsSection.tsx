@@ -14,7 +14,12 @@ export const TrustedBrandsSection = () => {
       }}
     >
       <Container maxWidth="lg">
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: transitions.duration.normal }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: transitions.duration.normal }}
+        >
           <Box sx={{ textAlign: 'center', mb: 6 }}>
             <Typography
               variant="overline"

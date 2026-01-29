@@ -140,10 +140,11 @@ export const FeaturedAuctionsSection = () => {
                   '& .MuiAlert-icon': { color: colors.accent.red },
                 }}
               >
-                Failed to load auctions. {error instanceof Error ? error.message : 'Please try again.'}
+                Failed to load auctions.{' '}
+                {error instanceof Error ? error.message : 'Please try again.'}
               </Alert>
             </Grid>
-          ) : featuredLoading ? (
+          ) : featuredLoading && (
             Array.from({ length: 4 }).map((_, index) => (
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index}>
                 <Skeleton
@@ -152,13 +153,15 @@ export const FeaturedAuctionsSection = () => {
                 />
               </Grid>
             ))
-          ) : featuredAuctions.length === 0 ? (
+          )}
+          {!isError && !featuredLoading && featuredAuctions.length === 0 && (
             <Grid size={{ xs: 12 }}>
               <Typography color="text.secondary" align="center" sx={{ py: 8 }}>
                 No featured auctions available
               </Typography>
             </Grid>
-          ) : (
+          )}
+          {!isError && !featuredLoading && featuredAuctions.length > 0 && (
             featuredAuctions.map((auction, index) => (
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={auction.id}>
                 <motion.div

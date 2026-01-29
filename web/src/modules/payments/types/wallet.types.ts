@@ -9,11 +9,7 @@ export type TransactionType =
   | 'escrow_release'
   | 'fee'
 
-export type TransactionStatus =
-  | 'pending'
-  | 'completed'
-  | 'failed'
-  | 'cancelled'
+export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'cancelled'
 
 export interface Wallet {
   id: string

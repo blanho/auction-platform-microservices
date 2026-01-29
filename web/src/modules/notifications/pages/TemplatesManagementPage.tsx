@@ -22,10 +22,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Alert,
   Tooltip,
   Pagination,
-  Skeleton,
 } from '@mui/material'
 import {
   Add,
@@ -38,13 +36,14 @@ import {
   CheckCircle,
   Cancel,
 } from '@mui/icons-material'
-import {
-  useTemplates,
-  useCreateTemplate,
-  useUpdateTemplate,
-  useDeleteTemplate,
-} from '../hooks'
-import type { NotificationTemplate, NotificationChannel, CreateTemplateDto, UpdateTemplateDto } from '../types/template.types'
+import { ConfirmDialog, InlineAlert, TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
+import { useTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from '../hooks'
+import type {
+  NotificationTemplate,
+  NotificationChannel,
+  CreateTemplateDto,
+  UpdateTemplateDto,
+} from '../types/template.types'
 
 const CHANNEL_ICONS: Record<NotificationChannel, React.ReactElement> = {
   email: <Email />,
@@ -63,6 +62,7 @@ const CHANNEL_COLORS: Record<NotificationChannel, string> = {
 export function TemplatesManagementPage() {
   const [page, setPage] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<NotificationTemplate | null>(null)
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplate | null>(null)
   const [formData, setFormData] = useState<CreateTemplateDto>({
     key: '',
@@ -78,6 +78,7 @@ export function TemplatesManagementPage() {
   const createTemplate = useCreateTemplate()
   const updateTemplate = useUpdateTemplate()
   const deleteTemplate = useDeleteTemplate()
+  const templateCount = templatesData?.items?.length ?? 0
 
   const handleOpenCreate = () => {
     setEditingTemplate(null)
@@ -113,39 +114,43 @@ export function TemplatesManagementPage() {
   }
 
   const handleSubmit = async () => {
-    try {
-      if (editingTemplate) {
-        const updateDto: UpdateTemplateDto = {
-          name: formData.name,
-          description: formData.description,
-          subject: formData.subject,
-          body: formData.body,
-          channel: formData.channel,
-          variables: formData.variables,
-        }
-        await updateTemplate.mutateAsync({ id: editingTemplate.id, dto: updateDto })
-      } else {
-        await createTemplate.mutateAsync(formData)
+    if (editingTemplate) {
+      const updateDto: UpdateTemplateDto = {
+        name: formData.name,
+        description: formData.description,
+        subject: formData.subject,
+        body: formData.body,
+        channel: formData.channel,
+        variables: formData.variables,
       }
-      handleClose()
-    } catch {
-      // Error handled by mutation
+      await updateTemplate.mutateAsync({ id: editingTemplate.id, dto: updateDto })
+    } else {
+      await createTemplate.mutateAsync(formData)
     }
+    handleClose()
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this template?')) {
-      try {
-        await deleteTemplate.mutateAsync(id)
-      } catch {
-        // Error handled by mutation
-      }
+  const handleDelete = (template: NotificationTemplate) => {
+    setDeleteTarget(template)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) {
+      return
     }
+    await deleteTemplate.mutateAsync(deleteTarget.id)
+    setDeleteTarget(null)
+  }
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteTarget(null)
   }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}
+      >
         <Box>
           <Typography
             variant="h4"
@@ -178,9 +183,9 @@ export function TemplatesManagementPage() {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
           Failed to load templates. Please try again.
-        </Alert>
+        </InlineAlert>
       )}
 
       <Card sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
@@ -193,28 +198,21 @@ export function TemplatesManagementPage() {
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Subject</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Variables</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600, color: '#4C1D95' }}>Actions</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                  </TableRow>
-                ))
-              ) : templatesData?.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                    <Typography sx={{ color: '#78716C' }}>No templates found</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
+              {isLoading && <TableSkeletonRows rows={5} columns={6} />}
+              {!isLoading && templateCount === 0 && (
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No templates found"
+                  cellSx={{ py: 8 }}
+                />
+              )}
+              {!isLoading && templateCount > 0 && (
                 templatesData?.items.map((template) => (
                   <TableRow
                     key={template.id}
@@ -228,7 +226,10 @@ export function TemplatesManagementPage() {
                         <Typography sx={{ fontWeight: 600, color: '#1C1917' }}>
                           {template.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#78716C', fontFamily: '"Fira Code", monospace' }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: '#78716C', fontFamily: '"Fira Code", monospace' }}
+                        >
                           {template.key}
                         </Typography>
                       </Box>
@@ -285,7 +286,7 @@ export function TemplatesManagementPage() {
                       <Tooltip title="Delete">
                         <IconButton
                           size="small"
-                          onClick={() => handleDelete(template.id)}
+                          onClick={() => handleDelete(template)}
                           sx={{ color: '#EF4444' }}
                         >
                           <Delete />
@@ -300,7 +301,9 @@ export function TemplatesManagementPage() {
         </TableContainer>
 
         {templatesData && templatesData.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}
+          >
             <Pagination
               count={templatesData.totalPages}
               page={page}
@@ -346,7 +349,9 @@ export function TemplatesManagementPage() {
               <Select
                 value={formData.channel}
                 label="Channel"
-                onChange={(e) => setFormData({ ...formData, channel: e.target.value as NotificationChannel })}
+                onChange={(e) =>
+                  setFormData({ ...formData, channel: e.target.value as NotificationChannel })
+                }
               >
                 <MenuItem value="email">Email</MenuItem>
                 <MenuItem value="sms">SMS</MenuItem>
@@ -375,7 +380,15 @@ export function TemplatesManagementPage() {
             <TextField
               label="Variables"
               value={formData.variables?.join(', ')}
-              onChange={(e) => setFormData({ ...formData, variables: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  variables: e.target.value
+                    .split(',')
+                    .map((v) => v.trim())
+                    .filter(Boolean),
+                })
+              }
               fullWidth
               helperText="Comma-separated list (e.g., userName, orderNumber)"
             />
@@ -396,6 +409,18 @@ export function TemplatesManagementPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Delete Template"
+        message={`Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={deleteTemplate.isPending}
+      />
     </Container>
   )
 }

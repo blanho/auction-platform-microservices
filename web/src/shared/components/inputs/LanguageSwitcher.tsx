@@ -22,9 +22,10 @@ export function LanguageSwitcher() {
     handleClose()
   }
 
-  const currentLanguage = supportedLanguages.find(
-    (lang) => lang.code === i18n.language || i18n.language.startsWith(lang.code)
-  ) || supportedLanguages[0]
+  const currentLanguage =
+    supportedLanguages.find(
+      (lang) => lang.code === i18n.language || i18n.language.startsWith(lang.code)
+    ) || supportedLanguages[0]
 
   return (
     <>

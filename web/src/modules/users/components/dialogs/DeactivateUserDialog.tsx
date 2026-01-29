@@ -1,13 +1,4 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Stack,
-  Alert,
-  Typography,
-} from '@mui/material'
+import { ConfirmDialog } from '@/shared/ui'
 import { getAdminUserDisplayName } from '../../utils'
 import type { AdminUser } from '../../types'
 
@@ -27,24 +18,16 @@ export function DeactivateUserDialog({
   onConfirm,
 }: DeactivateUserDialogProps) {
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Deactivate User</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ pt: 1 }}>
-          <Alert severity="warning">
-            This will disable the user&apos;s account. They will not be able to log in.
-          </Alert>
-          <Typography>
-            Are you sure you want to deactivate <strong>{getAdminUserDisplayName(user)}</strong>?
-          </Typography>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" color="warning" onClick={onConfirm} disabled={loading}>
-          {loading ? 'Deactivating...' : 'Deactivate User'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      title="Deactivate User"
+      message={`Are you sure you want to deactivate ${getAdminUserDisplayName(user)}? This will disable the user's account and they will not be able to log in.`}
+      confirmLabel="Deactivate User"
+      cancelLabel="Cancel"
+      variant="warning"
+      loading={loading}
+    />
   )
 }

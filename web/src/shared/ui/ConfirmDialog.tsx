@@ -26,7 +26,10 @@ interface ConfirmDialogProps {
   loading?: boolean
 }
 
-const variantConfig: Record<ConfirmDialogVariant, { icon: React.ReactNode; color: string; bgColor: string; buttonColor: string; hoverColor: string }> = {
+const variantConfig: Record<
+  ConfirmDialogVariant,
+  { icon: React.ReactNode; color: string; bgColor: string; buttonColor: string; hoverColor: string }
+> = {
   warning: {
     icon: <Warning sx={{ fontSize: 32 }} />,
     color: palette.brand.primary,
@@ -106,9 +109,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography sx={{ color: palette.neutral[500], pl: 8 }}>
-          {message}
-        </Typography>
+        <Typography sx={{ color: palette.neutral[500], pl: 8 }}>{message}</Typography>
       </DialogContent>
       <DialogActions sx={{ p: 3, pt: 1 }}>
         <Button

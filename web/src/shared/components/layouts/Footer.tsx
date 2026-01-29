@@ -127,15 +127,11 @@ export function Footer() {
                 maxWidth: 320,
               }}
             >
-              Discover unique treasures and rare finds. Join thousands of collectors
-              and enthusiasts in the premier destination for online auctions.
+              Discover unique treasures and rare finds. Join thousands of collectors and enthusiasts
+              in the premier destination for online auctions.
             </Typography>
 
-            <Box
-              component="form"
-              onSubmit={handleSubscribe}
-              sx={{ maxWidth: 360 }}
-            >
+            <Box component="form" onSubmit={handleSubscribe} sx={{ maxWidth: 360 }}>
               <Typography
                 variant="subtitle2"
                 sx={{
@@ -151,23 +147,15 @@ export function Footer() {
               </Typography>
 
               <Collapse in={isSubscribed}>
-                <Alert
-                  severity="success"
-                  sx={{ mb: 2 }}
-                  onClose={() => setIsSubscribed(false)}
-                >
+                <InlineAlert severity="success" sx={{ mb: 2 }} onClose={() => setIsSubscribed(false)}>
                   Thank you for subscribing!
-                </Alert>
+                </InlineAlert>
               </Collapse>
 
               <Collapse in={!!error}>
-                <Alert
-                  severity="error"
-                  sx={{ mb: 2 }}
-                  onClose={() => setError('')}
-                >
+                <InlineAlert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
                   {error}
-                </Alert>
+                </InlineAlert>
               </Collapse>
 
               <Stack direction="row" spacing={1}>
@@ -293,10 +281,7 @@ export function Footer() {
           alignItems={{ xs: 'flex-start', md: 'center' }}
           spacing={2}
         >
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={{ xs: 1, sm: 3 }}
-          >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 3 }}>
             <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
               © {new Date().getFullYear()} Auction Platform. All rights reserved.
             </Typography>

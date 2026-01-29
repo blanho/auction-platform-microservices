@@ -24,8 +24,8 @@ export const UnauthorizedPage = () => {
           Access Denied
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          You do not have permission to access this page. Please contact an administrator
-          if you believe this is a mistake.
+          You do not have permission to access this page. Please contact an administrator if you
+          believe this is a mistake.
         </Typography>
         <Button variant="contained" size="large" component={Link} to="/">
           Go to Homepage

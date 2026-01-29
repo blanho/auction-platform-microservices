@@ -9,6 +9,7 @@ import {
   LocalShipping,
   ArrowForward,
 } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 
 const steps = [
   {
@@ -80,20 +81,20 @@ const sellerSteps = [
 
 export const HowItWorksPage = () => {
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh' }}>
-      <Box sx={{ bgcolor: '#1C1917', py: { xs: 12, md: 16 }, mb: { xs: 8, md: 12 } }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh' }}>
+      <Box sx={{ bgcolor: palette.neutral[900], py: { xs: 12, md: 16 }, mb: { xs: 8, md: 12 } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', maxWidth: 700, mx: 'auto' }}>
             <Typography
               variant="overline"
-              sx={{ color: '#CA8A04', letterSpacing: 4, mb: 2, display: 'block' }}
+              sx={{ color: palette.brand.primary, letterSpacing: 4, mb: 2, display: 'block' }}
             >
               GETTING STARTED
             </Typography>
             <Typography
               variant="h2"
               sx={{
-                color: '#FAFAF9',
+                color: palette.neutral[50],
                 fontWeight: 300,
                 mb: 3,
                 fontSize: { xs: '2.5rem', md: '3.5rem' },
@@ -112,14 +113,14 @@ export const HowItWorksPage = () => {
         <Box sx={{ mb: 6 }}>
           <Typography
             variant="overline"
-            sx={{ color: '#44403C', letterSpacing: 3, display: 'block', mb: 1 }}
+            sx={{ color: palette.neutral[700], letterSpacing: 3, display: 'block', mb: 1 }}
           >
             FOR BUYERS
           </Typography>
-          <Typography variant="h3" sx={{ color: '#1C1917', fontWeight: 400, mb: 2 }}>
+          <Typography variant="h3" sx={{ color: palette.neutral[900], fontWeight: 400, mb: 2 }}>
             Your Journey to Discovery
           </Typography>
-          <Typography variant="body1" sx={{ color: '#44403C', maxWidth: 600 }}>
+          <Typography variant="body1" sx={{ color: palette.neutral[700], maxWidth: 600 }}>
             Whether you are a seasoned collector or first-time buyer, our platform makes it easy to
             find and acquire extraordinary items.
           </Typography>
@@ -147,11 +148,14 @@ export const HowItWorksPage = () => {
                 >
                   {step.step}
                 </Typography>
-                <Box sx={{ color: '#CA8A04', mb: 2 }}>{step.icon}</Box>
-                <Typography variant="h6" sx={{ color: '#1C1917', fontWeight: 500, mb: 1.5 }}>
+                <Box sx={{ color: palette.brand.primary, mb: 2 }}>{step.icon}</Box>
+                <Typography
+                  variant="h6"
+                  sx={{ color: palette.neutral[900], fontWeight: 500, mb: 1.5 }}
+                >
                   {step.title}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#44403C', lineHeight: 1.7 }}>
+                <Typography variant="body2" sx={{ color: palette.neutral[700], lineHeight: 1.7 }}>
                   {step.description}
                 </Typography>
               </Box>
@@ -160,17 +164,17 @@ export const HowItWorksPage = () => {
         </Grid>
       </Container>
 
-      <Box sx={{ bgcolor: '#1C1917', py: { xs: 10, md: 14 } }}>
+      <Box sx={{ bgcolor: palette.neutral[900], py: { xs: 10, md: 14 } }}>
         <Container maxWidth="lg">
           <Grid container spacing={8} alignItems="center">
             <Grid size={{ xs: 12, md: 5 }}>
               <Typography
                 variant="overline"
-                sx={{ color: '#CA8A04', letterSpacing: 3, display: 'block', mb: 2 }}
+                sx={{ color: palette.brand.primary, letterSpacing: 3, display: 'block', mb: 2 }}
               >
                 FOR SELLERS
               </Typography>
-              <Typography variant="h3" sx={{ color: '#FAFAF9', fontWeight: 400, mb: 3 }}>
+              <Typography variant="h3" sx={{ color: palette.neutral[50], fontWeight: 400, mb: 3 }}>
                 Turn Treasures into Profit
               </Typography>
               <Typography
@@ -178,7 +182,8 @@ export const HowItWorksPage = () => {
                 sx={{ color: 'rgba(250,250,249,0.7)', mb: 4, lineHeight: 1.8 }}
               >
                 Reach a global audience of collectors and enthusiasts. Our platform handles
-                authentication, payments, and shipping coordination so you can focus on what matters.
+                authentication, payments, and shipping coordination so you can focus on what
+                matters.
               </Typography>
               <Button
                 variant="outlined"
@@ -186,14 +191,14 @@ export const HowItWorksPage = () => {
                 component={Link}
                 to="/sell"
                 sx={{
-                  borderColor: '#CA8A04',
-                  color: '#CA8A04',
+                  borderColor: palette.brand.primary,
+                  color: palette.brand.primary,
                   px: 4,
                   py: 1.5,
                   textTransform: 'none',
                   borderRadius: 0,
                   '&:hover': {
-                    borderColor: '#CA8A04',
+                    borderColor: palette.brand.primary,
                     bgcolor: 'rgba(202,138,4,0.1)',
                   },
                 }}
@@ -211,19 +216,20 @@ export const HowItWorksPage = () => {
                       gap: 3,
                       py: 3,
                       borderBottom:
-                        index < sellerSteps.length - 1
-                          ? '1px solid rgba(250,250,249,0.1)'
-                          : 'none',
+                        index < sellerSteps.length - 1 ? '1px solid rgba(250,250,249,0.1)' : 'none',
                     }}
                   >
                     <Typography
                       variant="h5"
-                      sx={{ color: '#CA8A04', fontWeight: 600, minWidth: 40 }}
+                      sx={{ color: palette.brand.primary, fontWeight: 600, minWidth: 40 }}
                     >
                       {step.number}
                     </Typography>
                     <Box>
-                      <Typography variant="h6" sx={{ color: '#FAFAF9', fontWeight: 500, mb: 0.5 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ color: palette.neutral[50], fontWeight: 500, mb: 0.5 }}
+                      >
                         {step.title}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'rgba(250,250,249,0.6)' }}>
@@ -241,10 +247,13 @@ export const HowItWorksPage = () => {
       <Box sx={{ py: { xs: 10, md: 14 } }}>
         <Container maxWidth="md">
           <Box sx={{ textAlign: 'center', p: { xs: 6, md: 10 }, bgcolor: '#FFFFFF' }}>
-            <Typography variant="h4" sx={{ color: '#1C1917', fontWeight: 400, mb: 2 }}>
+            <Typography variant="h4" sx={{ color: palette.neutral[900], fontWeight: 400, mb: 2 }}>
               Ready to get started?
             </Typography>
-            <Typography variant="body1" sx={{ color: '#44403C', mb: 4, maxWidth: 500, mx: 'auto' }}>
+            <Typography
+              variant="body1"
+              sx={{ color: palette.neutral[700], mb: 4, maxWidth: 500, mx: 'auto' }}
+            >
               Join our community of collectors and sellers. Create your account today and discover
               your next treasure.
             </Typography>
@@ -256,8 +265,8 @@ export const HowItWorksPage = () => {
                 component={Link}
                 to="/register"
                 sx={{
-                  bgcolor: '#CA8A04',
-                  color: '#FAFAF9',
+                  bgcolor: palette.brand.primary,
+                  color: palette.neutral[50],
                   px: 5,
                   py: 1.5,
                   textTransform: 'none',
@@ -274,15 +283,15 @@ export const HowItWorksPage = () => {
                 component={Link}
                 to="/auctions"
                 sx={{
-                  borderColor: '#1C1917',
-                  color: '#1C1917',
+                  borderColor: palette.neutral[900],
+                  color: palette.neutral[900],
                   px: 5,
                   py: 1.5,
                   textTransform: 'none',
                   borderRadius: 0,
                   fontWeight: 500,
                   '&:hover': {
-                    borderColor: '#1C1917',
+                    borderColor: palette.neutral[900],
                     bgcolor: 'rgba(28,25,23,0.05)',
                   },
                 }}

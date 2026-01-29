@@ -20,7 +20,14 @@ export interface Auction {
   updatedAt: string
 }
 
-export type AuctionStatus = 'draft' | 'pending' | 'active' | 'ending-soon' | 'ended' | 'sold' | 'cancelled'
+export type AuctionStatus =
+  | 'draft'
+  | 'pending'
+  | 'active'
+  | 'ending-soon'
+  | 'ended'
+  | 'sold'
+  | 'cancelled'
 
 export interface AuctionImage {
   id: string

@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notificationsApi } from '../api'
-import type { NotificationFilters, NotificationPreferences, CreateNotificationDto, BroadcastNotificationDto, AdminNotificationFilters } from '../types/notification.types'
+import type {
+  NotificationFilters,
+  NotificationPreferences,
+  CreateNotificationDto,
+  BroadcastNotificationDto,
+  AdminNotificationFilters,
+} from '../types/notification.types'
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -10,7 +16,7 @@ export const notificationKeys = {
   preferences: () => [...notificationKeys.all, 'preferences'] as const,
   unread: () => [...notificationKeys.all, 'unread'] as const,
   admin: () => [...notificationKeys.all, 'admin'] as const,
-  adminList: (page: number, pageSize: number, filters?: AdminNotificationFilters) => 
+  adminList: (page: number, pageSize: number, filters?: AdminNotificationFilters) =>
     [...notificationKeys.admin(), 'list', page, pageSize, filters] as const,
   adminStats: () => [...notificationKeys.admin(), 'stats'] as const,
 }
@@ -20,16 +26,16 @@ export const useNotifications = (filters: NotificationFilters) => {
     queryKey: notificationKeys.list(filters),
     queryFn: async () => {
       const allNotifications = await notificationsApi.getNotifications(filters)
-      
+
       const page = filters.page || 1
       const pageSize = filters.pageSize || 20
       const startIndex = (page - 1) * pageSize
       const endIndex = startIndex + pageSize
-      
+
       const items = allNotifications.slice(startIndex, endIndex)
       const totalCount = allNotifications.length
       const totalPages = Math.ceil(totalCount / pageSize)
-      
+
       return {
         items,
         page,
@@ -133,7 +139,11 @@ export const useCreateNotification = () => {
   })
 }
 
-export const useAllNotifications = (page: number, pageSize: number, filters?: AdminNotificationFilters) => {
+export const useAllNotifications = (
+  page: number,
+  pageSize: number,
+  filters?: AdminNotificationFilters
+) => {
   return useQuery({
     queryKey: notificationKeys.adminList(page, pageSize, filters),
     queryFn: () => notificationsApi.getAllNotifications(page, pageSize, filters),

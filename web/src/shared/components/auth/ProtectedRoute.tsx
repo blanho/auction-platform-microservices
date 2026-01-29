@@ -41,9 +41,7 @@ export const ProtectedRoute = ({
   }
 
   if (permissions.length > 0) {
-    const hasRequiredPermissions = requireAll
-      ? canAll(permissions)
-      : canAny(permissions)
+    const hasRequiredPermissions = requireAll ? canAll(permissions) : canAny(permissions)
 
     if (!hasRequiredPermissions) {
       return <Navigate to="/unauthorized" replace />

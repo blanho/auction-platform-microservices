@@ -5,7 +5,6 @@ import {
   DialogActions,
   Button,
   Stack,
-  Alert,
   Box,
   Checkbox,
   FormControlLabel,
@@ -14,6 +13,7 @@ import {
 } from '@mui/material'
 import { AVAILABLE_ROLES, ROLE_DESCRIPTIONS, ROLE_COLORS, type UserRole } from '../../constants'
 import { getAdminUserDisplayName } from '../../utils'
+import { InlineAlert } from '@/shared/ui'
 import type { AdminUser } from '../../types'
 
 interface ManageRolesDialogProps {
@@ -40,9 +40,9 @@ export function ManageRolesDialog({
       <DialogTitle>Manage User Roles</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <Alert severity="info">
+          <InlineAlert severity="info">
             Select the roles for <strong>{getAdminUserDisplayName(user)}</strong>
-          </Alert>
+          </InlineAlert>
           <Box>
             {AVAILABLE_ROLES.map((role) => (
               <FormControlLabel

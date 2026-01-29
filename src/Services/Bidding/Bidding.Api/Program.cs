@@ -15,10 +15,13 @@ using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Infrastructure.Locking;
 using BuildingBlocks.Infrastructure.Extensions;
+using BuildingBlocks.Web.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddApplicationLogging();
+
+builder.Services.AddObservability(builder.Configuration);
 
 builder.Services.AddCommonUtilities();
 
@@ -109,6 +112,7 @@ if (!string.IsNullOrWhiteSpace(pathBase))
     app.UsePathBase(pathBase);
 }
 
+app.UseRequestTracing();
 app.UseAppExceptionHandling();
 
 app.MapCustomHealthChecks();

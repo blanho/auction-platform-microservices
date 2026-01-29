@@ -1,7 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { AuthContext } from '../context/AuthContext'
-import type { AuthUser, AuthStatus, AuthResponse, LoginRequest, RegisterRequest, TwoFactorLoginRequest } from '@/modules/auth/types'
+import type {
+  AuthUser,
+  AuthStatus,
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  TwoFactorLoginRequest,
+} from '@/modules/auth/types'
 import { authApi } from '@/modules/auth/api'
 import {
   setAccessToken,
@@ -54,7 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const silentRefresh = useCallback(async (): Promise<boolean> => {
     try {
       const response = await authApi.refreshToken()
-      if (!isMountedRef.current) return false
+      if (!isMountedRef.current) {return false}
       setAccessToken(response.accessToken, response.expiresIn)
       return true
     } catch {
@@ -80,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshUser = useCallback(async () => {
     try {
       const userData = await authApi.getCurrentUser()
-      if (!isMountedRef.current) return
+      if (!isMountedRef.current) {return}
 
       setUser(userData)
       setStoredUser(userData)
@@ -100,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const refreshed = await silentRefresh()
-      if (!isMountedRef.current) return
+      if (!isMountedRef.current) {return}
 
       if (refreshed) {
         await refreshUser()
@@ -122,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       isMountedRef.current = false
-      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current)
+      if (refreshTimerRef.current) {clearInterval(refreshTimerRef.current)}
     }
   }, [initializeAuth])
 

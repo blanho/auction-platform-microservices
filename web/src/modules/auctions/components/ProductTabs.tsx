@@ -14,13 +14,8 @@ import {
   Chip,
   Avatar,
 } from '@mui/material'
-import {
-  Description,
-  Gavel,
-  LocalShipping,
-  Policy,
-  Star,
-} from '@mui/icons-material'
+import { Description, Gavel, LocalShipping, Policy, Star } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import type { BidSummary } from '../types'
 import { ReviewsList } from './ReviewsList'
 import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
@@ -87,11 +82,11 @@ export function ProductTabs({
       sx={{
         bgcolor: 'white',
         borderRadius: 2,
-        border: '1px solid #E5E5E5',
+        border: `1px solid ${palette.neutral[100]}`,
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ borderBottom: '1px solid #E5E5E5' }}>
+      <Box sx={{ borderBottom: `1px solid ${palette.neutral[100]}` }}>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
@@ -103,14 +98,14 @@ export function ProductTabs({
               textTransform: 'none',
               fontWeight: 500,
               fontSize: '0.9375rem',
-              color: '#78716C',
+              color: palette.neutral[500],
               minHeight: 56,
               '&.Mui-selected': {
-                color: '#1C1917',
+                color: palette.neutral[900],
               },
             },
             '& .MuiTabs-indicator': {
-              bgcolor: '#1C1917',
+              bgcolor: palette.neutral[900],
               height: 2,
             },
           }}
@@ -136,7 +131,7 @@ export function ProductTabs({
           <Typography
             variant="body1"
             sx={{
-              color: '#44403C',
+              color: palette.neutral[700],
               lineHeight: 1.8,
               whiteSpace: 'pre-line',
             }}
@@ -152,7 +147,7 @@ export function ProductTabs({
                 sx={{
                   fontFamily: '"Playfair Display", serif',
                   fontWeight: 600,
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   mb: 2,
                 }}
               >
@@ -165,9 +160,9 @@ export function ProductTabs({
                       <TableCell
                         sx={{
                           fontWeight: 500,
-                          color: '#78716C',
+                          color: palette.neutral[500],
                           width: '40%',
-                          borderColor: '#F5F5F4',
+                          borderColor: palette.neutral[100],
                           py: 1.5,
                         }}
                       >
@@ -175,8 +170,8 @@ export function ProductTabs({
                       </TableCell>
                       <TableCell
                         sx={{
-                          color: '#1C1917',
-                          borderColor: '#F5F5F4',
+                          color: palette.neutral[900],
+                          borderColor: palette.neutral[100],
                           py: 1.5,
                         }}
                       >
@@ -193,7 +188,7 @@ export function ProductTabs({
         <TabPanel value={activeTab} index={1}>
           {bids.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant="body1" sx={{ color: '#78716C' }}>
+              <Typography variant="body1" sx={{ color: palette.neutral[500] }}>
                 No bids have been placed yet. Be the first to bid!
               </Typography>
             </Box>
@@ -207,7 +202,8 @@ export function ProductTabs({
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     py: 2,
-                    borderBottom: index < bids.length - 1 ? '1px solid #F5F5F4' : 'none',
+                    borderBottom:
+                      index < bids.length - 1 ? `1px solid ${palette.neutral[100]}` : 'none',
                   }}
                 >
                   <Stack direction="row" alignItems="center" spacing={2}>
@@ -215,7 +211,7 @@ export function ProductTabs({
                       sx={{
                         width: 36,
                         height: 36,
-                        bgcolor: index === 0 ? '#CA8A04' : '#E5E5E5',
+                        bgcolor: index === 0 ? palette.brand.primary : palette.neutral[100],
                         fontSize: '0.875rem',
                       }}
                     >
@@ -226,7 +222,7 @@ export function ProductTabs({
                         <Typography
                           sx={{
                             fontWeight: 500,
-                            color: '#1C1917',
+                            color: palette.neutral[900],
                             fontSize: '0.9375rem',
                           }}
                         >
@@ -239,13 +235,16 @@ export function ProductTabs({
                             sx={{
                               height: 20,
                               fontSize: '0.6875rem',
-                              bgcolor: '#FEF3C7',
-                              color: '#92400E',
+                              bgcolor: palette.brand.muted,
+                              color: palette.brand.dark,
                             }}
                           />
                         )}
                       </Stack>
-                      <Typography variant="body2" sx={{ color: '#78716C', fontSize: '0.8125rem' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}
+                      >
                         {formatTimeAgo(bid.createdAt)}
                       </Typography>
                     </Box>
@@ -253,7 +252,7 @@ export function ProductTabs({
                   <Typography
                     sx={{
                       fontWeight: 600,
-                      color: '#1C1917',
+                      color: palette.neutral[900],
                       fontSize: '1rem',
                     }}
                   >
@@ -280,22 +279,22 @@ export function ProductTabs({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                  sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
                   Shipping Method
                 </Typography>
-                <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.method}
                 </Typography>
               </Box>
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                  sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
                   Shipping Cost
                 </Typography>
-                <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.cost === 'free' ? (
                     <Chip label="Free Shipping" size="small" color="success" />
                   ) : (
@@ -306,18 +305,18 @@ export function ProductTabs({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                  sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
                   Estimated Delivery
                 </Typography>
-                <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+                <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.estimatedDays}
                 </Typography>
               </Box>
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                  sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
                   Ships To
                 </Typography>
@@ -328,14 +327,14 @@ export function ProductTabs({
                       label={location}
                       size="small"
                       variant="outlined"
-                      sx={{ borderColor: '#D4D4D4' }}
+                      sx={{ borderColor: palette.neutral[100] }}
                     />
                   ))}
                 </Stack>
               </Box>
             </Stack>
           ) : (
-            <Typography sx={{ color: '#78716C' }}>
+            <Typography sx={{ color: palette.neutral[500] }}>
               Shipping information not available. Please contact the seller for details.
             </Typography>
           )}
@@ -347,7 +346,7 @@ export function ProductTabs({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                  sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
                   Returns Accepted
                 </Typography>
@@ -362,22 +361,22 @@ export function ProductTabs({
                   <Box>
                     <Typography
                       variant="subtitle2"
-                      sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                      sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
                       Return Period
                     </Typography>
-                    <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+                    <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                       {returnPolicy.period} days from delivery
                     </Typography>
                   </Box>
                   <Box>
                     <Typography
                       variant="subtitle2"
-                      sx={{ color: '#78716C', mb: 0.5, fontSize: '0.8125rem' }}
+                      sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
                       Conditions
                     </Typography>
-                    <Typography sx={{ color: '#44403C', lineHeight: 1.6 }}>
+                    <Typography sx={{ color: palette.neutral[700], lineHeight: 1.6 }}>
                       {returnPolicy.conditions}
                     </Typography>
                   </Box>
@@ -385,7 +384,7 @@ export function ProductTabs({
               )}
             </Stack>
           ) : (
-            <Typography sx={{ color: '#78716C' }}>
+            <Typography sx={{ color: palette.neutral[500] }}>
               Return policy not specified. Please contact the seller for details.
             </Typography>
           )}

@@ -17,22 +17,33 @@ import {
   Select,
   MenuItem,
   Pagination,
-  Skeleton,
   Grid,
 } from '@mui/material'
 import { Person, CheckCircle, MailOutline, Archive } from '@mui/icons-material'
 import { useAllNotifications } from '../hooks'
-import type { Notification, NotificationType, NotificationStatus, AdminNotificationFilters } from '../types/notification.types'
+import type {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  AdminNotificationFilters,
+} from '../types/notification.types'
 import { formatTimeAgo, getNotificationColor, getNotificationLabel } from '../utils'
+import { palette } from '@/shared/theme/tokens'
+import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 
-const STATUS_CONFIG: Record<NotificationStatus, { color: string; bgcolor: string; icon: React.ReactElement }> = {
-  unread: { color: '#F59E0B', bgcolor: '#FEF3C7', icon: <MailOutline /> },
-  read: { color: '#10B981', bgcolor: '#D1FAE5', icon: <CheckCircle /> },
-  archived: { color: '#78716C', bgcolor: '#F5F5F5', icon: <Archive /> },
+const STATUS_CONFIG: Record<
+  NotificationStatus,
+  { color: string; bgcolor: string; icon: React.ReactElement }
+> = {
+  unread: { color: palette.semantic.warning, bgcolor: '#FEF3C7', icon: <MailOutline /> },
+  read: { color: palette.semantic.success, bgcolor: '#D1FAE5', icon: <CheckCircle /> },
+  archived: { color: palette.neutral[500], bgcolor: palette.neutral[100], icon: <Archive /> },
 }
 
 export function AllNotificationsPage() {
-  const [filters, setFilters] = useState<AdminNotificationFilters & { page: number; pageSize: number }>({
+  const [filters, setFilters] = useState<
+    AdminNotificationFilters & { page: number; pageSize: number }
+  >({
     page: 1,
     pageSize: 20,
   })
@@ -57,7 +68,7 @@ export function AllNotificationsPage() {
         >
           All Notifications
         </Typography>
-        <Typography sx={{ color: '#78716C', fontFamily: '"Inter", sans-serif' }}>
+        <Typography sx={{ color: palette.neutral[500], fontFamily: '"Inter", sans-serif' }}>
           View and manage all user notifications across the platform
         </Typography>
       </Box>
@@ -140,24 +151,15 @@ export function AllNotificationsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
-                Array.from({ length: 10 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                    <TableCell><Skeleton /></TableCell>
-                  </TableRow>
-                ))
-              ) : data?.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                    <Typography sx={{ color: '#78716C' }}>No notifications found</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
+              {isLoading && <TableSkeletonRows rows={10} columns={6} />}
+              {!isLoading && data?.items.length === 0 && (
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title="No notifications found"
+                  cellSx={{ py: 8 }}
+                />
+              )}
+              {!isLoading && data?.items.length > 0 && (
                 data?.items.map((notification: Notification) => (
                   <TableRow
                     key={notification.id}
@@ -168,12 +170,12 @@ export function AllNotificationsPage() {
                   >
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Person sx={{ fontSize: 18, color: '#78716C' }} />
+                        <Person sx={{ fontSize: 18, color: palette.neutral[500] }} />
                         <Typography
                           variant="caption"
                           sx={{
                             fontFamily: '"Inter", monospace',
-                            color: '#78716C',
+                            color: palette.neutral[500],
                           }}
                         >
                           {notification.userId.substring(0, 8)}...
@@ -193,7 +195,7 @@ export function AllNotificationsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
+                      <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                         {notification.title}
                       </Typography>
                     </TableCell>
@@ -201,7 +203,7 @@ export function AllNotificationsPage() {
                       <Typography
                         sx={{
                           fontSize: '0.875rem',
-                          color: '#44403C',
+                          color: palette.neutral[700],
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -224,7 +226,7 @@ export function AllNotificationsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption" sx={{ color: '#78716C' }}>
+                      <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
                         {formatTimeAgo(notification.createdAt)}
                       </Typography>
                     </TableCell>
@@ -236,7 +238,9 @@ export function AllNotificationsPage() {
         </TableContainer>
 
         {data && data.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}
+          >
             <Pagination
               count={data.totalPages}
               page={filters.page}
@@ -251,7 +255,7 @@ export function AllNotificationsPage() {
         <Card sx={{ p: 3, borderRadius: 2, bgcolor: '#FAF5FF' }}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <Typography variant="caption" sx={{ color: '#78716C' }}>
+              <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
                 Total Notifications
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>
@@ -259,7 +263,7 @@ export function AllNotificationsPage() {
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <Typography variant="caption" sx={{ color: '#78716C' }}>
+              <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
                 Current Page
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>
@@ -267,7 +271,7 @@ export function AllNotificationsPage() {
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <Typography variant="caption" sx={{ color: '#78716C' }}>
+              <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
                 Per Page
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>

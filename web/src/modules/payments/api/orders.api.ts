@@ -33,8 +33,8 @@ export const ordersApi = {
 
   async getOrdersByBuyer(
     username: string,
-    page: number = 1,
-    pageSize: number = 20
+    page = 1,
+    pageSize = 20
   ): Promise<{ items: Order[]; totalCount: number }> {
     const response = await http.get<Order[]>(`/orders/buyer/${username}`, {
       params: { page, pageSize },
@@ -45,8 +45,8 @@ export const ordersApi = {
 
   async getOrdersBySeller(
     username: string,
-    page: number = 1,
-    pageSize: number = 20
+    page = 1,
+    pageSize = 20
   ): Promise<{ items: Order[]; totalCount: number }> {
     const response = await http.get<Order[]>(`/orders/seller/${username}`, {
       params: { page, pageSize },
@@ -55,14 +55,18 @@ export const ordersApi = {
     return { items: response.data, totalCount }
   },
 
-  async getMyPurchases(filters: OrderFilters): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
+  async getMyPurchases(
+    filters: OrderFilters
+  ): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
     const response = await http.get<Order[]>('/orders/buyer/me', { params: filters })
     const totalCount = parseInt(response.headers['x-total-count'] || '0', 10)
     const pageSize = filters.pageSize || 20
     return { items: response.data, totalCount, totalPages: Math.ceil(totalCount / pageSize) }
   },
 
-  async getMySales(filters: OrderFilters): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
+  async getMySales(
+    filters: OrderFilters
+  ): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
     const response = await http.get<Order[]>('/orders/seller/me', { params: filters })
     const totalCount = parseInt(response.headers['x-total-count'] || '0', 10)
     const pageSize = filters.pageSize || 20
@@ -99,7 +103,9 @@ export const ordersApi = {
     return response.data
   },
 
-  async getAllOrders(params: GetAllOrdersParams = {}): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
+  async getAllOrders(
+    params: GetAllOrdersParams = {}
+  ): Promise<{ items: Order[]; totalCount: number; totalPages: number }> {
     const response = await http.get<Order[]>('/orders', { params })
     const totalCount = parseInt(response.headers['x-total-count'] || '0', 10)
     const pageSize = params.pageSize || 20

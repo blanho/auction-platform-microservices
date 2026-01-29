@@ -31,7 +31,10 @@ export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
   Dismissed: 'Dismissed',
 }
 
-export const REPORT_STATUS_COLORS: Record<ReportStatus, 'default' | 'warning' | 'success' | 'error'> = {
+export const REPORT_STATUS_COLORS: Record<
+  ReportStatus,
+  'default' | 'warning' | 'success' | 'error'
+> = {
   Pending: 'warning',
   UnderReview: 'default',
   Resolved: 'success',

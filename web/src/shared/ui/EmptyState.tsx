@@ -1,9 +1,24 @@
 import { Box, Typography, Button } from '@mui/material'
-import { Add, Search, Gavel, Inbox, ShoppingBag, Notifications, FavoriteBorder } from '@mui/icons-material'
+import {
+  Add,
+  Search,
+  Gavel,
+  Inbox,
+  ShoppingBag,
+  Notifications,
+  FavoriteBorder,
+} from '@mui/icons-material'
 import type { ReactNode } from 'react'
 import { palette } from '@/shared/theme/tokens'
 
-type EmptyStateVariant = 'default' | 'auctions' | 'bids' | 'notifications' | 'search' | 'favorites' | 'orders'
+type EmptyStateVariant =
+  | 'default'
+  | 'auctions'
+  | 'bids'
+  | 'notifications'
+  | 'search'
+  | 'favorites'
+  | 'orders'
 
 interface EmptyStateProps {
   variant?: EmptyStateVariant
@@ -17,7 +32,10 @@ interface EmptyStateProps {
   icon?: ReactNode
 }
 
-const variantConfig: Record<EmptyStateVariant, { icon: ReactNode; title: string; description: string }> = {
+const variantConfig: Record<
+  EmptyStateVariant,
+  { icon: ReactNode; title: string; description: string }
+> = {
   default: {
     icon: <Inbox sx={{ fontSize: 64 }} />,
     title: 'No data yet',
@@ -31,7 +49,7 @@ const variantConfig: Record<EmptyStateVariant, { icon: ReactNode; title: string;
   bids: {
     icon: <Gavel sx={{ fontSize: 64 }} />,
     title: 'No bids yet',
-    description: 'You haven\'t placed any bids. Start exploring auctions to find unique items.',
+    description: "You haven't placed any bids. Start exploring auctions to find unique items.",
   },
   notifications: {
     icon: <Notifications sx={{ fontSize: 64 }} />,
@@ -41,7 +59,7 @@ const variantConfig: Record<EmptyStateVariant, { icon: ReactNode; title: string;
   search: {
     icon: <Search sx={{ fontSize: 64 }} />,
     title: 'No results found',
-    description: 'Try adjusting your search or filters to find what you\'re looking for.',
+    description: "Try adjusting your search or filters to find what you're looking for.",
   },
   favorites: {
     icon: <FavoriteBorder sx={{ fontSize: 64 }} />,
@@ -55,7 +73,13 @@ const variantConfig: Record<EmptyStateVariant, { icon: ReactNode; title: string;
   },
 }
 
-export function EmptyState({ variant = 'default', title, description, action, icon }: EmptyStateProps) {
+export function EmptyState({
+  variant = 'default',
+  title,
+  description,
+  action,
+  icon,
+}: EmptyStateProps) {
   const config = variantConfig[variant]
   const displayIcon = icon || config.icon
   const displayTitle = title || config.title

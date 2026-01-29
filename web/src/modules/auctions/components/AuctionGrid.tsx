@@ -8,7 +8,11 @@ interface AuctionGridProps {
   emptyMessage?: string
 }
 
-export const AuctionGrid = ({ auctions, isLoading, emptyMessage = 'No auctions found' }: AuctionGridProps) => {
+export const AuctionGrid = ({
+  auctions,
+  isLoading,
+  emptyMessage = 'No auctions found',
+}: AuctionGridProps) => {
   if (isLoading) {
     return (
       <Grid container spacing={3}>
@@ -22,11 +26,7 @@ export const AuctionGrid = ({ auctions, isLoading, emptyMessage = 'No auctions f
   }
 
   if (auctions.length === 0) {
-    return (
-      <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
-        {emptyMessage}
-      </Box>
-    )
+    return <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>{emptyMessage}</Box>
   }
 
   return (

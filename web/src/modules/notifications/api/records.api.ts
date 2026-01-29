@@ -1,16 +1,21 @@
 import { http } from '@/services/http'
-import type { 
-  NotificationRecord, 
-  NotificationRecordFilterDto, 
-  NotificationRecordStatsDto 
+import type {
+  NotificationRecord,
+  NotificationRecordFilterDto,
+  NotificationRecordStatsDto,
 } from '../types/template.types'
 import type { PaginatedResponse } from '@/shared/types'
 
 export const recordsApi = {
-  async getRecords(filter: NotificationRecordFilterDto): Promise<PaginatedResponse<NotificationRecord>> {
-    const response = await http.get<PaginatedResponse<NotificationRecord>>('/notifications/records', {
-      params: filter
-    })
+  async getRecords(
+    filter: NotificationRecordFilterDto
+  ): Promise<PaginatedResponse<NotificationRecord>> {
+    const response = await http.get<PaginatedResponse<NotificationRecord>>(
+      '/notifications/records',
+      {
+        params: filter,
+      }
+    )
     return response.data
   },
 
@@ -19,9 +24,9 @@ export const recordsApi = {
     return response.data
   },
 
-  async getRecordsByUser(userId: string, limit: number = 50): Promise<NotificationRecord[]> {
+  async getRecordsByUser(userId: string, limit = 50): Promise<NotificationRecord[]> {
     const response = await http.get<NotificationRecord[]>(`/notifications/records/user/${userId}`, {
-      params: { limit }
+      params: { limit },
     })
     return response.data
   },

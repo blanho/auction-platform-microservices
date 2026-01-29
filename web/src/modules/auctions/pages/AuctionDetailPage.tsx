@@ -10,10 +10,10 @@ import {
   Stack,
   Skeleton,
   Snackbar,
-  Alert,
   IconButton,
   Tooltip,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import {
   NavigateNext,
   Visibility,
@@ -23,16 +23,26 @@ import {
   Pinterest,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 import { ImageGallery, ImageGallerySkeleton } from '../components/ImageGallery'
 import { BidSection, BidSectionSkeleton } from '../components/BidSection'
 import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
 import { ProductTabs, ProductTabsSkeleton } from '../components/ProductTabs'
+import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
 import { useAuctionSignalR, useAuction } from '../hooks'
+import { useAutoBidForAuction } from '@/modules/bidding/hooks'
+import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: auction, isLoading } = useAuction(id!)
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
+  const { isAuthenticated } = useAuth()
+  const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error' | 'info'
+  }>({
     open: false,
     message: '',
     severity: 'info',
@@ -78,18 +88,18 @@ export function AuctionDetailPage() {
   }
 
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="xl" sx={{ pt: 3 }}>
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}
           sx={{
             mb: 3,
             '& a': {
-              color: '#78716C',
+              color: palette.neutral[500],
               textDecoration: 'none',
               fontSize: '0.875rem',
               '&:hover': {
-                color: '#1C1917',
+                color: palette.neutral[900],
                 textDecoration: 'underline',
               },
             },
@@ -103,7 +113,7 @@ export function AuctionDetailPage() {
             </Link>
           )}
           <Link to={`/categories/${auction.category.id}`}>{auction.category.name}</Link>
-          <Typography sx={{ color: '#1C1917', fontSize: '0.875rem' }}>
+          <Typography sx={{ color: palette.neutral[900], fontSize: '0.875rem' }}>
             {auction.title.length > 40 ? `${auction.title.slice(0, 40)}...` : auction.title}
           </Typography>
         </Breadcrumbs>
@@ -129,16 +139,16 @@ export function AuctionDetailPage() {
                   to={`/categories/${auction.categoryId}`}
                   sx={{
                     cursor: 'pointer',
-                    bgcolor: '#F5F5F4',
-                    color: '#44403C',
-                    '&:hover': { bgcolor: '#E5E5E5' },
+                    bgcolor: palette.neutral[100],
+                    color: palette.neutral[700],
+                    '&:hover': { bgcolor: palette.neutral[100] },
                   }}
                 />
                 {auction.status === 'ending-soon' && (
                   <Chip
                     label="Ending Soon"
                     size="small"
-                    sx={{ bgcolor: '#FEE2E2', color: '#DC2626' }}
+                    sx={{ bgcolor: palette.semantic.errorLight, color: palette.semantic.error }}
                   />
                 )}
               </Stack>
@@ -149,7 +159,7 @@ export function AuctionDetailPage() {
                 sx={{
                   fontFamily: '"Playfair Display", serif',
                   fontWeight: 600,
-                  color: '#1C1917',
+                  color: palette.neutral[900],
                   lineHeight: 1.2,
                   mb: 1,
                 }}
@@ -158,7 +168,12 @@ export function AuctionDetailPage() {
               </Typography>
 
               <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: '#78716C' }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={0.5}
+                  sx={{ color: palette.neutral[500] }}
+                >
                   <Visibility fontSize="small" />
                   <Typography variant="body2">{auction.watcherCount} watching</Typography>
                 </Stack>
@@ -167,7 +182,7 @@ export function AuctionDetailPage() {
                   <Tooltip title="Share on Facebook">
                     <IconButton
                       size="small"
-                      sx={{ color: '#78716C', '&:hover': { color: '#1877F2' } }}
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#1877F2' } }}
                     >
                       <Facebook fontSize="small" />
                     </IconButton>
@@ -175,7 +190,7 @@ export function AuctionDetailPage() {
                   <Tooltip title="Share on Twitter">
                     <IconButton
                       size="small"
-                      sx={{ color: '#78716C', '&:hover': { color: '#1DA1F2' } }}
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#1DA1F2' } }}
                     >
                       <Twitter fontSize="small" />
                     </IconButton>
@@ -183,7 +198,7 @@ export function AuctionDetailPage() {
                   <Tooltip title="Pin on Pinterest">
                     <IconButton
                       size="small"
-                      sx={{ color: '#78716C', '&:hover': { color: '#E60023' } }}
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#E60023' } }}
                     >
                       <Pinterest fontSize="small" />
                     </IconButton>
@@ -192,7 +207,10 @@ export function AuctionDetailPage() {
                     <IconButton
                       size="small"
                       onClick={handleShare}
-                      sx={{ color: '#78716C', '&:hover': { color: '#1C1917' } }}
+                      sx={{
+                        color: palette.neutral[500],
+                        '&:hover': { color: palette.neutral[900] },
+                      }}
                     >
                       <ContentCopy fontSize="small" />
                     </IconButton>
@@ -202,6 +220,7 @@ export function AuctionDetailPage() {
 
               <BidSection
                 auctionId={auction.id}
+                auctionTitle={auction.title}
                 currentBid={auction.currentBid}
                 startingPrice={auction.startingPrice}
                 reservePrice={auction.reservePrice}
@@ -210,6 +229,9 @@ export function AuctionDetailPage() {
                 endTime={auction.endTime}
                 status={auction.status}
                 userBid={auction.userBid}
+                existingAutoBid={
+                  autoBid ? { maxAmount: autoBid.maxAmount, isActive: autoBid.isActive } : undefined
+                }
                 onPlaceBid={handlePlaceBid}
                 onBuyNow={handleBuyNow}
               />
@@ -235,12 +257,12 @@ export function AuctionDetailPage() {
             description={auction.description}
             bids={auction.bids}
             specifications={{
-              'Dimensions': '78"W x 18"D x 32"H',
-              'Material': 'Solid Teak',
-              'Era': '1960s',
-              'Origin': 'Denmark',
-              'Condition': 'Professionally Restored',
-              'Style': 'Mid-Century Modern',
+              Dimensions: '78"W x 18"D x 32"H',
+              Material: 'Solid Teak',
+              Era: '1960s',
+              Origin: 'Denmark',
+              Condition: 'Professionally Restored',
+              Style: 'Mid-Century Modern',
             }}
             shippingInfo={{
               method: 'White Glove Delivery',
@@ -256,6 +278,21 @@ export function AuctionDetailPage() {
             }}
           />
         </Box>
+
+        <Box sx={{ mt: 6 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: '"Playfair Display", serif',
+              fontWeight: 600,
+              color: palette.neutral[900],
+              mb: 3,
+            }}
+          >
+            Seller Reviews
+          </Typography>
+          <ReviewsSection sellerId={auction.seller.id} auctionId={auction.id} />
+        </Box>
       </Container>
 
       <Snackbar
@@ -264,13 +301,12 @@ export function AuctionDetailPage() {
         onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
+        <InlineAlert
           severity={snackbar.severity}
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
           sx={{ width: '100%' }}
         >
           {snackbar.message}
-        </Alert>
+        </InlineAlert>
       </Snackbar>
     </Box>
   )
@@ -278,7 +314,7 @@ export function AuctionDetailPage() {
 
 function AuctionDetailPageSkeleton() {
   return (
-    <Box sx={{ bgcolor: '#FAFAF9', minHeight: '100vh', pb: 8 }}>
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
       <Container maxWidth="xl" sx={{ pt: 3 }}>
         <Skeleton width={300} height={20} sx={{ mb: 3 }} />
 

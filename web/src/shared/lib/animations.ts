@@ -64,10 +64,10 @@ export const staggerItem: Variants = {
 
 export const cardHover = {
   rest: { scale: 1, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' },
-  hover: { 
-    scale: 1.02, 
+  hover: {
+    scale: 1.02,
     boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-    transition: { duration: 0.2 }
+    transition: { duration: 0.2 },
   },
 }
 
@@ -124,9 +124,9 @@ export const pulseAnimation = {
 
 export const shimmer: Variants = {
   initial: { backgroundPosition: '-200% 0' },
-  animate: { 
+  animate: {
     backgroundPosition: '200% 0',
-    transition: { duration: 1.5, repeat: Infinity, ease: 'linear' }
+    transition: { duration: 1.5, repeat: Infinity, ease: 'linear' },
   },
 }
 
@@ -137,6 +137,6 @@ export const getReducedMotionVariants = (): Variants => ({
 })
 
 export const useReducedMotion = (): boolean => {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined') {return false}
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }

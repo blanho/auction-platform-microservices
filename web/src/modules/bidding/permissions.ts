@@ -1,4 +1,4 @@
-import { Permission } from '@/shared/permissions'
+import type { Permission } from '@/shared/permissions'
 
 export const BID_PERMISSIONS = {
   PLACE: 'bids:place' as Permission,

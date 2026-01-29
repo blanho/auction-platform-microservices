@@ -1,10 +1,5 @@
 import { http } from '@/services/http'
-import type {
-  Wallet,
-  WalletTransaction,
-  DepositRequest,
-  WithdrawRequest,
-} from '../types'
+import type { Wallet, WalletTransaction, DepositRequest, WithdrawRequest } from '../types'
 
 export const walletsApi = {
   async getWallet(username: string): Promise<Wallet> {
@@ -29,8 +24,8 @@ export const walletsApi = {
 
   async getTransactions(
     username: string,
-    page: number = 1,
-    pageSize: number = 20
+    page = 1,
+    pageSize = 20
   ): Promise<{ items: WalletTransaction[]; totalCount: number; totalPages: number }> {
     const response = await http.get<WalletTransaction[]>(`/wallets/${username}/transactions`, {
       params: { page, pageSize },

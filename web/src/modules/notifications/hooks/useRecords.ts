@@ -26,7 +26,7 @@ export const useRecordById = (id: string) => {
   })
 }
 
-export const useRecordsByUser = (userId: string, limit: number = 50) => {
+export const useRecordsByUser = (userId: string, limit = 50) => {
   return useQuery({
     queryKey: recordKeys.byUser(userId, limit),
     queryFn: () => recordsApi.getRecordsByUser(userId, limit),

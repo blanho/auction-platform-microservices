@@ -6,10 +6,11 @@ import {
   Rating,
   Button,
   Stack,
-  Alert,
   CircularProgress,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import { Star } from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
 import { useCreateReview } from '@/modules/users/hooks'
 import type { CreateReviewRequest } from '@/modules/users/api/reviews.api'
 
@@ -22,7 +23,7 @@ interface CreateReviewFormProps {
   onCancel?: () => void
 }
 
-const ratingLabels: { [index: number]: string } = {
+const ratingLabels: Record<number, string> = {
   1: 'Poor',
   2: 'Fair',
   3: 'Good',
@@ -80,15 +81,15 @@ export function CreateReviewForm({
     <Box
       sx={{
         p: 3,
-        bgcolor: '#FAFAF9',
+        bgcolor: palette.neutral[50],
         borderRadius: 2,
-        border: '1px solid #E5E5E5',
+        border: `1px solid ${palette.neutral[100]}`,
       }}
     >
       <Typography
         sx={{
           fontWeight: 600,
-          color: '#1C1917',
+          color: palette.neutral[900],
           mb: 3,
           fontSize: '1.125rem',
         }}
@@ -97,13 +98,13 @@ export function CreateReviewForm({
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
           {error}
-        </Alert>
+        </InlineAlert>
       )}
 
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ color: '#78716C', mb: 1, fontSize: '0.875rem' }}>
+        <Typography sx={{ color: palette.neutral[500], mb: 1, fontSize: '0.875rem' }}>
           How would you rate your experience?
         </Typography>
         <Stack direction="row" alignItems="center" spacing={2}>
@@ -113,13 +114,13 @@ export function CreateReviewForm({
             onChangeActive={(_, value) => setHover(value)}
             size="large"
             sx={{
-              color: '#CA8A04',
-              '& .MuiRating-iconEmpty': { color: '#D6D3D1' },
+              color: palette.brand.primary,
+              '& .MuiRating-iconEmpty': { color: palette.neutral[100] },
             }}
             emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
           />
           {(rating !== null || hover !== -1) && (
-            <Typography sx={{ color: '#CA8A04', fontWeight: 500 }}>
+            <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
               {ratingLabels[hover !== -1 ? hover : rating!]}
             </Typography>
           )}
@@ -154,7 +155,7 @@ export function CreateReviewForm({
           <Button
             onClick={onCancel}
             sx={{
-              color: '#78716C',
+              color: palette.neutral[500],
               textTransform: 'none',
             }}
           >
@@ -166,11 +167,11 @@ export function CreateReviewForm({
           onClick={handleSubmit}
           disabled={createReview.isPending}
           sx={{
-            bgcolor: '#CA8A04',
+            bgcolor: palette.brand.primary,
             textTransform: 'none',
             fontWeight: 600,
             px: 4,
-            '&:hover': { bgcolor: '#A16207' },
+            '&:hover': { bgcolor: palette.brand.hover },
           }}
         >
           {createReview.isPending ? (

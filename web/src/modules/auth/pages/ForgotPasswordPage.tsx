@@ -6,14 +6,14 @@ import {
   Box,
   Container,
   Typography,
-  TextField,
   Button,
-  Alert,
   CircularProgress,
 } from '@mui/material'
+import { InlineAlert, FormField } from '@/shared/ui'
 import { Email, ArrowBack } from '@mui/icons-material'
 import { z } from 'zod'
 import { useForgotPassword } from '../hooks'
+import { palette } from '@/shared/theme/tokens'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -55,7 +55,7 @@ export function ForgotPasswordPage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          bgcolor: '#FAFAF9',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Container maxWidth="sm">
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
                 mb: 3,
               }}
             >
-              <Email sx={{ fontSize: 32, color: '#CA8A04' }} />
+              <Email sx={{ fontSize: 32, color: palette.brand.primary }} />
             </Box>
 
             <Typography
@@ -89,20 +89,20 @@ export function ForgotPasswordPage() {
               sx={{
                 fontFamily: '"Playfair Display", serif',
                 fontWeight: 600,
-                color: '#1C1917',
+                color: palette.neutral[900],
                 mb: 1,
               }}
             >
               Check Your Email
             </Typography>
 
-            <Typography sx={{ color: '#78716C', mb: 2 }}>
+            <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
               We've sent password reset instructions to
             </Typography>
 
             <Typography
               sx={{
-                color: '#1C1917',
+                color: palette.neutral[900],
                 fontWeight: 600,
                 fontSize: '1.125rem',
                 mb: 4,
@@ -111,7 +111,7 @@ export function ForgotPasswordPage() {
               {sentEmail}
             </Typography>
 
-            <Typography sx={{ color: '#78716C', fontSize: '0.875rem', mb: 4 }}>
+            <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mb: 4 }}>
               If you don't see the email, check your spam folder or make sure you entered the
               correct email address.
             </Typography>
@@ -122,11 +122,11 @@ export function ForgotPasswordPage() {
               component={Link}
               to="/login"
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 py: 1.5,
                 fontWeight: 600,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
               Back to Login
@@ -138,7 +138,7 @@ export function ForgotPasswordPage() {
               onClick={() => setEmailSent(false)}
               sx={{
                 mt: 2,
-                color: '#78716C',
+                color: palette.neutral[500],
                 textTransform: 'none',
               }}
             >
@@ -156,7 +156,7 @@ export function ForgotPasswordPage() {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        bgcolor: '#FAFAF9',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Container maxWidth="sm">
@@ -166,9 +166,9 @@ export function ForgotPasswordPage() {
             to="/login"
             startIcon={<ArrowBack />}
             sx={{
-              color: '#44403C',
+              color: palette.neutral[700],
               textTransform: 'none',
-              '&:hover': { bgcolor: 'transparent', color: '#1C1917' },
+              '&:hover': { bgcolor: 'transparent', color: palette.neutral[900] },
             }}
           >
             Back to login
@@ -188,7 +188,7 @@ export function ForgotPasswordPage() {
             sx={{
               fontFamily: '"Playfair Display", serif',
               fontWeight: 600,
-              color: '#1C1917',
+              color: palette.neutral[900],
               textAlign: 'center',
               mb: 1,
             }}
@@ -198,7 +198,7 @@ export function ForgotPasswordPage() {
 
           <Typography
             sx={{
-              color: '#78716C',
+              color: palette.neutral[500],
               textAlign: 'center',
               mb: 4,
             }}
@@ -207,19 +207,19 @@ export function ForgotPasswordPage() {
           </Typography>
 
           {forgotPassword.isError && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <InlineAlert severity="error" sx={{ mb: 3 }}>
               Something went wrong. Please try again.
-            </Alert>
+            </InlineAlert>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
+            <FormField
+              name="email"
+              register={register}
+              errors={errors}
               fullWidth
               label="Email Address"
               type="email"
-              {...register('email')}
-              error={!!errors.email}
-              helperText={errors.email?.message}
               sx={{ mb: 3 }}
             />
 
@@ -229,12 +229,12 @@ export function ForgotPasswordPage() {
               variant="contained"
               disabled={isSubmitting || forgotPassword.isPending}
               sx={{
-                bgcolor: '#1C1917',
+                bgcolor: palette.neutral[900],
                 py: 1.5,
                 fontSize: '1rem',
                 fontWeight: 600,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#44403C' },
+                '&:hover': { bgcolor: palette.neutral[700] },
                 '&.Mui-disabled': { bgcolor: '#E5E5E5' },
               }}
             >
@@ -250,7 +250,7 @@ export function ForgotPasswordPage() {
             sx={{
               mt: 4,
               textAlign: 'center',
-              color: '#78716C',
+              color: palette.neutral[500],
               fontSize: '0.9375rem',
             }}
           >
@@ -259,7 +259,7 @@ export function ForgotPasswordPage() {
               component={Link}
               to="/login"
               sx={{
-                color: '#CA8A04',
+                color: palette.brand.primary,
                 textDecoration: 'none',
                 fontWeight: 600,
                 '&:hover': { textDecoration: 'underline' },
