@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Paging;
+
 namespace Bidding.Application.Features.Bids.GetWinningBids;
 
 public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, PagedResult<WinningBidDto>>
@@ -18,15 +20,14 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
         _logger.LogInformation("Getting winning bids for user {UserId}, page {Page}", 
             request.UserId, request.Page);
 
-        var winningBids = await _repository.GetWinningBidsForUserAsync(
+        var queryParams = QueryParameters.Create(request.Page, request.PageSize);
+
+        var result = await _repository.GetWinningBidsForUserAsync(
             request.UserId, 
-            request.Page, 
-            request.PageSize, 
+            queryParams, 
             cancellationToken);
 
-        var totalCount = await _repository.GetWinningBidsCountForUserAsync(request.UserId, cancellationToken);
-
-        var enrichedBids = winningBids.Select(bid => new WinningBidDto
+        var enrichedBids = result.Items.Select(bid => new WinningBidDto
         {
             BidId = bid.Id,
             AuctionId = bid.AuctionId,
@@ -40,9 +41,9 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
         return Result<PagedResult<WinningBidDto>>.Success(new PagedResult<WinningBidDto>
         {
             Items = enrichedBids,
-            TotalCount = totalCount,
-            Page = request.Page,
-            PageSize = request.PageSize
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize
         });
     }
 }

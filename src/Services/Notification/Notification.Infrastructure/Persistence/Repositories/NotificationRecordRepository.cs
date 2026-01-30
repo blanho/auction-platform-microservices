@@ -1,5 +1,9 @@
+using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
+using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Infrastructure.Persistence;
@@ -9,6 +13,16 @@ namespace Notification.Infrastructure.Persistence.Repositories;
 public class NotificationRecordRepository : INotificationRecordRepository
 {
     private readonly NotificationDbContext _context;
+
+    private static readonly Dictionary<string, Expression<Func<NotificationRecord, object>>> SortMap = 
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["createdat"] = r => r.CreatedAt,
+        ["sentat"] = r => r.SentAt!,
+        ["channel"] = r => r.Channel,
+        ["status"] = r => r.Status,
+        ["templatekey"] = r => r.TemplateKey
+    };
 
     public NotificationRecordRepository(NotificationDbContext context)
     {
@@ -91,45 +105,31 @@ public class NotificationRecordRepository : INotificationRecordRepository
     }
 
     public async Task<PaginatedResult<NotificationRecord>> GetPagedAsync(
-        Guid? userId = null,
-        string? channel = null,
-        string? status = null,
-        string? templateKey = null,
-        DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null,
-        int page = 1,
-        int pageSize = 20,
+        NotificationRecordFilterDto queryParams,
         CancellationToken ct = default)
     {
-        var query = _context.Records.AsNoTracking().AsQueryable();
+        var filter = queryParams.Filter;
+        
+        var filterBuilder = FilterBuilder<NotificationRecord>.Create()
+            .WhenHasValue(filter.UserId, r => r.UserId == filter.UserId!.Value)
+            .WhenNotEmpty(filter.Channel, r => r.Channel == filter.Channel)
+            .WhenNotEmpty(filter.Status, r => r.Status.ToString() == filter.Status)
+            .WhenNotEmpty(filter.TemplateKey, r => r.TemplateKey == filter.TemplateKey)
+            .WhenHasValue(filter.FromDate, r => r.CreatedAt >= filter.FromDate!.Value)
+            .WhenHasValue(filter.ToDate, r => r.CreatedAt <= filter.ToDate!.Value);
 
-        if (userId.HasValue)
-            query = query.Where(r => r.UserId == userId.Value);
-
-        if (!string.IsNullOrWhiteSpace(channel))
-            query = query.Where(r => r.Channel == channel);
-
-        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<NotificationRecordStatus>(status, true, out var statusEnum))
-            query = query.Where(r => r.Status == statusEnum);
-
-        if (!string.IsNullOrWhiteSpace(templateKey))
-            query = query.Where(r => r.TemplateKey == templateKey);
-
-        if (fromDate.HasValue)
-            query = query.Where(r => r.CreatedAt >= fromDate.Value);
-
-        if (toDate.HasValue)
-            query = query.Where(r => r.CreatedAt <= toDate.Value);
+        var query = _context.Records
+            .AsNoTracking()
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt);
 
         var totalCount = await query.CountAsync(ct);
 
         var items = await query
-            .OrderByDescending(r => r.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .ApplyPaging(queryParams)
             .ToListAsync(ct);
 
-        return new PaginatedResult<NotificationRecord>(items, totalCount, page, pageSize);
+        return new PaginatedResult<NotificationRecord>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<int> GetTotalCountAsync(CancellationToken ct = default)

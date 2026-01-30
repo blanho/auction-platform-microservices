@@ -10,7 +10,7 @@ public class GetAuctionsRequest
     public string? SearchTerm { get; set; }
     public string? Category { get; set; }
     public bool? IsFeatured { get; set; }
-    public int PageNumber { get; set; } = PaginationDefaults.DefaultPage;
+    public int Page { get; set; } = PaginationDefaults.DefaultPage;
     public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
     public string? OrderBy { get; set; }
     public bool Descending { get; set; } = false;

@@ -6,6 +6,8 @@ using Analytics.Api.Enums;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 
 namespace Analytics.Api.Repositories;
 
@@ -21,6 +23,15 @@ public class ReportRepository : IReportRepository
 
     private static readonly Expression<Func<Report, bool>> IsPendingForEscalation =
         r => r.Status == ReportStatus.Pending;
+
+    private static readonly Dictionary<string, Expression<Func<Report, object>>> SortMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["priority"] = r => r.Priority,
+        ["createdat"] = r => r.CreatedAt,
+        ["status"] = r => r.Status,
+        ["type"] = r => r.Type,
+        ["reportedusername"] = r => r.ReportedUsername
+    };
 
     public ReportRepository(AnalyticsDbContext context)
     {
@@ -38,37 +49,26 @@ public class ReportRepository : IReportRepository
         ReportQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildFilteredQuery(queryParams).AsNoTracking();
+        var filter = queryParams.Filter;
+        
+        var filterBuilder = FilterBuilder<Report>.Create()
+            .WhenHasValue(filter.Status, r => r.Status == filter.Status!.Value)
+            .WhenHasValue(filter.Type, r => r.Type == filter.Type!.Value)
+            .WhenHasValue(filter.Priority, r => r.Priority == filter.Priority!.Value)
+            .WhenNotEmpty(filter.ReportedUsername, r => r.ReportedUsername.ToLower().Contains(filter.ReportedUsername!.ToLower()));
+
+        var query = _context.Reports
+            .AsNoTracking()
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var reports = await query
-            .OrderByDescending(r => r.Priority)
-            .ThenByDescending(r => r.CreatedAt)
-            .Skip((queryParams.Page - 1) * queryParams.PageSize)
-            .Take(queryParams.PageSize)
+        var items = await query
+            .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 
-        return new PaginatedResult<Report>(reports, totalCount, queryParams.Page, queryParams.PageSize);
-    }
-
-    private IQueryable<Report> BuildFilteredQuery(ReportQueryParams queryParams)
-    {
-        var query = _context.Reports.AsQueryable();
-
-        if (queryParams.Status.HasValue)
-            query = query.Where(r => r.Status == queryParams.Status.Value);
-
-        if (queryParams.Type.HasValue)
-            query = query.Where(r => r.Type == queryParams.Type.Value);
-
-        if (queryParams.Priority.HasValue)
-            query = query.Where(r => r.Priority == queryParams.Priority.Value);
-
-        if (!string.IsNullOrWhiteSpace(queryParams.ReportedUsername))
-            query = query.Where(r => r.ReportedUsername.ToLower().Contains(queryParams.ReportedUsername.ToLower()));
-
-        return query;
+        return new PaginatedResult<Report>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<Report> AddAsync(Report report, CancellationToken cancellationToken = default)

@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export interface NotificationTemplate {
   id: string
   key: string
@@ -53,15 +55,22 @@ export interface NotificationRecord {
 
 export type RecordStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
 
-export interface NotificationRecordFilterDto {
+export interface NotificationRecordFilter {
   userId?: string
   channel?: string
   status?: string
   templateKey?: string
   fromDate?: string
   toDate?: string
-  page?: number
-  pageSize?: number
+}
+
+export interface NotificationRecordFilterDto extends QueryParameters {
+  userId?: string
+  channel?: string
+  status?: string
+  templateKey?: string
+  fromDate?: string
+  toDate?: string
 }
 
 export interface NotificationRecordStatsDto {

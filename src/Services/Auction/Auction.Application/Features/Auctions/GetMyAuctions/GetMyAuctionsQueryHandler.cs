@@ -26,26 +26,29 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Pagin
     public async Task<Result<PaginatedResult<AuctionDto>>> Handle(GetMyAuctionsQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching auctions for user {Username} - Status: {Status}, Page: {Page}",
-            request.Username, request.Status ?? "All", request.PageNumber);
+            request.Username, request.Status ?? "All", request.Page);
 
         try
         {
-            var filter = new AuctionFilterDto
+            var queryParams = new AuctionFilterDto
             {
-                Status = request.Status,
-                Seller = request.Username,
-                SearchTerm = request.SearchTerm,
-                OrderBy = request.OrderBy,
-                Descending = request.Descending,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                Page = request.Page,
+                PageSize = request.PageSize,
+                SortBy = request.OrderBy,
+                SortDescending = request.Descending,
+                Filter = new AuctionFilter
+                {
+                    Status = request.Status,
+                    Seller = request.Username,
+                    SearchTerm = request.SearchTerm
+                }
             };
 
-            var result = await _repository.GetPagedAsync(filter, cancellationToken);
+            var result = await _repository.GetPagedAsync(queryParams, cancellationToken);
 
             var dtos = result.Items.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
 
-            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.PageNumber, request.PageSize);
+            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.Page, request.PageSize);
 
             _logger.LogInformation("Retrieved {Count} auctions for user {Username} out of {Total}", 
                 dtos.Count, request.Username, result.TotalCount);

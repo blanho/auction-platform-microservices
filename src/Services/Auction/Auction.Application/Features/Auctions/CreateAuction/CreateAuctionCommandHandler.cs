@@ -16,7 +16,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IFileConfirmationService _fileConfirmationService;
     private readonly ISanitizationService _sanitizationService;
 
     public CreateAuctionCommandHandler(
@@ -25,7 +24,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        IFileConfirmationService fileConfirmationService,
         ISanitizationService sanitizationService)
     {
         _repository = repository;
@@ -33,7 +31,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _fileConfirmationService = fileConfirmationService;
         _sanitizationService = sanitizationService;
     }
 
@@ -46,23 +43,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         auction.RaiseCreatedEvent();
 
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
-
-        if (request.Files != null && request.Files.Count > 0)
-        {
-            var fileIds = request.Files.Select(f => f.FileId).ToList();
-            
-            _logger.LogInformation("Confirming {FileCount} files for auction {AuctionId}", 
-                fileIds.Count, createdAuction.Id);
-
-            await _fileConfirmationService.ConfirmFilesAsync(
-                fileIds, 
-                "Auction", 
-                createdAuction.Id.ToString(), 
-                cancellationToken);
-
-            _logger.LogInformation("Confirmed {FileCount} files for auction {AuctionId}", 
-                fileIds.Count, createdAuction.Id);
-        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -82,6 +62,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             YearManufactured = request.YearManufactured,
             Attributes = request.Attributes ?? new Dictionary<string, string>(),
             CategoryId = request.CategoryId,
+            BrandId = request.BrandId,
             Files = new List<MediaFile>()
         };
 

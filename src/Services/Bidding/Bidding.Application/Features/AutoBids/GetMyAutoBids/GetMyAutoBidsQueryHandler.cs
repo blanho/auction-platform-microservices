@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Paging;
+
 namespace Bidding.Application.Features.AutoBids.GetMyAutoBids;
 
 public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAutoBidsResult>
@@ -21,20 +23,18 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
         _logger.LogInformation("Getting auto-bids for user {UserId}, page {Page}", 
             request.UserId, request.Page);
 
-        var autoBids = await _repository.GetAutoBidsByUserAsync(
+        var queryParams = QueryParameters.Create(request.Page, request.PageSize);
+        var result = await _repository.GetAutoBidsByUserAsync(
             request.UserId, 
             request.ActiveOnly, 
-            request.Page, 
-            request.PageSize, 
+            queryParams, 
             cancellationToken);
-
-        var totalCount = await _repository.GetAutoBidsCountForUserAsync(request.UserId, request.ActiveOnly, cancellationToken);
         var activeCount = await _repository.GetAutoBidsCountForUserAsync(request.UserId, true, cancellationToken);
 
         var items = new List<MyAutoBidDto>();
         decimal totalCommitted = 0;
 
-        foreach (var autoBid in autoBids)
+        foreach (var autoBid in result.Items)
         {
             var highestBid = await _bidRepository.GetHighestBidForAuctionAsync(autoBid.AuctionId, cancellationToken);
             var isWinning = highestBid?.BidderId == autoBid.UserId;
@@ -63,9 +63,9 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
         return Result<MyAutoBidsResult>.Success(new MyAutoBidsResult
         {
             Items = items,
-            TotalCount = totalCount,
-            Page = request.Page,
-            PageSize = request.PageSize,
+            TotalCount = result.TotalCount,
+            Page = result.Page,
+            PageSize = result.PageSize,
             ActiveCount = activeCount,
             TotalCommitted = totalCommitted
         });

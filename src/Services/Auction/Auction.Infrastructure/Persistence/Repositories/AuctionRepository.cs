@@ -1,10 +1,12 @@
 #nullable enable
+using System.Linq.Expressions;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Paging;
 using BuildingBlocks.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
@@ -14,6 +16,15 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
         private readonly IAuditContext _auditContext;
+
+        private static readonly Dictionary<string, Expression<Func<Auction, object>>> AuctionSortMap = 
+            new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["price"] = x => x.CurrentHighBid ?? x.ReservePrice,
+            ["enddate"] = x => x.AuctionEnd,
+            ["createdat"] = x => x.CreatedAt,
+            ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
+        };
 
         public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
@@ -153,9 +164,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
-            AuctionFilterDto filter,
+            AuctionFilterDto queryParams,
             CancellationToken cancellationToken = default)
         {
+            var filter = queryParams.Filter;
+            
             var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
@@ -203,31 +216,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = filter.OrderBy?.ToLower() switch
-            {
-                "price" => filter.Descending 
-                    ? query.OrderByDescending(x => x.CurrentHighBid ?? x.ReservePrice)
-                    : query.OrderBy(x => x.CurrentHighBid ?? x.ReservePrice),
-                "enddate" => filter.Descending 
-                    ? query.OrderByDescending(x => x.AuctionEnd)
-                    : query.OrderBy(x => x.AuctionEnd),
-                "createdat" => filter.Descending 
-                    ? query.OrderByDescending(x => x.CreatedAt)
-                    : query.OrderBy(x => x.CreatedAt),
-                "title" => filter.Descending 
-                    ? query.OrderByDescending(x => x.Item != null ? x.Item.Title : string.Empty)
-                    : query.OrderBy(x => x.Item != null ? x.Item.Title : string.Empty),
-                _ => filter.Descending 
-                    ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                    : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt)
-            };
+            query = query.ApplySorting(queryParams, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
 
             var items = await query
-                .Skip((filter.PageNumber - 1) * filter.PageSize)
-                .Take(filter.PageSize)
+                .ApplyPaging(queryParams)
                 .ToListAsync(cancellationToken);
 
-            return new PaginatedResult<Auction>(items, totalCount, filter.PageNumber, filter.PageSize);
+            return new PaginatedResult<Auction>(items, totalCount, queryParams.Page, queryParams.PageSize);
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)

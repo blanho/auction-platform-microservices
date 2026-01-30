@@ -10,7 +10,7 @@ public record GetAuctionsQuery(
     string? SearchTerm = null,
     string? Category = null,
     bool? IsFeatured = null,
-    int PageNumber = PaginationDefaults.DefaultPage,
+    int Page = PaginationDefaults.DefaultPage,
     int PageSize = PaginationDefaults.DefaultPageSize,
     string? OrderBy = null,
     bool Descending = false

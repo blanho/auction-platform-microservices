@@ -1,4 +1,5 @@
 import { http } from '@/services/http'
+import type { QueryParameters } from '@/shared/types'
 
 export interface Category {
   id: string
@@ -33,14 +34,12 @@ export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
   isActive?: boolean
 }
 
-export interface CategoryFilters {
+export interface CategoryFilters extends QueryParameters {
   search?: string
   parentId?: string
   isActive?: boolean
   activeOnly?: boolean
   includeCount?: boolean
-  page?: number
-  pageSize?: number
 }
 
 export const categoriesApi = {

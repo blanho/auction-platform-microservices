@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export interface SearchResult {
   id: string
   type: SearchResultType
@@ -16,16 +18,13 @@ export interface SearchHighlight {
   fragments: string[]
 }
 
-export interface SearchFilters {
+export interface SearchFilters extends QueryParameters {
   query: string
   types?: SearchResultType[]
   categoryId?: string
   minPrice?: number
   maxPrice?: number
   status?: string
-  sortBy?: 'relevance' | 'price-low' | 'price-high' | 'newest' | 'ending-soon'
-  page?: number
-  pageSize?: number
 }
 
 export interface SearchSuggestion {

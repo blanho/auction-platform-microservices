@@ -53,7 +53,7 @@ public class AuctionQueryEndpoints : ICarterModule
         var query = new GetAuctionsQuery(
             request.Status, request.Seller, request.Winner, request.SearchTerm,
             request.Category, request.IsFeatured,
-            request.PageNumber, request.PageSize, request.OrderBy, request.Descending);
+            request.Page, request.PageSize, request.OrderBy, request.Descending);
 
         var result = await mediator.Send(query, ct);
 
@@ -91,7 +91,7 @@ public class AuctionQueryEndpoints : ICarterModule
             username,
             request.Status,
             request.SearchTerm,
-            request.PageNumber,
+            request.Page,
             request.PageSize,
             request.OrderBy,
             request.Descending);

@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export type ReportType =
   | 'Fraud'
   | 'FakeItem'
@@ -40,13 +42,18 @@ export interface UpdateReportStatusRequest {
   resolution?: string
 }
 
-export interface ReportQueryParams {
+export interface ReportFilter {
   status?: ReportStatus
   type?: ReportType
   priority?: ReportPriority
   reportedUsername?: string
-  page?: number
-  pageSize?: number
+}
+
+export interface ReportQueryParams extends QueryParameters {
+  status?: ReportStatus
+  type?: ReportType
+  priority?: ReportPriority
+  reportedUsername?: string
 }
 
 export interface ReportStats {

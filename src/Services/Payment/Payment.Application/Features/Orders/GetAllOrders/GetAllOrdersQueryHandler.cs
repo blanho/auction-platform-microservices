@@ -18,25 +18,26 @@ public class GetAllOrdersQueryHandler : IQueryHandler<GetAllOrdersQuery, Paginat
 
     public async Task<Result<PaginatedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
     {
-        var orders = await _repository.GetAllAsync(
-            request.Page, 
-            request.PageSize, 
-            request.SearchTerm, 
-            request.Status,
-            request.FromDate,
-            request.ToDate);
-            
-        var totalCount = await _repository.GetAllCountAsync(
-            request.SearchTerm, 
-            request.Status,
-            request.FromDate,
-            request.ToDate);
+        var queryParams = new OrderQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            Filter = new OrderFilter
+            {
+                SearchTerm = request.SearchTerm,
+                Status = request.Status,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
+
+        var orders = await _repository.GetAllAsync(queryParams, cancellationToken);
 
         var result = new PaginatedResult<OrderDto>(
-            orders.ToDtoList(_mapper),
-            totalCount,
-            request.Page,
-            request.PageSize
+            orders.Items.ToDtoList(_mapper),
+            orders.TotalCount,
+            orders.Page,
+            orders.PageSize
         );
 
         return result;

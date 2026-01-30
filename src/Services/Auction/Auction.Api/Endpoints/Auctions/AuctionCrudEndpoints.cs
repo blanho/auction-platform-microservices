@@ -86,6 +86,7 @@ public class AuctionCrudEndpoints : ICarterModule
             dto.Currency,
             commandFiles,
             dto.CategoryId,
+            dto.BrandId,
             dto.IsFeatured);
 
         var result = await mediator.Send(command, ct);

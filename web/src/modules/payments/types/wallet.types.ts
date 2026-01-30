@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export type TransactionType =
   | 'deposit'
   | 'withdrawal'
@@ -53,11 +55,9 @@ export interface WithdrawRequest {
   description?: string
 }
 
-export interface TransactionFilters {
+export interface TransactionFilters extends QueryParameters {
   type?: TransactionType
   status?: TransactionStatus
   startDate?: string
   endDate?: string
-  page?: number
-  pageSize?: number
 }

@@ -66,8 +66,6 @@ images:
     newTag: staging
   - name: auction-platform/notification-api
     newTag: staging
-  - name: auction-platform/storage-api
-    newTag: staging
   - name: auction-platform/identity-api
     newTag: staging
   - name: auction-platform/analytics-api

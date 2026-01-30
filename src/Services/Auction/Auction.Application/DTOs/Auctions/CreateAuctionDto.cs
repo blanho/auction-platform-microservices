@@ -31,6 +31,8 @@ namespace Auctions.Application.DTOs
 
         public Guid? CategoryId { get; set; }
 
+        public Guid? BrandId { get; set; }
+
         public bool IsFeatured { get; set; } = false;
     }
 }

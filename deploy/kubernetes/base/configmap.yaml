@@ -23,6 +23,5 @@ data:
   BIDDING_SERVICE_URL: "http://bidding-api:80"
   PAYMENT_SERVICE_URL: "http://payment-api:80"
   NOTIFICATION_SERVICE_URL: "http://notification-api:80"
-  STORAGE_SERVICE_URL: "http://storage-api:80"
   IDENTITY_SERVICE_URL: "http://identity-api:80"
   ANALYTICS_SERVICE_URL: "http://analytics-api:80"

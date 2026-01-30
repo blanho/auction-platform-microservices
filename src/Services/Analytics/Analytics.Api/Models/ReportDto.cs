@@ -1,5 +1,6 @@
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;
+using BuildingBlocks.Application.Paging;
 
 namespace Analytics.Api.Models;
 
@@ -35,15 +36,15 @@ public class ResolveReportDto
     public required ReportStatus Status { get; set; }
 }
 
-public class ReportQueryParams
+public class ReportFilter
 {
-    public ReportStatus? Status { get; set; }
-    public ReportType? Type { get; set; }
-    public ReportPriority? Priority { get; set; }
-    public string? ReportedUsername { get; set; }
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    public ReportStatus? Status { get; init; }
+    public ReportType? Type { get; init; }
+    public ReportPriority? Priority { get; init; }
+    public string? ReportedUsername { get; init; }
 }
+
+public class ReportQueryParams : QueryParameters<ReportFilter> { }
 
 public class ReportStatsDto
 {

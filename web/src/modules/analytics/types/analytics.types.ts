@@ -1,3 +1,4 @@
+import type { QueryParameters } from '@/shared/types'
 import type {
   OverviewMetrics,
   AuctionMetrics,
@@ -108,14 +109,14 @@ export interface TrendingSearch {
   count: number
 }
 
-export interface AnalyticsQueryParams {
+export interface AnalyticsQueryParams extends QueryParameters {
   startDate?: string
   endDate?: string
   period?: string
   categoryId?: string
 }
 
-export interface TrendsQueryParams {
+export interface TrendsQueryParams extends QueryParameters {
   startDate?: string
   endDate?: string
   granularity?: 'hour' | 'day' | 'week' | 'month'

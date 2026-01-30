@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Common.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
@@ -5,12 +6,22 @@ using Analytics.Api.Entities;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 
 namespace Analytics.Api.Repositories;
 
 public class AuditLogRepository : IAuditLogRepository
 {
     private readonly AnalyticsDbContext _context;
+
+    private static readonly Dictionary<string, Expression<Func<AuditLog, object>>> SortMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["timestamp"] = x => x.Timestamp,
+        ["entitytype"] = x => x.EntityType,
+        ["action"] = x => x.Action,
+        ["servicename"] = x => x.ServiceName
+    };
 
     public AuditLogRepository(AnalyticsDbContext context)
     {
@@ -47,45 +58,29 @@ public class AuditLogRepository : IAuditLogRepository
         AuditLogQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var query = BuildFilteredQuery(queryParams).AsNoTracking();
+        var filter = queryParams.Filter;
+        
+        var filterBuilder = FilterBuilder<AuditLog>.Create()
+            .WhenHasValue(filter.EntityId, x => x.EntityId == filter.EntityId!.Value)
+            .WhenNotEmpty(filter.EntityType, x => x.EntityType == filter.EntityType)
+            .WhenHasValue(filter.UserId, x => x.UserId == filter.UserId!.Value)
+            .WhenNotEmpty(filter.ServiceName, x => x.ServiceName == filter.ServiceName)
+            .WhenHasValue(filter.Action, x => x.Action == filter.Action!.Value)
+            .WhenHasValue(filter.FromDate, x => x.Timestamp >= filter.FromDate!.Value)
+            .WhenHasValue(filter.ToDate, x => x.Timestamp <= filter.ToDate!.Value);
+
+        var query = _context.AuditLogs
+            .AsNoTracking()
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, SortMap, x => x.Timestamp);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .OrderByDescending(x => x.Timestamp)
-            .Skip((queryParams.Page - 1) * queryParams.PageSize)
-            .Take(queryParams.PageSize)
+            .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 
         return new PaginatedResult<AuditLog>(items, totalCount, queryParams.Page, queryParams.PageSize);
-    }
-
-    private IQueryable<AuditLog> BuildFilteredQuery(AuditLogQueryParams queryParams)
-    {
-        var query = _context.AuditLogs.AsQueryable();
-
-        if (queryParams.EntityId.HasValue)
-            query = query.Where(x => x.EntityId == queryParams.EntityId.Value);
-
-        if (!string.IsNullOrEmpty(queryParams.EntityType))
-            query = query.Where(x => x.EntityType == queryParams.EntityType);
-
-        if (queryParams.UserId.HasValue)
-            query = query.Where(x => x.UserId == queryParams.UserId.Value);
-
-        if (!string.IsNullOrEmpty(queryParams.ServiceName))
-            query = query.Where(x => x.ServiceName == queryParams.ServiceName);
-
-        if (queryParams.Action.HasValue)
-            query = query.Where(x => x.Action == queryParams.Action.Value);
-
-        if (queryParams.FromDate.HasValue)
-            query = query.Where(x => x.Timestamp >= queryParams.FromDate.Value);
-
-        if (queryParams.ToDate.HasValue)
-            query = query.Where(x => x.Timestamp <= queryParams.ToDate.Value);
-
-        return query;
     }
 
     public async Task AddAsync(AuditLog auditLog, CancellationToken cancellationToken = default)

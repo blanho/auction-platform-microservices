@@ -26,29 +26,32 @@ public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, Paginated
     public async Task<Result<PaginatedResult<AuctionDto>>> Handle(GetAuctionsQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching auctions with filters - Status: {Status}, Seller: {Seller}, Page: {Page}",
-            request.Status ?? "All", request.Seller ?? "All", request.PageNumber);
+            request.Status ?? "All", request.Seller ?? "All", request.Page);
 
         try
         {
-            var filter = new AuctionFilterDto
+            var queryParams = new AuctionFilterDto
             {
-                Status = request.Status,
-                Seller = request.Seller,
-                Winner = request.Winner,
-                SearchTerm = request.SearchTerm,
-                Category = request.Category,
-                IsFeatured = request.IsFeatured,
-                OrderBy = request.OrderBy,
-                Descending = request.Descending,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                Page = request.Page,
+                PageSize = request.PageSize,
+                SortBy = request.OrderBy,
+                SortDescending = request.Descending,
+                Filter = new AuctionFilter
+                {
+                    Status = request.Status,
+                    Seller = request.Seller,
+                    Winner = request.Winner,
+                    SearchTerm = request.SearchTerm,
+                    Category = request.Category,
+                    IsFeatured = request.IsFeatured
+                }
             };
 
-            var result = await _repository.GetPagedAsync(filter, cancellationToken);
+            var result = await _repository.GetPagedAsync(queryParams, cancellationToken);
 
             var dtos = result.Items.Select(auction => _mapper.Map<AuctionDto>(auction)).ToList();
 
-            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.PageNumber, request.PageSize);
+            var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.Page, request.PageSize);
 
             _logger.LogInformation("Retrieved {Count} auctions out of {Total}", dtos.Count, result.TotalCount);
 

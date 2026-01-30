@@ -1,27 +1,19 @@
 import type { BidStatus } from './bid.types'
+import type { QueryParameters } from '@/shared/types'
 
-export interface BidFilters {
+export interface BidFilters extends QueryParameters {
   status?: BidStatus
-  page?: number
-  pageSize?: number
 }
 
-export interface WinningBidsFilters {
-  page?: number
-  pageSize?: number
-}
+export interface WinningBidsFilters extends QueryParameters {}
 
-export interface BidHistoryFilters {
+export interface BidHistoryFilters extends QueryParameters {
   auctionId?: string
   status?: BidStatus
   fromDate?: string
   toDate?: string
-  page?: number
-  pageSize?: number
 }
 
-export interface AutoBidFilters {
+export interface AutoBidFilters extends QueryParameters {
   activeOnly?: boolean
-  page?: number
-  pageSize?: number
 }

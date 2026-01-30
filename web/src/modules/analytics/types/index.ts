@@ -49,11 +49,12 @@ export type {
   Report,
   CreateReportRequest,
   UpdateReportStatusRequest,
+  ReportFilter,
   ReportQueryParams,
   ReportStats,
 } from './reports.types'
 
-export type { AuditAction, AuditLog, AuditLogQueryParams } from './audit.types'
+export type { AuditAction, AuditLog, AuditLogFilter, AuditLogQueryParams } from './audit.types'
 
 export type {
   SettingCategory,

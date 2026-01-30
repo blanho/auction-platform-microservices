@@ -115,7 +115,6 @@ data:
     CREATE DATABASE bidding_db;
     CREATE DATABASE payment_db;
     CREATE DATABASE notification_db;
-    CREATE DATABASE storage_db;
     CREATE DATABASE identity_db;
     CREATE DATABASE analytics_db;
 
@@ -124,6 +123,5 @@ data:
     GRANT ALL PRIVILEGES ON DATABASE bidding_db TO postgres;
     GRANT ALL PRIVILEGES ON DATABASE payment_db TO postgres;
     GRANT ALL PRIVILEGES ON DATABASE notification_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE storage_db TO postgres;
     GRANT ALL PRIVILEGES ON DATABASE identity_db TO postgres;
     GRANT ALL PRIVILEGES ON DATABASE analytics_db TO postgres;

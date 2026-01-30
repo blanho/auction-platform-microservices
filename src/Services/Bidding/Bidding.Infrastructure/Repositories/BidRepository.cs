@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,8 @@ using Bidding.Application.DTOs;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 using Bidding.Domain.Enums;
 using Bidding.Domain.Entities;
 
@@ -15,6 +18,15 @@ namespace Bidding.Infrastructure.Repositories
         private readonly BidDbContext _context;
         private readonly IDateTimeProvider _dateTime;
         private readonly IAuditContext _auditContext;
+
+        private static readonly Dictionary<string, Expression<Func<Bid, object>>> BidSortMap = 
+            new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["bidtime"] = x => x.BidTime,
+            ["amount"] = x => x.Amount,
+            ["createdat"] = x => x.CreatedAt,
+            ["status"] = x => x.Status
+        };
 
         public BidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
@@ -242,10 +254,9 @@ namespace Bidding.Infrastructure.Repositories
             return topBidders;
         }
 
-        public async Task<List<Bid>> GetWinningBidsForUserAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, QueryParameters queryParams, CancellationToken cancellationToken = default)
         {
-
-            var winningBids = await _context.Bids
+            var baseQuery = _context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId && x.Status == BidStatus.Accepted)
                 .GroupBy(x => x.AuctionId)
@@ -254,13 +265,16 @@ namespace Bidding.Infrastructure.Repositories
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
                     ob.Status == BidStatus.Accepted &&
-                    ob.Amount > b.Amount))
+                    ob.Amount > b.Amount));
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var winningBids = await baseQuery
                 .OrderByDescending(b => b.BidTime)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .ApplyPaging(queryParams)
                 .ToListAsync(cancellationToken);
 
-            return winningBids;
+            return new PaginatedResult<Bid>(winningBids, totalCount, queryParams.Page, queryParams.PageSize);
         }
 
         public async Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -327,34 +341,30 @@ namespace Bidding.Infrastructure.Repositories
             return bidCounts;
         }
 
-        public async Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default)
+        public async Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryQueryParams queryParams, CancellationToken cancellationToken = default)
         {
-            var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted);
+            var filter = queryParams.Filter;
+            
+            var filterBuilder = FilterBuilder<Bid>.Create()
+                .When(true, x => !x.IsDeleted)
+                .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
+                .WhenHasValue(filter.UserId, x => x.BidderId == filter.UserId!.Value)
+                .WhenHasValue(filter.Status, x => x.Status == filter.Status!.Value)
+                .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
+                .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
 
-            if (filter.AuctionId.HasValue)
-                query = query.Where(x => x.AuctionId == filter.AuctionId.Value);
-
-            if (filter.UserId.HasValue)
-                query = query.Where(x => x.BidderId == filter.UserId.Value);
-
-            if (filter.Status.HasValue)
-                query = query.Where(x => x.Status == filter.Status.Value);
-
-            if (filter.FromDate.HasValue)
-                query = query.Where(x => x.BidTime >= filter.FromDate.Value);
-
-            if (filter.ToDate.HasValue)
-                query = query.Where(x => x.BidTime <= filter.ToDate.Value);
+            var query = _context.Bids
+                .AsNoTracking()
+                .ApplyFiltering(filterBuilder)
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
             var bids = await query
-                .OrderByDescending(x => x.BidTime)
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
+                .ApplyPaging(queryParams)
                 .ToListAsync(cancellationToken);
 
-            return new PaginatedResult<Bid>(bids, totalCount, filter.Page, filter.PageSize);
+            return new PaginatedResult<Bid>(bids, totalCount, queryParams.Page, queryParams.PageSize);
         }
     }
 }

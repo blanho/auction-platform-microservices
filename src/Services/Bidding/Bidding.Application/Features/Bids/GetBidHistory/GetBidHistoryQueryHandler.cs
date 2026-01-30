@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Paging;
+
 namespace Bidding.Application.Features.Bids.GetBidHistory;
 
 public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHistoryResult>
@@ -18,18 +20,21 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
         _logger.LogInformation("Getting bid history with filters - AuctionId: {AuctionId}, UserId: {UserId}, Page: {Page}",
             request.AuctionId, request.UserId, request.Page);
 
-        var filter = new BidHistoryFilter
+        var queryParams = new BidHistoryQueryParams
         {
-            AuctionId = request.AuctionId,
-            UserId = request.UserId,
-            Status = request.Status,
-            FromDate = request.FromDate,
-            ToDate = request.ToDate,
             Page = request.Page,
-            PageSize = request.PageSize
+            PageSize = request.PageSize,
+            Filter = new BidHistoryFilter
+            {
+                AuctionId = request.AuctionId,
+                UserId = request.UserId,
+                Status = request.Status,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
         };
 
-        var result = await _repository.GetBidHistoryAsync(filter, cancellationToken);
+        var result = await _repository.GetBidHistoryAsync(queryParams, cancellationToken);
 
         var items = result.Items.Select(b => new BidHistoryItemDto
         {

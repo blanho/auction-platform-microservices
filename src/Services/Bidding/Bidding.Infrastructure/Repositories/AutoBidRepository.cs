@@ -1,12 +1,14 @@
 
 
 
+using System.Linq.Expressions;
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bidding.Infrastructure.Repositories;
@@ -16,6 +18,15 @@ public class AutoBidRepository : IAutoBidRepository
     private readonly BidDbContext _context;
     private readonly IDateTimeProvider _dateTime;
     private readonly IAuditContext _auditContext;
+
+    private static readonly Dictionary<string, Expression<Func<AutoBid, object>>> AutoBidSortMap = 
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["createdat"] = x => x.CreatedAt,
+        ["maxamount"] = x => x.MaxAmount,
+        ["currentbidamount"] = x => x.CurrentBidAmount,
+        ["lastbidat"] = x => x.LastBidAt!
+    };
 
     public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
@@ -157,7 +168,7 @@ public class AutoBidRepository : IAutoBidRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<AutoBid>> GetAutoBidsByUserAsync(Guid userId, bool? activeOnly, int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<AutoBid>> GetAutoBidsByUserAsync(Guid userId, bool? activeOnly, QueryParameters queryParams, CancellationToken cancellationToken = default)
     {
         var query = _context.AutoBids
             .AsNoTracking()
@@ -166,11 +177,14 @@ public class AutoBidRepository : IAutoBidRepository
         if (activeOnly.HasValue)
             query = query.Where(ab => ab.IsActive == activeOnly.Value);
 
-        return await query
-            .OrderByDescending(ab => ab.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .ApplySorting(queryParams, AutoBidSortMap, ab => ab.CreatedAt)
+            .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<AutoBid>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<int> GetAutoBidsCountForUserAsync(Guid userId, bool? activeOnly, CancellationToken cancellationToken = default)

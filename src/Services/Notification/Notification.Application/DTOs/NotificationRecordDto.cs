@@ -1,3 +1,5 @@
+using BuildingBlocks.Application.Paging;
+
 namespace Notification.Application.DTOs;
 
 public class NotificationRecordDto
@@ -15,17 +17,17 @@ public class NotificationRecordDto
     public DateTimeOffset CreatedAt { get; set; }
 }
 
-public class NotificationRecordFilterDto
+public class NotificationRecordFilter
 {
-    public Guid? UserId { get; set; }
-    public string? Channel { get; set; }
-    public string? Status { get; set; }
-    public string? TemplateKey { get; set; }
-    public DateTimeOffset? FromDate { get; set; }
-    public DateTimeOffset? ToDate { get; set; }
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    public Guid? UserId { get; init; }
+    public string? Channel { get; init; }
+    public string? Status { get; init; }
+    public string? TemplateKey { get; init; }
+    public DateTimeOffset? FromDate { get; init; }
+    public DateTimeOffset? ToDate { get; init; }
 }
+
+public class NotificationRecordFilterDto : QueryParameters<NotificationRecordFilter> { }
 
 public class NotificationRecordStatsDto
 {

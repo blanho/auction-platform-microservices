@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions;
+using Notification.Application.DTOs;
 using Notification.Domain.Entities;
 
 namespace Notification.Application.Interfaces;
@@ -13,14 +14,7 @@ public interface INotificationRecordRepository
     Task<NotificationRecord?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     Task<PaginatedResult<NotificationRecord>> GetPagedAsync(
-        Guid? userId = null,
-        string? channel = null,
-        string? status = null,
-        string? templateKey = null,
-        DateTimeOffset? fromDate = null,
-        DateTimeOffset? toDate = null,
-        int page = 1,
-        int pageSize = 20,
+        NotificationRecordFilterDto queryParams,
         CancellationToken ct = default);
 
     Task<int> GetTotalCountAsync(CancellationToken ct = default);

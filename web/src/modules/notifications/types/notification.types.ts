@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export interface Notification {
   id: string
   userId: string
@@ -32,11 +34,9 @@ export interface NotificationSummary {
   recentNotifications: Notification[]
 }
 
-export interface NotificationFilters {
+export interface NotificationFilters extends QueryParameters {
   type?: NotificationType
   status?: NotificationStatus
-  page?: number
-  pageSize?: number
 }
 
 export interface NotificationPreferences {
@@ -67,7 +67,7 @@ export interface BroadcastNotificationDto {
   targetRole?: string
 }
 
-export interface AdminNotificationFilters {
+export interface AdminNotificationFilters extends QueryParameters {
   userId?: string
   type?: NotificationType
   status?: NotificationStatus

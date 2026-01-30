@@ -1,6 +1,7 @@
 import type { AuctionStatus } from './auction.types'
+import type { QueryParameters } from '@/shared/types'
 
-export interface AuctionFilters {
+export interface AuctionFilter {
   search?: string
   searchTerm?: string
   categoryId?: string
@@ -12,12 +13,20 @@ export interface AuctionFilters {
   seller?: string
   winner?: string
   isFeatured?: boolean
-  sortBy?: 'ending-soon' | 'newest' | 'price-low' | 'price-high' | 'popular'
-  orderBy?: string
-  descending?: boolean
-  page?: number
-  pageNumber?: number
-  pageSize?: number
+}
+
+export interface AuctionFilters extends QueryParameters {
+  search?: string
+  searchTerm?: string
+  categoryId?: string
+  category?: string
+  status?: AuctionStatus
+  minPrice?: number
+  maxPrice?: number
+  sellerId?: string
+  seller?: string
+  winner?: string
+  isFeatured?: boolean
 }
 
 export interface CreateAuctionFileInput {

@@ -19,12 +19,10 @@ public class AuctionDocument
 
     public Guid? BrandId { get; set; }
     public string? BrandName { get; set; }
-
     public Guid SellerId { get; set; }
     public string SellerUsername { get; set; } = string.Empty;
     public string? SellerDisplayName { get; set; }
     public double? SellerRating { get; set; }
-
     public decimal StartPrice { get; set; }
 
     public decimal ReservePrice { get; set; }

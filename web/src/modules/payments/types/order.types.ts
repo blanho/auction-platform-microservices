@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export type OrderStatus =
   | 'pending'
   | 'payment_pending'
@@ -118,10 +120,21 @@ export interface CancelOrderRequest {
   reason?: string
 }
 
-export interface OrderFilters {
+export interface OrderFilter {
+  status?: OrderStatus
+  paymentStatus?: PaymentStatus
+  searchTerm?: string
+  fromDate?: string
+  toDate?: string
+  buyerUsername?: string
+  sellerUsername?: string
+}
+
+export interface OrderFilters extends QueryParameters {
   status?: OrderStatus
   paymentStatus?: PaymentStatus
   role?: 'buyer' | 'seller'
-  page?: number
-  pageSize?: number
+  searchTerm?: string
+  fromDate?: string
+  toDate?: string
 }

@@ -8,7 +8,7 @@ public class GetMyAuctionsRequest
 
     public string? SearchTerm { get; set; }
 
-    public int PageNumber { get; set; } = PaginationDefaults.DefaultPage;
+    public int Page { get; set; } = PaginationDefaults.DefaultPage;
 
     public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
 

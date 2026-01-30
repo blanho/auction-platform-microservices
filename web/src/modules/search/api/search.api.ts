@@ -3,13 +3,13 @@ import type { SearchFilters, SearchResponse, SearchSuggestion } from '../types'
 
 export const searchApi = {
   async search(filters: SearchFilters): Promise<SearchResponse> {
-    const response = await http.get<SearchResponse>('/search', { params: filters })
+    const response = await http.get<SearchResponse>('/search/auctions', { params: filters })
     return response.data
   },
 
   async getSuggestions(query: string, limit = 10): Promise<SearchSuggestion[]> {
-    const response = await http.get<SearchSuggestion[]>('/search/suggestions', {
-      params: { query, limit },
+    const response = await http.get<SearchSuggestion[]>('/search/autocomplete', {
+      params: { q: query, limit },
     })
     return response.data
   },

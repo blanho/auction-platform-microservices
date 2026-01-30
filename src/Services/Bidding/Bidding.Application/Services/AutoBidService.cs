@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using BuildingBlocks.Application.Paging;
 using BuildingBlocks.Infrastructure.Repository;
 
 namespace Bidding.Application.Services
@@ -60,8 +61,9 @@ namespace Bidding.Application.Services
 
         public async Task<List<AutoBidDto>> GetAutoBidsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var autoBids = await _autoBidRepository.GetAutoBidsByUserAsync(userId, null, 1, 100, cancellationToken);
-            return autoBids.Select(MapToDto).ToList();
+            var queryParams = QueryParameters.Create(1, 100);
+            var result = await _autoBidRepository.GetAutoBidsByUserAsync(userId, null, queryParams, cancellationToken);
+            return result.Items.Select(MapToDto).ToList();
         }
 
         public async Task<AutoBidDto?> UpdateAutoBidAsync(Guid id, UpdateAutoBidDto dto, Guid userId, CancellationToken cancellationToken = default)

@@ -20,19 +20,22 @@ public class GetNotificationRecordsQueryHandler : IQueryHandler<GetNotificationR
     {
         _logger.LogInformation("Getting notification records - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
 
-        var filter = new NotificationRecordFilterDto
+        var queryParams = new NotificationRecordFilterDto
         {
-            UserId = request.UserId,
-            Channel = request.Channel,
-            Status = request.Status,
-            TemplateKey = request.TemplateKey,
-            FromDate = request.FromDate,
-            ToDate = request.ToDate,
             Page = request.Page,
-            PageSize = request.PageSize
+            PageSize = request.PageSize,
+            Filter = new NotificationRecordFilter
+            {
+                UserId = request.UserId,
+                Channel = request.Channel,
+                Status = request.Status,
+                TemplateKey = request.TemplateKey,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
         };
 
-        var result = await _recordService.GetPagedAsync(filter, cancellationToken);
+        var result = await _recordService.GetPagedAsync(queryParams, cancellationToken);
 
         return Result.Success(result);
     }

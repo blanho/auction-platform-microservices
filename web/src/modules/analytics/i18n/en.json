@@ -262,8 +262,7 @@
     "PaymentService": "Payment Service",
     "NotificationService": "Notification Service",
     "AnalyticsService": "Analytics Service",
-    "SearchService": "Search Service",
-    "StorageService": "Storage Service"
+    "SearchService": "Search Service"
   },
 
   "settings": {

@@ -1,41 +1,48 @@
 # ==============================================================================
-# Storage Service Dockerfile
+# Search Service Dockerfile
+# Multi-stage build for optimized production image
 # ==============================================================================
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /src
 
+# Copy project files for restore
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
-COPY ["src/Services/Storage/Storage.Domain/Storage.Domain.csproj", "src/Services/Storage/Storage.Domain/"]
-COPY ["src/Services/Storage/Storage.Application/Storage.Application.csproj", "src/Services/Storage/Storage.Application/"]
-COPY ["src/Services/Storage/Storage.Infrastructure/Storage.Infrastructure.csproj", "src/Services/Storage/Storage.Infrastructure/"]
-COPY ["src/Services/Storage/Storage.Api/Storage.Api.csproj", "src/Services/Storage/Storage.Api/"]
-COPY ["src/Services/Storage/Storage.Contracts/Storage.Contracts.csproj", "src/Services/Storage/Storage.Contracts/"]
+COPY ["src/Services/Search/Search.Api/Search.Api.csproj", "src/Services/Search/Search.Api/"]
 COPY ["src/Contracts/AuctionService.Contracts/AuctionService.Contracts.csproj", "src/Contracts/AuctionService.Contracts/"]
+COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
+COPY ["src/Contracts/SearchService.Contracts/SearchService.Contracts.csproj", "src/Contracts/SearchService.Contracts/"]
 
-RUN dotnet restore "src/Services/Storage/Storage.Api/Storage.Api.csproj" --runtime linux-musl-x64
+# Restore dependencies
+RUN dotnet restore "src/Services/Search/Search.Api/Search.Api.csproj" --runtime linux-musl-x64
 
+# Copy source code
 COPY ["src/", "src/"]
 
-WORKDIR "/src/src/Services/Storage/Storage.Api"
-RUN dotnet publish "Storage.Api.csproj" \
+# Build and publish
+WORKDIR "/src/src/Services/Search/Search.Api"
+RUN dotnet publish "Search.Api.csproj" \
     -c Release \
     -o /app/publish \
     --no-restore \
     --runtime linux-musl-x64 \
     --self-contained false
 
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
+# Security: Run as non-root user
 RUN addgroup -g 1000 appgroup && \
     adduser -u 1000 -G appgroup -s /bin/sh -D appuser
 
+# Install runtime dependencies
 RUN apk add --no-cache curl tzdata icu-libs
 
+# Environment variables
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
     ASPNETCORE_URLS=http://+:8080 \
     ASPNETCORE_ENVIRONMENT=Production
@@ -50,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 USER appuser
 
-ENTRYPOINT ["dotnet", "Storage.Api.dll"]
+ENTRYPOINT ["dotnet", "Search.Api.dll"]

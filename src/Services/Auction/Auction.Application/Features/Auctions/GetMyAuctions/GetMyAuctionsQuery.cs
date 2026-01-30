@@ -8,7 +8,7 @@ public record GetMyAuctionsQuery(
     string Username,
     string? Status = null,
     string? SearchTerm = null,
-    int PageNumber = PaginationDefaults.DefaultPage,
+    int Page = PaginationDefaults.DefaultPage,
     int PageSize = PaginationDefaults.DefaultPageSize,
     string? OrderBy = null,
     bool Descending = false) : IQuery<PaginatedResult<AuctionDto>>;

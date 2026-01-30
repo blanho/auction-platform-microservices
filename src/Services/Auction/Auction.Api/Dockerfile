@@ -18,7 +18,6 @@ COPY ["src/Services/Auction/Auction.Infrastructure/Auctions.Infrastructure.cspro
 COPY ["src/Services/Auction/Auction.Api/Auctions.Api.csproj", "src/Services/Auction/Auction.Api/"]
 COPY ["src/Services/Auction/Auction.Contracts/Auctions.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
 COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
-COPY ["src/Contracts/StorageService.Contracts/StorageService.Contracts.csproj", "src/Contracts/StorageService.Contracts/"]
 
 # Restore dependencies
 RUN dotnet restore "src/Services/Auction/Auction.Api/Auctions.Api.csproj" --runtime linux-musl-x64

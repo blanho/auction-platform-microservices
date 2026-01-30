@@ -1,4 +1,5 @@
 import { http } from '@/services/http'
+import type { QueryParameters } from '@/shared/types'
 
 export interface WatchlistItem {
   id: string
@@ -28,10 +29,8 @@ export interface UpdateWatchlistRequest {
   notifyOnEnd?: boolean
 }
 
-export interface WatchlistFilters {
+export interface WatchlistFilters extends QueryParameters {
   status?: 'active' | 'ended' | 'all'
-  page?: number
-  pageSize?: number
 }
 
 export const bookmarksApi = {

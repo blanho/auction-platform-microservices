@@ -1,22 +1,35 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Paging;
 using Payment.Application.DTOs;
 using Payment.Domain.Entities;
 using Payment.Domain.Enums;
 
 namespace Payment.Application.Interfaces;
 
+public class OrderFilter
+{
+    public string? SearchTerm { get; init; }
+    public OrderStatus? Status { get; init; }
+    public DateTime? FromDate { get; init; }
+    public DateTime? ToDate { get; init; }
+    public string? BuyerUsername { get; init; }
+    public string? SellerUsername { get; init; }
+}
+
+public class OrderQueryParams : QueryParameters<OrderFilter> { }
+
 public interface IOrderRepository
 {
     Task<Order> GetByIdAsync(Guid id);
     Task<Order> GetByAuctionIdAsync(Guid auctionId);
-    Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize);
-    Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize);
+    Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(string username, QueryParameters queryParams);
+    Task<PaginatedResult<Order>> GetBySellerUsernameAsync(string username, QueryParameters queryParams);
     Task<Order> AddAsync(Order order);
     Task<Order> UpdateAsync(Order order);
     Task<int> GetCountByBuyerUsernameAsync(string username);
     Task<int> GetCountBySellerUsernameAsync(string username);
     
-    Task<IEnumerable<Order>> GetAllAsync(int page, int pageSize, string? searchTerm = null, OrderStatus? status = null, DateTime? fromDate = null, DateTime? toDate = null);
-    Task<int> GetAllCountAsync(string? searchTerm = null, OrderStatus? status = null, DateTime? fromDate = null, DateTime? toDate = null);
+    Task<PaginatedResult<Order>> GetAllAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default);
     Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default);
     
     Task<RevenueStatsDto> GetRevenueStatsAsync(DateTimeOffset? startDate, DateTimeOffset? endDate, CancellationToken cancellationToken = default);

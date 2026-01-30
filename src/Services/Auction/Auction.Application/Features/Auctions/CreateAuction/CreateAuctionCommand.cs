@@ -15,6 +15,7 @@ public record CreateAuctionCommand(
     string Currency = "USD",
     List<CreateAuctionFileDto>? Files = null,
     Guid? CategoryId = null,
+    Guid? BrandId = null,
     bool IsFeatured = false
 ) : ICommand<AuctionDto>;
 

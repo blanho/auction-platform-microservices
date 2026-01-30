@@ -46,11 +46,6 @@ builder.Services.AddCarter();
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-builder.Services.AddGrpcClient<Storage.Api.Protos.StorageGrpc.StorageGrpcClient>(options =>
-{
-    options.Address = new Uri(builder.Configuration["GrpcServices:Storage"] ?? "http://localhost:5007");
-});
-
 var identityAuthority = builder.Configuration["Identity:Authority"];
 builder.Services.AddAuthentication(options =>
 {

@@ -1,5 +1,5 @@
 import { http } from '@/services/http'
-import type { PaginatedResponse } from '@/shared/types'
+import type { PaginatedResponse, QueryParameters } from '@/shared/types'
 
 export interface Brand {
   id: string
@@ -29,14 +29,12 @@ export interface UpdateBrandRequest extends Partial<CreateBrandRequest> {
   isActive?: boolean
 }
 
-export interface BrandFilters {
+export interface BrandFilters extends QueryParameters {
   search?: string
   isActive?: boolean
   activeOnly?: boolean
   isFeatured?: boolean
   limit?: number
-  page?: number
-  pageSize?: number
 }
 
 export const brandsApi = {

@@ -72,5 +72,4 @@ export const SERVICE_NAME_LABELS: Record<string, string> = {
   NotificationService: 'Notification Service',
   AnalyticsService: 'Analytics Service',
   SearchService: 'Search Service',
-  StorageService: 'Storage Service',
 }

@@ -74,9 +74,6 @@ images:
   - name: auction-platform/notification-api
     newName: ghcr.io/your-org/notification-api
     newTag: v1.0.0
-  - name: auction-platform/storage-api
-    newName: ghcr.io/your-org/storage-api
-    newTag: v1.0.0
   - name: auction-platform/identity-api
     newName: ghcr.io/your-org/identity-api
     newTag: v1.0.0

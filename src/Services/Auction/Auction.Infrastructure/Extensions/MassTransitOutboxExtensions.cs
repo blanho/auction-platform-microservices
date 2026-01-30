@@ -18,7 +18,6 @@ public static class MassTransitOutboxExtensions
         services.AddMassTransit(x =>
         {
             x.AddConsumer<BidPlacedConsumer>();
-            x.AddConsumer<FileUploadedConsumer>();
 
             x.AddConsumer<ReserveAuctionForBuyNowConsumer>();
             x.AddConsumer<CompleteBuyNowAuctionConsumer>();

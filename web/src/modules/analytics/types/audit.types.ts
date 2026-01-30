@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export type AuditAction =
   | 'Created'
   | 'Updated'
@@ -30,7 +32,7 @@ export interface AuditLog {
   timestamp: string
 }
 
-export interface AuditLogQueryParams {
+export interface AuditLogFilter {
   entityId?: string
   entityType?: string
   userId?: string
@@ -38,6 +40,14 @@ export interface AuditLogQueryParams {
   action?: AuditAction
   fromDate?: string
   toDate?: string
-  page?: number
-  pageSize?: number
+}
+
+export interface AuditLogQueryParams extends QueryParameters {
+  entityId?: string
+  entityType?: string
+  userId?: string
+  serviceName?: string
+  action?: AuditAction
+  fromDate?: string
+  toDate?: string
 }

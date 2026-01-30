@@ -45,19 +45,20 @@ public class CachedAuctionRepository : IAuctionRepository
     }
 
     public async Task<PaginatedResult<Auction>> GetPagedAsync(
-        AuctionFilterDto filter,
+        AuctionFilterDto queryParams,
         CancellationToken cancellationToken = default)
     {
-        var key = CacheKeys.AuctionList($"page:{filter.PageNumber}:size:{filter.PageSize}:status:{filter.Status}:seller:{filter.Seller}");
+        var filter = queryParams.Filter;
+        var key = CacheKeys.AuctionList($"page:{queryParams.Page}:size:{queryParams.PageSize}:status:{filter.Status}:seller:{filter.Seller}");
         var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
         if (cached != null)
         {
-            _logger.LogInformation("Cache HIT for paged auctions (page {Page}, size {Size})", filter.PageNumber, filter.PageSize);
+            _logger.LogInformation("Cache HIT for paged auctions (page {Page}, size {Size})", queryParams.Page, queryParams.PageSize);
             return cached;
         }
 
         _logger.LogInformation("Cache MISS for paged auctions - fetching from database");
-        var result = await _inner.GetPagedAsync(filter, cancellationToken);
+        var result = await _inner.GetPagedAsync(queryParams, cancellationToken);
         await _cache.SetAsync(key, result, AuctionListTtl, cancellationToken);
         return result;
     }

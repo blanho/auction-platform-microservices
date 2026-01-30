@@ -1,15 +1,15 @@
+using BuildingBlocks.Application.Paging;
+
 namespace Auctions.Application.DTOs;
 
-public class AuctionFilterDto
+public class AuctionFilter
 {
-    public string? Status { get; set; }
-    public string? Seller { get; set; }
-    public string? Winner { get; set; }
-    public string? SearchTerm { get; set; }
-    public string? Category { get; set; }
-    public bool? IsFeatured { get; set; }
-    public string? OrderBy { get; set; }
-    public bool Descending { get; set; } = true;
-    public int PageNumber { get; set; } = PaginationDefaults.DefaultPage;
-    public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
+    public string? Status { get; init; }
+    public string? Seller { get; init; }
+    public string? Winner { get; init; }
+    public string? SearchTerm { get; init; }
+    public string? Category { get; init; }
+    public bool? IsFeatured { get; init; }
 }
+
+public class AuctionFilterDto : QueryParameters<AuctionFilter> { }

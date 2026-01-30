@@ -1,3 +1,5 @@
+import type { QueryParameters } from '@/shared/types'
+
 export interface UpdateProfileRequest {
   displayName?: string
   firstName?: string
@@ -16,13 +18,11 @@ export interface BecomeSellerRequest {
   acceptTerms: boolean
 }
 
-export interface UserFilters {
+export interface UserFilters extends QueryParameters {
   search?: string
   role?: string
   isActive?: boolean
   isSuspended?: boolean
-  page?: number
-  pageSize?: number
 }
 
 export interface UpdateUserRolesRequest {

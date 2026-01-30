@@ -1,4 +1,8 @@
 
+using System.Linq.Expressions;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
@@ -11,6 +15,16 @@ namespace Payment.Infrastructure.Repositories;
 public class OrderRepository : IOrderRepository
 {
     private readonly PaymentDbContext _context;
+
+    private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap = 
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["createdat"] = o => o.CreatedAt,
+        ["totalamount"] = o => o.TotalAmount,
+        ["status"] = o => o.Status,
+        ["paidat"] = o => o.PaidAt!,
+        ["itemtitle"] = o => o.ItemTitle
+    };
 
     public OrderRepository(PaymentDbContext context)
     {
@@ -31,26 +45,36 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.AuctionId == auctionId);
     }
 
-    public async Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
+    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(string username, QueryParameters queryParams)
     {
-        return await _context.Orders
+        var query = _context.Orders
             .AsNoTracking()
-            .Where(o => o.BuyerUsername == username)
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Where(o => o.BuyerUsername == username);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplyPaging(queryParams)
             .ToListAsync();
+
+        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
-    public async Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
+    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(string username, QueryParameters queryParams)
     {
-        return await _context.Orders
+        var query = _context.Orders
             .AsNoTracking()
-            .Where(o => o.SellerUsername == username)
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Where(o => o.SellerUsername == username);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplyPaging(queryParams)
             .ToListAsync();
+
+        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<Order> AddAsync(Order order)
@@ -188,36 +212,36 @@ public class OrderRepository : IOrderRepository
         return topBuyers;
     }
 
-    public async Task<IEnumerable<Order>> GetAllAsync(
-        int page, 
-        int pageSize, 
-        string? searchTerm = null, 
-        OrderStatus? status = null,
-        DateTime? fromDate = null,
-        DateTime? toDate = null)
+    public async Task<PaginatedResult<Order>> GetAllAsync(
+        OrderQueryParams queryParams,
+        CancellationToken cancellationToken = default)
     {
-        var query = _context.Orders.AsNoTracking().AsQueryable();
+        var filter = queryParams.Filter;
         
-        query = ApplyFilters(query, searchTerm, status, fromDate, toDate);
+        var filterBuilder = FilterBuilder<Order>.Create()
+            .WhenNotEmpty(filter.SearchTerm, o => 
+                o.ItemTitle.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
+                o.BuyerUsername.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
+                o.SellerUsername.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
+                (o.TrackingNumber != null && o.TrackingNumber.ToLower().Contains(filter.SearchTerm!.ToLower())))
+            .WhenHasValue(filter.Status, o => o.Status == filter.Status!.Value)
+            .WhenHasValue(filter.FromDate, o => o.CreatedAt >= filter.FromDate!.Value)
+            .WhenHasValue(filter.ToDate, o => o.CreatedAt <= filter.ToDate!.Value)
+            .WhenNotEmpty(filter.BuyerUsername, o => o.BuyerUsername == filter.BuyerUsername)
+            .WhenNotEmpty(filter.SellerUsername, o => o.SellerUsername == filter.SellerUsername);
 
-        return await query
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-    }
+        var query = _context.Orders
+            .AsNoTracking()
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt);
 
-    public async Task<int> GetAllCountAsync(
-        string? searchTerm = null, 
-        OrderStatus? status = null,
-        DateTime? fromDate = null,
-        DateTime? toDate = null)
-    {
-        var query = _context.Orders.AsNoTracking().AsQueryable();
-        
-        query = ApplyFilters(query, searchTerm, status, fromDate, toDate);
+        var totalCount = await query.CountAsync(cancellationToken);
 
-        return await query.CountAsync();
+        var items = await query
+            .ApplyPaging(queryParams)
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
@@ -244,35 +268,6 @@ public class OrderRepository : IOrderRepository
             totalRevenue,
             averageOrderValue
         );
-    }
-
-    private static IQueryable<Order> ApplyFilters(
-        IQueryable<Order> query,
-        string? searchTerm,
-        OrderStatus? status,
-        DateTime? fromDate,
-        DateTime? toDate)
-    {
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var term = searchTerm.ToLower();
-            query = query.Where(o => 
-                o.ItemTitle.ToLower().Contains(term) ||
-                o.BuyerUsername.ToLower().Contains(term) ||
-                o.SellerUsername.ToLower().Contains(term) ||
-                o.TrackingNumber != null && o.TrackingNumber.ToLower().Contains(term));
-        }
-
-        if (status.HasValue)
-            query = query.Where(o => o.Status == status.Value);
-
-        if (fromDate.HasValue)
-            query = query.Where(o => o.CreatedAt >= fromDate.Value);
-
-        if (toDate.HasValue)
-            query = query.Where(o => o.CreatedAt <= toDate.Value);
-
-        return query;
     }
 
     private static DateTimeOffset GetPeriodStartDate(string period)
