@@ -9,7 +9,7 @@ using Identity.Api.Services;
 using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 
-namespace Identity.Api.Extensions;
+namespace Identity.Api.Extensions.DependencyInjection;
 
 internal static class ServiceCollectionExtensions
 {

@@ -9,7 +9,7 @@ using Npgsql;
 using Serilog;
 using System.Text.Json.Serialization;
 
-namespace Auctions.Api.Extensions
+namespace Auctions.Api.Extensions.DependencyInjection
 {
     public static class ServiceExtensions
     {
@@ -41,7 +41,14 @@ namespace Auctions.Api.Extensions
             var dataSource = dataSourceBuilder.Build();
 
             services.AddDbContext<AuctionDbContext>(options =>
-                options.UseNpgsql(dataSource));
+                options.UseNpgsql(dataSource, npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorCodesToAdd: null);
+                    npgsqlOptions.CommandTimeout(30);
+                }));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
             services.AddScoped<AuctionRepository>(); 

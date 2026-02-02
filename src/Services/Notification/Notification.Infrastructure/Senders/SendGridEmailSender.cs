@@ -119,10 +119,14 @@ public class SendGridOptions
 {
     public const string SectionName = "SendGrid";
 
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid ApiKey is required")]
     public string ApiKey { get; set; } = string.Empty;
 
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid FromEmail is required")]
+    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "FromEmail must be a valid email address")]
     public string FromEmail { get; set; } = string.Empty;
 
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid FromName is required")]
     public string FromName { get; set; } = string.Empty;
 
     public bool EnableClickTracking { get; set; } = true;

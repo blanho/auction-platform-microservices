@@ -15,8 +15,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICacheService _cache;
     private readonly ISanitizationService _sanitizationService;
-    
-    private const string CacheKeyPrefix = "auction:";
 
     public UpdateAuctionCommandHandler(
         IAuctionRepository repository,
@@ -36,10 +34,10 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
     public async Task<Result<bool>> Handle(UpdateAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating auction {AuctionId} at {Timestamp}", 
-            request.Id, _dateTime.UtcNow);
+        _logger.LogInformation("Updating auction {AuctionId}", request.Id);
 
-        var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        // Use tracked entity fetch for updates
+        var auction = await _repository.GetByIdForUpdateAsync(request.Id, cancellationToken);
 
         if (auction == null)
         {
@@ -51,25 +49,25 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         
         if (request.Title != null && request.Title != auction.Item.Title)
         {
-            auction.Item.Title = _sanitizationService.SanitizeText(request.Title);
+            auction.Item.UpdateTitle(_sanitizationService.SanitizeText(request.Title));
             modifiedFields.Add(nameof(auction.Item.Title));
         }
         
         if (request.Description != null && request.Description != auction.Item.Description)
         {
-            auction.Item.Description = _sanitizationService.SanitizeHtml(request.Description);
+            auction.Item.UpdateDescription(_sanitizationService.SanitizeHtml(request.Description));
             modifiedFields.Add(nameof(auction.Item.Description));
         }
         
         if (request.Condition != null && request.Condition != auction.Item.Condition)
         {
-            auction.Item.Condition = request.Condition;
+            auction.Item.UpdateCondition(request.Condition);
             modifiedFields.Add(nameof(auction.Item.Condition));
         }
         
         if (request.YearManufactured != null && request.YearManufactured != auction.Item.YearManufactured)
         {
-            auction.Item.YearManufactured = request.YearManufactured;
+            auction.Item.UpdateYearManufactured(request.YearManufactured);
             modifiedFields.Add(nameof(auction.Item.YearManufactured));
         }
         
@@ -77,7 +75,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         {
             foreach (var attr in request.Attributes)
             {
-                auction.Item.Attributes[attr.Key] = attr.Value;
+                auction.Item.SetAttribute(attr.Key, attr.Value);
             }
             modifiedFields.Add(nameof(auction.Item.Attributes));
         }
@@ -87,7 +85,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         await _repository.UpdateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.RemoveAsync($"{CacheKeyPrefix}{request.Id}", cancellationToken);
+        await _cache.RemoveAsync(CacheKeys.Auction(request.Id), cancellationToken);
 
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}", 
             request.Id, string.Join(", ", modifiedFields));

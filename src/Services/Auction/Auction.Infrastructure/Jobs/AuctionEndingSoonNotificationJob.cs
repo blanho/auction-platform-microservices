@@ -2,9 +2,15 @@ using BuildingBlocks.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+/// <summary>
+/// Sends notifications for auctions ending soon.
+/// Uses DisallowConcurrentExecution to prevent duplicate notifications.
+/// </summary>
+[DisallowConcurrentExecution]
 public class AuctionEndingSoonNotificationJob : BaseJob
 {
     public const string JobId = "auction-ending-soon";

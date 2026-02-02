@@ -46,7 +46,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
 
         if (lockHandle == null)
         {
-            _logger.LogWarning("Failed to acquire wallet lock for user {Username}", request.Username);
+            _logger.LogWarning("Failed to acquire wallet lock for operation");
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.Busy);
         }
 
@@ -79,13 +79,13 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         catch (DbUpdateConcurrencyException ex)
         {
             _logger.LogWarning(ex,
-                "Concurrency conflict holding funds for user {Username}, reference {ReferenceId}. Lock may have been released prematurely.",
-                request.Username, request.ReferenceId);
+                "Concurrency conflict holding funds for reference {ReferenceId}. Lock may have been released prematurely.",
+                request.ReferenceId);
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
 
-        _logger.LogInformation("Held {Amount} for {ReferenceType} {ReferenceId} for user: {Username}",
-            request.Amount, request.ReferenceType, request.ReferenceId, request.Username);
+        _logger.LogDebug("Held {Amount} for {ReferenceType} {ReferenceId}",
+            request.Amount, request.ReferenceType, request.ReferenceId);
 
         return Result.Success(transaction.ToDto(_mapper));
     }

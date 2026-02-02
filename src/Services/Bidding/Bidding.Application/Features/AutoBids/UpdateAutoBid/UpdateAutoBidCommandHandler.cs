@@ -6,25 +6,21 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
 {
     private readonly IAutoBidRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly ILogger<UpdateAutoBidCommandHandler> _logger;
 
     public UpdateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         ILogger<UpdateAutoBidCommandHandler> logger)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _logger = logger;
     }
 
     public async Task<Result<UpdateAutoBidResult>> Handle(UpdateAutoBidCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating auto-bid {AutoBidId} with new max {NewMaxAmount}",
-            request.AutoBidId, request.NewMaxAmount);
+        _logger.LogDebug("Updating auto-bid {AutoBidId} with new max amount", request.AutoBidId);
 
         var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
@@ -34,8 +30,7 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
 
         if (autoBid.UserId != request.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to update auto-bid {AutoBidId} owned by {OwnerId}",
-                request.UserId, request.AutoBidId, autoBid.UserId);
+            _logger.LogWarning("Unauthorized attempt to update auto-bid {AutoBidId}", request.AutoBidId);
             return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.Unauthorized);
         }
 
@@ -44,19 +39,16 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
             return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.Inactive);
         }
 
-        try
+        if (request.NewMaxAmount <= autoBid.CurrentBidAmount)
         {
-            autoBid.UpdateMaxAmount(request.NewMaxAmount);
+            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.MaxAmountTooLow(autoBid.CurrentBidAmount));
         }
-        catch (Exception ex)
-        {
-            return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.UpdateFailed(ex.Message));
-        }
+
+        autoBid.UpdateMaxAmount(request.NewMaxAmount);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Auto-bid {AutoBidId} updated successfully with new max {NewMaxAmount}",
-            request.AutoBidId, request.NewMaxAmount);
+        _logger.LogDebug("Auto-bid {AutoBidId} updated successfully", request.AutoBidId);
 
         var dto = autoBid.ToDto();
         return Result<UpdateAutoBidResult>.Success(UpdateAutoBidResult.Succeeded(dto));

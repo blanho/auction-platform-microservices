@@ -124,10 +124,18 @@ public class ReviewRepository : IReviewRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var review = await GetByIdAsync(id, cancellationToken);
+        // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
+        var review = await _context.Reviews
+            .Where(x => !x.IsDeleted)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        
+        if (review is null)
+        {
+            return;
+        }
+
         review.IsDeleted = true;
         review.UpdatedAt = _dateTime.UtcNow;
-        _context.Reviews.Update(review);
     }
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)

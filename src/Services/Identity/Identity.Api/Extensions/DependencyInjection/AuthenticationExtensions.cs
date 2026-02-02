@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Identity.Api.Extensions;
+namespace Identity.Api.Extensions.DependencyInjection;
 
 internal static class AuthenticationExtensions
 {
@@ -91,7 +91,8 @@ internal static class AuthenticationExtensions
         services.ConfigureExternalCookie(options =>
         {
             options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.HttpOnly = true;
         });
     }
 

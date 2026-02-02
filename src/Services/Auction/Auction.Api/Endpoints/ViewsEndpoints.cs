@@ -4,6 +4,7 @@ using Auctions.Application.Interfaces;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Application.DTOs.Views;
 using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Web.Authorization;
 
 namespace Auctions.Api.Endpoints;
 
@@ -14,10 +15,13 @@ public static class ViewsEndpoints
         var group = app.MapGroup("/api/auctions/{auctionId:guid}/views")
             .WithTags("Auction Views");
 
+        // Recording views requires authentication to prevent abuse
         group.MapPost("/", RecordView)
             .WithName("RecordAuctionView")
+            .RequireAuthorization()
             .Produces<RecordViewResponseDto>();
 
+        // View count is public data (shown on auction pages)
         group.MapGet("/count", GetViewCount)
             .WithName("GetAuctionViewCount")
             .Produces<ViewCountDto>();

@@ -127,15 +127,19 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
 
     private Auction CreateAuctionEntity(ImportAuctionDto dto, string seller, Guid sellerId)
     {
-        var item = new Item
+        var item = Item.Create(
+            title: dto.Title,
+            description: dto.Description ?? string.Empty,
+            condition: dto.Condition,
+            yearManufactured: dto.YearManufactured);
+
+        if (dto.Attributes != null)
         {
-            Id = Guid.NewGuid(),
-            Title = dto.Title,
-            Description = dto.Description ?? string.Empty,
-            Condition = dto.Condition,
-            YearManufactured = dto.YearManufactured,
-            Attributes = dto.Attributes ?? new Dictionary<string, string>()
-        };
+            foreach (var attr in dto.Attributes)
+            {
+                item.SetAttribute(attr.Key, attr.Value);
+            }
+        }
 
         return Auction.CreateScheduled(
             sellerId: sellerId,

@@ -10,27 +10,24 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
 {
     private readonly IAuctionRepository _repository;
     private readonly ILogger<DeleteAuctionCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteAuctionCommandHandler(
         IAuctionRepository repository,
         ILogger<DeleteAuctionCommandHandler> logger,
-        IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<bool>> Handle(DeleteAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting auction {AuctionId} at {Timestamp}", 
-            request.Id, _dateTime.UtcNow);
+        _logger.LogInformation("Deleting auction {AuctionId}", request.Id);
 
-        var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        // Use tracked entity for domain event
+        var auction = await _repository.GetByIdForUpdateAsync(request.Id, cancellationToken);
 
         if (auction == null)
         {

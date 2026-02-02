@@ -24,7 +24,7 @@ public class UserAnalyticsEndpoints : ICarterModule
 
         group.MapGet("/quick-stats", GetQuickStats)
             .WithName("GetQuickStats")
-            .AllowAnonymous()
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewOwn))
             .Produces<QuickStatsDto>();
     }
 

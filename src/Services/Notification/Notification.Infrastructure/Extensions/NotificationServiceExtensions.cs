@@ -55,7 +55,10 @@ public static class NotificationServiceExtensions
         IConfiguration configuration)
     {
 
-        services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.SectionName));
+        services.AddOptions<SendGridOptions>()
+            .BindConfiguration(SendGridOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton<ISendGridClient>(sp =>
         {
             var options = configuration.GetSection(SendGridOptions.SectionName).Get<SendGridOptions>();
@@ -63,7 +66,10 @@ public static class NotificationServiceExtensions
         });
         services.AddScoped<IEmailSender, SendGridEmailSender>();
 
-        services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
+        services.AddOptions<FirebaseOptions>()
+            .BindConfiguration(FirebaseOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton(sp =>
         {
             var options = configuration.GetSection(FirebaseOptions.SectionName).Get<FirebaseOptions>();
@@ -93,7 +99,10 @@ public static class NotificationServiceExtensions
         });
         services.AddScoped<IPushSender, FirebasePushSender>();
 
-        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
+        services.AddOptions<TwilioOptions>()
+            .BindConfiguration(TwilioOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddScoped<ISmsSender, TwilioSmsSender>();
 
         return services;

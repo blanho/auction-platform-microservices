@@ -58,7 +58,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var auction = await _context.Auctions
+            return await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
@@ -66,8 +66,17 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Brand)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-            
-            return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
+        }
+
+        public async Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
@@ -99,14 +108,16 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var auction = await GetByIdAsync(id, cancellationToken);
+            // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
+            var auction = await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            
             if (auction != null)
             {
                 auction.IsDeleted = true;
                 auction.DeletedAt = _dateTime.UtcNow;
                 auction.DeletedBy = _auditContext.UserId;
-                
-                _context.Auctions.Update(auction);
             }
         }
 
@@ -455,50 +466,90 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             DateTimeOffset? previousPeriodStart = null, 
             CancellationToken cancellationToken = default)
         {
-            var userAuctions = await _context.Auctions
-                .Where(x => !x.IsDeleted && x.SellerUsername == username)
-                .Include(x => x.Item)
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            // Get aggregated stats in SQL to avoid N+1
+            var baseQuery = _context.Auctions
+                .Where(x => !x.IsDeleted && x.SellerUsername == username);
 
-            var currentPeriodSales = userAuctions
+            // Current period sales - filter in SQL
+            var currentPeriodSales = await baseQuery
                 .Where(a => a.Status == Status.Finished && 
                            a.SoldAmount.HasValue && 
                            a.UpdatedAt >= periodStart)
-                .ToList();
+                .Select(a => new SaleProjection 
+                { 
+                    Id = a.Id, 
+                    SoldAmount = a.SoldAmount, 
+                    UpdatedAt = a.UpdatedAt, 
+                    WinnerUsername = a.WinnerUsername, 
+                    ItemTitle = a.Item != null ? a.Item.Title : "Unknown" 
+                })
+                .ToListAsync(cancellationToken);
 
-            var previousPeriodSales = previousPeriodStart.HasValue
-                ? userAuctions
+            // Previous period revenue - filter in SQL
+            decimal previousPeriodRevenue = 0;
+            int previousPeriodItemsSold = 0;
+            
+            if (previousPeriodStart.HasValue)
+            {
+                var previousPeriodStats = await baseQuery
                     .Where(a => a.Status == Status.Finished && 
                                a.SoldAmount.HasValue && 
                                a.UpdatedAt >= previousPeriodStart.Value &&
                                a.UpdatedAt < periodStart)
-                    .ToList()
-                : new List<Auction>();
+                    .GroupBy(a => 1)
+                    .Select(g => new { Revenue = g.Sum(a => a.SoldAmount ?? 0), Count = g.Count() })
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (previousPeriodStats != null)
+                {
+                    previousPeriodRevenue = previousPeriodStats.Revenue;
+                    previousPeriodItemsSold = previousPeriodStats.Count;
+                }
+            }
+
+            // Get counts in SQL
+            var statusCounts = await baseQuery
+                .GroupBy(a => a.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync(cancellationToken);
+
+            var activeListings = statusCounts.FirstOrDefault(s => s.Status == Status.Live)?.Count ?? 0;
+            var pendingAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Scheduled)?.Count ?? 0;
+            var draftAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Draft)?.Count ?? 0;
+            var totalListings = statusCounts.Sum(s => s.Count);
 
             return new SellerStatsDto
             {
                 TotalRevenue = currentPeriodSales.Sum(a => a.SoldAmount ?? 0),
-                PreviousPeriodRevenue = previousPeriodSales.Sum(a => a.SoldAmount ?? 0),
+                PreviousPeriodRevenue = previousPeriodRevenue,
                 ItemsSold = currentPeriodSales.Count,
-                PreviousPeriodItemsSold = previousPeriodSales.Count,
-                ActiveListings = userAuctions.Count(a => a.Status == Status.Live),
-                TotalListings = userAuctions.Count,
-                PendingAuctions = userAuctions.Count(a => a.Status == Status.Scheduled),
-                DraftAuctions = userAuctions.Count(a => a.Status == Status.Draft),
+                PreviousPeriodItemsSold = previousPeriodItemsSold,
+                ActiveListings = activeListings,
+                TotalListings = totalListings,
+                PendingAuctions = pendingAuctions,
+                DraftAuctions = draftAuctions,
                 RecentSales = currentPeriodSales
                     .OrderByDescending(a => a.UpdatedAt)
                     .Take(10)
                     .Select(a => new AuctionSummaryDto
                     {
                         Id = a.Id,
-                        Title = a.Item?.Title ?? "Unknown",
+                        Title = a.ItemTitle,
                         SoldAmount = a.SoldAmount,
                         SoldAt = a.UpdatedAt,
                         BuyerUsername = a.WinnerUsername
                     })
                     .ToList()
             };
+        }
+
+        private class SaleProjection
+        {
+            public Guid Id { get; set; }
+            public decimal? SoldAmount { get; set; }
+            public DateTimeOffset? UpdatedAt { get; set; }
+            public string? WinnerUsername { get; set; }
+            public string ItemTitle { get; set; } = "Unknown";
         }
 
         public async Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)

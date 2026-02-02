@@ -1,7 +1,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Identity.Api.Extensions;
+namespace Identity.Api.Extensions.DependencyInjection;
 
 internal static class RateLimitingExtensions
 {

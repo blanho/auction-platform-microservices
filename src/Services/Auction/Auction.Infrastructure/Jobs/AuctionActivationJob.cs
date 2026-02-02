@@ -3,9 +3,15 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+/// <summary>
+/// Activates scheduled auctions at their start time.
+/// Uses DisallowConcurrentExecution to prevent duplicate activation.
+/// </summary>
+[DisallowConcurrentExecution]
 public class AuctionActivationJob : BaseJob
 {
     public const string JobId = "auction-activation";
@@ -35,6 +41,7 @@ public class AuctionActivationJob : BaseJob
 
         Logger.LogInformation("Found {Count} scheduled auctions to activate", scheduledAuctions.Count);
         var activatedCount = 0;
+        var failedCount = 0;
 
         foreach (var auction in scheduledAuctions)
         {
@@ -45,18 +52,23 @@ public class AuctionActivationJob : BaseJob
 
                 activatedCount++;
                 Logger.LogInformation(
-                    "Activated scheduled auction {AuctionId}: {Title}",
-                    auction.Id, auction.Item?.Title ?? "Unknown");
+                    "Activated scheduled auction {AuctionId}",
+                    auction.Id);
             }
             catch (Exception ex)
             {
+                failedCount++;
                 Logger.LogError(ex, "Failed to activate auction {AuctionId}", auction.Id);
             }
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        Logger.LogInformation("Activated {ActivatedCount}/{TotalCount} scheduled auctions",
-            activatedCount, scheduledAuctions.Count);
+        if (activatedCount > 0)
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        Logger.LogInformation("Activated {ActivatedCount} scheduled auctions, {FailedCount} failed out of {TotalCount}",
+            activatedCount, failedCount, scheduledAuctions.Count);
     }
 }
 

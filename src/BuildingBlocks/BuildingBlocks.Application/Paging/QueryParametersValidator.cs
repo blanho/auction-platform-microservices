@@ -24,7 +24,7 @@ public class QueryParametersValidator : AbstractValidator<QueryParameters>
     }
 }
 
-public class QueryParametersValidator<TFilter> : AbstractValidator<QueryParameters<TFilter>> 
+public class QueryParametersValidator<TFilter> : AbstractValidator<QueryParameters<TFilter>>
     where TFilter : class, new()
 {
     public QueryParametersValidator(IValidator<TFilter>? filterValidator = null)

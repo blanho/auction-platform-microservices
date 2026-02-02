@@ -44,10 +44,11 @@ public static class JwtAuthenticationExtensions
 
                 ValidateLifetime = true,
 
-                ValidateIssuerSigningKey = !string.IsNullOrEmpty(secretKey),
+                // SECURITY: Always validate signing key - never skip validation
+                ValidateIssuerSigningKey = true,
                 IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
                     ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-                    : null,
+                    : throw new InvalidOperationException("Identity:SecretKey must be configured for JWT validation"),
 
                 ClockSkew = TimeSpan.FromMinutes(1),
 
@@ -92,10 +93,11 @@ public static class JwtAuthenticationExtensions
 
                 ValidateLifetime = true,
 
-                ValidateIssuerSigningKey = !string.IsNullOrEmpty(secretKey),
+                // SECURITY: Always validate signing key - never skip validation
+                ValidateIssuerSigningKey = true,
                 IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
                     ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-                    : null,
+                    : throw new InvalidOperationException("Identity:SecretKey must be configured for JWT validation"),
 
                 ClockSkew = TimeSpan.FromMinutes(1),
 

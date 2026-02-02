@@ -1,4 +1,5 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.Errors;
 using AutoMapper;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -33,51 +34,35 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
     {
         _logger.LogInformation("Activating auction {AuctionId}", request.AuctionId);
 
-        try
+        var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
+        
+        if (auction == null)
         {
-            var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
-            if (auction == null)
-            {
-                return Result.Failure<AuctionDto>(Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found"));
-            }
-
-            if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
-            {
-                var error = Error.Create("Auction.InvalidStatus", 
-                    $"Cannot activate auction with status {auction.Status}. Only Inactive or Scheduled auctions can be activated.");
-                return Result.Failure<AuctionDto>(error);
-            }
-
-            if (auction.AuctionEnd <= _dateTime.UtcNow)
-            {
-                var error = Error.Create("Auction.EndDatePassed", 
-                    "Cannot activate auction. The auction end date has already passed.");
-                return Result.Failure<AuctionDto>(error);
-            }
-
-            var previousStatus = auction.Status;
-            auction.ChangeStatus(Status.Live);
-
-            await _repository.UpdateAsync(auction, cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
-                request.AuctionId, previousStatus);
-
-            return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
         }
-        catch (KeyNotFoundException)
+
+        if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
         {
-            var error = Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found");
-            return Result.Failure<AuctionDto>(error);
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
         }
-        catch (Exception ex)
+
+        if (auction.AuctionEnd <= _dateTime.UtcNow)
         {
-            _logger.LogError("Failed to activate auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            var error = Error.Create("Auction.ActivationFailed", ex.Message);
-            return Result.Failure<AuctionDto>(error);
+            return Result.Failure<AuctionDto>(Error.Create("Auction.EndDatePassed", 
+                "Cannot activate auction. The auction end date has already passed."));
         }
+
+        var previousStatus = auction.Status;
+        auction.ChangeStatus(Status.Live);
+
+        await _repository.UpdateAsync(auction, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
+            request.AuctionId, previousStatus);
+
+        return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
     }
 }
 

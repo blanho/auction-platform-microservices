@@ -11,6 +11,8 @@ namespace Auctions.Application.Interfaces;
 
 public interface IAuctionRepository : IRepository<Auction>
 {
+    Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
+    
     Task<PaginatedResult<Auction>> GetPagedAsync(
             AuctionFilterDto filter,
             CancellationToken cancellationToken = default);

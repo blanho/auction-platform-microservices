@@ -1,12 +1,18 @@
 using BuildingBlocks.Infrastructure.Scheduling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;
 using Analytics.Api.Interfaces;
 
 namespace Analytics.Api.Jobs;
 
+/// <summary>
+/// Auto-escalates unreviewed reports.
+/// Uses DisallowConcurrentExecution to prevent duplicate escalation.
+/// </summary>
+[DisallowConcurrentExecution]
 public class ReportAutoEscalationJob : BaseJob
 {
     public const string JobId = "report-auto-escalation";

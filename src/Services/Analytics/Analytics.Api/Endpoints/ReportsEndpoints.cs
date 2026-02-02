@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
+using Analytics.Api.Extensions.DependencyInjection;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
@@ -31,12 +32,14 @@ public class ReportsEndpoints : ICarterModule
         group.MapPost("", CreateReport)
             .WithName("CreateReport")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Reports.Create))
+            .WithValidation<CreateReportDto>()
             .Produces<ReportDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
         group.MapPut("/{id:guid}/status", UpdateReportStatus)
             .WithName("UpdateReportStatus")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Reports.Manage))
+            .WithValidation<UpdateReportStatusDto>()
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 

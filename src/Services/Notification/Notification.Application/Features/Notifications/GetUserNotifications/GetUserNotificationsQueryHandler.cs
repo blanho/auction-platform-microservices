@@ -22,7 +22,7 @@ public class GetUserNotificationsQueryHandler : IQueryHandler<GetUserNotificatio
 
     public async Task<Result<PaginatedResult<NotificationDto>>> Handle(GetUserNotificationsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting notifications for user {UserId}, page {Page}", request.UserId, request.Page);
+        _logger.LogDebug("Getting notifications, page {Page}", request.Page);
 
         var result = await _repository.GetPaginatedAsync(
             request.Page,

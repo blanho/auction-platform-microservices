@@ -37,7 +37,7 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
         var created = await _walletRepository.AddAsync(wallet);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Wallet created for user: {Username} ({UserId})", request.Username, request.UserId);
+        _logger.LogDebug("Wallet created for user");
 
         return Result.Success(created.ToDto(_mapper));
     }

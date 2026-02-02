@@ -107,13 +107,16 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var bid = await GetByIdAsync(id, cancellationToken);
+            // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
+            var bid = await _context.Bids
+                .Where(x => !x.IsDeleted)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            
             if (bid != null)
             {
                 bid.IsDeleted = true;
                 bid.DeletedAt = _dateTime.UtcNow;
                 bid.DeletedBy = _auditContext.UserId;
-                _context.Bids.Update(bid);
             }
         }
 

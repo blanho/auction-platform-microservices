@@ -41,7 +41,7 @@ public sealed class FilterBuilder<T> where T : class
         return this;
     }
 
-    public FilterBuilder<T> WhenInRange<TValue>(TValue? from, TValue? to, Expression<Func<T, bool>> predicate) 
+    public FilterBuilder<T> WhenInRange<TValue>(TValue? from, TValue? to, Expression<Func<T, bool>> predicate)
         where TValue : struct
     {
         if (from.HasValue || to.HasValue)

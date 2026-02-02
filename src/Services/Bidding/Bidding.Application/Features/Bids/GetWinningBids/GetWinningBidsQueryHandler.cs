@@ -17,8 +17,7 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
 
     public async Task<Result<PagedResult<WinningBidDto>>> Handle(GetWinningBidsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting winning bids for user {UserId}, page {Page}", 
-            request.UserId, request.Page);
+        _logger.LogDebug("Getting winning bids, page {Page}", request.Page);
 
         var queryParams = QueryParameters.Create(request.Page, request.PageSize);
 

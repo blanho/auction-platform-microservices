@@ -26,9 +26,9 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
     {
         var @event = context.Message;
 
-        _logger.LogInformation(
-            "Processing Outbid event: {OutbidUser} was outbid by {NewBidder} on auction {AuctionId}",
-            @event.OutbidBidderUsername, @event.NewHighBidderUsername, @event.AuctionId);
+        _logger.LogDebug(
+            "Processing Outbid event for auction {AuctionId}",
+            @event.AuctionId);
 
         await _notificationService.CreateNotificationAsync(
             new CreateNotificationDto

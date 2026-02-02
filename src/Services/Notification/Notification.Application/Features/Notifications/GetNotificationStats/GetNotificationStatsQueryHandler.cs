@@ -18,7 +18,7 @@ public class GetNotificationStatsQueryHandler : IQueryHandler<GetNotificationSta
 
     public async Task<Result<NotificationStatsDto>> Handle(GetNotificationStatsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting notification stats");
+        _logger.LogDebug("Getting notification stats");
 
         var stats = await _repository.GetStatsAsync(cancellationToken);
 

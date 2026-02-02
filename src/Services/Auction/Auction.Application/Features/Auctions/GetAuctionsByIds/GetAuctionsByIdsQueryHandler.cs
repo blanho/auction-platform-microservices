@@ -1,8 +1,6 @@
-using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
 namespace Auctions.Application.Queries.GetAuctionsByIds;
@@ -25,25 +23,17 @@ public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery,
 
     public async Task<Result<IEnumerable<AuctionDto>>> Handle(GetAuctionsByIdsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching {Count} auctions by IDs", request.Ids.Count());
+        var idList = request.Ids.ToList();
+        _logger.LogDebug("Fetching {Count} auctions by IDs", idList.Count);
 
-        try
+        if (idList.Count == 0)
         {
-            var idList = request.Ids.ToList();
-            if (idList.Count == 0)
-            {
-                return Result.Success(Enumerable.Empty<AuctionDto>());
-            }
+            return Result.Success(Enumerable.Empty<AuctionDto>());
+        }
 
-            var auctions = await _repository.GetByIdsAsync(idList, cancellationToken);
-            var dtos = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
-            return Result.Success<IEnumerable<AuctionDto>>(dtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to fetch auctions by IDs: {Error}", ex.Message);
-            return Result.Failure<IEnumerable<AuctionDto>>(AuctionErrors.Auction.FetchFailed(ex.Message));
-        }
+        var auctions = await _repository.GetByIdsAsync(idList, cancellationToken);
+        var dtos = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
+        return Result.Success<IEnumerable<AuctionDto>>(dtos);
     }
 }
 

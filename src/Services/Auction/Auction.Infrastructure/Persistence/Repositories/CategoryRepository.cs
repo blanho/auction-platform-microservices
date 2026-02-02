@@ -120,6 +120,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var category = await GetByIdAsync(id, cancellationToken);
+            if (category is null)
+            {
+                return;
+            }
+
             category.IsDeleted = true;
             category.DeletedAt = _dateTime.UtcNow;
             _context.Categories.Update(category);

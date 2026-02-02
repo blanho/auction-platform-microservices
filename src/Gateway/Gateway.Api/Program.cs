@@ -1,5 +1,7 @@
+using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -158,6 +160,9 @@ if (!string.IsNullOrEmpty(identityAuthority))
 
 builder.Services.AddAuthorization();
 
+// Add health checks
+builder.Services.AddHealthChecks();
+
 builder.Services.AddCors(options =>
 {
     var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -179,6 +184,46 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Global exception handling for the Gateway
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Gateway error at {Path}", context.Request.Path);
+
+        var isDevelopment = app.Environment.IsDevelopment();
+        var statusCode = ex switch
+        {
+            UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+            TimeoutException or OperationCanceledException => HttpStatusCode.GatewayTimeout,
+            _ => HttpStatusCode.BadGateway
+        };
+
+        var problem = new ProblemDetails
+        {
+            Title = statusCode switch
+            {
+                HttpStatusCode.Unauthorized => "Unauthorized",
+                HttpStatusCode.GatewayTimeout => "Gateway timeout",
+                _ => "Gateway error"
+            },
+            Detail = isDevelopment ? ex.Message : "An error occurred while processing your request.",
+            Status = (int)statusCode,
+            Type = $"https://httpstatuses.com/{(int)statusCode}",
+            Instance = context.Request.Path
+        };
+
+        context.Response.StatusCode = (int)statusCode;
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsJsonAsync(problem);
+    }
+});
 
 app.Use(async (context, next) =>
 {
@@ -206,6 +251,16 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// Add correlation ID for distributed tracing
+app.Use(async (context, next) =>
+{
+    const string correlationIdHeader = "X-Correlation-Id";
+    var correlationId = context.Request.Headers[correlationIdHeader].FirstOrDefault()
+                        ?? Guid.NewGuid().ToString();
+    context.Response.Headers[correlationIdHeader] = correlationId;
+    await next();
+});
+
 app.UseSerilogRequestLogging();
 
 app.UseWebSockets();
@@ -219,7 +274,9 @@ app.UseAuthorization();
 
 app.MapReverseProxy();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
-   .AllowAnonymous();
+// Map health check endpoints for Kubernetes readiness/liveness probes
+app.MapHealthChecks("/health").AllowAnonymous();
+app.MapHealthChecks("/health/ready").AllowAnonymous();
+app.MapHealthChecks("/health/live").AllowAnonymous();
 
 app.Run();

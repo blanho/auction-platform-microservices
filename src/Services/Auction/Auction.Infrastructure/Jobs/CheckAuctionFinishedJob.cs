@@ -3,9 +3,15 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+/// <summary>
+/// Checks for finished auctions and marks them as finished.
+/// Uses DisallowConcurrentExecution to prevent duplicate processing if job runs longer than interval.
+/// </summary>
+[DisallowConcurrentExecution]
 public class CheckAuctionFinishedJob : BaseJob
 {
     public const string JobId = "check-auction-finished";
@@ -34,6 +40,8 @@ public class CheckAuctionFinishedJob : BaseJob
 
         Logger.LogInformation("Found {Count} finished auctions to process", finishedAuctions.Count);
         var processedCount = 0;
+        var failedCount = 0;
+        var failedAuctionIds = new List<Guid>();
 
         foreach (var auction in finishedAuctions)
         {
@@ -52,20 +60,31 @@ public class CheckAuctionFinishedJob : BaseJob
                 processedCount++;
 
                 Logger.LogInformation(
-                    "Marked auction {AuctionId} as finished, Sold: {ItemSold}, Winner: {Winner}",
+                    "Marked auction {AuctionId} as finished, Sold: {ItemSold}",
                     auction.Id,
-                    itemSold,
-                    auction.WinnerUsername);
+                    itemSold);
             }
             catch (Exception ex)
             {
+                failedCount++;
+                failedAuctionIds.Add(auction.Id);
                 Logger.LogError(ex, "Failed to finish auction {AuctionId}", auction.Id);
             }
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        Logger.LogInformation("Finished processing {ProcessedCount}/{TotalCount} auctions", 
-            processedCount, finishedAuctions.Count);
+        // Only save if we have successful updates
+        if (processedCount > 0)
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        Logger.LogInformation("Finished processing auctions: {ProcessedCount} succeeded, {FailedCount} failed out of {TotalCount}", 
+            processedCount, failedCount, finishedAuctions.Count);
+
+        if (failedAuctionIds.Count > 0)
+        {
+            Logger.LogWarning("Failed auction IDs: {FailedIds}", string.Join(", ", failedAuctionIds));
+        }
     }
 }
 

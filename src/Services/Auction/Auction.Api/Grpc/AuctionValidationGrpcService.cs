@@ -11,9 +11,9 @@ public partial class AuctionGrpcService
         ValidateAuctionRequest request,
         ServerCallContext context)
     {
-        _logger.LogInformation(
-            "Validating auction {AuctionId} for bid by {Bidder}, amount cents: {AmountCents}",
-            request.AuctionId, request.Bidder, request.BidAmountCents);
+        _logger.LogDebug(
+            "Validating auction {AuctionId} for bid, amount cents: {AmountCents}",
+            request.AuctionId, request.BidAmountCents);
 
         if (!Guid.TryParse(request.AuctionId, out var auctionId))
         {
@@ -159,7 +159,7 @@ public partial class AuctionGrpcService
             };
         }
 
-        auction.ExtendAuctionEnd(TimeSpan.FromMinutes(request.ExtendMinutes), "gRPC extension request");
+        auction.ExtendAuctionEnd(TimeSpan.FromMinutes(request.ExtendMinutes));
         await _auctionRepository.UpdateAsync(auction, context.CancellationToken);
 
         _logger.LogInformation(

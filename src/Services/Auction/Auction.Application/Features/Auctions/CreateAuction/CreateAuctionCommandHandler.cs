@@ -54,17 +54,21 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
     private Auction CreateAuctionEntity(CreateAuctionCommand request)
     {
-        var item = new Item
+        var item = Item.Create(
+            title: _sanitizationService.SanitizeText(request.Title),
+            description: _sanitizationService.SanitizeHtml(request.Description),
+            condition: request.Condition,
+            yearManufactured: request.YearManufactured,
+            categoryId: request.CategoryId,
+            brandId: request.BrandId);
+
+        if (request.Attributes != null)
         {
-            Title = _sanitizationService.SanitizeText(request.Title),
-            Description = _sanitizationService.SanitizeHtml(request.Description),
-            Condition = request.Condition,
-            YearManufactured = request.YearManufactured,
-            Attributes = request.Attributes ?? new Dictionary<string, string>(),
-            CategoryId = request.CategoryId,
-            BrandId = request.BrandId,
-            Files = new List<MediaFile>()
-        };
+            foreach (var attr in request.Attributes)
+            {
+                item.SetAttribute(attr.Key, attr.Value);
+            }
+        }
 
         var auction = Auction.Create(
             sellerId: request.SellerId,
@@ -80,7 +84,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         {
             foreach (var file in request.Files)
             {
-                auction.Item.Files.Add(new MediaFile
+                auction.Item.AddFile(new MediaFile
                 {
                     FileId = file.FileId,
                     FileType = file.FileType,

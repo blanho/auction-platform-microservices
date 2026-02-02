@@ -18,7 +18,7 @@ public class GetAutoBidQueryHandler : IQueryHandler<GetAutoBidQuery, AutoBidDeta
 
     public async Task<Result<AutoBidDetailDto?>> Handle(GetAutoBidQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting auto-bid details for {AutoBidId}", request.AutoBidId);
+        _logger.LogDebug("Getting auto-bid details for {AutoBidId}", request.AutoBidId);
 
         var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)

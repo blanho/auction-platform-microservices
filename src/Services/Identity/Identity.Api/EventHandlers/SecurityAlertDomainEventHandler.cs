@@ -22,10 +22,9 @@ public class SecurityAlertDomainEventHandler : INotificationHandler<SecurityAler
     public async Task Handle(SecurityAlertDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogWarning(
-            "Processing SecurityAlertDomainEvent: UserId={UserId}, AlertType={AlertType}, IP={IpAddress}",
+            "Processing SecurityAlertDomainEvent: UserId={UserId}, AlertType={AlertType}",
             notification.UserId,
-            notification.AlertType,
-            notification.IpAddress ?? "unknown");
+            notification.AlertType);
 
         await _eventPublisher.PublishAsync(new SecurityAlertEvent
         {

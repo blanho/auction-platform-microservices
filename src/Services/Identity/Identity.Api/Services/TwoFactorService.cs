@@ -48,12 +48,18 @@ public class TwoFactorService : ITwoFactorService
 
         await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask, isMachineRememberedTask);
 
+        // Safe to access .Result after Task.WhenAll completes, but using await is cleaner
+        var isEnabled = await isEnabledTask;
+        var authenticatorKey = await authenticatorKeyTask;
+        var recoveryCodes = await recoveryCodesTask;
+        var isMachineRemembered = await isMachineRememberedTask;
+
         return Result.Success(new TwoFactorStatusResponse
         {
-            IsEnabled = isEnabledTask.Result,
-            HasAuthenticator = authenticatorKeyTask.Result != null,
-            RecoveryCodesLeft = recoveryCodesTask.Result,
-            IsMachineRemembered = isMachineRememberedTask.Result
+            IsEnabled = isEnabled,
+            HasAuthenticator = authenticatorKey != null,
+            RecoveryCodesLeft = recoveryCodes,
+            IsMachineRemembered = isMachineRemembered
         });
     }
 
@@ -226,11 +232,16 @@ public class TwoFactorService : ITwoFactorService
 
         await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask);
 
+        // Safe to access after Task.WhenAll completes
+        var isEnabled = await isEnabledTask;
+        var authenticatorKey = await authenticatorKeyTask;
+        var recoveryCodes = await recoveryCodesTask;
+
         return Result.Success(new TwoFactorStatusResponse
         {
-            IsEnabled = isEnabledTask.Result,
-            HasAuthenticator = authenticatorKeyTask.Result != null,
-            RecoveryCodesLeft = recoveryCodesTask.Result,
+            IsEnabled = isEnabled,
+            HasAuthenticator = authenticatorKey != null,
+            RecoveryCodesLeft = recoveryCodes,
             IsMachineRemembered = false
         });
     }

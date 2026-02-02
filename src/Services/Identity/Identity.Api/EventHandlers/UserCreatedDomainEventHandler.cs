@@ -21,10 +21,9 @@ public class UserCreatedDomainEventHandler : INotificationHandler<UserCreatedDom
 
     public async Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Processing UserCreatedDomainEvent for User {UserId} ({Username})",
-            notification.UserId,
-            notification.Username);
+        _logger.LogDebug(
+            "Processing UserCreatedDomainEvent for User {UserId}",
+            notification.UserId);
 
         await _eventPublisher.PublishAsync(new UserCreatedEvent
         {

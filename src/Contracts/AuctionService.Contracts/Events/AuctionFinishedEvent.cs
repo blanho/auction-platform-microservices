@@ -3,7 +3,7 @@ namespace AuctionService.Contracts.Events;
 public record AuctionFinishedEvent : IVersionedEvent
 {
     public int Version => 1;
-    
+
     public bool ItemSold { get; init; }
     public Guid AuctionId { get; init; }
     public Guid? WinnerId { get; init; }

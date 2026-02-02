@@ -17,8 +17,8 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
 
     public async Task<Result<BidHistoryResult>> Handle(GetBidHistoryQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting bid history with filters - AuctionId: {AuctionId}, UserId: {UserId}, Page: {Page}",
-            request.AuctionId, request.UserId, request.Page);
+        _logger.LogDebug("Getting bid history with filters - AuctionId: {AuctionId}, Page: {Page}",
+            request.AuctionId, request.Page);
 
         var queryParams = new BidHistoryQueryParams
         {

@@ -21,11 +21,9 @@ public class UserLoginDomainEventHandler : INotificationHandler<UserLoginDomainE
 
     public async Task Handle(UserLoginDomainEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Processing UserLoginDomainEvent for User {UserId} ({Username}) from IP {IpAddress}",
-            notification.UserId,
-            notification.Username,
-            notification.IpAddress);
+        _logger.LogDebug(
+            "Processing UserLoginDomainEvent for User {UserId}",
+            notification.UserId);
 
         await _eventPublisher.PublishAsync(new UserLoginEvent
         {

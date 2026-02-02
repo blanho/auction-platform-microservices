@@ -26,7 +26,7 @@ public class DashboardEndpoints : ICarterModule
 
         group.MapGet("/health", GetPlatformHealth)
             .WithName("GetPlatformHealth")
-            .AllowAnonymous()
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewPlatform))
             .Produces<PlatformHealthDto>();
     }
 

@@ -2,7 +2,7 @@ using BuildingBlocks.Infrastructure.Scheduling;
 using Quartz;
 using Analytics.Api.Jobs;
 
-namespace Analytics.Api.Extensions;
+namespace Analytics.Api.Extensions.DependencyInjection;
 
 public static class SchedulingExtensions
 {

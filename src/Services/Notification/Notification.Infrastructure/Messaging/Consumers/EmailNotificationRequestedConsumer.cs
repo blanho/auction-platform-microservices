@@ -37,10 +37,9 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
         var message = context.Message;
         var ct = context.CancellationToken;
 
-        _logger.LogInformation(
-            "Processing EmailNotificationRequestedEvent: EventId={EventId}, UserId={UserId}, Template={TemplateKey}",
+        _logger.LogDebug(
+            "Processing EmailNotificationRequestedEvent: EventId={EventId}, Template={TemplateKey}",
             message.EventId,
-            message.UserId,
             message.TemplateKey);
 
         if (await _idempotency.IsProcessedAsync(message.EventId, "Email", ct))

@@ -206,11 +206,13 @@ public class FirebaseOptions
 
     public string? ServiceAccountJson { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Firebase ProjectId is required")]
     public string ProjectId { get; set; } = string.Empty;
 
     public string DefaultAndroidChannel { get; set; } = "default_channel";
 
     public string? WebPushIcon { get; set; }
 
+    [System.ComponentModel.DataAnnotations.Range(1, 168, ErrorMessage = "TimeToLiveHours must be between 1 and 168")]
     public int TimeToLiveHours { get; set; } = 24;
 }

@@ -27,7 +27,7 @@ public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ord
 
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating order for auction {AuctionId}", request.AuctionId);
+        _logger.LogDebug("Creating order for auction {AuctionId}", request.AuctionId);
 
         var existingOrder = await _repository.GetByAuctionIdAsync(request.AuctionId);
         if (existingOrder != null)
@@ -58,7 +58,7 @@ public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ord
         var createdOrder = await _repository.AddAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created order {OrderId} for auction {AuctionId}", createdOrder.Id, request.AuctionId);
+        _logger.LogDebug("Created order {OrderId} for auction {AuctionId}", createdOrder.Id, request.AuctionId);
 
         return _mapper.Map<OrderDto>(createdOrder);
     }

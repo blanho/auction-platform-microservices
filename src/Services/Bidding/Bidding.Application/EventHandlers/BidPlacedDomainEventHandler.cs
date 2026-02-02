@@ -21,11 +21,10 @@ public class BidPlacedDomainEventHandler : INotificationHandler<BidPlacedDomainE
 
     public async Task Handle(BidPlacedDomainEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Bid {BidId} placed on Auction {AuctionId} by {Bidder} for {Amount}",
+        _logger.LogDebug(
+            "Bid {BidId} placed on Auction {AuctionId} for {Amount}",
             notification.BidId,
             notification.AuctionId,
-            notification.BidderUsername,
             notification.Amount);
 
         await _eventPublisher.PublishAsync(new BidPlacedEvent

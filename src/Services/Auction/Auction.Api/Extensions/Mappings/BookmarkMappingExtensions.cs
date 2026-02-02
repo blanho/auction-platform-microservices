@@ -5,7 +5,7 @@ using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 
-namespace Auctions.Api.Extensions;
+namespace Auctions.Api.Extensions.Mappings;
 
 public static class BookmarkMappingExtensions
 {

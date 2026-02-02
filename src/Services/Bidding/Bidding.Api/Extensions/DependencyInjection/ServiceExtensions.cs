@@ -9,7 +9,7 @@ using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Infrastructure.Repository;
 using System.Text.Json.Serialization;
 
-namespace Bidding.Api.Extensions
+namespace Bidding.Api.Extensions.DependencyInjection
 {
     public static class ServiceExtensions
     {
@@ -30,7 +30,16 @@ namespace Bidding.Api.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<BidDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    npgsqlOptions =>
+                    {
+                        npgsqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 3,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorCodesToAdd: null);
+                        npgsqlOptions.CommandTimeout(30);
+                    }));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IBidRepository, BidRepository>();

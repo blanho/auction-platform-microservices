@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
 using Analytics.Api.Enums;
+using Analytics.Api.Extensions.DependencyInjection;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 
@@ -30,19 +31,21 @@ public class SettingsEndpoints : ICarterModule
 
         group.MapGet("/key/{key}", GetSettingByKey)
             .WithName("GetSettingByKey")
-            .AllowAnonymous()
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.ManageSettings))
             .Produces<PlatformSettingDto>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("", CreateSetting)
             .WithName("CreateSetting")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.ManageSettings))
+            .WithValidation<CreateSettingDto>()
             .Produces<PlatformSettingDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict);
 
         group.MapPut("/{id:guid}", UpdateSetting)
             .WithName("UpdateSetting")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.ManageSettings))
+            .WithValidation<UpdateSettingDto>()
             .Produces<PlatformSettingDto>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 

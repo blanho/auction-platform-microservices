@@ -21,10 +21,9 @@ public class PasswordChangedDomainEventHandler : INotificationHandler<PasswordCh
 
     public async Task Handle(PasswordChangedDomainEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Processing PasswordChangedDomainEvent for User {UserId} ({Username})",
-            notification.UserId,
-            notification.Username);
+        _logger.LogDebug(
+            "Processing PasswordChangedDomainEvent for User {UserId}",
+            notification.UserId);
 
         await _eventPublisher.PublishAsync(new PasswordChangedEvent
         {

@@ -9,8 +9,10 @@ public static class AuctionErrors
         public static Error NotFound => Error.Create("Auction.NotFound", "Auction not found");
         public static Error NotFoundById(Guid id) => Error.Create("Auction.NotFound", $"Auction with ID {id} was not found");
         public static Error FetchFailed(string reason) => Error.Create("Auction.FetchFailed", $"Failed to fetch auction: {reason}");
-        public static Error InvalidStatus(string currentStatus) => Error.Create("Auction.InvalidStatus", $"Cannot deactivate auction in {currentStatus} status. Only Draft or Scheduled auctions can be deactivated.");
+        public static Error InvalidStatus(string currentStatus) => Error.Create("Auction.InvalidStatus", $"Cannot perform this action on auction with status {currentStatus}.");
         public static Error DeactivationFailed(string reason) => Error.Create("Auction.DeactivationFailed", reason);
+        public static Error ActivationFailed(string reason) => Error.Create("Auction.ActivationFailed", reason);
+        public static Error EndDatePassed => Error.Create("Auction.EndDatePassed", "Cannot activate auction. The auction end date has already passed.");
         public static Error ExportFailed(string reason) => Error.Create("Auction.ExportFailed", reason);
         public static Error BulkUpdateFailed(string reason) => Error.Create("Auction.BulkUpdateFailed", $"Failed to bulk update auctions: {reason}");
     }

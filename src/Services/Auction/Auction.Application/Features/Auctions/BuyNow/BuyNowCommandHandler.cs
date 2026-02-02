@@ -37,8 +37,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
     public async Task<Result<BuyNowResultDto>> Handle(BuyNowCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Processing Buy Now for auction {AuctionId} by buyer {Buyer}",
-            request.AuctionId, request.BuyerUsername);
+        _logger.LogInformation("Processing Buy Now for auction {AuctionId}", request.AuctionId);
 
         var lockKey = $"auction:buynow:{request.AuctionId}";
         await using var lockHandle = await _distributedLock.AcquireAsync(
@@ -55,7 +54,8 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
         try
         {
-            var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
+            // Use tracked entity fetch for updates
+            var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
 
             if (auction == null)
             {
@@ -67,7 +67,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.NotAvailable);
             }
 
-            if (auction.SellerUsername == request.BuyerUsername)
+            if (auction.SellerId == request.BuyerId)
             {
                 return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.OwnAuction);
             }
@@ -83,8 +83,8 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Buy Now completed for auction {AuctionId}. Buyer: {Buyer}, Price: {Price}",
-                auction.Id, request.BuyerUsername, auction.BuyNowPrice);
+            _logger.LogInformation("Buy Now completed for auction {AuctionId}. Price: {Price}",
+                auction.Id, auction.BuyNowPrice);
 
             return Result<BuyNowResultDto>.Success(new BuyNowResultDto
             {
@@ -96,16 +96,15 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 Success = true
             });
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
-            _logger.LogWarning("Concurrency conflict in BuyNow for auction {AuctionId}: {Error}",
-                request.AuctionId, ex.Message);
+            _logger.LogWarning("Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
             return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);
         }
         catch (Exception ex)
         {
-            _logger.LogError("Buy Now failed for auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Failed(ex.Message));
+            _logger.LogError(ex, "Buy Now failed for auction {AuctionId}", request.AuctionId);
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Failed("An unexpected error occurred. Please try again."));
         }
     }
 }

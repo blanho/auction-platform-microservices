@@ -6,12 +6,13 @@ using Payment.Infrastructure.Repositories;
 using Payment.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Extensions;
 using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Payment.Api.Extensions;
+namespace Payment.Api.Extensions.DependencyInjection;
 
 public static class ServiceExtensions
 {
@@ -47,7 +48,16 @@ public static class ServiceExtensions
         });
 
         services.AddDbContext<PaymentDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(
+                configuration.GetConnectionString("DefaultConnection"),
+                npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorCodesToAdd: null);
+                    npgsqlOptions.CommandTimeout(30);
+                }));
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -58,7 +68,18 @@ public static class ServiceExtensions
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
 
-        services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.SectionName));
+        // Register UnitOfWork - required by command handlers, consumers, and StripePaymentService
+        services.AddScoped<UnitOfWork>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
+
+        // Register distributed locking - required by wallet operations (HoldFunds, ReleaseFunds, Withdraw, ProcessWalletPayment)
+        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        services.AddDistributedLocking(redisConnectionString);
+
+        services.AddOptions<StripeOptions>()
+            .BindConfiguration(StripeOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton<IStripeServiceFactory, StripeServiceFactory>();
         services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 

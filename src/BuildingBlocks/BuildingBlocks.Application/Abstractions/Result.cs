@@ -10,7 +10,7 @@ public class Result
     {
         if (isSuccess && error != null)
             throw new InvalidOperationException("Successful result cannot have an error.");
-        
+
         if (!isSuccess && error == null)
             throw new InvalidOperationException("Failed result must have an error.");
 
@@ -22,7 +22,7 @@ public class Result
     public static Result Failure(Error error) => new(false, error);
     public static Result<T> Success<T>(T value) => new(value, true, null);
     public static Result<T> Failure<T>(Error error) => new(default, false, error);
-    
+
     public static Result<T> FromValue<T>(T? value, Error error) where T : class
         => value is not null ? Success(value) : Failure<T>(error);
 
@@ -46,7 +46,7 @@ public class Result<T> : Result
     {
         if (IsFailure)
             throw new InvalidOperationException($"Cannot get value from failed result: {Error?.Message}");
-        
+
         return Value!;
     }
 
@@ -59,8 +59,8 @@ public static class ResultExtensions
         this Result<TIn> result,
         Func<TIn, Result<TOut>> next)
     {
-        return result.IsFailure 
-            ? Result.Failure<TOut>(result.Error!) 
+        return result.IsFailure
+            ? Result.Failure<TOut>(result.Error!)
             : next(result.Value!);
     }
 
@@ -68,8 +68,8 @@ public static class ResultExtensions
         this Result<TIn> result,
         Func<TIn, Task<Result<TOut>>> next)
     {
-        return result.IsFailure 
-            ? Result.Failure<TOut>(result.Error!) 
+        return result.IsFailure
+            ? Result.Failure<TOut>(result.Error!)
             : await next(result.Value!);
     }
 
@@ -78,8 +78,8 @@ public static class ResultExtensions
         Func<TIn, Task<Result<TOut>>> next)
     {
         var result = await resultTask;
-        return result.IsFailure 
-            ? Result.Failure<TOut>(result.Error!) 
+        return result.IsFailure
+            ? Result.Failure<TOut>(result.Error!)
             : await next(result.Value!);
     }
 
@@ -87,8 +87,8 @@ public static class ResultExtensions
         this Result<TIn> result,
         Func<TIn, TOut> mapper)
     {
-        return result.IsFailure 
-            ? Result.Failure<TOut>(result.Error!) 
+        return result.IsFailure
+            ? Result.Failure<TOut>(result.Error!)
             : Result.Success(mapper(result.Value!));
     }
 
@@ -97,8 +97,8 @@ public static class ResultExtensions
         Func<TIn, TOut> mapper)
     {
         var result = await resultTask;
-        return result.IsFailure 
-            ? Result.Failure<TOut>(result.Error!) 
+        return result.IsFailure
+            ? Result.Failure<TOut>(result.Error!)
             : Result.Success(mapper(result.Value!));
     }
 
@@ -106,7 +106,7 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
             action(result.Value!);
-        
+
         return result;
     }
 
@@ -116,7 +116,7 @@ public static class ResultExtensions
     {
         if (result.IsSuccess)
             await action(result.Value!);
-        
+
         return result;
     }
 
@@ -125,8 +125,8 @@ public static class ResultExtensions
         Func<TIn, TOut> onSuccess,
         Func<Error, TOut> onFailure)
     {
-        return result.IsSuccess 
-            ? onSuccess(result.Value!) 
+        return result.IsSuccess
+            ? onSuccess(result.Value!)
             : onFailure(result.Error!);
     }
 
@@ -138,8 +138,8 @@ public static class ResultExtensions
         if (result.IsFailure)
             return result;
 
-        return predicate(result.Value!) 
-            ? result 
+        return predicate(result.Value!)
+            ? result
             : Result.Failure<T>(error);
     }
 
@@ -153,7 +153,7 @@ public static class ResultExtensions
     {
         var resultList = results.ToList();
         var failedResult = resultList.FirstOrDefault(r => r.IsFailure);
-        
+
         if (failedResult != null)
             return Result.Failure<IEnumerable<T>>(failedResult.Error!);
 

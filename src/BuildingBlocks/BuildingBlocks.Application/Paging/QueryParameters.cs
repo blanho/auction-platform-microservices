@@ -16,8 +16,8 @@ public class QueryParameters
     public int PageSize
     {
         get => _pageSize;
-        init => _pageSize = value < 1 
-            ? PaginationDefaults.DefaultPageSize 
+        init => _pageSize = value < 1
+            ? PaginationDefaults.DefaultPageSize
             : Math.Min(value, PaginationDefaults.MaxPageSize);
     }
 

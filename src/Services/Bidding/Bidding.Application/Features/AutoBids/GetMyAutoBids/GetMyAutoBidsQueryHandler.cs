@@ -20,8 +20,7 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
 
     public async Task<Result<MyAutoBidsResult>> Handle(GetMyAutoBidsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting auto-bids for user {UserId}, page {Page}", 
-            request.UserId, request.Page);
+        _logger.LogDebug("Getting auto-bids, page {Page}", request.Page);
 
         var queryParams = QueryParameters.Create(request.Page, request.PageSize);
         var result = await _repository.GetAutoBidsByUserAsync(

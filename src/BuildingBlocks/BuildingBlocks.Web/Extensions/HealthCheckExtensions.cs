@@ -30,13 +30,14 @@ public static class HealthCheckExtensions
 
         if (!string.IsNullOrEmpty(rabbitMqConnectionString))
         {
-            builder.AddRabbitMQ(sp =>
+            // Use async connection factory with proper async overload
+            builder.AddRabbitMQ(async sp =>
             {
                 var factory = new RabbitMQ.Client.ConnectionFactory
                 {
                     Uri = new Uri(rabbitMqConnectionString)
                 };
-                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+                return await factory.CreateConnectionAsync();
             }, name: "rabbitmq",
                 failureStatus: HealthStatus.Degraded,
                 tags: new[] { "messaging", "ready" });

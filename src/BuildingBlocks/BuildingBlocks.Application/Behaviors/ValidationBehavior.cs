@@ -64,7 +64,7 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
             var failureMethod = typeof(Result)
                 .GetMethod(nameof(Result.Failure), 1, new[] { typeof(Error) })!
                 .MakeGenericMethod(valueType);
-            
+
             return (TResponse)failureMethod.Invoke(null, new object[] { error })!;
         }
 

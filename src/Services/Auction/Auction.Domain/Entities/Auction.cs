@@ -143,7 +143,7 @@ public class Auction : BaseEntity
         BuyNowPrice = newPrice;
     }
 
-    public void ExtendAuctionEnd(TimeSpan extension, string reason)
+    public void ExtendAuctionEnd(TimeSpan extension)
     {
         if (Status != Status.Live)
             throw new InvalidOperationException("Can only extend live auctions");

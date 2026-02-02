@@ -107,13 +107,16 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var autoBid = await GetByIdAsync(id, cancellationToken);
+        // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
+        var autoBid = await _context.AutoBids
+            .Where(x => !x.IsDeleted)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        
         if (autoBid != null)
         {
             autoBid.IsDeleted = true;
             autoBid.DeletedAt = _dateTime.UtcNow;
             autoBid.DeletedBy = _auditContext.UserId;
-            _context.AutoBids.Update(autoBid);
         }
     }
 

@@ -1,60 +1,102 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using Carter;
-using Search.Api.Extensions;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using Search.Api.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
+// Fail fast on missing required configuration
+builder.Services.ValidateStandardConfiguration(
+    builder.Configuration,
+    "SearchService",
+    requiresDatabase: false,
+    requiresRedis: true,
+    requiresRabbitMQ: true,
+    requiresIdentity: false);
 
 builder.Services.AddObservability(builder.Configuration);
-
 builder.Services.AddCarter();
-
 builder.Services.AddSearchServices(builder.Configuration);
-
 builder.Services.AddSearchMessaging(builder.Configuration);
-
+builder.Services.AddCommonUtilities();
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
-
-builder.Services.AddHealthChecks();
-
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration["Redis:ConnectionString"],
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    serviceName: "SearchService");
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "Search Service API",
-        Version = "v1",
-        Description = "Auction Platform Search Service - Elasticsearch-backed search for auctions"
-    });
-});
+    Title = "Search Service API",
+    Version = "v1",
+    Description = "Auction Platform Search Service - Elasticsearch-backed search for auctions"
+}));
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1");
-    });
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1"));
 }
 
+app.UseCorrelationId();
 app.UseRequestTracing();
-app.UseExceptionHandler();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionFeature?.Error;
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+        var statusCode = exception switch
+        {
+            BuildingBlocks.Web.Exceptions.NotFoundException => StatusCodes.Status404NotFound,
+            BuildingBlocks.Web.Exceptions.UnauthorizedAppException => StatusCodes.Status401Unauthorized,
+            BuildingBlocks.Web.Exceptions.ForbiddenAppException => StatusCodes.Status403Forbidden,
+            BuildingBlocks.Web.Exceptions.ValidationAppException => StatusCodes.Status400BadRequest,
+            BuildingBlocks.Web.Exceptions.ConflictException => StatusCodes.Status409Conflict,
+            ArgumentException or ArgumentNullException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        if (statusCode == StatusCodes.Status500InternalServerError)
+            logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
+
+        var problem = new ProblemDetails
+        {
+            Title = statusCode switch
+            {
+                StatusCodes.Status404NotFound => "Resource not found",
+                StatusCodes.Status401Unauthorized => "Unauthorized",
+                StatusCodes.Status403Forbidden => "Access denied",
+                StatusCodes.Status400BadRequest => "Invalid request",
+                StatusCodes.Status409Conflict => "Resource conflict",
+                _ => "An unexpected error occurred"
+            },
+            Detail = statusCode == StatusCodes.Status500InternalServerError && !app.Environment.IsDevelopment()
+                ? "An internal server error occurred. Please try again later."
+                : exception?.Message,
+            Status = statusCode,
+            Instance = context.Request.Path
+        };
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsJsonAsync(problem);
+    });
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAccessAuthorization();
-
-app.MapHealthChecks("/health");
-
+app.MapCustomHealthChecks();
 app.MapCarter();
 
 app.Run();

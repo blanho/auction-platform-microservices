@@ -69,6 +69,7 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
         builder.HasIndex(x => x.SellerId);
         builder.HasIndex(x => x.SellerUsername);
         builder.HasIndex(x => x.WinnerId);
+        builder.HasIndex(x => x.WinnerUsername);
         builder.HasIndex(x => x.IsFeatured);
         builder.HasIndex(x => new { x.Status, x.AuctionEnd });
         builder.HasIndex(x => new { x.Status, x.IsFeatured });

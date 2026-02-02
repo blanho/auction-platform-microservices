@@ -3,7 +3,7 @@ namespace AuctionService.Contracts.Events;
 public record AuctionCreatedEvent : IVersionedEvent
 {
     public int Version => 1;
-    
+
     public Guid Id { get; init; }
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;

@@ -30,7 +30,7 @@ public class CreateNotificationCommandHandler : ICommandHandler<CreateNotificati
 
     public async Task<Result<NotificationDto>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating notification for user {UserId}", request.UserId);
+        _logger.LogDebug("Creating notification of type {Type}", request.Type);
 
         if (!Enum.TryParse<NotificationType>(request.Type, true, out var notificationType))
         {

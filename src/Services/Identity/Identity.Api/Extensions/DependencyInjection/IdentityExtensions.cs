@@ -3,7 +3,7 @@ using Identity.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Identity.Api.Extensions;
+namespace Identity.Api.Extensions.DependencyInjection;
 
 internal static class IdentityExtensions
 {
@@ -12,7 +12,16 @@ internal static class IdentityExtensions
         IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(
+                configuration.GetConnectionString("DefaultConnection"),
+                npgsqlOptions =>
+                {
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorCodesToAdd: null);
+                    npgsqlOptions.CommandTimeout(30);
+                }));
 
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {

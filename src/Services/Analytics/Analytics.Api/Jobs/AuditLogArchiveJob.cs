@@ -1,10 +1,16 @@
 using BuildingBlocks.Infrastructure.Scheduling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
 using Analytics.Api.Interfaces;
 
 namespace Analytics.Api.Jobs;
 
+/// <summary>
+/// Monitors old audit logs for archival.
+/// Uses DisallowConcurrentExecution to prevent duplicate archival checks.
+/// </summary>
+[DisallowConcurrentExecution]
 public class AuditLogArchiveJob : BaseJob
 {
     public const string JobId = "audit-log-archive";

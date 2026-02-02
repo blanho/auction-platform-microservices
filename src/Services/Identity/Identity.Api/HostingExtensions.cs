@@ -1,7 +1,9 @@
 using System.Globalization;
 using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Middleware;
+using BuildingBlocks.Web.Observability;
 using Identity.Api.Data;
-using Identity.Api.Extensions;
+using Identity.Api.Extensions.DependencyInjection;
 using Identity.Api.Grpc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -24,6 +26,15 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
+        // Fail fast on missing required configuration
+        builder.Services.ValidateStandardConfiguration(
+            builder.Configuration,
+            "IdentityService",
+            requiresDatabase: true,
+            requiresRedis: true,
+            requiresRabbitMQ: true,
+            requiresIdentity: false); // Identity service is the authority itself
+
         builder.Services.AddControllers();
         builder.Services.AddGrpc();
         builder.Services.AddGrpcReflection();
@@ -39,6 +50,16 @@ internal static class HostingExtensions
             .AddCommonUtilities()
             .AddAuditServices(builder.Configuration, "identity-service");
 
+        // Add observability (OpenTelemetry tracing and metrics)
+        builder.Services.AddObservability(builder.Configuration);
+        
+        // Add health checks for infrastructure dependencies
+        builder.Services.AddCustomHealthChecks(
+            redisConnectionString: builder.Configuration["Redis:ConnectionString"],
+            rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+            databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+            serviceName: "IdentityService");
+
         return builder.Build();
     }
 
@@ -50,12 +71,56 @@ internal static class HostingExtensions
             db.Database.Migrate();
         }
 
+        app.UseCorrelationId();
         app.UseSerilogRequestLogging();
 
-        if (app.Environment.IsDevelopment())
+        // Use proper exception handling in all environments
+        app.UseExceptionHandler(errorApp =>
         {
-            app.UseDeveloperExceptionPage();
-        }
+            errorApp.Run(async context =>
+            {
+                var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                var exception = exceptionFeature?.Error;
+                var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                
+                var statusCode = exception switch
+                {
+                    BuildingBlocks.Web.Exceptions.NotFoundException => StatusCodes.Status404NotFound,
+                    BuildingBlocks.Web.Exceptions.UnauthorizedAppException => StatusCodes.Status401Unauthorized,
+                    BuildingBlocks.Web.Exceptions.ForbiddenAppException => StatusCodes.Status403Forbidden,
+                    BuildingBlocks.Web.Exceptions.ValidationAppException => StatusCodes.Status400BadRequest,
+                    ArgumentException => StatusCodes.Status400BadRequest,
+                    UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+                    _ => StatusCodes.Status500InternalServerError
+                };
+
+                if (statusCode == StatusCodes.Status500InternalServerError)
+                {
+                    logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
+                }
+
+                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                {
+                    Title = statusCode switch
+                    {
+                        StatusCodes.Status404NotFound => "Resource not found",
+                        StatusCodes.Status401Unauthorized => "Unauthorized",
+                        StatusCodes.Status403Forbidden => "Access denied",
+                        StatusCodes.Status400BadRequest => "Invalid request",
+                        _ => "An unexpected error occurred"
+                    },
+                    Detail = statusCode == StatusCodes.Status500InternalServerError && !app.Environment.IsDevelopment()
+                        ? "An internal server error occurred. Please try again later."
+                        : exception?.Message,
+                    Status = statusCode,
+                    Instance = context.Request.Path
+                };
+
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/problem+json";
+                await context.Response.WriteAsJsonAsync(problem);
+            });
+        });
 
         var allowedOrigins = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"];
@@ -73,7 +138,15 @@ internal static class HostingExtensions
 
         app.MapControllers();
         app.MapGrpcService<UserStatsGrpcService>();
-        app.MapGrpcReflectionService();
+
+        // Only enable gRPC reflection in development (exposes service metadata)
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapGrpcReflectionService();
+        }
+
+        // Map health check endpoints
+        app.MapCustomHealthChecks();
 
         return app;
     }

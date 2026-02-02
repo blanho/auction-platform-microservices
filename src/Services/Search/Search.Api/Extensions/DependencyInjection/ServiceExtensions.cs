@@ -5,7 +5,7 @@ using BuildingBlocks.Infrastructure.Extensions;
 using Search.Api.Configuration;
 using Search.Api.Consumers;
 
-namespace Search.Api.Extensions;
+namespace Search.Api.Extensions.DependencyInjection;
 
 public static class ServiceExtensions
 {
@@ -14,11 +14,15 @@ public static class ServiceExtensions
         IConfiguration configuration)
     {
 
-        services.Configure<ElasticsearchOptions>(
-            configuration.GetSection(ElasticsearchOptions.SectionName));
+        services.AddOptions<ElasticsearchOptions>()
+            .BindConfiguration(ElasticsearchOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.Configure<SearchOptions>(
-            configuration.GetSection(SearchOptions.SectionName));
+        services.AddOptions<SearchOptions>()
+            .BindConfiguration(SearchOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddStackExchangeRedisCache(options =>
         {

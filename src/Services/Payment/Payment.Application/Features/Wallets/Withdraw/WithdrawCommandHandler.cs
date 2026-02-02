@@ -46,7 +46,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
 
         if (lockHandle == null)
         {
-            _logger.LogWarning("Failed to acquire wallet lock for user {Username}", request.Username);
+            _logger.LogWarning("Failed to acquire wallet lock for withdrawal operation");
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.Busy);
         }
 
@@ -79,12 +79,11 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
         catch (DbUpdateConcurrencyException ex)
         {
             _logger.LogWarning(ex,
-                "Concurrency conflict during withdrawal for user {Username}. Lock may have been released prematurely.",
-                request.Username);
+                "Concurrency conflict during withdrawal. Lock may have been released prematurely.");
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
 
-        _logger.LogInformation("Withdrawal of {Amount} initiated for user: {Username}", request.Amount, request.Username);
+        _logger.LogDebug("Withdrawal of {Amount} initiated", request.Amount);
 
         return Result.Success(transaction.ToDto(_mapper));
     }

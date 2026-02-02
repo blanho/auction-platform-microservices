@@ -9,7 +9,7 @@
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="MassTransit" Version="8.4.0" />
-    <PackageReference Include="Stripe.net" Version="47.7.0" />
+    <PackageReference Include="Stripe.net" Version="48.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />

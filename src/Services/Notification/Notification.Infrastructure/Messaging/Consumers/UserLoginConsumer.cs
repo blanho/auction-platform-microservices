@@ -38,11 +38,9 @@ public class UserLoginConsumer : IConsumer<UserLoginEvent>
         var ct = context.CancellationToken;
         var eventId = $"user-login-{message.UserId}-{message.LoginAt:yyyyMMddHHmmss}";
 
-        _logger.LogInformation(
-            "Processing UserLoginEvent: UserId={UserId}, Username={Username}, IP={IpAddress}",
-            message.UserId,
-            message.Username,
-            message.IpAddress);
+        _logger.LogDebug(
+            "Processing UserLoginEvent: UserId={UserId}",
+            message.UserId);
 
         if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
             return;

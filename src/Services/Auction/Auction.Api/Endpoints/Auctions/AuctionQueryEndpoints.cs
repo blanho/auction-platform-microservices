@@ -63,14 +63,18 @@ public class AuctionQueryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetFeaturedAuctions(
+        int page,
         int pageSize,
         IMediator mediator,
         CancellationToken ct)
     {
+        var validPage = page > 0 ? page : 1;
+        var validPageSize = pageSize > 0 && pageSize <= 50 ? pageSize : 8;
+
         var query = new GetAuctionsQuery(
             null, null, null, null,
             null, true,
-            1, pageSize > 0 ? pageSize : 8, "auctionEnd", false);
+            validPage, validPageSize, "auctionEnd", false);
 
         var result = await mediator.Send(query, ct);
 
@@ -121,7 +125,19 @@ public class AuctionQueryEndpoints : ICarterModule
         IMediator mediator,
         CancellationToken ct)
     {
-        var query = new GetAuctionsByIdsQuery(ids);
+        if (ids == null || ids.Count == 0)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(
+                Error.Create("Validation.Empty", "At least one auction ID is required")));
+        }
+
+        if (ids.Count > 100)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(
+                Error.Create("Validation.TooMany", "Maximum 100 auction IDs allowed per request")));
+        }
+
+        var query = new GetAuctionsByIdsQuery(ids.Distinct().ToList());
         var result = await mediator.Send(query, ct);
 
         return result.IsSuccess

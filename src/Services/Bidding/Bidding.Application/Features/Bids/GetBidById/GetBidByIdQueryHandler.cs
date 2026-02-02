@@ -15,12 +15,12 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
 
     public async Task<Result<BidDetailDto?>> Handle(GetBidByIdQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting bid details for {BidId}", request.BidId);
+        _logger.LogDebug("Getting bid details for {BidId}", request.BidId);
 
         var bid = await _repository.GetByIdAsync(request.BidId, cancellationToken);
         if (bid == null)
         {
-            _logger.LogWarning("Bid {BidId} not found", request.BidId);
+            _logger.LogDebug("Bid {BidId} not found", request.BidId);
             return Result.Success<BidDetailDto?>(null);
         }
 
@@ -32,7 +32,7 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
         var isHighestBid = highestBid?.Id == bid.Id;
         var isWinningBid = isHighestBid && bid.Status == BidStatus.Accepted;
 
-        var nextMinimumBid = isHighestBid ? null : (decimal?)BidIncrementHelper.GetMinimumNextBid(highestBid!.Amount);
+        var nextMinimumBid = isHighestBid || highestBid == null ? null : (decimal?)BidIncrementHelper.GetMinimumNextBid(highestBid.Amount);
         
         return Result.Success<BidDetailDto?>(new BidDetailDto
         {

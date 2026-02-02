@@ -3,6 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
+/// <summary>
+/// Consumes BidPlacedEvent to update auction's current high bid.
+/// Implements idempotency by checking if the incoming bid is actually higher than current.
+/// </summary>
 public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
 {
     private readonly IAuctionRepository _repository;
@@ -22,22 +26,43 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
     public async Task Consume(ConsumeContext<BidPlacedEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Consuming BidPlacedEvent for auction {AuctionId}", message.AuctionId);
+        _logger.LogInformation(
+            "Consuming BidPlacedEvent {EventId} for auction {AuctionId}, Amount: {Amount}, Status: {Status}",
+            message.Id, message.AuctionId, message.BidAmount, message.BidStatus);
 
         var auction = await _repository.GetByIdAsync(message.AuctionId, context.CancellationToken);
         if (auction == null)
         {
-            _logger.LogWarning("Auction {AuctionId} not found", message.AuctionId);
+            _logger.LogWarning("Auction {AuctionId} not found for event {EventId}", message.AuctionId, message.Id);
             return;
         }
 
-        if (auction.CurrentHighBid == null || message.BidStatus.Contains("Accepted")
-            && message.BidAmount > auction.CurrentHighBid)
+        // Idempotency check: only update if this is an accepted bid AND it's actually higher
+        // This handles duplicate messages and out-of-order delivery
+        if (!message.BidStatus.Contains("Accepted"))
         {
-            auction.UpdateHighBid(message.BidAmount, message.BidderId, message.Bidder);
-            await _repository.UpdateAsync(auction, context.CancellationToken);
-            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+            _logger.LogDebug(
+                "Bid {EventId} not accepted (Status: {Status}), skipping update",
+                message.Id, message.BidStatus);
+            return;
         }
+
+        // Check if bid amount is actually higher than current (handles duplicates and out-of-order)
+        if (auction.CurrentHighBid.HasValue && message.BidAmount <= auction.CurrentHighBid.Value)
+        {
+            _logger.LogDebug(
+                "Bid {EventId} amount {BidAmount} is not higher than current {CurrentBid}, skipping (idempotent)",
+                message.Id, message.BidAmount, auction.CurrentHighBid.Value);
+            return;
+        }
+
+        auction.UpdateHighBid(message.BidAmount, message.BidderId, message.Bidder);
+        await _repository.UpdateAsync(auction, context.CancellationToken);
+        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+
+        _logger.LogInformation(
+            "Updated auction {AuctionId} high bid to {Amount} by {Bidder}",
+            message.AuctionId, message.BidAmount, message.Bidder);
     }
 }
 

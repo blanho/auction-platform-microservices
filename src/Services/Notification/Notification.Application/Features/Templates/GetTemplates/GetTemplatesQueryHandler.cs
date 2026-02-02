@@ -18,7 +18,7 @@ public class GetTemplatesQueryHandler : IQueryHandler<GetTemplatesQuery, Paginat
 
     public async Task<Result<PaginatedResult<TemplateDto>>> Handle(GetTemplatesQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting templates - Page: {Page}, PageSize: {PageSize}", request.Page, request.PageSize);
+        _logger.LogDebug("Getting templates - Page: {Page}", request.Page);
 
         var result = await _templateService.GetPagedAsync(request.Page, request.PageSize, cancellationToken);
 
