@@ -7,6 +7,14 @@ import type {
 } from '../types/auction-requests.types'
 import type { BackendAuctionDto, BackendAuctionListDto } from '../types/backend-dto.types'
 import type { PaginatedResponse } from '@/shared/types'
+import type {
+  ExportAuctionDto,
+  ImportAuctionDto,
+  ImportAuctionsResult,
+  ExportFilters,
+  BulkImportProgress,
+  BulkImportStartResponse,
+} from '../types/import-export.types'
 import { mapAuctionDto, mapAuctionListDtos } from '../utils/auction.mappers'
 
 interface BackendPaginatedResponse<T> {
@@ -101,5 +109,72 @@ export const auctionsApi = {
       hasNextPage: data.hasNextPage,
       hasPreviousPage: data.hasPreviousPage,
     }
+  },
+
+  async exportAuctions(filters: ExportFilters): Promise<ExportAuctionDto[] | Blob> {
+    const { format, ...params } = filters
+
+    if (format === 'json') {
+      const response = await http.get<ExportAuctionDto[]>('/auctions/export', {
+        params: { ...params, format },
+      })
+      return response.data
+    }
+
+    const response = await http.get('/auctions/export', {
+      params: { ...params, format },
+      responseType: 'blob',
+    })
+    return response.data as Blob
+  },
+
+  async importAuctionsFile(file: File): Promise<ImportAuctionsResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await http.post<ImportAuctionsResult>('/auctions/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+
+  async importAuctionsJson(auctions: ImportAuctionDto[]): Promise<ImportAuctionsResult> {
+    const response = await http.post<ImportAuctionsResult>('/auctions/import/json', auctions)
+    return response.data
+  },
+
+  downloadExport(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  },
+
+  async startBulkImport(file: File): Promise<BulkImportStartResponse> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await http.post<BulkImportStartResponse>('/auctions/import/bulk', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+
+  async getBulkImportProgress(jobId: string): Promise<BulkImportProgress> {
+    const response = await http.get<BulkImportProgress>(`/auctions/import/bulk/${jobId}`)
+    return response.data
+  },
+
+  async getAllBulkImportJobs(): Promise<BulkImportProgress[]> {
+    const response = await http.get<BulkImportProgress[]>('/auctions/import/bulk')
+    return response.data
+  },
+
+  async cancelBulkImport(jobId: string): Promise<void> {
+    await http.delete(`/auctions/import/bulk/${jobId}`)
   },
 }

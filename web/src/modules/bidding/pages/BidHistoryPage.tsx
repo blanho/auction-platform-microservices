@@ -1,67 +1,143 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Chip,
-  TextField,
-  MenuItem,
-  Stack,
-  Container,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Pagination,
-  IconButton,
-} from '@mui/material'
-import { AccessTime, FilterList, Close } from '@mui/icons-material'
+import { Box, Typography, Chip, Container, Stack } from '@mui/material'
+import { AccessTime } from '@mui/icons-material'
 import { useBidHistory } from '../hooks/useBids'
-import { BidStatus, type BidHistoryFilters } from '../types'
+import { BidStatus, type Bid } from '../types'
 import { formatCurrency, formatDateTime } from '@/shared/utils'
-import { TableEmptyStateRow, TableSkeletonRows, InlineAlert, StatusBadge } from '@/shared/ui'
+import { StatusBadge, DataTable, FilterPanel } from '@/shared/ui'
+import { usePagination } from '@/shared/hooks'
+import type { ColumnConfig, FilterPanelConfig, BidFilter } from '@/shared/types'
 
-export const BidHistoryPage = () => {
+const BID_STATUS_OPTIONS = Object.values(BidStatus).map((status) => ({
+  value: status,
+  label: status,
+}))
+
+const filterConfig: FilterPanelConfig = {
+  fields: [
+    {
+      key: 'auctionId',
+      type: 'text',
+      label: 'Auction ID',
+      placeholder: 'Enter auction ID...',
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Status',
+      options: BID_STATUS_OPTIONS,
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+    {
+      key: 'dateRange',
+      type: 'dateRange',
+      label: 'Date',
+      startKey: 'dateFrom',
+      endKey: 'dateTo',
+      gridSize: { xs: 12, sm: 12, md: 6 },
+    },
+  ],
+  collapsible: true,
+  defaultExpanded: true,
+  showClearButton: true,
+}
+
+export function BidHistoryPage() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<BidHistoryFilters>({
-    page: 1,
-    pageSize: 20,
+
+  const pagination = usePagination<BidFilter>({
+    defaultPageSize: 20,
+    defaultSortBy: 'bidTime',
+    defaultSortOrder: 'desc',
   })
 
-  const { data, isLoading, error } = useBidHistory(filters)
-  const bidCount = data?.items?.length ?? 0
+  const { data, isLoading, error, refetch } = useBidHistory({
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    auctionId: pagination.filter.auctionId,
+    status: pagination.filter.status,
+    fromDate: pagination.filter.dateFrom,
+    toDate: pagination.filter.dateTo,
+  })
 
-  const handleFilterChange = (key: keyof BidHistoryFilters, value: string | number | undefined) => {
-    setFilters((prev: BidHistoryFilters) => ({
-      ...prev,
-      [key]: value,
-      page: 1,
-    }))
-  }
-
-  const clearFilters = () => {
-    setFilters({
-      page: 1,
-      pageSize: 20,
-    })
-  }
-
-  const hasActiveFilters = filters.auctionId || filters.status || filters.fromDate || filters.toDate
-
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <InlineAlert severity="error">Failed to load bid history. Please try again.</InlineAlert>
-      </Container>
-    )
-  }
-
-  const totalPages = Math.ceil((data?.totalCount || 0) / (filters.pageSize || 20))
+  const columns: ColumnConfig<Bid>[] = useMemo(
+    () => [
+      {
+        key: 'auctionTitle',
+        header: 'Auction',
+        sortable: true,
+        sortKey: 'auctionTitle',
+        render: (value) => (
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, color: '#1E293B' }}
+          >
+            {String(value)}
+          </Typography>
+        ),
+      },
+      {
+        key: 'amount',
+        header: 'Bid Amount',
+        sortable: true,
+        align: 'right',
+        render: (value) => (
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: 'Russo One', color: '#2563EB', fontWeight: 700 }}
+          >
+            {formatCurrency(Number(value))}
+          </Typography>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortable: true,
+        render: (value) => (
+          <StatusBadge
+            status={String(value)}
+            sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, fontSize: '0.7rem' }}
+          />
+        ),
+      },
+      {
+        key: 'isWinning',
+        header: 'Winning',
+        render: (value) =>
+          value ? (
+            <Chip
+              label="WINNING"
+              size="small"
+              sx={{
+                background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)',
+                color: '#FFF',
+                fontFamily: 'Chakra Petch',
+                fontWeight: 600,
+                fontSize: '0.7rem',
+              }}
+            />
+          ) : (
+            <Typography variant="body2" sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}>
+              -
+            </Typography>
+          ),
+      },
+      {
+        key: 'bidTime',
+        header: 'Bid Time',
+        sortable: true,
+        render: (value) => (
+          <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
+            {formatDateTime(String(value))}
+          </Typography>
+        ),
+      },
+    ],
+    []
+  )
 
   return (
     <Box
@@ -96,249 +172,48 @@ export const BidHistoryPage = () => {
           </Typography>
         </Box>
 
-        <Card
-          sx={{
-            mb: 4,
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: 3,
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <FilterList sx={{ width: 24, height: 24, color: '#2563EB' }} />
-                <Typography variant="h6" sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>
-                  Filters
-                </Typography>
-              </Stack>
-              {hasActiveFilters && (
-                <IconButton onClick={clearFilters} size="small" sx={{ color: '#64748B' }}>
-                  <Close sx={{ width: 20, height: 20 }} />
-                </IconButton>
-              )}
-            </Stack>
+        <Stack spacing={3}>
+          <FilterPanel
+            config={filterConfig}
+            value={pagination.filter}
+            onChange={pagination.setFilter}
+            onClear={pagination.clearFilter}
+            onRefresh={refetch}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+            }}
+          />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField
-                  fullWidth
-                  label="Auction ID"
-                  value={filters.auctionId || ''}
-                  onChange={(e) => handleFilterChange('auctionId', e.target.value || undefined)}
-                  size="small"
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontFamily: 'Chakra Petch',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Status"
-                  value={filters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-                  size="small"
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontFamily: 'Chakra Petch',
-                    },
-                  }}
-                >
-                  <MenuItem value="">All Statuses</MenuItem>
-                  {Object.values(BidStatus).map((status) => (
-                    <MenuItem key={status} value={status}>
-                      {status}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="From Date"
-                  value={filters.fromDate || ''}
-                  onChange={(e) => handleFilterChange('fromDate', e.target.value || undefined)}
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontFamily: 'Chakra Petch',
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="To Date"
-                  value={filters.toDate || ''}
-                  onChange={(e) => handleFilterChange('toDate', e.target.value || undefined)}
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontFamily: 'Chakra Petch',
-                    },
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          sx={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: 3,
-          }}
-        >
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ background: 'rgba(37, 99, 235, 0.05)' }}>
-                  <TableCell sx={{ fontFamily: 'Russo One', color: '#1E293B', fontWeight: 700 }}>
-                    Auction
-                  </TableCell>
-                  <TableCell sx={{ fontFamily: 'Russo One', color: '#1E293B', fontWeight: 700 }}>
-                    Bid Amount
-                  </TableCell>
-                  <TableCell sx={{ fontFamily: 'Russo One', color: '#1E293B', fontWeight: 700 }}>
-                    Status
-                  </TableCell>
-                  <TableCell sx={{ fontFamily: 'Russo One', color: '#1E293B', fontWeight: 700 }}>
-                    Winning
-                  </TableCell>
-                  <TableCell sx={{ fontFamily: 'Russo One', color: '#1E293B', fontWeight: 700 }}>
-                    Bid Time
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {isLoading && <TableSkeletonRows rows={10} columns={5} />}
-                {!isLoading && bidCount > 0 && (
-                  data?.items.map((bid) => {
-                    return (
-                      <TableRow
-                        key={bid.id}
-                        hover
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': {
-                            background: 'rgba(37, 99, 235, 0.03)',
-                          },
-                        }}
-                        onClick={() => navigate(`/auctions/${bid.auctionId}`)}
-                      >
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontFamily: 'Chakra Petch',
-                              fontWeight: 600,
-                              color: '#1E293B',
-                            }}
-                          >
-                            {bid.auctionTitle}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontFamily: 'Russo One',
-                              color: '#2563EB',
-                              fontWeight: 700,
-                            }}
-                          >
-                            {formatCurrency(bid.amount)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge
-                            status={bid.status}
-                            sx={{
-                              fontFamily: 'Chakra Petch',
-                              fontWeight: 600,
-                              fontSize: '0.7rem',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {bid.isWinning ? (
-                            <Chip
-                              label="WINNING"
-                              size="small"
-                              sx={{
-                                background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)',
-                                color: '#FFF',
-                                fontFamily: 'Chakra Petch',
-                                fontWeight: 600,
-                                fontSize: '0.7rem',
-                              }}
-                            />
-                          ) : (
-                            <Typography
-                              variant="body2"
-                              sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
-                            >
-                              -
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
-                          >
-                            {formatDateTime(bid.bidTime)}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-                {!isLoading && bidCount === 0 && (
-                  <TableEmptyStateRow
-                    colSpan={5}
-                    title="No bid history found"
-                    cellSx={{ py: 8 }}
-                  />
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {totalPages > 1 && (
-            <Box display="flex" justifyContent="center" p={3}>
-              <Pagination
-                count={totalPages}
-                page={filters.page || 1}
-                onChange={(_, value) => handleFilterChange('page', value)}
-                color="primary"
-                size="large"
-                sx={{
-                  '& .MuiPaginationItem-root': {
-                    fontFamily: 'Chakra Petch',
-                    fontWeight: 600,
-                  },
-                  '& .Mui-selected': {
-                    background: '#2563EB !important',
-                    color: '#FFF',
-                  },
-                }}
-              />
-            </Box>
-          )}
-        </Card>
+          <DataTable
+            columns={columns}
+            data={data}
+            isLoading={isLoading}
+            error={error instanceof Error ? error : null}
+            sortBy={pagination.sortBy}
+            sortOrder={pagination.sortOrder}
+            onSort={pagination.handleSort}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.setPage}
+            onPageSizeChange={pagination.setPageSize}
+            onRowClick={(row) => navigate(`/auctions/${row.auctionId}`)}
+            rowHover
+            emptyMessage="No bid history found"
+            sx={{
+              '& .MuiPaper-root': {
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+              },
+            }}
+            tableContainerSx={{
+              background: 'transparent',
+              border: 'none',
+            }}
+          />
+        </Stack>
       </Container>
     </Box>
   )

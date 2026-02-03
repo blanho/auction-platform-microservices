@@ -66,6 +66,11 @@ const PlatformSettingsPage = lazy(() =>
     default: m.PlatformSettingsPage,
   }))
 )
+const BackgroundJobsPage = lazy(() =>
+  import('@/modules/analytics/pages/BackgroundJobsPage').then((m) => ({
+    default: m.BackgroundJobsPage,
+  }))
+)
 
 const ProfilePage = lazy(() =>
   import('@/modules/users/pages/ProfilePage').then((m) => ({ default: m.ProfilePage }))
@@ -332,6 +337,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permissions={['admin:access']}>
             {withSuspense(PlatformSettingsPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/jobs',
+        element: (
+          <ProtectedRoute permissions={['admin:access']}>
+            {withSuspense(BackgroundJobsPage)}
           </ProtectedRoute>
         ),
       },

@@ -47,6 +47,8 @@ import {
   Cancel,
   Pause,
   PlayArrow,
+  FileDownload,
+  FileUpload,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import {
@@ -55,6 +57,9 @@ import {
   useDeactivateAuction,
   useDeleteAuction,
 } from '@/modules/auctions/hooks'
+import { ExportAuctionsDialog } from '@/modules/auctions/components/ExportAuctionsDialog'
+import { ImportAuctionsDialog } from '@/modules/auctions/components/ImportAuctionsDialog'
+import { BulkImportDialog } from '@/modules/auctions/components/BulkImportDialog'
 import type { AuctionStatus, AuctionListItem } from '@/modules/auctions/types'
 import { formatTimeLeft } from '../utils'
 
@@ -124,6 +129,10 @@ export function MyAuctionsPage() {
     auction: AuctionListItem
   } | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null)
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false)
+  const [importMenuAnchor, setImportMenuAnchor] = useState<HTMLElement | null>(null)
   const [snackbar, setSnackbar] = useState<{
     open: boolean
     message: string
@@ -252,21 +261,73 @@ export function MyAuctionsPage() {
               Manage your auction listings
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            component={Link}
-            to="/auctions/create"
-            sx={{
-              bgcolor: palette.brand.primary,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3,
-              '&:hover': { bgcolor: '#A16207' },
-            }}
-          >
-            Create Auction
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<FileDownload />}
+              onClick={() => setExportDialogOpen(true)}
+              sx={{
+                borderColor: palette.neutral[300],
+                color: palette.neutral[700],
+                textTransform: 'none',
+                fontWeight: 500,
+                '&:hover': { borderColor: palette.brand.primary, color: palette.brand.primary },
+              }}
+            >
+              Export
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<FileUpload />}
+              onClick={(e) => setImportMenuAnchor(e.currentTarget)}
+              sx={{
+                borderColor: palette.neutral[300],
+                color: palette.neutral[700],
+                textTransform: 'none',
+                fontWeight: 500,
+                '&:hover': { borderColor: palette.brand.primary, color: palette.brand.primary },
+              }}
+            >
+              Import
+            </Button>
+            <Menu
+              anchorEl={importMenuAnchor}
+              open={Boolean(importMenuAnchor)}
+              onClose={() => setImportMenuAnchor(null)}
+            >
+              <MenuItem
+                onClick={() => {
+                  setImportMenuAnchor(null)
+                  setImportDialogOpen(true)
+                }}
+              >
+                Quick Import (small files)
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setImportMenuAnchor(null)
+                  setBulkImportDialogOpen(true)
+                }}
+              >
+                Bulk Import (large files, up to 1M records)
+              </MenuItem>
+            </Menu>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              component={Link}
+              to="/auctions/create"
+              sx={{
+                bgcolor: palette.brand.primary,
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 3,
+                '&:hover': { bgcolor: '#A16207' },
+              }}
+            >
+              Create Auction
+            </Button>
+          </Stack>
         </Stack>
       </Box>
 
@@ -680,6 +741,35 @@ export function MyAuctionsPage() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <ExportAuctionsDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+      />
+
+      <ImportAuctionsDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onSuccess={() => {
+          setSnackbar({
+            open: true,
+            message: 'Auctions imported successfully!',
+            severity: 'success',
+          })
+        }}
+      />
+
+      <BulkImportDialog
+        open={bulkImportDialogOpen}
+        onClose={() => setBulkImportDialogOpen(false)}
+        onComplete={() => {
+          setSnackbar({
+            open: true,
+            message: 'Bulk import completed! Check the results for details.',
+            severity: 'success',
+          })
+        }}
+      />
     </Container>
   )
 }

@@ -11,3 +11,11 @@ export { TableToolbar } from './TableToolbar'
 export type { FilterOption, FilterConfig, TableToolbarProps } from './TableToolbar'
 export { StatCard, StatCardSkeleton } from './StatCard'
 export type { StatCardProps } from './StatCard'
+
+export { DataTable, SortableTableHeader, TablePagination, FilterPanel } from './DataTable'
+export type {
+  DataTableProps,
+  SortableTableHeaderProps,
+  TablePaginationProps,
+  FilterPanelProps,
+} from './DataTable'

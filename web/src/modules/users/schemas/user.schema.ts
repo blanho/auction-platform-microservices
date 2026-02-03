@@ -1,15 +1,14 @@
 import { z } from 'zod'
 
 export const updateProfileSchema = z.object({
-  displayName: z.string().min(2, 'Display name must be at least 2 characters').max(100).optional(),
-  firstName: z.string().max(50).optional(),
-  lastName: z.string().max(50).optional(),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100).optional(),
   phoneNumber: z
     .string()
     .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
     .optional()
     .or(z.literal('')),
-  bio: z.string().max(500).optional(),
+  bio: z.string().max(500, 'Bio must be 500 characters or less').optional(),
+  location: z.string().max(100, 'Location must be 100 characters or less').optional(),
 })
 
 export const changePasswordSchema = z
@@ -17,10 +16,12 @@ export const changePasswordSchema = z
     currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(12, 'Password must be at least 12 characters')
+      .max(100, 'Password must be less than 100 characters')
       .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
       .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

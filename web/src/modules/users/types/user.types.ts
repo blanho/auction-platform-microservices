@@ -2,17 +2,17 @@ export interface UserProfile {
   id: string
   email: string
   username: string
-  displayName: string
-  firstName?: string
-  lastName?: string
+  fullName?: string
   avatarUrl?: string
   phoneNumber?: string
   bio?: string
-  isSeller: boolean
-  isVerified: boolean
+  location?: string
+  emailConfirmed: boolean
+  phoneNumberConfirmed: boolean
   twoFactorEnabled: boolean
+  roles: string[]
   createdAt: string
-  updatedAt: string
+  lastLoginAt?: string
 }
 
 export interface SellerStatus {

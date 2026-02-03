@@ -1,24 +1,5 @@
-import { useState } from 'react'
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Pagination,
-} from '@mui/material'
+import { useMemo } from 'react'
+import { Box, Container, Typography, Card, Grid, Chip } from '@mui/material'
 import {
   TrendingUp,
   Email,
@@ -31,47 +12,177 @@ import {
   Send,
 } from '@mui/icons-material'
 import { useRecords, useRecordStats } from '../hooks'
-import type {
-  NotificationChannel,
-  RecordStatus,
-  NotificationRecordFilterDto,
-} from '../types/template.types'
+import type { NotificationChannel, RecordStatus, NotificationRecord } from '../types/template.types'
 import { formatTimeAgo } from '../utils'
-import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import { usePagination } from '@/shared/hooks'
+import type { ColumnConfig, FilterPanelConfig, NotificationRecordFilter } from '@/shared/types'
 
 const CHANNEL_ICONS: Record<NotificationChannel, React.ReactElement> = {
-  email: <Email />,
-  sms: <Sms />,
-  push: <PhoneIphone />,
-  in_app: <Notifications />,
+  email: <Email fontSize="small" />,
+  sms: <Sms fontSize="small" />,
+  push: <PhoneIphone fontSize="small" />,
+  in_app: <Notifications fontSize="small" />,
 }
 
 const STATUS_CONFIG: Record<
   RecordStatus,
   { color: string; bgcolor: string; icon: React.ReactElement }
 > = {
-  pending: { color: '#F59E0B', bgcolor: '#FEF3C7', icon: <PendingActions /> },
-  sent: { color: '#3B82F6', bgcolor: '#DBEAFE', icon: <Send /> },
-  delivered: { color: '#10B981', bgcolor: '#D1FAE5', icon: <CheckCircle /> },
-  failed: { color: '#EF4444', bgcolor: '#FEE2E2', icon: <Error /> },
-  bounced: { color: '#78716C', bgcolor: '#F5F5F5', icon: <Error /> },
+  pending: { color: '#F59E0B', bgcolor: '#FEF3C7', icon: <PendingActions fontSize="small" /> },
+  sent: { color: '#3B82F6', bgcolor: '#DBEAFE', icon: <Send fontSize="small" /> },
+  delivered: { color: '#10B981', bgcolor: '#D1FAE5', icon: <CheckCircle fontSize="small" /> },
+  failed: { color: '#EF4444', bgcolor: '#FEE2E2', icon: <Error fontSize="small" /> },
+  bounced: { color: '#78716C', bgcolor: '#F5F5F5', icon: <Error fontSize="small" /> },
+}
+
+const FILTER_CONFIG: FilterPanelConfig = {
+  fields: [
+    {
+      key: 'channel',
+      label: 'Channel',
+      type: 'select',
+      options: [
+        { value: 'email', label: 'Email' },
+        { value: 'sms', label: 'SMS' },
+        { value: 'push', label: 'Push' },
+        { value: 'in_app', label: 'In-App' },
+      ],
+      clearable: true,
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'pending', label: 'Pending' },
+        { value: 'sent', label: 'Sent' },
+        { value: 'delivered', label: 'Delivered' },
+        { value: 'failed', label: 'Failed' },
+        { value: 'bounced', label: 'Bounced' },
+      ],
+      clearable: true,
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+    {
+      key: 'templateKey',
+      label: 'Template Key',
+      type: 'text',
+      placeholder: 'Search by template...',
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+    {
+      key: 'dateFrom',
+      label: 'From Date',
+      type: 'date',
+      gridSize: { xs: 12, sm: 6, md: 3 },
+    },
+  ],
+  collapsible: true,
+  defaultExpanded: true,
+  showClearButton: true,
 }
 
 export function RecordsDashboardPage() {
-  const [filters, setFilters] = useState<NotificationRecordFilterDto>({
-    page: 1,
-    pageSize: 20,
+  const pagination = usePagination<NotificationRecordFilter>({ pageSize: 20 })
+  const { data: recordsData, isLoading, refetch } = useRecords({
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    sortBy: pagination.sortBy,
+    sortOrder: pagination.sortOrder,
+    ...pagination.filter,
   })
-
-  const { data: recordsData, isLoading } = useRecords(filters)
   const { data: stats } = useRecordStats()
 
-  const handleFilterChange = (
-    key: keyof NotificationRecordFilterDto,
-    value: string | undefined
-  ) => {
-    setFilters({ ...filters, [key]: value, page: 1 })
-  }
+  const items = useMemo(() => recordsData?.items ?? [], [recordsData?.items])
+
+  const columns: ColumnConfig<NotificationRecord>[] = useMemo(
+    () => [
+      {
+        key: 'recipient',
+        header: 'Recipient',
+        sortable: true,
+        sortKey: 'recipient',
+        render: (_, row) => (
+          <Box>
+            <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>{row.recipient}</Typography>
+            {row.errorMessage && (
+              <Typography variant="caption" sx={{ color: '#EF4444' }}>
+                {row.errorMessage}
+              </Typography>
+            )}
+          </Box>
+        ),
+      },
+      {
+        key: 'channel',
+        header: 'Channel',
+        sortable: true,
+        sortKey: 'channel',
+        render: (_, row) => (
+          <Chip
+            icon={CHANNEL_ICONS[row.channel]}
+            label={row.channel.toUpperCase()}
+            size="small"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
+      {
+        key: 'templateKey',
+        header: 'Template',
+        sortable: true,
+        sortKey: 'templateKey',
+        render: (_, row) => (
+          <Typography
+            variant="caption"
+            sx={{ fontFamily: '"Fira Code", monospace', color: '#78716C' }}
+          >
+            {row.templateKey || '-'}
+          </Typography>
+        ),
+      },
+      {
+        key: 'subject',
+        header: 'Subject',
+        render: (_, row) => (
+          <Typography sx={{ fontSize: '0.875rem', color: '#44403C' }}>
+            {row.subject || '-'}
+          </Typography>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortable: true,
+        sortKey: 'status',
+        render: (_, row) => {
+          const config = STATUS_CONFIG[row.status]
+          return (
+            <Chip
+              icon={config.icon}
+              label={row.status.toUpperCase()}
+              size="small"
+              sx={{ bgcolor: config.bgcolor, color: config.color, fontWeight: 600 }}
+            />
+          )
+        },
+      },
+      {
+        key: 'sentAt',
+        header: 'Sent At',
+        sortable: true,
+        sortKey: 'sentAt',
+        render: (_, row) => (
+          <Typography variant="caption" sx={{ color: '#78716C' }}>
+            {row.sentAt ? formatTimeAgo(row.sentAt) : '-'}
+          </Typography>
+        ),
+      },
+    ],
+    []
+  )
 
   const statCards = [
     {
@@ -173,171 +284,29 @@ export function RecordsDashboardPage() {
       </Grid>
 
       <Card sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', mb: 3 }}>
-        <Box sx={{ p: 3, bgcolor: '#FAF5FF', borderBottom: '1px solid #F5F5F5' }}>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Channel</InputLabel>
-                <Select
-                  value={filters.channel || ''}
-                  label="Channel"
-                  onChange={(e) => handleFilterChange('channel', e.target.value || undefined)}
-                >
-                  <MenuItem value="">All Channels</MenuItem>
-                  <MenuItem value="email">Email</MenuItem>
-                  <MenuItem value="sms">SMS</MenuItem>
-                  <MenuItem value="push">Push</MenuItem>
-                  <MenuItem value="in_app">In-App</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status || ''}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-                >
-                  <MenuItem value="">All Statuses</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="sent">Sent</MenuItem>
-                  <MenuItem value="delivered">Delivered</MenuItem>
-                  <MenuItem value="failed">Failed</MenuItem>
-                  <MenuItem value="bounced">Bounced</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Template Key"
-                value={filters.templateKey || ''}
-                onChange={(e) => handleFilterChange('templateKey', e.target.value || undefined)}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField
-                fullWidth
-                size="small"
-                type="date"
-                label="From Date"
-                value={filters.fromDate || ''}
-                onChange={(e) => handleFilterChange('fromDate', e.target.value || undefined)}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+        <FilterPanel
+          config={FILTER_CONFIG}
+          value={pagination.filter}
+          onChange={pagination.setFilter}
+          onClear={pagination.clearFilter}
+          onRefresh={refetch}
+        />
 
-        <TableContainer sx={{ maxHeight: 600, overflow: 'auto' }}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Recipient
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Channel
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Template
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Subject
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Status
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Sent At
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {isLoading && <TableSkeletonRows rows={10} columns={6} />}
-              {!isLoading && recordsData?.items.length === 0 && (
-                <TableEmptyStateRow colSpan={6} title="No records found" cellSx={{ py: 8 }} />
-              )}
-              {!isLoading && recordsData?.items.length > 0 && (
-                recordsData?.items.map((record) => (
-                  <TableRow
-                    key={record.id}
-                    sx={{
-                      '&:hover': { bgcolor: '#FAFAF9' },
-                    }}
-                  >
-                    <TableCell>
-                      <Typography sx={{ fontWeight: 500, color: '#1C1917' }}>
-                        {record.recipient}
-                      </Typography>
-                      {record.errorMessage && (
-                        <Typography variant="caption" sx={{ color: '#EF4444' }}>
-                          {record.errorMessage}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        icon={CHANNEL_ICONS[record.channel]}
-                        label={record.channel.toUpperCase()}
-                        size="small"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontFamily: '"Fira Code", monospace',
-                          color: '#78716C',
-                        }}
-                      >
-                        {record.templateKey || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography sx={{ fontSize: '0.875rem', color: '#44403C' }}>
-                        {record.subject || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        icon={STATUS_CONFIG[record.status].icon}
-                        label={record.status.toUpperCase()}
-                        size="small"
-                        sx={{
-                          bgcolor: STATUS_CONFIG[record.status].bgcolor,
-                          color: STATUS_CONFIG[record.status].color,
-                          fontWeight: 600,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption" sx={{ color: '#78716C' }}>
-                        {record.sentAt ? formatTimeAgo(record.sentAt) : '-'}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        {recordsData && recordsData.totalPages > 1 && (
-          <Box
-            sx={{ display: 'flex', justifyContent: 'center', p: 3, borderTop: '1px solid #F5F5F5' }}
-          >
-            <Pagination
-              count={recordsData.totalPages}
-              page={filters.page || 1}
-              onChange={(_, p) => handleFilterChange('page', p)}
-              color="primary"
-            />
-          </Box>
-        )}
+        <DataTable
+          columns={columns}
+          data={items}
+          isLoading={isLoading}
+          sortBy={pagination.sortBy}
+          sortOrder={pagination.sortOrder}
+          onSort={pagination.handleSort}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalCount={recordsData?.totalCount ?? 0}
+          totalPages={recordsData?.totalPages ?? 0}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+          emptyMessage="No notification records found"
+        />
       </Card>
     </Container>
   )

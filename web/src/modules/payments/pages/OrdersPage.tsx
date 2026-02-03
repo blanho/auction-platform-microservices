@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -11,21 +11,8 @@ import {
   Tabs,
   Tab,
   Chip,
-  Skeleton,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Avatar,
   IconButton,
-  Pagination,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Stack,
 } from '@mui/material'
 import { ShoppingBag, Store, Visibility } from '@mui/icons-material'
@@ -34,6 +21,9 @@ import type { Order, OrderStatus } from '../types'
 import { getOrderStatusConfig } from '../utils'
 import { formatDate } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { usePagination } from '@/shared/hooks'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import type { ColumnConfig, FilterPanelConfig, OrderFilter } from '@/shared/types'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -49,190 +39,190 @@ function TabPanel({ children, value, index }: TabPanelProps) {
   )
 }
 
-function OrderRow({ order, role }: { order: Order; role: 'buyer' | 'seller' }) {
-  return (
-    <TableRow
-      component={motion.tr}
-      variants={staggerItem}
-      sx={{
-        '&:hover': { bgcolor: 'action.hover' },
-        cursor: 'pointer',
-      }}
-    >
-      <TableCell>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar variant="rounded" src={order.auctionImageUrl} sx={{ width: 56, height: 56 }}>
-            <ShoppingBag />
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
-              {order.auctionTitle}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Order #{order.id.slice(0, 8)}
-            </Typography>
-          </Box>
-        </Box>
-      </TableCell>
-      <TableCell>
-        <Typography variant="body2">
-          {role === 'buyer' ? order.sellerName : order.buyerName}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography variant="body2" fontWeight={600}>
-          ${order.totalAmount.toLocaleString()}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Chip
-          icon={getOrderStatusConfig(order.status).icon}
-          label={order.status.replace('_', ' ')}
-          color={getOrderStatusConfig(order.status).color}
-          size="small"
-          sx={{ textTransform: 'capitalize' }}
-        />
-      </TableCell>
-      <TableCell>
-        <Typography variant="body2" color="text.secondary">
-          {formatDate(order.createdAt)}
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <IconButton component={Link} to={`/orders/${order.id}`} size="small">
-          <Visibility fontSize="small" />
-        </IconButton>
-      </TableCell>
-    </TableRow>
-  )
+const ORDER_STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'payment_pending', label: 'Payment Pending' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'shipped', label: 'Shipped' },
+  { value: 'delivered', label: 'Delivered' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'refunded', label: 'Refunded' },
+]
+
+const filterConfig: FilterPanelConfig = {
+  fields: [
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Status',
+      options: ORDER_STATUS_OPTIONS,
+      gridSize: { xs: 12, sm: 6, md: 4 },
+    },
+  ],
+  collapsible: false,
+  showClearButton: true,
 }
 
-function OrdersTable({ role, status }: { role: 'buyer' | 'seller'; status?: OrderStatus }) {
-  const [page, setPage] = useState(1)
-  const pageSize = 10
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['orders', role, status, page],
-    queryFn: () =>
-      role === 'buyer'
-        ? ordersApi.getMyPurchases({ status, page, pageSize })
-        : ordersApi.getMySales({ status, page, pageSize }),
+function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
+  const pagination = usePagination<OrderFilter>({
+    defaultPageSize: 10,
+    defaultSortBy: 'createdAt',
+    defaultSortOrder: 'desc',
   })
 
-  if (isLoading) {
-    return (
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Item</TableCell>
-              <TableCell>{role === 'buyer' ? 'Seller' : 'Buyer'}</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[...Array(3)].map((_, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Skeleton variant="rounded" width={56} height={56} />
-                    <Box>
-                      <Skeleton width={150} />
-                      <Skeleton width={80} />
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Skeleton width={100} />
-                </TableCell>
-                <TableCell>
-                  <Skeleton width={80} />
-                </TableCell>
-                <TableCell>
-                  <Skeleton width={80} />
-                </TableCell>
-                <TableCell>
-                  <Skeleton width={100} />
-                </TableCell>
-                <TableCell>
-                  <Skeleton width={40} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    )
-  }
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['orders', role, pagination.queryParams],
+    queryFn: () =>
+      role === 'buyer'
+        ? ordersApi.getMyPurchases({
+            status: pagination.filter.status as OrderStatus | undefined,
+            page: pagination.page,
+            pageSize: pagination.pageSize,
+          })
+        : ordersApi.getMySales({
+            status: pagination.filter.status as OrderStatus | undefined,
+            page: pagination.page,
+            pageSize: pagination.pageSize,
+          }),
+  })
 
-  if (error) {
-    return <InlineAlert severity="error">Failed to load orders. Please try again.</InlineAlert>
-  }
+  const columns: ColumnConfig<Order>[] = useMemo(
+    () => [
+      {
+        key: 'auctionTitle',
+        header: 'Item',
+        sortable: true,
+        sortKey: 'title',
+        render: (_value, order) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar variant="rounded" src={order.auctionImageUrl} sx={{ width: 56, height: 56 }}>
+              <ShoppingBag />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
+                {order.auctionTitle}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Order #{order.id.slice(0, 8)}
+              </Typography>
+            </Box>
+          </Box>
+        ),
+      },
+      {
+        key: role === 'buyer' ? 'sellerName' : 'buyerName',
+        header: role === 'buyer' ? 'Seller' : 'Buyer',
+        sortable: true,
+        sortKey: role === 'buyer' ? 'sellerName' : 'buyerName',
+        render: (value) => <Typography variant="body2">{String(value)}</Typography>,
+      },
+      {
+        key: 'totalAmount',
+        header: 'Amount',
+        sortable: true,
+        align: 'right',
+        render: (value) => (
+          <Typography variant="body2" fontWeight={600}>
+            ${Number(value).toLocaleString()}
+          </Typography>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortable: true,
+        render: (value) => {
+          const config = getOrderStatusConfig(value as OrderStatus)
+          return (
+            <Chip
+              icon={config.icon}
+              label={String(value).replace('_', ' ')}
+              color={config.color}
+              size="small"
+              sx={{ textTransform: 'capitalize' }}
+            />
+          )
+        },
+      },
+      {
+        key: 'createdAt',
+        header: 'Date',
+        sortable: true,
+        render: (value) => (
+          <Typography variant="body2" color="text.secondary">
+            {formatDate(String(value))}
+          </Typography>
+        ),
+      },
+      {
+        key: 'id',
+        header: '',
+        align: 'right',
+        render: (value) => (
+          <IconButton component={Link} to={`/orders/${value}`} size="small">
+            <Visibility fontSize="small" />
+          </IconButton>
+        ),
+      },
+    ],
+    [role]
+  )
 
-  if (!data || data.items.length === 0) {
-    return (
-      <Card sx={{ p: 6, textAlign: 'center' }}>
-        {role === 'buyer' ? (
-          <ShoppingBag sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
-        ) : (
-          <Store sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
-        )}
-        <Typography variant="h6" gutterBottom>
-          No {role === 'buyer' ? 'purchases' : 'sales'} yet
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          {role === 'buyer'
-            ? 'Win an auction to see your orders here'
-            : 'Sell items to see your orders here'}
-        </Typography>
-        <Button variant="contained" component={Link} to="/auctions">
-          Browse Auctions
-        </Button>
-      </Card>
-    )
+  const emptyContent = (
+    <Card sx={{ p: 6, textAlign: 'center' }}>
+      {role === 'buyer' ? (
+        <ShoppingBag sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+      ) : (
+        <Store sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
+      )}
+      <Typography variant="h6" gutterBottom>
+        No {role === 'buyer' ? 'purchases' : 'sales'} yet
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        {role === 'buyer'
+          ? 'Win an auction to see your orders here'
+          : 'Sell items to see your orders here'}
+      </Typography>
+      <Button variant="contained" component={Link} to="/auctions">
+        Browse Auctions
+      </Button>
+    </Card>
+  )
+
+  if (!isLoading && (!data || data.items.length === 0) && Object.keys(pagination.filter).length === 0) {
+    return emptyContent
   }
 
   return (
-    <>
-      <TableContainer component={Card}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Item</TableCell>
-              <TableCell>{role === 'buyer' ? 'Seller' : 'Buyer'}</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody
-            component={motion.tbody}
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-          >
-            {data.items.map((order) => (
-              <OrderRow key={order.id} order={order} role={role} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    <Stack spacing={2}>
+      <FilterPanel
+        config={filterConfig}
+        value={pagination.filter}
+        onChange={pagination.setFilter}
+        onClear={pagination.clearFilter}
+        onRefresh={refetch}
+      />
 
-      {data.totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Pagination
-            count={data.totalPages}
-            page={page}
-            onChange={(_, newPage) => setPage(newPage)}
-            color="primary"
-          />
-        </Box>
-      )}
-    </>
+      <DataTable
+        columns={columns}
+        data={data}
+        isLoading={isLoading}
+        error={error instanceof Error ? error : null}
+        sortBy={pagination.sortBy}
+        sortOrder={pagination.sortOrder}
+        onSort={pagination.handleSort}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPageChange={pagination.setPage}
+        onPageSizeChange={pagination.setPageSize}
+        emptyMessage={`No ${role === 'buyer' ? 'purchases' : 'sales'} found`}
+        emptyIcon={role === 'buyer' ? <ShoppingBag /> : <Store />}
+        rowHover
+        animated
+      />
+    </Stack>
   )
 }
 
@@ -240,12 +230,10 @@ export function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [tabValue, setTabValue] = useState(tabParam === 'sales' ? 1 : 0)
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('')
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
     setSearchParams(newValue === 1 ? { tab: 'sales' } : {})
-    setStatusFilter('')
   }
 
   return (
@@ -282,35 +270,12 @@ export function OrdersPage() {
         </motion.div>
 
         <motion.div variants={staggerItem}>
-          <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-            <FormControl size="small" sx={{ minWidth: 150 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value as OrderStatus | '')}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="payment_pending">Payment Pending</MenuItem>
-                <MenuItem value="paid">Paid</MenuItem>
-                <MenuItem value="shipped">Shipped</MenuItem>
-                <MenuItem value="delivered">Delivered</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-                <MenuItem value="refunded">Refunded</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </motion.div>
-
-        <motion.div variants={staggerItem}>
           <TabPanel value={tabValue} index={0}>
-            <OrdersTable role="buyer" status={statusFilter || undefined} />
+            <OrdersTable role="buyer" />
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <OrdersTable role="seller" status={statusFilter || undefined} />
+            <OrdersTable role="seller" />
           </TabPanel>
         </motion.div>
       </motion.div>

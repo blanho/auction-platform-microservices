@@ -4,6 +4,8 @@ export const Permission = {
   AuctionsEdit: 'auctions:edit',
   AuctionsDelete: 'auctions:delete',
   AuctionsManage: 'auctions:manage',
+  AuctionsExport: 'auction:export',
+  AuctionsImport: 'auction:import',
 
   BidsPlace: 'bids:place',
   BidsView: 'bids:view',

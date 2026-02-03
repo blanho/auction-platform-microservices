@@ -5,10 +5,10 @@ const baseCreateAuctionSchema = z.object({
   description: z
     .string()
     .min(10, 'Description must be at least 10 characters')
-    .max(4000, 'Description too long'),
+    .max(2000, 'Description too long'),
   categoryId: z.string().min(1, 'Please select a category'),
   brandId: z.string().optional(),
-  condition: z.string().optional(),
+  condition: z.string().max(50, 'Condition must be 50 characters or less').optional(),
   yearManufactured: z
     .number()
     .min(1900)
@@ -52,7 +52,7 @@ export const updateAuctionSchema = z.object({
   description: z
     .string()
     .min(50, 'Description must be at least 50 characters')
-    .max(4000, 'Description too long'),
+    .max(2000, 'Description too long'),
   categoryId: z.string().min(1, 'Please select a category'),
   condition: z.string().optional(),
   yearManufactured: z.number().min(1900).max(2100).optional(),

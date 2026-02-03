@@ -9,6 +9,7 @@ export const placeBidSchema = z.object({
       BID_CONSTANTS.MIN_BID_AMOUNT,
       `Bid amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
     )
+    .max(10_000_000, 'Bid amount cannot exceed $10,000,000')
     .finite('Bid amount must be a valid number'),
 })
 

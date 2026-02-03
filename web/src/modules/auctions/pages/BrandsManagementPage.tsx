@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -6,13 +6,6 @@ import {
   Typography,
   Box,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
   IconButton,
   Dialog,
   DialogTitle,
@@ -21,9 +14,8 @@ import {
   TextField,
   Stack,
   Avatar,
-  InputAdornment,
 } from '@mui/material'
-import { Add, Edit, Delete, Search, Image as ImageIcon } from '@mui/icons-material'
+import { Add, Edit, Delete, Image as ImageIcon } from '@mui/icons-material'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { palette } from '@/shared/theme/tokens'
@@ -31,11 +23,30 @@ import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand } from '../ho
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import type { Brand } from '../api/brands.api'
 import { brandSchema, type BrandFormData } from '../schemas'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import { usePagination } from '@/shared/hooks'
+import type { ColumnConfig, FilterPanelConfig } from '@/shared/types'
+
+interface BrandFilter {
+  search?: string
+}
+
+const FILTER_CONFIG: FilterPanelConfig = {
+  fields: [
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'text',
+      placeholder: 'Search brands...',
+      gridSize: { xs: 12, sm: 6, md: 4 },
+    },
+  ],
+  collapsible: false,
+  showClearButton: true,
+}
 
 export function BrandsManagementPage() {
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const pagination = usePagination<BrandFilter>({ pageSize: 10 })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<Brand | null>(null)
@@ -55,19 +66,21 @@ export function BrandsManagementPage() {
     },
   })
 
-  const { data: brandsData } = useBrands({
-    page: page + 1,
-    pageSize: rowsPerPage,
-    search: search || undefined,
+  const { data: brandsData, refetch } = useBrands({
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    sortBy: pagination.sortBy,
+    sortOrder: pagination.sortOrder,
+    search: pagination.filter.search,
   })
-  const brands = brandsData?.items || []
-  const totalCount = brandsData?.totalCount || 0
+
+  const items = useMemo(() => brandsData?.items ?? [], [brandsData?.items])
 
   const createMutation = useCreateBrand()
   const updateMutation = useUpdateBrand()
   const deleteMutation = useDeleteBrand()
 
-  const handleOpenDialog = (brand?: Brand) => {
+  const handleOpenDialog = useCallback((brand?: Brand) => {
     if (brand) {
       setEditingBrand(brand)
       reset({
@@ -81,7 +94,111 @@ export function BrandsManagementPage() {
       reset({ name: '', slug: '', description: '', websiteUrl: '' })
     }
     setDialogOpen(true)
-  }
+  }, [reset])
+
+  const columns: ColumnConfig<Brand>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: 'Brand',
+        sortable: true,
+        sortKey: 'name',
+        render: (_, row) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar
+              src={row.logoUrl}
+              variant="rounded"
+              sx={{ width: 48, height: 48, bgcolor: 'grey.100' }}
+            >
+              <ImageIcon sx={{ color: 'grey.400' }} />
+            </Avatar>
+            <Box>
+              <Typography variant="body2" fontWeight={500}>
+                {row.name}
+              </Typography>
+              {row.description && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  sx={{ maxWidth: 200, display: 'block' }}
+                >
+                  {row.description}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        ),
+      },
+      {
+        key: 'slug',
+        header: 'Slug',
+        sortable: true,
+        sortKey: 'slug',
+        render: (_, row) => (
+          <Typography variant="body2" color="text.secondary">
+            /{row.slug}
+          </Typography>
+        ),
+      },
+      {
+        key: 'auctionCount',
+        header: 'Auctions',
+        sortable: true,
+        sortKey: 'auctionCount',
+        render: (_, row) => row.auctionCount ?? 0,
+      },
+      {
+        key: 'websiteUrl',
+        header: 'Website',
+        render: (_, row) =>
+          row.websiteUrl ? (
+            <Typography
+              variant="body2"
+              component="a"
+              href={row.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: 'primary.main', textDecoration: 'none' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.websiteUrl.replace(/^https?:\/\//, '')}
+            </Typography>
+          ) : (
+            '-'
+          ),
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        align: 'right',
+        render: (_, row) => (
+          <Box>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenDialog(row)
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                setDeleteDialog(row)
+              }}
+              disabled={(row.auctionCount ?? 0) > 0}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </Box>
+        ),
+      },
+    ],
+    [handleOpenDialog]
+  )
 
   const onSubmit = (data: BrandFormData) => {
     if (editingBrand) {
@@ -148,118 +265,28 @@ export function BrandsManagementPage() {
 
         <motion.div variants={fadeInUp}>
           <Card>
-            <Box sx={{ p: 2 }}>
-              <TextField
-                placeholder="Search brands..."
-                size="small"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value)
-                  setPage(0)
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{ width: 300 }}
-              />
-            </Box>
+            <FilterPanel
+              config={FILTER_CONFIG}
+              value={pagination.filter}
+              onChange={pagination.setFilter}
+              onClear={pagination.clearFilter}
+              onRefresh={refetch}
+            />
 
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Brand</TableCell>
-                    <TableCell>Slug</TableCell>
-                    <TableCell>Auctions</TableCell>
-                    <TableCell>Website</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {brands.map((brand) => (
-                    <TableRow key={brand.id} hover>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar
-                            src={brand.logoUrl}
-                            variant="rounded"
-                            sx={{ width: 48, height: 48, bgcolor: 'grey.100' }}
-                          >
-                            <ImageIcon sx={{ color: 'grey.400' }} />
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body2" fontWeight={500}>
-                              {brand.name}
-                            </Typography>
-                            {brand.description && (
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                noWrap
-                                sx={{ maxWidth: 200, display: 'block' }}
-                              >
-                                {brand.description}
-                              </Typography>
-                            )}
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          /{brand.slug}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{brand.auctionCount ?? 0}</TableCell>
-                      <TableCell>
-                        {brand.websiteUrl ? (
-                          <Typography
-                            variant="body2"
-                            component="a"
-                            href={brand.websiteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{ color: 'primary.main', textDecoration: 'none' }}
-                          >
-                            {brand.websiteUrl.replace(/^https?:\/\//, '')}
-                          </Typography>
-                        ) : (
-                          '-'
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton size="small" onClick={() => handleOpenDialog(brand)}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => setDeleteDialog(brand)}
-                          disabled={(brand.auctionCount ?? 0) > 0}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <TablePagination
-              component="div"
-              count={totalCount}
-              page={page}
-              onPageChange={(_, p) => setPage(p)}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value))
-                setPage(0)
-              }}
+            <DataTable
+              columns={columns}
+              data={items}
+              sortBy={pagination.sortBy}
+              sortOrder={pagination.sortOrder}
+              onSort={pagination.handleSort}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              totalCount={brandsData?.totalCount ?? 0}
+              totalPages={brandsData?.totalPages ?? 0}
+              onPageChange={pagination.setPage}
+              onPageSizeChange={pagination.setPageSize}
+              onRowClick={(row) => handleOpenDialog(row)}
+              emptyMessage="No brands found"
             />
           </Card>
         </motion.div>

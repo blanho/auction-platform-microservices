@@ -1,11 +1,10 @@
 import type { QueryParameters } from '@/shared/types'
 
 export interface UpdateProfileRequest {
-  displayName?: string
-  firstName?: string
-  lastName?: string
-  phoneNumber?: string
+  fullName?: string
   bio?: string
+  location?: string
+  phoneNumber?: string
 }
 
 export interface ChangePasswordRequest {
