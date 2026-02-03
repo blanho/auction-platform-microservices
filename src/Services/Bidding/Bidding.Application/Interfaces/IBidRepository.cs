@@ -1,3 +1,4 @@
+using Bidding.Application.Filtering;
 using Bidding.Domain.Entities;
 using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
@@ -18,7 +19,9 @@ namespace Bidding.Application.Interfaces
         Task<List<TopBidderDto>> GetTopBiddersAsync(int limit, CancellationToken cancellationToken = default);
         Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default);
 
-        Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, QueryParameters queryParams, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidsForAuctionPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidsForBidderPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, WinningBidQueryParams queryParams, CancellationToken cancellationToken = default);
         Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
         Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryQueryParams queryParams, CancellationToken cancellationToken = default);
@@ -31,6 +34,8 @@ namespace Bidding.Application.Interfaces
         public BidStatus? Status { get; init; }
         public DateTimeOffset? FromDate { get; init; }
         public DateTimeOffset? ToDate { get; init; }
+        public decimal? MinAmount { get; init; }
+        public decimal? MaxAmount { get; init; }
     }
 
     public class BidHistoryQueryParams : QueryParameters<BidHistoryFilter> { }

@@ -5,6 +5,7 @@ using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
+using Payment.Application.Filtering;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Domain.Enums;
@@ -45,11 +46,14 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.AuctionId == auctionId);
     }
 
-    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(string username, QueryParameters queryParams)
+    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)
     {
-        var query = _context.Orders
-            .AsNoTracking()
-            .Where(o => o.BuyerUsername == username);
+        var query = _context.Orders.AsNoTracking();
+        
+        if (queryParams.Filter != null)
+        {
+            query = queryParams.Filter.Apply(query);
+        }
 
         var totalCount = await query.CountAsync();
 
@@ -61,11 +65,14 @@ public class OrderRepository : IOrderRepository
         return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
-    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(string username, QueryParameters queryParams)
+    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams)
     {
-        var query = _context.Orders
-            .AsNoTracking()
-            .Where(o => o.SellerUsername == username);
+        var query = _context.Orders.AsNoTracking();
+        
+        if (queryParams.Filter != null)
+        {
+            query = queryParams.Filter.Apply(query);
+        }
 
         var totalCount = await query.CountAsync();
 
@@ -216,28 +223,17 @@ public class OrderRepository : IOrderRepository
         OrderQueryParams queryParams,
         CancellationToken cancellationToken = default)
     {
-        var filter = queryParams.Filter;
+        var query = _context.Orders.AsNoTracking();
         
-        var filterBuilder = FilterBuilder<Order>.Create()
-            .WhenNotEmpty(filter.SearchTerm, o => 
-                o.ItemTitle.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
-                o.BuyerUsername.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
-                o.SellerUsername.ToLower().Contains(filter.SearchTerm!.ToLower()) ||
-                (o.TrackingNumber != null && o.TrackingNumber.ToLower().Contains(filter.SearchTerm!.ToLower())))
-            .WhenHasValue(filter.Status, o => o.Status == filter.Status!.Value)
-            .WhenHasValue(filter.FromDate, o => o.CreatedAt >= filter.FromDate!.Value)
-            .WhenHasValue(filter.ToDate, o => o.CreatedAt <= filter.ToDate!.Value)
-            .WhenNotEmpty(filter.BuyerUsername, o => o.BuyerUsername == filter.BuyerUsername)
-            .WhenNotEmpty(filter.SellerUsername, o => o.SellerUsername == filter.SellerUsername);
-
-        var query = _context.Orders
-            .AsNoTracking()
-            .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt);
+        if (queryParams.Filter != null)
+        {
+            query = queryParams.Filter.Apply(query);
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
             .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 

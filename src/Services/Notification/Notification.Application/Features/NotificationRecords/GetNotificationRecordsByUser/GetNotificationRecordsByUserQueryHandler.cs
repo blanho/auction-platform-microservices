@@ -1,9 +1,11 @@
+using BuildingBlocks.Application.Abstractions;
 using Notification.Application.DTOs;
+using Notification.Application.Filtering;
 using Notification.Application.Interfaces;
 
 namespace Notification.Application.Features.NotificationRecords.GetNotificationRecordsByUser;
 
-public class GetNotificationRecordsByUserQueryHandler : IQueryHandler<GetNotificationRecordsByUserQuery, List<NotificationRecordDto>>
+public class GetNotificationRecordsByUserQueryHandler : IQueryHandler<GetNotificationRecordsByUserQuery, PaginatedResult<NotificationRecordDto>>
 {
     private readonly INotificationRecordService _recordService;
     private readonly ILogger<GetNotificationRecordsByUserQueryHandler> _logger;
@@ -16,12 +18,30 @@ public class GetNotificationRecordsByUserQueryHandler : IQueryHandler<GetNotific
         _logger = logger;
     }
 
-    public async Task<Result<List<NotificationRecordDto>>> Handle(GetNotificationRecordsByUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<NotificationRecordDto>>> Handle(GetNotificationRecordsByUserQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting notification records for user: {UserId}, Limit: {Limit}", request.UserId, request.Limit);
+        _logger.LogInformation("Getting notification records for user: {UserId}, Page: {Page}, PageSize: {PageSize}", 
+            request.UserId, request.Page, request.PageSize);
 
-        var records = await _recordService.GetByUserIdAsync(request.UserId, request.Limit, cancellationToken);
+        var queryParams = new NotificationRecordQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new NotificationRecordFilterCriteria
+            {
+                UserId = request.UserId,
+                Channel = request.Channel,
+                Status = request.Status,
+                TemplateKey = request.TemplateKey,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
 
-        return Result.Success(records);
+        var result = await _recordService.GetByUserIdAsync(queryParams, cancellationToken);
+
+        return Result.Success(result);
     }
 }

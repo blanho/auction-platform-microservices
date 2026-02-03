@@ -6,10 +6,6 @@ using Analytics.Api.Interfaces;
 
 namespace Analytics.Api.Jobs;
 
-/// <summary>
-/// Monitors old audit logs for archival.
-/// Uses DisallowConcurrentExecution to prevent duplicate archival checks.
-/// </summary>
 [DisallowConcurrentExecution]
 public class AuditLogArchiveJob : BaseJob
 {

@@ -1,6 +1,7 @@
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Application.Interfaces;
+using Auctions.Domain.Entities;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -35,7 +36,7 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
 
         try
         {
-            List<Auctions.Domain.Entities.Category> categories;
+            List<Category> categories;
             
             if (request.IncludeCount)
             {

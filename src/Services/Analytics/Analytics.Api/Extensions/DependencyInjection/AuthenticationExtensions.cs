@@ -10,7 +10,8 @@ public static class AuthenticationExtensions
         IConfiguration configuration, 
         IWebHostEnvironment environment)
     {
-        var identityAuthority = configuration["Identity:Authority"] ?? "http://localhost:5001";
+        var identityAuthority = configuration["Identity:Authority"]
+            ?? throw new InvalidOperationException("Identity:Authority configuration is required");
         
         services.AddAuthentication(options =>
         {

@@ -26,7 +26,6 @@ public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, Auc
     {
         _logger.LogDebug("Fetching auction {AuctionId}", request.Id);
 
-        // Repository already handles caching via CachedAuctionRepository decorator
         var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (auction == null)

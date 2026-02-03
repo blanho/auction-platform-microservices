@@ -107,7 +107,10 @@ public class OrderQueryEndpoints : ICarterModule
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrdersByBuyerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+        var query = new GetOrdersByBuyerQuery(
+            username, 
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)
@@ -128,7 +131,10 @@ public class OrderQueryEndpoints : ICarterModule
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrdersBySellerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+        var query = new GetOrdersBySellerQuery(
+            username, 
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)
@@ -152,7 +158,10 @@ public class OrderQueryEndpoints : ICarterModule
         if (string.IsNullOrEmpty(username))
             return TypedResults.Unauthorized();
 
-        var query = new GetOrdersByBuyerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+        var query = new GetOrdersByBuyerQuery(
+            username, 
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)
@@ -176,7 +185,10 @@ public class OrderQueryEndpoints : ICarterModule
         if (string.IsNullOrEmpty(username))
             return TypedResults.Unauthorized();
 
-        var query = new GetOrdersBySellerQuery(username, page > 0 ? page : PaginationDefaults.DefaultPage, pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+        var query = new GetOrdersBySellerQuery(
+            username, 
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         if (!result.IsSuccess)

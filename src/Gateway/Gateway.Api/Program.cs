@@ -159,14 +159,12 @@ if (!string.IsNullOrEmpty(identityAuthority))
 }
 
 builder.Services.AddAuthorization();
-
-// Add health checks
 builder.Services.AddHealthChecks();
 
 builder.Services.AddCors(options =>
 {
     var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-        ?? new[] { "http://localhost:3000", "http://localhost:3001" };
+        ?? throw new InvalidOperationException("Cors:AllowedOrigins configuration is required");
 
     options.AddPolicy("AllowAll", policy =>
     {
@@ -184,8 +182,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-// Global exception handling for the Gateway
 app.Use(async (context, next) =>
 {
     try
@@ -250,8 +246,6 @@ app.Use(async (context, next) =>
 
     await next();
 });
-
-// Add correlation ID for distributed tracing
 app.Use(async (context, next) =>
 {
     const string correlationIdHeader = "X-Correlation-Id";
@@ -273,8 +267,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();
-
-// Map health check endpoints for Kubernetes readiness/liveness probes
 app.MapHealthChecks("/health").AllowAnonymous();
 app.MapHealthChecks("/health/ready").AllowAnonymous();
 app.MapHealthChecks("/health/live").AllowAnonymous();

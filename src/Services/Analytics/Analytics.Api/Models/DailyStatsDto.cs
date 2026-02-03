@@ -1,8 +1,5 @@
 namespace Analytics.Api.Models;
 
-/// <summary>
-/// DTO representing daily auction statistics for a single date/event type.
-/// </summary>
 public class DailyAuctionStatsDto
 {
     public DateOnly DateKey { get; set; }
@@ -18,9 +15,6 @@ public class DailyAuctionStatsDto
     public long UnsoldCount { get; set; }
 }
 
-/// <summary>
-/// DTO representing daily bid statistics for a single date.
-/// </summary>
 public class DailyBidStatsDto
 {
     public DateOnly DateKey { get; set; }
@@ -33,9 +27,6 @@ public class DailyBidStatsDto
     public decimal? MaxBidAmount { get; set; }
 }
 
-/// <summary>
-/// DTO representing daily revenue statistics for a single date/event type.
-/// </summary>
 public class DailyRevenueStatsDto
 {
     public DateOnly DateKey { get; set; }
@@ -49,9 +40,6 @@ public class DailyRevenueStatsDto
     public long RefundCount { get; set; }
 }
 
-/// <summary>
-/// Container DTO for aggregated daily statistics across all three views.
-/// </summary>
 public class AggregatedDailyStatsDto
 {
     public DateOnly? StartDate { get; set; }
@@ -62,9 +50,6 @@ public class AggregatedDailyStatsDto
     public DailyStatsSummaryDto Summary { get; set; } = new();
 }
 
-/// <summary>
-/// Summary metrics computed from the aggregated daily stats.
-/// </summary>
 public class DailyStatsSummaryDto
 {
     public long TotalAuctionEvents { get; set; }

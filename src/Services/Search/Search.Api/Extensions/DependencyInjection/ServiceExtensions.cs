@@ -26,7 +26,8 @@ public static class ServiceExtensions
 
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = configuration["Redis:ConnectionString"] ?? "localhost:6379";
+            options.Configuration = configuration["Redis:ConnectionString"]
+                ?? throw new InvalidOperationException("Redis:ConnectionString configuration is required");
             options.InstanceName = "SearchService:";
         });
 
@@ -77,11 +78,17 @@ public static class ServiceExtensions
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitConfig = configuration.GetSection("RabbitMq");
+                var rabbitHost = rabbitConfig["Host"]
+                    ?? throw new InvalidOperationException("RabbitMq:Host configuration is required");
+                var rabbitUser = rabbitConfig["Username"]
+                    ?? throw new InvalidOperationException("RabbitMq:Username configuration is required");
+                var rabbitPass = rabbitConfig["Password"]
+                    ?? throw new InvalidOperationException("RabbitMq:Password configuration is required");
 
-                cfg.Host(rabbitConfig["Host"] ?? "localhost", h =>
+                cfg.Host(rabbitHost, h =>
                 {
-                    h.Username(rabbitConfig["Username"] ?? "guest");
-                    h.Password(rabbitConfig["Password"] ?? "guest");
+                    h.Username(rabbitUser);
+                    h.Password(rabbitPass);
                 });
 
                 cfg.UseMessageRetry(r => r

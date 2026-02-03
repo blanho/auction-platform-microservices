@@ -5,6 +5,7 @@ using Analytics.Api.Repositories;
 using Analytics.Api.Services;
 using Analytics.Api.Validators;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.BackgroundJobs;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Infrastructure.Messaging;
 using FluentValidation;
@@ -62,6 +63,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddAnalyticsBackgroundJobs(this IServiceCollection services)
+    {
+        services.AddBackgroundJobs()
+            .WithConcurrentWorkers(Environment.ProcessorCount)
+            .WithJobTimeout(TimeSpan.FromMinutes(30))
+            .Build();
+
+        return services;
+    }
+
     public static IServiceCollection AddAnalyticsMessaging(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMassTransit(x =>
@@ -78,10 +89,17 @@ public static class ServiceCollectionExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration["RabbitMQ:Host"] ?? "localhost", "/", h =>
+                var rabbitHost = configuration["RabbitMQ:Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
+                var rabbitUser = configuration["RabbitMQ:Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
+                var rabbitPass = configuration["RabbitMQ:Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
+
+                cfg.Host(rabbitHost, "/", h =>
                 {
-                    h.Username(configuration["RabbitMQ:Username"] ?? "guest");
-                    h.Password(configuration["RabbitMQ:Password"] ?? "guest");
+                    h.Username(rabbitUser);
+                    h.Password(rabbitPass);
                 });
 
                 cfg.ConfigureAuditEndpoint(context);

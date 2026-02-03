@@ -36,7 +36,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     {
         _logger.LogInformation("Updating auction {AuctionId}", request.Id);
 
-        // Use tracked entity fetch for updates
         var auction = await _repository.GetByIdForUpdateAsync(request.Id, cancellationToken);
 
         if (auction == null)
@@ -46,31 +45,31 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         }
 
         var modifiedFields = new List<string>();
-        
+
         if (request.Title != null && request.Title != auction.Item.Title)
         {
             auction.Item.UpdateTitle(_sanitizationService.SanitizeText(request.Title));
             modifiedFields.Add(nameof(auction.Item.Title));
         }
-        
+
         if (request.Description != null && request.Description != auction.Item.Description)
         {
             auction.Item.UpdateDescription(_sanitizationService.SanitizeHtml(request.Description));
             modifiedFields.Add(nameof(auction.Item.Description));
         }
-        
+
         if (request.Condition != null && request.Condition != auction.Item.Condition)
         {
             auction.Item.UpdateCondition(request.Condition);
             modifiedFields.Add(nameof(auction.Item.Condition));
         }
-        
+
         if (request.YearManufactured != null && request.YearManufactured != auction.Item.YearManufactured)
         {
             auction.Item.UpdateYearManufactured(request.YearManufactured);
             modifiedFields.Add(nameof(auction.Item.YearManufactured));
         }
-        
+
         if (request.Attributes != null)
         {
             foreach (var attr in request.Attributes)
@@ -81,13 +80,13 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         }
 
         auction.RaiseUpdatedEvent(modifiedFields);
-        
+
         await _repository.UpdateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _cache.RemoveAsync(CacheKeys.Auction(request.Id), cancellationToken);
 
-        _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}", 
+        _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));
         return Result.Success(true);
     }

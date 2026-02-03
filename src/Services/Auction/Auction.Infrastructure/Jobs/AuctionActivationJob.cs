@@ -7,10 +7,6 @@ using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
-/// <summary>
-/// Activates scheduled auctions at their start time.
-/// Uses DisallowConcurrentExecution to prevent duplicate activation.
-/// </summary>
 [DisallowConcurrentExecution]
 public class AuctionActivationJob : BaseJob
 {

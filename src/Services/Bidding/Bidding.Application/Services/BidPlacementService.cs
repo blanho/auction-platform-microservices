@@ -280,18 +280,32 @@ namespace Bidding.Application.Services
 
         #endregion
 
-        public async Task<List<BidDto>> GetBidsForAuctionAsync(Guid auctionId, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<BidDto>> GetBidsForAuctionAsync(BidQueryParams queryParams, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Getting bids for auction {AuctionId}", auctionId);
-            var bids = await _repository.GetBidsByAuctionIdAsync(auctionId, cancellationToken);
-            return bids.ToDtoList();
+            _logger.LogInformation("Getting bids for auction {AuctionId}, Page: {Page}", 
+                queryParams.Filter.AuctionId, queryParams.Page);
+            
+            var result = await _repository.GetBidsForAuctionPagedAsync(queryParams, cancellationToken);
+            
+            return new PaginatedResult<BidDto>(
+                result.Items.ToDtoList(),
+                result.TotalCount,
+                result.Page,
+                result.PageSize);
         }
 
-        public async Task<List<BidDto>> GetBidsForBidderAsync(string bidderUsername, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<BidDto>> GetBidsForBidderAsync(BidQueryParams queryParams, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Getting bids for bidder {Bidder}", bidderUsername);
-            var bids = await _repository.GetBidsByBidderUsernameAsync(bidderUsername, cancellationToken);
-            return bids.ToDtoList();
+            _logger.LogInformation("Getting bids for bidder {Bidder}, Page: {Page}", 
+                queryParams.Filter.BidderUsername, queryParams.Page);
+            
+            var result = await _repository.GetBidsForBidderPagedAsync(queryParams, cancellationToken);
+            
+            return new PaginatedResult<BidDto>(
+                result.Items.ToDtoList(),
+                result.TotalCount,
+                result.Page,
+                result.PageSize);
         }
     }
 

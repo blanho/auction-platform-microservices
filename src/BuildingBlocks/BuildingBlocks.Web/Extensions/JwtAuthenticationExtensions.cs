@@ -44,7 +44,6 @@ public static class JwtAuthenticationExtensions
 
                 ValidateLifetime = true,
 
-                // SECURITY: Always validate signing key - never skip validation
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
                     ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
@@ -93,7 +92,6 @@ public static class JwtAuthenticationExtensions
 
                 ValidateLifetime = true,
 
-                // SECURITY: Always validate signing key - never skip validation
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
                     ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))

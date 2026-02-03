@@ -1,7 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Paging;
 using Payment.Application.DTOs;
+using Payment.Application.Filtering;
 using Payment.Application.Interfaces;
 
 namespace Payment.Application.Features.Orders.GetOrdersBySeller;
@@ -19,8 +19,23 @@ public class GetOrdersBySellerQueryHandler : IQueryHandler<GetOrdersBySellerQuer
 
     public async Task<Result<PaginatedResult<OrderDto>>> Handle(GetOrdersBySellerQuery request, CancellationToken cancellationToken)
     {
-        var queryParams = QueryParameters.Create(request.Page, request.PageSize);
-        var orders = await _repository.GetBySellerUsernameAsync(request.SellerUsername, queryParams);
+        var queryParams = new OrderQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new OrderFilter
+            {
+                SellerUsername = request.SellerUsername,
+                SearchTerm = request.SearchTerm,
+                Status = request.Status,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
+        
+        var orders = await _repository.GetBySellerUsernameAsync(queryParams);
 
         var result = new PaginatedResult<OrderDto>(
             orders.Items.ToDtoList(_mapper),

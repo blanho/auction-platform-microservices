@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Repositories;
 
-/// <summary>
-/// Repository implementation for querying pre-aggregated daily statistics views.
-/// </summary>
 public class DailyStatsRepository : IDailyStatsRepository
 {
     private readonly AnalyticsDbContext _context;

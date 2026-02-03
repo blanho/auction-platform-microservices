@@ -1,11 +1,12 @@
-using BuildingBlocks.Application.CQRS;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.CQRS;
 using Auctions.Application.DTOs;
+using Auctions.Application.Filtering;
 using Auctions.Application.Interfaces;
 
 namespace Auctions.Application.Features.Reviews.GetReviewsForAuction;
 
-public class GetReviewsForAuctionQueryHandler : IQueryHandler<GetReviewsForAuctionQuery, List<ReviewDto>>
+public class GetReviewsForAuctionQueryHandler : IQueryHandler<GetReviewsForAuctionQuery, PaginatedResult<ReviewDto>>
 {
     private readonly IReviewRepository _reviewRepository;
 
@@ -14,11 +15,28 @@ public class GetReviewsForAuctionQueryHandler : IQueryHandler<GetReviewsForAucti
         _reviewRepository = reviewRepository;
     }
 
-    public async Task<Result<List<ReviewDto>>> Handle(GetReviewsForAuctionQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<ReviewDto>>> Handle(GetReviewsForAuctionQuery request, CancellationToken cancellationToken)
     {
-        var reviews = await _reviewRepository.GetByAuctionIdAsync(request.AuctionId, cancellationToken);
+        var queryParams = new ReviewQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new ReviewFilter
+            {
+                AuctionId = request.AuctionId,
+                MinRating = request.MinRating,
+                MaxRating = request.MaxRating,
+                HasSellerResponse = request.HasSellerResponse,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
 
-        var reviewDtos = reviews.Select(r => new ReviewDto(
+        var result = await _reviewRepository.GetByAuctionIdAsync(queryParams, cancellationToken);
+
+        var reviewDtos = result.Items.Select(r => new ReviewDto(
             r.Id,
             r.AuctionId,
             r.OrderId,
@@ -32,6 +50,7 @@ public class GetReviewsForAuctionQueryHandler : IQueryHandler<GetReviewsForAucti
             r.CreatedAt
         )).ToList();
 
-        return Result.Success(reviewDtos);
+        return Result.Success(new PaginatedResult<ReviewDto>(
+            reviewDtos, result.TotalCount, result.Page, result.PageSize));
     }
 }

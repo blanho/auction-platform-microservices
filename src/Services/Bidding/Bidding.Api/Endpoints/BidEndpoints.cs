@@ -10,6 +10,7 @@ using Bidding.Application.Features.Bids.RetractBid;
 using Bidding.Application.Helpers;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Carter;
@@ -52,12 +53,12 @@ public class BidEndpoints : ICarterModule
         group.MapGet("/winning", GetWinningBids)
             .WithName("GetWinningBids")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
-            .Produces<PagedResult<WinningBidDto>>(StatusCodes.Status200OK);
+            .Produces<PaginatedResult<WinningBidDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/history", GetBidHistory)
             .WithName("GetBidHistory")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
-            .Produces<BidHistoryResult>(StatusCodes.Status200OK);
+            .Produces<PaginatedResult<BidHistoryItemDto>>(StatusCodes.Status200OK);
 
         group.MapPost("/{bidId:guid}/retract", RetractBid)
             .WithName("RetractBid")
@@ -143,7 +144,7 @@ public class BidEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(context.User);
         page = page < 1 ? BidDefaults.DefaultPage : page;
         pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
-        var query = new GetWinningBidsQuery(userId, page, pageSize);
+        var query = new GetWinningBidsQuery(userId, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
 
         if (!result.IsSuccess)
@@ -168,7 +169,14 @@ public class BidEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(context.User);
         page = page < 1 ? BidDefaults.DefaultPage : page;
         pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
-        var query = new GetBidHistoryQuery(userId, auctionId, status, fromDate, toDate, page, pageSize);
+        var query = new GetBidHistoryQuery(
+            AuctionId: auctionId,
+            UserId: userId,
+            Status: status,
+            FromDate: fromDate,
+            ToDate: toDate,
+            Page: page,
+            PageSize: pageSize);
         var result = await mediator.Send(query, ct);
 
         if (!result.IsSuccess)

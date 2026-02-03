@@ -5,3 +5,53 @@ metadata:
   labels:
     name: auction-platform
     environment: base
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: auction-platform-quota
+  namespace: auction-platform
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    pods: "200"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+    persistentvolumeclaims: "50"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: auction-platform-limits
+  namespace: auction-platform
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"
+      min:
+        storage: "1Gi"
+

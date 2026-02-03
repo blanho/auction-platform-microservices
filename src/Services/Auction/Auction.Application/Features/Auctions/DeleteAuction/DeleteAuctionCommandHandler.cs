@@ -26,7 +26,6 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
     {
         _logger.LogInformation("Deleting auction {AuctionId}", request.Id);
 
-        // Use tracked entity for domain event
         var auction = await _repository.GetByIdForUpdateAsync(request.Id, cancellationToken);
 
         if (auction == null)

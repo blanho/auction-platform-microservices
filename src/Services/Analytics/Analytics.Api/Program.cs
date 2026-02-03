@@ -1,4 +1,5 @@
 using Analytics.Api.Data;
+using Analytics.Api.Endpoints;
 using Analytics.Api.Extensions.DependencyInjection;
 using Analytics.Api.Middleware;
 using BuildingBlocks.Web.Extensions;
@@ -9,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Fail fast on missing required configuration
 builder.Services.ValidateStandardConfiguration(
     builder.Configuration,
     "AnalyticsService",
@@ -37,6 +36,7 @@ builder.Services
     .AddAnalyticsDatabase(builder.Configuration)
     .AddAnalyticsRepositories()
     .AddAnalyticsServices()
+    .AddAnalyticsBackgroundJobs()
     .AddCommonUtilities()
     .AddUtilityScheduling(builder.Configuration)
     .AddAnalyticsMessaging(builder.Configuration)
@@ -46,7 +46,8 @@ builder.Services
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.Configuration = builder.Configuration["Redis:ConnectionString"]
+        ?? throw new InvalidOperationException("Redis:ConnectionString configuration is required");
     options.InstanceName = "AnalyticsService:";
 });
 
@@ -88,6 +89,7 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCustomHealthChecks();
+app.MapJobsEndpoints();
 app.MapControllers();
 
 app.Run();

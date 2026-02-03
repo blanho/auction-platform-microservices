@@ -1,8 +1,9 @@
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Paging;
 
 namespace Bidding.Application.Features.Bids.GetBidHistory;
 
-public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHistoryResult>
+public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, PaginatedResult<BidHistoryItemDto>>
 {
     private readonly IBidRepository _repository;
     private readonly ILogger<GetBidHistoryQueryHandler> _logger;
@@ -15,7 +16,7 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
         _logger = logger;
     }
 
-    public async Task<Result<BidHistoryResult>> Handle(GetBidHistoryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<BidHistoryItemDto>>> Handle(GetBidHistoryQuery request, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Getting bid history with filters - AuctionId: {AuctionId}, Page: {Page}",
             request.AuctionId, request.Page);
@@ -24,11 +25,15 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
         {
             Page = request.Page,
             PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
             Filter = new BidHistoryFilter
             {
                 AuctionId = request.AuctionId,
                 UserId = request.UserId,
                 Status = request.Status,
+                MinAmount = request.MinAmount,
+                MaxAmount = request.MaxAmount,
                 FromDate = request.FromDate,
                 ToDate = request.ToDate
             }
@@ -47,44 +52,7 @@ public class GetBidHistoryQueryHandler : IQueryHandler<GetBidHistoryQuery, BidHi
             Status = b.Status.ToString()
         }).ToList();
 
-        var allBidsForSummary = await GetAllBidsForSummaryAsync(request, cancellationToken);
-        var summary = CalculateSummary(allBidsForSummary);
-
-        return Result<BidHistoryResult>.Success(new BidHistoryResult
-        {
-            Items = items,
-            TotalCount = result.TotalCount,
-            Page = result.Page,
-            PageSize = result.PageSize,
-            Summary = summary
-        });
-    }
-
-    private async Task<List<Bid>> GetAllBidsForSummaryAsync(GetBidHistoryQuery request, CancellationToken ct)
-    {
-        if (request.AuctionId.HasValue)
-        {
-            return await _repository.GetBidsByAuctionIdAsync(request.AuctionId.Value, ct);
-        }
-
-        return new List<Bid>();
-    }
-
-    private static BidHistorySummary CalculateSummary(List<Bid> bids)
-    {
-        if (!bids.Any())
-        {
-            return new BidHistorySummary();
-        }
-
-        return new BidHistorySummary
-        {
-            TotalBids = bids.Count,
-            AcceptedBids = bids.Count(b => b.Status == BidStatus.Accepted),
-            RejectedBids = bids.Count(b => b.Status == BidStatus.Rejected),
-            TotalAmountBid = bids.Sum(b => b.Amount),
-            HighestBid = bids.Max(b => b.Amount),
-            AverageBid = bids.Average(b => b.Amount)
-        };
+        return Result<PaginatedResult<BidHistoryItemDto>>.Success(
+            new PaginatedResult<BidHistoryItemDto>(items, result.TotalCount, result.Page, result.PageSize));
     }
 }

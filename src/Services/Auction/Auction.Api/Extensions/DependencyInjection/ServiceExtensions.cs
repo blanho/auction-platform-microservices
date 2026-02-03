@@ -1,7 +1,10 @@
+using Auctions.Application.Features.Auctions.BulkImport;
+using Auctions.Application.Features.Auctions.Export;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using BuildingBlocks.Application.BackgroundJobs;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using AutoMapper;
@@ -73,6 +76,28 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddScoped<IBrandRepository, BrandRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddBulkImport();
+            services.AddBackgroundJobProcessing();
+
+            return services;
+        }
+
+        public static IServiceCollection AddBackgroundJobProcessing(this IServiceCollection services)
+        {
+            services.AddBackgroundJobs()
+                .AddHandler<ExportAuctionsJobHandler>()
+                .Build();
+
+            return services;
+        }
+
+        public static IServiceCollection AddBulkImport(this IServiceCollection services)
+        {
+            services.AddSingleton<IBulkImportJobStore, InMemoryBulkImportJobStore>();
+            services.AddSingleton(System.Threading.Channels.Channel.CreateUnbounded<BulkImportJob>());
+            services.AddSingleton<IBulkImportService, BulkImportService>();
+            services.AddHostedService<BulkImportBackgroundService>();
 
             return services;
         }

@@ -1,0 +1,31 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: auction-critical
+value: 1000000
+globalDefault: false
+description: "Priority class for critical auction platform services (gateway, bidding)"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: auction-high
+value: 100000
+globalDefault: false
+description: "Priority class for high priority services (auction, payment, identity)"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: auction-normal
+value: 10000
+globalDefault: true
+description: "Default priority class for auction platform services"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: auction-low
+value: 1000
+globalDefault: false
+description: "Priority class for non-critical services (analytics, notifications)"

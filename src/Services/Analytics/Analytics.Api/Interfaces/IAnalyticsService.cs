@@ -45,9 +45,6 @@ public interface IAnalyticsService
         AnalyticsQueryParams query,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Gets aggregated daily statistics from pre-computed views.
-    /// </summary>
     Task<AggregatedDailyStatsDto> GetAggregatedDailyStatsAsync(
         DateOnly? startDate,
         DateOnly? endDate,

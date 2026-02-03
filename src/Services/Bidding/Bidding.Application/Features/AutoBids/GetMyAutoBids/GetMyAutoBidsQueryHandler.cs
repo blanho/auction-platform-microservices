@@ -1,8 +1,9 @@
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Paging;
 
 namespace Bidding.Application.Features.AutoBids.GetMyAutoBids;
 
-public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAutoBidsResult>
+public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, PaginatedResult<MyAutoBidDto>>
 {
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
@@ -18,20 +19,30 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
         _logger = logger;
     }
 
-    public async Task<Result<MyAutoBidsResult>> Handle(GetMyAutoBidsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<MyAutoBidDto>>> Handle(GetMyAutoBidsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Getting auto-bids, page {Page}", request.Page);
+        _logger.LogDebug("Getting auto-bids for user {UserId}, page {Page}", request.UserId, request.Page);
 
-        var queryParams = QueryParameters.Create(request.Page, request.PageSize);
-        var result = await _repository.GetAutoBidsByUserAsync(
-            request.UserId, 
-            request.ActiveOnly, 
-            queryParams, 
-            cancellationToken);
-        var activeCount = await _repository.GetAutoBidsCountForUserAsync(request.UserId, true, cancellationToken);
+        var queryParams = new AutoBidQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new AutoBidFilter
+            {
+                AuctionId = request.AuctionId,
+                IsActive = request.IsActive,
+                MinMaxAmount = request.MinMaxAmount,
+                MaxMaxAmount = request.MaxMaxAmount,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
+        
+        var result = await _repository.GetAutoBidsByUserAsync(request.UserId, queryParams, cancellationToken);
 
         var items = new List<MyAutoBidDto>();
-        decimal totalCommitted = 0;
 
         foreach (var autoBid in result.Items)
         {
@@ -52,21 +63,9 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
                 AuctionEndTime = null,
                 CreatedAt = autoBid.CreatedAt
             });
-
-            if (autoBid.IsActive)
-            {
-                totalCommitted += autoBid.MaxAmount - autoBid.CurrentBidAmount;
-            }
         }
 
-        return Result<MyAutoBidsResult>.Success(new MyAutoBidsResult
-        {
-            Items = items,
-            TotalCount = result.TotalCount,
-            Page = result.Page,
-            PageSize = result.PageSize,
-            ActiveCount = activeCount,
-            TotalCommitted = totalCommitted
-        });
+        return Result<PaginatedResult<MyAutoBidDto>>.Success(
+            new PaginatedResult<MyAutoBidDto>(items, result.TotalCount, result.Page, result.PageSize));
     }
 }

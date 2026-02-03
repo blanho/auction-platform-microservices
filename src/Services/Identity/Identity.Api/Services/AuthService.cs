@@ -83,7 +83,8 @@ public class AuthService : IAuthService
         }
 
         var confirmationToken = await _userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var frontendUrl = _configuration["FrontendUrl"]
+            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
         var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, confirmationToken);
 
         await _mediator.Publish(new UserCreatedDomainEvent
@@ -155,7 +156,8 @@ public class AuthService : IAuthService
             return Result.Failure(IdentityErrors.Auth.EmailAlreadyConfirmed);
 
         var token = await _userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var frontendUrl = _configuration["FrontendUrl"]
+            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
         var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, token);
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>

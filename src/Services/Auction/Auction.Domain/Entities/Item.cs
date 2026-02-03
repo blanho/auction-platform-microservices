@@ -23,14 +23,12 @@ public class Item : BaseEntity
 
     [Column(TypeName = "jsonb")]
     public List<MediaFile> Files { get; private set; } = new();
-    
+
     [Column(TypeName = "jsonb")]
     public Dictionary<string, string> Attributes { get; private set; } = new();
 
-    // Private constructor for EF Core
     private Item() { }
 
-    // Factory method for creating new items
     public static Item Create(
         string title,
         string description,
@@ -52,7 +50,7 @@ public class Item : BaseEntity
             Attributes = new Dictionary<string, string>()
         };
     }
-    
+
     public void UpdateDetails(string title, string description, string? condition = null, int? yearManufactured = null)
     {
         Title = title;

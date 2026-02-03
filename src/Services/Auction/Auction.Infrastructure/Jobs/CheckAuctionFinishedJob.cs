@@ -7,25 +7,21 @@ using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
-/// <summary>
-/// Checks for finished auctions and marks them as finished.
-/// Uses DisallowConcurrentExecution to prevent duplicate processing if job runs longer than interval.
-/// </summary>
 [DisallowConcurrentExecution]
 public class CheckAuctionFinishedJob : BaseJob
 {
     public const string JobId = "check-auction-finished";
     public const string Description = "Checks for finished auctions and marks them as finished";
-    
+
     public CheckAuctionFinishedJob(
         ILogger<CheckAuctionFinishedJob> logger,
-        IServiceProvider serviceProvider) 
+        IServiceProvider serviceProvider)
         : base(logger, serviceProvider)
     {
     }
 
     protected override async Task ExecuteJobAsync(
-        IServiceProvider scopedProvider, 
+        IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
         var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
@@ -72,13 +68,12 @@ public class CheckAuctionFinishedJob : BaseJob
             }
         }
 
-        // Only save if we have successful updates
         if (processedCount > 0)
         {
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        Logger.LogInformation("Finished processing auctions: {ProcessedCount} succeeded, {FailedCount} failed out of {TotalCount}", 
+        Logger.LogInformation("Finished processing auctions: {ProcessedCount} succeeded, {FailedCount} failed out of {TotalCount}",
             processedCount, failedCount, finishedAuctions.Count);
 
         if (failedAuctionIds.Count > 0)

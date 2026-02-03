@@ -15,6 +15,7 @@ global using Bidding.Domain.Events;
 global using Bidding.Domain.Constants;
 
 global using Bidding.Application.DTOs;
+global using Bidding.Application.Filtering;
 global using Bidding.Application.Helpers;
 global using Bidding.Application.Interfaces;
 

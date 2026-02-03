@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Bidding.Application.Filtering;
 using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -107,7 +108,6 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
             var bid = await _context.Bids
                 .Where(x => !x.IsDeleted)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -257,29 +257,6 @@ namespace Bidding.Infrastructure.Repositories
             return topBidders;
         }
 
-        public async Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, QueryParameters queryParams, CancellationToken cancellationToken = default)
-        {
-            var baseQuery = _context.Bids
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.BidderId == userId && x.Status == BidStatus.Accepted)
-                .GroupBy(x => x.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).First())
-                .Where(b => !_context.Bids.Any(ob =>
-                    !ob.IsDeleted &&
-                    ob.AuctionId == b.AuctionId &&
-                    ob.Status == BidStatus.Accepted &&
-                    ob.Amount > b.Amount));
-
-            var totalCount = await baseQuery.CountAsync(cancellationToken);
-
-            var winningBids = await baseQuery
-                .OrderByDescending(b => b.BidTime)
-                .ApplyPaging(queryParams)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Bid>(winningBids, totalCount, queryParams.Page, queryParams.PageSize);
-        }
-
         public async Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             var count = await _context.Bids
@@ -342,6 +319,99 @@ namespace Bidding.Infrastructure.Repositories
             }
 
             return bidCounts;
+        }
+
+        public async Task<PaginatedResult<Bid>> GetBidsForAuctionPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
+        {
+            var filter = queryParams.Filter;
+            
+            var filterBuilder = FilterBuilder<Bid>.Create()
+                .When(true, x => !x.IsDeleted)
+                .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
+                .WhenHasValue(filter.Status, x => x.Status == filter.Status!.Value)
+                .WhenHasValue(filter.MinAmount, x => x.Amount >= filter.MinAmount!.Value)
+                .WhenHasValue(filter.MaxAmount, x => x.Amount <= filter.MaxAmount!.Value)
+                .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
+                .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
+
+            var query = _context.Bids
+                .AsNoTracking()
+                .ApplyFiltering(filterBuilder)
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var bids = await query
+                .ApplyPaging(queryParams)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Bid>(bids, totalCount, queryParams.Page, queryParams.PageSize);
+        }
+
+        public async Task<PaginatedResult<Bid>> GetBidsForBidderPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
+        {
+            var filter = queryParams.Filter;
+            
+            var filterBuilder = FilterBuilder<Bid>.Create()
+                .When(true, x => !x.IsDeleted)
+                .WhenNotEmpty(filter.BidderUsername, x => x.BidderUsername == filter.BidderUsername)
+                .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
+                .WhenHasValue(filter.Status, x => x.Status == filter.Status!.Value)
+                .WhenHasValue(filter.MinAmount, x => x.Amount >= filter.MinAmount!.Value)
+                .WhenHasValue(filter.MaxAmount, x => x.Amount <= filter.MaxAmount!.Value)
+                .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
+                .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
+
+            var query = _context.Bids
+                .AsNoTracking()
+                .ApplyFiltering(filterBuilder)
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var bids = await query
+                .ApplyPaging(queryParams)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Bid>(bids, totalCount, queryParams.Page, queryParams.PageSize);
+        }
+
+        public async Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, WinningBidQueryParams queryParams, CancellationToken cancellationToken = default)
+        {
+            var filter = queryParams.Filter;
+            
+            var baseQuery = _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.BidderId == userId && x.Status == BidStatus.Accepted)
+                .GroupBy(x => x.AuctionId)
+                .Select(g => g.OrderByDescending(b => b.Amount).First())
+                .Where(b => !_context.Bids.Any(ob =>
+                    !ob.IsDeleted &&
+                    ob.AuctionId == b.AuctionId &&
+                    ob.Status == BidStatus.Accepted &&
+                    ob.Amount > b.Amount));
+
+            if (filter.AuctionId.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.AuctionId == filter.AuctionId.Value);
+            }
+            if (filter.FromDate.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.BidTime >= filter.FromDate.Value);
+            }
+            if (filter.ToDate.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.BidTime <= filter.ToDate.Value);
+            }
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var winningBids = await baseQuery
+                .OrderByDescending(b => b.BidTime)
+                .ApplyPaging(queryParams)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Bid>(winningBids, totalCount, queryParams.Page, queryParams.PageSize);
         }
 
         public async Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryQueryParams queryParams, CancellationToken cancellationToken = default)

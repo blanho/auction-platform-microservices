@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Search.Api.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Fail fast on missing required configuration
 builder.Services.ValidateStandardConfiguration(
     builder.Configuration,
     "SearchService",

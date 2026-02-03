@@ -16,6 +16,7 @@ public static class PaymentErrors
         public static Error CancelledById(Guid id) => Error.Create("Order.Cancelled", $"Order {id} has been cancelled");
         public static Error InvalidStatus => Error.Create("Order.InvalidStatus", "Order is in an invalid status for this operation");
         public static Error InvalidStatusWithDetails(string status) => Error.Create("Order.InvalidStatus", $"Order cannot be processed in {status} status");
+        public static Error InvalidOrderData => Error.Create("Order.InvalidData", "Required order data is missing: BuyerId, SellerId, BuyerUsername, SellerUsername, ItemTitle, and WinningBid are required");
         public static Error NotPaid => Error.Create("Order.NotPaid", "Order is not paid yet");
         public static Error NotPaidById(Guid id) => Error.Create("Order.NotPaid", $"Order {id} has not been paid yet");
         public static Error AlreadyShipped => Error.Create("Order.AlreadyShipped", "Order is already shipped");

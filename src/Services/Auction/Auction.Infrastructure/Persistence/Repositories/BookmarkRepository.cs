@@ -1,8 +1,13 @@
 #nullable enable
+using System.Linq.Expressions;
+using Auctions.Application.Filtering;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
@@ -10,6 +15,14 @@ public class BookmarkRepository : IBookmarkRepository
 {
     private readonly AuctionDbContext _context;
     private readonly IDateTimeProvider _dateTime;
+
+    private static readonly Dictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap = 
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["addedat"] = x => x.AddedAt,
+        ["auctionend"] = x => x.Auction!.AuctionEnd,
+        ["currentbid"] = x => x.Auction!.CurrentHighBid
+    };
 
     public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime)
     {
@@ -52,21 +65,35 @@ public class BookmarkRepository : IBookmarkRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<Bookmark>> GetByUsernameAsync(string username, BookmarkType? type = null, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<Bookmark>> GetByUsernameAsync(string username, BookmarkType type, BookmarkQueryParams queryParams, CancellationToken cancellationToken = default)
     {
+        var filter = queryParams.Filter;
+        
+        var filterBuilder = FilterBuilder<Bookmark>.Create()
+            .When(true, x => !x.IsDeleted)
+            .When(true, x => x.Username == username)
+            .When(true, x => x.Type == type)
+            .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
+            .WhenHasValue(filter.NotifyOnBid, x => x.NotifyOnBid == filter.NotifyOnBid!.Value)
+            .WhenHasValue(filter.NotifyOnEnd, x => x.NotifyOnEnd == filter.NotifyOnEnd!.Value)
+            .WhenHasValue(filter.FromDate, x => x.AddedAt >= filter.FromDate!.Value)
+            .WhenHasValue(filter.ToDate, x => x.AddedAt <= filter.ToDate!.Value);
+
         var query = _context.Bookmarks
-            .Where(b => !b.IsDeleted && b.Username == username);
-
-        if (type.HasValue)
-            query = query.Where(b => b.Type == type.Value);
-
-        return await query
             .Include(b => b.Auction!)
             .ThenInclude(a => a.Item)
             .AsNoTracking()
-            .OrderByDescending(b => b.AddedAt)
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, BookmarkSortMap, x => x.AddedAt);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .ApplyPaging(queryParams)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<Bookmark>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<List<string>> GetUsersWatchingAuctionAsync(Guid auctionId, bool notifyOnEnd = true, CancellationToken cancellationToken = default)

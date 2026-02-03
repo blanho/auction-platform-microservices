@@ -1,23 +1,21 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Constants;
+
 namespace Bidding.Application.Features.Bids.GetBidHistory;
 
 public record GetBidHistoryQuery(
     Guid? AuctionId = null,
     Guid? UserId = null,
     BidStatus? Status = null,
+    decimal? MinAmount = null,
+    decimal? MaxAmount = null,
     DateTimeOffset? FromDate = null,
     DateTimeOffset? ToDate = null,
-    int Page = 1,
-    int PageSize = 20) : IQuery<BidHistoryResult>;
-
-public record BidHistoryResult
-{
-    public List<BidHistoryItemDto> Items { get; init; } = new();
-    public int TotalCount { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    public BidHistorySummary Summary { get; init; } = new();
-}
+    int Page = PaginationDefaults.DefaultPage,
+    int PageSize = PaginationDefaults.DefaultPageSize,
+    string? SortBy = null,
+    bool SortDescending = true
+) : IQuery<PaginatedResult<BidHistoryItemDto>>;
 
 public record BidHistoryItemDto
 {

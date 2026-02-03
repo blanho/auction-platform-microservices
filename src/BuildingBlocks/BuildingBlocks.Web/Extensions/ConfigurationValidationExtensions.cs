@@ -3,16 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BuildingBlocks.Web.Extensions;
 
-/// <summary>
-/// Extension methods for validating required configuration at startup.
-/// Use these methods to fail fast when required configuration is missing.
-/// </summary>
 public static class ConfigurationValidationExtensions
 {
-    /// <summary>
-    /// Validates that all required configuration values are present.
-    /// Call this at startup to fail fast on missing configuration.
-    /// </summary>
     public static IServiceCollection ValidateRequiredConfiguration(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -40,9 +32,6 @@ public static class ConfigurationValidationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Validates that a connection string is present and non-empty.
-    /// </summary>
     public static IServiceCollection ValidateConnectionString(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -61,9 +50,6 @@ public static class ConfigurationValidationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Validates all standard microservice configuration requirements.
-    /// </summary>
     public static IServiceCollection ValidateStandardConfiguration(
         this IServiceCollection services,
         IConfiguration configuration,

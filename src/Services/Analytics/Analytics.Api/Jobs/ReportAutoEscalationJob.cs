@@ -8,10 +8,6 @@ using Analytics.Api.Interfaces;
 
 namespace Analytics.Api.Jobs;
 
-/// <summary>
-/// Auto-escalates unreviewed reports.
-/// Uses DisallowConcurrentExecution to prevent duplicate escalation.
-/// </summary>
 [DisallowConcurrentExecution]
 public class ReportAutoEscalationJob : BaseJob
 {

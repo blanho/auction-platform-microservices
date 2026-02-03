@@ -67,13 +67,10 @@ public static class ServiceExtensions
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
-
-        // Register UnitOfWork - required by command handlers, consumers, and StripePaymentService
         services.AddScoped<UnitOfWork>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
-
-        // Register distributed locking - required by wallet operations (HoldFunds, ReleaseFunds, Withdraw, ProcessWalletPayment)
-        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        var redisConnectionString = configuration.GetConnectionString("Redis")
+            ?? throw new InvalidOperationException("Redis connection string is required");
         services.AddDistributedLocking(redisConnectionString);
 
         services.AddOptions<StripeOptions>()

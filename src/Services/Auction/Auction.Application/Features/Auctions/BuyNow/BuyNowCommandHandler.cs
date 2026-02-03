@@ -54,7 +54,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
         try
         {
-            // Use tracked entity fetch for updates
+
             var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
 
             if (auction == null)

@@ -8,6 +8,8 @@ public static class Perm
     public const string AuctionEdit = "auction:edit";
     public const string AuctionDelete = "auction:delete";
     public const string AuctionModerate = "auction:moderate";
+    public const string AuctionExport = "auction:export";
+    public const string AuctionImport = "auction:import";
     public const string CategoryManage = "category:manage";
     public const string BrandManage = "brand:manage";
 
@@ -69,6 +71,8 @@ public static class Permissions
         public const string Edit = Perm.AuctionEdit;
         public const string Delete = Perm.AuctionDelete;
         public const string Moderate = Perm.AuctionModerate;
+        public const string Export = Perm.AuctionExport;
+        public const string Import = Perm.AuctionImport;
         public const string ManageCategories = Perm.CategoryManage;
         public const string ManageBrands = Perm.BrandManage;
     }

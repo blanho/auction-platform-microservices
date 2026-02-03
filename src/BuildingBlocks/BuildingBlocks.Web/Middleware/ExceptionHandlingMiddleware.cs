@@ -116,7 +116,6 @@ public static class ExceptionHandlingMiddleware
         var status = HttpStatusCode.InternalServerError;
         var title = "An unexpected error occurred.";
 
-        // Map known exception types to appropriate status codes
         if (ex is ArgumentException or ArgumentNullException)
         {
             status = HttpStatusCode.BadRequest;
@@ -143,16 +142,14 @@ public static class ExceptionHandlingMiddleware
             title = "Request timeout";
         }
 
-        // Log the full exception for 500 errors
         if (status == HttpStatusCode.InternalServerError)
         {
             logger?.LogError(ex, "Unhandled exception occurred at {Path}", context.Request.Path);
         }
 
-        // SECURITY: Only expose exception details in development
-        var detail = isDevelopment 
-            ? ex.Message 
-            : status == HttpStatusCode.InternalServerError 
+        var detail = isDevelopment
+            ? ex.Message
+            : status == HttpStatusCode.InternalServerError
                 ? "An internal server error occurred. Please try again later."
                 : ex.Message;
 
@@ -170,7 +167,6 @@ public static class ExceptionHandlingMiddleware
             problem.Extensions["correlationId"] = cid.ToString();
         }
 
-        // Include stack trace only in development
         if (isDevelopment && status == HttpStatusCode.InternalServerError)
         {
             problem.Extensions["exception"] = ex.ToString();

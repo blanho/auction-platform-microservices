@@ -6,10 +6,6 @@ using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
-/// <summary>
-/// Sends notifications for auctions ending soon.
-/// Uses DisallowConcurrentExecution to prevent duplicate notifications.
-/// </summary>
 [DisallowConcurrentExecution]
 public class AuctionEndingSoonNotificationJob : BaseJob
 {

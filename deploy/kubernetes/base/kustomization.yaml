@@ -9,6 +9,8 @@ namespace: auction-platform
 
 resources:
   - namespace.yaml
+  - priority-classes.yaml
+  - rbac.yaml
   - configmap.yaml
   - secrets.yaml
   - services/auction-api.yaml
@@ -18,9 +20,12 @@ resources:
   - services/identity-api.yaml
   - services/analytics-api.yaml
   - services/gateway-api.yaml
+  - services/pdb.yaml
   - infrastructure/postgres.yaml
   - infrastructure/redis.yaml
   - infrastructure/rabbitmq.yaml
+  - infrastructure/rate-limiting.yaml
+  - monitoring/service-monitors.yaml
   - ingress.yaml
 
 commonLabels:

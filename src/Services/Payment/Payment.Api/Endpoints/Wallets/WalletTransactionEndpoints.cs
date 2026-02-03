@@ -28,7 +28,7 @@ public class WalletTransactionEndpoints : ICarterModule
             .WithSummary("Get a specific transaction by ID");
     }
 
-    private static async Task<Results<Ok<IEnumerable<WalletTransactionDto>>, BadRequest<ProblemDetails>>> GetTransactions(
+    private static async Task<Results<Ok<IReadOnlyList<WalletTransactionDto>>, BadRequest<ProblemDetails>>> GetTransactions(
         string username,
         int page,
         int pageSize,
@@ -53,7 +53,7 @@ public class WalletTransactionEndpoints : ICarterModule
         httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
         httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
 
-        return TypedResults.Ok(result.Value.Transactions);
+        return TypedResults.Ok(result.Value.Items);
     }
 
     private static async Task<Results<Ok<WalletTransactionDto>, NotFound, BadRequest<ProblemDetails>>> GetTransaction(

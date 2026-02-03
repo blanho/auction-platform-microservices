@@ -1,13 +1,14 @@
 
 
-
 using System.Linq.Expressions;
+using Bidding.Application.Filtering;
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Entities;
 using Bidding.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 
@@ -107,7 +108,6 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
         var autoBid = await _context.AutoBids
             .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -171,19 +171,28 @@ public class AutoBidRepository : IAutoBidRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<PaginatedResult<AutoBid>> GetAutoBidsByUserAsync(Guid userId, bool? activeOnly, QueryParameters queryParams, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<AutoBid>> GetAutoBidsByUserAsync(Guid userId, AutoBidQueryParams queryParams, CancellationToken cancellationToken = default)
     {
+        var filter = queryParams.Filter;
+        
+        var filterBuilder = FilterBuilder<AutoBid>.Create()
+            .When(true, x => !x.IsDeleted)
+            .When(true, x => x.UserId == userId)
+            .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
+            .WhenHasValue(filter.IsActive, x => x.IsActive == filter.IsActive!.Value)
+            .WhenHasValue(filter.MinMaxAmount, x => x.MaxAmount >= filter.MinMaxAmount!.Value)
+            .WhenHasValue(filter.MaxMaxAmount, x => x.MaxAmount <= filter.MaxMaxAmount!.Value)
+            .WhenHasValue(filter.FromDate, x => x.CreatedAt >= filter.FromDate!.Value)
+            .WhenHasValue(filter.ToDate, x => x.CreatedAt <= filter.ToDate!.Value);
+
         var query = _context.AutoBids
             .AsNoTracking()
-            .Where(ab => !ab.IsDeleted && ab.UserId == userId);
-        
-        if (activeOnly.HasValue)
-            query = query.Where(ab => ab.IsActive == activeOnly.Value);
+            .ApplyFiltering(filterBuilder)
+            .ApplySorting(queryParams, AutoBidSortMap, ab => ab.CreatedAt);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .ApplySorting(queryParams, AutoBidSortMap, ab => ab.CreatedAt)
             .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 

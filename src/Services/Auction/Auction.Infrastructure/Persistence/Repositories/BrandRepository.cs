@@ -105,11 +105,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            // Use tracked query - GetByIdAsync returns AsNoTracking which can't be updated
+
             var brand = await _context.Brands
                 .Where(b => !b.IsDeleted)
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-            
+
             if (brand != null)
             {
                 brand.IsDeleted = true;

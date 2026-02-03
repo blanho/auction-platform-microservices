@@ -85,7 +85,7 @@ public class CachedAuctionRepository : IAuctionRepository
 
     public Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        // Bypass cache for tracked entity fetches - these need to be fresh from DB
+
         return _inner.GetByIdForUpdateAsync(id, cancellationToken);
     }
 
@@ -171,9 +171,9 @@ public class CachedAuctionRepository : IAuctionRepository
         => _inner.GetWonByUsernameAsync(username, cancellationToken);
 
     public Task<SellerStatsDto> GetSellerStatsAsync(
-        string username, 
-        DateTimeOffset periodStart, 
-        DateTimeOffset? previousPeriodStart = null, 
+        string username,
+        DateTimeOffset periodStart,
+        DateTimeOffset? previousPeriodStart = null,
         CancellationToken cancellationToken = default)
         => _inner.GetSellerStatsAsync(username, periodStart, previousPeriodStart, cancellationToken);
 

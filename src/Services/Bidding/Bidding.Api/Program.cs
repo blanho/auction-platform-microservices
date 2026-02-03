@@ -23,7 +23,8 @@ builder.Services.ValidateStandardConfiguration(
 
 builder.AddApplicationLogging();
 
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis")
+    ?? throw new InvalidOperationException("Redis connection string is required");
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();

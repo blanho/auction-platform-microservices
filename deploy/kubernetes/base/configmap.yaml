@@ -18,6 +18,18 @@ data:
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_PORT: "5672"
   
+  # Logging & Observability
+  ELASTICSEARCH_URL: "http://elasticsearch:9200"
+  OTLP_ENDPOINT: "http://jaeger:4317"
+  SEQ_URL: "http://seq:5341"
+  
+  # Logging Configuration
+  Logging__MinimumLevel: "Warning"
+  Logging__EnableConsole: "true"
+  Logging__UseJsonFormat: "true"
+  Logging__Elasticsearch__Enabled: "true"
+  Logging__Elasticsearch__Url: "http://elasticsearch:9200"
+  
   # Service URLs (internal)
   AUCTION_SERVICE_URL: "http://auction-api:80"
   BIDDING_SERVICE_URL: "http://bidding-api:80"

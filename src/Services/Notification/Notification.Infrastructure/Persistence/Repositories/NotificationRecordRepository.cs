@@ -4,6 +4,7 @@ using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Notification.Application.DTOs;
+using Notification.Application.Filtering;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Infrastructure.Persistence;
@@ -34,15 +35,23 @@ public class NotificationRecordRepository : INotificationRecordRepository
         await _context.Records.AddAsync(record, ct);
     }
 
-    public async Task<List<NotificationRecord>> GetRecordsByUserIdAsync(Guid userId, int skip = 0, int take = 50, CancellationToken ct = default)
+    public async Task<PaginatedResult<NotificationRecord>> GetRecordsByUserIdAsync(NotificationRecordQueryParams queryParams, CancellationToken ct = default)
     {
-        return await _context.Records
-            .AsNoTracking()
-            .Where(r => r.UserId == userId)
-            .OrderByDescending(r => r.CreatedAt)
-            .Skip(skip)
-            .Take(take)
+        var query = _context.Records.AsNoTracking();
+        
+        if (queryParams.Filter != null)
+        {
+            query = queryParams.Filter.Apply(query);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt)
+            .ApplyPaging(queryParams)
             .ToListAsync(ct);
+
+        return new PaginatedResult<NotificationRecord>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task AddUserNotificationAsync(UserNotification notification, CancellationToken ct = default)

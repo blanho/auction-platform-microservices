@@ -11,27 +11,30 @@ public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
         RuleFor(x => x.AuctionId)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Auction ID"));
 
-        RuleFor(x => x.BuyerId)
-            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Buyer ID"));
+        When(x => x.BuyerUsername != null, () =>
+        {
+            RuleFor(x => x.BuyerUsername)
+                .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Buyer username", 256));
+        });
 
-        RuleFor(x => x.BuyerUsername)
-            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Buyer username"))
-            .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Buyer username", 256));
+        When(x => x.SellerUsername != null, () =>
+        {
+            RuleFor(x => x.SellerUsername)
+                .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Seller username", 256));
+        });
 
-        RuleFor(x => x.SellerId)
-            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
+        When(x => x.ItemTitle != null, () =>
+        {
+            RuleFor(x => x.ItemTitle)
+                .MaximumLength(ValidationConstants.StringLength.Medium)
+                .WithMessage(ValidationConstants.Messages.MaxLength("Item title", ValidationConstants.StringLength.Medium));
+        });
 
-        RuleFor(x => x.SellerUsername)
-            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"))
-            .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Seller username", 256));
-
-        RuleFor(x => x.ItemTitle)
-            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Item title"))
-            .MaximumLength(ValidationConstants.StringLength.Medium)
-            .WithMessage(ValidationConstants.Messages.MaxLength("Item title", ValidationConstants.StringLength.Medium));
-
-        RuleFor(x => x.WinningBid)
-            .GreaterThan(0).WithMessage("Winning bid must be greater than 0");
+        When(x => x.WinningBid.HasValue, () =>
+        {
+            RuleFor(x => x.WinningBid)
+                .GreaterThan(0).WithMessage("Winning bid must be greater than 0");
+        });
 
         When(x => x.ShippingCost.HasValue, () =>
         {

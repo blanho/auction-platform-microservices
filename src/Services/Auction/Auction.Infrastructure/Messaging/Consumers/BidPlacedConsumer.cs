@@ -3,10 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
-/// <summary>
 /// Consumes BidPlacedEvent to update auction's current high bid.
-/// Implements idempotency by checking if the incoming bid is actually higher than current.
-/// </summary>
 public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
 {
     private readonly IAuctionRepository _repository;
@@ -37,8 +34,6 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
             return;
         }
 
-        // Idempotency check: only update if this is an accepted bid AND it's actually higher
-        // This handles duplicate messages and out-of-order delivery
         if (!message.BidStatus.Contains("Accepted"))
         {
             _logger.LogDebug(
@@ -47,7 +42,6 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
             return;
         }
 
-        // Check if bid amount is actually higher than current (handles duplicates and out-of-order)
         if (auction.CurrentHighBid.HasValue && message.BidAmount <= auction.CurrentHighBid.Value)
         {
             _logger.LogDebug(

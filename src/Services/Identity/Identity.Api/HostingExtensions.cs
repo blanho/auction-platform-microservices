@@ -26,14 +26,14 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
-        // Fail fast on missing required configuration
+
         builder.Services.ValidateStandardConfiguration(
             builder.Configuration,
             "IdentityService",
             requiresDatabase: true,
             requiresRedis: true,
             requiresRabbitMQ: true,
-            requiresIdentity: false); // Identity service is the authority itself
+            requiresIdentity: false);
 
         builder.Services.AddControllers();
         builder.Services.AddGrpc();
@@ -50,10 +50,8 @@ internal static class HostingExtensions
             .AddCommonUtilities()
             .AddAuditServices(builder.Configuration, "identity-service");
 
-        // Add observability (OpenTelemetry tracing and metrics)
         builder.Services.AddObservability(builder.Configuration);
-        
-        // Add health checks for infrastructure dependencies
+
         builder.Services.AddCustomHealthChecks(
             redisConnectionString: builder.Configuration["Redis:ConnectionString"],
             rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
@@ -74,7 +72,6 @@ internal static class HostingExtensions
         app.UseCorrelationId();
         app.UseSerilogRequestLogging();
 
-        // Use proper exception handling in all environments
         app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
@@ -82,7 +79,7 @@ internal static class HostingExtensions
                 var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
                 var exception = exceptionFeature?.Error;
                 var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-                
+
                 var statusCode = exception switch
                 {
                     BuildingBlocks.Web.Exceptions.NotFoundException => StatusCodes.Status404NotFound,
@@ -139,13 +136,11 @@ internal static class HostingExtensions
         app.MapControllers();
         app.MapGrpcService<UserStatsGrpcService>();
 
-        // Only enable gRPC reflection in development (exposes service metadata)
         if (app.Environment.IsDevelopment())
         {
             app.MapGrpcReflectionService();
         }
 
-        // Map health check endpoints
         app.MapCustomHealthChecks();
 
         return app;

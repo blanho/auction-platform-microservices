@@ -30,7 +30,7 @@ public static class HealthCheckExtensions
 
         if (!string.IsNullOrEmpty(rabbitMqConnectionString))
         {
-            // Use async connection factory with proper async overload
+
             builder.AddRabbitMQ(async sp =>
             {
                 var factory = new RabbitMQ.Client.ConnectionFactory

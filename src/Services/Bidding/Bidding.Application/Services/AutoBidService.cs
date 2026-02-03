@@ -61,8 +61,13 @@ namespace Bidding.Application.Services
 
         public async Task<List<AutoBidDto>> GetAutoBidsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var queryParams = QueryParameters.Create(1, 100);
-            var result = await _autoBidRepository.GetAutoBidsByUserAsync(userId, null, queryParams, cancellationToken);
+            var queryParams = new AutoBidQueryParams
+            {
+                Page = 1,
+                PageSize = 100,
+                Filter = new AutoBidFilter()
+            };
+            var result = await _autoBidRepository.GetAutoBidsByUserAsync(userId, queryParams, cancellationToken);
             return result.Items.Select(MapToDto).ToList();
         }
 

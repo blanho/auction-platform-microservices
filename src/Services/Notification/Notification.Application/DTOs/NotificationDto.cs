@@ -11,7 +11,7 @@ public class NotificationDto
     public string Message { get; set; } = string.Empty;
     public string Data { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DateTime? ReadAt { get; set; }
+    public DateTimeOffset? ReadAt { get; set; }
     public Guid? AuctionId { get; set; }
     public Guid? BidId { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

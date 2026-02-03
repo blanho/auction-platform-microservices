@@ -9,10 +9,6 @@ using Quartz;
 
 namespace Identity.Api.Jobs;
 
-/// <summary>
-/// Locks user accounts that have been inactive for 30 days.
-/// Uses DisallowConcurrentExecution to prevent duplicate locking.
-/// </summary>
 [DisallowConcurrentExecution]
 public class InactiveUserLockJob : BaseJob
 {

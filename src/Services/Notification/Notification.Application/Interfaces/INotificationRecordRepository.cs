@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions;
 using Notification.Application.DTOs;
+using Notification.Application.Filtering;
 using Notification.Domain.Entities;
 
 namespace Notification.Application.Interfaces;
@@ -9,7 +10,7 @@ public interface INotificationRecordRepository
 
     Task AddRecordAsync(NotificationRecord record, CancellationToken ct = default);
 
-    Task<List<NotificationRecord>> GetRecordsByUserIdAsync(Guid userId, int skip = 0, int take = 50, CancellationToken ct = default);
+    Task<PaginatedResult<NotificationRecord>> GetRecordsByUserIdAsync(NotificationRecordQueryParams queryParams, CancellationToken ct = default);
 
     Task<NotificationRecord?> GetByIdAsync(Guid id, CancellationToken ct = default);
 

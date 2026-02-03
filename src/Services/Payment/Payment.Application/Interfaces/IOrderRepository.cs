@@ -1,29 +1,16 @@
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Paging;
 using Payment.Application.DTOs;
+using Payment.Application.Filtering;
 using Payment.Domain.Entities;
-using Payment.Domain.Enums;
 
 namespace Payment.Application.Interfaces;
-
-public class OrderFilter
-{
-    public string? SearchTerm { get; init; }
-    public OrderStatus? Status { get; init; }
-    public DateTime? FromDate { get; init; }
-    public DateTime? ToDate { get; init; }
-    public string? BuyerUsername { get; init; }
-    public string? SellerUsername { get; init; }
-}
-
-public class OrderQueryParams : QueryParameters<OrderFilter> { }
 
 public interface IOrderRepository
 {
     Task<Order> GetByIdAsync(Guid id);
     Task<Order> GetByAuctionIdAsync(Guid auctionId);
-    Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(string username, QueryParameters queryParams);
-    Task<PaginatedResult<Order>> GetBySellerUsernameAsync(string username, QueryParameters queryParams);
+    Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams);
+    Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams);
     Task<Order> AddAsync(Order order);
     Task<Order> UpdateAsync(Order order);
     Task<int> GetCountByBuyerUsernameAsync(string username);

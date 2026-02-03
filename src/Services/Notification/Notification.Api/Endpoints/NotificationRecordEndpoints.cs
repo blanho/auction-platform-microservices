@@ -70,13 +70,15 @@ public class NotificationRecordEndpoints : ICarterModule
             : TypedResults.Ok(result.Value);
     }
 
-    private static async Task<Ok<List<NotificationRecordDto>>> GetRecordsByUser(
+    private static async Task<Ok<PaginatedResult<NotificationRecordDto>>> GetRecordsByUser(
         Guid userId,
-        int? limit,
+        string? channel,
+        int page,
+        int pageSize,
         ISender sender,
         CancellationToken ct)
     {
-        var query = new GetNotificationRecordsByUserQuery(userId, limit ?? 50);
+        var query = new GetNotificationRecordsByUserQuery(userId, channel, Page: page, PageSize: pageSize);
         var result = await sender.Send(query, ct);
         
         return TypedResults.Ok(result.Value);

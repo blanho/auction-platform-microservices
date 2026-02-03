@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions;
 using Notification.Application.DTOs;
+using Notification.Application.Filtering;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 
@@ -31,10 +32,15 @@ public class NotificationRecordService : INotificationRecordService
             result.PageSize);
     }
 
-    public async Task<List<NotificationRecordDto>> GetByUserIdAsync(Guid userId, int limit = 50, CancellationToken ct = default)
+    public async Task<PaginatedResult<NotificationRecordDto>> GetByUserIdAsync(NotificationRecordQueryParams queryParams, CancellationToken ct = default)
     {
-        var records = await _repository.GetRecordsByUserIdAsync(userId, 0, limit, ct);
-        return records.Select(r => r.ToDto()).ToList();
+        var result = await _repository.GetRecordsByUserIdAsync(queryParams, ct);
+        
+        return new PaginatedResult<NotificationRecordDto>(
+            result.Items.Select(r => r.ToDto()).ToList(),
+            result.TotalCount,
+            result.Page,
+            result.PageSize);
     }
 
     public async Task<NotificationRecordStatsDto> GetStatsAsync(CancellationToken ct = default)

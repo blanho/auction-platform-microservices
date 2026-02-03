@@ -29,9 +29,12 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"] ?? "localhost";
-                var username = configuration["RabbitMQ:Username"] ?? "guest";
-                var password = configuration["RabbitMQ:Password"] ?? "guest";
+                var host = configuration["RabbitMQ:Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
+                var username = configuration["RabbitMQ:Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
+                var password = configuration["RabbitMQ:Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
 
                 cfg.Host(host, "/", h =>
                 {

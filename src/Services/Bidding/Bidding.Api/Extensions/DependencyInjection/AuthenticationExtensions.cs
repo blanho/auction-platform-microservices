@@ -46,7 +46,8 @@ public static class AuthenticationExtensions
     {
         services.AddGrpcClient<AuctionGrpc.AuctionGrpcClient>(options =>
         {
-            var auctionGrpcUrl = configuration["GrpcServices:AuctionService"] ?? "https://localhost:7001";
+            var auctionGrpcUrl = configuration["GrpcServices:AuctionService"]
+                ?? throw new InvalidOperationException("GrpcServices:AuctionService configuration is required");
             options.Address = new Uri(auctionGrpcUrl);
         })
         .ConfigurePrimaryHttpMessageHandler(() =>

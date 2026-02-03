@@ -6,6 +6,7 @@ using Bidding.Application.Features.AutoBids.GetMyAutoBids;
 using Bidding.Application.Features.AutoBids.ToggleAutoBid;
 using Bidding.Application.Features.AutoBids.UpdateAutoBid;
 using Bidding.Domain.Constants;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Carter;
@@ -37,7 +38,7 @@ public class AutoBidEndpoints : ICarterModule
         group.MapGet("/my", GetMyAutoBids)
             .WithName("GetMyAutoBids")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
-            .Produces<MyAutoBidsResult>(StatusCodes.Status200OK);
+            .Produces<PaginatedResult<MyAutoBidDto>>(StatusCodes.Status200OK);
 
         group.MapPut("/{autoBidId:guid}", UpdateAutoBid)
             .WithName("UpdateAutoBid")
@@ -115,7 +116,7 @@ public class AutoBidEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(context.User);
         page = page < 1 ? BidDefaults.DefaultPage : page;
         pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
-        var query = new GetMyAutoBidsQuery(userId, activeOnly, page, pageSize);
+        var query = new GetMyAutoBidsQuery(userId, IsActive: activeOnly, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
 
         if (!result.IsSuccess)

@@ -1,4 +1,5 @@
 using Carter;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using MediatR;
@@ -59,14 +60,23 @@ public class OrderCommandEndpoints : ICarterModule
         ILogger<OrderCommandEndpoints> logger,
         CancellationToken cancellationToken)
     {
+        if (!dto.BuyerId.HasValue || !dto.SellerId.HasValue || !dto.WinningBid.HasValue ||
+            string.IsNullOrWhiteSpace(dto.BuyerUsername) ||
+            string.IsNullOrWhiteSpace(dto.SellerUsername) ||
+            string.IsNullOrWhiteSpace(dto.ItemTitle))
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(
+                Error.Create("Order.InvalidData", "BuyerId, SellerId, BuyerUsername, SellerUsername, ItemTitle, and WinningBid are required")));
+        }
+
         var command = new CreateOrderCommand(
             dto.AuctionId,
-            dto.BuyerId,
+            dto.BuyerId.Value,
             dto.BuyerUsername,
-            dto.SellerId,
+            dto.SellerId.Value,
             dto.SellerUsername,
             dto.ItemTitle,
-            dto.WinningBid,
+            dto.WinningBid.Value,
             dto.ShippingCost,
             dto.PlatformFee,
             dto.ShippingAddress,

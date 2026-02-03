@@ -1,0 +1,76 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gateway-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: gateway-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auction-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: auction-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bidding-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: bidding-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: payment-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: payment-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: notification-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: identity-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: identity-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: analytics-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: analytics-api

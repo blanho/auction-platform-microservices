@@ -47,8 +47,6 @@ public class TwoFactorService : ITwoFactorService
         var isMachineRememberedTask = _signInManager.IsTwoFactorClientRememberedAsync(user);
 
         await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask, isMachineRememberedTask);
-
-        // Safe to access .Result after Task.WhenAll completes, but using await is cleaner
         var isEnabled = await isEnabledTask;
         var authenticatorKey = await authenticatorKeyTask;
         var recoveryCodes = await recoveryCodesTask;
@@ -231,8 +229,6 @@ public class TwoFactorService : ITwoFactorService
         var recoveryCodesTask = _userManager.CountRecoveryCodesAsync(user);
 
         await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask);
-
-        // Safe to access after Task.WhenAll completes
         var isEnabled = await isEnabledTask;
         var authenticatorKey = await authenticatorKeyTask;
         var recoveryCodes = await recoveryCodesTask;

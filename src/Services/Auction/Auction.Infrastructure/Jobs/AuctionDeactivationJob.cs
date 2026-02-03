@@ -6,10 +6,6 @@ using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
-/// <summary>
-/// Auto-deactivates expired auctions.
-/// Uses DisallowConcurrentExecution to prevent duplicate processing.
-/// </summary>
 [DisallowConcurrentExecution]
 public class AuctionDeactivationJob : BaseJob
 {

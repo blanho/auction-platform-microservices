@@ -4,14 +4,9 @@ using Ganss.Xss;
 
 namespace BuildingBlocks.Application.Implementations;
 
-/// <summary>
-/// Thread-safe HTML sanitization service.
-/// Uses ThreadLocal to ensure each thread has its own HtmlSanitizer instance,
-/// avoiding race conditions when the service is registered as a singleton.
-/// </summary>
 public class HtmlSanitizationService : ISanitizationService, IDisposable
 {
-    // ThreadLocal ensures thread safety for singleton registration
+
     private readonly ThreadLocal<HtmlSanitizer> _sanitizer;
     private bool _disposed;
 
