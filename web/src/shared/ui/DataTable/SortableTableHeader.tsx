@@ -15,7 +15,7 @@ export function SortableTableHeader<T>({
   sortBy,
   sortOrder = 'asc',
   onSort,
-}: SortableTableHeaderProps<T>) {
+}: Readonly<SortableTableHeaderProps<T>>) {
   const sortKey = column.sortKey ?? String(column.key)
   const isSorted = sortBy === sortKey
   const isSortable = column.sortable && onSort

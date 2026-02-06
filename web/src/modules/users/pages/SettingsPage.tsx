@@ -152,8 +152,10 @@ export function SettingsPage() {
                   <ListItemText
                     primary={item.label}
                     secondary={item.description}
-                    primaryTypographyProps={{ fontWeight: 500, color: palette.neutral[900] }}
-                    secondaryTypographyProps={{ fontSize: '0.8125rem' }}
+                    slotProps={{
+                      primary: { fontWeight: 500, color: palette.neutral[900] },
+                      secondary: { fontSize: '0.8125rem' },
+                    }}
                   />
                   <ChevronRight sx={{ color: palette.neutral[400] }} />
                 </ListItemButton>
@@ -319,8 +321,10 @@ export function SettingsPage() {
             onClose={() => setShow2FADialog(false)}
             maxWidth="sm"
             fullWidth
-            PaperProps={{
-              sx: { borderRadius: 2 },
+            slotProps={{
+              paper: {
+                sx: { borderRadius: 2 },
+              },
             }}
           >
             <DialogTitle

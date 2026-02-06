@@ -152,7 +152,7 @@ public class ItemTests
         item.AddFile(mediaFile);
 
         item.Files.Should().ContainSingle();
-        item.Files.First().FileId.Should().Be(mediaFile.FileId);
+        item.Files[0].FileId.Should().Be(mediaFile.FileId);
     }
 
     [Fact]

@@ -11,6 +11,7 @@ import {
   Chip,
   Divider,
   Skeleton,
+  Alert,
   Snackbar,
   Dialog,
   DialogTitle,
@@ -27,6 +28,7 @@ import {
   stepConnectorClasses,
   styled,
 } from '@mui/material'
+import type { StepIconProps } from '@mui/material/StepIcon'
 import {
   ArrowBack,
   LocalShipping,
@@ -97,19 +99,36 @@ const ColorlibStepIconRoot = styled('div')<{
   }),
 }))
 
-function ColorlibStepIcon(props: {
+function ColorlibStepIcon(props: Readonly<{
   active: boolean
   completed: boolean
   error?: boolean
   icon: React.ReactNode
   className?: string
-}) {
+}>) {
   const { active, completed, error, className, icon } = props
 
   return (
     <ColorlibStepIconRoot ownerState={{ completed, active, error }} className={className}>
       {icon}
     </ColorlibStepIconRoot>
+  )
+}
+
+interface OrderStepIconProps extends StepIconProps {
+  icon: React.ReactNode
+}
+
+function OrderStepIcon({ icon, ...props }: Readonly<OrderStepIconProps>) {
+  const { active = false, completed = false, error, className } = props
+  return (
+    <ColorlibStepIcon
+      active={active}
+      completed={completed}
+      error={error}
+      className={className}
+      icon={icon}
+    />
   )
 }
 
@@ -293,14 +312,14 @@ export function OrderDetailPage() {
                   {steps.map((step, index) => (
                     <Step key={step.label}>
                       <StepLabel
-                        StepIconComponent={(props) => (
-                          <ColorlibStepIcon
-                            {...props}
-                            active={index === activeStep}
-                            completed={index < activeStep}
-                            icon={step.icon}
-                          />
-                        )}
+                        slots={{
+                          stepIcon: OrderStepIcon,
+                        }}
+                        slotProps={{
+                          stepIcon: {
+                            icon: step.icon,
+                          },
+                        }}
                       >
                         <Typography
                           sx={{
@@ -863,12 +882,12 @@ function TimelineItem({
   title,
   date,
   subtitle,
-}: {
+}: Readonly<{
   icon: React.ReactNode
   title: string
   date: string
   subtitle?: string
-}) {
+}>) {
   return (
     <Box sx={{ display: 'flex', gap: 2 }}>
       <Box sx={{ pt: 0.3 }}>{icon}</Box>

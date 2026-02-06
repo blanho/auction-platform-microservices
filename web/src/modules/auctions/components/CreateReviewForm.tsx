@@ -38,7 +38,7 @@ export function CreateReviewForm({
   orderId,
   onSuccess,
   onCancel,
-}: CreateReviewFormProps) {
+}: Readonly<CreateReviewFormProps>) {
   const [rating, setRating] = useState<number | null>(null)
   const [hover, setHover] = useState(-1)
   const [title, setTitle] = useState('')
@@ -119,9 +119,9 @@ export function CreateReviewForm({
             }}
             emptyIcon={<Star style={{ opacity: 0.55 }} fontSize="inherit" />}
           />
-          {(rating !== null || hover !== -1) && (
+          {(rating !== null || hover >= 0) && (
             <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
-              {ratingLabels[hover !== -1 ? hover : rating ?? 0]}
+              {ratingLabels[hover >= 0 ? hover : rating ?? 0]}
             </Typography>
           )}
         </Stack>
@@ -134,7 +134,7 @@ export function CreateReviewForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         sx={{ mb: 2 }}
-        inputProps={{ maxLength: 100 }}
+        slotProps={{ htmlInput: { maxLength: 100 } }}
       />
 
       <TextField
@@ -146,7 +146,7 @@ export function CreateReviewForm({
         multiline
         rows={4}
         sx={{ mb: 3 }}
-        inputProps={{ maxLength: 1000 }}
+        slotProps={{ htmlInput: { maxLength: 1000 } }}
         helperText={`${comment.length}/1000 characters`}
       />
 

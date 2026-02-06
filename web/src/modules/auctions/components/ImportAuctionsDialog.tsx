@@ -30,7 +30,7 @@ interface ImportAuctionsDialogProps {
   onSuccess?: () => void
 }
 
-export function ImportAuctionsDialog({ open, onClose, onSuccess }: ImportAuctionsDialogProps) {
+export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<ImportAuctionsDialogProps>) {
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [result, setResult] = useState<ImportAuctionsResult | null>(null)

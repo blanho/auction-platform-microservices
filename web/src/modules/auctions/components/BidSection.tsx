@@ -21,7 +21,6 @@ interface BidSectionProps {
   auctionTitle: string
   currentBid: number
   startingPrice: number
-  reservePrice?: number
   buyNowPrice?: number
   bidCount: number
   endTime: string
@@ -53,7 +52,7 @@ export function BidSection({
   existingAutoBid,
   onPlaceBid,
   onBuyNow,
-}: BidSectionProps) {
+}: Readonly<BidSectionProps>) {
   const [bidAmount, setBidAmount] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,8 +124,8 @@ export function BidSection({
   }, [endTime])
 
   const handleSubmitBid = async () => {
-    const amount = parseFloat(bidAmount)
-    if (isNaN(amount) || amount < minimumBid) {
+    const amount = Number.parseFloat(bidAmount)
+    if (Number.isNaN(amount) || amount < minimumBid) {
       setError(`Minimum bid is $${minimumBid.toLocaleString()}`)
       return
     }
@@ -246,8 +245,10 @@ export function BidSection({
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
             placeholder={`$${minimumBid.toLocaleString()} or more`}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              },
             }}
             sx={{
               mb: 1.5,

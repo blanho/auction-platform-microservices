@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import {
   Box,
@@ -139,6 +140,9 @@ export function SearchPage() {
     filters.minPrice || 0,
     filters.maxPrice || 10000,
   ])
+  const skeletonKeys = useMemo(
+    () => Array.from({ length: 5 }, () => crypto.randomUUID()),
+    []
 
   const { data: searchResults, isLoading, error } = useSearch(filters, !!filters.query)
   const { data: suggestions } = useSearchSuggestions(
@@ -249,25 +253,27 @@ export function SearchPage() {
             }
           }}
           options={suggestions?.map((s) => s.text) || []}
-          renderInput={(params) => (
+          renderInput={({ InputProps: autocompleteInputProps, ...params }) => (
             <TextField
               {...params}
               inputRef={inputRef}
               placeholder="Search for auctions, categories, sellers..."
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: palette.neutral[500] }} />
-                  </InputAdornment>
-                ),
-                endAdornment: inputValue && (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => handleSearch('')}>
-                      <Close fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  ...autocompleteInputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: palette.neutral[500] }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: inputValue && (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => handleSearch('')}>
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -441,7 +447,7 @@ export function SearchPage() {
                 </Typography>
                 <Slider
                   value={priceRange}
-                  onChange={(_, value) => setPriceRange(value as number[])}
+                  onChange={(_, value) => setPriceRange(value)}
                   onChangeCommitted={handlePriceRangeCommit}
                   valueLabelDisplay="auto"
                   valueLabelFormat={(v) => formatCurrency(v)}
@@ -507,8 +513,8 @@ export function SearchPage() {
 
             {isLoading && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+                {skeletonKeys.map((key) => (
+                  <Skeleton key={key} variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
                 ))}
               </Box>
             )}

@@ -11,59 +11,52 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   Tooltip,
 } from '@mui/material'
 import {
   ExpandMore as ExpandIcon,
   ExpandLess as CollapseIcon,
   Cancel as CancelIcon,
-  Download as DownloadIcon,
   CheckCircle as SuccessIcon,
   Error as ErrorIcon,
   Schedule as PendingIcon,
-  Sync as RunningIcon,
+  Sync as ProcessingIcon,
   Close as CloseIcon,
 } from '@mui/icons-material'
-import { useBackgroundJobs, useCancelJob, useDownloadJobResult } from '@/shared/hooks/useBackgroundJobs'
-import type { BackgroundJobProgress, BackgroundJobStatus } from '@/shared/types/background-jobs.types'
+import { useJobs, useCancelJob } from '@/modules/jobs/hooks'
+import { JOB_STATUS_LABELS, JOB_STATUS_COLORS } from '@/modules/jobs/constants'
+import { isJobActive } from '@/modules/jobs/utils'
+import type { JobSummaryDto, JobStatus } from '@/modules/jobs/types'
 
-const statusConfig: Record<BackgroundJobStatus, { color: 'default' | 'primary' | 'success' | 'error' | 'warning'; icon: React.ReactNode }> = {
-  Pending: { color: 'default', icon: <PendingIcon fontSize="small" /> },
-  Running: { color: 'primary', icon: <RunningIcon fontSize="small" /> },
-  Completed: { color: 'success', icon: <SuccessIcon fontSize="small" /> },
-  Failed: { color: 'error', icon: <ErrorIcon fontSize="small" /> },
-  Cancelled: { color: 'warning', icon: <CloseIcon fontSize="small" /> },
-}
-
-function formatTimeRemaining(seconds: number): string {
-  if (seconds <= 0) {return 'Almost done...'}
-  if (seconds < 60) {return `${seconds}s`}
-  if (seconds < 3600) {return `${Math.floor(seconds / 60)}m ${seconds % 60}s`}
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
-}
-
-function formatFileSize(bytes?: number): string {
-  if (!bytes) {return ''}
-  if (bytes < 1024) {return `${bytes} B`}
-  if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`}
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+const statusIcons: Record<JobStatus, React.ReactElement> = {
+  Initializing: <PendingIcon fontSize="small" />,
+  Pending: <PendingIcon fontSize="small" />,
+  Processing: <ProcessingIcon fontSize="small" />,
+  Completed: <SuccessIcon fontSize="small" />,
+  CompletedWithErrors: <ErrorIcon fontSize="small" />,
+  Failed: <ErrorIcon fontSize="small" />,
+  Cancelled: <CloseIcon fontSize="small" />,
 }
 
 interface JobItemProps {
-  job: BackgroundJobProgress
-  onCancel: (jobId: string) => void
-  onDownload: (jobId: string, filename: string) => void
+  job: JobSummaryDto
+  onCancel: (id: string) => void
 }
 
-function JobItem({ job, onCancel, onDownload }: JobItemProps) {
-  const isRunning = job.status === 'Running' || job.status === 'Pending'
-  const canDownload = job.status === 'Completed' && job.resultFileName
+function JobItem({ job, onCancel }: Readonly<JobItemProps>) {
+  const active = isJobActive(job.status)
 
   return (
     <ListItem
+      secondaryAction={
+        active ? (
+          <Tooltip title="Cancel">
+            <IconButton size="small" onClick={() => onCancel(job.id)}>
+              <CancelIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        ) : undefined
+      }
       sx={{
         bgcolor: 'background.paper',
         borderRadius: 1,
@@ -76,94 +69,59 @@ function JobItem({ job, onCancel, onDownload }: JobItemProps) {
         primary={
           <Stack direction="row" alignItems="center" spacing={1}>
             <Typography variant="body2" fontWeight="medium">
-              {job.name}
+              {JOB_STATUS_LABELS[job.status]}
             </Typography>
             <Chip
               size="small"
-              icon={statusConfig[job.status].icon}
+              icon={statusIcons[job.status]}
               label={job.status}
-              color={statusConfig[job.status].color}
+              color={JOB_STATUS_COLORS[job.status]}
               sx={{ height: 20 }}
             />
           </Stack>
         }
         secondary={
           <Box sx={{ mt: 1 }}>
-            {isRunning && (
+            {active && (
               <>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                   <Typography variant="caption" color="text.secondary">
-                    {job.processedItems.toLocaleString()} / {job.totalItems.toLocaleString()}
+                    {job.completedItems.toLocaleString()} / {job.totalItems.toLocaleString()}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {job.progressPercentage.toFixed(1)}%
-                    {job.estimatedSecondsRemaining > 0 && ` • ${formatTimeRemaining(job.estimatedSecondsRemaining)}`}
+                    {job.progress.toFixed(1)}%
                   </Typography>
                 </Box>
                 <LinearProgress
                   variant="determinate"
-                  value={job.progressPercentage}
+                  value={job.progress}
                   sx={{ height: 4, borderRadius: 1 }}
                 />
               </>
             )}
-            {job.status === 'Completed' && job.resultFileName && (
-              <Typography variant="caption" color="text.secondary">
-                {job.resultFileName} ({formatFileSize(job.resultFileSizeBytes)})
-              </Typography>
-            )}
-            {job.status === 'Failed' && job.errorMessage && (
-              <Typography variant="caption" color="error">
-                {job.errorMessage}
-              </Typography>
-            )}
           </Box>
         }
       />
-      <ListItemSecondaryAction>
-        {isRunning && (
-          <Tooltip title="Cancel">
-            <IconButton size="small" onClick={() => onCancel(job.jobId)}>
-              <CancelIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
-        {canDownload && job.resultFileName && (
-          <Tooltip title="Download">
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() => onDownload(job.jobId, job.resultFileName ?? '')}
-            >
-              <DownloadIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
-      </ListItemSecondaryAction>
     </ListItem>
   )
 }
 
 interface BackgroundJobsPanelProps {
-  type?: string
+  jobType?: string
   title?: string
 }
 
-export function BackgroundJobsPanel({ type, title = 'Background Jobs' }: BackgroundJobsPanelProps) {
+export function BackgroundJobsPanel({ jobType, title = 'Background Jobs' }: Readonly<BackgroundJobsPanelProps>) {
   const [expanded, setExpanded] = useState(true)
-  const { data: jobs = [], isLoading } = useBackgroundJobs(type)
+  const { data, isLoading } = useJobs(jobType ? { jobType } : undefined)
   const cancelMutation = useCancelJob()
-  const downloadMutation = useDownloadJobResult()
 
-  const activeJobs = jobs.filter((j) => j.status === 'Running' || j.status === 'Pending')
-  const recentJobs = jobs.filter((j) => j.status !== 'Running' && j.status !== 'Pending').slice(0, 5)
+  const jobs = data?.items ?? []
+  const activeJobs = jobs.filter((j) => isJobActive(j.status))
+  const recentJobs = jobs.filter((j) => !isJobActive(j.status)).slice(0, 5)
 
-  const handleCancel = (jobId: string) => {
-    cancelMutation.mutate(jobId)
-  }
-
-  const handleDownload = (jobId: string, filename: string) => {
-    downloadMutation.mutate({ jobId, filename })
+  const handleCancel = (id: string) => {
+    cancelMutation.mutate(id)
   }
 
   if (isLoading || jobs.length === 0) {
@@ -191,7 +149,7 @@ export function BackgroundJobsPanel({ type, title = 'Background Jobs' }: Backgro
           {activeJobs.length > 0 && (
             <Chip
               size="small"
-              label={`${activeJobs.length} running`}
+              label={`${activeJobs.length} active`}
               color="primary"
               sx={{ height: 20 }}
             />
@@ -211,12 +169,7 @@ export function BackgroundJobsPanel({ type, title = 'Background Jobs' }: Backgro
               </Typography>
               <List disablePadding>
                 {activeJobs.map((job) => (
-                  <JobItem
-                    key={job.jobId}
-                    job={job}
-                    onCancel={handleCancel}
-                    onDownload={handleDownload}
-                  />
+                  <JobItem key={job.id} job={job} onCancel={handleCancel} />
                 ))}
               </List>
             </Box>
@@ -229,12 +182,7 @@ export function BackgroundJobsPanel({ type, title = 'Background Jobs' }: Backgro
               </Typography>
               <List disablePadding>
                 {recentJobs.map((job) => (
-                  <JobItem
-                    key={job.jobId}
-                    job={job}
-                    onCancel={handleCancel}
-                    onDownload={handleDownload}
-                  />
+                  <JobItem key={job.id} job={job} onCancel={handleCancel} />
                 ))}
               </List>
             </Box>

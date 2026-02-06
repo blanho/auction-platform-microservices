@@ -29,7 +29,7 @@ export function SuspendUserDialog({
   onClose,
   onReasonChange,
   onConfirm,
-}: SuspendUserDialogProps) {
+}: Readonly<SuspendUserDialogProps>) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Suspend User</DialogTitle>

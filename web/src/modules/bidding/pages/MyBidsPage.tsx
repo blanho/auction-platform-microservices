@@ -117,7 +117,7 @@ export function MyBidsPage() {
       await updateAutoBid.mutateAsync({
         autoBidId: editAutoBid.id,
         data: {
-          maxAmount: parseFloat(newMaxAmount),
+          maxAmount: Number.parseFloat(newMaxAmount),
         },
       })
       setEditAutoBid(null)
@@ -155,7 +155,7 @@ export function MyBidsPage() {
         <Typography sx={{ color: palette.neutral[500] }}>Track your bidding activity</Typography>
       </Box>
 
-      {autoBids && autoBids.autoBids && autoBids.autoBids.length > 0 && (
+      {autoBids?.autoBids?.length ? (
         <Card
           sx={{
             mb: 4,
@@ -226,7 +226,7 @@ export function MyBidsPage() {
             )}
           </Box>
         </Card>
-      )}
+      ) : null}
 
       <Card
         sx={{
@@ -282,7 +282,7 @@ export function MyBidsPage() {
             </TableHead>
             <TableBody>
               {bidsLoading && <TableSkeletonRows rows={5} columns={5} />}
-              {!bidsLoading && myBids && myBids.length === 0 && (
+              {!bidsLoading && (myBids?.length ?? 0) === 0 && (
                 <TableEmptyStateRow
                   colSpan={5}
                   title={emptyMessage}
@@ -304,7 +304,7 @@ export function MyBidsPage() {
                   cellSx={{ py: 8 }}
                 />
               )}
-              {!isLoading && myBids && myBids.length > 0 && (
+              {!isLoading && (myBids?.length ?? 0) > 0 && (
                 myBids?.map((bid) => (
                   <TableRow key={bid.id} hover>
                     <TableCell>
@@ -388,8 +388,10 @@ export function MyBidsPage() {
             type="number"
             value={newMaxAmount}
             onChange={(e) => setNewMaxAmount(e.target.value)}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              },
             }}
             sx={{ mb: 2.5 }}
           />

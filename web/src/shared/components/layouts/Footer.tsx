@@ -81,7 +81,7 @@ export function Footer() {
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !email.includes('@')) {
+    if (!email?.includes('@')) {
       setError('Please enter a valid email address')
       return
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
@@ -48,18 +48,15 @@ export function LoginPage() {
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
 
   const sessionParam = searchParams.get('session')
-  const initialSessionMessage =
-    sessionParam && SESSION_MESSAGES[sessionParam] ? SESSION_MESSAGES[sessionParam] : null
+  const sessionMessage = useMemo(
+    () => (sessionParam && SESSION_MESSAGES[sessionParam] ? SESSION_MESSAGES[sessionParam] : null),
+    [sessionParam]
+  )
 
   const [rememberMe, setRememberMe] = useState(false)
   const [requires2FA, setRequires2FA] = useState(false)
   const [twoFactorToken, setTwoFactorToken] = useState('')
   const [twoFactorCode, setTwoFactorCode] = useState('')
-  const [sessionMessage, _setSessionMessage] = useState<{
-    severity: 'warning' | 'error' | 'info'
-    message: string
-  } | null>(initialSessionMessage)
-
   useEffect(() => {
     if (sessionParam && SESSION_MESSAGES[sessionParam]) {
       searchParams.delete('session')
@@ -111,7 +108,7 @@ export function LoginPage() {
 
   const handleSocialLogin = (provider: 'google' | 'github') => {
     const baseUrl = import.meta.env.VITE_API_URL || ''
-    window.location.href = `${baseUrl}/api/auth/external-login?provider=${provider}`
+    globalThis.location.href = `${baseUrl}/api/auth/external-login?provider=${provider}`
   }
 
   if (requires2FA) {
@@ -167,7 +164,7 @@ export function LoginPage() {
                 fullWidth
                 label="Verification Code"
                 value={twoFactorCode}
-                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(e) => setTwoFactorCode(e.target.value.replaceAll(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
                 inputProps={{
                   maxLength: 6,

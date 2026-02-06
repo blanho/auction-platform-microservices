@@ -48,24 +48,15 @@ public class OrderRepository : IOrderRepository
 
     public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)
     {
-        var query = _context.Orders.AsNoTracking();
-        
-        if (queryParams.Filter != null)
-        {
-            query = queryParams.Filter.Apply(query);
-        }
-
-        var totalCount = await query.CountAsync();
-
-        var items = await query
-            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
-            .ApplyPaging(queryParams)
-            .ToListAsync();
-
-        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
+        return await GetOrdersByQueryParamsAsync(queryParams);
     }
 
     public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams)
+    {
+        return await GetOrdersByQueryParamsAsync(queryParams);
+    }
+
+    private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams)
     {
         var query = _context.Orders.AsNoTracking();
         

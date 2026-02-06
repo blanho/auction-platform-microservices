@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Container,
@@ -45,7 +45,7 @@ interface WatchlistCardProps {
   isRemoving: boolean
 }
 
-function WatchlistCard({ item, onRemove, isRemoving }: WatchlistCardProps) {
+function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardProps>) {
   const auction = item.auction
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
@@ -247,6 +247,10 @@ export function WatchlistPage() {
   const [sortBy, setSortBy] = useState<'ending-soon' | 'newest' | 'price-low' | 'price-high'>(
     'ending-soon'
   )
+  const skeletonKeys = useMemo(
+    () => Array.from({ length: 6 }, () => crypto.randomUUID()),
+    []
+  )
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const { data, isLoading, error } = useWatchlist()
@@ -296,7 +300,17 @@ export function WatchlistPage() {
                   <Select
                     value={sortBy}
                     label="Sort By"
-                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (
+                        value === 'ending-soon' ||
+                        value === 'newest' ||
+                        value === 'price-low' ||
+                        value === 'price-high'
+                      ) {
+                        setSortBy(value)
+                      }
+                    }}
                     startAdornment={<Sort sx={{ mr: 1, color: 'action.active' }} />}
                   >
                     <MenuItem value="ending-soon">Ending Soon</MenuItem>
@@ -340,8 +354,8 @@ export function WatchlistPage() {
 
         {isLoading && (
           <Grid container spacing={3}>
-            {[...Array(6)].map((_, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+            {skeletonKeys.map((key) => (
+              <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card>
                   <Skeleton variant="rectangular" height={200} />
                   <Box sx={{ p: 2 }}>
@@ -371,21 +385,19 @@ export function WatchlistPage() {
           </motion.div>
         )}
         {!isLoading && data && data.length > 0 && (
-          <>
-            <AnimatePresence mode="popLayout">
-              <Grid container spacing={3}>
-                {data?.map((item: WatchlistItem) => (
-                  <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <WatchlistCard
-                      item={item}
-                      onRemove={handleRemove}
-                      isRemoving={removeMutation.isPending}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </AnimatePresence>
-          </>
+          <AnimatePresence mode="popLayout">
+            <Grid container spacing={3}>
+              {data?.map((item: WatchlistItem) => (
+                <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <WatchlistCard
+                    item={item}
+                    onRemove={handleRemove}
+                    isRemoving={removeMutation.isPending}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </AnimatePresence>
         )}
       </motion.div>
     </Container>

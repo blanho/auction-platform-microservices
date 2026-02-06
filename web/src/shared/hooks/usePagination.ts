@@ -55,32 +55,32 @@ export function usePagination<TFilter = Record<string, unknown>>(
     defaultFilter = {} as TFilter,
   } = options
 
-  const [page, setPageState] = useState(defaultPage)
-  const [pageSize, setPageSizeState] = useState(defaultPageSize)
-  const [sortBy, setSortByState] = useState(defaultSortBy)
-  const [sortOrder, setSortOrderState] = useState<'asc' | 'desc'>(defaultSortOrder)
-  const [filter, setFilterState] = useState<TFilter>(defaultFilter)
+  const [page, setPage] = useState(defaultPage)
+  const [pageSize, setPageSize] = useState(defaultPageSize)
+  const [sortBy, setSortBy] = useState(defaultSortBy)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(defaultSortOrder)
+  const [filter, setFilter] = useState<TFilter>(defaultFilter)
 
-  const setPage = useCallback((newPage: number) => {
-    setPageState(Math.max(1, newPage))
+  const setPageValue = useCallback((newPage: number) => {
+    setPage(Math.max(1, newPage))
   }, [])
 
-  const setPageSize = useCallback((newSize: number) => {
-    setPageSizeState(Math.min(Math.max(1, newSize), 100))
-    setPageState(1)
+  const setPageSizeValue = useCallback((newSize: number) => {
+    setPageSize(Math.min(Math.max(1, newSize), 100))
+    setPage(1)
   }, [])
 
-  const setSortBy = useCallback((field: string) => {
-    setSortByState(field)
-    setPageState(1)
+  const setSortByValue = useCallback((field: string) => {
+    setSortBy(field)
+    setPage(1)
   }, [])
 
-  const setSortOrder = useCallback((order: 'asc' | 'desc') => {
-    setSortOrderState(order)
+  const setSortOrderValue = useCallback((order: 'asc' | 'desc') => {
+    setSortOrder(order)
   }, [])
 
   const toggleSortOrder = useCallback(() => {
-    setSortOrderState((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
   }, [])
 
   const handleSort = useCallback(
@@ -88,35 +88,35 @@ export function usePagination<TFilter = Record<string, unknown>>(
       if (sortBy === field) {
         toggleSortOrder()
       } else {
-        setSortByState(field)
-        setSortOrderState('asc')
+        setSortBy(field)
+        setSortOrder('asc')
       }
-      setPageState(1)
+      setPage(1)
     },
     [sortBy, toggleSortOrder]
   )
 
-  const setFilter = useCallback((newFilter: TFilter | ((prev: TFilter) => TFilter)) => {
-    setFilterState(newFilter)
-    setPageState(1)
+  const setFilterValue = useCallback((newFilter: TFilter | ((prev: TFilter) => TFilter)) => {
+    setFilter(newFilter)
+    setPage(1)
   }, [])
 
   const updateFilter = useCallback(<K extends keyof TFilter>(key: K, value: TFilter[K]) => {
-    setFilterState((prev) => ({ ...prev, [key]: value }))
-    setPageState(1)
+    setFilter((prev) => ({ ...prev, [key]: value }))
+    setPage(1)
   }, [])
 
   const clearFilter = useCallback(() => {
-    setFilterState(defaultFilter)
-    setPageState(1)
+    setFilter(defaultFilter)
+    setPage(1)
   }, [defaultFilter])
 
   const reset = useCallback(() => {
-    setPageState(defaultPage)
-    setPageSizeState(defaultPageSize)
-    setSortByState(defaultSortBy)
-    setSortOrderState(defaultSortOrder)
-    setFilterState(defaultFilter)
+    setPage(defaultPage)
+    setPageSize(defaultPageSize)
+    setSortBy(defaultSortBy)
+    setSortOrder(defaultSortOrder)
+    setFilter(defaultFilter)
   }, [defaultPage, defaultPageSize, defaultSortBy, defaultSortOrder, defaultFilter])
 
   const queryParams = useMemo(
@@ -171,13 +171,13 @@ export function usePagination<TFilter = Record<string, unknown>>(
     sortOrder,
     filter,
     queryParams,
-    setPage,
-    setPageSize,
-    setSortBy,
-    setSortOrder,
+    setPage: setPageValue,
+    setPageSize: setPageSizeValue,
+    setSortBy: setSortByValue,
+    setSortOrder: setSortOrderValue,
     toggleSortOrder,
     handleSort,
-    setFilter,
+    setFilter: setFilterValue,
     updateFilter,
     clearFilter,
     reset,

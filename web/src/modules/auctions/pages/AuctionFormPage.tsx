@@ -48,6 +48,7 @@ import {
 } from '../hooks'
 import type { CreateAuctionRequest, UpdateAuctionRequest } from '../types'
 import { getDefaultCreateValues } from '../utils'
+import { addDays, formatDateTimeLocal } from '../utils/date.utils'
 import {
   ITEM_CONDITIONS,
   CURRENCIES,
@@ -229,7 +230,7 @@ export function AuctionFormPage() {
           title="Failed to Load Auction"
         >
           Unable to load auction data. Please try again.
-          <Button color="inherit" size="small" onClick={() => window.location.reload()} sx={{ ml: 1 }}>
+          <Button color="inherit" size="small" onClick={() => globalThis.location.reload()} sx={{ ml: 1 }}>
             Retry
           </Button>
         </InlineAlert>
@@ -373,7 +374,7 @@ export function AuctionFormPage() {
                 render={({ field }) => (
                   <Autocomplete
                     options={YEAR_OPTIONS}
-                    getOptionLabel={(option) => String(option)}
+                    getOptionLabel={String}
                     value={field.value || null}
                     onChange={(_, newValue) => field.onChange(newValue || undefined)}
                     renderInput={(params) => (
@@ -568,7 +569,7 @@ export function AuctionFormPage() {
                     Brand
                   </Typography>
                   <Typography variant="body1">
-                    {brands.find((b) => b.id === (watchedValues as CreateAuctionFormData).brandId)
+                    {brands.find((b) => b.id === watchedValues.brandId)
                       ?.name || '-'}
                   </Typography>
                 </Grid>
@@ -598,16 +599,16 @@ export function AuctionFormPage() {
                       Starting Price
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      ${(watchedValues as CreateAuctionFormData).reservePrice}
+                      ${watchedValues.reservePrice}
                     </Typography>
                   </Grid>
-                  {enableBuyNow && (watchedValues as CreateAuctionFormData).buyNowPrice && (
+                  {enableBuyNow && watchedValues.buyNowPrice && (
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" color="text.secondary">
                         Buy Now Price
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 600, color: 'success.main' }}>
-                        ${(watchedValues as CreateAuctionFormData).buyNowPrice}
+                        ${watchedValues.buyNowPrice}
                       </Typography>
                     </Grid>
                   )}
@@ -617,7 +618,7 @@ export function AuctionFormPage() {
                     </Typography>
                     <Typography variant="body1">
                       {new Date(
-                        (watchedValues as CreateAuctionFormData).auctionEnd
+                        watchedValues.auctionEnd
                       ).toLocaleString()}
                     </Typography>
                   </Grid>
@@ -627,7 +628,7 @@ export function AuctionFormPage() {
                     </Typography>
                     <Typography variant="body1">
                       {CURRENCIES.find(
-                        (c) => c.value === (watchedValues as CreateAuctionFormData).currency
+                        (c) => c.value === watchedValues.currency
                       )?.label || 'USD'}
                     </Typography>
                   </Grid>

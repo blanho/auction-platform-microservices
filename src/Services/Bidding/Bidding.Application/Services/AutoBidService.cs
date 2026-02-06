@@ -120,15 +120,7 @@ namespace Bidding.Application.Services
                 return;
             }
             
-            try
-            {
-                await ProcessAutoBidsWithLock(auctionId, currentHighBid, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing auto-bids for auction {AuctionId}", auctionId);
-                throw;
-            }
+            await ProcessAutoBidsWithLock(auctionId, currentHighBid, cancellationToken);
         }
 
         private static AutoBidDto MapToDto(AutoBid autoBid)
@@ -262,7 +254,7 @@ namespace Bidding.Application.Services
 
         private async Task PlaceOptimalAutoBid(List<AutoBid> eligibleAutoBids, Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken)
         {
-            var highestAutoBid = eligibleAutoBids.First();
+            var highestAutoBid = eligibleAutoBids[0];
             var secondHighestMax = eligibleAutoBids.Count > 1 ? eligibleAutoBids[1].MaxAmount : currentHighBid;
 
             var newBidAmount = CalculateOptimalBidAmount(highestAutoBid.MaxAmount, secondHighestMax, currentHighBid);

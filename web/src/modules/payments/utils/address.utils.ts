@@ -10,7 +10,7 @@ export function parseShippingAddress(addressString: string | ShippingAddress | u
   }
 
   if (typeof addressString === 'object') {
-    return addressString as ShippingAddress
+    return addressString
   }
 
   try {

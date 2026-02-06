@@ -17,6 +17,8 @@ namespace Bidding.Api.Endpoints;
 
 public class AutoBidEndpoints : ICarterModule
 {
+    private const string AutoBidResourceName = "AutoBid";
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/autobids")
@@ -99,7 +101,7 @@ public class AutoBidEndpoints : ICarterModule
 
         if (!result.IsSuccess || result.Value == null)
         {
-            return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+            return Results.NotFound(ProblemDetailsHelper.NotFound(AutoBidResourceName, autoBidId));
         }
 
         return Results.Ok(result.Value);
@@ -146,7 +148,7 @@ public class AutoBidEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error == BiddingErrors.AutoBid.NotFound)
-                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+                return Results.NotFound(ProblemDetailsHelper.NotFound(AutoBidResourceName, autoBidId));
             return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 
@@ -166,7 +168,7 @@ public class AutoBidEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error == BiddingErrors.AutoBid.NotFound)
-                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+                return Results.NotFound(ProblemDetailsHelper.NotFound(AutoBidResourceName, autoBidId));
             return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 
@@ -187,7 +189,7 @@ public class AutoBidEndpoints : ICarterModule
         if (!result.IsSuccess)
         {
             if (result.Error == BiddingErrors.AutoBid.NotFound)
-                return Results.NotFound(ProblemDetailsHelper.NotFound("AutoBid", autoBidId));
+                return Results.NotFound(ProblemDetailsHelper.NotFound(AutoBidResourceName, autoBidId));
             return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 

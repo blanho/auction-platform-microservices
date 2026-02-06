@@ -45,7 +45,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
   onRefresh,
   showRefreshButton = true,
   sx,
-}: FilterPanelProps<TFilter>) {
+}: Readonly<FilterPanelProps<TFilter>>) {
   const [isExpanded, setIsExpanded] = useState(config.defaultExpanded ?? true)
 
   const activeFilterCount = useMemo(() => {
@@ -213,7 +213,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                       e.target.value ? Number(e.target.value) : undefined
                     )
                   }
-                  inputProps={{ min: field.min, max: field.max, step: field.step }}
+                  slotProps={{ htmlInput: { min: field.min, max: field.max, step: field.step } }}
                 />
                 <Typography variant="body2" color="text.secondary">
                   -
@@ -230,19 +230,27 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                       e.target.value ? Number(e.target.value) : undefined
                     )
                   }
-                  inputProps={{ min: field.min, max: field.max, step: field.step }}
+                  slotProps={{ htmlInput: { min: field.min, max: field.max, step: field.step } }}
                 />
               </Stack>
             </Grid>
           )
 
-        case 'boolean':
+        case 'boolean': {
+          let booleanValue = ''
+
+          if (fieldValue === true) {
+            booleanValue = 'true'
+          } else if (fieldValue === false) {
+            booleanValue = 'false'
+          }
+
           return (
             <Grid size={gridSize} key={field.key}>
               <FormControl fullWidth size="small">
                 <InputLabel>{field.label}</InputLabel>
                 <Select
-                  value={fieldValue === undefined ? '' : String(fieldValue)}
+                  value={booleanValue}
                   label={field.label}
                   onChange={(e: SelectChangeEvent<string>) => {
                     const newValue = e.target.value
@@ -262,6 +270,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
               </FormControl>
             </Grid>
           )
+        }
 
         default:
           return null

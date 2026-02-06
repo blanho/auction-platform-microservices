@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -22,7 +22,6 @@ import {
   Twitter,
   Pinterest,
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
 import { ImageGallery, ImageGallerySkeleton } from '../components/ImageGallery'
 import { BidSection, BidSectionSkeleton } from '../components/BidSection'
@@ -59,7 +58,7 @@ export function AuctionDetailPage() {
   }, [auction?.isWatching])
 
   const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href)
+    navigator.clipboard.writeText(globalThis.location.href)
     setSnackbar({
       open: true,
       message: 'Link copied to clipboard',
@@ -223,7 +222,6 @@ export function AuctionDetailPage() {
                 auctionTitle={auction.title}
                 currentBid={auction.currentBid}
                 startingPrice={auction.startingPrice}
-                reservePrice={auction.reservePrice}
                 buyNowPrice={auction.buyNowPrice}
                 bidCount={auction.bidCount}
                 endTime={auction.endTime}

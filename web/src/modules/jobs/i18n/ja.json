@@ -1,0 +1,23 @@
+{
+  "jobs": {
+    "title": "バックグラウンドジョブ",
+    "subtitle": "バックグラウンド処理タスクの監視と管理",
+    "refresh": "更新",
+    "processing": "処理中",
+    "queued": "待機中",
+    "completed": "完了",
+    "errors": "エラー",
+    "total": "合計",
+    "noJobs": "ジョブが見つかりません",
+    "noJobsHint": "処理タスクが作成されると、バックグラウンドジョブがここに表示されます",
+    "cancel": "キャンセル",
+    "retry": "リトライ",
+    "viewDetails": "詳細を見る",
+    "backToJobs": "ジョブ一覧に戻る",
+    "details": "詳細",
+    "progress": "進捗",
+    "items": "アイテム",
+    "duration": "所要時間",
+    "noItems": "アイテムが見つかりません"
+  }
+}

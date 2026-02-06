@@ -63,7 +63,7 @@ const SERVICE_NAME_OPTIONS = [
 
 const ACTION_OPTIONS = Object.values(AUDIT_ACTION).map((act) => ({
   value: act,
-  label: act.replace(/([A-Z])/g, ' $1').trim(),
+  label: act.replaceAll(/([A-Z])/g, ' $1').trim(),
 }))
 
 export function AuditLogsPage() {
@@ -304,7 +304,7 @@ export function AuditLogsPage() {
               onPageChange={(_, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10))
+                setRowsPerPage(Number.parseInt(e.target.value, 10))
                 setPage(0)
               }}
               rowsPerPageOptions={[10, 20, 50, 100]}

@@ -2,34 +2,31 @@ import { z } from 'zod'
 import { BID_CONSTANTS } from '../constants'
 
 export const placeBidSchema = z.object({
-  auctionId: z.string().min(1, 'Auction ID is required').uuid('Invalid auction ID'),
+  auctionId: z.uuid({ message: 'Invalid auction ID' }),
   amount: z
     .number()
     .min(
       BID_CONSTANTS.MIN_BID_AMOUNT,
       `Bid amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
     )
-    .max(10_000_000, 'Bid amount cannot exceed $10,000,000')
-    .finite('Bid amount must be a valid number'),
+    .max(10_000_000, 'Bid amount cannot exceed $10,000,000'),
 })
 
 export const createAutoBidSchema = z
   .object({
-    auctionId: z.string().min(1, 'Auction ID is required').uuid('Invalid auction ID'),
+    auctionId: z.uuid({ message: 'Invalid auction ID' }),
     maxAmount: z
       .number()
       .min(
         BID_CONSTANTS.MIN_BID_AMOUNT,
         `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
-      )
-      .finite('Maximum amount must be a valid number'),
+      ),
     bidIncrement: z
       .number()
       .min(
         BID_CONSTANTS.MIN_BID_AMOUNT,
         `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
       )
-      .finite('Increment must be a valid number')
       .optional(),
   })
   .refine((data) => !data.bidIncrement || data.bidIncrement < data.maxAmount, {
@@ -45,7 +42,6 @@ export const updateAutoBidSchema = z
         BID_CONSTANTS.MIN_BID_AMOUNT,
         `Maximum amount must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
       )
-      .finite('Maximum amount must be a valid number')
       .optional(),
     bidIncrement: z
       .number()
@@ -53,7 +49,6 @@ export const updateAutoBidSchema = z
         BID_CONSTANTS.MIN_BID_AMOUNT,
         `Increment must be at least $${BID_CONSTANTS.MIN_BID_AMOUNT}`
       )
-      .finite('Increment must be a valid number')
       .optional(),
   })
   .refine(
@@ -78,7 +73,7 @@ export const retractBidSchema = z.object({
 
 export const setAutoBidSchema = z
   .object({
-    auctionId: z.string().uuid('Invalid auction'),
+    auctionId: z.uuid({ message: 'Invalid auction' }),
     maxAmount: z.number().min(0.01, 'Maximum amount must be greater than 0'),
     incrementAmount: z.number().min(0.01, 'Increment must be greater than 0'),
   })

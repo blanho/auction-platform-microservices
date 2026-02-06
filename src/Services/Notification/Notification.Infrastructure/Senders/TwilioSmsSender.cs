@@ -111,11 +111,6 @@ public class TwilioSmsSender : ISmsSender
                 ex.Message,
                 ex.MoreInfo);
 
-            var isPermanent = ex.Code is
-                21211 or
-                21614 or
-                21408;
-
             return new SmsSendResult(false, Error: $"Twilio error {ex.Code}: {ex.Message}");
         }
         catch (Exception ex)
@@ -125,7 +120,7 @@ public class TwilioSmsSender : ISmsSender
         }
     }
 
-    private string? FormatPhoneNumber(string phone)
+    private static string? FormatPhoneNumber(string phone)
     {
         if (string.IsNullOrEmpty(phone))
             return null;

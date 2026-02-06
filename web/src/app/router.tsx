@@ -66,9 +66,14 @@ const PlatformSettingsPage = lazy(() =>
     default: m.PlatformSettingsPage,
   }))
 )
-const BackgroundJobsPage = lazy(() =>
-  import('@/modules/analytics/pages/BackgroundJobsPage').then((m) => ({
-    default: m.BackgroundJobsPage,
+const JobsPage = lazy(() =>
+  import('@/modules/jobs/pages/JobsPage').then((m) => ({
+    default: m.JobsPage,
+  }))
+)
+const JobDetailPage = lazy(() =>
+  import('@/modules/jobs/pages/JobDetailPage').then((m) => ({
+    default: m.JobDetailPage,
   }))
 )
 
@@ -344,7 +349,15 @@ export const router = createBrowserRouter([
         path: '/admin/jobs',
         element: (
           <ProtectedRoute permissions={['admin:access']}>
-            {withSuspense(BackgroundJobsPage)}
+            {withSuspense(JobsPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/jobs/:jobId',
+        element: (
+          <ProtectedRoute permissions={['admin:access']}>
+            {withSuspense(JobDetailPage)}
           </ProtectedRoute>
         ),
       },

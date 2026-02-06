@@ -265,11 +265,11 @@ function DetailItem({
   icon,
   label,
   value,
-}: {
+}: Readonly<{
   icon: React.ReactNode
   label: string
   value: string
-}) {
+}>) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
       <Box sx={{ mt: 0.3 }}>{icon}</Box>

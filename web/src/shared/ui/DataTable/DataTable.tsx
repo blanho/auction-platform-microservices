@@ -75,7 +75,7 @@ export function DataTable<T extends { id?: string }>({
   sx,
   tableContainerSx,
   animated = true,
-}: DataTableProps<T>) {
+}: Readonly<DataTableProps<T>>) {
   const visibleColumns = useMemo(
     () => columns.filter((col) => !col.hidden),
     [columns]

@@ -21,9 +21,9 @@ public class NotificationRecordService : INotificationRecordService
         return record?.ToDto();
     }
 
-    public async Task<PaginatedResult<NotificationRecordDto>> GetPagedAsync(NotificationRecordFilterDto queryParams, CancellationToken ct = default)
+    public async Task<PaginatedResult<NotificationRecordDto>> GetPagedAsync(NotificationRecordFilterDto filter, CancellationToken ct = default)
     {
-        var result = await _repository.GetPagedAsync(queryParams, ct);
+        var result = await _repository.GetPagedAsync(filter, ct);
 
         return new PaginatedResult<NotificationRecordDto>(
             result.Items.Select(r => r.ToDto()).ToList(),

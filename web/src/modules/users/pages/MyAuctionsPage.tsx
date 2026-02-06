@@ -499,12 +499,14 @@ export function MyAuctionsPage() {
               placeholder="Search auctions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: palette.neutral[500] }} />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: palette.neutral[500] }} />
+                    </InputAdornment>
+                  ),
+                },
               }}
               sx={{ width: { xs: '100%', sm: 250 } }}
             />
@@ -630,7 +632,7 @@ export function MyAuctionsPage() {
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10))
+            setRowsPerPage(Number.parseInt(e.target.value, 10))
             setPage(0)
           }}
           rowsPerPageOptions={[5, 10, 25]}

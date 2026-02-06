@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -39,6 +39,11 @@ export const AutoBidManagementPage = () => {
   const [activeOnly, setActiveOnly] = useState<boolean | undefined>(undefined)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
+  const skeletonKeys = useMemo(
+    () => Array.from({ length: 6 }, () => crypto.randomUUID()),
+    []
+  )
   const [selectedAutoBid, setSelectedAutoBid] = useState<AutoBid | null>(null)
   const [editForm, setEditForm] = useState<UpdateAutoBidRequest>({})
 
@@ -228,8 +233,8 @@ export const AutoBidManagementPage = () => {
 
         {isLoading && (
           <Grid container spacing={3}>
-            {[...Array(6)].map((_, index) => (
-              <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+            {skeletonKeys.map((key) => (
+              <Grid key={key} size={{ xs: 12, sm: 6, md: 4 }}>
                 <Skeleton variant="rounded" height={300} sx={{ borderRadius: 3 }} />
               </Grid>
             ))}
@@ -490,12 +495,14 @@ export const AutoBidManagementPage = () => {
       <Dialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.3)',
+        slotProps={{
+          paper: {
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+            },
           },
         }}
       >
@@ -550,12 +557,14 @@ export const AutoBidManagementPage = () => {
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.3)',
+        slotProps={{
+          paper: {
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 3,
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+            },
           },
         }}
       >

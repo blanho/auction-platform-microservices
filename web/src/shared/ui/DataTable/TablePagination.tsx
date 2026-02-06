@@ -38,7 +38,7 @@ export function TablePagination({
   showPageInfo = true,
   position = 'space-between',
   sx,
-}: TablePaginationProps) {
+}: Readonly<TablePaginationProps>) {
   const handlePageChange = useCallback(
     (_event: React.ChangeEvent<unknown>, newPage: number) => {
       onPageChange(newPage)

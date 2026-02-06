@@ -24,7 +24,7 @@ export const shippingAddressSchema = z.object({
 })
 
 export const createOrderSchema = z.object({
-  auctionId: z.string().uuid('Invalid auction ID'),
+  auctionId: z.uuid({ message: 'Invalid auction ID' }),
   shippingAddress: shippingAddressSchema,
   buyerNotes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
 })

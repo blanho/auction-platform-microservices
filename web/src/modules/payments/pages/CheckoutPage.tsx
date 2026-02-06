@@ -19,6 +19,7 @@ import {
   Stack,
   Chip,
 } from '@mui/material'
+import type { StepIconProps } from '@mui/material/StepIcon'
 import {
   ArrowBack,
   LocalShipping,
@@ -28,6 +29,29 @@ import {
   Lock,
 } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
+function CheckoutStepIcon(props: Readonly<StepIconProps>) {
+  const stepIndex = Number(props.icon) - 1
+  const isActive = props.active || props.completed
+
+  return (
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: isActive ? 'primary.main' : 'grey.300',
+        color: 'white',
+      }}
+    >
+      {stepIndex === 0 && <LocalShipping />}
+      {stepIndex === 1 && <Payment />}
+      {stepIndex === 2 && <CheckCircle />}
+    </Box>
+  )
+}
 import { useForm, Controller } from 'react-hook-form'
 import { InlineAlert } from '@/shared/ui'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -167,24 +191,9 @@ export function CheckoutPage() {
               {steps.map((label, index) => (
                 <Step key={label}>
                   <StepLabel
-                    StepIconComponent={() => (
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: index <= activeStep ? 'primary.main' : 'grey.300',
-                          color: 'white',
-                        }}
-                      >
-                        {index === 0 && <LocalShipping />}
-                        {index === 1 && <Payment />}
-                        {index === 2 && <CheckCircle />}
-                      </Box>
-                    )}
+                    slots={{
+                      stepIcon: CheckoutStepIcon,
+                    }}
                   >
                     {label}
                   </StepLabel>

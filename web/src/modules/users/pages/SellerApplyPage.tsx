@@ -99,8 +99,7 @@ export function SellerApplyPage() {
   })
 
   const onSubmit = (data: SellerFormData) => {
-    const { agreedToTerms, ...submitData } = data
-    void agreedToTerms
+    const { agreedToTerms: _, ...submitData } = data
     applyMutation.mutate(submitData)
   }
 
@@ -202,15 +201,15 @@ export function SellerApplyPage() {
                     Seller Benefits
                   </Typography>
                   <List>
-                    {benefits.map((benefit, index) => (
-                      <ListItem key={index} sx={{ px: 0 }}>
+                    {benefits.map((benefit) => (
+                      <ListItem key={benefit.title} sx={{ px: 0 }}>
                         <ListItemIcon sx={{ color: 'primary.main', minWidth: 44 }}>
                           {benefit.icon}
                         </ListItemIcon>
                         <ListItemText
                           primary={benefit.title}
                           secondary={benefit.description}
-                          primaryTypographyProps={{ fontWeight: 600, variant: 'subtitle2' }}
+                          slotProps={{ primary: { fontWeight: 600, variant: 'subtitle2' } }}
                         />
                       </ListItem>
                     ))}
