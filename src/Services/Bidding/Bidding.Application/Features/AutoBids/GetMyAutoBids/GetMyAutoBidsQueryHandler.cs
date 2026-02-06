@@ -43,10 +43,12 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, Pagin
         var result = await _repository.GetAutoBidsByUserAsync(request.UserId, queryParams, cancellationToken);
 
         var items = new List<MyAutoBidDto>();
+        var auctionIds = result.Items.Select(x => x.AuctionId).Distinct().ToList();
+        var highestBids = await _bidRepository.GetHighestBidsForAuctionsAsync(auctionIds, cancellationToken);
 
         foreach (var autoBid in result.Items)
         {
-            var highestBid = await _bidRepository.GetHighestBidForAuctionAsync(autoBid.AuctionId, cancellationToken);
+            highestBids.TryGetValue(autoBid.AuctionId, out var highestBid);
             var isWinning = highestBid?.BidderId == autoBid.UserId;
             
             items.Add(new MyAutoBidDto

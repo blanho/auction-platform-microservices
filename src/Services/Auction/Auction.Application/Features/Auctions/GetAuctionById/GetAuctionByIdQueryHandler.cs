@@ -2,18 +2,18 @@ using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 namespace Auctions.Application.Queries.GetAuctionById;
 
 public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, AuctionDto>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetAuctionByIdQueryHandler> _logger;
 
     public GetAuctionByIdQueryHandler(
-        IAuctionRepository repository,
+        IAuctionReadRepository repository,
         IMapper mapper,
         ILogger<GetAuctionByIdQueryHandler> logger)
     {

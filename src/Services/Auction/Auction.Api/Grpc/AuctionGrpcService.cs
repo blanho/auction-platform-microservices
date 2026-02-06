@@ -6,12 +6,14 @@ using MediatR;
 namespace Auctions.Api.Grpc;
 
 public partial class AuctionGrpcService(
-    IAuctionRepository auctionRepository,
+    IAuctionReadRepository auctionReadRepository,
+    IAuctionWriteRepository auctionWriteRepository,
     IMediator mediator,
     ILogger<AuctionGrpcService> logger)
     : AuctionGrpc.AuctionGrpcBase
 {
-    private readonly IAuctionRepository _auctionRepository = auctionRepository;
+    private readonly IAuctionReadRepository _auctionReadRepository = auctionReadRepository;
+    private readonly IAuctionWriteRepository _auctionWriteRepository = auctionWriteRepository;
     private readonly IMediator _mediator = mediator;
     private readonly ILogger<AuctionGrpcService> _logger = logger;
 }

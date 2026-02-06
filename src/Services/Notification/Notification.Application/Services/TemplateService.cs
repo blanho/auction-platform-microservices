@@ -3,6 +3,7 @@ using Notification.Application.DTOs;
 using Notification.Application.Errors;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
+using IUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
 
 namespace Notification.Application.Services;
 

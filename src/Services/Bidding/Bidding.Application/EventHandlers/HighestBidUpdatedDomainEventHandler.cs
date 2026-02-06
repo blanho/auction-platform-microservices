@@ -24,14 +24,15 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
             notification.AuctionId,
             notification.NewHighestAmount);
 
-        await _eventPublisher.PublishAsync(new BidPlacedEvent
+        await _eventPublisher.PublishAsync(new HighestBidUpdatedEvent
         {
             Id = notification.BidId,
             AuctionId = notification.AuctionId,
             BidderId = notification.BidderId,
-            Bidder = notification.BidderUsername,
+            BidderUsername = notification.BidderUsername,
+            NewHighestAmount = notification.NewHighestAmount,
+            PreviousHighestAmount = notification.PreviousHighestAmount,
             BidTime = DateTimeOffset.UtcNow,
-            BidAmount = notification.NewHighestAmount,
             BidStatus = "Accepted"
         }, cancellationToken);
 

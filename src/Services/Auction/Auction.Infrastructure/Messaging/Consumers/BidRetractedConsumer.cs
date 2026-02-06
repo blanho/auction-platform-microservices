@@ -6,16 +6,19 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BidRetractedConsumer> _logger;
 
     public BidRetractedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<BidRetractedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -27,7 +30,7 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
             "Consuming BidRetracted event for auction {AuctionId}",
             message.AuctionId);
 
-        var auction = await _repository.GetByIdAsync(message.AuctionId, context.CancellationToken);
+        var auction = await _readRepository.GetByIdAsync(message.AuctionId, context.CancellationToken);
         if (auction == null)
         {
             _logger.LogWarning("Auction {AuctionId} not found", message.AuctionId);
@@ -54,7 +57,7 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
                 message.AuctionId);
         }
 
-        await _repository.UpdateAsync(auction, context.CancellationToken);
+        await _writeRepository.UpdateAsync(auction, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
     }
 }

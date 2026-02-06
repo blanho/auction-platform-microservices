@@ -1,3 +1,4 @@
+using Common.Contracts.Events;
 using NotificationService.Contracts.Enums;
 
 namespace NotificationService.Contracts.Events;

@@ -1,8 +1,8 @@
 #nullable enable
+using Auctions.Api.Extensions;
 using Auctions.Application.Features.Categories.BulkUpdateCategories;
 using Auctions.Application.Features.Categories.CreateCategory;
 using Auctions.Application.Features.Categories.DeleteCategory;
-using Auctions.Application.Features.Categories.ImportCategories;
 using Auctions.Application.Features.Categories.UpdateCategory;
 using Auctions.Application.Features.Categories.GetCategories;
 using Auctions.Application.Features.Categories.GetCategoryById;
@@ -57,12 +57,6 @@ public class CategoryEndpoints : ICarterModule
             .WithMetadata(new RequireAdminAttribute())
             .Produces<int>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
-
-        group.MapPost("/import", ImportCategories)
-            .WithName("ImportCategories")
-            .WithMetadata(new RequireAdminAttribute())
-            .Produces<ImportCategoriesResultDto>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> GetCategories(
@@ -74,9 +68,7 @@ public class CategoryEndpoints : ICarterModule
         var query = new GetCategoriesQuery(activeOnly, includeCount);
         var result = await mediator.Send(query, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateCategory(
@@ -96,9 +88,8 @@ public class CategoryEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.CreatedAtRoute("GetCategories", new { id = result.Value!.Id }, result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(category => 
+            Results.CreatedAtRoute("GetCategories", new { id = category.Id }, category));
     }
 
     private static async Task<IResult> UpdateCategory(
@@ -120,14 +111,7 @@ public class CategoryEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Category.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> DeleteCategory(
@@ -138,14 +122,7 @@ public class CategoryEndpoints : ICarterModule
         var command = new DeleteCategoryCommand(id);
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Category.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.NoContent();
+        return result.ToNoContentResult();
     }
 
     private static async Task<IResult> BulkUpdateCategories(
@@ -156,29 +133,9 @@ public class CategoryEndpoints : ICarterModule
         var command = new BulkUpdateCategoriesCommand(dto.CategoryIds, dto.IsActive);
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
-    private static async Task<IResult> ImportCategories(
-        ImportCategoriesDto dto,
-        IMediator mediator,
-        CancellationToken ct)
-    {
-        var command = new ImportCategoriesCommand(dto.Categories);
-        var result = await mediator.Send(command, ct);
-
-        if (!result.IsSuccess)
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        return Results.Ok(new ImportCategoriesResultDto
-        {
-            SuccessCount = result.Value!.SuccessCount,
-            FailureCount = result.Value.FailureCount,
-            Errors = result.Value.Errors
-        });
-    }
 
     private static async Task<IResult> GetCategoryById(
         Guid id,
@@ -188,14 +145,7 @@ public class CategoryEndpoints : ICarterModule
         var query = new GetCategoryByIdQuery(id);
         var result = await mediator.Send(query, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Category.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 }
 

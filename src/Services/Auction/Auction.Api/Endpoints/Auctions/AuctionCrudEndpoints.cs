@@ -1,5 +1,4 @@
 #nullable enable
-using Auctions.Api.Extensions;
 using Auctions.Application.Commands.ActivateAuction;
 using Auctions.Application.Commands.CreateAuction;
 using Auctions.Application.Commands.DeactivateAuction;
@@ -7,9 +6,9 @@ using Auctions.Application.Commands.DeleteAuction;
 using Auctions.Application.Commands.UpdateAuction;
 using Auctions.Application.DTOs;
 using Auctions.Application.DTOs.Auctions;
-using Auctions.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Helpers;
 using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -101,13 +100,9 @@ public class AuctionCrudEndpoints : ICarterModule
         UpdateAuctionDto dto,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
-        
-        if (error != null) return error;
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
         var command = new UpdateAuctionCommand(
             id,
@@ -115,7 +110,8 @@ public class AuctionCrudEndpoints : ICarterModule
             dto.Description,
             dto.Condition,
             dto.YearManufactured,
-            dto.Attributes);
+            dto.Attributes,
+            userId);
 
         var result = await mediator.Send(command, ct);
 
@@ -128,15 +124,11 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Delete, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-        
-        var command = new DeleteAuctionCommand(id);
+        var command = new DeleteAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
@@ -148,15 +140,11 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-
-        var command = new ActivateAuctionCommand(id);
+        var command = new ActivateAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
@@ -168,15 +156,11 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-
-        var command = new DeactivateAuctionCommand(id);
+        var command = new DeactivateAuctionCommand(id, userId, null);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess

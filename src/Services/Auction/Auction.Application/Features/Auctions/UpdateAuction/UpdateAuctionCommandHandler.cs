@@ -2,33 +2,30 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.UpdateAuction;
 
 public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand, bool>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly ILogger<UpdateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ICacheService _cache;
     private readonly ISanitizationService _sanitizationService;
 
     public UpdateAuctionCommandHandler(
-        IAuctionRepository repository,
+        IAuctionWriteRepository repository,
         ILogger<UpdateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        ICacheService cache,
         ISanitizationService sanitizationService)
     {
         _repository = repository;
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _cache = cache;
         _sanitizationService = sanitizationService;
     }
 
@@ -42,6 +39,13 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         {
             _logger.LogWarning("Auction {AuctionId} not found for update", request.Id);
             return Result.Failure<bool>(AuctionErrors.Auction.NotFoundById(request.Id));
+        }
+
+        if (auction.SellerId != request.UserId)
+        {
+            _logger.LogWarning("User {UserId} attempted to update auction {AuctionId} owned by {OwnerId}", 
+                request.UserId, request.Id, auction.SellerId);
+            return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to update this auction"));
         }
 
         var modifiedFields = new List<string>();
@@ -84,7 +88,6 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         await _repository.UpdateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.RemoveAsync(CacheKeys.Auction(request.Id), cancellationToken);
 
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));

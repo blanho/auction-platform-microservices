@@ -3,19 +3,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
-/// Consumes BidPlacedEvent to update auction's current high bid.
 public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BidPlacedConsumer> _logger;
 
     public BidPlacedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<BidPlacedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -27,7 +29,7 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
             "Consuming BidPlacedEvent {EventId} for auction {AuctionId}, Amount: {Amount}, Status: {Status}",
             message.Id, message.AuctionId, message.BidAmount, message.BidStatus);
 
-        var auction = await _repository.GetByIdAsync(message.AuctionId, context.CancellationToken);
+        var auction = await _readRepository.GetByIdAsync(message.AuctionId, context.CancellationToken);
         if (auction == null)
         {
             _logger.LogWarning("Auction {AuctionId} not found for event {EventId}", message.AuctionId, message.Id);
@@ -51,7 +53,7 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
         }
 
         auction.UpdateHighBid(message.BidAmount, message.BidderId, message.Bidder);
-        await _repository.UpdateAsync(auction, context.CancellationToken);
+        await _writeRepository.UpdateAsync(auction, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation(

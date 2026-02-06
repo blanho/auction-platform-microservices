@@ -1,4 +1,5 @@
 using Bidding.Api.Extensions.DependencyInjection;
+using Bidding.Domain.Constants;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
 using BuildingBlocks.Application.Extensions;
@@ -10,6 +11,7 @@ using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
 using Carter;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,7 @@ app.MapCustomHealthChecks();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseAccessAuthorization();
 app.MapCarter();
 

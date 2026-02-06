@@ -23,7 +23,7 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
         _logger.LogInformation("Cancelling auto-bid {AutoBidId} by user {UserId}",
             request.AutoBidId, request.UserId);
 
-        var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
+        var autoBid = await _repository.GetByIdForUpdateAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
         {
             return Result.Failure<CancelAutoBidResult>(BiddingErrors.AutoBid.NotFound);

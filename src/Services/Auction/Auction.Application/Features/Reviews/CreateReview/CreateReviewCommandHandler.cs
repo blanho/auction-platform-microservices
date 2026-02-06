@@ -5,21 +5,21 @@ using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Features.Reviews.CreateReview;
 
 public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, ReviewDto>
 {
     private readonly IReviewRepository _reviewRepository;
-    private readonly IAuctionRepository _auctionRepository;
+    private readonly IAuctionReadRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ISanitizationService _sanitizationService;
 
     public CreateReviewCommandHandler(
         IReviewRepository reviewRepository,
-        IAuctionRepository auctionRepository,
+        IAuctionReadRepository auctionRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ISanitizationService sanitizationService)

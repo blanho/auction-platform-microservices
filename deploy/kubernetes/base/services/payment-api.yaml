@@ -17,7 +17,8 @@ spec:
         app: payment-api
         tier: backend
     spec:
-      serviceAccountName: default
+      serviceAccountName: auction-service-account
+      priorityClassName: auction-high
       terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true

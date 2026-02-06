@@ -17,7 +17,8 @@ spec:
         app: analytics-api
         tier: backend
     spec:
-      serviceAccountName: default
+      serviceAccountName: auction-service-account
+      priorityClassName: auction-low
       terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true

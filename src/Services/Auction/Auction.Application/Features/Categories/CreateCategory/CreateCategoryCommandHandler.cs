@@ -3,8 +3,8 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Features.Categories.CreateCategory;
 

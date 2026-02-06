@@ -19,10 +19,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common.Contracts\Common.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="Grpc\auctions.proto" GrpcServices="None" />
     <Protobuf Include="Grpc\auction_validation.proto" GrpcServices="None" />
     <Protobuf Include="Grpc\auction_stats.proto" GrpcServices="None" />
     <Protobuf Include="Grpc\user_analytics.proto" GrpcServices="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Events\IVersionedEvent.cs" />
   </ItemGroup>
 
 </Project>

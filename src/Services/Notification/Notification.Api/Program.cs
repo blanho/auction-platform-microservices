@@ -4,6 +4,7 @@ using Notification.Api.Services;
 using Notification.Application.Interfaces;
 using Notification.Infrastructure.Extensions;
 using Notification.Infrastructure.Persistence;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Authorization;

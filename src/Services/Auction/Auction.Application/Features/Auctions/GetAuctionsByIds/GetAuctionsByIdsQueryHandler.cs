@@ -1,18 +1,18 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Queries.GetAuctionsByIds;
 
 public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery, IEnumerable<AuctionDto>>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetAuctionsByIdsQueryHandler> _logger;
 
     public GetAuctionsByIdsQueryHandler(
-        IAuctionRepository repository,
+        IAuctionReadRepository repository,
         IMapper mapper,
         ILogger<GetAuctionsByIdsQueryHandler> logger)
     {

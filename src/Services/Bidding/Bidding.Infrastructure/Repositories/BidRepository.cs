@@ -63,6 +63,13 @@ namespace Bidding.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
+        public async Task<Bid?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bids
+                .Where(x => !x.IsDeleted)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
         public async Task<Bid> CreateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
             bid.CreatedAt = _dateTime.UtcNow;
@@ -178,6 +185,46 @@ namespace Bidding.Infrastructure.Repositories
                 .OrderByDescending(x => x.Amount)
                 .ThenByDescending(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<Dictionary<Guid, Bid>> GetHighestBidsForAuctionsAsync(IEnumerable<Guid> auctionIds, CancellationToken cancellationToken = default)
+        {
+            var auctionIdList = auctionIds.Distinct().ToList();
+            if (auctionIdList.Count == 0)
+            {
+                return new Dictionary<Guid, Bid>();
+            }
+
+            var highestBids = await _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && auctionIdList.Contains(x.AuctionId) && x.Status == BidStatus.Accepted)
+                .GroupBy(x => x.AuctionId)
+                .Select(g => g
+                    .OrderByDescending(b => b.Amount)
+                    .ThenByDescending(b => b.BidTime)
+                    .First())
+                .ToListAsync(cancellationToken);
+
+            return highestBids.ToDictionary(x => x.AuctionId, x => x);
+        }
+
+        public async Task<int> GetBidCountForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
+                .CountAsync(cancellationToken);
+        }
+
+        public async Task<int> GetBidPositionAsync(Guid auctionId, decimal amount, DateTimeOffset bidTime, CancellationToken cancellationToken = default)
+        {
+            var higherCount = await _context.Bids
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
+                .Where(x => x.Amount > amount || (x.Amount == amount && x.BidTime > bidTime))
+                .CountAsync(cancellationToken);
+
+            return higherCount + 1;
         }
 
         public async Task<Bid?> GetSecondHighestBidForAuctionAsync(Guid auctionId, Guid excludeBidId, CancellationToken cancellationToken = default)

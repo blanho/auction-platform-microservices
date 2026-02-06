@@ -17,7 +17,8 @@ spec:
         app: gateway-api
         tier: frontend
     spec:
-      serviceAccountName: default
+      serviceAccountName: auction-service-account
+      priorityClassName: auction-critical
       terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true

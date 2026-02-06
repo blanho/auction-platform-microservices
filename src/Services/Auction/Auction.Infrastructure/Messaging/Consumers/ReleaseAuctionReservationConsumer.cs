@@ -8,18 +8,21 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReservation>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
+    private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<ReleaseAuctionReservationConsumer> _logger;
 
     public ReleaseAuctionReservationConsumer(
-        IAuctionRepository repository,
-        IUnitOfWork unitOfWork,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
+        BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<ReleaseAuctionReservationConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
         _logger = logger;
@@ -34,7 +37,7 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
 
         try
         {
-            var auction = await _repository.GetByIdAsync(message.AuctionId);
+            var auction = await _readRepository.GetByIdAsync(message.AuctionId);
 
             if (auction == null)
             {
@@ -54,7 +57,7 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
             if (auction.Status == Status.ReservedForBuyNow)
             {
                 auction.ChangeStatus(Status.Live);
-                await _repository.UpdateAsync(auction, context.CancellationToken);
+                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
                 await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
                 _logger.LogInformation(

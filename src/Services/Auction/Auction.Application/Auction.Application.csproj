@@ -11,7 +11,6 @@
     <ProjectReference Include="..\Auction.Domain\Auction.Domain.csproj" />
     <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

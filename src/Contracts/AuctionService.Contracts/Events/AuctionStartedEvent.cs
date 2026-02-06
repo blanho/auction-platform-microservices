@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace AuctionService.Contracts.Events;
 
 public record AuctionStartedEvent : IVersionedEvent
@@ -6,7 +8,7 @@ public record AuctionStartedEvent : IVersionedEvent
     public Guid AuctionId { get; init; }
     public string Seller { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
-    public DateTime StartTime { get; init; }
-    public DateTime EndTime { get; init; }
+    public DateTimeOffset StartTime { get; init; }
+    public DateTimeOffset EndTime { get; init; }
     public decimal ReservePrice { get; init; }
 }

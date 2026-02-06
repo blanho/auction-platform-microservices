@@ -12,6 +12,7 @@ using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using Carter;
 using MediatR;
@@ -89,12 +90,8 @@ public class BidEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Created($"/api/v1/bids/auction/{dto.AuctionId}", result.Value);
+        return result.ToApiResult(bid => 
+            Results.Created($"/api/v1/bids/auction/{dto.AuctionId}", bid));
     }
 
     private static async Task<IResult> GetBidById(
@@ -105,12 +102,7 @@ public class BidEndpoints : ICarterModule
         var query = new GetBidByIdQuery(bidId);
         var result = await mediator.Send(query, ct);
 
-        if (!result.IsSuccess || result.Value == null)
-        {
-            return Results.NotFound(ProblemDetailsHelper.NotFound("Bid", bidId));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetBidsForAuction(
@@ -120,7 +112,7 @@ public class BidEndpoints : ICarterModule
     {
         var query = new GetBidsForAuctionQuery(auctionId);
         var result = await mediator.Send(query, ct);
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetMyBids(
@@ -131,7 +123,7 @@ public class BidEndpoints : ICarterModule
         var username = UserHelper.GetUsername(context.User);
         var query = new GetMyBidsQuery(username);
         var result = await mediator.Send(query, ct);
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetWinningBids(
@@ -146,13 +138,7 @@ public class BidEndpoints : ICarterModule
         pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
         var query = new GetWinningBidsQuery(userId, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
-
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetBidHistory(
@@ -178,13 +164,7 @@ public class BidEndpoints : ICarterModule
             Page: page,
             PageSize: pageSize);
         var result = await mediator.Send(query, ct);
-
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> RetractBid(
@@ -197,15 +177,7 @@ public class BidEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(context.User);
         var command = new RetractBidCommand(bidId, userId, request.Reason);
         var result = await mediator.Send(command, ct);
-
-        if (!result.IsSuccess)
-        {
-            if (result.Error == BiddingErrors.Bid.NotFound)
-                return Results.NotFound(ProblemDetailsHelper.NotFound("Bid", bidId));
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static IResult GetBidIncrementInfo(decimal currentBid)

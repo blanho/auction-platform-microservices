@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace IdentityService.Contracts.Events;
 
 public record TwoFactorDisabledEvent : IVersionedEvent

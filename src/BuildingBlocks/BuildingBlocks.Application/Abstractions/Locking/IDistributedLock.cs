@@ -1,4 +1,4 @@
-namespace BuildingBlocks.Infrastructure.Locking;
+namespace BuildingBlocks.Application.Abstractions.Locking;
 
 public interface IDistributedLock
 {

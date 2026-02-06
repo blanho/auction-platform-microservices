@@ -1,3 +1,4 @@
+using System.Text;
 using Auctions.Api.Grpc;
 using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Grpc;
@@ -13,7 +14,9 @@ public static class AuthenticationExtensions
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        var identityAuthority = configuration["Identity:Authority"];
+        var issuer = configuration["Identity:IssuerUri"] ?? configuration["Identity:Authority"] ?? "http://localhost:5001";
+        var secretKey = configuration["Identity:SecretKey"]
+            ?? throw new InvalidOperationException("Identity:SecretKey configuration is required");
         
         services.AddAuthentication(options =>
         {
@@ -21,16 +24,17 @@ public static class AuthenticationExtensions
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
-            options.Authority = identityAuthority;
             options.RequireHttpsMetadata = !environment.IsDevelopment();
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = identityAuthority,
+                ValidIssuer = issuer,
                 ValidateAudience = true,
                 ValidAudience = "auctionApp",
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(1),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                ClockSkew = TimeSpan.Zero,
                 NameClaimType = "name",
                 RoleClaimType = "role"
             };
@@ -52,13 +56,38 @@ public static class AuthenticationExtensions
         })
         .ConfigurePrimaryHttpMessageHandler(() =>
         {
-            var handler = new HttpClientHandler();
+            var handler = new SocketsHttpHandler
+            {
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+                KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+                EnableMultipleHttp2Connections = true,
+                ConnectTimeout = TimeSpan.FromSeconds(5)
+            };
             if (environment.IsDevelopment())
             {
-                handler.ServerCertificateCustomValidationCallback =
-                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
             }
             return handler;
+        })
+        .ConfigureChannel(options =>
+        {
+            options.MaxRetryAttempts = 3;
+            options.ServiceConfig = new Grpc.Net.Client.Configuration.ServiceConfig
+            {
+                MethodConfigs = { new Grpc.Net.Client.Configuration.MethodConfig
+                {
+                    Names = { Grpc.Net.Client.Configuration.MethodName.Default },
+                    RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
+                    {
+                        MaxAttempts = 3,
+                        InitialBackoff = TimeSpan.FromMilliseconds(500),
+                        MaxBackoff = TimeSpan.FromSeconds(5),
+                        BackoffMultiplier = 2,
+                        RetryableStatusCodes = { Grpc.Core.StatusCode.Unavailable, Grpc.Core.StatusCode.DeadlineExceeded }
+                    }
+                }}
+            };
         });
 
         services.AddScoped<IAuctionGrpcClient, AuctionGrpcClient>();

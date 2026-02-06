@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace BidService.Contracts.Events;
 
 public record BidEscrowConfirmedEvent : IVersionedEvent
@@ -9,5 +11,5 @@ public record BidEscrowConfirmedEvent : IVersionedEvent
     public bool Success { get; init; }
     public string? FailureReason { get; init; }
     public decimal HeldAmount { get; init; }
-    public DateTime ConfirmedAt { get; init; }
+    public DateTimeOffset ConfirmedAt { get; init; }
 }

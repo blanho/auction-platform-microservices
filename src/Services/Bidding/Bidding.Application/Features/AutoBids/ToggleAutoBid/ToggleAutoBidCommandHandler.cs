@@ -23,7 +23,7 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
         _logger.LogInformation("Toggling auto-bid {AutoBidId} to {State} by user {UserId}",
             request.AutoBidId, request.Activate ? "active" : "inactive", request.UserId);
 
-        var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
+        var autoBid = await _repository.GetByIdForUpdateAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
         {
             return Result.Failure<ToggleAutoBidResult>(BiddingErrors.AutoBid.NotFound);

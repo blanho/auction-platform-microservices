@@ -4,14 +4,14 @@ using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.CreateAuction;
 
 public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand, AuctionDto>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
@@ -19,7 +19,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly ISanitizationService _sanitizationService;
 
     public CreateAuctionCommandHandler(
-        IAuctionRepository repository,
+        IAuctionWriteRepository repository,
         IMapper mapper,
         ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,

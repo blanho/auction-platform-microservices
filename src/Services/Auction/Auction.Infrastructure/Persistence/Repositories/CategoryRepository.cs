@@ -79,6 +79,19 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Category>> GetByIdsForUpdateAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var idList = ids.Distinct().ToList();
+            if (idList.Count == 0)
+            {
+                return new List<Category>();
+            }
+
+            return await _context.Categories
+                .Where(x => !x.IsDeleted && idList.Contains(x.Id))
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Categories.Where(x => !x.IsDeleted && x.Slug == slug);

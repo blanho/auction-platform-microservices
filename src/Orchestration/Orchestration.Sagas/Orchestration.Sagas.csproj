@@ -36,12 +36,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- BuildingBlocks for MassTransit extensions -->
     <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    
-    <!-- Contracts for events being orchestrated -->
-    <ProjectReference Include="..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
-    <ProjectReference Include="..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\OrchestrationService.Contracts\OrchestrationService.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="AuctionCompletion\Events\AuctionCompletionSagaEvents.cs" />
+    <Compile Remove="BuyNow\Events\BuyNowSagaEvents.cs" />
   </ItemGroup>
 
 </Project>

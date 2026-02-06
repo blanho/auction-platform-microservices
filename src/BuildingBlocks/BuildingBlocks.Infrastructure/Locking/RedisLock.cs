@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using BuildingBlocks.Application.Abstractions.Locking;
 
 namespace BuildingBlocks.Infrastructure.Locking;
 

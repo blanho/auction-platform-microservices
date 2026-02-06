@@ -9,18 +9,21 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<UserDeletedConsumer> _logger;
 
     public UserDeletedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         ILogger<UserDeletedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _logger = logger;
@@ -34,7 +37,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             message.UserId,
             message.Username);
 
-        var activeAuctions = await _repository.GetActiveAuctionsBySellerIdAsync(
+        var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(
             Guid.Parse(message.UserId),
             context.CancellationToken);
 
@@ -53,7 +56,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
                 }
 
                 auction.Cancel("Seller account deleted");
-                await _repository.UpdateAsync(auction, context.CancellationToken);
+                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
                 
                 _logger.LogWarning(
                     "Cancelled auction {AuctionId} ({Title}) - Status: {Status}, Had bids: {HadBids}",
@@ -81,7 +84,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
                 affectedBidders.Count);
         }
 
-        var allAuctions = await _repository.GetAllBySellerIdAsync(
+        var allAuctions = await _readRepository.GetAllBySellerIdAsync(
             Guid.Parse(message.UserId),
             context.CancellationToken);
 
@@ -94,7 +97,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             foreach (var auction in finishedAuctions)
             {
                 auction.UpdateSellerUsername($"[Deleted User - {message.Username}]");
-                await _repository.UpdateAsync(auction, context.CancellationToken);
+                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
             }
 
             _logger.LogInformation(

@@ -19,6 +19,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Common.Contracts\Common.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Events\IVersionedEvent.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="Grpc\user_stats.proto" GrpcServices="None" />
   </ItemGroup>
 

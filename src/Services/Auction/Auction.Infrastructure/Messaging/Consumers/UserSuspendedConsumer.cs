@@ -9,18 +9,21 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<UserSuspendedConsumer> _logger;
 
     public UserSuspendedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         ILogger<UserSuspendedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _logger = logger;
@@ -35,7 +38,7 @@ public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
             message.Username,
             message.Reason);
 
-        var activeAuctions = await _repository.GetActiveAuctionsBySellerIdAsync(
+        var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(
             Guid.Parse(message.UserId),
             context.CancellationToken);
 
@@ -54,7 +57,7 @@ public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
             var currentWinner = auction.WinnerUsername;
 
             auction.Cancel($"Seller account suspended: {message.Reason}");
-            await _repository.UpdateAsync(auction, context.CancellationToken);
+            await _writeRepository.UpdateAsync(auction, context.CancellationToken);
             
             cancelledCount++;
 

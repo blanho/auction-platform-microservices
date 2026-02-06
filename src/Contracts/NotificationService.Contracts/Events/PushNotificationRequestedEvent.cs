@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace NotificationService.Contracts.Events;
 
 public record PushNotificationRequestedEvent : IVersionedEvent

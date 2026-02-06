@@ -1,5 +1,4 @@
 
-global using BuildingBlocks.Infrastructure.Repository;
 global using BuildingBlocks.Application.Abstractions;
 
 global using Bidding.Domain.Entities;

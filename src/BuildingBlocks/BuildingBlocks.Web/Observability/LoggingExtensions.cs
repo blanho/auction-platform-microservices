@@ -258,15 +258,7 @@ public static class CorrelationIdEnricher
 {
     public static LoggerConfiguration WithCorrelationId(this LoggerEnrichmentConfiguration enrichConfig)
     {
-        return enrichConfig.With<CorrelationIdLogEnricher>();
-    }
-}
-
-public class CorrelationIdLogEnricher : Serilog.Core.ILogEventEnricher
-{
-    public void Enrich(LogEvent logEvent, Serilog.Core.ILogEventPropertyFactory propertyFactory)
-    {
-
+        return enrichConfig.FromLogContext();
     }
 }
 

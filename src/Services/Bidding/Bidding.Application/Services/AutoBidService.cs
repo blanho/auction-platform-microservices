@@ -1,6 +1,8 @@
-using Microsoft.Extensions.Logging;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Application.Paging;
-using BuildingBlocks.Infrastructure.Repository;
+using Microsoft.Extensions.Logging;
 
 namespace Bidding.Application.Services
 {

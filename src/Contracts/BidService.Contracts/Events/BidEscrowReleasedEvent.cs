@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace BidService.Contracts.Events;
 
 public record BidEscrowReleasedEvent : IVersionedEvent
@@ -7,5 +9,5 @@ public record BidEscrowReleasedEvent : IVersionedEvent
     public string Bidder { get; init; } = string.Empty;
     public decimal ReleasedAmount { get; init; }
     public string Reason { get; init; } = string.Empty;
-    public DateTime ReleasedAt { get; init; }
+    public DateTimeOffset ReleasedAt { get; init; }
 }

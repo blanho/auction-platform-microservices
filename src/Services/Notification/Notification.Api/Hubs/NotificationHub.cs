@@ -48,12 +48,24 @@ public class NotificationHub : Hub
 
     public async Task JoinUserGroup(string userId)
     {
+        var authenticatedUserId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                ?? Context.User?.FindFirst("sub")?.Value;
+
+        if (authenticatedUserId != userId)
+            throw new HubException("Cannot join another user's notification group.");
+
         await Groups.AddToGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} joined user group {UserId}", Context.ConnectionId, userId);
     }
 
     public async Task LeaveUserGroup(string userId)
     {
+        var authenticatedUserId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                ?? Context.User?.FindFirst("sub")?.Value;
+
+        if (authenticatedUserId != userId)
+            throw new HubException("Cannot leave another user's notification group.");
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} left user group {UserId}", Context.ConnectionId, userId);
     }

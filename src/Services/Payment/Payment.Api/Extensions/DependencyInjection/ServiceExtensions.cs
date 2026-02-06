@@ -5,12 +5,12 @@ using Payment.Infrastructure.Persistence;
 using Payment.Infrastructure.Repositories;
 using Payment.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Extensions;
 using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Api.Extensions.DependencyInjection;
 

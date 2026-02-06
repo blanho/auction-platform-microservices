@@ -145,15 +145,13 @@ public class ChangeTrackerAuditCollector : IAuditCollector
         return changedProperties;
     }
 
-    private static bool ShouldAuditProperty(string propertyName)
+    private static readonly HashSet<string> ExcludedProperties = new(StringComparer.OrdinalIgnoreCase)
     {
-        var excludedProperties = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "DomainEvents",
-            "RowVersion",
-            "ConcurrencyStamp"
-        };
+        "DomainEvents",
+        "RowVersion",
+        "ConcurrencyStamp"
+    };
 
-        return !excludedProperties.Contains(propertyName);
-    }
+    private static bool ShouldAuditProperty(string propertyName)
+        => !ExcludedProperties.Contains(propertyName);
 }

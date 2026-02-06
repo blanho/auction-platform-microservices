@@ -1,5 +1,5 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Abstractions.Locking;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.Errors;
@@ -76,7 +76,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (Exception ex) when (ex.GetType().Name.Contains("DbUpdate"))
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict holding funds for reference {ReferenceId}. Lock may have been released prematurely.",

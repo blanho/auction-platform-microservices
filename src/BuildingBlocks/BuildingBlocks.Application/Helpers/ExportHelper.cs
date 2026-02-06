@@ -5,6 +5,8 @@ namespace BuildingBlocks.Application.Helpers;
 
 public static class ExportHelper
 {
+    private static readonly JsonSerializerOptions BaseJsonOptions = new();
+
     public static byte[] GenerateCsv<T>(IEnumerable<T> items, string[] headers, Func<T, string?[]> valueSelector)
     {
         var sb = new StringBuilder();
@@ -22,10 +24,12 @@ public static class ExportHelper
 
     public static byte[] GenerateJson<T>(IEnumerable<T> items, bool writeIndented = true)
     {
-        return JsonSerializer.SerializeToUtf8Bytes(items, new JsonSerializerOptions
+        var options = new JsonSerializerOptions(BaseJsonOptions)
         {
             WriteIndented = writeIndented
-        });
+        };
+
+        return JsonSerializer.SerializeToUtf8Bytes(items, options);
     }
 
     public static string EscapeCsvValue(string? value)

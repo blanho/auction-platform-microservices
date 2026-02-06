@@ -24,10 +24,11 @@ public class CheckAuctionFinishedJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
+        var readRepository = scopedProvider.GetRequiredService<IAuctionReadRepository>();
+        var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
 
-        var finishedAuctions = await repository.GetFinishedAuctionsAsync(cancellationToken);
+        var finishedAuctions = await readRepository.GetFinishedAuctionsAsync(cancellationToken);
 
         if (finishedAuctions.Count == 0)
         {
@@ -52,7 +53,7 @@ public class CheckAuctionFinishedJob : BaseJob
                 var itemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice;
                 auction.Finish(auction.WinnerId, auction.WinnerUsername, auction.CurrentHighBid, itemSold);
 
-                await repository.UpdateAsync(auction, cancellationToken);
+                await writeRepository.UpdateAsync(auction, cancellationToken);
                 processedCount++;
 
                 Logger.LogInformation(

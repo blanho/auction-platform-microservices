@@ -1,6 +1,8 @@
 using Auctions.Api.Extensions.DependencyInjection;
 using Auctions.Api.Endpoints;
 using Auctions.Infrastructure.Extensions;
+using BuildingBlocks.Application.Abstractions;
+using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Infrastructure.Extensions;

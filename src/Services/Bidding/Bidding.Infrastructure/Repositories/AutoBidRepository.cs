@@ -63,6 +63,13 @@ public class AutoBidRepository : IAutoBidRepository
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
+    public async Task<AutoBid?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.AutoBids
+            .Where(x => !x.IsDeleted)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
     public async Task<AutoBid> CreateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
         autoBid.CreatedAt = _dateTime.UtcNow;

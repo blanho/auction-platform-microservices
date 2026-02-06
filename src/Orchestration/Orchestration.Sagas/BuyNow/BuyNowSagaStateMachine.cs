@@ -1,5 +1,5 @@
 using MassTransit;
-using Orchestration.Sagas.BuyNow.Events;
+using OrchestrationService.Contracts.Events;
 
 namespace Orchestration.Sagas.BuyNow;
 

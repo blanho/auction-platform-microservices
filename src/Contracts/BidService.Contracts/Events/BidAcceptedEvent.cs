@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace BidService.Contracts.Events;
 
 public record BidAcceptedEvent : IVersionedEvent

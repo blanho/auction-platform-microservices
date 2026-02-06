@@ -3,6 +3,7 @@ using BuildingBlocks.Web.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Serilog.Context;
 
 namespace BuildingBlocks.Web.Middleware;
 
@@ -23,7 +24,10 @@ public class CorrelationIdMiddleware
         correlationIdProvider.Set(correlationId);
         context.Response.Headers[HeaderConstants.CorrelationId] = correlationId;
 
-        await _next(context);
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await _next(context);
+        }
     }
 }
 

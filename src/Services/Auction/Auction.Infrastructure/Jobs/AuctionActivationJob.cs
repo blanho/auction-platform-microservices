@@ -25,10 +25,11 @@ public class AuctionActivationJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
+        var readRepository = scopedProvider.GetRequiredService<IAuctionReadRepository>();
+        var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
 
-        var scheduledAuctions = await repository.GetScheduledAuctionsToActivateAsync(cancellationToken);
+        var scheduledAuctions = await readRepository.GetScheduledAuctionsToActivateAsync(cancellationToken);
 
         if (scheduledAuctions.Count == 0)
         {
@@ -44,7 +45,7 @@ public class AuctionActivationJob : BaseJob
             try
             {
                 auction.ChangeStatus(Status.Live);
-                await repository.UpdateAsync(auction, cancellationToken);
+                await writeRepository.UpdateAsync(auction, cancellationToken);
 
                 activatedCount++;
                 Logger.LogInformation(

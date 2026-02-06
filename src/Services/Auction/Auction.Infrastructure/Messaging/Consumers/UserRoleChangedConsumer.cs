@@ -9,18 +9,21 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<UserRoleChangedConsumer> _logger;
 
     public UserRoleChangedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         ILogger<UserRoleChangedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _logger = logger;
@@ -42,7 +45,7 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
 
         if (!hadSellerRole && !hasAdminRole)
         {
-            var activeAuctions = await _repository.GetActiveAuctionsBySellerIdAsync(
+            var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(
                 userId,
                 context.CancellationToken);
 
@@ -62,7 +65,7 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
                     var currentWinner = auction.WinnerUsername;
 
                     auction.Cancel("Seller privileges revoked");
-                    await _repository.UpdateAsync(auction, context.CancellationToken);
+                    await _writeRepository.UpdateAsync(auction, context.CancellationToken);
 
                     cancelledCount++;
 

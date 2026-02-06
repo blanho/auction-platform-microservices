@@ -12,7 +12,7 @@ namespace Auction.Application.Tests.Features.Auctions;
 
 public class CreateAuctionCommandHandlerTests
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -22,7 +22,7 @@ public class CreateAuctionCommandHandlerTests
 
     public CreateAuctionCommandHandlerTests()
     {
-        _repository = Substitute.For<IAuctionRepository>();
+        _repository = Substitute.For<IAuctionWriteRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CreateAuctionCommandHandler>>();
         _dateTimeProvider = Substitute.For<IDateTimeProvider>();

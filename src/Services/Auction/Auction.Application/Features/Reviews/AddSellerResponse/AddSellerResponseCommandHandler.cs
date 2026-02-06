@@ -4,7 +4,7 @@ using Auctions.Application.Errors;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Features.Reviews.AddSellerResponse;
 

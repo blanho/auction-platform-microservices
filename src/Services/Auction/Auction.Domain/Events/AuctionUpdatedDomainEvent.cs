@@ -10,7 +10,7 @@ public record AuctionUpdatedDomainEvent : DomainEvent
     public string? Description { get; init; }
     public string? Condition { get; init; }
     public int? YearManufactured { get; init; }
-    public DateTimeOffset UpdatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; init; }
 
     public IReadOnlyList<string> ModifiedFields { get; init; } = Array.Empty<string>();
 }

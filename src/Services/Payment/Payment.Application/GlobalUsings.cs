@@ -14,8 +14,6 @@ global using BuildingBlocks.Application.Constants;
 global using BuildingBlocks.Application.CQRS.Commands;
 global using BuildingBlocks.Application.CQRS.Queries;
 global using BuildingBlocks.Domain.Events;
-global using BuildingBlocks.Infrastructure.Locking;
-global using BuildingBlocks.Infrastructure.Repository;
 global using Payment.Domain.Entities;
 global using Payment.Domain.Enums;
 global using Payment.Domain.Events;

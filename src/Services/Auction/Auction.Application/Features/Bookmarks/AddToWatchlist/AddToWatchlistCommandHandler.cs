@@ -2,21 +2,21 @@ using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.Bookmarks.AddToWatchlist;
 
 public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistCommand, BookmarkItemDto>
 {
     private readonly IBookmarkRepository _bookmarkRepository;
-    private readonly IAuctionRepository _auctionRepository;
+    private readonly IAuctionReadRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AddToWatchlistCommandHandler> _logger;
 
     public AddToWatchlistCommandHandler(
         IBookmarkRepository bookmarkRepository,
-        IAuctionRepository auctionRepository,
+        IAuctionReadRepository auctionRepository,
         IUnitOfWork unitOfWork,
         ILogger<AddToWatchlistCommandHandler> logger)
     {

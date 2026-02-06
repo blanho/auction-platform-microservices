@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -10,7 +11,9 @@ public static class AuthenticationExtensions
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        var identityAuthority = configuration["Identity:Authority"];
+        var issuer = configuration["Identity:IssuerUri"] ?? configuration["Identity:Authority"] ?? "http://localhost:5001";
+        var secretKey = configuration["Identity:SecretKey"]
+            ?? throw new InvalidOperationException("Identity:SecretKey configuration is required");
         
         services.AddAuthentication(options =>
         {
@@ -18,17 +21,18 @@ public static class AuthenticationExtensions
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
-            options.Authority = identityAuthority;
             options.RequireHttpsMetadata = !environment.IsDevelopment();
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = identityAuthority,
+                ValidIssuer = issuer,
                 ValidateAudience = true,
                 ValidAudience = "auctionApp",
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(1),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                ClockSkew = TimeSpan.Zero,
                 NameClaimType = "name",
                 RoleClaimType = "role"
             };

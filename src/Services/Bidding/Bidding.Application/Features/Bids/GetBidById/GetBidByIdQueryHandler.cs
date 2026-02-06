@@ -24,11 +24,10 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
             return Result.Success<BidDetailDto?>(null);
         }
 
-        var allBidsForAuction = await _repository.GetBidsByAuctionIdAsync(bid.AuctionId, cancellationToken);
-        var orderedBids = allBidsForAuction.OrderByDescending(b => b.Amount).ToList();
-        
-        var highestBid = orderedBids.FirstOrDefault();
-        var bidPosition = orderedBids.FindIndex(b => b.Id == bid.Id) + 1;
+        var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
+        var totalBidsOnAuction = await _repository.GetBidCountForAuctionAsync(bid.AuctionId, cancellationToken);
+        var bidPosition = await _repository.GetBidPositionAsync(bid.AuctionId, bid.Amount, bid.BidTime, cancellationToken);
+
         var isHighestBid = highestBid?.Id == bid.Id;
         var isWinningBid = isHighestBid && bid.Status == BidStatus.Accepted;
 
@@ -47,7 +46,7 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
             IsWinningBid = isWinningBid,
             NextMinimumBid = nextMinimumBid,
             BidPosition = bidPosition,
-            TotalBidsOnAuction = allBidsForAuction.Count,
+            TotalBidsOnAuction = totalBidsOnAuction,
             CreatedAt = bid.CreatedAt
         });
     }

@@ -29,7 +29,19 @@ builder.Host.UseSerilog((context, config) =>
 });
 
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(builderContext =>
+    {
+        builderContext.AddRequestTransform(context =>
+        {
+            const string correlationIdHeader = "X-Correlation-Id";
+            var correlationId = context.HttpContext.Request.Headers[correlationIdHeader].FirstOrDefault()
+                                ?? Guid.NewGuid().ToString();
+            context.ProxyRequest.Headers.Remove(correlationIdHeader);
+            context.ProxyRequest.Headers.Add(correlationIdHeader, correlationId);
+            return ValueTask.CompletedTask;
+        });
+    });
 
 builder.Services.AddRateLimiter(options =>
 {

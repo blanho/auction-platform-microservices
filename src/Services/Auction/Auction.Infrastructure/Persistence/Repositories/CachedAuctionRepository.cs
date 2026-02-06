@@ -10,15 +10,22 @@ using BuildingBlocks.Infrastructure.Repository;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
-public class CachedAuctionRepository : IAuctionRepository
+public class CachedAuctionRepository : 
+    IAuctionReadRepository, 
+    IAuctionWriteRepository,
+    IAuctionQueryRepository,
+    IAuctionSchedulerRepository,
+    IAuctionAnalyticsRepository,
+    IAuctionUserRepository,
+    IAuctionExportRepository
 {
-    private readonly IAuctionRepository _inner;
+    private readonly AuctionRepository _inner;
     private readonly ICacheService _cache;
     private readonly ILogger<CachedAuctionRepository> _logger;
     private static readonly TimeSpan SingleAuctionTtl = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan AuctionListTtl = TimeSpan.FromMinutes(1);
 
-    public CachedAuctionRepository(IAuctionRepository inner, ICacheService cache, ILogger<CachedAuctionRepository> logger)
+    public CachedAuctionRepository(AuctionRepository inner, ICacheService cache, ILogger<CachedAuctionRepository> logger)
     {
         _inner = inner;
         _cache = cache;
@@ -106,6 +113,12 @@ public class CachedAuctionRepository : IAuctionRepository
     {
         await _inner.DeleteAsync(id, cancellationToken);
         await InvalidateAfterWrite(id, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Auction auction, CancellationToken cancellationToken = default)
+    {
+        await _inner.DeleteAsync(auction, cancellationToken);
+        await InvalidateAfterWrite(auction.Id, cancellationToken);
     }
 
     public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)

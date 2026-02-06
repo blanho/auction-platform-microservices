@@ -160,15 +160,18 @@ public class ReviewRepository : IReviewRepository
 
     public async Task<(double AverageRating, int TotalReviews)> GetRatingSummaryAsync(string username, CancellationToken cancellationToken = default)
     {
-        var reviews = await _context.Reviews
+        var query = _context.Reviews
             .Where(x => !x.IsDeleted && x.ReviewedUsername == username)
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .AsNoTracking();
 
-        if (reviews.Count == 0)
+        var totalReviews = await query.CountAsync(cancellationToken);
+        if (totalReviews == 0)
+        {
             return (0, 0);
+        }
 
-        return (reviews.Average(x => x.Rating), reviews.Count);
+        var averageRating = await query.AverageAsync(x => (double)x.Rating, cancellationToken);
+        return (averageRating, totalReviews);
     }
 
     public async Task<Review> CreateAsync(Review review, CancellationToken cancellationToken = default)

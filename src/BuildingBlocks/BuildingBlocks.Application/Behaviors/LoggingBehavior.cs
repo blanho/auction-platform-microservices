@@ -22,10 +22,9 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         var requestId = Guid.NewGuid().ToString();
 
         _logger.LogInformation(
-            "[START] {RequestName} {RequestId} {@Request}",
+            "[START] {RequestName} {RequestId}",
             requestName,
-            requestId,
-            request);
+            requestId);
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 

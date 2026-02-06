@@ -1,3 +1,8 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Abstractions.Providers;
+using Microsoft.Extensions.Logging;
+
 namespace Bidding.Application.Services
 {
     public class BidPlacementService : IBidService
@@ -76,11 +81,13 @@ namespace Bidding.Application.Services
             if (auctionValidation != null)
                 return auctionValidation;
 
-            var bidIncrementValidation = await ValidateBidIncrement(dto, bidderId, bidderUsername, ct);
-            if (bidIncrementValidation != null)
-                return bidIncrementValidation;
+            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
+            var currentHighBid = highestBid?.Amount ?? 0;
 
-            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, ct);
+            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
+                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
+
+            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, ct);
             if (bid.Status == BidStatus.Rejected.ToString())
                 return bid;
 
@@ -190,9 +197,10 @@ namespace Bidding.Application.Services
                 await _unitOfWork.SaveChangesAsync(ct);
                 return null;
             }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
-                when (ex.InnerException?.Message.Contains("duplicate") == true ||
-                      ex.InnerException?.Message.Contains("unique") == true)
+            catch (Exception ex)
+                when (ex.GetType().Name == "DbUpdateException" &&
+                      (ex.InnerException?.Message.Contains("duplicate") == true ||
+                       ex.InnerException?.Message.Contains("unique") == true))
             {
                 _logger.LogWarning(
                     "Duplicate bid detected for auction {AuctionId} at amount {Amount}. Race condition handled.",
@@ -253,20 +261,8 @@ namespace Bidding.Application.Services
             return null;
         }
 
-        private async Task<BidDto?> ValidateBidIncrement(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken ct)
+        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, CancellationToken ct)
         {
-            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
-            var currentHighBid = highestBid?.Amount ?? 0;
-
-            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
-                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
-
-            return null;
-        }
-
-        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, CancellationToken ct)
-        {
-            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
             var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid);
             
             var createdBid = await _repository.CreateAsync(bid, ct);

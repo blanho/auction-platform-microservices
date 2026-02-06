@@ -55,7 +55,7 @@ public class ReportRepository : IReportRepository
             .WhenHasValue(filter.Status, r => r.Status == filter.Status!.Value)
             .WhenHasValue(filter.Type, r => r.Type == filter.Type!.Value)
             .WhenHasValue(filter.Priority, r => r.Priority == filter.Priority!.Value)
-            .WhenNotEmpty(filter.ReportedUsername, r => r.ReportedUsername.ToLower().Contains(filter.ReportedUsername!.ToLower()));
+            .WhenNotEmpty(filter.ReportedUsername, r => EF.Functions.ILike(r.ReportedUsername, $"%{filter.ReportedUsername}%"));
 
         var query = _context.Reports
             .AsNoTracking()

@@ -19,6 +19,6 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Orchestration\Orchestration.Sagas\Orchestration.Sagas.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\OrchestrationService.Contracts\OrchestrationService.Contracts.csproj" />
   </ItemGroup>
 </Project>

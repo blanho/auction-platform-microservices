@@ -1,4 +1,4 @@
-namespace BuildingBlocks.Infrastructure.Caching;
+namespace BuildingBlocks.Application.Abstractions;
 
 public interface ICacheService
 {

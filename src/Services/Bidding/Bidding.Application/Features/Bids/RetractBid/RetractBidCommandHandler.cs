@@ -27,7 +27,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         _logger.LogInformation("Processing bid retraction for {BidId} by user {UserId}",
             request.BidId, request.UserId);
 
-        var bid = await _repository.GetByIdAsync(request.BidId, cancellationToken);
+        var bid = await _repository.GetByIdForUpdateAsync(request.BidId, cancellationToken);
         if (bid == null)
         {
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.NotFound);

@@ -22,7 +22,7 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
     {
         _logger.LogDebug("Updating auto-bid {AutoBidId} with new max amount", request.AutoBidId);
 
-        var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
+        var autoBid = await _repository.GetByIdForUpdateAsync(request.AutoBidId, cancellationToken);
         if (autoBid == null)
         {
             return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.NotFound);

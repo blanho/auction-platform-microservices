@@ -1,5 +1,7 @@
+using Auctions.Application.Services;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
+using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -51,26 +53,30 @@ namespace Auctions.Api.Extensions.DependencyInjection
                 }));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
-            services.AddScoped<AuctionRepository>(); 
-            services.AddScoped<IAuctionRepository>(sp =>
+            services.AddScoped<AuctionRepository>();
+            services.AddScoped<CachedAuctionRepository>(sp =>
             {
                 var inner = sp.GetRequiredService<AuctionRepository>();
                 var cache = sp.GetRequiredService<ICacheService>();
                 var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
                 return new CachedAuctionRepository(inner, cache, logger);
             });
+            services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionQueryRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionSchedulerRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionAnalyticsRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionUserRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionExportRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
 
-            services.AddScoped<AuctionViewRepository>();
-            services.AddScoped<IAuctionViewRepository>(sp =>
-            {
-                var inner = sp.GetRequiredService<AuctionViewRepository>();
-                return new CachedAuctionViewRepository(inner);
-            });
+            services.AddScoped<IAuctionViewRepository, AuctionViewRepository>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
+
+            services.AddScoped<IPaginatedAuctionQueryService, PaginatedAuctionQueryService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace AuctionService.Contracts.Events;
 
 public record AuctionExtendedEvent : IVersionedEvent

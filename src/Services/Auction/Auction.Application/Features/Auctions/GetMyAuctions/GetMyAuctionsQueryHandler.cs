@@ -1,24 +1,20 @@
 using Auctions.Application.DTOs;
-using AutoMapper;
+using Auctions.Application.Services;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Repository;
 
 namespace Auctions.Application.Queries.GetMyAuctions;
 
 public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, PaginatedResult<AuctionDto>>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IMapper _mapper;
+    private readonly IPaginatedAuctionQueryService _queryService;
     private readonly ILogger<GetMyAuctionsQueryHandler> _logger;
 
     public GetMyAuctionsQueryHandler(
-        IAuctionRepository repository,
-        IMapper mapper,
+        IPaginatedAuctionQueryService queryService,
         ILogger<GetMyAuctionsQueryHandler> logger)
     {
-        _repository = repository;
-        _mapper = mapper;
+        _queryService = queryService;
         _logger = logger;
     }
 
@@ -41,14 +37,10 @@ public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, Pagin
             }
         };
 
-        var result = await _repository.GetPagedAsync(queryParams, cancellationToken);
-
-        var dtos = result.Items.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
-
-        var paginatedResult = new PaginatedResult<AuctionDto>(dtos, result.TotalCount, request.Page, request.PageSize);
+        var paginatedResult = await _queryService.GetPagedAuctionsAsync(queryParams, cancellationToken);
 
         _logger.LogDebug("Retrieved {Count} auctions out of {Total}",
-            dtos.Count, result.TotalCount);
+            paginatedResult.Items.Count, paginatedResult.TotalCount);
 
         return Result.Success(paginatedResult);
     }

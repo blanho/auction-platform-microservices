@@ -54,6 +54,14 @@ internal static class ServiceCollectionExtensions
                     h.Username(rabbitConfig["Username"] ?? "guest");
                     h.Password(rabbitConfig["Password"] ?? "guest");
                 });
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 3,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(10),
+                    intervalDelta: TimeSpan.FromMilliseconds(200)));
+
+                cfg.ConfigureEndpoints(context);
             });
         });
 

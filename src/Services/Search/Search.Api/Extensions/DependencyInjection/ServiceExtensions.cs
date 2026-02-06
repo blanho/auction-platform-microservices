@@ -73,6 +73,7 @@ public static class ServiceExtensions
             x.AddConsumer<AuctionDeletedConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BidPlacedConsumer>();
+            x.AddConsumer<HighestBidUpdatedConsumer>();
             x.AddConsumer<BidRetractedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -133,6 +134,15 @@ public static class ServiceExtensions
                 cfg.ReceiveEndpoint("search-bid-placed", e =>
                 {
                     e.ConfigureConsumer<BidPlacedConsumer>(context);
+                    e.PrefetchCount = 64;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
+                });
+
+                cfg.ReceiveEndpoint("search-bid-updated", e =>
+                {
+                    e.ConfigureConsumer<HighestBidUpdatedConsumer>(context);
                     e.PrefetchCount = 64;
                     e.UseDelayedRedelivery(r => r.Intervals(
                         TimeSpan.FromSeconds(5),

@@ -1,9 +1,6 @@
 using Auctions.Application.Filtering;
 using Auctions.Domain.Entities;
-using Microsoft.Extensions.Logging;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
 
 namespace Auctions.Application.Interfaces;
 

@@ -4,7 +4,6 @@ using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Orchestration.Sagas.BuyNow;
 using Auctions.Infrastructure.Messaging.Consumers;
 
 namespace Auctions.Infrastructure.Extensions;
@@ -27,14 +26,6 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<UserDeletedConsumer>();
             x.AddConsumer<UserUpdatedConsumer>();
             x.AddConsumer<UserRoleChangedConsumer>();
-
-            x.AddSagaStateMachine<BuyNowSagaStateMachine, BuyNowSagaState>()
-                .EntityFrameworkRepository(r =>
-                {
-                    r.ConcurrencyMode = ConcurrencyMode.Optimistic;
-                    r.ExistingDbContext<AuctionDbContext>();
-                    r.UsePostgres();
-                });
 
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {
@@ -63,11 +54,6 @@ public static class MassTransitOutboxExtensions
                     e.ConfigureConsumer<CompleteBuyNowAuctionConsumer>(context);
                     e.ConfigureConsumer<ReleaseAuctionReservationConsumer>(context);
                     e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
-                });
-
-                cfg.ReceiveEndpoint("buy-now-saga-state", e =>
-                {
-                    e.ConfigureSaga<BuyNowSagaState>(context);
                 });
 
                 cfg.UseMessageRetry(r => r.Immediate(5));

@@ -1,4 +1,3 @@
-using BuildingBlocks.Infrastructure.Repository;
 using BuildingBlocks.Web.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -7,11 +6,15 @@ using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Stripe;
 using Stripe.Checkout;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Services;
 
 public class StripePaymentService : IStripePaymentService
 {
+    private static readonly object _stripeInitLock = new();
+    private static bool _stripeInitialized;
+
     private readonly IConfiguration _configuration;
     private readonly ILogger<StripePaymentService> _logger;
     private readonly IOrderRepository _orderRepository;
@@ -44,7 +47,18 @@ public class StripePaymentService : IStripePaymentService
                 "It should start with 'whsec_' and be obtained from the Stripe Dashboard.");
         }
 
-        StripeConfiguration.ApiKey = secretKey;
+        InitializeStripe(secretKey);
+    }
+
+    private static void InitializeStripe(string secretKey)
+    {
+        if (_stripeInitialized) return;
+        lock (_stripeInitLock)
+        {
+            if (_stripeInitialized) return;
+            StripeConfiguration.ApiKey = secretKey;
+            _stripeInitialized = true;
+        }
     }
 
     public async Task<PaymentIntent> CreatePaymentIntentAsync(

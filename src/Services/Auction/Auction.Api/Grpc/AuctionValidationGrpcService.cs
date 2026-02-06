@@ -25,7 +25,7 @@ public partial class AuctionGrpcService
             };
         }
 
-        var auction = await _auctionRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _auctionReadRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
@@ -100,7 +100,7 @@ public partial class AuctionGrpcService
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid auction ID"));
         }
 
-        var auction = await _auctionRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _auctionReadRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
@@ -139,7 +139,7 @@ public partial class AuctionGrpcService
             };
         }
 
-        var auction = await _auctionRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _auctionReadRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
@@ -160,7 +160,7 @@ public partial class AuctionGrpcService
         }
 
         auction.ExtendAuctionEnd(TimeSpan.FromMinutes(request.ExtendMinutes));
-        await _auctionRepository.UpdateAsync(auction, context.CancellationToken);
+        await _auctionWriteRepository.UpdateAsync(auction, context.CancellationToken);
 
         _logger.LogInformation(
             "Extended auction {AuctionId} to {NewEndTime}",

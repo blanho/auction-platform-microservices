@@ -10,6 +10,7 @@ using BuildingBlocks.Infrastructure.Messaging;
 using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using IUnitOfWork = Analytics.Api.Interfaces.IUnitOfWork;
 
 namespace Analytics.Api.Extensions.DependencyInjection;
 
@@ -71,6 +72,7 @@ public static class ServiceCollectionExtensions
             x.AddConsumer<AuctionFinishedAnalyticsConsumer>();
             x.AddConsumer<BidPlacedAnalyticsConsumer>();
             x.AddConsumer<BidPlacedBatchConsumer>();
+            x.AddConsumer<HighestBidUpdatedAnalyticsConsumer>();
             x.AddConsumer<PaymentCompletedAnalyticsConsumer>();
             x.AddConsumer<OrderCreatedAnalyticsConsumer>();
             x.AddConsumer<OrderShippedAnalyticsConsumer>();
@@ -134,6 +136,7 @@ public static class ServiceCollectionExtensions
                     .SetMessageLimit(100)
                     .SetTimeLimit(TimeSpan.FromSeconds(1)));
             });
+            e.ConfigureConsumer<HighestBidUpdatedAnalyticsConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: 128, concurrentLimit: 32);
         });
     }

@@ -6,16 +6,19 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserUpdatedConsumer> _logger;
 
     public UserUpdatedConsumer(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<UserUpdatedConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -31,7 +34,7 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
         var updatedCount = 0;
         var userId = Guid.Parse(message.UserId);
 
-        var sellerAuctions = await _repository.GetAllBySellerIdAsync(
+        var sellerAuctions = await _readRepository.GetAllBySellerIdAsync(
             userId,
             context.CancellationToken);
 
@@ -40,7 +43,7 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
             if (auction.SellerUsername != message.Username)
             {
                 auction.UpdateSellerUsername(message.Username);
-                await _repository.UpdateAsync(auction, context.CancellationToken);
+                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
                 updatedCount++;
             }
         }
@@ -53,7 +56,7 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
                 message.UserId);
         }
 
-        var wonAuctions = await _repository.GetAuctionsWithWinnerIdAsync(
+        var wonAuctions = await _readRepository.GetAuctionsWithWinnerIdAsync(
             userId,
             context.CancellationToken);
 
@@ -62,7 +65,7 @@ public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
             if (auction.WinnerUsername != message.Username)
             {
                 auction.UpdateWinnerUsername(message.Username);
-                await _repository.UpdateAsync(auction, context.CancellationToken);
+                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
                 updatedCount++;
             }
         }

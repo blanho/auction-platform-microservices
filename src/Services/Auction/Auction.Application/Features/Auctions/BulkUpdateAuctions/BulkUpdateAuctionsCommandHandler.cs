@@ -1,25 +1,28 @@
 using Auctions.Application.Errors;
 using BuildingBlocks.Domain.Enums;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.BulkUpdateAuctions;
 
 public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctionsCommand, int>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly ILogger<BulkUpdateAuctionsCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
 
     public BulkUpdateAuctionsCommandHandler(
-        IAuctionRepository repository,
+        IAuctionReadRepository readRepository,
+        IAuctionWriteRepository writeRepository,
         ILogger<BulkUpdateAuctionsCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _logger = logger;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
@@ -36,7 +39,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
 
             foreach (var auctionId in request.AuctionIds)
             {
-                var auction = await _repository.GetByIdAsync(auctionId, cancellationToken);
+                var auction = await _readRepository.GetByIdAsync(auctionId, cancellationToken);
                 if (auction == null)
                 {
                     _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
@@ -50,7 +53,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                         if (auction.AuctionEnd > _dateTime.UtcNow)
                         {
                             auction.ChangeStatus(Status.Live);
-                            await _repository.UpdateAsync(auction, cancellationToken);
+                            await _writeRepository.UpdateAsync(auction, cancellationToken);
                             updatedCount++;
                         }
                     }
@@ -60,7 +63,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                     if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
                     {
                         auction.ChangeStatus(Status.Inactive);
-                        await _repository.UpdateAsync(auction, cancellationToken);
+                        await _writeRepository.UpdateAsync(auction, cancellationToken);
                         updatedCount++;
                     }
                 }

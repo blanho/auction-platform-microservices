@@ -1,20 +1,23 @@
 using System.Text.Json;
+using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace BuildingBlocks.Infrastructure.Caching;
 
 public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IConnectionMultiplexer? _redis;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
-    public RedisCacheService(IDistributedCache cache)
+    public RedisCacheService(IDistributedCache cache, IConnectionMultiplexer? redis = null)
     {
         _cache = cache;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        _redis = redis;
     }
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
@@ -24,12 +27,12 @@ public class RedisCacheService : ICacheService
             return default;
 
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+        return JsonSerializer.Deserialize<T>(json, JsonOptions);
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
-        var json = JsonSerializer.Serialize(value, _jsonOptions);
+        var json = JsonSerializer.Serialize(value, JsonOptions);
         var bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
         var options = new DistributedCacheEntryOptions();
@@ -48,6 +51,11 @@ public class RedisCacheService : ICacheService
 
     public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
     {
+        if (_redis != null)
+        {
+            return await _redis.GetDatabase().KeyExistsAsync(key);
+        }
+
         var bytes = await _cache.GetAsync(key, cancellationToken);
         return bytes != null && bytes.Length > 0;
     }

@@ -53,8 +53,7 @@ public class Auction : BaseEntity
             Currency = currency,
             BuyNowPrice = buyNowPrice,
             IsFeatured = isFeatured,
-            Status = Status.Live,
-            CreatedAt = DateTimeOffset.UtcNow
+            Status = Status.Live
         };
     }
 
@@ -76,8 +75,7 @@ public class Auction : BaseEntity
             ReservePrice = reservePrice,
             AuctionEnd = auctionEnd,
             Currency = currency,
-            Status = Status.Scheduled,
-            CreatedAt = DateTimeOffset.UtcNow
+            Status = Status.Scheduled
         };
     }
 
@@ -271,7 +269,6 @@ public class Auction : BaseEntity
 
         var oldStatus = Status;
         Status = Status.Cancelled;
-        UpdatedAt = DateTimeOffset.UtcNow;
         
         AddDomainEvent(new AuctionStatusChangedDomainEvent
         {
@@ -292,7 +289,6 @@ public class Auction : BaseEntity
         if (SellerUsername != newUsername)
         {
             SellerUsername = newUsername;
-            UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
@@ -302,7 +298,6 @@ public class Auction : BaseEntity
         if (WinnerUsername != newUsername)
         {
             WinnerUsername = newUsername;
-            UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 }

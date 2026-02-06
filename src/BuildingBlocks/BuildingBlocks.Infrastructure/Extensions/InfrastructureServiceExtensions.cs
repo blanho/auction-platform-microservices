@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Infrastructure.Locking;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;

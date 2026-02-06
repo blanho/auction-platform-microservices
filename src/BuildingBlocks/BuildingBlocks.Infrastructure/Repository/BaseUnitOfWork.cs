@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Events;

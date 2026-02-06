@@ -4,8 +4,8 @@ using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.CQRS;
 using BuildingBlocks.Application.Abstractions;

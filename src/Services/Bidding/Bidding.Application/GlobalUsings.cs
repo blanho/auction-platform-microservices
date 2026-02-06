@@ -5,9 +5,6 @@ global using BuildingBlocks.Application.Abstractions.Messaging;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.CQRS.Commands;
 global using BuildingBlocks.Application.CQRS.Queries;
-global using BuildingBlocks.Infrastructure.Caching;
-global using BuildingBlocks.Infrastructure.Locking;
-global using BuildingBlocks.Infrastructure.Repository;
 
 global using Bidding.Domain.Entities;
 global using Bidding.Domain.Enums;

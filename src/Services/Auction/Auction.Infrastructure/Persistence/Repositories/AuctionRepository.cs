@@ -11,7 +11,14 @@ using BuildingBlocks.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
 {
-    public class AuctionRepository : IAuctionRepository
+    public class AuctionRepository : 
+        IAuctionReadRepository,
+        IAuctionWriteRepository,
+        IAuctionQueryRepository,
+        IAuctionSchedulerRepository,
+        IAuctionAnalyticsRepository,
+        IAuctionUserRepository,
+        IAuctionExportRepository
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
@@ -97,13 +104,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return auction;
         }
 
-        public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
+        public Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             auction.UpdatedAt = _dateTime.UtcNow;
             auction.UpdatedBy = _auditContext.UserId;
 
             _context.Auctions.Update(auction);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -121,57 +128,17 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             }
         }
 
+        public Task DeleteAsync(Auction auction, CancellationToken cancellationToken = default)
+        {
+            auction.IsDeleted = true;
+            auction.DeletedAt = _dateTime.UtcNow;
+            auction.DeletedBy = _auditContext.UserId;
+            return Task.CompletedTask;
+        }
+
         public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
-        }
-
-        public Task AddRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
-        {
-            var utcNow = _dateTime.UtcNow;
-            foreach (var auction in auctions)
-            {
-                auction.CreatedAt = utcNow;
-                auction.CreatedBy = _auditContext.UserId;
-                auction.IsDeleted = false;
-
-                if (auction.Item != null)
-                {
-                    auction.Item.CreatedAt = utcNow;
-                    auction.Item.CreatedBy = _auditContext.UserId;
-                    auction.Item.IsDeleted = false;
-                }
-            }
-            _context.Auctions.AddRange(auctions);
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateRangeAsync(IEnumerable<Auction> auctions, CancellationToken cancellationToken = default)
-        {
-            var utcNow = _dateTime.UtcNow;
-            foreach (var auction in auctions)
-            {
-                auction.UpdatedAt = utcNow;
-                auction.UpdatedBy = _auditContext.UserId;
-            }
-            _context.Auctions.UpdateRange(auctions);
-            return Task.CompletedTask;
-        }
-
-        public async Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            var utcNow = _dateTime.UtcNow;
-            var auctions = await _context.Auctions
-                .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
-                .ToListAsync(cancellationToken);
-
-            foreach (var auction in auctions)
-            {
-                auction.IsDeleted = true;
-                auction.DeletedAt = utcNow;
-                auction.DeletedBy = _auditContext.UserId;
-            }
-            _context.Auctions.UpdateRange(auctions);
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
@@ -207,11 +174,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             if (!string.IsNullOrEmpty(filter.SearchTerm))
             {
-                var term = filter.SearchTerm.ToLower();
+                var term = $"%{filter.SearchTerm}%";
                 query = query.Where(x =>
                     x.Item != null && (
-                        x.Item.Title.ToLower().Contains(term) ||
-                        (x.Item.Description != null && x.Item.Description.ToLower().Contains(term))
+                        EF.Functions.ILike(x.Item.Title, term) ||
+                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
                     ));
             }
 
@@ -489,7 +456,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             if (previousPeriodStart.HasValue)
             {
-                var previousPeriodStats = await baseQuery
+                    var previousPeriodStats = await baseQuery
                     .Where(a => a.Status == Status.Finished &&
                                a.SoldAmount.HasValue &&
                                a.UpdatedAt >= previousPeriodStart.Value &&

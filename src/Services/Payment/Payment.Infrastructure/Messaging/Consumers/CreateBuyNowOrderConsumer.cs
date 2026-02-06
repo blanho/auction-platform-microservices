@@ -1,10 +1,10 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using Orchestration.Sagas.BuyNow.Events;
+using OrchestrationService.Contracts.Events;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Messaging.Consumers;
 

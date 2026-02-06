@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
+// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
+// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
@@ -28,26 +28,20 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
         try
         {
             var updatedCount = 0;
+            var categories = await _repository.GetByIdsForUpdateAsync(request.CategoryIds, cancellationToken);
+            var categoriesById = categories.ToDictionary(x => x.Id, x => x);
 
-            foreach (var categoryId in request.CategoryIds)
+            foreach (var categoryId in request.CategoryIds.Distinct())
             {
-                try
+                if (!categoriesById.TryGetValue(categoryId, out var category))
                 {
-                    var category = await _repository.GetByIdAsync(categoryId, cancellationToken);
-                    if (category == null)
-                    {
-                        _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
-                        continue;
-                    }
-                    
-                    category.IsActive = request.IsActive;
-                    await _repository.UpdateAsync(category, cancellationToken);
-                    updatedCount++;
+                    _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
+                    continue;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Error updating category {CategoryId} during bulk update", categoryId);
-                }
+
+                category.IsActive = request.IsActive;
+                await _repository.UpdateAsync(category, cancellationToken);
+                updatedCount++;
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
