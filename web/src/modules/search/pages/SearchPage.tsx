@@ -20,7 +20,6 @@ import {
   Divider,
   IconButton,
   Autocomplete,
-  Alert,
   Paper,
 } from '@mui/material'
 import { Search, FilterList, Close, TrendingUp, History, Clear } from '@mui/icons-material'

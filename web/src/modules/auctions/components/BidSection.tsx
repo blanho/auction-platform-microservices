@@ -12,7 +12,7 @@ import {
   Skeleton,
 } from '@mui/material'
 import { InlineAlert } from '@/shared/ui'
-import { Gavel, Timer, TrendingUp, LocalOffer, InfoOutlined, AutoMode } from '@mui/icons-material'
+import { Gavel, Timer, LocalOffer, AutoMode } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { AutoBidDialog } from '@/modules/bidding/components/AutoBidDialog'
 

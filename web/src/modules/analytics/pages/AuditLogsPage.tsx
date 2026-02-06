@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Box,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -26,7 +25,7 @@ import {
 } from '@mui/material'
 import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, TableToolbar } from '@/shared/ui'
 import type { FilterConfig } from '@/shared/ui'
-import { Visibility, History, Close } from '@mui/icons-material'
+import { Visibility, History } from '@mui/icons-material'
 import { useAuditLogs } from '../hooks/useAnalytics'
 import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import type { AuditLog, AuditAction, AuditLogQueryParams } from '../types'

@@ -64,7 +64,10 @@ export function groupNotificationsByDate(
     if (!groups.has(groupKey)) {
       groups.set(groupKey, [])
     }
-    groups.get(groupKey)!.push(notification)
+    const group = groups.get(groupKey)
+    if (group) {
+      group.push(notification)
+    }
   })
 
   return groups

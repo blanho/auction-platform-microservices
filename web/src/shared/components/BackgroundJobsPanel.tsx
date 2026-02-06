@@ -7,7 +7,6 @@ import {
   IconButton,
   Chip,
   Stack,
-  Button,
   Collapse,
   List,
   ListItem,
@@ -38,18 +37,18 @@ const statusConfig: Record<BackgroundJobStatus, { color: 'default' | 'primary' |
 }
 
 function formatTimeRemaining(seconds: number): string {
-  if (seconds <= 0) return 'Almost done...'
-  if (seconds < 60) return `${seconds}s`
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+  if (seconds <= 0) {return 'Almost done...'}
+  if (seconds < 60) {return `${seconds}s`}
+  if (seconds < 3600) {return `${Math.floor(seconds / 60)}m ${seconds % 60}s`}
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
   return `${hours}h ${minutes}m`
 }
 
 function formatFileSize(bytes?: number): string {
-  if (!bytes) return ''
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (!bytes) {return ''}
+  if (bytes < 1024) {return `${bytes} B`}
+  if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`}
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
@@ -129,12 +128,12 @@ function JobItem({ job, onCancel, onDownload }: JobItemProps) {
             </IconButton>
           </Tooltip>
         )}
-        {canDownload && (
+        {canDownload && job.resultFileName && (
           <Tooltip title="Download">
             <IconButton
               size="small"
               color="primary"
-              onClick={() => onDownload(job.jobId, job.resultFileName!)}
+              onClick={() => onDownload(job.jobId, job.resultFileName ?? '')}
             >
               <DownloadIcon fontSize="small" />
             </IconButton>

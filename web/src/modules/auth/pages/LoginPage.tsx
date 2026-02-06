@@ -15,7 +15,7 @@ import {
   CircularProgress,
   Stack,
 } from '@mui/material'
-import { Google, GitHub, Warning } from '@mui/icons-material'
+import { Google, GitHub } from '@mui/icons-material'
 import { loginSchema } from '../schemas'
 import { useLogin, useLoginWith2FA } from '../hooks'
 import type { LoginRequest } from '../types'
@@ -55,7 +55,7 @@ export function LoginPage() {
   const [requires2FA, setRequires2FA] = useState(false)
   const [twoFactorToken, setTwoFactorToken] = useState('')
   const [twoFactorCode, setTwoFactorCode] = useState('')
-  const [sessionMessage, setSessionMessage] = useState<{
+  const [sessionMessage, _setSessionMessage] = useState<{
     severity: 'warning' | 'error' | 'info'
     message: string
   } | null>(initialSessionMessage)

@@ -36,7 +36,6 @@ import {
 import { Link } from 'react-router-dom'
 import { useWatchlist, useRemoveFromWatchlist } from '../hooks'
 import type { WatchlistItem } from '../api/bookmarks.api'
-import type { AuctionStatus } from '../types'
 import { fadeInUp, staggerContainer, staggerItem, cardHover } from '@/shared/lib/animations'
 import { formatTimeLeft } from '../utils'
 

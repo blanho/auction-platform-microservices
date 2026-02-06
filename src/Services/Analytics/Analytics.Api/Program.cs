@@ -36,7 +36,6 @@ builder.Services
     .AddAnalyticsDatabase(builder.Configuration)
     .AddAnalyticsRepositories()
     .AddAnalyticsServices()
-    .AddAnalyticsBackgroundJobs()
     .AddCommonUtilities()
     .AddUtilityScheduling(builder.Configuration)
     .AddAnalyticsMessaging(builder.Configuration)
@@ -89,7 +88,6 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCustomHealthChecks();
-app.MapJobsEndpoints();
 app.MapControllers();
 
 app.Run();

@@ -59,14 +59,23 @@ export function CheckoutPage() {
 
   const { data: existingOrder, isLoading: checkingOrder } = useQuery({
     queryKey: ['order', 'auction', auctionId],
-    queryFn: () => ordersApi.getOrderByAuctionId(auctionId!),
+    queryFn: () => {
+      if (!auctionId) {
+        throw new Error('Auction ID is required')
+      }
+      return ordersApi.getOrderByAuctionId(auctionId)
+    },
     enabled: !!auctionId,
     retry: false,
   })
 
   const createOrderMutation = useMutation({
-    mutationFn: (shippingAddress: ShippingAddress) =>
-      ordersApi.createOrder({ auctionId: auctionId!, shippingAddress }),
+    mutationFn: (shippingAddress: ShippingAddress) => {
+      if (!auctionId) {
+        throw new Error('Auction ID is required')
+      }
+      return ordersApi.createOrder({ auctionId, shippingAddress })
+    },
     onSuccess: (order) => {
       setOrderId(order.id)
       setActiveStep(1)

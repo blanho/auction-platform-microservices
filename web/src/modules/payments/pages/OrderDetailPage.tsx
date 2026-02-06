@@ -127,21 +127,22 @@ export function OrderDetailPage() {
     severity: 'success' | 'error' | 'info'
   }>({ open: false, message: '', severity: 'info' })
 
-  const { data: order, isLoading, error } = useOrderById(orderId!)
+  const { data: order, isLoading, error } = useOrderById(orderId ?? '')
   const shipOrder = useShipOrder()
   const cancelOrder = useCancelOrder()
   const markDelivered = useMarkDelivered()
 
   const handleCopyOrderId = () => {
-    navigator.clipboard.writeText(orderId!)
+    if (!orderId) {return}
+    navigator.clipboard.writeText(orderId)
     setSnackbar({ open: true, message: 'Order ID copied to clipboard', severity: 'success' })
   }
 
   const handleShipOrder = async () => {
-    if (!trackingNumber || !shippingCarrier) {return}
+    if (!trackingNumber || !shippingCarrier || !orderId) {return}
     try {
       await shipOrder.mutateAsync({
-        id: orderId!,
+        id: orderId,
         data: { trackingNumber, shippingCarrier },
       })
       setShowShipDialog(false)
@@ -154,9 +155,10 @@ export function OrderDetailPage() {
   }
 
   const handleCancelOrder = async () => {
+    if (!orderId) {return}
     try {
       await cancelOrder.mutateAsync({
-        id: orderId!,
+        id: orderId,
         data: { reason: cancelReason },
       })
       setShowCancelDialog(false)
@@ -168,8 +170,9 @@ export function OrderDetailPage() {
   }
 
   const handleMarkDelivered = async () => {
+    if (!orderId) {return}
     try {
-      await markDelivered.mutateAsync(orderId!)
+      await markDelivered.mutateAsync(orderId)
       setSnackbar({ open: true, message: 'Order marked as delivered', severity: 'success' })
     } catch {
       setSnackbar({ open: true, message: 'Failed to update order', severity: 'error' })

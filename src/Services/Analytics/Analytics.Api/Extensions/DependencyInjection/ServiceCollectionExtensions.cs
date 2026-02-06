@@ -5,7 +5,6 @@ using Analytics.Api.Repositories;
 using Analytics.Api.Services;
 using Analytics.Api.Validators;
 using BuildingBlocks.Application.Abstractions.Messaging;
-using BuildingBlocks.Application.BackgroundJobs;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Infrastructure.Messaging;
 using FluentValidation;
@@ -59,16 +58,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserAnalyticsAggregator, UserAnalyticsAggregator>();
 
         services.AddValidatorsFromAssemblyContaining<CreateReportDtoValidator>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddAnalyticsBackgroundJobs(this IServiceCollection services)
-    {
-        services.AddBackgroundJobs()
-            .WithConcurrentWorkers(Environment.ProcessorCount)
-            .WithJobTimeout(TimeSpan.FromMinutes(30))
-            .Build();
 
         return services;
     }

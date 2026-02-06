@@ -2,8 +2,7 @@ import { CreditCard } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { CARD_BRANDS, STRIPE_CONFIG } from '../constants'
 
-export function getCardBrandIcon(brand?: string): React.ReactElement {
-  console.debug('Card brand:', brand)
+export function getCardBrandIcon(_brand?: string): React.ReactElement {
   return <CreditCard sx={{ fontSize: 32, color: palette.neutral[500] }} />
 }
 

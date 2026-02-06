@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Box,
@@ -10,7 +10,6 @@ import {
   Chip,
   Button,
   Pagination,
-  Alert,
   Tooltip,
   IconButton,
 } from '@mui/material'
@@ -35,11 +34,11 @@ export function NotificationsPage() {
     pageSize: NOTIFICATION_CONFIG.DEFAULT_PAGE_SIZE,
   })
 
-  const getStatusFilter = () => {
+  const statusFilter = useMemo(() => {
     if (activeTab === 1) {return 'unread'}
     if (activeTab === 2) {return 'archived'}
     return undefined
-  }
+  }, [activeTab])
 
   const {
     data: notifications,
@@ -47,7 +46,7 @@ export function NotificationsPage() {
     error,
   } = useNotifications({
     ...filters,
-    status: getStatusFilter(),
+    status: statusFilter,
   })
   const { data: summary } = useNotificationSummary()
   const markAsRead = useMarkAsRead()
@@ -55,37 +54,37 @@ export function NotificationsPage() {
   const deleteNotification = useDeleteNotification()
   const archiveNotification = useArchiveNotification()
 
-  const handleMarkAsRead = async (id: string) => {
+  const handleMarkAsRead = useCallback(async (id: string) => {
     try {
       await markAsRead.mutateAsync(id)
     } catch {
       // Error handled by mutation
     }
-  }
+  }, [markAsRead])
 
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = useCallback(async () => {
     try {
       await markAllAsRead.mutateAsync()
     } catch {
       // Error handled by mutation
     }
-  }
+  }, [markAllAsRead])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     try {
       await deleteNotification.mutateAsync(id)
     } catch {
       // Error handled by mutation
     }
-  }
+  }, [deleteNotification])
 
-  const handleArchive = async (id: string) => {
+  const handleArchive = useCallback(async (id: string) => {
     try {
       await archiveNotification.mutateAsync(id)
     } catch {
       // Error handled by mutation
     }
-  }
+  }, [archiveNotification])
 
   const getEmptyMessage = () => {
     switch (activeTab) {

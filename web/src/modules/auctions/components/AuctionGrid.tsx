@@ -8,6 +8,8 @@ interface AuctionGridProps {
   emptyMessage?: string
 }
 
+const SKELETON_ITEMS = Array.from({ length: 8 }, (_, index) => index)
+
 export const AuctionGrid = ({
   auctions,
   isLoading,
@@ -16,7 +18,7 @@ export const AuctionGrid = ({
   if (isLoading) {
     return (
       <Grid container spacing={3}>
-        {Array.from({ length: 8 }).map((_, index) => (
+        {SKELETON_ITEMS.map((index) => (
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
             <Skeleton variant="rectangular" height={320} sx={{ borderRadius: 2 }} />
           </Grid>

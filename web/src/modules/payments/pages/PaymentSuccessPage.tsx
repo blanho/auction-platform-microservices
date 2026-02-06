@@ -32,7 +32,12 @@ export function PaymentSuccessPage() {
     error,
   } = useQuery({
     queryKey: ['order', orderId],
-    queryFn: () => ordersApi.getOrderById(orderId!),
+    queryFn: () => {
+      if (!orderId) {
+        throw new Error('Order ID is required')
+      }
+      return ordersApi.getOrderById(orderId)
+    },
     enabled: !!orderId,
     retry: 3,
     retryDelay: 1000,

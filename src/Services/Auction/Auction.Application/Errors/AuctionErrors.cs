@@ -13,7 +13,6 @@ public static class AuctionErrors
         public static Error DeactivationFailed(string reason) => Error.Create("Auction.DeactivationFailed", reason);
         public static Error ActivationFailed(string reason) => Error.Create("Auction.ActivationFailed", reason);
         public static Error EndDatePassed => Error.Create("Auction.EndDatePassed", "Cannot activate auction. The auction end date has already passed.");
-        public static Error ExportFailed(string reason) => Error.Create("Auction.ExportFailed", reason);
         public static Error BulkUpdateFailed(string reason) => Error.Create("Auction.BulkUpdateFailed", $"Failed to bulk update auctions: {reason}");
     }
 
@@ -53,7 +52,6 @@ public static class AuctionErrors
         public static Error CreateFailed(string reason) => Error.Create("Category.CreateFailed", $"Failed to create category: {reason}");
         public static Error UpdateFailed(string reason) => Error.Create("Category.UpdateFailed", $"Failed to update category: {reason}");
         public static Error DeleteFailed(string reason) => Error.Create("Category.DeleteFailed", $"Failed to delete category: {reason}");
-        public static Error ImportFailed(string reason) => Error.Create("Category.ImportFailed", $"Failed to import categories: {reason}");
         public static Error FetchError(string reason) => Error.Create("Categories.FetchError", $"Error fetching categories: {reason}");
     }
 

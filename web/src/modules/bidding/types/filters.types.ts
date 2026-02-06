@@ -5,7 +5,7 @@ export interface BidFilters extends QueryParameters {
   status?: BidStatus
 }
 
-export interface WinningBidsFilters extends QueryParameters {}
+export type WinningBidsFilters = QueryParameters
 
 export interface BidHistoryFilters extends QueryParameters {
   auctionId?: string

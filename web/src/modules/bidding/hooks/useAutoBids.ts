@@ -41,7 +41,12 @@ export const useMyAutoBids = (activeOnly?: boolean, page = 1, pageSize = 20) => 
 export const useAutoBidForAuction = (auctionId: string | undefined, enabled = true) => {
   return useQuery({
     queryKey: ['autobid', 'auction', auctionId],
-    queryFn: () => biddingApi.getAutoBidForAuction(auctionId!),
+    queryFn: () => {
+      if (!auctionId) {
+        throw new Error('Auction ID is required')
+      }
+      return biddingApi.getAutoBidForAuction(auctionId)
+    },
     enabled: enabled && !!auctionId,
   })
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Timer, Gavel } from '@mui/icons-material'
@@ -9,7 +10,7 @@ interface AuctionCardProps {
   auction: AuctionListItem
 }
 
-export const AuctionCard = ({ auction }: AuctionCardProps) => {
+export const AuctionCard = memo(({ auction }: AuctionCardProps) => {
   return (
     <Card
       sx={{
@@ -77,4 +78,4 @@ export const AuctionCard = ({ auction }: AuctionCardProps) => {
       </Box>
     </Card>
   )
-}
+})

@@ -247,6 +247,7 @@ export function AuctionFormPage() {
   }
   const submitButtonText = getSubmitButtonText()
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedValues = watch()
 
   const renderStepContent = (step: number) => {

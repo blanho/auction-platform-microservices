@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Box,
@@ -35,7 +35,7 @@ import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: auction, isLoading } = useAuction(id!)
+  const { data: auction, isLoading } = useAuction(id)
   const { isAuthenticated } = useAuth()
   const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
   const [snackbar, setSnackbar] = useState<{
@@ -48,40 +48,40 @@ export function AuctionDetailPage() {
     severity: 'info',
   })
 
-  useAuctionSignalR({ auctionId: id!, enabled: !isLoading && !!id })
+  useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = useCallback(() => {
     setSnackbar({
       open: true,
       message: auction?.isWatching ? 'Removed from watchlist' : 'Added to watchlist',
       severity: 'success',
     })
-  }
+  }, [auction?.isWatching])
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     navigator.clipboard.writeText(window.location.href)
     setSnackbar({
       open: true,
       message: 'Link copied to clipboard',
       severity: 'success',
     })
-  }
+  }, [])
 
-  const handlePlaceBid = async () => {
+  const handlePlaceBid = useCallback(async () => {
     setSnackbar({
       open: true,
       message: 'Bid placed successfully',
       severity: 'success',
     })
-  }
+  }, [])
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = useCallback(async () => {
     setSnackbar({
       open: true,
       message: 'Redirecting to checkout...',
       severity: 'info',
     })
-  }
+  }, [])
 
   if (isLoading || !auction) {
     return <AuctionDetailPageSkeleton />

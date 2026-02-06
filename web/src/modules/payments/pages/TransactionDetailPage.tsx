@@ -48,12 +48,18 @@ export function TransactionDetailPage() {
     error,
   } = useQuery({
     queryKey: ['transaction', transactionId],
-    queryFn: () => walletsApi.getTransactionById(transactionId!),
+    queryFn: () => {
+      if (!transactionId) {
+        throw new Error('Transaction ID is required')
+      }
+      return walletsApi.getTransactionById(transactionId)
+    },
     enabled: !!transactionId,
   })
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText(transactionId!)
+    if (!transactionId) {return}
+    navigator.clipboard.writeText(transactionId)
   }
 
   if (isLoading) {

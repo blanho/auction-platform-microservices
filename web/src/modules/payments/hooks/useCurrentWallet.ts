@@ -75,7 +75,7 @@ export const useAddPaymentMethod = () => {
 
   return useMutation({
     mutationFn: async (token: string) => {
-      console.log('Adding payment method:', token)
+      console.warn('Adding payment method not implemented:', token)
       throw new Error('Not implemented')
     },
     onSuccess: () => {
@@ -89,7 +89,7 @@ export const useRemovePaymentMethod = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('Removing payment method:', id)
+      console.warn('Removing payment method not implemented:', id)
       throw new Error('Not implemented')
     },
     onSuccess: () => {
@@ -103,7 +103,7 @@ export const useSetDefaultPaymentMethod = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('Setting default payment method:', id)
+      console.warn('Setting default payment method not implemented:', id)
       throw new Error('Not implemented')
     },
     onSuccess: () => {

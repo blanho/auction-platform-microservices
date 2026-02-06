@@ -10,10 +10,9 @@ import {
   Select,
   MenuItem,
   Button,
-  Alert,
   Grid,
 } from '@mui/material'
-import { Send, CheckCircle } from '@mui/icons-material'
+import { Send } from '@mui/icons-material'
 import { useBroadcastNotification } from '../hooks'
 import type { NotificationType, BroadcastNotificationDto } from '../types/notification.types'
 

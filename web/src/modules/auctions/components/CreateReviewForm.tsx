@@ -121,7 +121,7 @@ export function CreateReviewForm({
           />
           {(rating !== null || hover !== -1) && (
             <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
-              {ratingLabels[hover !== -1 ? hover : rating!]}
+              {ratingLabels[hover !== -1 ? hover : rating ?? 0]}
             </Typography>
           )}
         </Stack>

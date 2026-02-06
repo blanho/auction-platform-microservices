@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -91,11 +91,11 @@ export function AdminDashboardPage() {
   const { data: analytics } = usePlatformAnalytics({ period })
   const { data: categories, isLoading: categoriesLoading } = useCategoryPerformance()
 
-  const handlePeriodChange = (_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
+  const handlePeriodChange = useCallback((_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
     if (newPeriod) {
       setPeriod(newPeriod)
     }
-  }
+  }, [])
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
