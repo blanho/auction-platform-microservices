@@ -26,8 +26,8 @@ public static class ServiceExtensions
 
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = configuration["Redis:ConnectionString"]
-                ?? throw new InvalidOperationException("Redis:ConnectionString configuration is required");
+            options.Configuration = configuration.GetConnectionString("Redis")
+                ?? throw new InvalidOperationException("ConnectionStrings:Redis configuration is required");
             options.InstanceName = "SearchService:";
         });
 
@@ -78,15 +78,15 @@ public static class ServiceExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var rabbitConfig = configuration.GetSection("RabbitMq");
-                var rabbitHost = rabbitConfig["Host"]
-                    ?? throw new InvalidOperationException("RabbitMq:Host configuration is required");
-                var rabbitUser = rabbitConfig["Username"]
-                    ?? throw new InvalidOperationException("RabbitMq:Username configuration is required");
-                var rabbitPass = rabbitConfig["Password"]
-                    ?? throw new InvalidOperationException("RabbitMq:Password configuration is required");
+                var rabbitHost = configuration["RabbitMQ:Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
+                var rabbitUser = configuration["RabbitMQ:Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
+                var rabbitPass = configuration["RabbitMQ:Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
+                var rabbitVHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(rabbitHost, h =>
+                cfg.Host(rabbitHost, rabbitVHost, h =>
                 {
                     h.Username(rabbitUser);
                     h.Password(rabbitPass);

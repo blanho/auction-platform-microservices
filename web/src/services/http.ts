@@ -95,7 +95,6 @@ class HttpService {
         if (error.response?.status === 401 && !originalRequest._retry) {
           if (originalRequest.url?.includes('/auth/refresh')) {
             clearAuthStorage()
-            window.location.href = '/login?session=expired'
             return Promise.reject(error)
           }
 
@@ -129,17 +128,6 @@ class HttpService {
           } catch (refreshError) {
             onTokenRefreshed(null)
             clearAuthStorage()
-
-            const axiosRefreshError = refreshError as AxiosError<{ code?: string }>
-            if (
-              axiosRefreshError.response?.status === 403 &&
-              axiosRefreshError.response?.data?.code === 'security_termination'
-            ) {
-              window.location.href = '/login?session=security'
-            } else {
-              window.location.href = '/login?session=expired'
-            }
-
             return Promise.reject(error)
           } finally {
             isRefreshing = false
@@ -151,8 +139,8 @@ class HttpService {
     )
   }
 
-  get<T>(url: string, params?: Record<string, unknown>) {
-    return this.client.get<T>(url, { params })
+  get<T>(url: string, config?: { params?: Record<string, unknown> }) {
+    return this.client.get<T>(url, config)
   }
 
   post<T>(url: string, data?: unknown, config?: { headers?: Record<string, string> }) {

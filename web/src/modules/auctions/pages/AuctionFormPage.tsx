@@ -46,8 +46,11 @@ import {
   useActiveCategories,
   useActiveBrands,
 } from '../hooks'
+import { useFileUpload } from '@/shared/hooks/useFileUpload'
 import type { CreateAuctionRequest, UpdateAuctionRequest } from '../types'
 import { getDefaultCreateValues } from '../utils'
+import { FileUploadZone } from '@/shared/components/upload'
+import { ACCEPTED_IMAGE_TYPES } from '@/shared/constants/storage.constants'
 import { addDays, formatDateTimeLocal } from '../utils/date.utils'
 import {
   ITEM_CONDITIONS,
@@ -101,7 +104,19 @@ export function AuctionFormPage() {
   const createMutation = useCreateAuction()
   const updateMutation = useUpdateAuction()
 
-  const isSubmitting = createMutation.isPending || updateMutation.isPending
+  const {
+    uploads,
+    attachments,
+    uploadFiles,
+    removeAttachment,
+    setPrimaryAttachment,
+    isUploading,
+  } = useFileUpload({
+    subFolder: 'auctions',
+    acceptedTypes: ACCEPTED_IMAGE_TYPES,
+  })
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending || isUploading
   const isLoading = isCategoriesLoading || isBrandsLoading || (isEditMode && isFetchingAuction)
 
   const schema = useMemo(
@@ -169,7 +184,12 @@ export function AuctionFormPage() {
           brandId: formData.brandId || undefined,
           currency: formData.currency,
           isFeatured: formData.isFeatured,
-          files: [],
+          files: attachments.map((a) => ({
+            fileId: a.fileId,
+            fileType: a.fileType,
+            displayOrder: a.displayOrder,
+            isPrimary: a.isPrimary,
+          })),
         }
         await createMutation.mutateAsync(createData)
       }
@@ -394,6 +414,25 @@ export function AuctionFormPage() {
                 increase trust in your listing.
               </InlineAlert>
             </Grid>
+            {!isEditMode && (
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  Photos & Files
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Add photos of your item. The first image will be used as the cover photo.
+                </Typography>
+                <FileUploadZone
+                  attachments={attachments}
+                  uploads={uploads}
+                  isUploading={isUploading}
+                  onFilesSelected={uploadFiles}
+                  onRemove={removeAttachment}
+                  onSetPrimary={setPrimaryAttachment}
+                  acceptedTypes={ACCEPTED_IMAGE_TYPES}
+                />
+              </Grid>
+            )}
           </Grid>
         )
 
@@ -594,6 +633,16 @@ export function AuctionFormPage() {
               )}
               {!isEditMode && 'reservePrice' in watchedValues && (
                 <>
+                  {attachments.length > 0 && (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Files Attached
+                      </Typography>
+                      <Typography variant="body1">
+                        {`${attachments.length} file(s)`}
+                      </Typography>
+                    </Grid>
+                  )}
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" color="text.secondary">
                       Starting Price

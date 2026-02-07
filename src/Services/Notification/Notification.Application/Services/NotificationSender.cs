@@ -223,18 +223,18 @@ public class NotificationSender : INotificationSender
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                _logger.LogInformation("SMS sent to {Phone} for template {Template}", MaskPhone(phoneNumber), templateKey);
+                _logger.LogInformation("SMS sent to {Phone} for template {Template}", TemplateHelper.MaskPhone(phoneNumber), templateKey);
             }
             else
             {
                 record.MarkAsFailed(result.Error ?? "Unknown error");
-                _logger.LogWarning("Failed to send SMS to {Phone}: {Error}", MaskPhone(phoneNumber), result.Error);
+                _logger.LogWarning("Failed to send SMS to {Phone}: {Error}", TemplateHelper.MaskPhone(phoneNumber), result.Error);
             }
         }
         catch (Exception ex)
         {
             record.MarkAsFailed(ex.Message);
-            _logger.LogError(ex, "Exception sending SMS to {Phone}", MaskPhone(phoneNumber));
+            _logger.LogError(ex, "Exception sending SMS to {Phone}", TemplateHelper.MaskPhone(phoneNumber));
         }
 
         await _notificationRepo.AddRecordAsync(record, ct);
@@ -279,9 +279,6 @@ public class NotificationSender : INotificationSender
 
     private static string StripHtml(string html)
         => TemplateHelper.StripHtml(html);
-
-    private static string MaskPhone(string phone)
-        => TemplateHelper.MaskPhone(phone);
 
     #endregion
 }

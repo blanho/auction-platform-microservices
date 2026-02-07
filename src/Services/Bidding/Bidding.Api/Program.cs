@@ -43,12 +43,11 @@ builder.Services.AddCQRS(typeof(Bidding.Application.Interfaces.IBidRepository).A
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
-builder.Services.AddGrpc();
-builder.Services.AddGrpcReflection();
 builder.Services.AddGrpcClients(builder.Configuration, builder.Environment);
 builder.Services.AddBiddingAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
+builder.Services.AddBiddingRateLimiting();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: builder.Configuration.GetConnectionString("RabbitMQ"),
@@ -60,7 +59,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BidDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
@@ -83,9 +82,8 @@ app.MapCarter();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapGrpcReflectionService();
     app.UseCommonOpenApi();
     app.UseCommonSwaggerUI("Bidding Service");
 }
 
-app.Run();
+await app.RunAsync();

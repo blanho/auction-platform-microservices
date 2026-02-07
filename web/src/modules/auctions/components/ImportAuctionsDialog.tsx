@@ -21,8 +21,8 @@ import {
 } from '@mui/material'
 import { FileUpload, CheckCircle, Error as ErrorIcon, InsertDriveFile } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
-import type { ImportAuctionsResult } from '../types/import-export.types'
-import { useImportAuctionsFile } from '../hooks/useImportExport'
+import type { ImportAuctionsResult, ImportAuctionError } from '@/modules/auctions/types/import-export.types'
+import { useImportAuctionsFile } from '@/modules/auctions/hooks/useImportExport'
 
 interface ImportAuctionsDialogProps {
   open: boolean
@@ -81,7 +81,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
         onSuccess?.()
       }
     } catch {
-      // Error handled by mutation
+      setResult(null)
     }
   }
 
@@ -248,37 +248,25 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                 </Typography>
               </Box>
 
-              {result.results.length > 0 && (
+              {result.errors.length > 0 && (
                 <TableContainer sx={{ maxHeight: 300 }}>
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell>Row</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell>Field</TableCell>
                         <TableCell>Details</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {result.results.map((item) => (
-                        <TableRow key={item.rowNumber}>
-                          <TableCell>{item.rowNumber}</TableCell>
+                      {result.errors.map((item: ImportAuctionError) => (
+                        <TableRow key={`${item.row}-${item.field}-${item.message}`}>
+                          <TableCell>{item.row}</TableCell>
+                          <TableCell>{item.field}</TableCell>
                           <TableCell>
-                            {item.success ? (
-                              <Chip label="Success" size="small" color="success" />
-                            ) : (
-                              <Chip label="Failed" size="small" color="error" />
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {item.success ? (
-                              <Typography variant="caption" color="text.secondary">
-                                ID: {item.auctionId?.slice(0, 8)}...
-                              </Typography>
-                            ) : (
-                              <Typography variant="caption" color="error">
-                                {item.error}
-                              </Typography>
-                            )}
+                            <Typography variant="caption" color="error">
+                              {item.message}
+                            </Typography>
                           </TableCell>
                         </TableRow>
                       ))}

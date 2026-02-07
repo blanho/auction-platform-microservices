@@ -13,6 +13,7 @@ using Payment.Application.Features.Orders.GetOrdersByBuyer;
 using Payment.Application.Features.Orders.GetOrdersBySeller;
 using Payment.Application.Features.Orders.GetOrderStats;
 using Payment.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
 
 namespace Payment.Api.Endpoints.Orders;
 
@@ -120,6 +121,9 @@ public class OrderQueryEndpoints : ICarterModule
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
+        if (result.Value is null)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
+
         httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
         httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
         httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
@@ -143,6 +147,9 @@ public class OrderQueryEndpoints : ICarterModule
 
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+
+        if (result.Value is null)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
 
         httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
         httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
@@ -171,6 +178,9 @@ public class OrderQueryEndpoints : ICarterModule
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
+        if (result.Value is null)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
+
         httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
         httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
         httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
@@ -198,6 +208,9 @@ public class OrderQueryEndpoints : ICarterModule
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
+        if (result.Value is null)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
+
         httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
         httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
         httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
@@ -224,6 +237,9 @@ public class OrderQueryEndpoints : ICarterModule
         if (!result.IsSuccess)
             return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
+        if (result.Value is null)
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
+
         httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
         httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
         httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
@@ -244,11 +260,3 @@ public class OrderQueryEndpoints : ICarterModule
         return TypedResults.Ok(result.Value);
     }
 }
-
-public record GetAllOrdersFilter(
-    int Page = 1,
-    int PageSize = 10,
-    string? Search = null,
-    OrderStatus? Status = null,
-    DateTime? FromDate = null,
-    DateTime? ToDate = null);

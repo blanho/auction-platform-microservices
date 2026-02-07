@@ -23,6 +23,7 @@ public class TokenGenerationService : ITokenGenerationService
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMediator _mediator;
+    private readonly IRolePermissionService _rolePermissionService;
 
     private const int AccessTokenExpirationMinutes = 15;
     private const int RefreshTokenExpirationDays = 7;
@@ -33,13 +34,15 @@ public class TokenGenerationService : ITokenGenerationService
         ILogger<TokenGenerationService> logger,
         ApplicationDbContext context,
         IConfiguration configuration,
-        IMediator mediator)
+        IMediator mediator,
+        IRolePermissionService rolePermissionService)
     {
         _userManager = userManager;
         _logger = logger;
         _context = context;
         _configuration = configuration;
         _mediator = mediator;
+        _rolePermissionService = rolePermissionService;
     }
 
     public async Task<TokenResponse?> GenerateTokensForUserAsync(string userId, string clientId)
@@ -281,7 +284,7 @@ public class TokenGenerationService : ITokenGenerationService
             claims.Add(new Claim("role", role));
         }
 
-        var permissions = RolePermissions.GetPermissionsForRoles(effectiveRoles);
+        var permissions = await _rolePermissionService.GetPermissionsForRolesAsync(effectiveRoles);
         foreach (var permission in permissions)
         {
             claims.Add(new Claim("permission", permission));

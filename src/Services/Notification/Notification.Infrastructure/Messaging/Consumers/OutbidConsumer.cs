@@ -1,6 +1,7 @@
 using BidService.Contracts.Events;
 using MassTransit;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 
@@ -36,7 +37,7 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
                 UserId = @event.OutbidBidderId.ToString(),
                 Type = NotificationType.BidOutbid,
                 Title = "You've Been Outbid!",
-                Message = $"Your bid of {FormatCurrency(@event.PreviousBidAmount)} has been outbid. New high bid: {FormatCurrency(@event.NewHighBidAmount)}",
+                Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(@event.PreviousBidAmount)} has been outbid. New high bid: {NotificationFormattingHelper.FormatCurrency(@event.NewHighBidAmount)}",
                 Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
                 {
                     ["AuctionId"] = @event.AuctionId.ToString(),
@@ -57,6 +58,4 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
                 OutbidAt = @event.OutbidAt
             });
     }
-
-    private static string FormatCurrency(decimal amount) => $"${amount:N2}";
 }

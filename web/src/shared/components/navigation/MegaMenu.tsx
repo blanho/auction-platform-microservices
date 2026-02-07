@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Box,
@@ -13,6 +13,8 @@ import {
 } from '@mui/material'
 import { KeyboardArrowDown } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
+import { useCategoriesTree } from '@/modules/auctions/hooks/useCategories'
+import type { Category } from '@/modules/auctions/hooks/useCategories'
 
 interface CategoryItem {
   name: string
@@ -38,110 +40,119 @@ interface NavItem {
   }
 }
 
-const navItems: NavItem[] = [
-  {
-    label: 'Auctions',
-    path: '/auctions',
-    megaMenu: {
-      categories: [
-        {
-          title: 'By Category',
-          items: [
-            { name: 'Fine Art', path: '/auctions?category=fine-art' },
-            { name: 'Antiques', path: '/auctions?category=antiques' },
-            { name: 'Jewelry & Watches', path: '/auctions?category=jewelry' },
-            { name: 'Collectibles', path: '/auctions?category=collectibles' },
-            { name: 'Furniture', path: '/auctions?category=furniture' },
-            { name: 'Wine & Spirits', path: '/auctions?category=wine' },
-            { name: 'Fashion & Accessories', path: '/auctions?category=fashion' },
-            { name: 'Books & Manuscripts', path: '/auctions?category=books' },
-          ],
-        },
-        {
-          title: 'By Status',
-          items: [
-            { name: 'Ending Today', path: '/auctions?ending=today' },
-            { name: 'Ending This Week', path: '/auctions?ending=week' },
-            { name: 'Newly Listed', path: '/auctions?sort=new' },
-            { name: 'No Reserve', path: '/auctions?reserve=none' },
-            { name: 'Buy Now Available', path: '/auctions?buyNow=true' },
-          ],
-        },
-        {
-          title: 'Price Range',
-          items: [
-            { name: 'Under $500', path: '/auctions?maxPrice=500' },
-            { name: '$500 - $2,000', path: '/auctions?minPrice=500&maxPrice=2000' },
-            { name: '$2,000 - $10,000', path: '/auctions?minPrice=2000&maxPrice=10000' },
-            { name: 'Over $10,000', path: '/auctions?minPrice=10000' },
-          ],
-        },
-      ],
-      featured: {
-        title: 'Featured Collection',
-        image: 'https://picsum.photos/400/500?random=mega1',
-        link: '/collections/featured',
-      },
-    },
-  },
-  {
-    label: 'Categories',
-    path: '/categories',
-    megaMenu: {
-      categories: [
-        {
-          title: 'Art & Paintings',
-          items: [
-            { name: 'Contemporary Art', path: '/categories/contemporary-art' },
-            { name: 'Modern Art', path: '/categories/modern-art' },
-            { name: 'Old Masters', path: '/categories/old-masters' },
-            { name: 'Photography', path: '/categories/photography' },
-            { name: 'Prints & Multiples', path: '/categories/prints' },
-            { name: 'Sculptures', path: '/categories/sculptures' },
-          ],
-        },
-        {
-          title: 'Luxury & Fashion',
-          items: [
-            { name: 'Designer Handbags', path: '/categories/handbags' },
-            { name: 'Fine Jewelry', path: '/categories/jewelry' },
-            { name: 'Luxury Watches', path: '/categories/watches' },
-            { name: 'Vintage Clothing', path: '/categories/vintage-clothing' },
-            { name: 'Shoes & Accessories', path: '/categories/shoes' },
-          ],
-        },
-        {
-          title: 'Home & Décor',
-          items: [
-            { name: 'Furniture', path: '/categories/furniture' },
-            { name: 'Rugs & Carpets', path: '/categories/rugs' },
-            { name: 'Lighting', path: '/categories/lighting' },
-            { name: 'Decorative Objects', path: '/categories/decorative' },
-            { name: 'Silver & Tableware', path: '/categories/silver' },
-          ],
-        },
-        {
-          title: 'Collectibles',
-          items: [
-            { name: 'Coins & Stamps', path: '/categories/coins' },
-            { name: 'Sports Memorabilia', path: '/categories/sports' },
-            { name: 'Rare Books', path: '/categories/books' },
-            { name: 'Toys & Models', path: '/categories/toys' },
-            { name: 'Wine & Whisky', path: '/categories/wine' },
-          ],
-        },
-      ],
-    },
-  },
-  { label: 'How It Works', path: '/how-it-works' },
-  { label: 'Sell', path: '/sell' },
-]
-
 export const MegaMenu = () => {
   const location = useLocation()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { data: categoriesTree } = useCategoriesTree()
+
+  const activeCategories = useMemo(() => {
+    return (categoriesTree ?? []).filter((category) => category.isActive)
+  }, [categoriesTree])
+
+  const topCategories = useMemo(() => {
+    return activeCategories.filter((category) => !category.parentId && !category.parentCategoryId)
+  }, [activeCategories])
+
+  const buildCategoryLink = useCallback(
+    (categoryId: string) => `/auctions?categoryId=${categoryId}`,
+    []
+  )
+
+  const flattenCategories = useMemo(() => {
+    const items: Category[] = []
+    topCategories.forEach((category) => {
+      if (category.children && category.children.length > 0) {
+        items.push(...category.children.filter((child) => child.isActive))
+      } else {
+        items.push(category)
+      }
+    })
+    return items
+  }, [topCategories])
+
+  const featuredCategory = useMemo(() => {
+    return activeCategories.find((category) => Boolean(category.imageUrl))
+  }, [activeCategories])
+
+  const auctionsMenuCategories: MegaMenuCategory[] = useMemo(() => {
+    const byCategoryItems = flattenCategories.slice(0, 8).map((category) => ({
+      name: category.name,
+      path: buildCategoryLink(category.id),
+    }))
+
+    return [
+      {
+        title: 'By Category',
+        items: byCategoryItems,
+      },
+      {
+        title: 'By Status',
+        items: [
+          { name: 'Ending Today', path: '/auctions?ending=today' },
+          { name: 'Ending This Week', path: '/auctions?ending=week' },
+          { name: 'Newly Listed', path: '/auctions?sort=new' },
+          { name: 'No Reserve', path: '/auctions?reserve=none' },
+          { name: 'Buy Now Available', path: '/auctions?buyNow=true' },
+        ],
+      },
+      {
+        title: 'Price Range',
+        items: [
+          { name: 'Under $500', path: '/auctions?maxPrice=500' },
+          { name: '$500 - $2,000', path: '/auctions?minPrice=500&maxPrice=2000' },
+          { name: '$2,000 - $10,000', path: '/auctions?minPrice=2000&maxPrice=10000' },
+          { name: 'Over $10,000', path: '/auctions?minPrice=10000' },
+        ],
+      },
+    ]
+  }, [flattenCategories, buildCategoryLink])
+
+  const categoriesMenuCategories: MegaMenuCategory[] = useMemo(() => {
+    return topCategories.slice(0, 4).map((category) => {
+      const items = (category.children ?? []).filter((child) => child.isActive)
+      const mappedItems = (items.length ? items : [category]).slice(0, 6).map((item) => ({
+        name: item.name,
+        path: buildCategoryLink(item.id),
+      }))
+
+      return {
+        title: category.name,
+        items: mappedItems,
+      }
+    })
+  }, [topCategories, buildCategoryLink])
+
+  const navItems: NavItem[] = useMemo(() => {
+    const auctionsFeatured = featuredCategory?.imageUrl
+      ? {
+          title: featuredCategory.name,
+          image: featuredCategory.imageUrl,
+          link: buildCategoryLink(featuredCategory.id),
+        }
+      : undefined
+
+    return [
+      {
+        label: 'Auctions',
+        path: '/auctions',
+        megaMenu: {
+          categories: auctionsMenuCategories,
+          featured: auctionsFeatured,
+        },
+      },
+      {
+        label: 'Categories',
+        path: '/categories',
+        megaMenu: {
+          categories: categoriesMenuCategories,
+        },
+      },
+      { label: 'How It Works', path: '/how-it-works' },
+      { label: 'Sell', path: '/sell' },
+    ]
+  }, [auctionsMenuCategories, categoriesMenuCategories, featuredCategory, buildCategoryLink])
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>, label: string) => {
     if (timeoutRef.current) {
@@ -220,7 +231,7 @@ export const MegaMenu = () => {
         placement="bottom-start"
         transition
         disablePortal
-        sx={{ zIndex: 1300, width: '100%', left: '0 !important', right: 0 }}
+        sx={{ zIndex: 1300, width: '100%', left: 0, right: 0 }}
         modifiers={[
           {
             name: 'offset',
@@ -251,10 +262,10 @@ export const MegaMenu = () => {
               <ClickAwayListener onClickAway={handleClose}>
                 <Container maxWidth="xl" sx={{ py: 5 }}>
                   <Grid container spacing={4}>
-                    {activeItem?.megaMenu?.categories.map((category, idx) => (
+                    {activeItem?.megaMenu?.categories.map((category) => (
                       <Grid
                         size={{ xs: 12, sm: 6, md: activeItem.megaMenu?.featured ? 2.4 : 3 }}
-                        key={idx}
+                        key={category.title}
                       >
                         <Typography
                           variant="subtitle2"

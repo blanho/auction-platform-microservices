@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Infrastructure.Configuration;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -60,7 +61,7 @@ public class SendGridEmailSender : IEmailSender
 
             _logger.LogDebug(
                 "Sending email via SendGrid to {To}, Subject: {Subject}",
-                MaskEmail(to),
+                EmailHelper.MaskEmail(to),
                 subject);
 
             var response = await _client.SendEmailAsync(msg, ct);
@@ -74,7 +75,7 @@ public class SendGridEmailSender : IEmailSender
 
                 _logger.LogInformation(
                     "Email sent successfully via SendGrid to {To}. MessageId: {MessageId}, StatusCode: {StatusCode}",
-                    MaskEmail(to),
+                    EmailHelper.MaskEmail(to),
                     messageId,
                     response.StatusCode);
 
@@ -93,47 +94,8 @@ public class SendGridEmailSender : IEmailSender
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email via SendGrid to {To}", MaskEmail(to));
+            _logger.LogError(ex, "Failed to send email via SendGrid to {To}", EmailHelper.MaskEmail(to));
             return new EmailSendResult(false, Error: ex.Message);
         }
     }
-
-    private static string MaskEmail(string email)
-    {
-        if (string.IsNullOrEmpty(email) || !email.Contains('@'))
-            return "***";
-
-        var parts = email.Split('@');
-        var localPart = parts[0];
-        var domain = parts[1];
-
-        var maskedLocal = localPart.Length > 2
-            ? localPart[..2] + new string('*', Math.Min(localPart.Length - 2, 4))
-            : localPart;
-
-        return $"{maskedLocal}@{domain}";
-    }
-}
-
-public class SendGridOptions
-{
-    public const string SectionName = "SendGrid";
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid ApiKey is required")]
-    public string ApiKey { get; set; } = string.Empty;
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid FromEmail is required")]
-    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "FromEmail must be a valid email address")]
-    public string FromEmail { get; set; } = string.Empty;
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "SendGrid FromName is required")]
-    public string FromName { get; set; } = string.Empty;
-
-    public bool EnableClickTracking { get; set; } = true;
-
-    public bool EnableOpenTracking { get; set; } = true;
-
-    public string? DefaultCategory { get; set; }
-
-    public bool SandboxMode { get; set; } = false;
 }

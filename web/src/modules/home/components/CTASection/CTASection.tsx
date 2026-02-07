@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Box, Container, Typography, Button } from '@mui/material'
-import { GlassCard } from '../shared'
+import { GlassCard } from '@/shared/components/ui'
 import { colors, gradients, typography, transitions } from '@/shared/theme/tokens'
 
 export const CTASection = () => {

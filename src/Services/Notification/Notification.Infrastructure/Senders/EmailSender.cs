@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 
 namespace Notification.Infrastructure.Senders;
@@ -34,7 +35,7 @@ public class EmailSender : IEmailSender
 
             _logger.LogInformation(
                 "Sending email to {To}, Subject: {Subject}",
-                MaskEmail(to),
+                EmailHelper.MaskEmail(to),
                 subject);
 
             await Task.Delay(10, ct);
@@ -43,31 +44,15 @@ public class EmailSender : IEmailSender
 
             _logger.LogInformation(
                 "Email sent successfully to {To}. MessageId: {MessageId}",
-                MaskEmail(to),
+                EmailHelper.MaskEmail(to),
                 messageId);
 
             return new EmailSendResult(true, messageId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}", MaskEmail(to));
+            _logger.LogError(ex, "Failed to send email to {To}", EmailHelper.MaskEmail(to));
             return new EmailSendResult(false, Error: ex.Message);
         }
-    }
-
-    private static string MaskEmail(string email)
-    {
-        if (string.IsNullOrEmpty(email) || !email.Contains('@'))
-            return "***";
-
-        var parts = email.Split('@');
-        var localPart = parts[0];
-        var domain = parts[1];
-
-        var maskedLocal = localPart.Length > 2
-            ? localPart[..2] + new string('*', Math.Min(localPart.Length - 2, 4))
-            : localPart;
-
-        return $"{maskedLocal}@{domain}";
     }
 }

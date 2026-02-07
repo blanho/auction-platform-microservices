@@ -1,6 +1,7 @@
 using BidService.Contracts.Events;
 using MassTransit;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 
@@ -33,7 +34,7 @@ public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
                 UserId = @event.BidderId.ToString(),
                 Type = NotificationType.BidRejected,
                 Title = "Bid Rejected",
-                Message = $"Your bid of {FormatCurrency(@event.Amount)} was rejected. Reason: {@event.Reason}",
+                Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(@event.Amount)} was rejected. Reason: {@event.Reason}",
                 Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
                 {
                     ["AuctionId"] = @event.AuctionId.ToString(),
@@ -46,6 +47,4 @@ public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
             },
             context.CancellationToken);
     }
-
-    private static string FormatCurrency(decimal amount) => $"${amount:N2}";
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 
 namespace Notification.Infrastructure.Senders;
@@ -32,7 +33,7 @@ public class SmsNotificationSender : ISmsSender
 
             _logger.LogInformation(
                 "Sending SMS to {PhoneNumber}, Length: {Length}",
-                MaskPhoneNumber(phoneNumber),
+                PhoneNumberHelper.MaskPhoneNumber(phoneNumber),
                 message.Length);
 
             await Task.Delay(10, ct);
@@ -41,23 +42,15 @@ public class SmsNotificationSender : ISmsSender
 
             _logger.LogInformation(
                 "SMS sent successfully to {PhoneNumber}. MessageId: {MessageId}",
-                MaskPhoneNumber(phoneNumber),
+                PhoneNumberHelper.MaskPhoneNumber(phoneNumber),
                 messageId);
 
             return new SmsSendResult(true, messageId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send SMS to {PhoneNumber}", MaskPhoneNumber(phoneNumber));
+            _logger.LogError(ex, "Failed to send SMS to {PhoneNumber}", PhoneNumberHelper.MaskPhoneNumber(phoneNumber));
             return new SmsSendResult(false, Error: ex.Message);
         }
-    }
-
-    private static string MaskPhoneNumber(string phone)
-    {
-        if (string.IsNullOrEmpty(phone) || phone.Length < 4)
-            return "***";
-
-        return phone[..3] + new string('*', phone.Length - 6) + phone[^3..];
     }
 }

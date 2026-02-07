@@ -9,6 +9,8 @@ namespace Notification.Infrastructure.Consumers;
 
 public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationRequestedEvent>
 {
+    private const string EmailChannelType = "Email";
+    
     private readonly IIdempotencyService _idempotency;
     private readonly ITemplateRepository _templateRepo;
     private readonly INotificationRecordRepository _recordRepo;
@@ -42,7 +44,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
             message.EventId,
             message.TemplateKey);
 
-        if (await _idempotency.IsProcessedAsync(message.EventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(message.EventId, EmailChannelType, ct))
         {
             _logger.LogDebug("Email already sent for EventId={EventId}", message.EventId);
             return;
@@ -87,7 +89,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                await _idempotency.MarkAsProcessedAsync(message.EventId, "Email", result.MessageId, ct: ct);
+                await _idempotency.MarkAsProcessedAsync(message.EventId, EmailChannelType, result.MessageId, ct: ct);
                 _logger.LogInformation(
                     "Email sent: EventId={EventId}, MessageId={MessageId}",
                     message.EventId,
@@ -100,7 +102,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
                     "Email failed: EventId={EventId}, Error={Error}",
                     message.EventId,
                     result.Error);
-                throw new Exception($"Email delivery failed: {result.Error}");
+                throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }
         finally

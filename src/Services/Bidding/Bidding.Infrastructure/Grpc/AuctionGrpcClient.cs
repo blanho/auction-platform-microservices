@@ -9,6 +9,8 @@ public class AuctionGrpcClient : IAuctionGrpcClient
 {
     private readonly AuctionGrpc.AuctionGrpcClient _client;
     private readonly ILogger<AuctionGrpcClient> _logger;
+    private static readonly TimeSpan DefaultDeadline = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan ExtendedDeadline = TimeSpan.FromSeconds(10);
 
     public AuctionGrpcClient(
         AuctionGrpc.AuctionGrpcClient client,
@@ -33,12 +35,20 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 BidAmountCents = DecimalToCents(bidAmount)
             };
 
-            var response = await _client.ValidateAuctionForBidAsync(request, cancellationToken: cancellationToken);
+            var response = await _client.ValidateAuctionForBidAsync(
+                request,
+                deadline: DateTime.UtcNow.Add(DefaultDeadline),
+                cancellationToken: cancellationToken);
 
             return new AuctionValidationResult(
                 response.IsValid,
                 response.ErrorMessage,
                 response.ErrorCode);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
+        {
+            _logger.LogError(ex, "Auction service deadline exceeded during bid validation for {AuctionId}", auctionId);
+            return new AuctionValidationResult(false, "Auction service request timed out", "DEADLINE_EXCEEDED");
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.Unavailable)
         {
@@ -59,7 +69,10 @@ public class AuctionGrpcClient : IAuctionGrpcClient
         try
         {
             var request = new GetAuctionDetailsRequest { AuctionId = auctionId.ToString() };
-            var response = await _client.GetAuctionDetailsAsync(request, cancellationToken: cancellationToken);
+            var response = await _client.GetAuctionDetailsAsync(
+                request,
+                deadline: DateTime.UtcNow.Add(DefaultDeadline),
+                cancellationToken: cancellationToken);
 
             return new AuctionDetails(
                 response.Title,
@@ -67,6 +80,11 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 DateTime.Parse(response.AuctionEnd),
                 response.Status,
                 response.IsBuyNowAvailable);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
+        {
+            _logger.LogError(ex, "Auction service deadline exceeded for GetAuctionDetails {AuctionId}", auctionId);
+            return null;
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
         {
@@ -95,7 +113,10 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 Reason = "Anti-snipe protection"
             };
 
-            var response = await _client.ExtendAuctionAsync(request, cancellationToken: cancellationToken);
+            var response = await _client.ExtendAuctionAsync(
+                request,
+                deadline: DateTime.UtcNow.Add(ExtendedDeadline),
+                cancellationToken: cancellationToken);
 
             DateTime? parsedEndTime = null;
             if (!string.IsNullOrEmpty(response.NewEndTime) && DateTime.TryParse(response.NewEndTime, out var dt))
@@ -104,6 +125,11 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             }
 
             return new ExtendAuctionResult(response.Success, response.ErrorMessage ?? string.Empty, parsedEndTime);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
+        {
+            _logger.LogError(ex, "Auction service deadline exceeded for ExtendAuction {AuctionId}", auctionId);
+            return new ExtendAuctionResult(false, "Auction service request timed out");
         }
         catch (RpcException ex)
         {

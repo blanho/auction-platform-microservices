@@ -188,7 +188,7 @@ export function CheckoutPage() {
         <motion.div variants={staggerItem}>
           <Card sx={{ p: 3, mb: 4 }}>
             <Stepper activeStep={activeStep} alternativeLabel>
-              {steps.map((label, index) => (
+              {steps.map((label, _index) => (
                 <Step key={label}>
                   <StepLabel
                     slots={{

@@ -3,6 +3,7 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notification.Infrastructure.Configuration;
 using Notification.Application.Interfaces;
 using Notification.Application.Services;
 using Notification.Infrastructure.Messaging;

@@ -53,7 +53,7 @@ public class AuctionQueryEndpoints : ICarterModule
         var query = new GetAuctionsQuery(
             request.Status, request.Seller, request.Winner, request.SearchTerm,
             request.Category, request.IsFeatured,
-            request.Page, request.PageSize, request.OrderBy, request.Descending);
+            request.Page, request.PageSize, request.OrderBy, request.Descending ?? false);
 
         var result = await mediator.Send(query, ct);
 
@@ -63,10 +63,10 @@ public class AuctionQueryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetFeaturedAuctions(
-        int page,
-        int pageSize,
-        IMediator mediator,
-        CancellationToken ct)
+        int page = 1,
+        int pageSize = 8,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
         var validPage = page > 0 ? page : 1;
         var validPageSize = pageSize > 0 && pageSize <= 50 ? pageSize : 8;
@@ -98,7 +98,7 @@ public class AuctionQueryEndpoints : ICarterModule
             request.Page,
             request.PageSize,
             request.OrderBy,
-            request.Descending);
+            request.Descending ?? false);
 
         var result = await mediator.Send(query, ct);
 

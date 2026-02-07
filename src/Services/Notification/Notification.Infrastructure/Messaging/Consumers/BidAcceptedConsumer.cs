@@ -1,6 +1,7 @@
 using BidService.Contracts.Events;
 using MassTransit;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 
@@ -33,7 +34,7 @@ public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
                 UserId = @event.BidderId.ToString(),
                 Type = NotificationType.BidAccepted,
                 Title = "Bid Accepted",
-                Message = $"Congratulations! Your bid of {FormatCurrency(@event.Amount)} has been accepted.",
+                Message = $"Congratulations! Your bid of {NotificationFormattingHelper.FormatCurrency(@event.Amount)} has been accepted.",
                 Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
                 {
                     ["AuctionId"] = @event.AuctionId.ToString(),
@@ -45,6 +46,4 @@ public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
             },
             context.CancellationToken);
     }
-
-    private static string FormatCurrency(decimal amount) => $"${amount:N2}";
 }

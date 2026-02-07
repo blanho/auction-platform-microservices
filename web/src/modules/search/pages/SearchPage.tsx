@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import {
   Box,
@@ -143,6 +142,7 @@ export function SearchPage() {
   const skeletonKeys = useMemo(
     () => Array.from({ length: 5 }, () => crypto.randomUUID()),
     []
+  )
 
   const { data: searchResults, isLoading, error } = useSearch(filters, !!filters.query)
   const { data: suggestions } = useSearchSuggestions(

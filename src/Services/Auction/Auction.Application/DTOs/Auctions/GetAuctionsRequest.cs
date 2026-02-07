@@ -13,6 +13,6 @@ public class GetAuctionsRequest
     public int Page { get; set; } = PaginationDefaults.DefaultPage;
     public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
     public string? OrderBy { get; set; }
-    public bool Descending { get; set; } = false;
+    public bool? Descending { get; set; }
 }
 

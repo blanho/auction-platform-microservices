@@ -13,7 +13,7 @@ import type {
   TwoFactorStatusResponse,
 } from '../types'
 
-const BASE_URL = '/api/auth'
+const BASE_URL = '/auth'
 
 function mapResponseToUser(response: AuthResponse): AuthUser {
   return {

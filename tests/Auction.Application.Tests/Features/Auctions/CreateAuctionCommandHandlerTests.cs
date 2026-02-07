@@ -4,7 +4,6 @@ using Auctions.Application.Interfaces;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.Extensions.Logging;
 using AuctionEntity = Auctions.Domain.Entities.Auction;
 
@@ -158,7 +157,7 @@ public class CreateAuctionCommandHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         await _repository.Received(1).CreateAsync(
-            Arg.Is<AuctionEntity>(a => a.IsFeatured == true),
+            Arg.Is<AuctionEntity>(a => a.IsFeatured),
             Arg.Any<CancellationToken>());
     }
 

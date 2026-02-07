@@ -1,9 +1,23 @@
 import { motion } from 'framer-motion'
 import { Box, Container, Typography } from '@mui/material'
-import { TRUSTED_BRANDS } from '../../data'
+import { useMemo } from 'react'
+import { useBrands } from '@/modules/auctions/hooks/useBrands'
 import { colors, typography, transitions } from '@/shared/theme/tokens'
 
 export const TrustedBrandsSection = () => {
+  const { data: featuredBrandsData } = useBrands({ activeOnly: true, featuredOnly: true, page: 1, pageSize: 8 })
+  const { data: activeBrandsData } = useBrands({ activeOnly: true, page: 1, pageSize: 8 })
+
+  const brands = useMemo(() => {
+    const featured = featuredBrandsData?.items ?? []
+    const active = activeBrandsData?.items ?? []
+    return featured.length > 0 ? featured : active
+  }, [featuredBrandsData?.items, activeBrandsData?.items])
+
+  if (brands.length === 0) {
+    return null
+  }
+
   return (
     <Box
       sx={{
@@ -41,9 +55,9 @@ export const TrustedBrandsSection = () => {
               gap: { xs: 4, md: 8 },
             }}
           >
-            {TRUSTED_BRANDS.map((brand, index) => (
+            {brands.map((brand, index) => (
               <motion.div
-                key={brand.name}
+                key={brand.id}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -62,23 +76,39 @@ export const TrustedBrandsSection = () => {
                     },
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 1,
-                      border: `1px solid ${colors.border.light}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontFamily: typography.fontFamily.display,
-                      fontWeight: typography.fontWeight.bold,
-                      fontSize: '1.25rem',
-                      color: colors.text.primary,
-                    }}
-                  >
-                    {brand.logo}
-                  </Box>
+                  {brand.logoUrl ? (
+                    <Box
+                      component="img"
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1,
+                        border: `1px solid ${colors.border.light}`,
+                        objectFit: 'contain',
+                        bgcolor: colors.background.primary,
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1,
+                        border: `1px solid ${colors.border.light}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: typography.fontFamily.display,
+                        fontWeight: typography.fontWeight.bold,
+                        fontSize: '1.25rem',
+                        color: colors.text.primary,
+                      }}
+                    >
+                      {brand.name.charAt(0)}
+                    </Box>
+                  )}
                   <Typography
                     sx={{
                       fontFamily: typography.fontFamily.body,

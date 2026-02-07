@@ -1,7 +1,9 @@
 using FirebaseAdmin.Messaging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Infrastructure.Configuration;
 
 namespace Notification.Infrastructure.Senders;
 
@@ -171,7 +173,7 @@ public class FirebasePushSender : IPushSender
                     {
                         _logger.LogWarning(
                             "Device token unregistered, should be removed: {Token}",
-                            MaskToken(tokens[i]));
+                            SecurityHelper.MaskToken(tokens[i]));
                     }
                 }
             }
@@ -189,30 +191,4 @@ public class FirebasePushSender : IPushSender
             return new PushSendResult(false, Error: ex.Message);
         }
     }
-
-    private static string MaskToken(string token)
-    {
-        if (string.IsNullOrEmpty(token) || token.Length < 10)
-            return "***";
-        return token[..5] + "..." + token[^5..];
-    }
-}
-
-public class FirebaseOptions
-{
-    public const string SectionName = "Firebase";
-
-    public string ServiceAccountPath { get; set; } = string.Empty;
-
-    public string? ServiceAccountJson { get; set; }
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Firebase ProjectId is required")]
-    public string ProjectId { get; set; } = string.Empty;
-
-    public string DefaultAndroidChannel { get; set; } = "default_channel";
-
-    public string? WebPushIcon { get; set; }
-
-    [System.ComponentModel.DataAnnotations.Range(1, 168, ErrorMessage = "TimeToLiveHours must be between 1 and 168")]
-    public int TimeToLiveHours { get; set; } = 24;
 }

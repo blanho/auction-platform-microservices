@@ -21,6 +21,7 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddScoped<ITokenGenerationService, TokenGenerationService>();
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProfileService, ProfileService>();

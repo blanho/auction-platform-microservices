@@ -8,11 +8,12 @@ interface InlineAlertProps {
   children: ReactNode
   variant?: 'standard' | 'outlined' | 'filled'
   sx?: SxProps<Theme>
+  onClose?: () => void
 }
 
-export function InlineAlert({ severity, title, children, variant, sx }: InlineAlertProps) {
+export function InlineAlert({ severity, title, children, variant, sx, onClose }: InlineAlertProps) {
   return (
-    <Alert severity={severity} variant={variant} sx={sx}>
+    <Alert severity={severity} variant={variant} sx={sx} onClose={onClose}>
       {title && <AlertTitle>{title}</AlertTitle>}
       {children}
     </Alert>

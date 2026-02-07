@@ -8,7 +8,6 @@ namespace Bidding.Application.Services
     public class BidPlacementService : IBidService
     {
         private readonly IBidRepository _repository;
-        private readonly IMapper _mapper;
         private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
         private readonly IUnitOfWork _unitOfWork;
@@ -17,7 +16,6 @@ namespace Bidding.Application.Services
 
         public BidPlacementService(
             IBidRepository repository,
-            IMapper mapper,
             ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
             IUnitOfWork unitOfWork,
@@ -25,7 +23,6 @@ namespace Bidding.Application.Services
             IAuctionGrpcClient auctionGrpcClient)
         {
             _repository = repository;
-            _mapper = mapper;
             _logger = logger;
             _dateTime = dateTime;
             _unitOfWork = unitOfWork;
@@ -33,12 +30,12 @@ namespace Bidding.Application.Services
             _auctionGrpcClient = auctionGrpcClient;
         }
 
-        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken cancellationToken)
+        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken cancellationToken = default)
         {
             return await PlaceBidAsync(dto, bidderId, bidderUsername, isAutoBid: false, cancellationToken);
         }
 
-        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, CancellationToken cancellationToken)
+        public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Placing bid for auction {AuctionId} by bidder {Bidder} (IsAutoBid: {IsAutoBid})",
                 dto.AuctionId, bidderUsername, isAutoBid);
@@ -203,6 +200,7 @@ namespace Bidding.Application.Services
                        ex.InnerException?.Message.Contains("unique") == true))
             {
                 _logger.LogWarning(
+                    ex,
                     "Duplicate bid detected for auction {AuctionId} at amount {Amount}. Race condition handled.",
                     dto.AuctionId, dto.Amount);
 
@@ -276,7 +274,7 @@ namespace Bidding.Application.Services
 
         #endregion
 
-        public async Task<PaginatedResult<BidDto>> GetBidsForAuctionAsync(BidQueryParams queryParams, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<BidDto>> GetBidsForAuctionAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Getting bids for auction {AuctionId}, Page: {Page}", 
                 queryParams.Filter.AuctionId, queryParams.Page);
@@ -290,7 +288,7 @@ namespace Bidding.Application.Services
                 result.PageSize);
         }
 
-        public async Task<PaginatedResult<BidDto>> GetBidsForBidderAsync(BidQueryParams queryParams, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<BidDto>> GetBidsForBidderAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Getting bids for bidder {Bidder}, Page: {Page}", 
                 queryParams.Filter.BidderUsername, queryParams.Page);

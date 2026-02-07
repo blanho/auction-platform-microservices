@@ -27,6 +27,7 @@ export const AuctionProductCard = ({
   id,
   title,
   currentBid,
+  startingPrice,
   endTime,
   bidCount,
   images,
@@ -37,10 +38,12 @@ export const AuctionProductCard = ({
   isFavorited = false,
 }: AuctionProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isImageLoaded, setIsImageLoaded] = useState(false)
+  const [isImageLoaded, setIsImageLoaded] = useState(images.length === 0)
   const [isHovered, setIsHovered] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [isEndingSoon, setIsEndingSoon] = useState(false)
+  const currentImage = images[currentImageIndex]
+  const currentPrice = currentBid > 0 ? currentBid : startingPrice ?? 0
 
   useEffect(() => {
     const updateTimeLeft = () => {
@@ -53,6 +56,14 @@ export const AuctionProductCard = ({
     const interval = setInterval(updateTimeLeft, 60000)
     return () => clearInterval(interval)
   }, [endTime])
+
+  useEffect(() => {
+    if (!currentImage) {
+      setIsImageLoaded(true)
+      return
+    }
+    setIsImageLoaded(false)
+  }, [currentImage])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (images.length <= 1) {return}
@@ -99,7 +110,7 @@ export const AuctionProductCard = ({
           }}
           onMouseMove={handleMouseMove}
         >
-          {!isImageLoaded && (
+          {!isImageLoaded && currentImage && (
             <Skeleton
               variant="rectangular"
               sx={{
@@ -111,20 +122,38 @@ export const AuctionProductCard = ({
             />
           )}
 
-          <Box
-            component="img"
-            src={images[currentImageIndex] || `https://picsum.photos/600/750?random=${id}`}
-            alt={title}
-            onLoad={() => setIsImageLoaded(true)}
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              opacity: isImageLoaded ? 1 : 0,
-              transition: 'opacity 0.3s ease, transform 0.5s ease',
-              transform: isHovered ? 'scale(1.03)' : 'scale(1)',
-            }}
-          />
+          {currentImage ? (
+            <Box
+              component="img"
+              src={currentImage}
+              alt={title}
+              onLoad={() => setIsImageLoaded(true)}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: isImageLoaded ? 1 : 0,
+                transition: 'opacity 0.3s ease, transform 0.5s ease',
+                transform: isHovered ? 'scale(1.03)' : 'scale(1)',
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: palette.neutral[100],
+                color: palette.neutral[600],
+                fontWeight: 600,
+                fontSize: '1.5rem',
+              }}
+            >
+              {title.charAt(0)}
+            </Box>
+          )}
 
           {images.length > 1 && (
             <Box
@@ -137,9 +166,9 @@ export const AuctionProductCard = ({
                 gap: 0.5,
               }}
             >
-              {images.map((_, index) => (
+              {images.map((image, index) => (
                 <Box
-                  key={index}
+                  key={`${image}-${index}`}
                   sx={{
                     width: 6,
                     height: 6,
@@ -277,7 +306,7 @@ export const AuctionProductCard = ({
                   fontFamily: '"Playfair Display", serif',
                 }}
               >
-                {formatCurrency(currentBid)}
+                {formatCurrency(currentPrice)}
               </Typography>
             </Box>
             <Typography

@@ -1,12 +1,27 @@
 import { Box, Typography, Chip } from '@mui/material'
-import { Timer, North } from '@mui/icons-material'
-import { GlassCard, FloatingElement } from '../shared'
+import { Timer } from '@mui/icons-material'
+import { GlassCard } from '@/shared/components/ui'
+import { FloatingElement } from '../shared'
 import { colors, typography, shadows, transitions } from '@/shared/theme/tokens'
+import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
+import { formatCurrency, formatTimeLeft } from '@/modules/auctions/utils'
+import { useMemo } from 'react'
 
 export const FloatingCards = () => {
+  const { data: featuredData } = useFeaturedAuctions(2)
+  const featuredAuctions = useMemo(() => featuredData?.items ?? [], [featuredData?.items])
+
+  if (featuredAuctions.length === 0) {
+    return null
+  }
+
+  const primary = featuredAuctions[0]
+  const secondary = featuredAuctions[1]
+
   return (
     <Box sx={{ position: 'relative', height: 600 }}>
-      <FloatingElement delay={0}>
+      {primary && (
+        <FloatingElement delay={0}>
         <GlassCard
           sx={{
             position: 'absolute',
@@ -23,15 +38,34 @@ export const FloatingCards = () => {
           }}
         >
           <Box sx={{ position: 'relative' }}>
-            <Box
-              component="img"
-              src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=640"
-              alt="Featured artwork"
-              sx={{ width: '100%', height: 240, objectFit: 'cover' }}
-            />
+            {primary.primaryImageUrl ? (
+              <Box
+                component="img"
+                src={primary.primaryImageUrl}
+                alt={primary.title}
+                sx={{ width: '100%', height: 240, objectFit: 'cover' }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: 240,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: colors.background.secondary,
+                  color: colors.text.primary,
+                  fontFamily: typography.fontFamily.display,
+                  fontSize: '2rem',
+                  fontWeight: typography.fontWeight.semibold,
+                }}
+              >
+                {primary.title.charAt(0)}
+              </Box>
+            )}
             <Chip
               icon={<Timer sx={{ fontSize: 14 }} />}
-              label="2h 34m"
+              label={formatTimeLeft(primary.endTime)}
               size="small"
               sx={{
                 position: 'absolute',
@@ -46,13 +80,13 @@ export const FloatingCards = () => {
           </Box>
           <Box sx={{ p: 2.5 }}>
             <Typography variant="caption" sx={{ color: colors.text.disabled }}>
-              Contemporary Art
+              {primary.categoryName}
             </Typography>
             <Typography
               variant="subtitle1"
               sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, my: 1 }}
             >
-              Abstract Composition No. 47
+              {primary.title}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Box>
@@ -63,11 +97,11 @@ export const FloatingCards = () => {
                   variant="h6"
                   sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold }}
                 >
-                  $12,400
+                  {formatCurrency(primary.currentBid || primary.startingPrice)}
                 </Typography>
               </Box>
               <Chip
-                label="23 bids"
+                label={`${primary.bidCount} bids`}
                 size="small"
                 sx={{ bgcolor: colors.background.elevated, color: colors.text.primary }}
               />
@@ -75,8 +109,10 @@ export const FloatingCards = () => {
           </Box>
         </GlassCard>
       </FloatingElement>
+      )}
 
-      <FloatingElement delay={1}>
+      {secondary && (
+        <FloatingElement delay={1}>
         <GlassCard
           sx={{
             position: 'absolute',
@@ -90,16 +126,35 @@ export const FloatingCards = () => {
           }}
         >
           <Box sx={{ position: 'relative' }}>
-            <Box
-              component="img"
-              src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=640"
-              alt="Luxury watch"
-              sx={{ width: '100%', height: 180, objectFit: 'cover' }}
-            />
+            {secondary.primaryImageUrl ? (
+              <Box
+                component="img"
+                src={secondary.primaryImageUrl}
+                alt={secondary.title}
+                sx={{ width: '100%', height: 180, objectFit: 'cover' }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: 180,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: colors.background.secondary,
+                  color: colors.text.primary,
+                  fontFamily: typography.fontFamily.display,
+                  fontSize: '1.5rem',
+                  fontWeight: typography.fontWeight.semibold,
+                }}
+              >
+                {secondary.title.charAt(0)}
+              </Box>
+            )}
           </Box>
           <Box sx={{ p: 2 }}>
             <Typography variant="caption" sx={{ color: colors.text.disabled }}>
-              Luxury Watches
+              {secondary.categoryName}
             </Typography>
             <Typography
               variant="subtitle2"
@@ -109,63 +164,18 @@ export const FloatingCards = () => {
                 mt: 0.5,
               }}
             >
-              Vintage Patek Philippe
+              {secondary.title}
             </Typography>
             <Typography
               variant="h6"
               sx={{ color: colors.gold.primary, fontWeight: typography.fontWeight.bold, mt: 1 }}
             >
-              $45,800
+              {formatCurrency(secondary.currentBid || secondary.startingPrice)}
             </Typography>
           </Box>
         </GlassCard>
       </FloatingElement>
-
-      <FloatingElement delay={2}>
-        <GlassCard
-          sx={{
-            position: 'absolute',
-            bottom: 40,
-            right: 80,
-            px: 3,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-          }}
-        >
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              bgcolor: `${colors.success}33`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <North sx={{ color: colors.success }} />
-          </Box>
-          <Box>
-            <Typography variant="caption" sx={{ color: colors.text.disabled }}>
-              Just Sold
-            </Typography>
-            <Typography
-              variant="subtitle2"
-              sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold }}
-            >
-              Rare Ming Vase
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: colors.success, fontWeight: typography.fontWeight.bold }}
-            >
-              $128,500
-            </Typography>
-          </Box>
-        </GlassCard>
-      </FloatingElement>
+      )}
     </Box>
   )
 }

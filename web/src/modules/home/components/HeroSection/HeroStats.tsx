@@ -1,11 +1,17 @@
 import { Box, Typography } from '@mui/material'
 import { motion } from 'framer-motion'
-import type { LiveStat } from '../../data'
-import { AnimatedCounter } from '../shared'
+import { AnimatedCounter } from '@/shared/components/motion'
 import { colors, typography, transitions } from '@/shared/theme/tokens'
 
+interface HeroStat {
+  label: string
+  value: number
+  prefix?: string
+  suffix?: string
+}
+
 interface HeroStatsProps {
-  stats: readonly LiveStat[]
+  stats: readonly HeroStat[]
 }
 
 export const HeroStats = ({ stats }: HeroStatsProps) => {

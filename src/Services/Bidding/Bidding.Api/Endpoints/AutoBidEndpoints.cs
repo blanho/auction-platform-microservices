@@ -196,5 +196,3 @@ public class AutoBidEndpoints : ICarterModule
         return Results.Ok(result.Value);
     }
 }
-
-public record ToggleAutoBidDto(bool Activate);

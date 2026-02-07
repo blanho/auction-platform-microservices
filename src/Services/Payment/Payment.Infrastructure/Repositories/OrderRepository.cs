@@ -6,6 +6,7 @@ using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
 using Payment.Application.Filtering;
+using Payment.Application.Helpers;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Domain.Enums;
@@ -169,7 +170,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<TopSellerDto>> GetTopSellersAsync(int limit, string period, CancellationToken cancellationToken = default)
     {
-        var startDate = GetPeriodStartDate(period);
+        var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
         var topSellers = await _context.Orders
             .AsNoTracking()
@@ -191,7 +192,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<TopBuyerDto>> GetTopBuyersAsync(int limit, string period, CancellationToken cancellationToken = default)
     {
-        var startDate = GetPeriodStartDate(period);
+        var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
         var topBuyers = await _context.Orders
             .AsNoTracking()
@@ -255,18 +256,5 @@ public class OrderRepository : IOrderRepository
             totalRevenue,
             averageOrderValue
         );
-    }
-
-    private static DateTimeOffset GetPeriodStartDate(string period)
-    {
-        var now = DateTimeOffset.UtcNow;
-        return period.ToLower() switch
-        {
-            "day" => now.AddDays(-1),
-            "week" => now.AddDays(-7),
-            "month" => now.AddMonths(-1),
-            "year" => now.AddYears(-1),
-            _ => now.AddMonths(-1)
-        };
     }
 }

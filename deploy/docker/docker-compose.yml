@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
-      POSTGRES_MULTIPLE_DATABASES: auction_db,bid_db,payment_db,notification_db,identity_db,analytics_db
+      POSTGRES_MULTIPLE_DATABASES: auction_db,bid_db,payment_db,notification_db,identity_db,analytics_db,storage_db
     ports:
       - "5432:5432"
     volumes:
@@ -124,6 +124,7 @@ services:
       ReverseProxy__Clusters__identity__Destinations__destination1__Address: http://identity-api:8080
       ReverseProxy__Clusters__analytics__Destinations__destination1__Address: http://analytics-api:8080
       ReverseProxy__Clusters__search__Destinations__destination1__Address: http://search-api:8080
+      ReverseProxy__Clusters__storage__Destinations__destination1__Address: http://storage-api:8080
       Serilog__WriteTo__0__Name: Seq
       Serilog__WriteTo__0__Args__serverUrl: http://seq:80
     depends_on:
@@ -358,6 +359,35 @@ services:
       elasticsearch:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - auction-network
+
+  storage-api:
+    build:
+      context: ../..
+      dockerfile: src/Services/Storage/Storage.Api/Dockerfile
+    container_name: storage-api
+    restart: unless-stopped
+    ports:
+      - "5009:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=storage_db;Username=postgres;Password=postgres123
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:80
+    depends_on:
+      postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy

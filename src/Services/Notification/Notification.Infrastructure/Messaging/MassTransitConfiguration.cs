@@ -1,6 +1,7 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notification.Infrastructure.Configuration;
 using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Persistence;
 
@@ -122,9 +123,6 @@ public static class MassTransitConfiguration
 
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
 
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
-
                     e.UseDelayedRedelivery(r => r
                         .Intervals(
                             TimeSpan.FromSeconds(5),
@@ -140,8 +138,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<UserCreatedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r
                         .Intervals(
                             TimeSpan.FromSeconds(5),
@@ -154,8 +150,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<EmailNotificationRequestedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r
                         .Intervals(
                             TimeSpan.FromSeconds(5),
@@ -168,8 +162,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<PasswordChangedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
@@ -178,8 +170,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<TwoFactorEnabledConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
@@ -188,8 +178,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<TwoFactorDisabledConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
@@ -198,8 +186,6 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<UserLoginConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
-                    e.DiscardFaultedMessages();
-                    e.DiscardSkippedMessages();
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
@@ -222,19 +208,4 @@ public static class MassTransitConfiguration
                ex.Message.Contains("User not found") ||
                ex.Message.Contains("Unregistered");
     }
-}
-
-public class RabbitMqSettings
-{
-    public const string SectionName = "RabbitMQ";
-
-    public string Host { get; set; } = string.Empty;
-    public ushort Port { get; set; } = 5672;
-    public string VirtualHost { get; set; } = "/";
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-
-    public int PrefetchCount { get; set; } = 16;
-
-    public int ConcurrencyLimit { get; set; } = 10;
 }

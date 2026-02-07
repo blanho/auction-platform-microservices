@@ -53,11 +53,11 @@ public class BrandEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetBrands(
-        bool activeOnly,
-        bool featuredOnly,
-        int? count,
-        IMediator mediator,
-        CancellationToken ct)
+        bool activeOnly = true,
+        bool featuredOnly = false,
+        int? count = null,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
         var query = new GetBrandsQuery(activeOnly, featuredOnly, count);
         var result = await mediator.Send(query, ct);

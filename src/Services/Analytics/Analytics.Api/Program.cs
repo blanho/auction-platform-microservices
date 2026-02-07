@@ -45,8 +45,8 @@ builder.Services
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"]
-        ?? throw new InvalidOperationException("Redis:ConnectionString configuration is required");
+    options.Configuration = builder.Configuration.GetConnectionString("Redis")
+        ?? throw new InvalidOperationException("ConnectionStrings:Redis configuration is required");
     options.InstanceName = "AnalyticsService:";
 });
 
@@ -62,7 +62,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddCustomHealthChecks(
-    redisConnectionString: builder.Configuration["Redis:ConnectionString"],
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "AnalyticsService");

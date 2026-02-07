@@ -11,7 +11,10 @@ namespace BuildingBlocks.Web.Observability;
 public class ObservabilityOptions
 {
     public const string SectionName = "Observability";
-    public string ServiceName { get; set; } = "UnnamedService";
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServiceName is required")]
+    public string ServiceName { get; set; } = string.Empty;
+
     public string ServiceVersion { get; set; } = "1.0.0";
     public string Environment { get; set; } = "development";
     public string? OtlpEndpoint { get; set; }

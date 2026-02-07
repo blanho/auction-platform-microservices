@@ -91,8 +91,22 @@ const UsersManagementPage = lazy(() =>
     default: m.UsersManagementPage,
   }))
 )
+const RolePermissionsPage = lazy(() =>
+  import('@/modules/users/pages/RolePermissionsPage').then((m) => ({
+    default: m.RolePermissionsPage,
+  }))
+)
 const SellerApplyPage = lazy(() =>
   import('@/modules/users/pages/SellerApplyPage').then((m) => ({ default: m.SellerApplyPage }))
+)
+const SellerProfilePage = lazy(() =>
+  import('@/modules/users/pages/SellerProfilePage').then((m) => ({ default: m.SellerProfilePage }))
+)
+const MyReviewsPage = lazy(() =>
+  import('@/modules/users/pages/MyReviewsPage').then((m) => ({ default: m.MyReviewsPage }))
+)
+const AuctionListingPage = lazy(() =>
+  import('@/modules/auctions/pages/AuctionListingPage').then((m) => ({ default: m.AuctionListingPage }))
 )
 
 const MyBidsPage = lazy(() =>
@@ -210,20 +224,32 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <AuthLayout />,
-    children: [
-      { path: '/login', element: withSuspense(LoginPage) },
-      { path: '/register', element: withSuspense(RegisterPage) },
-      { path: '/forgot-password', element: withSuspense(ForgotPasswordPage) },
-      { path: '/reset-password', element: withSuspense(ResetPasswordPage) },
-      { path: '/confirm-email', element: withSuspense(ConfirmEmailPage) },
-    ],
+    path: '/login',
+    element: withSuspense(LoginPage),
+  },
+  {
+    path: '/register',
+    element: withSuspense(RegisterPage),
+  },
+  {
+    path: '/forgot-password',
+    element: withSuspense(ForgotPasswordPage),
+  },
+  {
+    path: '/reset-password',
+    element: withSuspense(ResetPasswordPage),
+  },
+  {
+    path: '/confirm-email',
+    element: withSuspense(ConfirmEmailPage),
   },
   {
     element: <MainLayout />,
     children: [
       { path: '/auctions', element: withSuspense(AuctionsPage) },
+      { path: '/browse', element: withSuspense(AuctionListingPage) },
       { path: '/auctions/:id', element: withSuspense(AuctionDetailPage) },
+      { path: '/sellers/:sellerId', element: withSuspense(SellerProfilePage) },
       { path: '/search', element: withSuspense(SearchPage) },
       {
         path: '/auctions/create',
@@ -256,6 +282,10 @@ export const router = createBrowserRouter([
       {
         path: '/my-auctions',
         element: <ProtectedRoute>{withSuspense(MyAuctionsPage)}</ProtectedRoute>,
+      },
+      {
+        path: '/my-reviews',
+        element: <ProtectedRoute>{withSuspense(MyReviewsPage)}</ProtectedRoute>,
       },
       {
         path: '/my-bids',
@@ -366,6 +396,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute permissions={['users:manage']}>
             {withSuspense(UsersManagementPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/roles',
+        element: (
+          <ProtectedRoute permissions={['users:manage-roles']}>
+            {withSuspense(RolePermissionsPage)}
           </ProtectedRoute>
         ),
       },

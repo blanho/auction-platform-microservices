@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Box, Typography, IconButton, Container } from '@mui/material'
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
+import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
 
 interface Promotion {
   id: string
@@ -12,27 +13,6 @@ interface Promotion {
   bgColor?: string
 }
 
-const defaultPromotions: Promotion[] = [
-  {
-    id: '1',
-    text: 'New Spring Arrivals',
-    link: '/auctions?sort=new',
-    linkText: 'Shop Now',
-  },
-  {
-    id: '2',
-    text: 'Free Authentication on Orders Over $1,000',
-    link: '/how-it-works',
-    linkText: 'Learn More',
-  },
-  {
-    id: '3',
-    text: 'Ending Soon: Rare Art Collection',
-    link: '/collections/rare-art',
-    linkText: 'View Collection',
-  },
-]
-
 interface PromoBannerProps {
   promotions?: Promotion[]
   autoRotate?: boolean
@@ -40,35 +20,57 @@ interface PromoBannerProps {
 }
 
 export const PromoBanner = ({
-  promotions = defaultPromotions,
+  promotions,
   autoRotate = true,
   rotateInterval = 5000,
 }: PromoBannerProps) => {
+  const { data: featuredData } = useFeaturedAuctions(3)
+
+  const apiPromotions = useMemo(() => {
+    const items = featuredData?.items ?? []
+    const colors = [palette.neutral[900], palette.brand.primary, palette.neutral[800]]
+    return items.map((auction, index) => ({
+      id: auction.id,
+      text: `Live Now: ${auction.title}`,
+      link: `/auctions/${auction.id}`,
+      linkText: 'View Auction',
+      bgColor: colors[index % colors.length],
+    }))
+  }, [featuredData?.items])
+
+  const resolvedPromotions = promotions ?? apiPromotions
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (!autoRotate || isPaused || promotions.length <= 1) {return}
+    if (!autoRotate || isPaused || resolvedPromotions.length <= 1) {return}
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % promotions.length)
+      setCurrentIndex((prev) => (prev + 1) % resolvedPromotions.length)
     }, rotateInterval)
 
     return () => clearInterval(interval)
-  }, [autoRotate, isPaused, promotions.length, rotateInterval])
+  }, [autoRotate, isPaused, resolvedPromotions.length, rotateInterval])
+
+  useEffect(() => {
+    if (currentIndex >= resolvedPromotions.length) {
+      setCurrentIndex(0)
+    }
+  }, [currentIndex, resolvedPromotions.length])
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + promotions.length) % promotions.length)
+    setCurrentIndex((prev) => (prev - 1 + resolvedPromotions.length) % resolvedPromotions.length)
   }
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % promotions.length)
+    setCurrentIndex((prev) => (prev + 1) % resolvedPromotions.length)
   }
 
-  if (!isVisible || promotions.length === 0) {return null}
+  if (!isVisible || resolvedPromotions.length === 0) {return null}
 
-  const currentPromo = promotions[currentIndex]
+  const currentPromo = resolvedPromotions[currentIndex]
 
   return (
     <Box
@@ -91,7 +93,7 @@ export const PromoBanner = ({
             position: 'relative',
           }}
         >
-          {promotions.length > 1 && (
+          {resolvedPromotions.length > 1 && (
             <IconButton
               size="small"
               onClick={handlePrev}
@@ -148,7 +150,7 @@ export const PromoBanner = ({
             )}
           </Box>
 
-          {promotions.length > 1 && (
+          {resolvedPromotions.length > 1 && (
             <IconButton
               size="small"
               onClick={handleNext}
@@ -179,7 +181,7 @@ export const PromoBanner = ({
           </IconButton>
         </Box>
 
-        {promotions.length > 1 && (
+        {resolvedPromotions.length > 1 && (
           <Box
             sx={{
               display: 'flex',
@@ -188,9 +190,9 @@ export const PromoBanner = ({
               mt: 1,
             }}
           >
-            {promotions.map((_, index) => (
+            {resolvedPromotions.map((promo, index) => (
               <Box
-                key={index}
+                key={promo.id}
                 onClick={() => setCurrentIndex(index)}
                 sx={{
                   width: 5,

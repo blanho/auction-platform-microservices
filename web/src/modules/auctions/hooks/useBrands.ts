@@ -17,7 +17,7 @@ export function useBrands(filters?: BrandFilters) {
   })
 }
 
-export function useAllBrands(filters?: { activeOnly?: boolean; isFeatured?: boolean }) {
+export function useAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }) {
   return useQuery({
     queryKey: brandKeys.allBrands(),
     queryFn: () => brandsApi.getAllBrands(filters),

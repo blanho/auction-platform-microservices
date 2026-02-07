@@ -22,6 +22,7 @@ import {
   Button,
   Tooltip,
   Paper,
+  Stack,
 } from '@mui/material'
 import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, TableToolbar } from '@/shared/ui'
 import type { FilterConfig } from '@/shared/ui'

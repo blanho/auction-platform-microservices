@@ -60,6 +60,11 @@ export const AuctionListingPage = () => {
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
 
+  const skeletonKeys = useMemo(
+    () => Array.from({ length: 12 }, () => crypto.randomUUID()),
+    []
+  )
+
   const { data, isLoading } = useAuctions({
     categoryId: selectedCategories[0],
     minPrice: priceRange[0],
@@ -454,8 +459,8 @@ export const AuctionListingPage = () => {
 
             <Grid container spacing={3}>
               {isLoading
-                ? Array.from({ length: 12 }).map((_, i) => (
-                    <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={i}>
+                ? skeletonKeys.map((key) => (
+                    <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={key}>
                       <AuctionProductCardSkeleton />
                     </Grid>
                   ))
@@ -513,8 +518,8 @@ export const AuctionListingPage = () => {
         anchor="left"
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
-        PaperProps={{
-          sx: { width: 320, bgcolor: palette.neutral[50] },
+        slotProps={{
+          paper: { sx: { width: 320, bgcolor: palette.neutral[50] } },
         }}
       >
         {filterContent}

@@ -86,8 +86,9 @@ public static class ServiceCollectionExtensions
                     ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
                 var rabbitPass = configuration["RabbitMQ:Password"]
                     ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
+                var rabbitVHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(rabbitHost, "/", h =>
+                cfg.Host(rabbitHost, rabbitVHost, h =>
                 {
                     h.Username(rabbitUser);
                     h.Password(rabbitPass);

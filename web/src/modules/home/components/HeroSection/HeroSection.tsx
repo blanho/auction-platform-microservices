@@ -1,12 +1,12 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Box, Container, Typography, Button, Grid } from '@mui/material'
 import { PlayArrow, East } from '@mui/icons-material'
-import { GlassCard } from '../shared'
+import { GlassCard } from '@/shared/components/ui'
 import { HeroStats } from './HeroStats'
 import { FloatingCards } from './FloatingCards'
-import { LIVE_STATS } from '../../data'
+import { useHomeMetrics } from '../../hooks/useHomeMetrics'
 import { colors, gradients, typography, shadows, transitions } from '@/shared/theme/tokens'
 
 export const HeroSection = () => {
@@ -14,6 +14,16 @@ export const HeroSection = () => {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0])
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95])
+  const { activeAuctionsCount, categoriesCount, featuredBrandsCount } = useHomeMetrics()
+
+  const stats = useMemo(
+    () => [
+      { label: 'Active Auctions', value: activeAuctionsCount },
+      { label: 'Categories', value: categoriesCount },
+      { label: 'Featured Brands', value: featuredBrandsCount },
+    ],
+    [activeAuctionsCount, categoriesCount, featuredBrandsCount]
+  )
 
   const handleScrollDown = () => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
@@ -107,7 +117,7 @@ export const HeroSection = () => {
                       letterSpacing: 1,
                     }}
                   >
-                    {LIVE_STATS[1].value} LIVE AUCTIONS NOW
+                    {activeAuctionsCount} LIVE AUCTIONS NOW
                   </Typography>
                 </GlassCard>
 
@@ -216,7 +226,7 @@ export const HeroSection = () => {
                   </motion.div>
                 </Box>
 
-                <HeroStats stats={LIVE_STATS} />
+                <HeroStats stats={stats} />
               </motion.div>
             </Grid>
 

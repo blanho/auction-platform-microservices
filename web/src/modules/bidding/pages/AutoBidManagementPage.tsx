@@ -445,8 +445,10 @@ export const AutoBidManagementPage = () => {
                       backdropFilter: 'blur(8px)',
                     },
                     '& .Mui-selected': {
-                      background: '#2563EB !important',
-                      color: '#FFF',
+                      '&&': {
+                        background: '#2563EB',
+                        color: '#FFF',
+                      },
                     },
                   }}
                 />

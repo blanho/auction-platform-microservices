@@ -11,20 +11,17 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 {
     private readonly IAuctionWriteRepository _repository;
     private readonly ILogger<UpdateAuctionCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISanitizationService _sanitizationService;
 
     public UpdateAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<UpdateAuctionCommandHandler> logger,
-        IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         ISanitizationService sanitizationService)
     {
         _repository = repository;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
         _sanitizationService = sanitizationService;
     }

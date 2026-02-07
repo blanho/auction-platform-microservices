@@ -31,10 +31,9 @@ export interface UpdateBrandRequest extends Partial<CreateBrandRequest> {
 
 export interface BrandFilters extends QueryParameters {
   search?: string
-  isActive?: boolean
   activeOnly?: boolean
-  isFeatured?: boolean
-  limit?: number
+  featuredOnly?: boolean
+  count?: number
 }
 
 export const brandsApi = {
@@ -43,8 +42,8 @@ export const brandsApi = {
     return response.data
   },
 
-  async getAllBrands(filters?: { activeOnly?: boolean; isFeatured?: boolean }): Promise<Brand[]> {
-    const response = await http.get<Brand[]>('/brands', { params: { ...filters, limit: 1000 } })
+  async getAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }): Promise<Brand[]> {
+    const response = await http.get<Brand[]>('/brands', { params: { ...filters, count: 1000 } })
     return response.data
   },
 

@@ -57,9 +57,11 @@ import {
   useDeactivateAuction,
   useDeleteAuction,
 } from '@/modules/auctions/hooks'
-import { ExportAuctionsDialog } from '@/modules/auctions/components/ExportAuctionsDialog'
-import { ImportAuctionsDialog } from '@/modules/auctions/components/ImportAuctionsDialog'
-import { BulkImportDialog } from '@/modules/auctions/components/BulkImportDialog'
+import {
+  ExportAuctionsDialog,
+  ImportAuctionsDialog,
+  BulkImportDialog,
+} from '@/modules/auctions/components'
 import type { AuctionStatus, AuctionListItem } from '@/modules/auctions/types'
 import { formatTimeLeft } from '../utils'
 

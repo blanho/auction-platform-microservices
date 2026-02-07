@@ -17,14 +17,19 @@ public class LoggingOptions
 {
     public const string SectionName = "Logging";
 
-    public string ServiceName { get; set; } = "UnnamedService";
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServiceName is required")]
+    public string ServiceName { get; set; } = string.Empty;
+
     public string Environment { get; set; } = "development";
     public string MinimumLevel { get; set; } = "Information";
     public bool EnableConsole { get; set; } = true;
     public bool UseJsonFormat { get; set; } = false;
     public bool EnableRequestLogging { get; set; } = true;
     public bool EnablePerformanceLogging { get; set; } = true;
+
+    [System.ComponentModel.DataAnnotations.Range(100, 60000, ErrorMessage = "SlowRequestThresholdMs must be between 100 and 60000")]
     public int SlowRequestThresholdMs { get; set; } = 3000;
+
     public FileLoggingOptions? File { get; set; }
     public ElasticsearchLoggingOptions? Elasticsearch { get; set; }
     public SeqLoggingOptions? Seq { get; set; }
@@ -43,18 +48,31 @@ public class FileLoggingOptions
 public class ElasticsearchLoggingOptions
 {
     public bool Enabled { get; set; } = false;
-    public string Url { get; set; } = "http://elasticsearch:9200";
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Elasticsearch Url is required when Enabled=true")]
+    [System.ComponentModel.DataAnnotations.Url(ErrorMessage = "Url must be a valid URL")]
+    public string Url { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "IndexFormat is required")]
     public string IndexFormat { get; set; } = "logs-{0:yyyy.MM.dd}";
+
     public string? Username { get; set; }
     public string? Password { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Range(1, 1000, ErrorMessage = "BatchPostingLimit must be between 1 and 1000")]
     public int BatchPostingLimit { get; set; } = 50;
+
     public TimeSpan Period { get; set; } = TimeSpan.FromSeconds(2);
 }
 
 public class SeqLoggingOptions
 {
     public bool Enabled { get; set; } = false;
-    public string ServerUrl { get; set; } = "http://seq:5341";
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServerUrl is required when Enabled=true")]
+    [System.ComponentModel.DataAnnotations.Url(ErrorMessage = "ServerUrl must be a valid URL")]
+    public string ServerUrl { get; set; } = string.Empty;
+
     public string? ApiKey { get; set; }
 }
 
@@ -269,11 +287,12 @@ public static class PerformanceLogger
         return new OperationTimer(operationName, properties);
     }
 
-    private class OperationTimer : IDisposable
+    private sealed class OperationTimer : IDisposable
     {
         private readonly string _operationName;
         private readonly Stopwatch _stopwatch;
         private readonly (string Key, object Value)[] _properties;
+        private bool _disposed;
 
         public OperationTimer(string operationName, (string Key, object Value)[] properties)
         {
@@ -286,6 +305,11 @@ public static class PerformanceLogger
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _stopwatch.Stop();
             var elapsed = _stopwatch.ElapsedMilliseconds;
 
@@ -301,6 +325,8 @@ public static class PerformanceLogger
             {
                 Log.Debug("Operation: {OperationName} completed in {ElapsedMs}ms", _operationName, elapsed);
             }
+
+            _disposed = true;
         }
     }
 }

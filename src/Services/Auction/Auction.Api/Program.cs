@@ -1,5 +1,4 @@
 using Auctions.Api.Extensions.DependencyInjection;
-using Auctions.Api.Endpoints;
 using Auctions.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
@@ -30,7 +29,6 @@ builder.Services.AddStackExchangeRedisCache(options => options.Configuration = r
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddApplicationServices(builder.Configuration);
-builder.Services.AddGrpcClients();
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddCQRS(typeof(Auctions.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
 builder.Services.AddAuditServices(builder.Configuration, "auction-service");
@@ -67,7 +65,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAccessAuthorization();
 app.MapCarter();
-app.MapViewsEndpoints();
 app.MapGrpcService<Auctions.Api.Grpc.AuctionGrpcService>();
 
 if (app.Environment.IsDevelopment())
@@ -77,6 +74,6 @@ if (app.Environment.IsDevelopment())
     app.UseCommonSwaggerUI("Auction Service");
 }
 
-app.Run();
+await app.RunAsync();
 
-public partial class Program { }
+public static partial class Program { }

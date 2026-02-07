@@ -7,7 +7,6 @@ import {
   CollectionsSection,
   TrustedBrandsSection,
   CTASection,
-  Footer,
 } from '../components'
 import { colors } from '@/shared/theme/tokens'
 
@@ -21,14 +20,6 @@ export const LandingPageEnhanced = () => {
       <CollectionsSection />
       <TrustedBrandsSection />
       <CTASection />
-      <Footer />
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </Box>
   )
 }

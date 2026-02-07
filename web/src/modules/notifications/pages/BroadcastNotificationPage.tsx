@@ -13,6 +13,7 @@ import {
   Grid,
 } from '@mui/material'
 import { Send } from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
 import { useBroadcastNotification } from '../hooks'
 import type { NotificationType, BroadcastNotificationDto } from '../types/notification.types'
 

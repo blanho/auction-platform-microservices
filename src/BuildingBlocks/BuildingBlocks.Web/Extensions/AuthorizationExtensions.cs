@@ -10,6 +10,7 @@ public static class AuthorizationExtensions
 
     public static IServiceCollection AddRbacAuthorization(this IServiceCollection services)
     {
+        services.AddAuthorization();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionHandler>();
         return services;

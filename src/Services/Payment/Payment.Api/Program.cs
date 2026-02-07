@@ -7,7 +7,6 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Application.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,20 +18,10 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
-builder.WebHost.ConfigureKestrel((context, options) =>
-{
-    var httpPort = context.Configuration.GetValue<int>("Kestrel:HttpPort", 8080);
-    var grpcPort = context.Configuration.GetValue<int>("Kestrel:GrpcPort", 8081);
-    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-});
-
 builder.AddApplicationLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
-builder.Services.AddGrpc();
-builder.Services.AddGrpcReflection();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -81,7 +70,6 @@ app.MapCarter();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapGrpcReflectionService();
     app.UseCommonOpenApi();
     app.UseCommonSwaggerUI("Payment Service");
 }

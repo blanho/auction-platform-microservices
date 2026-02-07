@@ -14,6 +14,6 @@ public class GetMyAuctionsRequest
 
     public string? OrderBy { get; set; }
 
-    public bool Descending { get; set; } = false;
+    public bool? Descending { get; set; }
 }
 

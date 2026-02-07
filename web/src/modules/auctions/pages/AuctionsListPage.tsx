@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   Container,
   Typography,
@@ -20,18 +20,29 @@ import {
 } from '@mui/material'
 import { Search, Timer } from '@mui/icons-material'
 import { formatTimeLeft } from '../utils'
-import { useAuctions } from '../hooks'
+import { useAuctions, useActiveCategories } from '../hooks'
 import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
 
 export const AuctionsListPage = () => {
+  const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
-  const [category, setCategory] = useState('all')
+  const [category, setCategory] = useState(() => searchParams.get('categoryId') ?? 'all')
   const [sortBy, setSortBy] = useState('ending-soon')
   const [page, setPage] = useState(1)
+  const { data: categoriesData } = useActiveCategories()
+  const categories = useMemo(() => categoriesData ?? [], [categoriesData])
+
+  useEffect(() => {
+    const categoryId = searchParams.get('categoryId')
+    const nextCategory = categoryId ?? 'all'
+    if (nextCategory !== category) {
+      setCategory(nextCategory)
+    }
+  }, [searchParams, category])
 
   const { data, isLoading, isError, refetch } = useAuctions({
     search: searchQuery || undefined,
-    categoryId: category !== 'all' ? category : undefined,
+    categoryId: category === 'all' ? undefined : category,
     page,
     pageSize: 12,
   })
@@ -172,12 +183,14 @@ export const AuctionsListPage = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{ flexGrow: 1, minWidth: 200 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 
@@ -185,10 +198,11 @@ export const AuctionsListPage = () => {
           <InputLabel>Category</InputLabel>
           <Select value={category} label="Category" onChange={(e) => setCategory(e.target.value)}>
             <MenuItem value="all">All Categories</MenuItem>
-            <MenuItem value="electronics">Electronics</MenuItem>
-            <MenuItem value="art">Art</MenuItem>
-            <MenuItem value="collectibles">Collectibles</MenuItem>
-            <MenuItem value="fashion">Fashion</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 

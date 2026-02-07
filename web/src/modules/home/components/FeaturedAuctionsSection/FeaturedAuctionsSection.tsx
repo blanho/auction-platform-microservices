@@ -183,21 +183,38 @@ export const FeaturedAuctionsSection = () => {
                     }}
                   >
                     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                      <Box
-                        component="img"
-                        className="auction-image"
-                        src={
-                          auction.primaryImageUrl ||
-                          `https://picsum.photos/600/600?random=${index + 10}`
-                        }
-                        alt={auction.title}
-                        sx={{
-                          width: '100%',
-                          aspectRatio: '1',
-                          objectFit: 'cover',
-                          transition: `transform ${transitions.slower}`,
-                        }}
-                      />
+                      {auction.primaryImageUrl ? (
+                        <Box
+                          component="img"
+                          className="auction-image"
+                          src={auction.primaryImageUrl}
+                          alt={auction.title}
+                          sx={{
+                            width: '100%',
+                            aspectRatio: '1',
+                            objectFit: 'cover',
+                            transition: `transform ${transitions.slower}`,
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          className="auction-image"
+                          sx={{
+                            width: '100%',
+                            aspectRatio: '1',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: `linear-gradient(135deg, ${colors.background.secondary}, ${colors.border.light})`,
+                            color: colors.text.secondary,
+                            fontFamily: typography.fontFamily.display,
+                            fontSize: '1.5rem',
+                            transition: `transform ${transitions.slower}`,
+                          }}
+                        >
+                          {auction.title.charAt(0)}
+                        </Box>
+                      )}
                       <IconButton
                         onClick={(e) => {
                           e.preventDefault()

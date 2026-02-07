@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Infrastructure.Configuration;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
@@ -46,7 +48,7 @@ public class TwilioSmsSender : ISmsSender
         if (string.IsNullOrEmpty(message))
             return new SmsSendResult(false, Error: "Message is required");
 
-        var formattedPhone = FormatPhoneNumber(phoneNumber);
+        var formattedPhone = PhoneNumberHelper.FormatPhoneNumber(phoneNumber);
         if (formattedPhone == null)
             return new SmsSendResult(false, Error: "Invalid phone number format");
 
@@ -63,7 +65,7 @@ public class TwilioSmsSender : ISmsSender
         {
             _logger.LogDebug(
                 "Sending SMS via Twilio to {Phone}, Length: {Length}",
-                MaskPhoneNumber(formattedPhone),
+                PhoneNumberHelper.MaskPhoneNumber(formattedPhone),
                 message.Length);
 
             var messageResource = await MessageResource.CreateAsync(
@@ -99,7 +101,7 @@ public class TwilioSmsSender : ISmsSender
                 "SMS sent successfully via Twilio. SID: {Sid}, Status: {Status}, To: {To}",
                 messageResource.Sid,
                 messageResource.Status,
-                MaskPhoneNumber(formattedPhone));
+                PhoneNumberHelper.MaskPhoneNumber(formattedPhone));
 
             return new SmsSendResult(true, messageResource.Sid);
         }
@@ -115,65 +117,8 @@ public class TwilioSmsSender : ISmsSender
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send SMS to {Phone}", MaskPhoneNumber(phoneNumber));
+            _logger.LogError(ex, "Failed to send SMS to {Phone}", PhoneNumberHelper.MaskPhoneNumber(phoneNumber));
             return new SmsSendResult(false, Error: ex.Message);
         }
     }
-
-    private static string? FormatPhoneNumber(string phone)
-    {
-        if (string.IsNullOrEmpty(phone))
-            return null;
-
-        var cleaned = new string(phone.Where(c => char.IsDigit(c) || c == '+').ToArray());
-
-        if (cleaned.StartsWith('+'))
-            return cleaned;
-
-        if (cleaned.Length >= 10)
-        {
-
-            if (cleaned.Length == 10)
-                return $"+1{cleaned}";
-
-            if (cleaned.Length == 11 && cleaned.StartsWith('1'))
-                return $"+{cleaned}";
-
-            return $"+{cleaned}";
-        }
-
-        return null;
-    }
-
-    private static string MaskPhoneNumber(string phone)
-    {
-        if (string.IsNullOrEmpty(phone) || phone.Length < 6)
-            return "***";
-
-        return phone[..3] + new string('*', phone.Length - 6) + phone[^3..];
-    }
-}
-
-public class TwilioOptions
-{
-    public const string SectionName = "Twilio";
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Twilio AccountSid is required")]
-    public string AccountSid { get; set; } = string.Empty;
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Twilio AuthToken is required")]
-    public string AuthToken { get; set; } = string.Empty;
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Twilio FromNumber is required")]
-    [System.ComponentModel.DataAnnotations.Phone(ErrorMessage = "FromNumber must be a valid phone number")]
-    public string FromNumber { get; set; } = string.Empty;
-
-    public string? MessagingServiceSid { get; set; }
-
-    public string? StatusCallbackUrl { get; set; }
-
-    [System.ComponentModel.DataAnnotations.Range(1, 10000, ErrorMessage = "MaxMessageLength must be between 1 and 10000")]
-    public int MaxMessageLength { get; set; } = 1600;
-
-    public string DefaultCountryCode { get; set; } = "1";
 }

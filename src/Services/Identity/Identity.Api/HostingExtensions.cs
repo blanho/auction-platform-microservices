@@ -53,7 +53,7 @@ internal static class HostingExtensions
         builder.Services.AddObservability(builder.Configuration);
 
         builder.Services.AddCustomHealthChecks(
-            redisConnectionString: builder.Configuration["Redis:ConnectionString"],
+            redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
             rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
             databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
             serviceName: "IdentityService");

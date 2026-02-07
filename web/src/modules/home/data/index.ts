@@ -1,1 +1,1 @@
-export * from './landingContent'
+export {}

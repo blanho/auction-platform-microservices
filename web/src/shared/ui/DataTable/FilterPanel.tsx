@@ -12,7 +12,7 @@ import {
   IconButton,
   Typography,
   InputAdornment,
-  Grid2 as Grid,
+  Grid,
   Chip,
 } from '@mui/material'
 import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'

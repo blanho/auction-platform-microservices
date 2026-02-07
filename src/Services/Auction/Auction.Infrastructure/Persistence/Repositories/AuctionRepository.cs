@@ -142,10 +142,10 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
-            AuctionFilterDto queryParams,
+            AuctionFilterDto filter,
             CancellationToken cancellationToken = default)
         {
-            var filter = queryParams.Filter;
+            var filterParams = filter.Filter;
 
             var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
@@ -157,24 +157,24 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .AsSplitQuery()
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<Status>(filter.Status, true, out var statusEnum))
+            if (!string.IsNullOrEmpty(filterParams.Status) && Enum.TryParse<Status>(filterParams.Status, true, out var statusEnum))
             {
                 query = query.Where(x => x.Status == statusEnum);
             }
 
-            if (!string.IsNullOrEmpty(filter.Seller))
+            if (!string.IsNullOrEmpty(filterParams.Seller))
             {
-                query = query.Where(x => x.SellerUsername == filter.Seller);
+                query = query.Where(x => x.SellerUsername == filterParams.Seller);
             }
 
-            if (!string.IsNullOrEmpty(filter.Winner))
+            if (!string.IsNullOrEmpty(filterParams.Winner))
             {
-                query = query.Where(x => x.WinnerUsername == filter.Winner);
+                query = query.Where(x => x.WinnerUsername == filterParams.Winner);
             }
 
-            if (!string.IsNullOrEmpty(filter.SearchTerm))
+            if (!string.IsNullOrEmpty(filterParams.SearchTerm))
             {
-                var term = $"%{filter.SearchTerm}%";
+                var term = $"%{filterParams.SearchTerm}%";
                 query = query.Where(x =>
                     x.Item != null && (
                         EF.Functions.ILike(x.Item.Title, term) ||
@@ -182,25 +182,25 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     ));
             }
 
-            if (!string.IsNullOrEmpty(filter.Category))
+            if (!string.IsNullOrEmpty(filterParams.Category))
             {
-                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filter.Category);
+                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filterParams.Category);
             }
 
-            if (filter.IsFeatured.HasValue)
+            if (filterParams.IsFeatured.HasValue)
             {
-                query = query.Where(x => x.IsFeatured == filter.IsFeatured.Value);
+                query = query.Where(x => x.IsFeatured == filterParams.IsFeatured.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = query.ApplySorting(queryParams, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
+            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
 
             var items = await query
-                .ApplyPaging(queryParams)
+                .ApplyPaging(filter)
                 .ToListAsync(cancellationToken);
 
-            return new PaginatedResult<Auction>(items, totalCount, queryParams.Page, queryParams.PageSize);
+            return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
@@ -507,7 +507,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             };
         }
 
-        private class SaleProjection
+        private sealed class SaleProjection
         {
             public Guid Id { get; set; }
             public decimal? SoldAmount { get; set; }

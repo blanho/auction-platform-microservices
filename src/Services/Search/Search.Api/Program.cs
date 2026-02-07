@@ -24,16 +24,11 @@ builder.Services.AddCommonUtilities();
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 builder.Services.AddCustomHealthChecks(
-    redisConnectionString: builder.Configuration["Redis:ConnectionString"],
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
     serviceName: "SearchService");
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-{
-    Title = "Search Service API",
-    Version = "v1",
-    Description = "Auction Platform Search Service - Elasticsearch-backed search for auctions"
-}));
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 

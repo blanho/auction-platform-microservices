@@ -1,3 +1,4 @@
+using Auctions.Application.Helpers;
 using BuildingBlocks.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,7 +65,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
 
                     var itemTitle = auction.Item?.Title ?? "Auction";
 
-                    var timeRemaining = GetTimeRemainingText(threshold);
+                    var timeRemaining = TimeHelper.GetTimeRemainingText(threshold);
                     var endingSoonEvent = new AuctionEndingSoonEvent
                     {
                         AuctionId = auction.Id,
@@ -95,13 +96,6 @@ public class AuctionEndingSoonNotificationJob : BaseJob
         {
             Logger.LogInformation("Sent {Count} auction ending soon notifications", notificationsSent);
         }
-    }
-
-    private static string GetTimeRemainingText(TimeSpan threshold)
-    {
-        if (threshold.TotalHours >= 1)
-            return $"{(int)threshold.TotalHours} hour";
-        return $"{(int)threshold.TotalMinutes} minutes";
     }
 }
 

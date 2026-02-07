@@ -60,10 +60,10 @@ public class CategoryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetCategories(
-        bool activeOnly,
-        bool includeCount,
-        IMediator mediator,
-        CancellationToken ct)
+        bool activeOnly = true,
+        bool includeCount = false,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
         var query = new GetCategoriesQuery(activeOnly, includeCount);
         var result = await mediator.Send(query, ct);
