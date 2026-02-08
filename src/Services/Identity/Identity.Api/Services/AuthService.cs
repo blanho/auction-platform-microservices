@@ -18,76 +18,57 @@ using System.Web;
 
 namespace Identity.Api.Services;
 
-public class AuthService : IAuthService
+public class AuthService(
+    IUserService userService,
+    SignInManager<ApplicationUser> signInManager,
+    ITokenGenerationService tokenService,
+    IConfiguration configuration,
+    ILogger<AuthService> logger,
+    IMediator mediator,
+    IAuditPublisher auditPublisher,
+    IMapper mapper) : IAuthService
 {
-    private readonly IUserService _userService;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly ITokenGenerationService _tokenService;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<AuthService> _logger;
-    private readonly IMediator _mediator;
-    private readonly IAuditPublisher _auditPublisher;
-    private readonly IMapper _mapper;
     private const string ClientId = "nextApp";
+    private const string UsernameKey = "username";
 
-    public AuthService(
-        IUserService userService,
-        SignInManager<ApplicationUser> signInManager,
-        ITokenGenerationService tokenService,
-        IConfiguration configuration,
-        ILogger<AuthService> logger,
-        IMediator mediator,
-        IAuditPublisher auditPublisher,
-        IMapper mapper)
+    public async Task<Result<UserDto>> RegisterAsync(RegisterRequest request)
     {
-        _userService = userService;
-        _signInManager = signInManager;
-        _tokenService = tokenService;
-        _configuration = configuration;
-        _logger = logger;
-        _mediator = mediator;
-        _auditPublisher = auditPublisher;
-        _mapper = mapper;
-    }
-
-    public async Task<Result<UserDto>> RegisterAsync(RegisterRequest dto)
-    {
-        var existingUser = await _userService.FindByNameAsync(dto.Username);
+        var existingUser = await userService.FindByNameAsync(request.Username);
         if (existingUser != null)
             return Result.Failure<UserDto>(IdentityErrors.Auth.UsernameExists);
 
-        existingUser = await _userService.FindByEmailAsync(dto.Email);
+        existingUser = await userService.FindByEmailAsync(request.Email);
         if (existingUser != null)
             return Result.Failure<UserDto>(IdentityErrors.Auth.EmailExists);
 
         var user = new ApplicationUser
         {
-            UserName = dto.Username,
-            Email = dto.Email,
+            UserName = request.Username,
+            Email = request.Email,
             EmailConfirmed = false
         };
 
-        var result = await _userService.CreateAsync(user, dto.Password);
+        var result = await userService.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("User registration failed for {Username}: {Errors}", dto.Username, string.Join(", ", errors));
+            logger.LogWarning("User registration failed for {Username}: {Errors}", request.Username, string.Join(", ", errors));
             return Result.Failure<UserDto>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Registration failed", errors));
         }
 
-        var roleResult = await _userService.AddToRoleAsync(user, AppRoles.User);
+        var roleResult = await userService.AddToRoleAsync(user, AppRoles.User);
         if (!roleResult.Succeeded)
         {
-            _logger.LogWarning("Failed to assign default role to {Username}", dto.Username);
+            logger.LogWarning("Failed to assign default role to {Username}", request.Username);
         }
 
-        var confirmationToken = await _userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"]
+        var confirmationToken = await userService.GenerateEmailConfirmationTokenAsync(user);
+        var frontendUrl = configuration["FrontendUrl"]
             ?? throw new InvalidOperationException("FrontendUrl configuration is required");
         var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, confirmationToken);
 
-        await _mediator.Publish(new UserCreatedDomainEvent
+        await mediator.Publish(new UserCreatedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
@@ -98,14 +79,14 @@ public class AuthService : IAuthService
             ConfirmationLink = confirmationLink
         });
 
-        await _auditPublisher.PublishAsync(
+        await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             UserAuditData.FromUser(user, [AppRoles.User]),
             AuditAction.Created);
 
-        _logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", dto.Username);
+        logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", request.Username);
 
-        var userDto = _mapper.Map<UserDto>(user);
+        var userDto = mapper.Map<UserDto>(user);
         userDto.Roles = [AppRoles.User];
 
         return Result.Success(userDto);
@@ -113,7 +94,7 @@ public class AuthService : IAuthService
 
     public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
     {
-        var user = await _userService.FindByIdAsync(request.UserId);
+        var user = await userService.FindByIdAsync(request.UserId);
         if (user == null)
             return Result.Failure(IdentityErrors.Auth.InvalidConfirmationLink);
 
@@ -121,134 +102,135 @@ public class AuthService : IAuthService
             return Result.Success();
 
         var decodedToken = HttpUtility.UrlDecode(request.Token);
-        var result = await _userService.ConfirmEmailAsync(user, decodedToken);
+        var result = await userService.ConfirmEmailAsync(user, decodedToken);
 
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("Email confirmation failed for {UserId}: {Errors}", request.UserId, string.Join(", ", errors));
+            logger.LogWarning("Email confirmation failed for {UserId}: {Errors}", request.UserId, string.Join(", ", errors));
             return Result.Failure(IdentityErrors.WithIdentityErrors("Auth.ConfirmationFailed", "Email confirmation failed", errors));
         }
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
         {
-            ["username"] = user.UserName!
+            [UsernameKey] = user.UserName!
         });
 
-        await _mediator.Publish(new UserEmailConfirmedDomainEvent
+        await mediator.Publish(new UserEmailConfirmedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
             Email = user.Email!
         });
 
-        _logger.LogInformation("Email confirmed for user {Username}", user.UserName);
+        logger.LogInformation("Email confirmed for user {Username}", user.UserName);
         return Result.Success();
     }
 
     public async Task<Result> ResendConfirmationAsync(string email)
     {
-        var user = await _userService.FindByEmailAsync(email);
+        var user = await userService.FindByEmailAsync(email);
         if (user == null)
             return Result.Success();
 
         if (user.EmailConfirmed)
             return Result.Failure(IdentityErrors.Auth.EmailAlreadyConfirmed);
 
-        var token = await _userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"]
+        var token = await userService.GenerateEmailConfirmationTokenAsync(user);
+        var frontendUrl = configuration["FrontendUrl"]
             ?? throw new InvalidOperationException("FrontendUrl configuration is required");
         var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, token);
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>
         {
-            ["username"] = user.UserName!,
+            [UsernameKey] = user.UserName!,
             ["confirmationLink"] = confirmationLink
         });
 
-        _logger.LogInformation("Confirmation email resent to {Email}", email);
+        logger.LogInformation("Confirmation email resent to {Email}", email);
 
         return Result.Success();
     }
 
     public async Task<Result> ForgotPasswordAsync(string email)
     {
-        var user = await _userService.FindByEmailAsync(email);
+        var user = await userService.FindByEmailAsync(email);
 
         if (user == null || !user.EmailConfirmed)
         {
-            _logger.LogWarning("Password reset requested for non-existent or unconfirmed email: {Email}", email);
+            logger.LogWarning("Password reset requested for non-existent or unconfirmed email: {Email}", email);
             return Result.Success();
         }
 
-        var token = await _userService.GeneratePasswordResetTokenAsync(user);
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        var token = await userService.GeneratePasswordResetTokenAsync(user);
+        var frontendUrl = configuration["FrontendUrl"]
+            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
         var resetLink = EmailLinkHelper.GeneratePasswordResetLink(frontendUrl, user.Email!, token);
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "password-reset", "Reset Your Password", new Dictionary<string, string>
         {
-            ["username"] = user.UserName!,
+            [UsernameKey] = user.UserName!,
             ["resetLink"] = resetLink
         });
 
-        _logger.LogInformation("Password reset email requested for {Email}", email);
+        logger.LogInformation("Password reset email requested for {Email}", email);
         return Result.Success();
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
     {
-        var user = await _userService.FindByEmailAsync(request.Email);
+        var user = await userService.FindByEmailAsync(request.Email);
         if (user == null)
             return Result.Failure(IdentityErrors.Auth.InvalidResetRequest);
 
         var decodedToken = HttpUtility.UrlDecode(request.Token);
-        var result = await _userService.ResetPasswordAsync(user, decodedToken, request.NewPassword);
+        var result = await userService.ResetPasswordAsync(user, decodedToken, request.NewPassword);
 
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("Password reset failed for {Email}: {Errors}", request.Email, string.Join(", ", errors));
+            logger.LogWarning("Password reset failed for {Email}: {Errors}", request.Email, string.Join(", ", errors));
             return Result.Failure(IdentityErrors.WithIdentityErrors("Auth.ResetFailed", "Password reset failed", errors));
         }
 
-        _logger.LogInformation("Password reset successful for {Email}", request.Email);
+        logger.LogInformation("Password reset successful for {Email}", request.Email);
         return Result.Success();
     }
 
-    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest dto, string ipAddress)
+    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, string ipAddress)
     {
-        var user = await FindUserByUsernameOrEmailAsync(dto.UsernameOrEmail);
+        var user = await FindUserByUsernameOrEmailAsync(request.UsernameOrEmail);
         if (user == null)
         {
-            _logger.LogWarning("Login failed: user not found for {UsernameOrEmail}", dto.UsernameOrEmail);
+            logger.LogWarning("Login failed: user not found for {UsernameOrEmail}", request.UsernameOrEmail);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidCredentials);
         }
 
         if (user.IsSuspended)
         {
-            _logger.LogWarning("Login attempt for suspended user {Username}", user.UserName);
+            logger.LogWarning("Login attempt for suspended user {Username}", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.AccountSuspended(user.SuspensionReason));
         }
 
         if (!user.EmailConfirmed)
         {
-            _logger.LogWarning("Login attempt for unconfirmed email {Username}", user.UserName);
+            logger.LogWarning("Login attempt for unconfirmed email {Username}", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.EmailNotConfirmed);
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
+        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
 
         if (result.IsLockedOut)
         {
-            _logger.LogWarning("User {Username} is locked out", user.UserName);
+            logger.LogWarning("User {Username} is locked out", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.AccountLocked);
         }
 
         if (result.RequiresTwoFactor)
         {
-            var twoFactorStateToken = _tokenService.GenerateTwoFactorStateToken(user.Id);
+            var twoFactorStateToken = tokenService.GenerateTwoFactorStateToken(user.Id);
 
-            _logger.LogInformation("User {Username} requires two-factor authentication", user.UserName);
+            logger.LogInformation("User {Username} requires two-factor authentication", user.UserName);
             return Result.Success(new LoginResponse
             {
                 UserId = user.Id,
@@ -261,7 +243,7 @@ public class AuthService : IAuthService
 
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Login failed for user {Username}: invalid password", user.UserName);
+            logger.LogWarning("Login failed for user {Username}: invalid password", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidCredentials);
         }
 
@@ -270,39 +252,39 @@ public class AuthService : IAuthService
 
     public async Task<Result<LoginResponse>> LoginWith2FAAsync(TwoFactorLoginRequest request, string ipAddress)
     {
-        var (isValid, userId) = _tokenService.ValidateTwoFactorStateToken(request.TwoFactorStateToken);
+        var (isValid, userId) = tokenService.ValidateTwoFactorStateToken(request.TwoFactorStateToken);
         if (!isValid || string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("Invalid or expired 2FA state token from {IpAddress}", ipAddress);
+            logger.LogWarning("Invalid or expired 2FA state token from {IpAddress}", ipAddress);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
-        var user = await _userService.FindByIdAsync(userId);
+        var user = await userService.FindByIdAsync(userId);
         if (user == null)
             return Result.Failure<LoginResponse>(IdentityErrors.User.NotFound);
 
-        var isValidCode = await _userService.VerifyTwoFactorTokenAsync(
+        var isValidCode = await userService.VerifyTwoFactorTokenAsync(
             user,
-            _signInManager.Options.Tokens.AuthenticatorTokenProvider,
+            signInManager.Options.Tokens.AuthenticatorTokenProvider,
             request.Code);
 
         if (!isValidCode)
         {
-            _logger.LogWarning("Invalid 2FA code for user {Username}", user.UserName);
+            logger.LogWarning("Invalid 2FA code for user {Username}", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.TwoFactor.InvalidCode);
         }
 
-        _logger.LogInformation("User {Username} logged in successfully with 2FA", user.UserName);
+        logger.LogInformation("User {Username} logged in successfully with 2FA", user.UserName);
         return await GenerateLoginResponseAsync(user, ipAddress);
     }
 
     public async Task<Result<TokenResponse>> RefreshTokenAsync(string refreshToken, string ipAddress)
     {
-        var result = await _tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
+        var result = await tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
 
         if (!result.IsSuccess)
         {
-            _logger.LogWarning("Invalid refresh token attempt from {IpAddress}, reason: {Reason}", 
+            logger.LogWarning("Invalid refresh token attempt from {IpAddress}, reason: {Reason}", 
                 ipAddress, result.FailureReason);
             
             return result.FailureReason == RefreshTokenFailureReason.SecurityTermination
@@ -310,7 +292,7 @@ public class AuthService : IAuthService
                 : Result.Failure<TokenResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
-        _logger.LogInformation("Token refreshed successfully from {IpAddress}", ipAddress);
+        logger.LogInformation("Token refreshed successfully from {IpAddress}", ipAddress);
 
         return Result.Success(new TokenResponse(
             result.AccessToken!,
@@ -321,7 +303,7 @@ public class AuthService : IAuthService
 
     public async Task<Result> RevokeTokenAsync(string refreshToken, string ipAddress)
     {
-        await _tokenService.RevokeTokenAsync(refreshToken, ipAddress);
+        await tokenService.RevokeTokenAsync(refreshToken, ipAddress);
         return Result.Success();
     }
 
@@ -331,45 +313,45 @@ public class AuthService : IAuthService
 
         if (!string.IsNullOrEmpty(refreshToken))
         {
-            await _tokenService.RevokeTokenAsync(refreshToken, ipAddress);
+            await tokenService.RevokeTokenAsync(refreshToken, ipAddress);
         }
         else if (!string.IsNullOrEmpty(userId))
         {
-            await _tokenService.RevokeAllUserTokensAsync(userId, ipAddress);
+            await tokenService.RevokeAllUserTokensAsync(userId, ipAddress);
         }
 
-        _logger.LogInformation("User {UserId} logged out successfully", userId);
+        logger.LogInformation("User {UserId} logged out successfully", userId);
         return Result.Success();
     }
 
     public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
     {
-        var user = await _userService.FindByIdAsync(userId);
+        var user = await userService.FindByIdAsync(userId);
         if (user == null)
             return Result.Failure(IdentityErrors.User.NotFound);
 
-        var result = await _userService.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        var result = await userService.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            _logger.LogWarning("Password change failed for user {UserId}: {Errors}", userId, string.Join(", ", errors));
+            logger.LogWarning("Password change failed for user {UserId}: {Errors}", userId, string.Join(", ", errors));
             return Result.Failure(IdentityErrors.WithIdentityErrors("Profile.PasswordChangeFailed", "Password change failed", errors));
         }
 
-        _logger.LogInformation("Password changed successfully for user {UserId}", userId);
+        logger.LogInformation("Password changed successfully for user {UserId}", userId);
         return Result.Success();
     }
 
     public async Task<Result> LogoutAllAsync(string userId)
     {
-        await _tokenService.RevokeAllUserTokensAsync(userId, "logout-all");
-        _logger.LogInformation("All tokens revoked for user {UserId}", userId);
+        await tokenService.RevokeAllUserTokensAsync(userId, "logout-all");
+        logger.LogInformation("All tokens revoked for user {UserId}", userId);
         return Result.Success();
     }
 
     public async Task<ExternalLoginInfo?> GetExternalLoginInfoAsync() =>
-        await _signInManager.GetExternalLoginInfoAsync();
+        await signInManager.GetExternalLoginInfoAsync();
 
     public async Task<Result<ExternalAuthResult>> ProcessExternalLoginAsync(ExternalLoginInfo info)
     {
@@ -379,7 +361,7 @@ public class AuthService : IAuthService
         if (string.IsNullOrEmpty(email))
             return Result.Failure<ExternalAuthResult>(IdentityErrors.External.EmailNotProvided);
 
-        var user = await _userService.FindByEmailAsync(email);
+        var user = await userService.FindByEmailAsync(email);
 
         if (user == null)
         {
@@ -392,17 +374,17 @@ public class AuthService : IAuthService
                 FullName = name
             };
 
-            var createResult = await _userService.CreateWithoutPasswordAsync(user);
+            var createResult = await userService.CreateWithoutPasswordAsync(user);
             if (!createResult.Succeeded)
             {
                 var errors = createResult.Errors.Select(e => e.Description).ToList();
-                _logger.LogError("Failed to create user from external login: {Errors}", string.Join(", ", errors));
+                logger.LogError("Failed to create user from external login: {Errors}", string.Join(", ", errors));
                 return Result.Failure<ExternalAuthResult>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Failed to create account", errors));
             }
 
-            await _userService.AddToRoleAsync(user, AppRoles.User);
+            await userService.AddToRoleAsync(user, AppRoles.User);
 
-            await _mediator.Publish(new UserCreatedDomainEvent
+            await mediator.Publish(new UserCreatedDomainEvent
             {
                 UserId = user.Id,
                 Username = user.UserName!,
@@ -414,7 +396,7 @@ public class AuthService : IAuthService
 
             await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
             {
-                ["username"] = user.UserName!
+                [UsernameKey] = user.UserName!
             });
         }
         else if (user.IsSuspended)
@@ -422,32 +404,32 @@ public class AuthService : IAuthService
             return Result.Failure<ExternalAuthResult>(IdentityErrors.Auth.AccountSuspended(user.SuspensionReason));
         }
 
-        var existingLogins = await _userService.GetLoginsAsync(user);
+        var existingLogins = await userService.GetLoginsAsync(user);
         if (!existingLogins.Any(l => l.LoginProvider == info.LoginProvider && l.ProviderKey == info.ProviderKey))
         {
-            var addLoginResult = await _userService.AddLoginAsync(user, info);
+            var addLoginResult = await userService.AddLoginAsync(user, info);
             if (!addLoginResult.Succeeded)
             {
-                _logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
+                logger.LogWarning("Failed to add external login for user {UserId}", user.Id);
             }
         }
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
-        await _userService.UpdateAsync(user);
+        await userService.UpdateAsync(user);
 
-        var authCode = _tokenService.GenerateTwoFactorStateToken(user.Id);
-        _logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
+        var authCode = tokenService.GenerateTwoFactorStateToken(user.Id);
+        logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
 
         return Result.Success(new ExternalAuthResult(user.Id, authCode));
     }
 
     public async Task<Result<string>> GenerateAuthCodeAsync(string userId)
     {
-        var user = await _userService.FindByIdAsync(userId);
+        var user = await userService.FindByIdAsync(userId);
         if (user == null)
             return Result.Failure<string>(IdentityErrors.User.NotFound);
 
-        var code = _tokenService.GenerateTwoFactorStateToken(userId);
+        var code = tokenService.GenerateTwoFactorStateToken(userId);
         return Result.Success(code);
     }
 
@@ -456,15 +438,15 @@ public class AuthService : IAuthService
         if (string.IsNullOrEmpty(code))
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
 
-        var (isValid, userId) = _tokenService.ValidateTwoFactorStateToken(code);
+        var (isValid, userId) = tokenService.ValidateTwoFactorStateToken(code);
 
         if (!isValid || string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("Invalid or expired authorization code attempt");
+            logger.LogWarning("Invalid or expired authorization code attempt");
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
-        var (user, _) = await _userService.GetByIdWithRolesAsync(userId);
+        var (user, _) = await userService.GetByIdWithRolesAsync(userId);
         if (user == null)
             return Result.Failure<LoginResponse>(IdentityErrors.User.NotFound);
 
@@ -473,42 +455,42 @@ public class AuthService : IAuthService
 
     public async Task<bool> IsUsernameAvailableAsync(string username)
     {
-        var user = await _userService.FindByNameAsync(username);
+        var user = await userService.FindByNameAsync(username);
         return user == null;
     }
 
     public async Task<bool> IsEmailAvailableAsync(string email)
     {
-        var user = await _userService.FindByEmailAsync(email);
+        var user = await userService.FindByEmailAsync(email);
         return user == null;
     }
 
     public async Task<Result<UserDto>> GetCurrentUserAsync(string userId)
     {
-        var (user, roles) = await _userService.GetByIdWithRolesAsync(userId);
+        var (user, roles) = await userService.GetByIdWithRolesAsync(userId);
         if (user == null)
             return Result.Failure<UserDto>(IdentityErrors.User.NotFound);
 
-        var userDto = _mapper.Map<UserDto>(user);
+        var userDto = mapper.Map<UserDto>(user);
         userDto.Roles = roles.ToList();
         return Result.Success(userDto);
     }
 
     private async Task<Result<LoginResponse>> GenerateLoginResponseAsync(ApplicationUser user, string ipAddress)
     {
-        var tokens = await _tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
+        var tokens = await tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
         if (tokens == null)
         {
-            _logger.LogError("Failed to generate tokens for user {Username}", user.UserName);
+            logger.LogError("Failed to generate tokens for user {Username}", user.UserName);
             return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
         }
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
-        await _userService.UpdateAsync(user);
+        await userService.UpdateAsync(user);
         
-        var roles = await _userService.GetRolesAsync(user);
+        var roles = await userService.GetRolesAsync(user);
 
-        await _mediator.Publish(new UserLoginDomainEvent
+        await mediator.Publish(new UserLoginDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
@@ -516,7 +498,7 @@ public class AuthService : IAuthService
             IpAddress = ipAddress
         });
 
-        await _auditPublisher.PublishAsync(
+        await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             new AuthAuditData
             {
@@ -529,7 +511,7 @@ public class AuthService : IAuthService
             AuditAction.Updated,
             metadata: new Dictionary<string, object> { ["action"] = "login" });
 
-        _logger.LogInformation("User {Username} logged in successfully", user.UserName);
+        logger.LogInformation("User {Username} logged in successfully", user.UserName);
 
         return Result.Success(new LoginResponse
         {
@@ -553,7 +535,7 @@ public class AuthService : IAuthService
         var username = sanitized;
         var counter = 1;
 
-        while (await _userService.FindByNameAsync(username) != null)
+        while (await userService.FindByNameAsync(username) != null)
             username = $"{sanitized}{counter++}";
 
         return username;
@@ -561,7 +543,7 @@ public class AuthService : IAuthService
 
     private async Task PublishEmailEventAsync(string userId, string email, string name, string templateKey, string subject, Dictionary<string, string> data)
     {
-        await _mediator.Publish(new EmailNotificationRequestedDomainEvent
+        await mediator.Publish(new EmailNotificationRequestedDomainEvent
         {
             UserId = userId,
             RecipientEmail = email,
@@ -575,8 +557,8 @@ public class AuthService : IAuthService
     private async Task<ApplicationUser?> FindUserByUsernameOrEmailAsync(string usernameOrEmail)
     {
         if (MailAddress.TryCreate(usernameOrEmail, out _))
-            return await _userService.FindByEmailAsync(usernameOrEmail);
+            return await userService.FindByEmailAsync(usernameOrEmail);
 
-        return await _userService.FindByNameAsync(usernameOrEmail);
+        return await userService.FindByNameAsync(usernameOrEmail);
     }
 }

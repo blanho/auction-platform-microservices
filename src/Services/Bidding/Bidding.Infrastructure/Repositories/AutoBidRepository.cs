@@ -93,6 +93,11 @@ public class AutoBidRepository : IAutoBidRepository
         return autoBids;
     }
 
+    async Task IBatchRepository<AutoBid>.AddRangeAsync(IEnumerable<AutoBid> entities, CancellationToken cancellationToken)
+    {
+        await AddRangeAsync(entities, cancellationToken);
+    }
+
     public Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
         autoBid.UpdatedAt = _dateTime.UtcNow;

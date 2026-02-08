@@ -75,11 +75,8 @@ public class ChangeTrackerAuditCollector : IAuditCollector
 
     private static AuditAction MapStateToAction(EntityState state, object entity)
     {
-        if (state == EntityState.Modified && entity is BaseEntity baseEntity)
-        {
-            if (baseEntity.IsDeleted)
-                return AuditAction.SoftDeleted;
-        }
+        if (state == EntityState.Modified && entity is BaseEntity baseEntity && baseEntity.IsDeleted)
+            return AuditAction.SoftDeleted;
 
         return state switch
         {
@@ -92,28 +89,16 @@ public class ChangeTrackerAuditCollector : IAuditCollector
 
     private static Dictionary<string, object?> GetCurrentValues(EntityEntry entry)
     {
-        var values = new Dictionary<string, object?>();
-        foreach (var property in entry.CurrentValues.Properties)
-        {
-            if (ShouldAuditProperty(property.Name))
-            {
-                values[property.Name] = entry.CurrentValues[property];
-            }
-        }
-        return values;
+        return entry.CurrentValues.Properties
+            .Where(property => ShouldAuditProperty(property.Name))
+            .ToDictionary(property => property.Name, property => entry.CurrentValues[property]);
     }
 
     private static Dictionary<string, object?> GetOriginalValues(EntityEntry entry)
     {
-        var values = new Dictionary<string, object?>();
-        foreach (var property in entry.OriginalValues.Properties)
-        {
-            if (ShouldAuditProperty(property.Name))
-            {
-                values[property.Name] = entry.OriginalValues[property];
-            }
-        }
-        return values;
+        return entry.OriginalValues.Properties
+            .Where(property => ShouldAuditProperty(property.Name))
+            .ToDictionary(property => property.Name, property => entry.OriginalValues[property]);
     }
 
     private static List<string> GetAllPropertyNames(EntityEntry entry)

@@ -48,7 +48,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             buyerUsername: message.WinnerUsername,
             sellerId: message.SellerId,
             sellerUsername: message.SellerUsername,
-            itemTitle: string.Empty,
+            itemTitle: message.ItemTitle,
             winningBid: message.SoldAmount ?? 0);
 
         await _orderRepository.AddAsync(order);

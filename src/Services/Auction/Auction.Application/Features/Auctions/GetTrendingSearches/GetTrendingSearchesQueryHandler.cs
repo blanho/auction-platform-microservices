@@ -17,7 +17,7 @@ public class GetTrendingSearchesQueryHandler : IQueryHandler<GetTrendingSearches
         var results = trendingItems.Select(item => new TrendingSearchDto
         {
             SearchTerm = item.Item?.Title ?? "Item",
-            Icon = GetIconForCategory(item.Item?.CategoryId),
+            Icon = GetIconForCategory(),
             Trending = item.CurrentHighBid.HasValue && item.CurrentHighBid > 1000,
             Hot = item.IsFeatured,
             IsNew = (DateTime.UtcNow - item.CreatedAt).TotalDays <= 7,
@@ -27,7 +27,7 @@ public class GetTrendingSearchesQueryHandler : IQueryHandler<GetTrendingSearches
         return Result<List<TrendingSearchDto>>.Success(results);
     }
 
-    private static string GetIconForCategory(Guid? categoryId)
+    private static string GetIconForCategory()
     {
         return "🔍";
     }

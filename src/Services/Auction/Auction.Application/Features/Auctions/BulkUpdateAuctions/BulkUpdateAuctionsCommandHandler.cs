@@ -1,5 +1,6 @@
+using Auction = Auctions.Domain.Entities.Auction;
 using Auctions.Application.Errors;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 // using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
 // using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
@@ -46,26 +47,10 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
                     continue;
                 }
 
-                if (request.Activate)
+                if (TryApplyStatusChange(auction, request.Activate))
                 {
-                    if (auction.Status == Status.Inactive || auction.Status == Status.Scheduled)
-                    {
-                        if (auction.AuctionEnd > _dateTime.UtcNow)
-                        {
-                            auction.ChangeStatus(Status.Live);
-                            await _writeRepository.UpdateAsync(auction, cancellationToken);
-                            updatedCount++;
-                        }
-                    }
-                }
-                else
-                {
-                    if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
-                    {
-                        auction.ChangeStatus(Status.Inactive);
-                        await _writeRepository.UpdateAsync(auction, cancellationToken);
-                        updatedCount++;
-                    }
+                    await _writeRepository.UpdateAsync(auction, cancellationToken);
+                    updatedCount++;
                 }
             }
 
@@ -79,6 +64,28 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
             _logger.LogError(ex, "Failed to bulk update auctions");
             return Result.Failure<int>(AuctionErrors.Auction.BulkUpdateFailed(ex.Message));
         }
+    }
+
+    private bool TryApplyStatusChange(Auction auction, bool activate)
+    {
+        if (activate)
+        {
+            if ((auction.Status == Status.Inactive || auction.Status == Status.Scheduled) && auction.AuctionEnd > _dateTime.UtcNow)
+            {
+                auction.ChangeStatus(Status.Live);
+                return true;
+            }
+        }
+        else
+        {
+            if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
+            {
+                auction.ChangeStatus(Status.Inactive);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Entities;
 using BuildingBlocks.Infrastructure.Repository.Converters;
@@ -29,6 +30,10 @@ public class AnalyticsDbContext : DbContext
         modelBuilder.HasDefaultSchema("public");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnalyticsDbContext).Assembly);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

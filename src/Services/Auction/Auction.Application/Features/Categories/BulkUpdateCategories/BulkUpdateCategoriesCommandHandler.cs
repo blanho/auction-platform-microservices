@@ -52,7 +52,7 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to bulk update categories: {Error}", ex.Message);
+            _logger.LogError(ex, "Failed to bulk update categories: {Error}", ex.Message);
             return Result.Failure<int>(Error.Create("Category.BulkUpdateFailed", $"Failed to bulk update categories: {ex.Message}"));
         }
     }

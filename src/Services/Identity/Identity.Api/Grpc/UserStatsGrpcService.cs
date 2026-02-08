@@ -54,23 +54,33 @@ public class UserStatsGrpcService(
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var query = _dbContext.Users.AsNoTracking();
+        var stats = await _dbContext.Users
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                TotalUsers = g.Count(),
+                ActiveUsers = g.Count(u => u.IsActive && !u.IsSuspended),
+                VerifiedUsers = g.Count(u => u.EmailConfirmed),
+                NewUsersToday = g.Count(u => u.CreatedAt.Date == today),
+                NewUsersThisWeek = g.Count(u => u.CreatedAt >= weekStart),
+                NewUsersThisMonth = g.Count(u => u.CreatedAt >= monthStart)
+            })
+            .FirstOrDefaultAsync(context.CancellationToken);
 
-        var totalUsers = await query.CountAsync(context.CancellationToken);
-        var activeUsers = await query.CountAsync(u => u.IsActive && !u.IsSuspended, context.CancellationToken);
-        var verifiedUsers = await query.CountAsync(u => u.EmailConfirmed, context.CancellationToken);
-        var newUsersToday = await query.CountAsync(u => u.CreatedAt.Date == today, context.CancellationToken);
-        var newUsersThisWeek = await query.CountAsync(u => u.CreatedAt >= weekStart, context.CancellationToken);
-        var newUsersThisMonth = await query.CountAsync(u => u.CreatedAt >= monthStart, context.CancellationToken);
+        if (stats == null)
+        {
+            return new PlatformUserStatsResponse();
+        }
 
         return new PlatformUserStatsResponse
         {
-            TotalUsers = totalUsers,
-            ActiveUsers = activeUsers,
-            NewUsersToday = newUsersToday,
-            NewUsersThisWeek = newUsersThisWeek,
-            NewUsersThisMonth = newUsersThisMonth,
-            VerifiedUsers = verifiedUsers
+            TotalUsers = stats.TotalUsers,
+            ActiveUsers = stats.ActiveUsers,
+            NewUsersToday = stats.NewUsersToday,
+            NewUsersThisWeek = stats.NewUsersThisWeek,
+            NewUsersThisMonth = stats.NewUsersThisMonth,
+            VerifiedUsers = stats.VerifiedUsers
         };
     }
 }

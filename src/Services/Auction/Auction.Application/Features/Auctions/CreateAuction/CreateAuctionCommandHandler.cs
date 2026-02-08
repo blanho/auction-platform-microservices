@@ -2,7 +2,7 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 // using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
 // using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
@@ -70,15 +70,15 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             }
         }
 
-        var auction = Auction.Create(
-            sellerId: request.SellerId,
-            sellerUsername: request.SellerUsername,
-            item: item,
-            reservePrice: request.ReservePrice,
-            auctionEnd: request.AuctionEnd,
-            currency: request.Currency,
-            buyNowPrice: request.BuyNowPrice,
-            isFeatured: request.IsFeatured);
+        var auction = Auction.Create(new CreateAuctionParams(
+            SellerId: request.SellerId,
+            SellerUsername: request.SellerUsername,
+            Item: item,
+            ReservePrice: request.ReservePrice,
+            AuctionEnd: request.AuctionEnd,
+            Currency: request.Currency,
+            BuyNowPrice: request.BuyNowPrice,
+            IsFeatured: request.IsFeatured));
 
         if (request.Files != null && request.Files.Count > 0)
         {

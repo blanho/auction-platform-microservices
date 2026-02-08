@@ -78,7 +78,7 @@ export const LandingHeader = () => {
     if (!isLandingPage) {
       return palette.neutral[900]
     }
-    return isScrolled ? 'rgba(28, 25, 23, 0.98)' : 'transparent'
+    return isScrolled ? 'rgba(28, 25, 23, 0.98)' : 'rgba(28, 25, 23, 0.7)'
   }
   const headerBg = getHeaderBg()
 
@@ -190,7 +190,7 @@ export const LandingHeader = () => {
         elevation={0}
         sx={{
           bgcolor: headerBg,
-          borderBottom: isScrolled || !isLandingPage ? '1px solid rgba(250,250,249,0.1)' : 'none',
+          borderBottom: isLandingPage ? '1px solid rgba(250,250,249,0.08)' : '1px solid rgba(250,250,249,0.1)',
           transition: 'all 0.3s ease',
           backdropFilter: isScrolled ? 'blur(12px)' : 'none',
         }}

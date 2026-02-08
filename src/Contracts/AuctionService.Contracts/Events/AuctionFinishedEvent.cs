@@ -13,4 +13,5 @@ public record AuctionFinishedEvent : IVersionedEvent
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;
     public decimal? SoldAmount { get; init; }
+    public string ItemTitle { get; init; } = string.Empty;
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Exceptions;
 
 namespace Payment.Domain.Entities;
 
@@ -32,16 +33,66 @@ public class Wallet : BaseEntity
         };
     }
 
-    public void Deposit(decimal amount) => Balance += amount;
+    public void Deposit(decimal amount)
+    {
+        GuardActive();
+        GuardPositiveAmount(amount);
+        Balance += amount;
+    }
 
-    public void Withdraw(decimal amount) => Balance -= amount;
+    public void Withdraw(decimal amount)
+    {
+        GuardActive();
+        GuardPositiveAmount(amount);
 
-    public void HoldFunds(decimal amount) => HeldAmount += amount;
+        if (AvailableBalance < amount)
+        {
+            throw new DomainInvariantException(
+                $"Insufficient available balance. Available: {AvailableBalance}, Requested: {amount}");
+        }
 
-    public void ReleaseFunds(decimal amount) => HeldAmount -= amount;
+        Balance -= amount;
+    }
+
+    public void HoldFunds(decimal amount)
+    {
+        GuardActive();
+        GuardPositiveAmount(amount);
+
+        if (AvailableBalance < amount)
+        {
+            throw new DomainInvariantException(
+                $"Insufficient available balance to hold. Available: {AvailableBalance}, Requested: {amount}");
+        }
+
+        HeldAmount += amount;
+    }
+
+    public void ReleaseFunds(decimal amount)
+    {
+        GuardActive();
+        GuardPositiveAmount(amount);
+
+        if (HeldAmount < amount)
+        {
+            throw new DomainInvariantException(
+                $"Cannot release more than held amount. Held: {HeldAmount}, Requested: {amount}");
+        }
+
+        HeldAmount -= amount;
+    }
 
     public void DeductFromHeld(decimal amount)
     {
+        GuardActive();
+        GuardPositiveAmount(amount);
+
+        if (HeldAmount < amount)
+        {
+            throw new DomainInvariantException(
+                $"Cannot deduct more than held amount. Held: {HeldAmount}, Requested: {amount}");
+        }
+
         HeldAmount -= amount;
         Balance -= amount;
     }
@@ -49,4 +100,21 @@ public class Wallet : BaseEntity
     public void Activate() => IsActive = true;
 
     public void Deactivate() => IsActive = false;
+
+    private void GuardActive()
+    {
+        if (!IsActive)
+        {
+            throw new InvalidEntityStateException(
+                nameof(Wallet), nameof(IsActive), "Wallet is deactivated");
+        }
+    }
+
+    private static void GuardPositiveAmount(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new DomainInvariantException($"Amount must be positive. Received: {amount}");
+        }
+    }
 }

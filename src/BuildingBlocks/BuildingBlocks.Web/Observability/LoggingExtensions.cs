@@ -86,94 +86,115 @@ public static class LoggingExtensions
 
         builder.Host.UseSerilog((context, services, loggerConfig) =>
         {
-
-            loggerConfig
-                .MinimumLevel.Is(ParseLogLevel(options.MinimumLevel))
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-                .MinimumLevel.Override("System", LogEventLevel.Warning)
-                .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
-                .MinimumLevel.Override("MassTransit", LogEventLevel.Warning);
-
-            foreach (var (source, level) in options.Overrides)
-            {
-                loggerConfig.MinimumLevel.Override(source, ParseLogLevel(level));
-            }
-
-            loggerConfig
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithEnvironmentName()
-                .Enrich.WithProperty("ServiceName", options.ServiceName)
-                .Enrich.WithProperty("Environment", options.Environment)
-                .Enrich.WithCorrelationId();
-
-            if (options.EnableConsole)
-            {
-                if (options.UseJsonFormat || !context.HostingEnvironment.IsDevelopment())
-                {
-
-                    loggerConfig.WriteTo.Console(new CompactJsonFormatter());
-                }
-                else
-                {
-
-                    loggerConfig.WriteTo.Console(
-                        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}      {Message:lj}{NewLine}{Exception}");
-                }
-            }
-
-            if (options.File?.Enabled == true)
-            {
-                loggerConfig.WriteTo.File(
-                    new CompactJsonFormatter(),
-                    path: options.File.Path,
-                    rollingInterval: options.File.RollingInterval,
-                    fileSizeLimitBytes: options.File.FileSizeLimitBytes,
-                    retainedFileCountLimit: options.File.RetainedFileCountLimit,
-                    shared: true,
-                    flushToDiskInterval: TimeSpan.FromSeconds(1));
-            }
-
-            if (options.Elasticsearch?.Enabled == true)
-            {
-                var esOptions = new ElasticsearchSinkOptions(new Uri(options.Elasticsearch.Url))
-                {
-                    AutoRegisterTemplate = true,
-                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
-                    IndexFormat = $"{options.ServiceName.ToLower()}-{options.Elasticsearch.IndexFormat}",
-                    BatchPostingLimit = options.Elasticsearch.BatchPostingLimit,
-                    Period = options.Elasticsearch.Period,
-                    InlineFields = true,
-                    EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
-                                       EmitEventFailureHandling.RaiseCallback,
-                    FailureCallback = (e, ex) => Console.Error.WriteLine($"Elasticsearch log failure: {ex?.Message}")
-                };
-
-                if (!string.IsNullOrEmpty(options.Elasticsearch.Username))
-                {
-                    esOptions.ModifyConnectionSettings = conn =>
-                        conn.BasicAuthentication(
-                            options.Elasticsearch.Username,
-                            options.Elasticsearch.Password ?? string.Empty);
-                }
-
-                loggerConfig.WriteTo.Elasticsearch(esOptions);
-            }
-
-            if (options.Seq?.Enabled == true)
-            {
-                loggerConfig.WriteTo.Seq(
-                    serverUrl: options.Seq.ServerUrl,
-                    apiKey: options.Seq.ApiKey);
-            }
-
+            ConfigureMinimumLevels(loggerConfig, options);
+            ConfigureEnrichment(loggerConfig, options);
+            ConfigureConsoleSink(loggerConfig, options, context);
+            ConfigureFileSink(loggerConfig, options);
+            ConfigureElasticsearchSink(loggerConfig, options);
+            ConfigureSeqSink(loggerConfig, options);
             loggerConfig.ReadFrom.Configuration(context.Configuration);
         });
 
         return builder;
+    }
+
+    private static void ConfigureMinimumLevels(LoggerConfiguration loggerConfig, LoggingOptions options)
+    {
+        loggerConfig
+            .MinimumLevel.Is(ParseLogLevel(options.MinimumLevel))
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .MinimumLevel.Override("Grpc", LogEventLevel.Warning)
+            .MinimumLevel.Override("MassTransit", LogEventLevel.Warning);
+
+        foreach (var (source, level) in options.Overrides)
+        {
+            loggerConfig.MinimumLevel.Override(source, ParseLogLevel(level));
+        }
+    }
+
+    private static void ConfigureEnrichment(LoggerConfiguration loggerConfig, LoggingOptions options)
+    {
+        loggerConfig
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .Enrich.WithEnvironmentName()
+            .Enrich.WithProperty("ServiceName", options.ServiceName)
+            .Enrich.WithProperty("Environment", options.Environment)
+            .Enrich.WithCorrelationId();
+    }
+
+    private static void ConfigureConsoleSink(LoggerConfiguration loggerConfig, LoggingOptions options, HostBuilderContext context)
+    {
+        if (!options.EnableConsole)
+            return;
+
+        if (options.UseJsonFormat || !context.HostingEnvironment.IsDevelopment())
+        {
+            loggerConfig.WriteTo.Console(new CompactJsonFormatter());
+        }
+        else
+        {
+            loggerConfig.WriteTo.Console(
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}      {Message:lj}{NewLine}{Exception}");
+        }
+    }
+
+    private static void ConfigureFileSink(LoggerConfiguration loggerConfig, LoggingOptions options)
+    {
+        if (options.File?.Enabled != true)
+            return;
+
+        loggerConfig.WriteTo.File(
+            new CompactJsonFormatter(),
+            path: options.File.Path,
+            rollingInterval: options.File.RollingInterval,
+            fileSizeLimitBytes: options.File.FileSizeLimitBytes,
+            retainedFileCountLimit: options.File.RetainedFileCountLimit,
+            shared: true,
+            flushToDiskInterval: TimeSpan.FromSeconds(1));
+    }
+
+    private static void ConfigureElasticsearchSink(LoggerConfiguration loggerConfig, LoggingOptions options)
+    {
+        if (options.Elasticsearch?.Enabled != true)
+            return;
+
+        var esOptions = new ElasticsearchSinkOptions(new Uri(options.Elasticsearch.Url))
+        {
+            AutoRegisterTemplate = true,
+            AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7,
+            IndexFormat = $"{options.ServiceName.ToLower()}-{options.Elasticsearch.IndexFormat}",
+            BatchPostingLimit = options.Elasticsearch.BatchPostingLimit,
+            Period = options.Elasticsearch.Period,
+            InlineFields = true,
+            EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
+                               EmitEventFailureHandling.RaiseCallback,
+            FailureCallback = (e, ex) => Console.Error.WriteLine($"Elasticsearch log failure: {ex?.Message}")
+        };
+
+        if (!string.IsNullOrEmpty(options.Elasticsearch.Username))
+        {
+            esOptions.ModifyConnectionSettings = conn =>
+                conn.BasicAuthentication(
+                    options.Elasticsearch.Username,
+                    options.Elasticsearch.Password ?? string.Empty);
+        }
+
+        loggerConfig.WriteTo.Elasticsearch(esOptions);
+    }
+
+    private static void ConfigureSeqSink(LoggerConfiguration loggerConfig, LoggingOptions options)
+    {
+        if (options.Seq?.Enabled != true)
+            return;
+
+        loggerConfig.WriteTo.Seq(
+            serverUrl: options.Seq.ServerUrl,
+            apiKey: options.Seq.ApiKey);
     }
 
     public static IApplicationBuilder UseSerilogRequestLogging(this IApplicationBuilder app)
@@ -183,53 +204,54 @@ public static class LoggingExtensions
 
         return app.UseSerilogRequestLogging(opts =>
         {
-            opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-            {
-                diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
-                diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
-                diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString());
-                diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-                diagnosticContext.Set("RequestProtocol", httpContext.Request.Protocol);
-
-                if (httpContext.Request.Headers.TryGetValue("X-Correlation-Id", out var correlationId))
-                {
-                    diagnosticContext.Set("CorrelationId", correlationId.ToString());
-                }
-
-                if (httpContext.User.Identity?.IsAuthenticated == true)
-                {
-                    diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value);
-                    diagnosticContext.Set("Username", httpContext.User.FindFirst("username")?.Value);
-                }
-
-                var activity = Activity.Current;
-                if (activity != null)
-                {
-                    diagnosticContext.Set("TraceId", activity.TraceId.ToString());
-                    diagnosticContext.Set("SpanId", activity.SpanId.ToString());
-                }
-            };
-
+            opts.EnrichDiagnosticContext = EnrichDiagnosticContext;
             opts.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-
-            opts.GetLevel = (httpContext, elapsed, ex) =>
-            {
-
-                if (httpContext.Request.Path.StartsWithSegments("/health"))
-                    return LogEventLevel.Verbose;
-
-                if (ex != null || httpContext.Response.StatusCode >= 500)
-                    return LogEventLevel.Error;
-
-                if (httpContext.Response.StatusCode >= 400)
-                    return LogEventLevel.Warning;
-
-                if (elapsed > options.SlowRequestThresholdMs)
-                    return LogEventLevel.Warning;
-
-                return LogEventLevel.Information;
-            };
+            opts.GetLevel = (httpContext, elapsed, ex) => DetermineLogLevel(httpContext, elapsed, ex, options.SlowRequestThresholdMs);
         });
+    }
+
+    private static void EnrichDiagnosticContext(IDiagnosticContext diagnosticContext, HttpContext httpContext)
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
+        diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString());
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("RequestProtocol", httpContext.Request.Protocol);
+
+        if (httpContext.Request.Headers.TryGetValue("X-Correlation-Id", out var correlationId))
+        {
+            diagnosticContext.Set("CorrelationId", correlationId.ToString());
+        }
+
+        if (httpContext.User.Identity?.IsAuthenticated == true)
+        {
+            diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value);
+            diagnosticContext.Set("Username", httpContext.User.FindFirst("username")?.Value);
+        }
+
+        var activity = Activity.Current;
+        if (activity != null)
+        {
+            diagnosticContext.Set("TraceId", activity.TraceId.ToString());
+            diagnosticContext.Set("SpanId", activity.SpanId.ToString());
+        }
+    }
+
+    private static LogEventLevel DetermineLogLevel(HttpContext httpContext, double elapsed, Exception? ex, int slowThresholdMs)
+    {
+        if (httpContext.Request.Path.StartsWithSegments("/health"))
+            return LogEventLevel.Verbose;
+
+        if (ex != null || httpContext.Response.StatusCode >= 500)
+            return LogEventLevel.Error;
+
+        if (httpContext.Response.StatusCode >= 400)
+            return LogEventLevel.Warning;
+
+        if (elapsed > slowThresholdMs)
+            return LogEventLevel.Warning;
+
+        return LogEventLevel.Information;
     }
 
     public static IApplicationBuilder UseCorrelationIdLogging(this IApplicationBuilder app)
@@ -252,12 +274,9 @@ public static class LoggingExtensions
         var env = app.Environment.EnvironmentName;
         var urls = string.Join(", ", app.Urls);
 
-        Log.Information("=== {ServiceName} Started ===", serviceName);
-        Log.Information("Environment: {Environment}", env);
-        Log.Information("Listening on: {Urls}", urls);
-        Log.Information("Process ID: {ProcessId}", Environment.ProcessId);
-        Log.Information("Machine: {MachineName}", Environment.MachineName);
-        Log.Information(".NET Version: {DotNetVersion}", Environment.Version);
+        Log.Information(
+            "=== {ServiceName} Started === Environment={Environment}, Urls={Urls}, PID={ProcessId}, Machine={MachineName}, .NET={DotNetVersion}",
+            serviceName, env, urls, Environment.ProcessId, Environment.MachineName, Environment.Version);
     }
 
     private static LogEventLevel ParseLogLevel(string level) => level.ToLower() switch

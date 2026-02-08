@@ -1,8 +1,7 @@
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
-using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Locking;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Commands.BuyNow;
@@ -10,24 +9,18 @@ namespace Auctions.Application.Commands.BuyNow;
 public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultDto>
 {
     private readonly IAuctionWriteRepository _repository;
-    private readonly IMapper _mapper;
     private readonly ILogger<BuyNowCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDistributedLock _distributedLock;
 
     public BuyNowCommandHandler(
         IAuctionWriteRepository repository,
-        IMapper mapper,
         ILogger<BuyNowCommandHandler> logger,
-        IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IDistributedLock distributedLock)
     {
         _repository = repository;
-        _mapper = mapper;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
         _distributedLock = distributedLock;
     }
@@ -95,7 +88,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            _logger.LogWarning("Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
+            _logger.LogWarning(ex, "Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
             return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);
         }
         catch (Exception ex)

@@ -1,4 +1,4 @@
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -54,6 +54,7 @@ public class CheckAuctionFinishedJob : BaseJob
                 auction.Finish(auction.WinnerId, auction.WinnerUsername, auction.CurrentHighBid, itemSold);
 
                 await writeRepository.UpdateAsync(auction, cancellationToken);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
                 processedCount++;
 
                 Logger.LogInformation(
@@ -67,11 +68,6 @@ public class CheckAuctionFinishedJob : BaseJob
                 failedAuctionIds.Add(auction.Id);
                 Logger.LogError(ex, "Failed to finish auction {AuctionId}", auction.Id);
             }
-        }
-
-        if (processedCount > 0)
-        {
-            await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
         Logger.LogInformation("Finished processing auctions: {ProcessedCount} succeeded, {FailedCount} failed out of {TotalCount}",

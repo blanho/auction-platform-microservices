@@ -1,5 +1,5 @@
 using Auctions.Application.Helpers;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

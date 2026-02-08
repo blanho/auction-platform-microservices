@@ -1,6 +1,7 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Infrastructure.Scheduling;
+using Identity.Api.Data;
 using Identity.Api.Data.Repositories;
 using Identity.Api.Interfaces;
 using Identity.Api.Jobs;
@@ -47,6 +48,13 @@ internal static class ServiceCollectionExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.UseBusOutbox();
+            });
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitConfig = configuration.GetSection("RabbitMq");

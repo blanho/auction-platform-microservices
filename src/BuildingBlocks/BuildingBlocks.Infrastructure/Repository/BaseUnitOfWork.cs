@@ -88,7 +88,15 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
 
     public void Dispose()
     {
-        Context.Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Context.Dispose();
+        }
     }
 }

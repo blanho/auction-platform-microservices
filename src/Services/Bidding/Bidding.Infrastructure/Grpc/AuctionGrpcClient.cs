@@ -77,7 +77,7 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             return new AuctionDetails(
                 response.Title,
                 response.Seller,
-                DateTime.Parse(response.AuctionEnd),
+                DateTime.Parse(response.AuctionEnd, System.Globalization.CultureInfo.InvariantCulture),
                 response.Status,
                 response.IsBuyNowAvailable);
         }

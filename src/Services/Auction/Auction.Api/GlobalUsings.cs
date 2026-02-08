@@ -18,4 +18,4 @@ global using Auctions.Application.DTOs.Reviews;
 global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Interfaces;
 
-global using AuctionStatus = BuildingBlocks.Domain.Enums.Status;
+global using AuctionStatus = Auctions.Domain.Enums.Status;

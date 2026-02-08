@@ -1,6 +1,6 @@
 using Auction.Domain.Tests.Builders;
 using Auctions.Domain.Events;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auction.Domain.Tests.Entities;
 

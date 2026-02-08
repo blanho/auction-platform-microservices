@@ -28,9 +28,7 @@ public static class QueryExtensions
     {
         if (sorts == null || sorts.Count == 0)
         {
-            return defaultSort != null
-                ? (defaultDesc ? query.OrderByDescending(defaultSort) : query.OrderBy(defaultSort))
-                : query;
+            return ApplyDefaultSort(query, defaultSort, defaultDesc);
         }
 
         IOrderedQueryable<T>? ordered = null;
@@ -41,8 +39,8 @@ public static class QueryExtensions
                 continue;
 
             ordered = ordered == null
-                ? (sort.Desc ? query.OrderByDescending(expr) : query.OrderBy(expr))
-                : (sort.Desc ? ordered.ThenByDescending(expr) : ordered.ThenBy(expr));
+                ? OrderByDirection(query, expr, sort.Desc)
+                : ThenByDirection(ordered, expr, sort.Desc);
         }
 
         return ordered ?? query;
@@ -59,21 +57,42 @@ public static class QueryExtensions
 
         if (string.IsNullOrWhiteSpace(parameters.SortBy))
         {
-            return defaultSort != null
-                ? (parameters.SortDescending ? query.OrderByDescending(defaultSort) : query.OrderBy(defaultSort))
-                : query;
+            return ApplyDefaultSort(query, defaultSort, parameters.SortDescending);
         }
 
         if (!sortMap.TryGetValue(parameters.SortBy.ToLowerInvariant(), out var sortExpr))
         {
-            return defaultSort != null
-                ? (parameters.SortDescending ? query.OrderByDescending(defaultSort) : query.OrderBy(defaultSort))
-                : query;
+            return ApplyDefaultSort(query, defaultSort, parameters.SortDescending);
         }
 
-        return parameters.SortDescending
-            ? query.OrderByDescending(sortExpr)
-            : query.OrderBy(sortExpr);
+        return OrderByDirection(query, sortExpr, parameters.SortDescending);
+    }
+
+    private static IQueryable<T> ApplyDefaultSort<T>(
+        IQueryable<T> query,
+        Expression<Func<T, object>>? defaultSort,
+        bool descending)
+    {
+        if (defaultSort == null)
+            return query;
+
+        return descending ? query.OrderByDescending(defaultSort) : query.OrderBy(defaultSort);
+    }
+
+    private static IOrderedQueryable<T> OrderByDirection<T>(
+        IQueryable<T> query,
+        Expression<Func<T, object>> expr,
+        bool descending)
+    {
+        return descending ? query.OrderByDescending(expr) : query.OrderBy(expr);
+    }
+
+    private static IOrderedQueryable<T> ThenByDirection<T>(
+        IOrderedQueryable<T> query,
+        Expression<Func<T, object>> expr,
+        bool descending)
+    {
+        return descending ? query.ThenByDescending(expr) : query.ThenBy(expr);
     }
 
     public static IQueryable<T> ApplyFiltering<T>(

@@ -115,11 +115,6 @@ public class FirebasePushSender : IPushSender
                 ex.MessagingErrorCode,
                 userId);
 
-            var isPermanent = ex.MessagingErrorCode is
-                MessagingErrorCode.InvalidArgument or
-                MessagingErrorCode.Unregistered or
-                MessagingErrorCode.SenderIdMismatch;
-
             return new PushSendResult(false, Error: $"{ex.MessagingErrorCode}: {ex.Message}");
         }
         catch (Exception ex)

@@ -59,4 +59,39 @@ public class RedisCacheService : ICacheService
         var bytes = await _cache.GetAsync(key, cancellationToken);
         return bytes != null && bytes.Length > 0;
     }
+
+    public async Task<T> GetOrSetAsync<T>(
+        string key,
+        Func<CancellationToken, Task<T>> factory,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default)
+    {
+        var cached = await GetAsync<T>(key, cancellationToken);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
+        var value = await factory(cancellationToken);
+        await SetAsync(key, value, expiration, cancellationToken);
+        return value;
+    }
+
+    public async Task RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
+    {
+        if (_redis == null)
+        {
+            return;
+        }
+
+        var endpoints = _redis.GetEndPoints();
+        foreach (var endpoint in endpoints)
+        {
+            var server = _redis.GetServer(endpoint);
+            await foreach (var key in server.KeysAsync(pattern: $"{prefix}*"))
+            {
+                await _redis.GetDatabase().KeyDeleteAsync(key);
+            }
+        }
+    }
 }

@@ -57,14 +57,14 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(message.EventId, "Email", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(message.EventId, EmailChannelType, ct: ct);
         if (lockHandle == null)
         {
             _logger.LogDebug("Could not acquire lock for email, EventId={EventId}", message.EventId);
             return;
         }
 
-        if (await _idempotency.IsProcessedAsync(message.EventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(message.EventId, EmailChannelType, ct))
             return;
 
         var subject = TemplateHelper.RenderTemplate(template.Subject ?? message.Subject, message.Data);
@@ -73,7 +73,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
         var record = Notification.Domain.Entities.NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
             message.TemplateKey,
-            "Email",
+            EmailChannelType,
             subject,
             message.RecipientEmail);
 

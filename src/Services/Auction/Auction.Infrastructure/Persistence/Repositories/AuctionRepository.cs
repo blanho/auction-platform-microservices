@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Paging;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
 {
@@ -61,6 +61,68 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
 
             return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
+        }
+
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            AuctionFilterDto filter,
+            CancellationToken cancellationToken = default)
+        {
+            var filterParams = filter.Filter;
+
+            var query = _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterParams.Status) && Enum.TryParse<Status>(filterParams.Status, true, out var statusEnum))
+            {
+                query = query.Where(x => x.Status == statusEnum);
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.Seller))
+            {
+                query = query.Where(x => x.SellerUsername == filterParams.Seller);
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.Winner))
+            {
+                query = query.Where(x => x.WinnerUsername == filterParams.Winner);
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.SearchTerm))
+            {
+                var term = $"%{filterParams.SearchTerm}%";
+                query = query.Where(x =>
+                    x.Item != null && (
+                        EF.Functions.ILike(x.Item.Title, term) ||
+                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
+                    ));
+            }
+
+            if (!string.IsNullOrEmpty(filterParams.Category))
+            {
+                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filterParams.Category);
+            }
+
+            if (filterParams.IsFeatured.HasValue)
+            {
+                query = query.Where(x => x.IsFeatured == filterParams.IsFeatured.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
+
+            var items = await query
+                .ApplyPaging(filter)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
         }
 
         public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -141,68 +203,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
         }
 
-        public async Task<PaginatedResult<Auction>> GetPagedAsync(
-            AuctionFilterDto filter,
-            CancellationToken cancellationToken = default)
-        {
-            var filterParams = filter.Filter;
-
-            var query = _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filterParams.Status) && Enum.TryParse<Status>(filterParams.Status, true, out var statusEnum))
-            {
-                query = query.Where(x => x.Status == statusEnum);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Seller))
-            {
-                query = query.Where(x => x.SellerUsername == filterParams.Seller);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Winner))
-            {
-                query = query.Where(x => x.WinnerUsername == filterParams.Winner);
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.SearchTerm))
-            {
-                var term = $"%{filterParams.SearchTerm}%";
-                query = query.Where(x =>
-                    x.Item != null && (
-                        EF.Functions.ILike(x.Item.Title, term) ||
-                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
-                    ));
-            }
-
-            if (!string.IsNullOrEmpty(filterParams.Category))
-            {
-                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filterParams.Category);
-            }
-
-            if (filterParams.IsFeatured.HasValue)
-            {
-                query = query.Where(x => x.IsFeatured == filterParams.IsFeatured.Value);
-            }
-
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
-
-            var items = await query
-                .ApplyPaging(filter)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
-        }
-
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         {
             var now = _dateTime.UtcNow;
@@ -212,7 +212,9 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     && x.AuctionEnd < now
                     && x.Status != Status.Finished
                     && x.Status != Status.ReservedNotMet
-                    && x.Status != Status.Inactive)
+                    && x.Status != Status.Inactive
+                    && x.Status != Status.Cancelled
+                    && x.Status != Status.ReservedForBuyNow)
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
         }

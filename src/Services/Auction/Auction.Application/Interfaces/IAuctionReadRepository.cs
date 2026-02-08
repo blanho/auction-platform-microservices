@@ -1,7 +1,7 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Application.Interfaces;
 

@@ -57,12 +57,6 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<StorageDbContext>();
-    db.Database.Migrate();
-}
-
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))
 {

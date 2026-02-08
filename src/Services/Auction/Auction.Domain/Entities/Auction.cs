@@ -1,7 +1,7 @@
 #nullable enable
 using Auctions.Domain.Events;
 using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Domain.Entities;
 
@@ -29,30 +29,22 @@ public class Auction : BaseEntity
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
     public ICollection<Bookmark> Bookmarks { get; private set; } = new List<Bookmark>();
 
-    public static Auction Create(
-        Guid sellerId,
-        string sellerUsername,
-        Item item,
-        decimal reservePrice,
-        DateTimeOffset auctionEnd,
-        string currency = "USD",
-        decimal? buyNowPrice = null,
-        bool isFeatured = false)
+    public static Auction Create(CreateAuctionParams createParams)
     {
-        if (buyNowPrice.HasValue && buyNowPrice.Value <= reservePrice)
+        if (createParams.BuyNowPrice.HasValue && createParams.BuyNowPrice.Value <= createParams.ReservePrice)
             throw new InvalidOperationException("Buy now price must be greater than reserve price");
 
         return new Auction
         {
             Id = Guid.NewGuid(),
-            SellerId = sellerId,
-            SellerUsername = sellerUsername,
-            Item = item,
-            ReservePrice = reservePrice,
-            AuctionEnd = auctionEnd,
-            Currency = currency,
-            BuyNowPrice = buyNowPrice,
-            IsFeatured = isFeatured,
+            SellerId = createParams.SellerId,
+            SellerUsername = createParams.SellerUsername,
+            Item = createParams.Item,
+            ReservePrice = createParams.ReservePrice,
+            AuctionEnd = createParams.AuctionEnd,
+            Currency = createParams.Currency,
+            BuyNowPrice = createParams.BuyNowPrice,
+            IsFeatured = createParams.IsFeatured,
             Status = Status.Live
         };
     }
@@ -76,32 +68,6 @@ public class Auction : BaseEntity
             AuctionEnd = auctionEnd,
             Currency = currency,
             Status = Status.Scheduled
-        };
-    }
-
-    public static Auction CreateForSeeding(
-        Guid id,
-        string sellerUsername,
-        Item item,
-        decimal reservePrice,
-        DateTimeOffset auctionEnd,
-        Status status,
-        string currency = "USD",
-        bool isFeatured = false,
-        DateTimeOffset? createdAt = null)
-    {
-        return new Auction
-        {
-            Id = id,
-            SellerId = Guid.Empty,
-            SellerUsername = sellerUsername,
-            Item = item,
-            ReservePrice = reservePrice,
-            AuctionEnd = auctionEnd,
-            Currency = currency,
-            Status = status,
-            IsFeatured = isFeatured,
-            CreatedAt = createdAt ?? DateTimeOffset.UtcNow
         };
     }
 
@@ -194,7 +160,8 @@ public class Auction : BaseEntity
             WinnerId = winnerId,
             WinnerUsername = winnerUsername,
             SoldAmount = soldAmount,
-            ItemSold = itemSold
+            ItemSold = itemSold,
+            ItemTitle = Item?.Title ?? string.Empty
         });
     }
 
@@ -224,7 +191,8 @@ public class Auction : BaseEntity
             WinnerId = buyerId,
             WinnerUsername = buyerUsername,
             SoldAmount = BuyNowPrice,
-            ItemSold = true
+            ItemSold = true,
+            ItemTitle = Item?.Title ?? string.Empty
         });
     }
 
@@ -301,3 +269,13 @@ public class Auction : BaseEntity
         }
     }
 }
+
+public record CreateAuctionParams(
+    Guid SellerId,
+    string SellerUsername,
+    Item Item,
+    decimal ReservePrice,
+    DateTimeOffset AuctionEnd,
+    string Currency = "USD",
+    decimal? BuyNowPrice = null,
+    bool IsFeatured = false);

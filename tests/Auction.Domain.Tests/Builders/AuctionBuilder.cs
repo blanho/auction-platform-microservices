@@ -1,5 +1,5 @@
 using Auctions.Domain.Entities;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auction.Domain.Tests.Builders;
 
@@ -66,7 +66,7 @@ public class AuctionBuilder
 
     public Auctions.Domain.Entities.Auction Build()
     {
-        return Auctions.Domain.Entities.Auction.Create(
+        return Auctions.Domain.Entities.Auction.Create(new Auctions.Domain.Entities.CreateAuctionParams(
             _sellerId,
             _sellerUsername,
             _item,
@@ -74,7 +74,7 @@ public class AuctionBuilder
             _auctionEnd,
             _currency,
             _buyNowPrice,
-            _isFeatured);
+            _isFeatured));
     }
 
     public Auctions.Domain.Entities.Auction BuildScheduled()

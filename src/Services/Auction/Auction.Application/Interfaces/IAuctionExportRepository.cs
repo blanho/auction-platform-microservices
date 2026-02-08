@@ -1,5 +1,5 @@
 using Auctions.Domain.Entities;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Application.Interfaces;
 

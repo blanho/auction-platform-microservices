@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Abstractions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -7,10 +8,14 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
     where TRequest : notnull
 {
     private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+    private readonly IUserContext? _userContext;
 
-    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+    public LoggingBehavior(
+        ILogger<LoggingBehavior<TRequest, TResponse>> logger,
+        IUserContext? userContext = null)
     {
         _logger = logger;
+        _userContext = userContext;
     }
 
     public async Task<TResponse> Handle(
@@ -19,12 +24,13 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
-        var requestId = Guid.NewGuid().ToString();
+        var correlationId = _userContext?.CorrelationId ?? Guid.NewGuid().ToString();
 
         _logger.LogInformation(
-            "[START] {RequestName} {RequestId}",
+            "[START] {RequestName} CorrelationId={CorrelationId} UserId={UserId}",
             requestName,
-            requestId);
+            correlationId,
+            _userContext?.UserIdOrDefault);
 
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -35,22 +41,21 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             stopwatch.Stop();
 
             _logger.LogInformation(
-                "[END] {RequestName} {RequestId} completed in {ElapsedMilliseconds}ms",
+                "[END] {RequestName} CorrelationId={CorrelationId} completed in {ElapsedMilliseconds}ms",
                 requestName,
-                requestId,
+                correlationId,
                 stopwatch.ElapsedMilliseconds);
 
             return response;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             stopwatch.Stop();
 
-            _logger.LogError(
-                ex,
-                "[ERROR] {RequestName} {RequestId} failed after {ElapsedMilliseconds}ms",
+            _logger.LogWarning(
+                "[FAILED] {RequestName} CorrelationId={CorrelationId} failed after {ElapsedMilliseconds}ms",
                 requestName,
-                requestId,
+                correlationId,
                 stopwatch.ElapsedMilliseconds);
 
             throw;

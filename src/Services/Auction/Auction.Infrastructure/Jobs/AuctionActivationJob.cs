@@ -1,4 +1,4 @@
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;

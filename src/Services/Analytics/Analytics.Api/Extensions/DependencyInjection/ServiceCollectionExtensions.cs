@@ -78,6 +78,13 @@ public static class ServiceCollectionExtensions
             x.AddConsumer<OrderShippedAnalyticsConsumer>();
             x.AddConsumer<OrderDeliveredAnalyticsConsumer>();
 
+            x.AddEntityFrameworkOutbox<AnalyticsDbContext>(o =>
+            {
+                o.UsePostgres();
+                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.UseBusOutbox();
+            });
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 var rabbitHost = configuration["RabbitMQ:Host"]

@@ -6,7 +6,7 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Application.Interfaces;
 
-public interface IAutoBidRepository : IRepository<AutoBid>
+public interface IAutoBidRepository : IRepository<AutoBid>, IBatchRepository<AutoBid>
 {
     Task<AutoBid?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default);
     Task<List<AutoBid>> GetActiveAutoBidsForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default);

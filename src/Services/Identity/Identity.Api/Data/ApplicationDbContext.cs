@@ -1,4 +1,5 @@
 using Identity.Api.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,5 +31,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsRequired();
 
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        builder.AddInboxStateEntity();
+        builder.AddOutboxMessageEntity();
+        builder.AddOutboxStateEntity();
     }
 }

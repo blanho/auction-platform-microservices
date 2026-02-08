@@ -1,5 +1,5 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using IdentityService.Contracts.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -37,80 +37,101 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             message.UserId,
             message.Username);
 
-        var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(
-            Guid.Parse(message.UserId),
-            context.CancellationToken);
-
-        if (activeAuctions.Any())
-        {
-            var affectedBidders = new HashSet<string>();
-
-            foreach (var auction in activeAuctions)
-            {
-                var hadBids = auction.CurrentHighBid.HasValue;
-                var auctionTitle = auction.Item?.Title ?? "Unknown";
-
-                if (hadBids && !string.IsNullOrEmpty(auction.WinnerUsername))
-                {
-                    affectedBidders.Add(auction.WinnerUsername);
-                }
-
-                auction.Cancel("Seller account deleted");
-                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-                
-                _logger.LogWarning(
-                    "Cancelled auction {AuctionId} ({Title}) - Status: {Status}, Had bids: {HadBids}",
-                    auction.Id,
-                    auctionTitle,
-                    auction.Status,
-                    hadBids);
-            }
-
-            foreach (var bidderUsername in affectedBidders)
-            {
-                await _eventPublisher.PublishAsync(new AuctionCancelledNotificationEvent
-                {
-                    RecipientUsername = bidderUsername,
-                    AuctionTitle = activeAuctions.First().Item?.Title ?? "Auction",
-                    Reason = "Seller account no longer active",
-                    RefundExpected = true
-                }, context.CancellationToken);
-            }
-
-            _logger.LogWarning(
-                "Cancelled {Count} active auctions for deleted user {UserId}. Affected bidders: {BidderCount}",
-                activeAuctions.Count,
-                message.UserId,
-                affectedBidders.Count);
-        }
-
-        var allAuctions = await _readRepository.GetAllBySellerIdAsync(
-            Guid.Parse(message.UserId),
-            context.CancellationToken);
-
-        var finishedAuctions = allAuctions
-            .Where(a => a.Status == Status.Finished)
-            .ToList();
-
-        if (finishedAuctions.Any())
-        {
-            foreach (var auction in finishedAuctions)
-            {
-                auction.UpdateSellerUsername($"[Deleted User - {message.Username}]");
-                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-            }
-
-            _logger.LogInformation(
-                "Anonymized {Count} finished auctions for deleted user {UserId}",
-                finishedAuctions.Count,
-                message.UserId);
-        }
+        var userId = Guid.Parse(message.UserId);
+        await CancelActiveAuctions(userId, message, context.CancellationToken);
+        await AnonymizeFinishedAuctions(userId, message, context.CancellationToken);
 
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
+        var allAuctions = await _readRepository.GetAllBySellerIdAsync(userId, context.CancellationToken);
         _logger.LogWarning(
             "Completed account deletion processing for user {UserId}. Total auctions affected: {TotalCount}",
             message.UserId,
             allAuctions.Count);
+    }
+
+    private async Task CancelActiveAuctions(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
+    {
+        var activeAuctions = await _readRepository.GetActiveAuctionsBySellerIdAsync(userId, cancellationToken);
+
+        if (!activeAuctions.Any())
+            return;
+
+        var affectedBidderAuctions = new Dictionary<string, List<string>>();
+
+        foreach (var auction in activeAuctions)
+        {
+            CollectAffectedBidder(auction, affectedBidderAuctions);
+            auction.Cancel("Seller account deleted");
+            await _writeRepository.UpdateAsync(auction, cancellationToken);
+            
+            _logger.LogWarning(
+                "Cancelled auction {AuctionId} ({Title}) - Status: {Status}, Had bids: {HadBids}",
+                auction.Id,
+                auction.Item?.Title ?? "Unknown",
+                auction.Status,
+                auction.CurrentHighBid.HasValue);
+        }
+
+        await NotifyAffectedBidders(affectedBidderAuctions, cancellationToken);
+
+        _logger.LogWarning(
+            "Cancelled {Count} active auctions for deleted user {UserId}. Affected bidders: {BidderCount}",
+            activeAuctions.Count,
+            message.UserId,
+            affectedBidderAuctions.Count);
+    }
+
+    private static void CollectAffectedBidder(Auctions.Domain.Entities.Auction auction, Dictionary<string, List<string>> affectedBidderAuctions)
+    {
+        if (!auction.CurrentHighBid.HasValue || string.IsNullOrEmpty(auction.WinnerUsername))
+            return;
+
+        var auctionTitle = auction.Item?.Title ?? "Unknown";
+        if (!affectedBidderAuctions.TryGetValue(auction.WinnerUsername, out var titles))
+        {
+            titles = new List<string>();
+            affectedBidderAuctions[auction.WinnerUsername] = titles;
+        }
+        titles.Add(auctionTitle);
+    }
+
+    private async Task NotifyAffectedBidders(Dictionary<string, List<string>> affectedBidderAuctions, CancellationToken cancellationToken)
+    {
+        foreach (var (bidderUsername, auctionTitles) in affectedBidderAuctions)
+        {
+            foreach (var auctionTitle in auctionTitles)
+            {
+                await _eventPublisher.PublishAsync(new AuctionCancelledNotificationEvent
+                {
+                    RecipientUsername = bidderUsername,
+                    AuctionTitle = auctionTitle,
+                    Reason = "Seller account no longer active",
+                    RefundExpected = true
+                }, cancellationToken);
+            }
+        }
+    }
+
+    private async Task AnonymizeFinishedAuctions(Guid userId, UserDeletedEvent message, CancellationToken cancellationToken)
+    {
+        var allAuctions = await _readRepository.GetAllBySellerIdAsync(userId, cancellationToken);
+        var finishedAuctions = allAuctions
+            .Where(a => a.Status == Status.Finished)
+            .ToList();
+
+        if (!finishedAuctions.Any())
+            return;
+
+        foreach (var auction in finishedAuctions)
+        {
+            auction.UpdateSellerUsername($"[Deleted User - {message.Username}]");
+            await _writeRepository.UpdateAsync(auction, cancellationToken);
+        }
+
+        _logger.LogInformation(
+            "Anonymized {Count} finished auctions for deleted user {UserId}",
+            finishedAuctions.Count,
+            message.UserId);
     }
 }

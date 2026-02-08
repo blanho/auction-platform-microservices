@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Exceptions;
 using Payment.Domain.Enums;
 using Payment.Domain.Events;
 
@@ -6,6 +7,20 @@ namespace Payment.Domain.Entities;
 
 public class Order : BaseEntity
 {
+    private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> AllowedTransitions = new()
+    {
+        [OrderStatus.Pending] = [OrderStatus.PaymentPending, OrderStatus.Cancelled],
+        [OrderStatus.PaymentPending] = [OrderStatus.Paid, OrderStatus.Cancelled],
+        [OrderStatus.Paid] = [OrderStatus.Processing, OrderStatus.Shipped, OrderStatus.Cancelled, OrderStatus.Disputed],
+        [OrderStatus.Processing] = [OrderStatus.Shipped, OrderStatus.Cancelled],
+        [OrderStatus.Shipped] = [OrderStatus.Delivered, OrderStatus.Disputed],
+        [OrderStatus.Delivered] = [OrderStatus.Completed, OrderStatus.Disputed],
+        [OrderStatus.Completed] = [OrderStatus.Disputed],
+        [OrderStatus.Disputed] = [OrderStatus.Refunded, OrderStatus.Completed],
+        [OrderStatus.Cancelled] = [],
+        [OrderStatus.Refunded] = [],
+    };
+
     public Guid AuctionId { get; private set; }
     public Guid BuyerId { get; private set; }
     public string BuyerUsername { get; private set; } = string.Empty;
@@ -30,6 +45,8 @@ public class Order : BaseEntity
     public DateTimeOffset? DeliveredAt { get; private set; }
     public string? BuyerNotes { get; private set; }
     public string? SellerNotes { get; private set; }
+
+    public bool IsTerminal => Status is OrderStatus.Cancelled or OrderStatus.Refunded or OrderStatus.Completed;
 
     public static Order Create(
         Guid auctionId,
@@ -92,6 +109,8 @@ public class Order : BaseEntity
 
     public void ChangeStatus(OrderStatus newStatus)
     {
+        GuardTransition(newStatus);
+
         var oldStatus = Status;
         Status = newStatus;
         AddDomainEvent(new OrderStatusChangedDomainEvent
@@ -107,6 +126,8 @@ public class Order : BaseEntity
 
     public void CompletePayment(string? transactionId)
     {
+        GuardTransition(OrderStatus.Paid);
+
         PaymentStatus = PaymentStatus.Completed;
         PaymentTransactionId = transactionId;
         PaidAt = DateTimeOffset.UtcNow;
@@ -127,6 +148,8 @@ public class Order : BaseEntity
 
     public void MarkAsShipped(string? trackingNumber, string? carrier)
     {
+        GuardTransition(OrderStatus.Shipped);
+
         TrackingNumber = trackingNumber;
         ShippingCarrier = carrier;
         ShippedAt = DateTimeOffset.UtcNow;
@@ -145,6 +168,8 @@ public class Order : BaseEntity
 
     public void MarkAsDelivered()
     {
+        GuardTransition(OrderStatus.Delivered);
+
         DeliveredAt = DateTimeOffset.UtcNow;
         Status = OrderStatus.Delivered;
 
@@ -161,6 +186,8 @@ public class Order : BaseEntity
 
     public void Cancel(string? reason = null)
     {
+        GuardTransition(OrderStatus.Cancelled);
+
         var oldStatus = Status;
         Status = OrderStatus.Cancelled;
 
@@ -180,5 +207,16 @@ public class Order : BaseEntity
             OldStatus = oldStatus,
             NewStatus = OrderStatus.Cancelled
         });
+    }
+
+    private void GuardTransition(OrderStatus target)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !allowed.Contains(target))
+        {
+            throw new InvalidEntityStateException(
+                nameof(Order),
+                Status.ToString(),
+                $"Cannot transition from {Status} to {target}");
+        }
     }
 }

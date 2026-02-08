@@ -1,5 +1,5 @@
 using Auctions.Domain.Events;
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using MediatR;
 using Microsoft.Extensions.Logging;

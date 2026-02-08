@@ -1,4 +1,4 @@
-using BuildingBlocks.Domain.Enums;
+using Auctions.Domain.Enums;
 using BuildingBlocks.Domain.Events;
 
 namespace Auctions.Domain.Events;
