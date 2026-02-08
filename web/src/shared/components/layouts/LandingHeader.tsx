@@ -26,13 +26,14 @@ import {
   FavoriteBorder,
   PersonOutline,
   ShoppingBagOutlined,
-  LocationOnOutlined,
+  NotificationsOutlined,
 } from '@mui/icons-material'
 import { useAuth } from '@/app/providers'
 import { useNotificationSummary } from '@/modules/notifications/hooks'
 import { useWatchlistCount } from '@/modules/auctions/hooks'
 import { palette } from '@/shared/theme/tokens'
 import { WishlistDrawer } from '../navigation/WishlistDrawer'
+import { LanguageSwitcher } from '../inputs'
 
 const categoryLinks = [
   { label: 'New Arrivals', path: '/auctions?sort=newest' },
@@ -264,7 +265,6 @@ export const LandingHeader = () => {
 
   const showSolidHeader = isScrolled || !isLandingPage
 
-  const promoBannerHeight = 44
   const mainHeaderHeight = { xs: 56, md: 64 }
   const categoryNavHeight = { xs: 0, md: 44 }
   const greetingHeight = isAuthenticated ? { xs: 0, md: 32 } : { xs: 0, md: 0 }
@@ -277,7 +277,7 @@ export const LandingHeader = () => {
         sx={{
           bgcolor: headerBg,
           transition: 'all 0.3s ease',
-          top: promoBannerHeight,
+          top: 0,
         }}
       >
         {isAuthenticated && showSolidHeader && (
@@ -402,13 +402,13 @@ export const LandingHeader = () => {
                   <SearchIcon
                     sx={{
                       color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
-                      fontSize: 22,
+                      fontSize: 24,
                     }}
                   />
                 </IconButton>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1 }, ml: 'auto' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
                 <Button
                   component={Link}
                   to="/sell"
@@ -421,8 +421,9 @@ export const LandingHeader = () => {
                     fontSize: '0.6875rem',
                     fontWeight: 500,
                     letterSpacing: '0.15em',
-                    px: 2.5,
-                    py: 1,
+                    px: 3,
+                    py: 1.25,
+                    height: 40,
                     borderRadius: 0,
                     boxShadow: 'none',
                     whiteSpace: 'nowrap',
@@ -435,32 +436,41 @@ export const LandingHeader = () => {
                   Sell With Us
                 </Button>
 
-                {isAuthenticated && (
-                  <Button
-                    component={Link}
-                    to="/my-auctions"
-                    sx={{
-                      display: { xs: 'none', md: 'flex' },
-                      color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
-                      fontSize: '0.8125rem',
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      px: 1.5,
-                      '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
-                    }}
-                  >
-                    MyAuction
-                  </Button>
-                )}
-
-                <IconButton
+                <Box
                   sx={{
                     display: { xs: 'none', sm: 'flex' },
+                    alignItems: 'center',
+                    gap: 1,
                     color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                   }}
                 >
-                  <LocationOnOutlined sx={{ fontSize: 22 }} />
-                </IconButton>
+                  <LanguageSwitcher />
+
+                  {isAuthenticated && (
+                    <IconButton
+                      component={Link}
+                      to="/notifications"
+                      sx={{
+                        color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
+                        p: 1,
+                      }}
+                    >
+                      <Badge
+                        badgeContent={notificationSummary?.unreadCount || 0}
+                        color="error"
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: '0.625rem',
+                            minWidth: 16,
+                            height: 16,
+                          },
+                        }}
+                      >
+                        <NotificationsOutlined sx={{ fontSize: 24 }} />
+                      </Badge>
+                    </IconButton>
+                  )}
+                </Box>
 
                 {isAuthenticated ? (
                   <>
@@ -468,15 +478,20 @@ export const LandingHeader = () => {
                       onClick={handleUserMenuOpen}
                       sx={{
                         color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
+                        p: 1,
                       }}
                     >
                       {user?.avatarUrl ? (
                         <Avatar
                           src={user.avatarUrl}
-                          sx={{ width: 24, height: 24 }}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            border: `2px solid ${showSolidHeader ? palette.neutral[300] : 'rgba(255,255,255,0.4)'}`,
+                          }}
                         />
                       ) : (
-                        <PersonOutline sx={{ fontSize: 22 }} />
+                        <PersonOutline sx={{ fontSize: 24 }} />
                       )}
                     </IconButton>
                     <Menu
@@ -578,9 +593,10 @@ export const LandingHeader = () => {
                     to="/login"
                     sx={{
                       color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
+                      p: 1,
                     }}
                   >
-                    <PersonOutline sx={{ fontSize: 22 }} />
+                    <PersonOutline sx={{ fontSize: 24 }} />
                   </IconButton>
                 )}
 
@@ -588,6 +604,7 @@ export const LandingHeader = () => {
                   onClick={handleWishlistOpen}
                   sx={{
                     color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
+                    p: 1,
                   }}
                 >
                   <Badge
@@ -601,7 +618,7 @@ export const LandingHeader = () => {
                       },
                     }}
                   >
-                    <FavoriteBorder sx={{ fontSize: 22 }} />
+                    <FavoriteBorder sx={{ fontSize: 24 }} />
                   </Badge>
                 </IconButton>
 
@@ -610,9 +627,10 @@ export const LandingHeader = () => {
                   to={isAuthenticated ? '/my-bids' : '/login'}
                   sx={{
                     color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
+                    p: 1,
                   }}
                 >
-                  <ShoppingBagOutlined sx={{ fontSize: 22 }} />
+                  <ShoppingBagOutlined sx={{ fontSize: 24 }} />
                 </IconButton>
               </Box>
             </Box>
@@ -678,8 +696,8 @@ export const LandingHeader = () => {
         <Box
           sx={{
             height: {
-              xs: promoBannerHeight + mainHeaderHeight.xs,
-              md: promoBannerHeight + mainHeaderHeight.md + categoryNavHeight.md + greetingHeight.md,
+              xs: mainHeaderHeight.xs,
+              md: mainHeaderHeight.md + categoryNavHeight.md + greetingHeight.md,
             },
           }}
         />

@@ -14,13 +14,12 @@ import {
   CircularProgress,
   Stack,
   TextField,
-  alpha,
 } from '@mui/material'
-import { Google, ArrowForward, Gavel } from '@mui/icons-material'
+import { Google, East } from '@mui/icons-material'
 import { loginSchema } from '../schemas'
 import { useAuth } from '@/app/providers'
 import type { LoginRequest } from '../types'
-import { palette, colors, gradients } from '@/shared/theme/tokens'
+import { palette } from '@/shared/theme/tokens'
 import { InlineAlert, FormField } from '@/shared/ui'
 import { getErrorMessage } from '@/services/http'
 import { getAndClearRedirectUrl } from '@/shared/components/auth'
@@ -44,48 +43,34 @@ const SESSION_MESSAGES: Record<
   },
 }
 
-const glassCardStyles = {
-  background: 'rgba(255, 255, 255, 0.03)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: 3,
-}
-
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 2,
+    backgroundColor: palette.neutral[0],
+    borderRadius: 0,
     '& fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.15)',
+      borderColor: palette.neutral[300],
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(255, 255, 255, 0.3)',
+      borderColor: palette.neutral[500],
     },
     '&.Mui-focused fieldset': {
-      borderColor: palette.brand.primary,
+      borderColor: palette.neutral[900],
+      borderWidth: 1,
     },
   },
   '& .MuiInputLabel-root': {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: palette.neutral[500],
+    fontSize: '0.875rem',
   },
   '& .MuiInputLabel-root.Mui-focused': {
-    color: palette.brand.primary,
-  },
-  '& .MuiInputLabel-root.MuiInputLabel-shrink': {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: palette.neutral[900],
   },
   '& .MuiOutlinedInput-input': {
-    color: palette.neutral[50],
-  },
-  '& .MuiFormHelperText-root': {
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: palette.neutral[900],
+    py: 1.75,
   },
   '& .MuiFormHelperText-root.Mui-error': {
     color: palette.semantic.error,
-  },
-  '& .MuiIconButton-root': {
-    color: 'rgba(255, 255, 255, 0.5)',
   },
 }
 
@@ -178,36 +163,69 @@ export function LoginPage() {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
+        </Box>
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 440, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 } }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440 }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
+              <Typography
+                component={Link}
+                to="/"
+                sx={{
+                  display: 'block',
+                  fontFamily: '"Playfair Display", serif',
+                  fontStyle: 'italic',
+                  fontWeight: 500,
+                  fontSize: '1.75rem',
+                  color: palette.neutral[900],
+                  textDecoration: 'none',
+                  mb: 6,
+                }}
+              >
+                TheAuction
+              </Typography>
+
               <Typography
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  textAlign: 'center',
+                  fontWeight: 500,
+                  color: palette.neutral[900],
                   mb: 1,
                 }}
               >
@@ -216,16 +234,15 @@ export function LoginPage() {
 
               <Typography
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  textAlign: 'center',
+                  color: palette.neutral[500],
                   mb: 4,
                 }}
               >
-                Enter the code from your authenticator app
+                Enter the 6-digit code from your authenticator app
               </Typography>
 
               {loginError && (
-                <InlineAlert severity="error" sx={{ mb: 3 }}>
+                <InlineAlert severity="error" sx={{ mb: 3, borderRadius: 0 }}>
                   {loginError}
                 </InlineAlert>
               )}
@@ -242,7 +259,7 @@ export function LoginPage() {
                     style: { textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.5rem' },
                   },
                 }}
-                sx={{ ...inputStyles, mb: 3 }}
+                sx={{ ...inputStyles, mb: 4 }}
               />
 
               <Button
@@ -250,25 +267,28 @@ export function LoginPage() {
                 variant="contained"
                 onClick={handle2FASubmit}
                 disabled={twoFactorCode.length !== 6 || isLoggingIn}
-                endIcon={!isLoggingIn && <ArrowForward />}
+                endIcon={!isLoggingIn && <East />}
                 sx={{
-                  background: gradients.gold,
-                  color: palette.neutral[900],
-                  py: 1.5,
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: 2,
+                  bgcolor: palette.neutral[900],
+                  color: palette.neutral[0],
+                  py: 1.75,
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  borderRadius: 0,
+                  boxShadow: 'none',
                   '&:hover': {
-                    background: gradients.goldHover,
+                    bgcolor: palette.neutral[800],
+                    boxShadow: 'none',
                   },
                   '&.Mui-disabled': {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'rgba(255, 255, 255, 0.3)',
+                    bgcolor: palette.neutral[300],
+                    color: palette.neutral[500],
                   },
                 }}
               >
-                {isLoggingIn ? <CircularProgress size={24} color="inherit" /> : 'Verify'}
+                {isLoggingIn ? <CircularProgress size={20} color="inherit" /> : 'Verify Code'}
               </Button>
 
               <Button
@@ -277,18 +297,18 @@ export function LoginPage() {
                 onClick={() => setRequires2FA(false)}
                 sx={{
                   mt: 2,
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  color: palette.neutral[500],
                   textTransform: 'none',
                   '&:hover': {
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    background: 'transparent',
+                    color: palette.neutral[900],
+                    bgcolor: 'transparent',
                   },
                 }}
               >
-                Use a different account
+                ← Back to login
               </Button>
-            </Box>
-          </motion.div>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )
@@ -299,126 +319,112 @@ export function LoginPage() {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        bgcolor: colors.background.primary,
-        position: 'relative',
-        overflow: 'hidden',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Box
         sx={{
-          position: 'absolute',
-          top: '-20%',
-          left: '-10%',
-          width: '600px',
-          height: '600px',
-          background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.08)} 0%, transparent 70%)`,
-          pointerEvents: 'none',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '-30%',
-          right: '-10%',
-          width: '800px',
-          height: '800px',
-          background: `radial-gradient(circle, ${alpha(palette.purple.primary, 0.06)} 0%, transparent 70%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      <Box
-        sx={{
-          display: { xs: 'none', lg: 'flex' },
+          display: { xs: 'none', lg: 'block' },
           width: '50%',
           position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center',
           overflow: 'hidden',
-          borderRight: '1px solid rgba(255, 255, 255, 0.05)',
         }}
       >
-        <motion.div
-          initial="initial"
-          animate="animate"
-          variants={staggerContainer}
-          style={{ position: 'relative', zIndex: 1, padding: '3rem', textAlign: 'center', width: '100%', maxWidth: 520 }}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: 'rgba(28, 25, 23, 0.4)',
+          }}
+        />
+
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 60,
+            left: 60,
+            right: 60,
+            color: palette.neutral[0],
+          }}
         >
-          <motion.div variants={staggerItem}>
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                background: gradients.gold,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 4,
-                boxShadow: `0 0 60px ${alpha(palette.brand.primary, 0.4)}`,
-              }}
-            >
-              <Gavel sx={{ fontSize: 40, color: palette.neutral[900] }} />
-            </Box>
-          </motion.div>
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={staggerContainer}
+          >
+            <motion.div variants={staggerItem}>
+              <Typography
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  fontSize: { lg: '2.5rem', xl: '3rem' },
+                  fontWeight: 400,
+                  lineHeight: 1.2,
+                  mb: 3,
+                }}
+              >
+                Discover Rare
+                <br />
+                & Exceptional Pieces
+              </Typography>
+            </motion.div>
 
-          <motion.div variants={staggerItem}>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 700,
-                background: gradients.gold,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 2,
-              }}
-            >
-              AUCTION
-            </Typography>
-          </motion.div>
+            <motion.div variants={staggerItem}>
+              <Typography
+                sx={{
+                  fontSize: '1rem',
+                  color: 'rgba(255,255,255,0.7)',
+                  maxWidth: 400,
+                  lineHeight: 1.6,
+                }}
+              >
+                Join thousands of collectors finding authenticated luxury items from trusted sellers worldwide.
+              </Typography>
+            </motion.div>
 
-          <motion.div variants={staggerItem}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'rgba(255,255,255,0.6)',
-                fontWeight: 300,
-                lineHeight: 1.6,
-              }}
-            >
-              Discover unique treasures and rare finds from collectors worldwide
-            </Typography>
+            <motion.div variants={staggerItem}>
+              <Stack direction="row" spacing={6} sx={{ mt: 5 }}>
+                {[
+                  { value: '50K+', label: 'Items Sold' },
+                  { value: '10K+', label: 'Trusted Sellers' },
+                  { value: '99%', label: 'Authenticity Rate' },
+                ].map((stat) => (
+                  <Box key={stat.label}>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Playfair Display", serif',
+                        fontSize: '1.75rem',
+                        fontWeight: 500,
+                        color: palette.neutral[0],
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.75rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        mt: 0.5,
+                      }}
+                    >
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </motion.div>
           </motion.div>
-
-          <motion.div variants={staggerItem}>
-            <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: { xs: 3, xl: 5 } }}>
-              {[
-                { label: 'Active Auctions', value: '2,500+' },
-                { label: 'Trusted Sellers', value: '10K+' },
-                { label: 'Items Sold', value: '50K+' },
-              ].map((stat) => (
-                <Box key={stat.label} sx={{ textAlign: 'center', minWidth: 100 }}>
-                  <Typography
-                    sx={{
-                      fontFamily: '"Playfair Display", serif',
-                      fontSize: { xs: '1.5rem', xl: '1.75rem' },
-                      fontWeight: 600,
-                      color: palette.brand.primary,
-                    }}
-                  >
-                    {stat.value}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', mt: 0.5, whiteSpace: 'nowrap' }}>
-                    {stat.label}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </motion.div>
-        </motion.div>
+        </Box>
       </Box>
 
       <Box
@@ -427,223 +433,229 @@ export function LoginPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          p: { xs: 2, sm: 4 },
+          px: { xs: 3, md: 6 },
+          py: 6,
         }}
       >
-        <Box sx={{ width: '100%', maxWidth: 480, px: { xs: 1, sm: 0 } }}>
+        <Box sx={{ width: '100%', maxWidth: 440 }}>
           <motion.div initial="initial" animate="animate" variants={staggerContainer}>
             <motion.div variants={staggerItem}>
-              <Box sx={{ mb: 4, textAlign: 'center' }}>
-                <Typography
-                  component={Link}
-                  to="/"
-                  sx={{
-                    fontFamily: '"Playfair Display", serif',
-                    fontWeight: 700,
-                    fontSize: '1.5rem',
-                    background: gradients.gold,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textDecoration: 'none',
-                    display: { lg: 'none' },
-                  }}
-                >
-                  AUCTION
-                </Typography>
-              </Box>
+              <Typography
+                component={Link}
+                to="/"
+                sx={{
+                  display: 'block',
+                  fontFamily: '"Playfair Display", serif',
+                  fontStyle: 'italic',
+                  fontWeight: 500,
+                  fontSize: '1.75rem',
+                  color: palette.neutral[900],
+                  textDecoration: 'none',
+                  mb: 6,
+                }}
+              >
+                TheAuction
+              </Typography>
             </motion.div>
 
             <motion.div variants={staggerItem}>
-              <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 } }}>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontFamily: '"Playfair Display", serif',
-                    fontWeight: 600,
-                    color: palette.neutral[50],
-                    textAlign: 'center',
-                    mb: 1,
-                  }}
+              <Typography
+                variant="h4"
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 1,
+                }}
+              >
+                Welcome Back
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: palette.neutral[500],
+                  mb: 4,
+                }}
+              >
+                Sign in to your account to continue
+              </Typography>
+            </motion.div>
+
+            {sessionMessage && (
+              <motion.div variants={staggerItem}>
+                <InlineAlert
+                  severity={sessionMessage.severity}
+                  sx={{ mb: 3, borderRadius: 0 }}
                 >
-                  Welcome Back
-                </Typography>
+                  {sessionMessage.message}
+                </InlineAlert>
+              </motion.div>
+            )}
 
-                <Typography
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    textAlign: 'center',
-                    mb: 4,
-                  }}
+            {loginError && (
+              <motion.div variants={staggerItem}>
+                <InlineAlert severity="error" sx={{ mb: 3, borderRadius: 0 }}>
+                  {loginError}
+                </InlineAlert>
+              </motion.div>
+            )}
+
+            <motion.div variants={staggerItem}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormField
+                  name="usernameOrEmail"
+                  register={register}
+                  errors={errors}
+                  fullWidth
+                  label="Email or Username"
+                  sx={{ ...inputStyles, mb: 2.5 }}
+                />
+
+                <FormField
+                  name="password"
+                  register={register}
+                  errors={errors}
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  showPasswordToggle
+                  sx={{ ...inputStyles, mb: 2 }}
+                />
+
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  sx={{ mb: 4 }}
                 >
-                  Sign in to continue to your account
-                </Typography>
-
-                {sessionMessage && (
-                  <InlineAlert
-                    severity={sessionMessage.severity}
-                    sx={{ mb: 3 }}
-                  >
-                    {sessionMessage.message}
-                  </InlineAlert>
-                )}
-
-                {loginError && (
-                  <InlineAlert severity="error" sx={{ mb: 3 }}>
-                    {loginError}
-                  </InlineAlert>
-                )}
-
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <FormField
-                    name="usernameOrEmail"
-                    register={register}
-                    errors={errors}
-                    fullWidth
-                    label="Email or Username"
-                    sx={{ ...inputStyles, mb: 2.5 }}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        size="small"
+                        sx={{
+                          color: palette.neutral[400],
+                          '&.Mui-checked': { color: palette.neutral[900] },
+                        }}
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600] }}>
+                        Remember me
+                      </Typography>
+                    }
                   />
-
-                  <FormField
-                    name="password"
-                    register={register}
-                    errors={errors}
-                    fullWidth
-                    label="Password"
-                    type="password"
-                    showPasswordToggle
-                    sx={{ ...inputStyles, mb: 2 }}
-                  />
-
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ mb: 3 }}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          size="small"
-                          sx={{
-                            color: 'rgba(255, 255, 255, 0.3)',
-                            '&.Mui-checked': { color: palette.brand.primary },
-                          }}
-                        />
-                      }
-                      label={
-                        <Typography sx={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                          Remember me
-                        </Typography>
-                      }
-                    />
-                    <Typography
-                      component={Link}
-                      to="/forgot-password"
-                      sx={{
-                        fontSize: '0.875rem',
-                        color: palette.brand.primary,
-                        textDecoration: 'none',
-                        fontWeight: 500,
-                        '&:hover': { textDecoration: 'underline' },
-                      }}
-                    >
-                      Forgot password?
-                    </Typography>
-                  </Stack>
-
-                  <Button
-                    fullWidth
-                    type="submit"
-                    variant="contained"
-                    disabled={isSubmitting || isLoggingIn}
-                    endIcon={!isSubmitting && !isLoggingIn && <ArrowForward />}
+                  <Typography
+                    component={Link}
+                    to="/forgot-password"
                     sx={{
-                      background: gradients.gold,
+                      fontSize: '0.875rem',
                       color: palette.neutral[900],
-                      py: 1.5,
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      borderRadius: 2,
-                      '&:hover': {
-                        background: gradients.goldHover,
-                      },
-                      '&.Mui-disabled': {
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'rgba(255, 255, 255, 0.3)',
-                      },
+                      textDecoration: 'underline',
+                      textUnderlineOffset: 3,
+                      '&:hover': { color: palette.neutral[600] },
                     }}
                   >
-                    {isSubmitting || isLoggingIn ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      'Sign In'
-                    )}
-                  </Button>
-                </form>
+                    Forgot password?
+                  </Typography>
+                </Stack>
 
-                <Divider
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  disabled={isSubmitting || isLoggingIn}
+                  endIcon={!isSubmitting && !isLoggingIn && <East />}
                   sx={{
-                    my: 3,
-                    '&::before, &::after': {
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                    bgcolor: palette.neutral[900],
+                    color: palette.neutral[0],
+                    py: 1.75,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: palette.neutral[800],
+                      boxShadow: 'none',
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: palette.neutral[300],
+                      color: palette.neutral[500],
                     },
                   }}
                 >
-                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.875rem' }}>
-                    or continue with
-                  </Typography>
-                </Divider>
+                  {isSubmitting || isLoggingIn ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    'Sign In'
+                  )}
+                </Button>
+              </form>
+            </motion.div>
 
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Google />}
-                    onClick={handleGoogleLogin}
-                    sx={{
-                      py: 1.25,
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      borderRadius: 2,
-                      '&:hover': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      },
-                    }}
-                  >
-                    Continue with Google
-                  </Button>
-                </Stack>
+            <motion.div variants={staggerItem}>
+              <Divider
+                sx={{
+                  my: 4,
+                  '&::before, &::after': {
+                    borderColor: palette.neutral[200],
+                  },
+                }}
+              >
+                <Typography sx={{ color: palette.neutral[400], fontSize: '0.8125rem' }}>
+                  or
+                </Typography>
+              </Divider>
 
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<Google />}
+                onClick={handleGoogleLogin}
+                sx={{
+                  py: 1.5,
+                  borderColor: palette.neutral[300],
+                  color: palette.neutral[900],
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  borderRadius: 0,
+                  '&:hover': {
+                    borderColor: palette.neutral[900],
+                    bgcolor: 'transparent',
+                  },
+                }}
+              >
+                Continue with Google
+              </Button>
+            </motion.div>
+
+            <motion.div variants={staggerItem}>
+              <Typography
+                sx={{
+                  mt: 5,
+                  textAlign: 'center',
+                  color: palette.neutral[500],
+                  fontSize: '0.9375rem',
+                }}
+              >
+                Don't have an account?{' '}
                 <Typography
+                  component={Link}
+                  to="/register"
                   sx={{
-                    mt: 4,
-                    textAlign: 'center',
-                    color: 'rgba(255, 255, 255, 0.5)',
-                    fontSize: '0.9375rem',
+                    color: palette.neutral[900],
+                    textDecoration: 'underline',
+                    textUnderlineOffset: 3,
+                    fontWeight: 500,
+                    '&:hover': { color: palette.neutral[600] },
                   }}
                 >
-                  Don't have an account?{' '}
-                  <Typography
-                    component={Link}
-                    to="/register"
-                    sx={{
-                      color: palette.brand.primary,
-                      textDecoration: 'none',
-                      fontWeight: 600,
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
-                  >
-                    Create account
-                  </Typography>
+                  Create account
                 </Typography>
-              </Box>
+              </Typography>
             </motion.div>
           </motion.div>
         </Box>

@@ -3,12 +3,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Box, Typography, Button, CircularProgress, alpha } from '@mui/material'
+import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
-import { Email, ArrowBack, ArrowForward } from '@mui/icons-material'
+import { Email, West, East } from '@mui/icons-material'
 import { z } from 'zod'
 import { useForgotPassword } from '../hooks'
-import { palette, colors, gradients } from '@/shared/theme/tokens'
+import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 const forgotPasswordSchema = z.object({
@@ -17,28 +17,35 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>
 
-const glassCardStyles = {
-  background: 'rgba(255, 255, 255, 0.03)',
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: 3,
-}
-
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 2,
-    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-    '&.Mui-focused fieldset': { borderColor: palette.brand.primary },
+    backgroundColor: palette.neutral[0],
+    borderRadius: 0,
+    '& fieldset': {
+      borderColor: palette.neutral[300],
+    },
+    '&:hover fieldset': {
+      borderColor: palette.neutral[500],
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: palette.neutral[900],
+      borderWidth: 1,
+    },
   },
-  '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-  '& .MuiInputLabel-root.Mui-focused': { color: palette.brand.primary },
-  '& .MuiInputLabel-root.MuiInputLabel-shrink': { color: 'rgba(255, 255, 255, 0.7)' },
-  '& .MuiOutlinedInput-input': { color: palette.neutral[50] },
-  '& .MuiFormHelperText-root': { color: 'rgba(255, 255, 255, 0.5)' },
-  '& .MuiFormHelperText-root.Mui-error': { color: palette.semantic.error },
+  '& .MuiInputLabel-root': {
+    color: palette.neutral[500],
+    fontSize: '0.875rem',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: palette.neutral[900],
+  },
+  '& .MuiOutlinedInput-input': {
+    color: palette.neutral[900],
+    py: 1.75,
+  },
+  '& .MuiFormHelperText-root.Mui-error': {
+    color: palette.semantic.error,
+  },
 }
 
 export function ForgotPasswordPage() {
@@ -71,29 +78,46 @@ export function ForgotPasswordPage() {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
+        </Box>
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -104,16 +128,15 @@ export function ForgotPasswordPage() {
                     width: 80,
                     height: 80,
                     borderRadius: '50%',
-                    background: gradients.gold,
+                    bgcolor: palette.neutral[900],
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mx: 'auto',
-                    mb: 3,
-                    boxShadow: `0 0 40px ${alpha(palette.brand.primary, 0.4)}`,
+                    mb: 4,
                   }}
                 >
-                  <Email sx={{ fontSize: 40, color: palette.neutral[900] }} />
+                  <Email sx={{ fontSize: 40, color: palette.neutral[0] }} />
                 </Box>
               </motion.div>
 
@@ -121,21 +144,21 @@ export function ForgotPasswordPage() {
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  mb: 1,
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 2,
                 }}
               >
                 Check Your Email
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 2 }}>
+              <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
                 We've sent password reset instructions to
               </Typography>
 
               <Typography
                 sx={{
-                  color: palette.brand.primary,
+                  color: palette.neutral[900],
                   fontWeight: 600,
                   fontSize: '1.125rem',
                   mb: 4,
@@ -144,44 +167,54 @@ export function ForgotPasswordPage() {
                 {sentEmail}
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.875rem', mb: 4 }}>
+              <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mb: 5 }}>
                 If you don't see the email, check your spam folder.
               </Typography>
 
-              <Button
-                fullWidth
-                variant="contained"
-                component={Link}
-                to="/login"
-                endIcon={<ArrowForward />}
-                sx={{
-                  background: gradients.gold,
-                  color: palette.neutral[900],
-                  py: 1.5,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: 2,
-                  '&:hover': { background: gradients.goldHover },
-                }}
-              >
-                Back to Login
-              </Button>
+              <Stack spacing={2}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  component={Link}
+                  to="/login"
+                  endIcon={<East />}
+                  sx={{
+                    bgcolor: palette.neutral[900],
+                    color: palette.neutral[0],
+                    py: 1.75,
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontSize: '0.875rem',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: palette.neutral[800],
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  Back to Login
+                </Button>
 
-              <Button
-                fullWidth
-                variant="text"
-                onClick={() => setEmailSent(false)}
-                sx={{
-                  mt: 2,
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  textTransform: 'none',
-                  '&:hover': { color: 'rgba(255, 255, 255, 0.8)', background: 'transparent' },
-                }}
-              >
-                Try a different email
-              </Button>
-            </Box>
-          </motion.div>
+                <Button
+                  fullWidth
+                  variant="text"
+                  onClick={() => setEmailSent(false)}
+                  sx={{
+                    color: palette.neutral[500],
+                    textTransform: 'none',
+                    '&:hover': {
+                      color: palette.neutral[900],
+                      bgcolor: 'transparent',
+                    },
+                  }}
+                >
+                  Try a different email
+                </Button>
+              </Stack>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )
@@ -192,80 +225,156 @@ export function ForgotPasswordPage() {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: colors.background.primary,
-        position: 'relative',
-        overflow: 'hidden',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Box
         sx={{
-          position: 'absolute',
-          top: '-20%',
-          left: '-10%',
-          width: '600px',
-          height: '600px',
-          background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.08)} 0%, transparent 70%)`,
-          pointerEvents: 'none',
+          display: { xs: 'none', lg: 'block' },
+          width: '50%',
+          position: 'relative',
+          overflow: 'hidden',
         }}
-      />
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: 'rgba(28, 25, 23, 0.4)',
+          }}
+        />
+
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 60,
+            left: 60,
+            right: 60,
+            color: palette.neutral[0],
+          }}
+        >
+          <motion.div initial="initial" animate="animate" variants={staggerContainer}>
+            <motion.div variants={staggerItem}>
+              <Typography
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  fontSize: { lg: '2.5rem', xl: '3rem' },
+                  fontWeight: 400,
+                  lineHeight: 1.2,
+                  mb: 3,
+                }}
+              >
+                Password Recovery
+              </Typography>
+            </motion.div>
+
+            <motion.div variants={staggerItem}>
+              <Typography
+                sx={{
+                  fontSize: '1rem',
+                  color: 'rgba(255,255,255,0.7)',
+                  maxWidth: 400,
+                  lineHeight: 1.6,
+                }}
+              >
+                No worries, we'll help you regain access to your account securely.
+              </Typography>
+            </motion.div>
+          </motion.div>
+        </Box>
+      </Box>
+
       <Box
         sx={{
-          position: 'absolute',
-          bottom: '-30%',
-          right: '-10%',
-          width: '800px',
-          height: '800px',
-          background: `radial-gradient(circle, ${alpha(palette.purple.primary, 0.06)} 0%, transparent 70%)`,
-          pointerEvents: 'none',
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: { xs: 3, md: 6 },
         }}
-      />
-
-      <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-        <motion.div initial="initial" animate="animate" variants={staggerContainer}>
-          <motion.div variants={staggerItem}>
-            <Box sx={{ mb: 3 }}>
+      >
+        <Box sx={{ width: '100%', maxWidth: 440 }}>
+          <motion.div initial="initial" animate="animate" variants={staggerContainer}>
+            <motion.div variants={staggerItem}>
               <Button
                 component={Link}
                 to="/login"
-                startIcon={<ArrowBack />}
+                startIcon={<West />}
                 sx={{
-                  color: 'rgba(255, 255, 255, 0.6)',
+                  color: palette.neutral[500],
                   textTransform: 'none',
-                  '&:hover': { bgcolor: 'transparent', color: palette.neutral[50] },
+                  mb: 4,
+                  ml: -1,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    color: palette.neutral[900],
+                  },
                 }}
               >
                 Back to login
               </Button>
-            </Box>
-          </motion.div>
+            </motion.div>
 
-          <motion.div variants={staggerItem}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 } }}>
+            <motion.div variants={staggerItem}>
+              <Typography
+                component={Link}
+                to="/"
+                sx={{
+                  display: 'block',
+                  fontFamily: '"Playfair Display", serif',
+                  fontStyle: 'italic',
+                  fontWeight: 500,
+                  fontSize: '1.75rem',
+                  color: palette.neutral[900],
+                  textDecoration: 'none',
+                  mb: 6,
+                }}
+              >
+                TheAuction
+              </Typography>
+            </motion.div>
+
+            <motion.div variants={staggerItem}>
               <Typography
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  textAlign: 'center',
+                  fontWeight: 500,
+                  color: palette.neutral[900],
                   mb: 1,
                 }}
               >
                 Forgot Password?
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', textAlign: 'center', mb: 4 }}>
+              <Typography
+                sx={{
+                  color: palette.neutral[500],
+                  mb: 4,
+                }}
+              >
                 No worries, we'll send you reset instructions
               </Typography>
+            </motion.div>
 
-              {forgotPassword.isError && (
-                <InlineAlert severity="error" sx={{ mb: 3 }}>
+            {forgotPassword.isError && (
+              <motion.div variants={staggerItem}>
+                <InlineAlert severity="error" sx={{ mb: 3, borderRadius: 0 }}>
                   Something went wrong. Please try again.
                 </InlineAlert>
-              )}
+              </motion.div>
+            )}
 
+            <motion.div variants={staggerItem}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <FormField
                   name="email"
@@ -274,7 +383,7 @@ export function ForgotPasswordPage() {
                   fullWidth
                   label="Email Address"
                   type="email"
-                  sx={{ ...inputStyles, mb: 3 }}
+                  sx={{ ...inputStyles, mb: 4 }}
                 />
 
                 <Button
@@ -282,35 +391,42 @@ export function ForgotPasswordPage() {
                   type="submit"
                   variant="contained"
                   disabled={isSubmitting || forgotPassword.isPending}
-                  endIcon={!isSubmitting && !forgotPassword.isPending && <ArrowForward />}
+                  endIcon={!isSubmitting && !forgotPassword.isPending && <East />}
                   sx={{
-                    background: gradients.gold,
-                    color: palette.neutral[900],
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    '&:hover': { background: gradients.goldHover },
+                    bgcolor: palette.neutral[900],
+                    color: palette.neutral[0],
+                    py: 1.75,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: palette.neutral[800],
+                      boxShadow: 'none',
+                    },
                     '&.Mui-disabled': {
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.3)',
+                      bgcolor: palette.neutral[300],
+                      color: palette.neutral[500],
                     },
                   }}
                 >
                   {isSubmitting || forgotPassword.isPending ? (
-                    <CircularProgress size={24} color="inherit" />
+                    <CircularProgress size={20} color="inherit" />
                   ) : (
                     'Reset Password'
                   )}
                 </Button>
               </form>
+            </motion.div>
 
+            <motion.div variants={staggerItem}>
               <Typography
                 sx={{
-                  mt: 4,
+                  mt: 5,
                   textAlign: 'center',
-                  color: 'rgba(255, 255, 255, 0.5)',
+                  color: palette.neutral[500],
                   fontSize: '0.9375rem',
                 }}
               >
@@ -319,18 +435,19 @@ export function ForgotPasswordPage() {
                   component={Link}
                   to="/login"
                   sx={{
-                    color: palette.brand.primary,
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                    '&:hover': { textDecoration: 'underline' },
+                    color: palette.neutral[900],
+                    textDecoration: 'underline',
+                    textUnderlineOffset: 3,
+                    fontWeight: 500,
+                    '&:hover': { color: palette.neutral[600] },
                   }}
                 >
                   Sign in
                 </Typography>
               </Typography>
-            </Box>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </Box>
       </Box>
     </Box>
   )

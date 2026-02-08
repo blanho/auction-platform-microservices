@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Box, Typography, Button, CircularProgress, alpha } from '@mui/material'
+import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import {
   Error as ErrorIcon,
-  ArrowForward,
+  East,
   Email,
   MarkEmailRead,
+  CheckCircle,
 } from '@mui/icons-material'
 import { useConfirmEmail, useResendConfirmation } from '../hooks'
-import { palette, colors, gradients } from '@/shared/theme/tokens'
-import { fadeInUp } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function ConfirmEmailPage() {
   const [searchParams] = useSearchParams()
@@ -40,74 +41,83 @@ export function ConfirmEmailPage() {
     }
   }
 
-  const glassCardStyles = {
-    background: 'rgba(255, 255, 255, 0.03)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: 3,
-  }
-
   if (!token || !userId) {
     return (
       <Box
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
+        </Box>
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
               <Box
                 sx={{
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: gradients.gold,
+                  bgcolor: palette.neutral[900],
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   mx: 'auto',
-                  mb: 3,
-                  boxShadow: `0 0 40px ${alpha(palette.brand.primary, 0.4)}`,
+                  mb: 4,
                 }}
               >
-                <Email sx={{ fontSize: 40, color: palette.neutral[900] }} />
+                <Email sx={{ fontSize: 40, color: palette.neutral[0] }} />
               </Box>
 
               <Typography
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  mb: 1,
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 2,
                 }}
               >
                 Verify Your Email
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 4 }}>
-                Please check your inbox and click the verification link we sent to complete your registration.
+              <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
+                Please check your inbox and click the verification link we sent to complete your
+                registration.
               </Typography>
 
               {email && !resendSuccess && (
@@ -119,13 +129,13 @@ export function ConfirmEmailPage() {
                   sx={{
                     mb: 2,
                     py: 1.5,
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    color: palette.neutral[50],
+                    borderColor: palette.neutral[300],
+                    color: palette.neutral[900],
                     textTransform: 'none',
-                    borderRadius: 2,
+                    borderRadius: 0,
                     '&:hover': {
-                      borderColor: palette.brand.primary,
-                      bgcolor: alpha(palette.brand.primary, 0.05),
+                      borderColor: palette.neutral[900],
+                      bgcolor: 'transparent',
                     },
                   }}
                 >
@@ -142,14 +152,16 @@ export function ConfirmEmailPage() {
                   sx={{
                     mb: 3,
                     p: 2,
-                    borderRadius: 2,
-                    bgcolor: alpha(palette.semantic.success, 0.1),
-                    border: `1px solid ${alpha(palette.semantic.success, 0.3)}`,
+                    border: `1px solid ${palette.semantic.success}`,
+                    bgcolor: 'rgba(22, 163, 74, 0.05)',
                   }}
                 >
-                  <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
-                    Verification email sent! Check your inbox.
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                    <CheckCircle sx={{ color: palette.semantic.success, fontSize: 20 }} />
+                    <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
+                      Verification email sent! Check your inbox.
+                    </Typography>
+                  </Stack>
                 </Box>
               )}
 
@@ -158,21 +170,27 @@ export function ConfirmEmailPage() {
                 variant="contained"
                 component={Link}
                 to="/login"
-                endIcon={<ArrowForward />}
+                endIcon={<East />}
                 sx={{
-                  background: gradients.gold,
-                  color: palette.neutral[900],
-                  py: 1.5,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: 2,
-                  '&:hover': { background: gradients.goldHover },
+                  bgcolor: palette.neutral[900],
+                  color: palette.neutral[0],
+                  py: 1.75,
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontSize: '0.875rem',
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: palette.neutral[800],
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 Go to Login
               </Button>
-            </Box>
-          </motion.div>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )
@@ -184,50 +202,67 @@ export function ConfirmEmailPage() {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.brand.primary, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
+        </Box>
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
-              <Box sx={{ mb: 3 }}>
-                <CircularProgress size={60} sx={{ color: palette.brand.primary }} />
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
+              <Box sx={{ mb: 4 }}>
+                <CircularProgress size={60} sx={{ color: palette.neutral[900] }} />
               </Box>
 
               <Typography
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  mb: 1,
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 2,
                 }}
               >
                 Verifying Email...
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+              <Typography sx={{ color: palette.neutral[500] }}>
                 Please wait while we confirm your email address.
               </Typography>
-            </Box>
-          </motion.div>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )
@@ -239,29 +274,87 @@ export function ConfirmEmailPage() {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.semantic.success, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 60,
+              left: 60,
+              right: 60,
+              color: palette.neutral[0],
+            }}
+          >
+            <motion.div initial="initial" animate="animate" variants={staggerContainer}>
+              <motion.div variants={staggerItem}>
+                <Typography
+                  sx={{
+                    fontFamily: '"Playfair Display", serif',
+                    fontSize: { lg: '2.5rem', xl: '3rem' },
+                    fontWeight: 400,
+                    lineHeight: 1.2,
+                    mb: 3,
+                  }}
+                >
+                  Welcome to
+                  <br />
+                  TheAuction
+                </Typography>
+              </motion.div>
+
+              <motion.div variants={staggerItem}>
+                <Typography
+                  sx={{
+                    fontSize: '1rem',
+                    color: 'rgba(255,255,255,0.7)',
+                    maxWidth: 400,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Your account is now verified. Start exploring exclusive auctions and rare finds.
+                </Typography>
+              </motion.div>
+            </motion.div>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -272,13 +365,12 @@ export function ConfirmEmailPage() {
                     width: 80,
                     height: 80,
                     borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${palette.semantic.success} 0%, #15803D 100%)`,
+                    bgcolor: palette.semantic.success,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mx: 'auto',
-                    mb: 3,
-                    boxShadow: `0 0 40px ${alpha(palette.semantic.success, 0.4)}`,
+                    mb: 4,
                   }}
                 >
                   <MarkEmailRead sx={{ fontSize: 40, color: 'white' }} />
@@ -289,15 +381,15 @@ export function ConfirmEmailPage() {
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  mb: 1,
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 2,
                 }}
               >
                 Email Verified!
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 4 }}>
+              <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
                 Your email has been successfully verified. You can now sign in to your account.
               </Typography>
 
@@ -306,21 +398,27 @@ export function ConfirmEmailPage() {
                 variant="contained"
                 component={Link}
                 to="/login"
-                endIcon={<ArrowForward />}
+                endIcon={<East />}
                 sx={{
-                  background: gradients.gold,
-                  color: palette.neutral[900],
-                  py: 1.5,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: 2,
-                  '&:hover': { background: gradients.goldHover },
+                  bgcolor: palette.neutral[900],
+                  color: palette.neutral[0],
+                  py: 1.75,
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontSize: '0.875rem',
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: palette.neutral[800],
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 Sign In
               </Button>
-            </Box>
-          </motion.div>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )
@@ -332,40 +430,57 @@ export function ConfirmEmailPage() {
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: colors.background.primary,
-          position: 'relative',
-          overflow: 'hidden',
+          bgcolor: palette.neutral[50],
         }}
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '600px',
-            background: `radial-gradient(circle, ${alpha(palette.semantic.error, 0.15)} 0%, transparent 70%)`,
-            pointerEvents: 'none',
+            display: { xs: 'none', lg: 'block' },
+            width: '50%',
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              bgcolor: 'rgba(28, 25, 23, 0.4)',
+            }}
+          />
+        </Box>
 
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: 480, px: 3 }}>
-          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
-            <Box sx={{ ...glassCardStyles, p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 3, md: 6 },
+          }}
+        >
+          <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+            <motion.div initial="initial" animate="animate" variants={fadeInUp}>
               <Box
                 sx={{
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${palette.semantic.error} 0%, #B91C1C 100%)`,
+                  bgcolor: palette.semantic.error,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   mx: 'auto',
-                  mb: 3,
+                  mb: 4,
                 }}
               >
                 <ErrorIcon sx={{ fontSize: 40, color: 'white' }} />
@@ -375,15 +490,15 @@ export function ConfirmEmailPage() {
                 variant="h4"
                 sx={{
                   fontFamily: '"Playfair Display", serif',
-                  fontWeight: 600,
-                  color: palette.neutral[50],
-                  mb: 1,
+                  fontWeight: 500,
+                  color: palette.neutral[900],
+                  mb: 2,
                 }}
               >
                 Verification Failed
               </Typography>
 
-              <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 4 }}>
+              <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
                 We couldn't verify your email. The link may have expired or is invalid.
               </Typography>
 
@@ -396,13 +511,13 @@ export function ConfirmEmailPage() {
                   sx={{
                     mb: 2,
                     py: 1.5,
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    color: palette.neutral[50],
+                    borderColor: palette.neutral[300],
+                    color: palette.neutral[900],
                     textTransform: 'none',
-                    borderRadius: 2,
+                    borderRadius: 0,
                     '&:hover': {
-                      borderColor: palette.brand.primary,
-                      bgcolor: alpha(palette.brand.primary, 0.05),
+                      borderColor: palette.neutral[900],
+                      bgcolor: 'transparent',
                     },
                   }}
                 >
@@ -419,14 +534,16 @@ export function ConfirmEmailPage() {
                   sx={{
                     mb: 3,
                     p: 2,
-                    borderRadius: 2,
-                    bgcolor: alpha(palette.semantic.success, 0.1),
-                    border: `1px solid ${alpha(palette.semantic.success, 0.3)}`,
+                    border: `1px solid ${palette.semantic.success}`,
+                    bgcolor: 'rgba(22, 163, 74, 0.05)',
                   }}
                 >
-                  <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
-                    Verification email sent! Check your inbox.
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+                    <CheckCircle sx={{ color: palette.semantic.success, fontSize: 20 }} />
+                    <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
+                      Verification email sent! Check your inbox.
+                    </Typography>
+                  </Stack>
                 </Box>
               )}
 
@@ -435,21 +552,27 @@ export function ConfirmEmailPage() {
                 variant="contained"
                 component={Link}
                 to="/login"
-                endIcon={<ArrowForward />}
+                endIcon={<East />}
                 sx={{
-                  background: gradients.gold,
-                  color: palette.neutral[900],
-                  py: 1.5,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: 2,
-                  '&:hover': { background: gradients.goldHover },
+                  bgcolor: palette.neutral[900],
+                  color: palette.neutral[0],
+                  py: 1.75,
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontSize: '0.875rem',
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: palette.neutral[800],
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 Back to Login
               </Button>
-            </Box>
-          </motion.div>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     )

@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Box, CircularProgress, Typography, alpha } from '@mui/material'
+import { Box, CircularProgress, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 import { useOAuthExchange } from '../hooks'
-import { colors, palette } from '@/shared/theme/tokens'
+import { palette } from '@/shared/theme/tokens'
 import { getErrorMessage } from '@/services/http'
+import { fadeInUp } from '@/shared/lib/animations'
 
 export function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
@@ -59,95 +61,108 @@ export function OAuthCallbackPage() {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: colors.background.primary,
-        position: 'relative',
-        overflow: 'hidden',
+        bgcolor: palette.neutral[50],
       }}
     >
       <Box
         sx={{
-          position: 'absolute',
-          top: '30%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '500px',
-          height: '500px',
-          background: errorMessage
-            ? `radial-gradient(circle, ${alpha(palette.semantic.error, 0.15)} 0%, transparent 70%)`
-            : `radial-gradient(circle, ${alpha(palette.brand.primary, 0.15)} 0%, transparent 70%)`,
-          pointerEvents: 'none',
+          display: { xs: 'none', lg: 'block' },
+          width: '50%',
+          position: 'relative',
+          overflow: 'hidden',
         }}
-      />
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: 'rgba(28, 25, 23, 0.4)',
+          }}
+        />
+      </Box>
 
       <Box
         sx={{
-          position: 'relative',
-          zIndex: 1,
-          textAlign: 'center',
-          p: 4,
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: { xs: 3, md: 6 },
         }}
       >
-        {errorMessage ? (
-          <>
-            <Typography
-              variant="h5"
-              sx={{
-                color: palette.semantic.error,
-                fontWeight: 600,
-                mb: 2,
-              }}
-            >
-              Authentication Failed
-            </Typography>
-            <Typography
-              sx={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                mb: 3,
-              }}
-            >
-              {errorMessage}
-            </Typography>
-            <Typography
-              sx={{
-                color: 'rgba(255, 255, 255, 0.4)',
-                fontSize: '0.875rem',
-              }}
-            >
-              Redirecting to login...
-            </Typography>
-          </>
-        ) : (
-          <>
-            <CircularProgress
-              size={48}
-              sx={{
-                color: palette.brand.primary,
-                mb: 3,
-              }}
-            />
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontWeight: 500,
-                mb: 1,
-              }}
-            >
-              Completing sign in...
-            </Typography>
-            <Typography
-              sx={{
-                color: 'rgba(255, 255, 255, 0.5)',
-                fontSize: '0.875rem',
-              }}
-            >
-              Please wait while we verify your account
-            </Typography>
-          </>
-        )}
+        <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+          <motion.div initial="initial" animate="animate" variants={fadeInUp}>
+            {errorMessage ? (
+              <>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontFamily: '"Playfair Display", serif',
+                    fontWeight: 500,
+                    color: palette.semantic.error,
+                    mb: 2,
+                  }}
+                >
+                  Authentication Failed
+                </Typography>
+                <Typography
+                  sx={{
+                    color: palette.neutral[600],
+                    mb: 3,
+                  }}
+                >
+                  {errorMessage}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: palette.neutral[500],
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Redirecting to login...
+                </Typography>
+              </>
+            ) : (
+              <>
+                <CircularProgress
+                  size={48}
+                  sx={{
+                    color: palette.neutral[900],
+                    mb: 4,
+                  }}
+                />
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontFamily: '"Playfair Display", serif',
+                    color: palette.neutral[900],
+                    fontWeight: 500,
+                    mb: 2,
+                  }}
+                >
+                  Completing sign in...
+                </Typography>
+                <Typography
+                  sx={{
+                    color: palette.neutral[500],
+                    fontSize: '0.9375rem',
+                  }}
+                >
+                  Please wait while we verify your account
+                </Typography>
+              </>
+            )}
+          </motion.div>
+        </Box>
       </Box>
     </Box>
   )

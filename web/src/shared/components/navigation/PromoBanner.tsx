@@ -73,11 +73,16 @@ export const PromoBanner = ({
   }
 
   const hasPromotions = resolvedPromotions.length > 0
-  const currentPromo = hasPromotions ? resolvedPromotions[currentIndex] : null
-  const displayText = currentPromo?.text || 'Free Shipping on Orders Over $500'
-  const displayLink = currentPromo?.link
-  const displayLinkText = currentPromo?.linkText || 'Shop Now'
-  const displayBgColor = currentPromo?.bgColor || palette.neutral[900]
+  
+  if (!hasPromotions) {
+    return null
+  }
+
+  const currentPromo = resolvedPromotions[currentIndex]
+  const displayText = currentPromo.text
+  const displayLink = currentPromo.link
+  const displayLinkText = currentPromo.linkText || 'Shop Now'
+  const displayBgColor = currentPromo.bgColor || palette.neutral[900]
 
   return (
     <Box

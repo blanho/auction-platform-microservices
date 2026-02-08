@@ -28,8 +28,8 @@ export const HeroSection = () => {
   }
 
   const headerHeight = {
-    xs: 44 + 56,
-    md: 44 + 32 + 64 + 44,
+    xs: 56,
+    md: 32 + 64 + 44,
   }
 
   return (
