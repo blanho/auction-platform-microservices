@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Search.NoResults" xml:space="preserve"><value>結果が見つかりませんでした</value></data>
+  <data name="Search.ResultsFound" xml:space="preserve"><value>{0}件の結果が見つかりました</value></data>
+  <data name="Search.InvalidQuery" xml:space="preserve"><value>無効な検索クエリです</value></data>
+  <data name="Search.QueryTooShort" xml:space="preserve"><value>検索クエリは{0}文字以上でなければなりません</value></data>
+  <data name="Search.QueryTooLong" xml:space="preserve"><value>検索クエリは{0}文字以内でなければなりません</value></data>
+  
+  <data name="Filter.InvalidCategory" xml:space="preserve"><value>無効なカテゴリフィルターです</value></data>
+  <data name="Filter.InvalidPriceRange" xml:space="preserve"><value>無効な価格範囲です</value></data>
+  <data name="Filter.InvalidDateRange" xml:space="preserve"><value>無効な日付範囲です</value></data>
+  <data name="Filter.InvalidStatus" xml:space="preserve"><value>無効なステータスフィルターです</value></data>
+  
+  <data name="Sort.InvalidField" xml:space="preserve"><value>無効なソートフィールドです</value></data>
+  <data name="Sort.InvalidOrder" xml:space="preserve"><value>無効なソート順序です</value></data>
+  
+  <data name="Index.Rebuilding" xml:space="preserve"><value>検索インデックスを再構築中です</value></data>
+  <data name="Index.RebuildComplete" xml:space="preserve"><value>検索インデックスの再構築が完了しました</value></data>
+  <data name="Index.RebuildFailed" xml:space="preserve"><value>検索インデックスの再構築に失敗しました</value></data>
+  
+  <data name="Suggestion.NoSuggestions" xml:space="preserve"><value>候補がありません</value></data>
+  
+  <data name="Validation.PageRequired" xml:space="preserve"><value>ページ番号は必須です</value></data>
+  <data name="Validation.PageSizeRequired" xml:space="preserve"><value>ページサイズは必須です</value></data>
+  <data name="Validation.InvalidPageNumber" xml:space="preserve"><value>ページ番号は0より大きくなければなりません</value></data>
+  <data name="Validation.InvalidPageSize" xml:space="preserve"><value>ページサイズは1から100の間でなければなりません</value></data>
+</root>

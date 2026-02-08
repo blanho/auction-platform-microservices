@@ -21,7 +21,7 @@ builder.Services.AddCarter();
 builder.Services.AddSearchServices(builder.Configuration);
 builder.Services.AddSearchMessaging(builder.Configuration);
 builder.Services.AddCommonUtilities();
-builder.Services.AddAuthentication();
+builder.Services.AddSearchAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddAuthorization();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),

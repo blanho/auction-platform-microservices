@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { palette } from '@/shared/theme/tokens'
@@ -48,13 +48,25 @@ export function ProfilePage() {
   } = useForm<UpdateProfileRequest>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      displayName: profile?.displayName || '',
-      firstName: profile?.firstName || '',
-      lastName: profile?.lastName || '',
+      fullName: profile?.fullName || '',
       phoneNumber: profile?.phoneNumber || '',
       bio: profile?.bio || '',
+      location: profile?.location || '',
     },
   })
+
+  useEffect(() => {
+    if (!profile) {
+      return
+    }
+
+    reset({
+      fullName: profile.fullName || '',
+      phoneNumber: profile.phoneNumber || '',
+      bio: profile.bio || '',
+      location: profile.location || '',
+    })
+  }, [profile, reset])
 
   const onSubmit = async (data: UpdateProfileRequest) => {
     try {
@@ -119,7 +131,7 @@ export function ProfilePage() {
 
   if (profileLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Card sx={{ textAlign: 'center', p: 4 }}>
@@ -141,14 +153,14 @@ export function ProfilePage() {
 
   if (profileError) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert severity="error">Failed to load profile. Please try again.</InlineAlert>
       </Container>
     )
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h4"
@@ -185,7 +197,7 @@ export function ProfilePage() {
                   bgcolor: palette.neutral[900],
                 }}
               >
-                {profile?.displayName?.[0]?.toUpperCase()}
+                {(profile?.fullName || profile?.username)?.[0]?.toUpperCase()}
               </Avatar>
               <IconButton
                 onClick={handleAvatarClick}
@@ -217,7 +229,7 @@ export function ProfilePage() {
             </Box>
 
             <Typography variant="h5" sx={{ fontWeight: 600, color: palette.neutral[900], mb: 0.5 }}>
-              {profile?.displayName}
+              {profile?.fullName || profile?.username}
             </Typography>
 
             <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
@@ -225,7 +237,7 @@ export function ProfilePage() {
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {profile?.isVerified && (
+              {profile?.emailConfirmed && (
                 <Chip
                   icon={<Verified />}
                   label="Verified"
@@ -294,11 +306,10 @@ export function ProfilePage() {
                 <Button
                   onClick={() => {
                     reset({
-                      displayName: profile?.displayName || '',
-                      firstName: profile?.firstName || '',
-                      lastName: profile?.lastName || '',
+                      fullName: profile?.fullName || '',
                       phoneNumber: profile?.phoneNumber || '',
                       bio: profile?.bio || '',
+                      location: profile?.location || '',
                     })
                     setIsEditing(true)
                   }}
@@ -327,41 +338,21 @@ export function ProfilePage() {
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <Stack spacing={2.5}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5}>
-                  <FormField
-                    name="firstName"
-                    register={register}
-                    errors={errors}
-                    fullWidth
-                    label="First Name"
-                    disabled={!isEditing}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                  <FormField
-                    name="lastName"
-                    register={register}
-                    errors={errors}
-                    fullWidth
-                    label="Last Name"
-                    disabled={!isEditing}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Stack>
                 <FormField
-                  name="displayName"
+                  name="fullName"
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Display Name"
+                  label="Full Name"
                   disabled={!isEditing}
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
                 <TextField
                   fullWidth
                   label="Email"
                   value={profile?.email || ''}
                   disabled
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                   helperText="Contact support to change your email"
                 />
                 <FormField
@@ -371,7 +362,16 @@ export function ProfilePage() {
                   fullWidth
                   label="Phone Number"
                   disabled={!isEditing}
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <FormField
+                  name="location"
+                  register={register}
+                  errors={errors}
+                  fullWidth
+                  label="Location"
+                  disabled={!isEditing}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
                 <FormField
                   name="bio"
@@ -383,7 +383,7 @@ export function ProfilePage() {
                   rows={4}
                   helperText={`${profile?.bio?.length || 0}/500 characters`}
                   disabled={!isEditing}
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
               </Stack>
 

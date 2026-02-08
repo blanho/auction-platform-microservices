@@ -207,6 +207,33 @@ public class AuthController : ControllerBase
             : Results.Unauthorized();
     }
 
+    [HttpGet("external-login/{provider}")]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public IActionResult ExternalLogin(string provider, [FromQuery] string? returnUrl = null)
+    {
+        var allowedProviders = new[] { "Google", "Facebook" };
+        if (!allowedProviders.Contains(provider, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(ProblemDetailsHelper.ValidationError("provider", $"Provider '{provider}' is not supported"));
+        }
+
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var callbackUrl = Url.Action(
+            nameof(ExternalLoginCallback),
+            "Auth",
+            new { returnUrl = returnUrl ?? frontendUrl },
+            Request.Scheme);
+
+        var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+        {
+            RedirectUri = callbackUrl,
+            Items = { { "LoginProvider", provider } }
+        };
+
+        return Challenge(properties, provider);
+    }
+
     [HttpGet("external-login-callback")]
     public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null, CancellationToken cancellationToken = default)
     {

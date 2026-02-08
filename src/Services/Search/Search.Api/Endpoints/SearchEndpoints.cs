@@ -1,6 +1,8 @@
 using Carter;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Web.Authorization;
+using System.Security.Claims;
+using Search.Api.Services;
 
 namespace Search.Api.Endpoints;
 
@@ -34,6 +36,29 @@ public class SearchEndpoints : ICarterModule
             .WithSummary("Get single auction from search index")
             .Produces<AuctionDocument>()
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        var publicGroup = app.MapGroup("/api/v1/search")
+            .WithTags("Search");
+
+        publicGroup.MapGet("/popular", GetPopularSearches)
+            .WithName("GetPopularSearches")
+            .WithSummary("Get popular search terms")
+            .Produces<List<string>>()
+            .AllowAnonymous();
+
+        var authGroup = app.MapGroup("/api/v1/search")
+            .WithTags("Search")
+            .RequireAuthorization();
+
+        authGroup.MapGet("/recent", GetRecentSearches)
+            .WithName("GetRecentSearches")
+            .WithSummary("Get user's recent searches")
+            .Produces<List<string>>();
+
+        authGroup.MapDelete("/recent", ClearRecentSearches)
+            .WithName("ClearRecentSearches")
+            .WithSummary("Clear user's recent searches")
+            .Produces(StatusCodes.Status204NoContent);
     }
 
     private static async Task<IResult> SearchAuctions(
@@ -111,5 +136,39 @@ public class SearchEndpoints : ICarterModule
         }
 
         return Results.Ok(document);
+    }
+
+    private static Task<IResult> GetRecentSearches(
+        ClaimsPrincipal user,
+        [FromServices] IRecentSearchService recentSearchService)
+    {
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Task.FromResult(Results.Ok(new List<string>()));
+        }
+
+        var recentSearches = recentSearchService.GetRecentSearches(userId);
+        return Task.FromResult(Results.Ok(recentSearches));
+    }
+
+    private static Task<IResult> ClearRecentSearches(
+        ClaimsPrincipal user,
+        [FromServices] IRecentSearchService recentSearchService)
+    {
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(userId))
+        {
+            recentSearchService.ClearRecentSearches(userId);
+        }
+
+        return Task.FromResult(Results.NoContent());
+    }
+
+    private static Task<IResult> GetPopularSearches(
+        [FromServices] IRecentSearchService recentSearchService)
+    {
+        var popularSearches = recentSearchService.GetPopularSearches();
+        return Task.FromResult(Results.Ok(popularSearches));
     }
 }

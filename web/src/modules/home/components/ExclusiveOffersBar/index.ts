@@ -1,0 +1,1 @@
+export { ExclusiveOffersBar } from './ExclusiveOffersBar'

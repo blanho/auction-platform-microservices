@@ -105,7 +105,7 @@ export function SellerApplyPage() {
 
   if (success) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8 }}>
+      <Container maxWidth="sm" sx={{ py: { xs: 6, md: 8 }, minHeight: '60vh' }}>
         <motion.div variants={scaleIn} initial="initial" animate="animate">
           <Card sx={{ p: 6, textAlign: 'center' }}>
             <motion.div
@@ -161,7 +161,7 @@ export function SellerApplyPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
           <Button

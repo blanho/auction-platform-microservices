@@ -26,6 +26,7 @@ import type { NotificationFilters } from '../types'
 import { NotificationList } from '../components'
 import { NOTIFICATION_CONFIG } from '../constants'
 import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
 
 export function NotificationsPage() {
   const [activeTab, setActiveTab] = useState(0)
@@ -105,14 +106,14 @@ export function NotificationsPage() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert severity="error">Failed to load notifications. Please try again.</InlineAlert>
       </Container>
     )
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}
       >

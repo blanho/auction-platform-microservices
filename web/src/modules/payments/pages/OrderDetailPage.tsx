@@ -204,7 +204,7 @@ export function OrderDetailPage() {
 
   if (error || !order) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert severity="error" sx={{ mb: 3 }}>
           Order not found or you don't have permission to view it.
         </InlineAlert>

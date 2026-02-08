@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Payment.NotFound" xml:space="preserve"><value>支払いが見つかりません</value></data>
+  <data name="Payment.Successful" xml:space="preserve"><value>支払いが完了しました</value></data>
+  <data name="Payment.Failed" xml:space="preserve"><value>支払いに失敗しました</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>支払い処理中です</value></data>
+  <data name="Payment.Cancelled" xml:space="preserve"><value>支払いがキャンセルされました</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>支払いが返金されました</value></data>
+  <data name="Payment.AlreadyProcessed" xml:space="preserve"><value>支払いは既に処理されています</value></data>
+  <data name="Payment.InvalidAmount" xml:space="preserve"><value>無効な支払金額です</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>残高が不足しています</value></data>
+  <data name="Payment.CardDeclined" xml:space="preserve"><value>カードが拒否されました</value></data>
+  <data name="Payment.CardExpired" xml:space="preserve"><value>カードの有効期限が切れています</value></data>
+  <data name="Payment.InvalidCard" xml:space="preserve"><value>カード情報が無効です</value></data>
+  
+  <data name="Refund.NotFound" xml:space="preserve"><value>返金が見つかりません</value></data>
+  <data name="Refund.Successful" xml:space="preserve"><value>返金が完了しました</value></data>
+  <data name="Refund.Failed" xml:space="preserve"><value>返金に失敗しました</value></data>
+  <data name="Refund.Pending" xml:space="preserve"><value>返金処理中です</value></data>
+  <data name="Refund.AlreadyProcessed" xml:space="preserve"><value>返金は既に処理されています</value></data>
+  <data name="Refund.ExceedsPayment" xml:space="preserve"><value>返金額が元の支払額を超えています</value></data>
+  
+  <data name="Transaction.NotFound" xml:space="preserve"><value>取引が見つかりません</value></data>
+  <data name="Transaction.Created" xml:space="preserve"><value>取引が作成されました</value></data>
+  <data name="Transaction.Completed" xml:space="preserve"><value>取引が完了しました</value></data>
+  
+  <data name="PaymentMethod.NotFound" xml:space="preserve"><value>支払い方法が見つかりません</value></data>
+  <data name="PaymentMethod.Added" xml:space="preserve"><value>支払い方法が追加されました</value></data>
+  <data name="PaymentMethod.Removed" xml:space="preserve"><value>支払い方法が削除されました</value></data>
+  <data name="PaymentMethod.SetAsDefault" xml:space="preserve"><value>デフォルトの支払い方法に設定されました</value></data>
+  
+  <data name="Validation.AmountRequired" xml:space="preserve"><value>金額は必須です</value></data>
+  <data name="Validation.AmountPositive" xml:space="preserve"><value>金額は正の数でなければなりません</value></data>
+  <data name="Validation.CurrencyRequired" xml:space="preserve"><value>通貨は必須です</value></data>
+  <data name="Validation.PaymentMethodRequired" xml:space="preserve"><value>支払い方法は必須です</value></data>
+</root>

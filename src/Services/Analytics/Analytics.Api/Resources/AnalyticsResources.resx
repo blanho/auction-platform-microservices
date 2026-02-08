@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Report.NotFound" xml:space="preserve"><value>Report not found</value></data>
+  <data name="Report.Generated" xml:space="preserve"><value>Report generated successfully</value></data>
+  <data name="Report.GenerationFailed" xml:space="preserve"><value>Failed to generate report</value></data>
+  <data name="Report.InProgress" xml:space="preserve"><value>Report generation in progress</value></data>
+  <data name="Report.Scheduled" xml:space="preserve"><value>Report scheduled successfully</value></data>
+  <data name="Report.Cancelled" xml:space="preserve"><value>Report generation cancelled</value></data>
+  
+  <data name="Dashboard.NoData" xml:space="preserve"><value>No data available for the selected period</value></data>
+  <data name="Dashboard.Updated" xml:space="preserve"><value>Dashboard data updated</value></data>
+  
+  <data name="Metric.NotFound" xml:space="preserve"><value>Metric not found</value></data>
+  <data name="Metric.InvalidType" xml:space="preserve"><value>Invalid metric type</value></data>
+  <data name="Metric.InvalidPeriod" xml:space="preserve"><value>Invalid time period</value></data>
+  
+  <data name="Export.Started" xml:space="preserve"><value>Export started</value></data>
+  <data name="Export.Completed" xml:space="preserve"><value>Export completed</value></data>
+  <data name="Export.Failed" xml:space="preserve"><value>Export failed</value></data>
+  <data name="Export.InvalidFormat" xml:space="preserve"><value>Invalid export format</value></data>
+  
+  <data name="Validation.StartDateRequired" xml:space="preserve"><value>Start date is required</value></data>
+  <data name="Validation.EndDateRequired" xml:space="preserve"><value>End date is required</value></data>
+  <data name="Validation.InvalidDateRange" xml:space="preserve"><value>End date must be after start date</value></data>
+  <data name="Validation.DateRangeTooLarge" xml:space="preserve"><value>Date range cannot exceed {0} days</value></data>
+</root>

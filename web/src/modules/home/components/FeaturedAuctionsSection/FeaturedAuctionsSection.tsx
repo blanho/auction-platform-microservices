@@ -11,11 +11,10 @@ import {
   Skeleton,
   Alert,
 } from '@mui/material'
-import { Timer, Favorite, FavoriteBorder, KeyboardArrowRight, Refresh } from '@mui/icons-material'
+import { Timer, Favorite, FavoriteBorder, East, Refresh } from '@mui/icons-material'
 import { useFeaturedAuctions, useWatchlist, useToggleWatchlist } from '../../../auctions/hooks'
 import { formatTimeLeft, formatCurrency } from '../../../auctions/utils'
-import { GlassCard } from '@/shared/components/ui'
-import { colors, typography, transitions, shadows } from '@/shared/theme/tokens'
+import { colors, typography } from '@/shared/theme/tokens'
 
 export const FeaturedAuctionsSection = () => {
   const {
@@ -28,7 +27,9 @@ export const FeaturedAuctionsSection = () => {
   const featuredAuctions = featuredData?.items ?? []
 
   const { data: watchlistData } = useWatchlist()
-  const watchlistIds = new Set(watchlistData?.map((item) => item.auctionId) ?? [])
+  const watchlistIds = new Set(
+    Array.isArray(watchlistData) ? watchlistData.map((item) => item.auctionId) : []
+  )
   const toggleWatchlist = useToggleWatchlist()
 
   const handleToggleWatchlist = (auctionId: string) => {
@@ -39,12 +40,15 @@ export const FeaturedAuctionsSection = () => {
   }
 
   return (
-    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: colors.background.secondary }}>
+    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+
       <Container maxWidth="xl">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
         >
           <Box
             sx={{
@@ -57,64 +61,46 @@ export const FeaturedAuctionsSection = () => {
             }}
           >
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                <Typography
-                  variant="overline"
-                  sx={{
-                    color: colors.gold.primary,
-                    letterSpacing: 4,
-                    fontFamily: typography.fontFamily.sans,
-                  }}
-                >
-                  FEATURED
-                </Typography>
-                <Chip
-                  icon={
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: colors.accent.green,
-                        mr: -0.5,
-                      }}
-                    />
-                  }
-                  label="Live"
-                  size="small"
-                  sx={{
-                    bgcolor: colors.accent.greenLight,
-                    color: colors.accent.green,
-                    fontWeight: typography.fontWeight.semibold,
-                    height: 24,
-                  }}
-                />
-              </Box>
+              <Typography
+                sx={{
+                  color: '#78716C',
+                  letterSpacing: '0.2em',
+                  fontFamily: typography.fontFamily.body,
+                  fontSize: '0.6875rem',
+                  fontWeight: typography.fontWeight.medium,
+                  textTransform: 'uppercase',
+                  mb: 2,
+                }}
+              >
+                Featured
+              </Typography>
               <Typography
                 variant="h2"
                 sx={{
-                  fontFamily: typography.fontFamily.serif,
-                  color: colors.text.primary,
+                  fontFamily: typography.fontFamily.display,
+                  color: '#1C1917',
                   fontWeight: typography.fontWeight.regular,
-                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontSize: { xs: '1.75rem', md: '2.5rem' },
                 }}
               >
                 Live Auctions
               </Typography>
             </Box>
             <Button
-              endIcon={<KeyboardArrowRight />}
+              endIcon={<East />}
               component={Link}
               to="/auctions"
               sx={{
-                color: colors.text.secondary,
-                textTransform: 'none',
+                color: '#1C1917',
+                textTransform: 'uppercase',
                 fontWeight: typography.fontWeight.medium,
-                fontFamily: typography.fontFamily.sans,
-                '&:hover': { color: colors.gold.primary },
+                fontFamily: typography.fontFamily.body,
+                fontSize: '0.75rem',
+                letterSpacing: '0.1em',
+                '&:hover': { color: '#78716C' },
               }}
             >
-              View All Auctions
+              View All
             </Button>
           </Box>
         </motion.div>
@@ -134,11 +120,6 @@ export const FeaturedAuctionsSection = () => {
                     Retry
                   </Button>
                 }
-                sx={{
-                  bgcolor: 'rgba(239, 68, 68, 0.1)',
-                  color: colors.accent.red,
-                  '& .MuiAlert-icon': { color: colors.accent.red },
-                }}
               >
                 Failed to load auctions.{' '}
                 {error instanceof Error ? error.message : 'Please try again.'}
@@ -149,14 +130,14 @@ export const FeaturedAuctionsSection = () => {
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index}>
                 <Skeleton
                   variant="rectangular"
-                  sx={{ aspectRatio: '1', borderRadius: 3, bgcolor: colors.border.light }}
+                  sx={{ aspectRatio: '3/4', bgcolor: '#F5F5F4' }}
                 />
               </Grid>
             ))
           )}
           {!isError && !featuredLoading && featuredAuctions.length === 0 && (
             <Grid size={{ xs: 12 }}>
-              <Typography color="text.secondary" align="center" sx={{ py: 8 }}>
+              <Typography sx={{ color: '#A8A29E', textAlign: 'center', py: 8 }}>
                 No featured auctions available
               </Typography>
             </Grid>
@@ -165,24 +146,20 @@ export const FeaturedAuctionsSection = () => {
             featuredAuctions.map((auction, index) => (
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={auction.id}>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
                 >
-                  <GlassCard
+                  <Box
                     sx={{
-                      overflow: 'hidden',
                       cursor: 'pointer',
-                      transition: `transform ${transitions.normal}, box-shadow ${transitions.normal}`,
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: shadows.card,
-                      },
-                      '&:hover .auction-image': { transform: 'scale(1.05)' },
+                      transition: 'opacity 0.3s ease',
+                      '&:hover': { opacity: 0.9 },
+                      '&:hover .auction-image': { transform: 'scale(1.03)' },
                     }}
                   >
-                    <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+                    <Box sx={{ position: 'relative', overflow: 'hidden', mb: 2 }}>
                       {auction.primaryImageUrl ? (
                         <Box
                           component="img"
@@ -191,9 +168,10 @@ export const FeaturedAuctionsSection = () => {
                           alt={auction.title}
                           sx={{
                             width: '100%',
-                            aspectRatio: '1',
+                            aspectRatio: '3/4',
                             objectFit: 'cover',
-                            transition: `transform ${transitions.slower}`,
+                            transition: 'transform 0.6s ease',
+                            display: 'block',
                           }}
                         />
                       ) : (
@@ -201,15 +179,16 @@ export const FeaturedAuctionsSection = () => {
                           className="auction-image"
                           sx={{
                             width: '100%',
-                            aspectRatio: '1',
+                            aspectRatio: '3/4',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: `linear-gradient(135deg, ${colors.background.secondary}, ${colors.border.light})`,
-                            color: colors.text.secondary,
+                            bgcolor: '#F5F5F4',
+                            color: '#A8A29E',
                             fontFamily: typography.fontFamily.display,
-                            fontSize: '1.5rem',
-                            transition: `transform ${transitions.slower}`,
+                            fontSize: '2.5rem',
+                            fontWeight: typography.fontWeight.light,
+                            transition: 'transform 0.6s ease',
                           }}
                         >
                           {auction.title.charAt(0)}
@@ -225,15 +204,14 @@ export const FeaturedAuctionsSection = () => {
                           position: 'absolute',
                           top: 12,
                           right: 12,
-                          bgcolor: colors.overlay.dark,
-                          backdropFilter: 'blur(10px)',
-                          '&:hover': { bgcolor: colors.overlay.darker },
+                          bgcolor: 'rgba(255,255,255,0.9)',
+                          '&:hover': { bgcolor: '#FFFFFF' },
                         }}
                       >
                         {watchlistIds.has(auction.id) ? (
-                          <Favorite sx={{ color: colors.accent.red, fontSize: 20 }} />
+                          <Favorite sx={{ color: colors.accent.red, fontSize: 18 }} />
                         ) : (
-                          <FavoriteBorder sx={{ color: colors.text.primary, fontSize: 20 }} />
+                          <FavoriteBorder sx={{ color: '#1C1917', fontSize: 18 }} />
                         )}
                       </IconButton>
                       <Chip
@@ -244,65 +222,63 @@ export const FeaturedAuctionsSection = () => {
                           position: 'absolute',
                           bottom: 12,
                           left: 12,
-                          bgcolor: colors.overlay.darkest,
-                          color: colors.gold.light,
-                          fontWeight: typography.fontWeight.semibold,
-                          backdropFilter: 'blur(10px)',
-                          '& .MuiChip-icon': { color: colors.gold.light },
+                          bgcolor: 'rgba(255,255,255,0.9)',
+                          color: '#1C1917',
+                          fontWeight: typography.fontWeight.medium,
+                          fontSize: '0.7rem',
+                          '& .MuiChip-icon': { color: '#1C1917' },
                         }}
                       />
                     </Box>
-                    <Box sx={{ p: 2.5 }}>
-                      <Typography variant="caption" sx={{ color: colors.text.subtle }}>
-                        {auction.categoryName}
+                    <Typography
+                      sx={{
+                        color: '#78716C',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        fontSize: '0.625rem',
+                        fontWeight: typography.fontWeight.medium,
+                        mb: 0.5,
+                      }}
+                    >
+                      {auction.categoryName}
+                    </Typography>
+                    <Typography
+                      component={Link}
+                      to={`/auctions/${auction.id}`}
+                      sx={{
+                        color: '#1C1917',
+                        fontWeight: typography.fontWeight.medium,
+                        fontFamily: typography.fontFamily.body,
+                        textDecoration: 'none',
+                        display: 'block',
+                        lineHeight: 1.4,
+                        fontSize: '0.9rem',
+                        mb: 1,
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
+                    >
+                      {auction.title}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography
+                        sx={{
+                          color: '#1C1917',
+                          fontWeight: typography.fontWeight.semibold,
+                          fontSize: '0.9rem',
+                        }}
+                      >
+                        {formatCurrency(auction.currentBid || auction.startingPrice)}
                       </Typography>
                       <Typography
-                        variant="subtitle1"
-                        component={Link}
-                        to={`/auctions/${auction.id}`}
                         sx={{
-                          color: colors.text.primary,
-                          fontWeight: typography.fontWeight.semibold,
-                          fontFamily: typography.fontFamily.sans,
-                          textDecoration: 'none',
-                          display: 'block',
-                          my: 1,
-                          lineHeight: 1.4,
-                          '&:hover': { color: colors.gold.primary },
+                          color: '#A8A29E',
+                          fontSize: '0.75rem',
                         }}
                       >
-                        {auction.title}
+                        {auction.bidCount} bids
                       </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          mt: 2,
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="caption" sx={{ color: colors.text.subtle }}>
-                            Current Bid
-                          </Typography>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              color: colors.gold.primary,
-                              fontWeight: typography.fontWeight.bold,
-                            }}
-                          >
-                            {formatCurrency(auction.currentBid || auction.startingPrice)}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          label={`${auction.bidCount} bids`}
-                          size="small"
-                          sx={{ bgcolor: colors.border.light, color: colors.text.secondary }}
-                        />
-                      </Box>
                     </Box>
-                  </GlassCard>
+                  </Box>
                 </motion.div>
               </Grid>
             ))

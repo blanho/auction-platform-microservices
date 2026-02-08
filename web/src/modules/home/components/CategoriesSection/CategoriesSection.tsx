@@ -1,42 +1,24 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Box, Container, Typography, Button, Grid } from '@mui/material'
-import { KeyboardArrowRight } from '@mui/icons-material'
+import { East } from '@mui/icons-material'
 import { useMemo } from 'react'
 import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
-import { colors, gradients, typography, transitions } from '@/shared/theme/tokens'
+import { typography } from '@/shared/theme/tokens'
 
 export const CategoriesSection = () => {
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => (categoriesData ?? []).slice(0, 6), [categoriesData])
 
-  const overlayGradients = [
-    'linear-gradient(135deg, rgba(102,126,234,0.7) 0%, rgba(118,75,162,0.7) 100%)',
-    'linear-gradient(135deg, rgba(240,147,251,0.7) 0%, rgba(245,87,108,0.7) 100%)',
-    'linear-gradient(135deg, rgba(79,172,254,0.7) 0%, rgba(0,242,254,0.7) 100%)',
-    'linear-gradient(135deg, rgba(67,233,123,0.7) 0%, rgba(56,249,215,0.7) 100%)',
-    'linear-gradient(135deg, rgba(250,112,154,0.7) 0%, rgba(254,225,64,0.7) 100%)',
-    'linear-gradient(135deg, rgba(161,140,209,0.7) 0%, rgba(251,194,235,0.7) 100%)',
-  ]
-
   return (
-    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: colors.background.primary, position: 'relative' }}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: gradients.horizontalDivider,
-        }}
-      />
+    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FAFAF9', position: 'relative' }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
       <Container maxWidth="xl">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: transitions.duration.normal }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
         >
           <Box
             sx={{
@@ -50,49 +32,53 @@ export const CategoriesSection = () => {
           >
             <Box>
               <Typography
-                variant="overline"
                 sx={{
-                  color: colors.gold.primary,
-                  letterSpacing: 4,
+                  color: '#78716C',
+                  letterSpacing: '0.2em',
                   display: 'block',
-                  mb: 1,
+                  mb: 2,
                   fontFamily: typography.fontFamily.body,
+                  fontSize: '0.6875rem',
+                  fontWeight: typography.fontWeight.medium,
+                  textTransform: 'uppercase',
                 }}
               >
-                EXPLORE
+                Explore
               </Typography>
               <Typography
                 variant="h2"
                 sx={{
                   fontFamily: typography.fontFamily.display,
-                  color: colors.text.primary,
+                  color: '#1C1917',
                   fontWeight: typography.fontWeight.regular,
-                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontSize: { xs: '1.75rem', md: '2.5rem' },
                 }}
               >
-                Categories
+                Browse by Category
               </Typography>
             </Box>
             <Button
-              endIcon={<KeyboardArrowRight />}
+              endIcon={<East />}
               component={Link}
               to="/categories"
               sx={{
-                color: colors.text.secondary,
-                textTransform: 'none',
+                color: '#1C1917',
+                textTransform: 'uppercase',
                 fontWeight: typography.fontWeight.medium,
                 fontFamily: typography.fontFamily.body,
-                '&:hover': { color: colors.gold.primary },
+                fontSize: '0.75rem',
+                letterSpacing: '0.1em',
+                '&:hover': { color: '#78716C' },
               }}
             >
-              View All Categories
+              All Categories
             </Button>
           </Box>
         </motion.div>
 
         {categories.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: '#A8A29E' }}>
               No categories available right now.
             </Typography>
           </Box>
@@ -104,7 +90,7 @@ export const CategoriesSection = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: transitions.duration.normal }}
+                  transition={{ delay: index * 0.08, duration: 0.5 }}
                 >
                   <Box
                     component={Link}
@@ -114,11 +100,11 @@ export const CategoriesSection = () => {
                       position: 'relative',
                       aspectRatio: '1',
                       overflow: 'hidden',
-                      borderRadius: 3,
                       cursor: 'pointer',
                       textDecoration: 'none',
-                      '&:hover img': { transform: 'scale(1.1)' },
-                      '&:hover .category-overlay': { opacity: 1 },
+                      '&:hover img, &:hover .category-placeholder': {
+                        transform: 'scale(1.05)',
+                      },
                     }}
                   >
                     {category.imageUrl ? (
@@ -130,23 +116,24 @@ export const CategoriesSection = () => {
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          transition: `transform ${transitions.duration.slow}s ease`,
+                          transition: 'transform 0.6s ease',
                         }}
                       />
                     ) : (
                       <Box
+                        className="category-placeholder"
                         sx={{
                           width: '100%',
                           height: '100%',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          bgcolor: colors.background.secondary,
-                          color: colors.text.primary,
+                          bgcolor: '#F5F5F4',
+                          color: '#A8A29E',
                           fontFamily: typography.fontFamily.display,
-                          fontSize: '2rem',
-                          fontWeight: typography.fontWeight.semibold,
-                          transition: `transform ${transitions.duration.slow}s ease`,
+                          fontSize: '2.5rem',
+                          fontWeight: typography.fontWeight.light,
+                          transition: 'transform 0.6s ease',
                         }}
                       >
                         {category.name.charAt(0)}
@@ -156,40 +143,22 @@ export const CategoriesSection = () => {
                       sx={{
                         position: 'absolute',
                         inset: 0,
-                        background: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)`,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
                       }}
                     />
-                    <Box
-                      className="category-overlay"
-                      sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: overlayGradients[index % overlayGradients.length],
-                        opacity: 0,
-                        transition: `opacity ${transitions.duration.normal}s ease`,
-                        mixBlendMode: 'overlay',
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        p: 2,
-                      }}
-                    >
+                    <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 2 }}>
                       <Typography
-                        variant="subtitle1"
                         sx={{
-                          color: colors.text.primary,
-                          fontWeight: typography.fontWeight.semibold,
+                          color: '#FFFFFF',
+                          fontWeight: typography.fontWeight.medium,
                           fontFamily: typography.fontFamily.body,
+                          fontSize: '0.8125rem',
+                          lineHeight: 1.3,
                         }}
                       >
                         {category.name}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: colors.text.subtle }}>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', mt: 0.5 }}>
                         {category.auctionCount ?? 0} items
                       </Typography>
                     </Box>

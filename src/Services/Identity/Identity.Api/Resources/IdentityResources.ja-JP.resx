@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="User.NotFound" xml:space="preserve"><value>ユーザーが見つかりません</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>このメールアドレスのユーザーは既に存在します</value></data>
+  <data name="User.Created" xml:space="preserve"><value>ユーザーが作成されました</value></data>
+  <data name="User.Updated" xml:space="preserve"><value>ユーザーが更新されました</value></data>
+  <data name="User.Deleted" xml:space="preserve"><value>ユーザーが削除されました</value></data>
+  <data name="User.Deactivated" xml:space="preserve"><value>ユーザーアカウントが無効化されました</value></data>
+  <data name="User.EmailNotVerified" xml:space="preserve"><value>メールアドレスが確認されていません</value></data>
+  <data name="User.EmailVerified" xml:space="preserve"><value>メールが確認されました</value></data>
+  
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>メールアドレスまたはパスワードが正しくありません</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>アカウントがロックされています。しばらくしてから再試行してください</value></data>
+  <data name="Auth.AccountDisabled" xml:space="preserve"><value>アカウントが無効化されています</value></data>
+  <data name="Auth.LoginSuccessful" xml:space="preserve"><value>ログインしました</value></data>
+  <data name="Auth.LogoutSuccessful" xml:space="preserve"><value>ログアウトしました</value></data>
+  <data name="Auth.TokenExpired" xml:space="preserve"><value>セッションが期限切れです。再度ログインしてください</value></data>
+  <data name="Auth.TokenInvalid" xml:space="preserve"><value>無効な認証トークンです</value></data>
+  <data name="Auth.RefreshTokenExpired" xml:space="preserve"><value>リフレッシュトークンが期限切れです</value></data>
+  <data name="Auth.Unauthorized" xml:space="preserve"><value>この操作を行う権限がありません</value></data>
+  <data name="Auth.AccessDenied" xml:space="preserve"><value>アクセスが拒否されました</value></data>
+  
+  <data name="Password.Changed" xml:space="preserve"><value>パスワードが変更されました</value></data>
+  <data name="Password.ResetSent" xml:space="preserve"><value>パスワードリセットの手順をメールで送信しました</value></data>
+  <data name="Password.ResetSuccess" xml:space="preserve"><value>パスワードがリセットされました</value></data>
+  <data name="Password.InvalidCurrent" xml:space="preserve"><value>現在のパスワードが正しくありません</value></data>
+  <data name="Password.TooWeak" xml:space="preserve"><value>パスワードがセキュリティ要件を満たしていません</value></data>
+  <data name="Password.SameAsCurrent" xml:space="preserve"><value>新しいパスワードは現在のパスワードと異なる必要があります</value></data>
+  
+  <data name="Validation.EmailRequired" xml:space="preserve"><value>メールアドレスは必須です</value></data>
+  <data name="Validation.EmailInvalid" xml:space="preserve"><value>メールアドレスの形式が無効です</value></data>
+  <data name="Validation.PasswordRequired" xml:space="preserve"><value>パスワードは必須です</value></data>
+  <data name="Validation.PasswordLength" xml:space="preserve"><value>パスワードは8文字以上でなければなりません</value></data>
+  <data name="Validation.FirstNameRequired" xml:space="preserve"><value>名は必須です</value></data>
+  <data name="Validation.LastNameRequired" xml:space="preserve"><value>姓は必須です</value></data>
+</root>

@@ -1,2 +1,2 @@
-export { LandingPageEnhanced } from './LandingPageEnhanced'
+export { LandingPage } from './LandingPage'
 export { HowItWorksPage } from './HowItWorksPage'

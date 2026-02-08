@@ -3,29 +3,35 @@ import type { ThemeOptions } from '@mui/material/styles'
 
 const baseTheme: ThemeOptions = {
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Helvetica Neue", "Arial", sans-serif',
     h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
-      lineHeight: 1.2,
+      fontFamily: '"Playfair Display", Georgia, serif',
+      fontSize: '2.75rem',
+      fontWeight: 400,
+      lineHeight: 1.15,
+      letterSpacing: '-0.02em',
     },
     h2: {
-      fontSize: '2rem',
-      fontWeight: 700,
-      lineHeight: 1.3,
+      fontFamily: '"Playfair Display", Georgia, serif',
+      fontSize: '2.25rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
+      letterSpacing: '-0.01em',
     },
     h3: {
+      fontFamily: '"Playfair Display", Georgia, serif',
       fontSize: '1.75rem',
-      fontWeight: 600,
-      lineHeight: 1.3,
+      fontWeight: 500,
+      lineHeight: 1.25,
     },
     h4: {
-      fontSize: '1.5rem',
+      fontSize: '1.375rem',
       fontWeight: 600,
-      lineHeight: 1.4,
+      lineHeight: 1.35,
+      letterSpacing: '-0.01em',
     },
     h5: {
-      fontSize: '1.25rem',
+      fontSize: '1.125rem',
       fontWeight: 600,
       lineHeight: 1.4,
     },
@@ -35,37 +41,59 @@ const baseTheme: ThemeOptions = {
       lineHeight: 1.5,
     },
     body1: {
-      fontSize: '1rem',
-      lineHeight: 1.5,
+      fontSize: '0.9375rem',
+      lineHeight: 1.6,
+      letterSpacing: '0.01em',
     },
     body2: {
-      fontSize: '0.875rem',
-      lineHeight: 1.5,
+      fontSize: '0.8125rem',
+      lineHeight: 1.6,
+      letterSpacing: '0.01em',
     },
     button: {
       textTransform: 'none',
-      fontWeight: 600,
+      fontWeight: 500,
+      letterSpacing: '0.03em',
+    },
+    overline: {
+      fontSize: '0.6875rem',
+      fontWeight: 500,
+      letterSpacing: '0.12em',
+      textTransform: 'uppercase',
+      lineHeight: 1.5,
     },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 2,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          padding: '8px 16px',
+          borderRadius: 0,
+          padding: '10px 24px',
+          fontSize: '0.8125rem',
+          letterSpacing: '0.08em',
+          fontWeight: 500,
         },
         sizeLarge: {
-          padding: '12px 24px',
+          padding: '14px 32px',
+          fontSize: '0.875rem',
+        },
+        contained: {
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 0,
+          boxShadow: 'none',
+          border: '1px solid #E7E5E4',
         },
       },
     },
@@ -74,11 +102,44 @@ const baseTheme: ThemeOptions = {
         variant: 'outlined',
         size: 'small',
       },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 0,
+          },
+        },
+      },
     },
     MuiPaper: {
       styleOverrides: {
         rounded: {
-          borderRadius: 12,
+          borderRadius: 2,
+        },
+      },
+      defaultProps: {
+        elevation: 0,
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: '#E7E5E4',
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          fontWeight: 500,
+          letterSpacing: '0.04em',
         },
       },
     },
@@ -88,93 +149,93 @@ const baseTheme: ThemeOptions = {
 const lightPalette = {
   mode: 'light' as const,
   primary: {
-    main: '#2563eb',
-    light: '#3b82f6',
-    dark: '#1d4ed8',
-    contrastText: '#ffffff',
+    main: '#1C1917',
+    light: '#44403C',
+    dark: '#0C0A09',
+    contrastText: '#FFFFFF',
   },
   secondary: {
-    main: '#7c3aed',
-    light: '#8b5cf6',
-    dark: '#6d28d9',
-    contrastText: '#ffffff',
+    main: '#78716C',
+    light: '#A8A29E',
+    dark: '#57534E',
+    contrastText: '#FFFFFF',
   },
   error: {
-    main: '#dc2626',
-    light: '#ef4444',
-    dark: '#b91c1c',
+    main: '#DC2626',
+    light: '#EF4444',
+    dark: '#B91C1C',
   },
   warning: {
-    main: '#d97706',
-    light: '#f59e0b',
-    dark: '#b45309',
+    main: '#D97706',
+    light: '#F59E0B',
+    dark: '#B45309',
   },
   success: {
-    main: '#059669',
-    light: '#10b981',
-    dark: '#047857',
+    main: '#16A34A',
+    light: '#22C55E',
+    dark: '#15803D',
   },
   info: {
-    main: '#0284c7',
-    light: '#0ea5e9',
-    dark: '#0369a1',
+    main: '#2563EB',
+    light: '#3B82F6',
+    dark: '#1D4ED8',
   },
   background: {
-    default: '#f8fafc',
-    paper: '#ffffff',
+    default: '#FFFFFF',
+    paper: '#FFFFFF',
   },
   text: {
-    primary: '#0f172a',
-    secondary: '#475569',
-    disabled: '#94a3b8',
+    primary: '#1C1917',
+    secondary: '#57534E',
+    disabled: '#A8A29E',
   },
-  divider: '#e2e8f0',
+  divider: '#E7E5E4',
 }
 
 const darkPalette = {
   mode: 'dark' as const,
   primary: {
-    main: '#3b82f6',
-    light: '#60a5fa',
-    dark: '#2563eb',
-    contrastText: '#ffffff',
+    main: '#FAFAF9',
+    light: '#FFFFFF',
+    dark: '#E7E5E4',
+    contrastText: '#1C1917',
   },
   secondary: {
-    main: '#8b5cf6',
-    light: '#a78bfa',
-    dark: '#7c3aed',
-    contrastText: '#ffffff',
+    main: '#A8A29E',
+    light: '#D6D3D1',
+    dark: '#78716C',
+    contrastText: '#1C1917',
   },
   error: {
-    main: '#ef4444',
-    light: '#f87171',
-    dark: '#dc2626',
+    main: '#EF4444',
+    light: '#F87171',
+    dark: '#DC2626',
   },
   warning: {
-    main: '#f59e0b',
-    light: '#fbbf24',
-    dark: '#d97706',
+    main: '#F59E0B',
+    light: '#FBBF24',
+    dark: '#D97706',
   },
   success: {
-    main: '#10b981',
-    light: '#34d399',
-    dark: '#059669',
+    main: '#22C55E',
+    light: '#34D399',
+    dark: '#16A34A',
   },
   info: {
-    main: '#0ea5e9',
-    light: '#38bdf8',
-    dark: '#0284c7',
+    main: '#3B82F6',
+    light: '#60A5FA',
+    dark: '#2563EB',
   },
   background: {
-    default: '#0f172a',
-    paper: '#1e293b',
+    default: '#0C0A09',
+    paper: '#1C1917',
   },
   text: {
-    primary: '#f1f5f9',
-    secondary: '#94a3b8',
-    disabled: '#475569',
+    primary: '#FAFAF9',
+    secondary: '#A8A29E',
+    disabled: '#57534E',
   },
-  divider: '#334155',
+  divider: '#292524',
 }
 
 export const createAppTheme = (mode: 'light' | 'dark') => {

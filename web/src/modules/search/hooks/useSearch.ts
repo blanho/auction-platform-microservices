@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/app/hooks/useAuth'
 import { searchApi } from '../api'
 import type { SearchFilters } from '../types'
 
@@ -35,9 +36,11 @@ export const usePopularSearches = () => {
 }
 
 export const useRecentSearches = () => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: searchKeys.recent(),
     queryFn: () => searchApi.getRecentSearches(),
+    enabled: isAuthenticated,
   })
 }
 

@@ -100,47 +100,48 @@ export function Footer() {
       component="footer"
       sx={{
         bgcolor: palette.neutral[900],
-        color: 'white',
-        pt: 8,
-        pb: 4,
+        color: palette.neutral[0],
+        pt: 10,
+        pb: 5,
       }}
     >
       <Container maxWidth="xl">
-        <Grid container spacing={6}>
+        <Grid container spacing={8}>
           <Grid size={{ xs: 12, lg: 4 }}>
             <Typography
-              variant="h5"
               sx={{
                 fontFamily: '"Playfair Display", serif',
-                fontWeight: 700,
-                mb: 2,
+                fontWeight: 600,
+                fontSize: '1.375rem',
+                letterSpacing: '0.08em',
+                mb: 3,
               }}
             >
-              AUCTION
+              THE AUCTION
             </Typography>
             <Typography
               variant="body2"
               sx={{
                 color: palette.neutral[400],
                 lineHeight: 1.8,
-                mb: 3,
+                mb: 4,
                 maxWidth: 320,
+                fontSize: '0.8125rem',
               }}
             >
-              Discover unique treasures and rare finds. Join thousands of collectors and enthusiasts
-              in the premier destination for online auctions.
+              Authenticated luxury consignment. Discover extraordinary pieces
+              from the world's most discerning collectors.
             </Typography>
 
             <Box component="form" onSubmit={handleSubscribe} sx={{ maxWidth: 360 }}>
               <Typography
-                variant="subtitle2"
                 sx={{
-                  color: 'white',
-                  fontWeight: 600,
-                  mb: 1.5,
+                  color: palette.neutral[300],
+                  fontWeight: 500,
+                  mb: 2,
                   textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.75rem',
+                  letterSpacing: '0.12em',
+                  fontSize: '0.6875rem',
                 }}
               >
                 Subscribe to Our Newsletter
@@ -158,7 +159,7 @@ export function Footer() {
                 </InlineAlert>
               </Collapse>
 
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={0}>
                 <TextField
                   fullWidth
                   size="small"
@@ -168,20 +169,22 @@ export function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      borderRadius: 1,
+                      bgcolor: 'transparent',
+                      borderRadius: 0,
                       '& fieldset': {
-                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderColor: palette.neutral[700],
+                        borderRight: 'none',
                       },
                       '&:hover fieldset': {
-                        borderColor: 'rgba(255,255,255,0.2)',
+                        borderColor: palette.neutral[500],
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: palette.brand.primary,
+                        borderColor: palette.neutral[400],
                       },
                     },
                     '& .MuiOutlinedInput-input': {
-                      color: 'white',
+                      color: palette.neutral[0],
+                      fontSize: '0.8125rem',
                       '&::placeholder': {
                         color: palette.neutral[500],
                         opacity: 1,
@@ -193,21 +196,22 @@ export function Footer() {
                   type="submit"
                   variant="contained"
                   sx={{
-                    bgcolor: palette.brand.primary,
-                    color: 'white',
+                    bgcolor: palette.neutral[0],
+                    color: palette.neutral[900],
                     minWidth: 48,
                     px: 2,
+                    borderRadius: 0,
                     '&:hover': {
-                      bgcolor: palette.brand.secondary,
+                      bgcolor: palette.neutral[200],
                     },
                   }}
                 >
-                  <ArrowForward />
+                  <ArrowForward sx={{ fontSize: 18 }} />
                 </Button>
               </Stack>
             </Box>
 
-            <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
+            <Stack direction="row" spacing={1} sx={{ mt: 5 }}>
               {socialLinks.map((social) => (
                 <IconButton
                   key={social.label}
@@ -216,11 +220,12 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
+                  size="small"
                   sx={{
                     color: palette.neutral[500],
                     '&:hover': {
-                      color: 'white',
-                      bgcolor: 'rgba(255,255,255,0.1)',
+                      color: palette.neutral[0],
+                      bgcolor: 'transparent',
                     },
                   }}
                 >
@@ -235,19 +240,18 @@ export function Footer() {
               {Object.entries(footerLinks).map(([key, section]) => (
                 <Grid key={key} size={{ xs: 6, sm: 3 }}>
                   <Typography
-                    variant="subtitle2"
                     sx={{
-                      color: 'white',
-                      fontWeight: 600,
-                      mb: 2,
+                      color: palette.neutral[300],
+                      fontWeight: 500,
+                      mb: 3,
                       textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      fontSize: '0.75rem',
+                      letterSpacing: '0.12em',
+                      fontSize: '0.6875rem',
                     }}
                   >
                     {section.title}
                   </Typography>
-                  <Stack spacing={1.5}>
+                  <Stack spacing={2}>
                     {section.links.map((link) => (
                       <Typography
                         key={link.href}
@@ -255,11 +259,11 @@ export function Footer() {
                         to={link.href}
                         sx={{
                           color: palette.neutral[400],
-                          fontSize: '0.875rem',
+                          fontSize: '0.8125rem',
                           textDecoration: 'none',
                           transition: 'color 0.2s ease',
                           '&:hover': {
-                            color: 'white',
+                            color: palette.neutral[0],
                           },
                         }}
                       >
@@ -273,7 +277,7 @@ export function Footer() {
           </Grid>
         </Grid>
 
-        <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 6 }} />
+        <Divider sx={{ borderColor: palette.neutral[800], my: 6 }} />
 
         <Stack
           direction={{ xs: 'column', md: 'row' }}
@@ -281,46 +285,46 @@ export function Footer() {
           alignItems={{ xs: 'flex-start', md: 'center' }}
           spacing={2}
         >
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 3 }}>
-            <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
-              © {new Date().getFullYear()} Auction Platform. All rights reserved.
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 4 }}>
+            <Typography variant="body2" sx={{ color: palette.neutral[600], fontSize: '0.75rem' }}>
+              © {new Date().getFullYear()} The Auction. All rights reserved.
             </Typography>
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={3}>
               <Typography
                 component={Link}
                 to="/privacy"
                 sx={{
                   color: palette.neutral[500],
-                  fontSize: '0.875rem',
+                  fontSize: '0.75rem',
                   textDecoration: 'none',
-                  '&:hover': { color: 'white' },
+                  '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Privacy Policy
+                Privacy
               </Typography>
               <Typography
                 component={Link}
                 to="/terms"
                 sx={{
                   color: palette.neutral[500],
-                  fontSize: '0.875rem',
+                  fontSize: '0.75rem',
                   textDecoration: 'none',
-                  '&:hover': { color: 'white' },
+                  '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Terms of Service
+                Terms
               </Typography>
               <Typography
                 component={Link}
                 to="/cookies"
                 sx={{
                   color: palette.neutral[500],
-                  fontSize: '0.875rem',
+                  fontSize: '0.75rem',
                   textDecoration: 'none',
-                  '&:hover': { color: 'white' },
+                  '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Cookie Policy
+                Cookies
               </Typography>
             </Stack>
           </Stack>
@@ -330,9 +334,11 @@ export function Footer() {
             endIcon={<KeyboardArrowUp />}
             sx={{
               color: palette.neutral[500],
-              textTransform: 'none',
+              textTransform: 'uppercase',
+              fontSize: '0.6875rem',
+              letterSpacing: '0.1em',
               '&:hover': {
-                color: 'white',
+                color: palette.neutral[0],
                 bgcolor: 'transparent',
               },
             }}

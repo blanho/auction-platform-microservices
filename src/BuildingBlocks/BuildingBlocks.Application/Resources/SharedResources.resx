@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <!-- Errors -->
+  <data name="Error.NotFound" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>A conflict occurred with the current state of the resource.</value></data>
+  <data name="Error.Unauthorized" xml:space="preserve"><value>Authentication is required to access this resource.</value></data>
+  <data name="Error.Forbidden" xml:space="preserve"><value>You do not have permission to access this resource.</value></data>
+  <data name="Error.ValidationFailed" xml:space="preserve"><value>One or more validation errors occurred.</value></data>
+  <data name="Error.InternalServerError" xml:space="preserve"><value>An unexpected error occurred. Please try again later.</value></data>
+  <data name="Error.BadRequest" xml:space="preserve"><value>The request was invalid or cannot be processed.</value></data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve"><value>The service is temporarily unavailable. Please try again later.</value></data>
+
+  <!-- Validation -->
+  <data name="Validation.Required" xml:space="preserve"><value>The {0} field is required.</value></data>
+  <data name="Validation.MaxLength" xml:space="preserve"><value>The {0} field must not exceed {1} characters.</value></data>
+  <data name="Validation.MinLength" xml:space="preserve"><value>The {0} field must be at least {1} characters.</value></data>
+  <data name="Validation.InvalidEmail" xml:space="preserve"><value>The email address is not valid.</value></data>
+  <data name="Validation.InvalidFormat" xml:space="preserve"><value>The {0} field has an invalid format.</value></data>
+  <data name="Validation.MustBePositive" xml:space="preserve"><value>The {0} field must be a positive number.</value></data>
+  <data name="Validation.MustBeInRange" xml:space="preserve"><value>The {0} field must be between {1} and {2}.</value></data>
+  <data name="Validation.InvalidDate" xml:space="preserve"><value>The {0} field contains an invalid date.</value></data>
+  <data name="Validation.FutureDate" xml:space="preserve"><value>The {0} field must be a future date.</value></data>
+  <data name="Validation.PastDate" xml:space="preserve"><value>The {0} field must be a past date.</value></data>
+
+  <!-- Auction -->
+  <data name="Auction.NotFound" xml:space="preserve"><value>Auction not found.</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>This auction has already ended.</value></data>
+  <data name="Auction.NotStarted" xml:space="preserve"><value>This auction has not started yet.</value></data>
+  <data name="Auction.BidTooLow" xml:space="preserve"><value>Your bid must be higher than the current bid of {0}.</value></data>
+  <data name="Auction.CannotBidOwnAuction" xml:space="preserve"><value>You cannot bid on your own auction.</value></data>
+  <data name="Auction.InvalidStatus" xml:space="preserve"><value>The auction status does not allow this operation.</value></data>
+  <data name="Auction.Created" xml:space="preserve"><value>Auction created successfully.</value></data>
+  <data name="Auction.Updated" xml:space="preserve"><value>Auction updated successfully.</value></data>
+  <data name="Auction.Deleted" xml:space="preserve"><value>Auction deleted successfully.</value></data>
+
+  <!-- User -->
+  <data name="User.NotFound" xml:space="preserve"><value>User not found.</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>A user with this email already exists.</value></data>
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>Invalid email or password.</value></data>
+  <data name="User.AccountLocked" xml:space="preserve"><value>Your account has been locked. Please contact support.</value></data>
+  <data name="User.EmailNotConfirmed" xml:space="preserve"><value>Please confirm your email address before logging in.</value></data>
+  <data name="User.PasswordResetSent" xml:space="preserve"><value>Password reset instructions have been sent to your email.</value></data>
+  <data name="User.PasswordChanged" xml:space="preserve"><value>Your password has been changed successfully.</value></data>
+  <data name="User.ProfileUpdated" xml:space="preserve"><value>Your profile has been updated successfully.</value></data>
+
+  <!-- Payment -->
+  <data name="Payment.Failed" xml:space="preserve"><value>Payment processing failed. Please try again.</value></data>
+  <data name="Payment.Succeeded" xml:space="preserve"><value>Payment processed successfully.</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>Payment is being processed.</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>Payment has been refunded.</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>Insufficient funds to complete this transaction.</value></data>
+
+  <!-- Common -->
+  <data name="Common.Success" xml:space="preserve"><value>Operation completed successfully.</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>Operation failed.</value></data>
+  <data name="Common.Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Common.NoResults" xml:space="preserve"><value>No results found.</value></data>
+  <data name="Common.OperationCompleted" xml:space="preserve"><value>The operation has been completed.</value></data>
+</root>

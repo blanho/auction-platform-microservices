@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="User.NotFound" xml:space="preserve"><value>User not found</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>User with this email already exists</value></data>
+  <data name="User.Created" xml:space="preserve"><value>User created successfully</value></data>
+  <data name="User.Updated" xml:space="preserve"><value>User updated successfully</value></data>
+  <data name="User.Deleted" xml:space="preserve"><value>User deleted successfully</value></data>
+  <data name="User.Deactivated" xml:space="preserve"><value>User account has been deactivated</value></data>
+  <data name="User.EmailNotVerified" xml:space="preserve"><value>Email address has not been verified</value></data>
+  <data name="User.EmailVerified" xml:space="preserve"><value>Email verified successfully</value></data>
+  
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>Invalid email or password</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>Account is locked. Please try again later</value></data>
+  <data name="Auth.AccountDisabled" xml:space="preserve"><value>Account has been disabled</value></data>
+  <data name="Auth.LoginSuccessful" xml:space="preserve"><value>Login successful</value></data>
+  <data name="Auth.LogoutSuccessful" xml:space="preserve"><value>Logout successful</value></data>
+  <data name="Auth.TokenExpired" xml:space="preserve"><value>Session has expired. Please login again</value></data>
+  <data name="Auth.TokenInvalid" xml:space="preserve"><value>Invalid authentication token</value></data>
+  <data name="Auth.RefreshTokenExpired" xml:space="preserve"><value>Refresh token has expired</value></data>
+  <data name="Auth.Unauthorized" xml:space="preserve"><value>You are not authorized to perform this action</value></data>
+  <data name="Auth.AccessDenied" xml:space="preserve"><value>Access denied</value></data>
+  
+  <data name="Password.Changed" xml:space="preserve"><value>Password changed successfully</value></data>
+  <data name="Password.ResetSent" xml:space="preserve"><value>Password reset instructions sent to your email</value></data>
+  <data name="Password.ResetSuccess" xml:space="preserve"><value>Password has been reset successfully</value></data>
+  <data name="Password.InvalidCurrent" xml:space="preserve"><value>Current password is incorrect</value></data>
+  <data name="Password.TooWeak" xml:space="preserve"><value>Password does not meet security requirements</value></data>
+  <data name="Password.SameAsCurrent" xml:space="preserve"><value>New password must be different from current password</value></data>
+  
+  <data name="Validation.EmailRequired" xml:space="preserve"><value>Email is required</value></data>
+  <data name="Validation.EmailInvalid" xml:space="preserve"><value>Invalid email format</value></data>
+  <data name="Validation.PasswordRequired" xml:space="preserve"><value>Password is required</value></data>
+  <data name="Validation.PasswordLength" xml:space="preserve"><value>Password must be at least 8 characters</value></data>
+  <data name="Validation.FirstNameRequired" xml:space="preserve"><value>First name is required</value></data>
+  <data name="Validation.LastNameRequired" xml:space="preserve"><value>Last name is required</value></data>
+</root>

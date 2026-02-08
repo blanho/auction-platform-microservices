@@ -14,7 +14,7 @@ export interface AuthContextType {
   isLoading: boolean
   error: string | null
 
-  login: (data: LoginRequest) => Promise<{ requiresTwoFactor?: boolean; twoFactorToken?: string }>
+  login: (data: LoginRequest) => Promise<{ requiresTwoFactor?: boolean; twoFactorStateToken?: string }>
   loginWith2FA: (data: TwoFactorLoginRequest) => Promise<void>
   register: (data: RegisterRequest) => Promise<void>
   logout: () => Promise<void>

@@ -2,7 +2,7 @@ import * as signalR from '@microsoft/signalr'
 import { getAccessToken } from '@/modules/auth/utils/token.utils'
 import { signalRLogger } from '@/shared/lib/logger'
 
-const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5000/notificationHub'
+const SIGNALR_URL = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:6001/hubs/notifications'
 
 class SignalRService {
   private connection: signalR.HubConnection | null = null

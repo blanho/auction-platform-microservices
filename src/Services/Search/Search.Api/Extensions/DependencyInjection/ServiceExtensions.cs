@@ -4,6 +4,7 @@ using MassTransit;
 using BuildingBlocks.Infrastructure.Extensions;
 using Search.Api.Configuration;
 using Search.Api.Consumers;
+using Search.Api.Services;
 
 namespace Search.Api.Extensions.DependencyInjection;
 
@@ -57,6 +58,7 @@ public static class ServiceExtensions
         services.AddScoped<IIndexManagementService, IndexManagementService>();
         services.AddScoped<IAuctionSearchService, AuctionSearchService>();
         services.AddScoped<IAuctionIndexService, AuctionIndexService>();
+        services.AddSingleton<IRecentSearchService, InMemoryRecentSearchService>();
 
         return services;
     }

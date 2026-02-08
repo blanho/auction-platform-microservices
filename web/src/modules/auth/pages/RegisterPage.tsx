@@ -21,10 +21,11 @@ import {
   alpha,
 } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
-import { Google, GitHub, CheckCircle, ArrowForward, Gavel } from '@mui/icons-material'
+import { Google, CheckCircle, ArrowForward, Gavel } from '@mui/icons-material'
 import { registerSchema } from '../schemas'
 import { useRegister, useCheckUsername } from '../hooks'
 import { palette, colors, gradients } from '@/shared/theme/tokens'
+import { getErrorMessage } from '@/services/http'
 
 interface RegisterFormData {
   email: string
@@ -169,9 +170,10 @@ export function RegisterPage() {
     }
   }
 
-  const handleSocialLogin = (provider: 'google' | 'github') => {
+  const handleGoogleLogin = () => {
     const baseUrl = import.meta.env.VITE_API_URL || ''
-    globalThis.location.href = `${baseUrl}/api/auth/external-login?provider=${provider}`
+    const returnUrl = encodeURIComponent(globalThis.location.origin + '/auth/callback')
+    globalThis.location.href = `${baseUrl}/api/auth/external-login/Google?returnUrl=${returnUrl}`
   }
 
   if (registrationSuccess) {
@@ -486,7 +488,7 @@ export function RegisterPage() {
 
                 {registerMutation.isError && (
                   <InlineAlert severity="error" sx={{ mb: 3 }}>
-                    Registration failed. Please check your information and try again.
+                    {getErrorMessage(registerMutation.error)}
                   </InlineAlert>
                 )}
 
@@ -495,7 +497,7 @@ export function RegisterPage() {
                     fullWidth
                     variant="outlined"
                     startIcon={<Google />}
-                    onClick={() => handleSocialLogin('google')}
+                    onClick={handleGoogleLogin}
                     sx={{
                       py: 1.25,
                       borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -509,27 +511,7 @@ export function RegisterPage() {
                       },
                     }}
                   >
-                    Google
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<GitHub />}
-                    onClick={() => handleSocialLogin('github')}
-                    sx={{
-                      py: 1.25,
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      borderRadius: 2,
-                      '&:hover': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      },
-                    }}
-                  >
-                    GitHub
+                    Continue with Google
                   </Button>
                 </Stack>
 

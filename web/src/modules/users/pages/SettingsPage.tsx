@@ -20,6 +20,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  IconButton,
 } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
 import {
@@ -100,7 +101,7 @@ export function SettingsPage() {
   ]
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h4"

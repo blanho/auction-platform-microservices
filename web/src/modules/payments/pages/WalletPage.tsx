@@ -38,6 +38,8 @@ import {
   AccountBalance,
   TrendingUp,
   FilterList,
+  ArrowUpward,
+  History,
 } from '@mui/icons-material'
 import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, StatusBadge } from '@/shared/ui'
 import { palette } from '@/shared/theme/tokens'
@@ -95,7 +97,7 @@ export function WalletPage() {
 
   if (walletLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
@@ -112,7 +114,7 @@ export function WalletPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h4"

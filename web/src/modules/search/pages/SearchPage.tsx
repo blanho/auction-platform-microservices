@@ -241,7 +241,7 @@ export function SearchPage() {
   }, [filters.query])
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
         <Autocomplete
           freeSolo

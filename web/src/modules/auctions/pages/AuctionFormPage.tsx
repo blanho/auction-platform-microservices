@@ -62,7 +62,7 @@ import {
 
 function AuctionFormSkeleton() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Skeleton variant="text" width={300} height={40} sx={{ mb: 2 }} />
       <Skeleton variant="text" width={200} height={24} sx={{ mb: 4 }} />
       <Card sx={{ p: 4 }}>
@@ -244,7 +244,7 @@ export function AuctionFormPage() {
 
   if (isEditMode && fetchError) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert
           severity="error"
           title="Failed to Load Auction"
@@ -693,7 +693,7 @@ export function AuctionFormPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <motion.div variants={staggerContainer} initial="initial" animate="animate">
         <motion.div variants={fadeInUp}>
           <Breadcrumbs sx={{ mb: 2 }}>

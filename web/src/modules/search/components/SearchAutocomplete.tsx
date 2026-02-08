@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   Autocomplete,
   TextField,
@@ -24,6 +24,8 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { debounce } from 'lodash'
+import { useAuth } from '@/app/hooks/useAuth'
 import { searchApi } from '@/modules/search/api/search.api'
 import type { SearchSuggestion } from '@/modules/search/types'
 
@@ -54,28 +56,28 @@ export function SearchAutocomplete({
 }: SearchAutocompleteProps) {
   const theme = useTheme()
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
   const [inputValue, setInputValue] = useState(defaultValue)
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
+  const debouncedSetQuery = useMemo(
+    () => debounce((value: string) => setDebouncedQuery(value), DEBOUNCE_DELAY),
+    []
+  )
 
-    if (inputValue.trim()) {
-      debounceRef.current = setTimeout(() => {
-        setDebouncedQuery(inputValue.trim())
-      }, DEBOUNCE_DELAY)
-    }
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setInputValue(value)
+      if (value.trim()) {
+        debouncedSetQuery(value.trim())
+      } else {
+        debouncedSetQuery.cancel()
+        setDebouncedQuery('')
       }
-    }
-  }, [inputValue])
+    },
+    [debouncedSetQuery]
+  )
 
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
     queryKey: ['search', 'suggestions', debouncedQuery],
@@ -88,6 +90,7 @@ export function SearchAutocomplete({
     queryKey: ['search', 'recent'],
     queryFn: (): Promise<string[]> => searchApi.getRecentSearches(),
     staleTime: 5 * 60 * 1000,
+    enabled: isAuthenticated,
   })
 
   const { data: popularSearches = [] } = useQuery({
@@ -188,7 +191,7 @@ export function SearchAutocomplete({
       groupBy={groupBy}
       onChange={handleOptionSelect}
       inputValue={inputValue}
-      onInputChange={(_, value) => setInputValue(value)}
+      onInputChange={(_, value) => handleInputChange(value)}
       fullWidth={fullWidth}
       loading={suggestionsLoading}
       filterOptions={(x) => x}
@@ -289,7 +292,7 @@ export function SearchAutocomplete({
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
-                        onClick={() => setInputValue('')}
+                        onClick={() => handleInputChange('')}
                         sx={{
                           cursor: 'pointer',
                           '&:hover': { color: 'error.main' },

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/app/hooks/useAuth'
 import { bookmarksApi } from '../api/bookmarks.api'
 import type {
   AddToWatchlistRequest,
@@ -15,24 +16,29 @@ export const bookmarkKeys = {
 }
 
 export const useWatchlist = (filters?: WatchlistFilters) => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: bookmarkKeys.watchlistFiltered(filters || {}),
     queryFn: () => bookmarksApi.getWatchlist(filters),
+    enabled: isAuthenticated,
   })
 }
 
 export const useWatchlistCount = () => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: bookmarkKeys.count(),
     queryFn: () => bookmarksApi.getWatchlistCount(),
+    enabled: isAuthenticated,
   })
 }
 
 export const useIsInWatchlist = (auctionId: string) => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: bookmarkKeys.check(auctionId),
     queryFn: () => bookmarksApi.isInWatchlist(auctionId),
-    enabled: !!auctionId,
+    enabled: !!auctionId && isAuthenticated,
   })
 }
 

@@ -12,11 +12,13 @@ import type {
 import type { PaginatedResponse } from '@/shared/types'
 
 export const notificationsApi = {
-  async getNotifications(filters: NotificationFilters): Promise<Notification[]> {
-    const response = await http.get<Notification[]>('/notifications', {
+  async getNotifications(filters: NotificationFilters): Promise<PaginatedResponse<Notification>> {
+    const response = await http.get<PaginatedResponse<Notification>>('/notifications', {
       params: {
         type: filters.type,
         status: filters.status,
+        page: filters.page,
+        pageSize: filters.pageSize,
       },
     })
     return response.data

@@ -69,6 +69,9 @@
     
     <!-- PDF -->
     <PackageReference Include="QuestPDF" Version="2024.12.2" />
+    
+    <!-- Localization -->
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>

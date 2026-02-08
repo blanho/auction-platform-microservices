@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Auction.NotFound" xml:space="preserve"><value>オークションが見つかりません</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>このオークションは既に終了しています</value></data>
+  <data name="Auction.NotStarted" xml:space="preserve"><value>このオークションはまだ開始されていません</value></data>
+  <data name="Auction.AlreadyCancelled" xml:space="preserve"><value>このオークションはキャンセルされました</value></data>
+  <data name="Auction.CannotModify" xml:space="preserve"><value>開始後のオークションは変更できません</value></data>
+  <data name="Auction.CannotDelete" xml:space="preserve"><value>入札があるオークションは削除できません</value></data>
+  <data name="Auction.InvalidDates" xml:space="preserve"><value>終了日は開始日より後でなければなりません</value></data>
+  <data name="Auction.InvalidStartPrice" xml:space="preserve"><value>開始価格は0より大きくなければなりません</value></data>
+  <data name="Auction.InvalidReservePrice" xml:space="preserve"><value>最低落札価格は開始価格以上でなければなりません</value></data>
+  <data name="Auction.Created" xml:space="preserve"><value>オークションが作成されました</value></data>
+  <data name="Auction.Updated" xml:space="preserve"><value>オークションが更新されました</value></data>
+  <data name="Auction.Cancelled" xml:space="preserve"><value>オークションがキャンセルされました</value></data>
+  <data name="Auction.Published" xml:space="preserve"><value>オークションが公開されました</value></data>
+  <data name="Auction.Ended" xml:space="preserve"><value>オークションが終了しました</value></data>
+  <data name="Auction.SellerCannotBid" xml:space="preserve"><value>出品者は自分のオークションに入札できません</value></data>
+  <data name="Auction.TitleRequired" xml:space="preserve"><value>オークションタイトルは必須です</value></data>
+  <data name="Auction.DescriptionRequired" xml:space="preserve"><value>オークション説明は必須です</value></data>
+  <data name="Auction.CategoryRequired" xml:space="preserve"><value>カテゴリは必須です</value></data>
+  <data name="Auction.ImageRequired" xml:space="preserve"><value>少なくとも1枚の画像が必要です</value></data>
+  
+  <data name="Category.NotFound" xml:space="preserve"><value>カテゴリが見つかりません</value></data>
+  <data name="Category.AlreadyExists" xml:space="preserve"><value>この名前のカテゴリは既に存在します</value></data>
+  <data name="Category.HasAuctions" xml:space="preserve"><value>オークションがあるカテゴリは削除できません</value></data>
+  
+  <data name="Validation.InvalidPageNumber" xml:space="preserve"><value>ページ番号は0より大きくなければなりません</value></data>
+  <data name="Validation.InvalidPageSize" xml:space="preserve"><value>ページサイズは1から100の間でなければなりません</value></data>
+</root>

@@ -34,6 +34,7 @@ public interface IUserService
     Task<IdentityResult> RemoveFromRolesAsync(ApplicationUser user, IEnumerable<string> roles);
     Task<bool> RoleExistsAsync(string role);
     Task CreateRoleAsync(string role);
+    Task EnsureRoleExistsAsync(string role);
 
     Task<IList<UserLoginInfo>> GetLoginsAsync(ApplicationUser user);
     Task<IdentityResult> AddLoginAsync(ApplicationUser user, ExternalLoginInfo info);

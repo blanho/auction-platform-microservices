@@ -44,5 +44,5 @@ export const BID_STATUS_COLORS = {
   Accepted: { bg: 'rgba(34, 197, 94, 0.1)', color: '#16A34A' },
   Rejected: { bg: 'rgba(239, 68, 68, 0.1)', color: '#DC2626' },
   Retracted: { bg: 'rgba(107, 114, 128, 0.1)', color: '#6B7280' },
-  Outbid: { bg: 'rgba(59, 130, 246, 0.1)', color: palette.semantic.info },
+  Outbid: { bg: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6' },
 } as const

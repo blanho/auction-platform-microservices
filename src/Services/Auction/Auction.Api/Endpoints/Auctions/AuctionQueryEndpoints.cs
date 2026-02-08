@@ -95,8 +95,8 @@ public class AuctionQueryEndpoints : ICarterModule
             username,
             request.Status,
             request.SearchTerm,
-            request.Page,
-            request.PageSize,
+            request.Page ?? 1,
+            request.PageSize ?? 10,
             request.OrderBy,
             request.Descending ?? false);
 

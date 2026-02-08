@@ -16,12 +16,14 @@ import {
   TextField,
   alpha,
 } from '@mui/material'
-import { Google, GitHub, ArrowForward, Gavel } from '@mui/icons-material'
+import { Google, ArrowForward, Gavel } from '@mui/icons-material'
 import { loginSchema } from '../schemas'
-import { useLogin, useLoginWith2FA } from '../hooks'
+import { useAuth } from '@/app/providers'
 import type { LoginRequest } from '../types'
 import { palette, colors, gradients } from '@/shared/theme/tokens'
 import { InlineAlert, FormField } from '@/shared/ui'
+import { getErrorMessage } from '@/services/http'
+import { getAndClearRedirectUrl } from '@/shared/components/auth'
 
 const SESSION_MESSAGES: Record<
   string,
@@ -91,7 +93,9 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
+  const savedRedirect = getAndClearRedirectUrl()
+  const stateFrom = (location.state as { from?: { pathname: string } })?.from?.pathname
+  const from = savedRedirect || stateFrom || '/'
 
   const sessionParam = searchParams.get('session')
   const sessionMessage = useMemo(
@@ -103,15 +107,17 @@ export function LoginPage() {
   const [requires2FA, setRequires2FA] = useState(false)
   const [twoFactorToken, setTwoFactorToken] = useState('')
   const [twoFactorCode, setTwoFactorCode] = useState('')
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  const { login: authLogin, loginWith2FA: authLoginWith2FA } = useAuth()
+
   useEffect(() => {
     if (sessionParam && SESSION_MESSAGES[sessionParam]) {
       searchParams.delete('session')
       setSearchParams(searchParams, { replace: true })
     }
   }, [sessionParam, searchParams, setSearchParams])
-
-  const login = useLogin()
-  const login2FA = useLoginWith2FA()
 
   const {
     register,
@@ -126,8 +132,10 @@ export function LoginPage() {
   })
 
   const onSubmit = async (data: LoginRequest) => {
+    setLoginError(null)
+    setIsLoggingIn(true)
     try {
-      const response = await login.mutateAsync(data)
+      const response = await authLogin(data)
 
       if (response.requiresTwoFactor && response.twoFactorStateToken) {
         setRequires2FA(true)
@@ -135,26 +143,33 @@ export function LoginPage() {
       } else {
         navigate(from, { replace: true })
       }
-    } catch {
-      /* Error handled by mutation */
+    } catch (err) {
+      setLoginError(getErrorMessage(err))
+    } finally {
+      setIsLoggingIn(false)
     }
   }
 
   const handle2FASubmit = async () => {
+    setLoginError(null)
+    setIsLoggingIn(true)
     try {
-      await login2FA.mutateAsync({
+      await authLoginWith2FA({
         twoFactorStateToken: twoFactorToken,
         code: twoFactorCode,
       })
       navigate(from, { replace: true })
-    } catch {
-      /* Error handled by mutation */
+    } catch (err) {
+      setLoginError(getErrorMessage(err))
+    } finally {
+      setIsLoggingIn(false)
     }
   }
 
-  const handleSocialLogin = (provider: 'google' | 'github') => {
+  const handleGoogleLogin = () => {
     const baseUrl = import.meta.env.VITE_API_URL || ''
-    globalThis.location.href = `${baseUrl}/api/auth/external-login?provider=${provider}`
+    const returnUrl = encodeURIComponent(`${globalThis.location.origin}/auth/callback`)
+    globalThis.location.href = `${baseUrl}/api/auth/external-login/Google?returnUrl=${returnUrl}`
   }
 
   if (requires2FA) {
@@ -209,9 +224,9 @@ export function LoginPage() {
                 Enter the code from your authenticator app
               </Typography>
 
-              {login2FA.isError && (
+              {loginError && (
                 <InlineAlert severity="error" sx={{ mb: 3 }}>
-                  Invalid verification code. Please try again.
+                  {loginError}
                 </InlineAlert>
               )}
 
@@ -234,8 +249,8 @@ export function LoginPage() {
                 fullWidth
                 variant="contained"
                 onClick={handle2FASubmit}
-                disabled={twoFactorCode.length !== 6 || login2FA.isPending}
-                endIcon={!login2FA.isPending && <ArrowForward />}
+                disabled={twoFactorCode.length !== 6 || isLoggingIn}
+                endIcon={!isLoggingIn && <ArrowForward />}
                 sx={{
                   background: gradients.gold,
                   color: palette.neutral[900],
@@ -253,7 +268,7 @@ export function LoginPage() {
                   },
                 }}
               >
-                {login2FA.isPending ? <CircularProgress size={24} color="inherit" /> : 'Verify'}
+                {isLoggingIn ? <CircularProgress size={24} color="inherit" /> : 'Verify'}
               </Button>
 
               <Button
@@ -473,9 +488,9 @@ export function LoginPage() {
                   </InlineAlert>
                 )}
 
-                {login.isError && (
+                {loginError && (
                   <InlineAlert severity="error" sx={{ mb: 3 }}>
-                    Invalid email or password. Please try again.
+                    {loginError}
                   </InlineAlert>
                 )}
 
@@ -543,8 +558,8 @@ export function LoginPage() {
                     fullWidth
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || login.isPending}
-                    endIcon={!isSubmitting && !login.isPending && <ArrowForward />}
+                    disabled={isSubmitting || isLoggingIn}
+                    endIcon={!isSubmitting && !isLoggingIn && <ArrowForward />}
                     sx={{
                       background: gradients.gold,
                       color: palette.neutral[900],
@@ -562,7 +577,7 @@ export function LoginPage() {
                       },
                     }}
                   >
-                    {isSubmitting || login.isPending ? (
+                    {isSubmitting || isLoggingIn ? (
                       <CircularProgress size={24} color="inherit" />
                     ) : (
                       'Sign In'
@@ -588,7 +603,7 @@ export function LoginPage() {
                     fullWidth
                     variant="outlined"
                     startIcon={<Google />}
-                    onClick={() => handleSocialLogin('google')}
+                    onClick={handleGoogleLogin}
                     sx={{
                       py: 1.25,
                       borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -602,27 +617,7 @@ export function LoginPage() {
                       },
                     }}
                   >
-                    Google
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<GitHub />}
-                    onClick={() => handleSocialLogin('github')}
-                    sx={{
-                      py: 1.25,
-                      borderColor: 'rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      borderRadius: 2,
-                      '&:hover': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        bgcolor: 'rgba(255, 255, 255, 0.05)',
-                      },
-                    }}
-                  >
-                    GitHub
+                    Continue with Google
                   </Button>
                 </Stack>
 

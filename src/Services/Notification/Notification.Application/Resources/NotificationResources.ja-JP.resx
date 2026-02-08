@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Notification.NotFound" xml:space="preserve"><value>通知が見つかりません</value></data>
+  <data name="Notification.Sent" xml:space="preserve"><value>通知が送信されました</value></data>
+  <data name="Notification.MarkedAsRead" xml:space="preserve"><value>通知を既読にしました</value></data>
+  <data name="Notification.AllMarkedAsRead" xml:space="preserve"><value>すべての通知を既読にしました</value></data>
+  <data name="Notification.Deleted" xml:space="preserve"><value>通知が削除されました</value></data>
+  <data name="Notification.Failed" xml:space="preserve"><value>通知の送信に失敗しました</value></data>
+  
+  <data name="Email.Sent" xml:space="preserve"><value>メールが送信されました</value></data>
+  <data name="Email.Failed" xml:space="preserve"><value>メールの送信に失敗しました</value></data>
+  <data name="Email.InvalidRecipient" xml:space="preserve"><value>無効なメール受信者です</value></data>
+  <data name="Email.SubjectRequired" xml:space="preserve"><value>メールの件名は必須です</value></data>
+  <data name="Email.BodyRequired" xml:space="preserve"><value>メールの本文は必須です</value></data>
+  
+  <data name="Sms.Sent" xml:space="preserve"><value>SMSが送信されました</value></data>
+  <data name="Sms.Failed" xml:space="preserve"><value>SMSの送信に失敗しました</value></data>
+  <data name="Sms.InvalidNumber" xml:space="preserve"><value>無効な電話番号です</value></data>
+  
+  <data name="Push.Sent" xml:space="preserve"><value>プッシュ通知が送信されました</value></data>
+  <data name="Push.Failed" xml:space="preserve"><value>プッシュ通知の送信に失敗しました</value></data>
+  <data name="Push.DeviceNotRegistered" xml:space="preserve"><value>デバイスがプッシュ通知に登録されていません</value></data>
+  
+  <data name="Template.NotFound" xml:space="preserve"><value>通知テンプレートが見つかりません</value></data>
+  <data name="Template.InvalidParameters" xml:space="preserve"><value>無効なテンプレートパラメータです</value></data>
+  
+  <data name="Preference.Updated" xml:space="preserve"><value>通知設定が更新されました</value></data>
+  <data name="Preference.NotFound" xml:space="preserve"><value>通知設定が見つかりません</value></data>
+  
+  <data name="Subject.AuctionWon" xml:space="preserve"><value>おめでとうございます！オークションに落札しました</value></data>
+  <data name="Subject.Outbid" xml:space="preserve"><value>より高い入札がありました</value></data>
+  <data name="Subject.AuctionEnding" xml:space="preserve"><value>オークションがまもなく終了します</value></data>
+  <data name="Subject.PaymentReceived" xml:space="preserve"><value>支払いを受け取りました</value></data>
+  <data name="Subject.WelcomeEmail" xml:space="preserve"><value>プラットフォームへようこそ</value></data>
+</root>

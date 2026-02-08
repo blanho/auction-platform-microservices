@@ -133,14 +133,14 @@ export function MyBidsPage() {
 
   if (bidsError) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert severity="error">Failed to load your bids. Please try again.</InlineAlert>
       </Container>
     )
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h4"
@@ -304,7 +304,7 @@ export function MyBidsPage() {
                   cellSx={{ py: 8 }}
                 />
               )}
-              {!isLoading && (myBids?.length ?? 0) > 0 && (
+              {!bidsLoading && (myBids?.length ?? 0) > 0 && (
                 myBids?.map((bid) => (
                   <TableRow key={bid.id} hover>
                     <TableCell>

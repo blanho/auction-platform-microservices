@@ -230,7 +230,7 @@ export function MyAuctionsPage() {
 
   if (isLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <Skeleton variant="text" width={200} height={40} sx={{ mb: 2 }} />
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[1, 2, 3, 4].map((i) => (
@@ -245,9 +245,9 @@ export function MyAuctionsPage() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
           <Box>
             <Typography
               variant="h4"

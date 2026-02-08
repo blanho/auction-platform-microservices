@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Bid.Placed" xml:space="preserve"><value>入札が完了しました</value></data>
+  <data name="Bid.NotFound" xml:space="preserve"><value>入札が見つかりません</value></data>
+  <data name="Bid.TooLow" xml:space="preserve"><value>入札額は現在の最高入札額より高くなければなりません</value></data>
+  <data name="Bid.BelowMinimum" xml:space="preserve"><value>入札額は少なくとも{0}以上でなければなりません</value></data>
+  <data name="Bid.BelowIncrement" xml:space="preserve"><value>入札額は現在の入札額より{0}以上高くなければなりません</value></data>
+  <data name="Bid.AuctionClosed" xml:space="preserve"><value>終了したオークションには入札できません</value></data>
+  <data name="Bid.AuctionNotStarted" xml:space="preserve"><value>オークション開始前に入札することはできません</value></data>
+  <data name="Bid.SellerCannotBid" xml:space="preserve"><value>出品者は自分のオークションに入札できません</value></data>
+  <data name="Bid.AlreadyHighestBidder" xml:space="preserve"><value>あなたは既に最高入札者です</value></data>
+  <data name="Bid.Retracted" xml:space="preserve"><value>入札が取り消されました</value></data>
+  <data name="Bid.CannotRetract" xml:space="preserve"><value>現在、入札を取り消すことはできません</value></data>
+  <data name="Bid.InvalidAmount" xml:space="preserve"><value>無効な入札金額です</value></data>
+  <data name="Bid.Outbid" xml:space="preserve"><value>より高い入札がありました</value></data>
+  <data name="Bid.Won" xml:space="preserve"><value>おめでとうございます！オークションに落札しました</value></data>
+  <data name="Bid.Lost" xml:space="preserve"><value>このオークションでは落札できませんでした</value></data>
+  
+  <data name="AutoBid.Created" xml:space="preserve"><value>自動入札が設定されました</value></data>
+  <data name="AutoBid.Updated" xml:space="preserve"><value>自動入札が更新されました</value></data>
+  <data name="AutoBid.Deleted" xml:space="preserve"><value>自動入札が削除されました</value></data>
+  <data name="AutoBid.InvalidMaxAmount" xml:space="preserve"><value>最高入札額は現在の入札額より大きくなければなりません</value></data>
+  <data name="AutoBid.AlreadyExists" xml:space="preserve"><value>このオークションには既に自動入札が設定されています</value></data>
+  
+  <data name="Validation.AuctionIdRequired" xml:space="preserve"><value>オークションIDは必須です</value></data>
+  <data name="Validation.AmountRequired" xml:space="preserve"><value>入札金額は必須です</value></data>
+  <data name="Validation.AmountPositive" xml:space="preserve"><value>入札金額は正の数でなければなりません</value></data>
+</root>

@@ -1,14 +1,13 @@
 import { lazy, Suspense, type ComponentType } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { MainLayout } from '@/shared/components/layouts/MainLayout'
-import { AuthLayout } from '@/shared/components/layouts/AuthLayout'
 import { LandingLayout } from '@/shared/components/layouts/LandingLayout'
 import { LoadingScreen } from '@/shared/ui/LoadingScreen'
 import { ProtectedRoute } from '@/shared/components/auth/ProtectedRoute'
+import { GuestRoute } from '@/shared/components/auth/GuestRoute'
 
 const LandingPage = lazy(() =>
-  import('@/modules/home/pages/LandingPageEnhanced').then((m) => ({
-    default: m.LandingPageEnhanced,
+  import('@/modules/home/pages/LandingPage').then((m) => ({
+    default: m.LandingPage,
   }))
 )
 const HowItWorksPage = lazy(() =>
@@ -43,6 +42,9 @@ const ResetPasswordPage = lazy(() =>
 )
 const ConfirmEmailPage = lazy(() =>
   import('@/modules/auth/pages/ConfirmEmailPage').then((m) => ({ default: m.ConfirmEmailPage }))
+)
+const OAuthCallbackPage = lazy(() =>
+  import('@/modules/auth/pages/OAuthCallbackPage').then((m) => ({ default: m.OAuthCallbackPage }))
 )
 
 const DashboardPage = lazy(() =>
@@ -225,15 +227,15 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: withSuspense(LoginPage),
+    element: <GuestRoute>{withSuspense(LoginPage)}</GuestRoute>,
   },
   {
     path: '/register',
-    element: withSuspense(RegisterPage),
+    element: <GuestRoute>{withSuspense(RegisterPage)}</GuestRoute>,
   },
   {
     path: '/forgot-password',
-    element: withSuspense(ForgotPasswordPage),
+    element: <GuestRoute>{withSuspense(ForgotPasswordPage)}</GuestRoute>,
   },
   {
     path: '/reset-password',
@@ -244,7 +246,11 @@ export const router = createBrowserRouter([
     element: withSuspense(ConfirmEmailPage),
   },
   {
-    element: <MainLayout />,
+    path: '/auth/callback',
+    element: withSuspense(OAuthCallbackPage),
+  },
+  {
+    element: <LandingLayout />,
     children: [
       { path: '/auctions', element: withSuspense(AuctionsPage) },
       { path: '/browse', element: withSuspense(AuctionListingPage) },

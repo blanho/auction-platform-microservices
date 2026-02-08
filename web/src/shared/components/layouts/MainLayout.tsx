@@ -24,7 +24,6 @@ import {
 } from '@mui/material'
 import {
   Menu as MenuIcon,
-  Gavel as GavelIcon,
   Notifications as NotificationsIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
@@ -34,11 +33,13 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Search as SearchIcon,
+  Gavel as GavelIcon,
 } from '@mui/icons-material'
 import { useAuth, useThemeMode } from '@/app/providers'
 import { useNotificationSummary } from '@/modules/notifications/hooks'
 import { LanguageSwitcher } from '../inputs'
 import { SearchAutocomplete } from '@/modules/search/components/SearchAutocomplete'
+import { typography } from '@/shared/theme/tokens'
 
 export const MainLayout = () => {
   const { t } = useTranslation()
@@ -77,10 +78,19 @@ export const MainLayout = () => {
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Auction Platform
+      <Typography
+        sx={{
+          my: 2,
+          fontFamily: typography.fontFamily.display,
+          fontWeight: typography.fontWeight.medium,
+          fontSize: '1.125rem',
+          letterSpacing: '0.08em',
+          color: '#1C1917',
+        }}
+      >
+        THE AUCTION
       </Typography>
-      <Divider />
+      <Divider sx={{ borderColor: '#E7E5E4' }} />
       <List>
         {navItems.map((item) => (
           <ListItem key={item.path} disablePadding>
@@ -88,9 +98,27 @@ export const MainLayout = () => {
               component={Link}
               to={item.path}
               selected={location.pathname === item.path}
+              sx={{
+                '&.Mui-selected': {
+                  bgcolor: '#FAFAF9',
+                  borderRight: '2px solid #1C1917',
+                },
+              }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemIcon sx={{ color: '#57534E' }}>{item.icon}</ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                slotProps={{
+                  primary: {
+                    sx: {
+                      fontSize: '0.8125rem',
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                    },
+                  },
+                }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
@@ -100,50 +128,67 @@ export const MainLayout = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="sticky" elevation={1}>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          bgcolor: '#FFFFFF',
+          borderBottom: '1px solid #E7E5E4',
+        }}
+      >
         <Container maxWidth="xl">
-          <Toolbar disableGutters>
+          <Toolbar disableGutters sx={{ minHeight: { xs: 56, sm: 64 } }}>
             <IconButton
-              color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
+              sx={{ mr: 2, display: { sm: 'none' }, color: '#1C1917' }}
             >
               <MenuIcon />
             </IconButton>
 
-            <GavelIcon sx={{ display: { xs: 'none', sm: 'flex' }, mr: 1 }} />
             <Typography
-              variant="h6"
               noWrap
               component={Link}
               to="/"
               sx={{
-                mr: 2,
+                mr: 4,
                 display: { xs: 'none', sm: 'flex' },
-                fontWeight: 700,
-                color: 'inherit',
+                fontFamily: typography.fontFamily.display,
+                fontWeight: typography.fontWeight.medium,
+                fontSize: '1.125rem',
+                letterSpacing: '0.08em',
+                color: '#1C1917',
                 textDecoration: 'none',
               }}
             >
-              Auction
+              THE AUCTION
             </Typography>
 
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-              {navItems.map((item) => (
-                <Button
-                  key={item.path}
-                  component={Link}
-                  to={item.path}
-                  sx={{
-                    color: 'white',
-                    opacity: location.pathname === item.path ? 1 : 0.8,
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path
+                return (
+                  <Button
+                    key={item.path}
+                    component={Link}
+                    to={item.path}
+                    sx={{
+                      color: isActive ? '#1C1917' : '#78716C',
+                      fontSize: '0.75rem',
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      px: 2,
+                      borderBottom: isActive ? '2px solid #1C1917' : '2px solid transparent',
+                      borderRadius: 0,
+                      '&:hover': { color: '#1C1917', bgcolor: 'transparent' },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                )
+              })}
             </Box>
 
             <Box
@@ -151,7 +196,7 @@ export const MainLayout = () => {
                 flexGrow: 1,
                 display: { xs: 'none', md: 'flex' },
                 justifyContent: 'center',
-                maxWidth: 400,
+                maxWidth: 360,
                 mx: 2,
               }}
             >
@@ -161,23 +206,22 @@ export const MainLayout = () => {
               />
             </Box>
 
-            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <IconButton
-                color="inherit"
-                sx={{ display: { xs: 'flex', md: 'none' } }}
+                sx={{ display: { xs: 'flex', md: 'none' }, color: '#1C1917' }}
                 onClick={() => navigate('/search')}
               >
                 <SearchIcon />
               </IconButton>
               <LanguageSwitcher />
-              <IconButton color="inherit" onClick={toggleTheme}>
+              <IconButton onClick={toggleTheme} sx={{ color: '#57534E' }}>
                 {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
               </IconButton>
 
               {isAuthenticated ? (
                 <>
                   <Tooltip title={t('nav.notifications') || 'Notifications'}>
-                    <IconButton color="inherit" component={Link} to="/notifications">
+                    <IconButton component={Link} to="/notifications" sx={{ color: '#57534E' }}>
                       <Badge badgeContent={notificationSummary?.unreadCount || 0} color="error">
                         <NotificationsIcon />
                       </Badge>
@@ -185,11 +229,18 @@ export const MainLayout = () => {
                   </Tooltip>
 
                   <Tooltip title="Account settings">
-                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, ml: 1 }}>
                       <Avatar
                         alt={user?.displayName}
                         src={user?.avatarUrl}
-                        sx={{ width: 32, height: 32 }}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: '#F5F5F4',
+                          color: '#57534E',
+                          fontFamily: typography.fontFamily.display,
+                          fontSize: '0.875rem',
+                        }}
                       />
                     </IconButton>
                   </Tooltip>
@@ -197,17 +248,22 @@ export const MainLayout = () => {
                     sx={{ mt: '45px' }}
                     id="menu-appbar"
                     anchorEl={anchorElUser}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     open={Boolean(anchorElUser)}
                     onClose={handleCloseUserMenu}
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          bgcolor: '#FFFFFF',
+                          border: '1px solid #E7E5E4',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                          borderRadius: 0,
+                          minWidth: 180,
+                        },
+                      },
+                    }}
                   >
                     <MenuItem
                       onClick={() => {
@@ -216,9 +272,9 @@ export const MainLayout = () => {
                       }}
                     >
                       <ListItemIcon>
-                        <PersonIcon fontSize="small" />
+                        <PersonIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      Profile
+                      <Typography sx={{ fontSize: '0.8125rem' }}>Profile</Typography>
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
@@ -227,25 +283,50 @@ export const MainLayout = () => {
                       }}
                     >
                       <ListItemIcon>
-                        <SettingsIcon fontSize="small" />
+                        <SettingsIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      Settings
+                      <Typography sx={{ fontSize: '0.8125rem' }}>Settings</Typography>
                     </MenuItem>
-                    <Divider />
+                    <Divider sx={{ borderColor: '#E7E5E4' }} />
                     <MenuItem onClick={handleLogout}>
                       <ListItemIcon>
-                        <LogoutIcon fontSize="small" />
+                        <LogoutIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      Logout
+                      <Typography sx={{ fontSize: '0.8125rem' }}>Logout</Typography>
                     </MenuItem>
                   </Menu>
                 </>
               ) : (
                 <>
-                  <Button color="inherit" component={Link} to="/login">
+                  <Button
+                    component={Link}
+                    to="/login"
+                    sx={{
+                      color: '#1C1917',
+                      fontSize: '0.75rem',
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     Login
                   </Button>
-                  <Button variant="contained" color="secondary" component={Link} to="/register">
+                  <Button
+                    variant="contained"
+                    component={Link}
+                    to="/register"
+                    sx={{
+                      bgcolor: '#1C1917',
+                      color: '#FFFFFF',
+                      fontSize: '0.75rem',
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      borderRadius: 0,
+                      boxShadow: 'none',
+                      '&:hover': { bgcolor: '#292524', boxShadow: 'none' },
+                    }}
+                  >
                     Sign Up
                   </Button>
                 </>
@@ -259,18 +340,21 @@ export const MainLayout = () => {
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true,
-        }}
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 260,
+            bgcolor: '#FFFFFF',
+            borderRight: '1px solid #E7E5E4',
+          },
         }}
       >
         {drawer}
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: '#FFFFFF' }}>
         <Outlet />
       </Box>
 
@@ -280,13 +364,20 @@ export const MainLayout = () => {
           py: 3,
           px: 2,
           mt: 'auto',
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
+          bgcolor: '#FAFAF9',
+          borderTop: '1px solid #E7E5E4',
         }}
       >
         <Container maxWidth="xl">
-          <Typography variant="body2" color="text.secondary" align="center">
-            © {new Date().getFullYear()} Auction Platform. All rights reserved.
+          <Typography
+            align="center"
+            sx={{
+              color: '#A8A29E',
+              fontSize: '0.75rem',
+              letterSpacing: '0.05em',
+            }}
+          >
+            © {new Date().getFullYear()} The Auction. All rights reserved.
           </Typography>
         </Container>
       </Box>

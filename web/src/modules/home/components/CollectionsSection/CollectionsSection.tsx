@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Box, Container, Typography, Grid } from '@mui/material'
 import { useMemo } from 'react'
 import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
-import { colors, typography, transitions } from '@/shared/theme/tokens'
+import { typography } from '@/shared/theme/tokens'
 
 export const CollectionsSection = () => {
   const { data: categoriesData } = useActiveCategories()
@@ -15,34 +15,38 @@ export const CollectionsSection = () => {
   }, [categoriesData])
 
   return (
-    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: colors.background.secondary }}>
-      <Container maxWidth="lg">
+    <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+
+      <Container maxWidth="lg" sx={{ position: 'relative' }}>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: transitions.duration.normal }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
         >
-          <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Box sx={{ textAlign: 'center', mb: 10 }}>
             <Typography
-              variant="overline"
               sx={{
-                color: colors.gold.primary,
-                letterSpacing: 4,
+                color: '#78716C',
+                letterSpacing: '0.2em',
                 display: 'block',
-                mb: 1,
+                mb: 2,
                 fontFamily: typography.fontFamily.body,
+                fontSize: '0.6875rem',
+                fontWeight: typography.fontWeight.medium,
+                textTransform: 'uppercase',
               }}
             >
-              CURATED COLLECTIONS
+              Curated Collections
             </Typography>
             <Typography
               variant="h2"
               sx={{
                 fontFamily: typography.fontFamily.display,
-                color: colors.text.primary,
+                color: '#1C1917',
                 fontWeight: typography.fontWeight.regular,
-                fontSize: { xs: '2rem', md: '3rem' },
+                fontSize: { xs: '1.75rem', md: '2.5rem' },
               }}
             >
               Featured Galleries
@@ -52,7 +56,7 @@ export const CollectionsSection = () => {
 
         {collections.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography sx={{ color: '#A8A29E', fontSize: '0.9rem' }}>
               No collections available right now.
             </Typography>
           </Box>
@@ -61,10 +65,10 @@ export const CollectionsSection = () => {
             {collections.map((collection, index) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={collection.id}>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: transitions.duration.normal }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
                 >
                   <Box
                     component={Link}
@@ -72,17 +76,10 @@ export const CollectionsSection = () => {
                     sx={{
                       display: 'block',
                       position: 'relative',
-                      borderRadius: 3,
                       overflow: 'hidden',
                       cursor: 'pointer',
                       textDecoration: 'none',
-                      '&:hover .collection-image': {
-                        transform: 'scale(1.05)',
-                      },
-                      '&:hover .collection-overlay': {
-                        background:
-                          'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
-                      },
+                      '&:hover .collection-image': { transform: 'scale(1.04)' },
                     }}
                   >
                     {collection.imageUrl ? (
@@ -94,7 +91,7 @@ export const CollectionsSection = () => {
                           backgroundImage: `url(${collection.imageUrl})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
-                          transition: `transform ${transitions.duration.slow}s ease`,
+                          transition: 'transform 0.6s ease',
                         }}
                       />
                     ) : (
@@ -103,62 +100,42 @@ export const CollectionsSection = () => {
                         sx={{
                           width: '100%',
                           aspectRatio: '3/4',
-                          background: colors.background.tertiary,
+                          bgcolor: '#F5F5F4',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontFamily: typography.fontFamily.display,
-                          fontSize: '2rem',
-                          fontWeight: typography.fontWeight.semibold,
-                          color: colors.text.primary,
-                          transition: `transform ${transitions.duration.slow}s ease`,
+                          fontSize: '3rem',
+                          fontWeight: typography.fontWeight.light,
+                          color: '#A8A29E',
+                          transition: 'transform 0.6s ease',
                         }}
                       >
                         {collection.name.charAt(0)}
                       </Box>
                     )}
                     <Box
-                      className="collection-overlay"
                       sx={{
                         position: 'absolute',
                         inset: 0,
-                        background:
-                          'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
-                        transition: `background ${transitions.duration.normal}s ease`,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
                       }}
                     />
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        p: 3,
-                      }}
-                    >
+                    <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 3 }}>
                       <Typography
-                        variant="h6"
                         sx={{
                           fontFamily: typography.fontFamily.display,
-                          color: colors.text.primary,
-                          fontWeight: typography.fontWeight.semibold,
-                          fontSize: '1.25rem',
-                          mb: 1,
+                          color: '#FFFFFF',
+                          fontWeight: typography.fontWeight.medium,
+                          fontSize: '1.125rem',
+                          mb: 0.5,
                         }}
                       >
                         {collection.name}
                       </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Typography variant="caption" sx={{ color: colors.text.subtle }}>
-                          {collection.auctionCount ?? 0} items
-                        </Typography>
-                      </Box>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
+                        {collection.auctionCount ?? 0} items
+                      </Typography>
                     </Box>
                   </Box>
                 </motion.div>

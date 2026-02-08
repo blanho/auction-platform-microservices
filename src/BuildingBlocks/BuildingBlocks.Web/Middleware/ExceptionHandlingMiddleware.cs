@@ -1,4 +1,5 @@
 using System.Net;
+using BuildingBlocks.Application.Localization;
 using BuildingBlocks.Domain.Exceptions;
 using BuildingBlocks.Web.Constants;
 using BuildingBlocks.Web.Exceptions;
@@ -79,12 +80,14 @@ public static class ExceptionHandlingMiddleware
 
     private static Task WriteDomainExceptionAsync(HttpContext context, DomainException ex)
     {
+        var localizer = context.RequestServices.GetService<ILocalizationService>();
+        
         var (status, title) = ex switch
         {
-            EntityNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
-            DomainConflictException => (HttpStatusCode.Conflict, "Operation conflict"),
-            InvalidEntityStateException => (HttpStatusCode.BadRequest, "Invalid operation"),
-            DomainInvariantException => (HttpStatusCode.BadRequest, "Business rule violation"),
+            EntityNotFoundException => (HttpStatusCode.NotFound, localizer?[LocalizationKeys.Errors.NotFound] ?? "Resource not found"),
+            DomainConflictException => (HttpStatusCode.Conflict, localizer?[LocalizationKeys.Errors.Conflict] ?? "Operation conflict"),
+            InvalidEntityStateException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid operation"),
+            DomainInvariantException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.ValidationFailed] ?? "Business rule violation"),
             _ => (HttpStatusCode.BadRequest, "Domain error")
         };
 
@@ -111,35 +114,36 @@ public static class ExceptionHandlingMiddleware
     {
         var env = context.RequestServices.GetService<IWebHostEnvironment>();
         var logger = context.RequestServices.GetService<ILogger<ProblemDetails>>();
+        var localizer = context.RequestServices.GetService<ILocalizationService>();
         var isDevelopment = env?.IsDevelopment() ?? false;
 
         var status = HttpStatusCode.InternalServerError;
-        var title = "An unexpected error occurred.";
+        var title = localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An unexpected error occurred.";
 
         if (ex is ArgumentException or ArgumentNullException)
         {
             status = HttpStatusCode.BadRequest;
-            title = "Invalid argument";
+            title = localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid argument";
         }
         else if (ex is UnauthorizedAccessException)
         {
             status = HttpStatusCode.Unauthorized;
-            title = "Unauthorized";
+            title = localizer?[LocalizationKeys.Errors.Unauthorized] ?? "Unauthorized";
         }
         else if (ex is KeyNotFoundException)
         {
             status = HttpStatusCode.NotFound;
-            title = "Resource not found";
+            title = localizer?[LocalizationKeys.Errors.NotFound] ?? "Resource not found";
         }
         else if (ex is InvalidOperationException)
         {
             status = HttpStatusCode.BadRequest;
-            title = "Invalid operation";
+            title = localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid operation";
         }
         else if (ex is TimeoutException or OperationCanceledException)
         {
             status = HttpStatusCode.GatewayTimeout;
-            title = "Request timeout";
+            title = localizer?[LocalizationKeys.Errors.ServiceUnavailable] ?? "Request timeout";
         }
 
         if (status == HttpStatusCode.InternalServerError)
@@ -150,7 +154,7 @@ public static class ExceptionHandlingMiddleware
         var detail = isDevelopment
             ? ex.Message
             : status == HttpStatusCode.InternalServerError
-                ? "An internal server error occurred. Please try again later."
+                ? localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An internal server error occurred. Please try again later."
                 : ex.Message;
 
         var problem = new ProblemDetails

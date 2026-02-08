@@ -1,3 +1,4 @@
+using Carter;
 using Notification.Api.Extensions.DependencyInjection;
 using Notification.Api.Hubs;
 using Notification.Api.Services;
@@ -65,6 +66,7 @@ builder.Services.AddCustomHealthChecks(
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "NotificationService");
+builder.Services.AddCarter();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -96,6 +98,7 @@ app.UseCors("SignalRCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAccessAuthorization();
+app.MapCarter();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
 

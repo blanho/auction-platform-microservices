@@ -57,6 +57,7 @@ public class AuthService(
             return Result.Failure<UserDto>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Registration failed", errors));
         }
 
+        await userService.EnsureRoleExistsAsync(AppRoles.User);
         var roleResult = await userService.AddToRoleAsync(user, AppRoles.User);
         if (!roleResult.Succeeded)
         {
@@ -382,6 +383,7 @@ public class AuthService(
                 return Result.Failure<ExternalAuthResult>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Failed to create account", errors));
             }
 
+            await userService.EnsureRoleExistsAsync(AppRoles.User);
             await userService.AddToRoleAsync(user, AppRoles.User);
 
             await mediator.Publish(new UserCreatedDomainEvent

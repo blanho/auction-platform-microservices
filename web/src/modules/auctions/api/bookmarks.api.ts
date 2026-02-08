@@ -33,10 +33,20 @@ export interface WatchlistFilters extends QueryParameters {
   status?: 'active' | 'ended' | 'all'
 }
 
+interface PaginatedWatchlistResponse {
+  items: WatchlistItem[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
 export const bookmarksApi = {
   async getWatchlist(filters?: WatchlistFilters): Promise<WatchlistItem[]> {
-    const response = await http.get<WatchlistItem[]>('/bookmarks/watchlist', { params: filters })
-    return response.data
+    const response = await http.get<PaginatedWatchlistResponse | WatchlistItem[]>('/bookmarks/watchlist', { params: filters })
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return response.data.items ?? []
   },
 
   async getWatchlistCount(): Promise<number> {

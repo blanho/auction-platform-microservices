@@ -1,6 +1,6 @@
 export const fontFamily = {
-  display: '"Cormorant Garamond", Georgia, serif',
-  body: '"Montserrat", system-ui, sans-serif',
+  display: '"Playfair Display", Georgia, serif',
+  body: '"Inter", system-ui, -apple-system, sans-serif',
   mono: '"JetBrains Mono", "Fira Code", monospace',
 } as const
 

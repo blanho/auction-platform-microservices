@@ -1,0 +1,1 @@
+export { FreshArrivalsSection } from './FreshArrivalsSection'

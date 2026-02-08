@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Payment.NotFound" xml:space="preserve"><value>Payment not found</value></data>
+  <data name="Payment.Successful" xml:space="preserve"><value>Payment successful</value></data>
+  <data name="Payment.Failed" xml:space="preserve"><value>Payment failed</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>Payment is pending</value></data>
+  <data name="Payment.Cancelled" xml:space="preserve"><value>Payment has been cancelled</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>Payment has been refunded</value></data>
+  <data name="Payment.AlreadyProcessed" xml:space="preserve"><value>Payment has already been processed</value></data>
+  <data name="Payment.InvalidAmount" xml:space="preserve"><value>Invalid payment amount</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>Insufficient funds</value></data>
+  <data name="Payment.CardDeclined" xml:space="preserve"><value>Card was declined</value></data>
+  <data name="Payment.CardExpired" xml:space="preserve"><value>Card has expired</value></data>
+  <data name="Payment.InvalidCard" xml:space="preserve"><value>Invalid card details</value></data>
+  
+  <data name="Refund.NotFound" xml:space="preserve"><value>Refund not found</value></data>
+  <data name="Refund.Successful" xml:space="preserve"><value>Refund processed successfully</value></data>
+  <data name="Refund.Failed" xml:space="preserve"><value>Refund failed</value></data>
+  <data name="Refund.Pending" xml:space="preserve"><value>Refund is pending</value></data>
+  <data name="Refund.AlreadyProcessed" xml:space="preserve"><value>Refund has already been processed</value></data>
+  <data name="Refund.ExceedsPayment" xml:space="preserve"><value>Refund amount exceeds original payment</value></data>
+  
+  <data name="Transaction.NotFound" xml:space="preserve"><value>Transaction not found</value></data>
+  <data name="Transaction.Created" xml:space="preserve"><value>Transaction created</value></data>
+  <data name="Transaction.Completed" xml:space="preserve"><value>Transaction completed</value></data>
+  
+  <data name="PaymentMethod.NotFound" xml:space="preserve"><value>Payment method not found</value></data>
+  <data name="PaymentMethod.Added" xml:space="preserve"><value>Payment method added successfully</value></data>
+  <data name="PaymentMethod.Removed" xml:space="preserve"><value>Payment method removed successfully</value></data>
+  <data name="PaymentMethod.SetAsDefault" xml:space="preserve"><value>Payment method set as default</value></data>
+  
+  <data name="Validation.AmountRequired" xml:space="preserve"><value>Amount is required</value></data>
+  <data name="Validation.AmountPositive" xml:space="preserve"><value>Amount must be positive</value></data>
+  <data name="Validation.CurrencyRequired" xml:space="preserve"><value>Currency is required</value></data>
+  <data name="Validation.PaymentMethodRequired" xml:space="preserve"><value>Payment method is required</value></data>
+</root>

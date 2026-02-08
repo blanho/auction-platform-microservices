@@ -68,17 +68,28 @@ export const PromoBanner = ({
     setCurrentIndex((prev) => (prev + 1) % resolvedPromotions.length)
   }
 
-  if (!isVisible || resolvedPromotions.length === 0) {return null}
+  if (!isVisible) {
+    return null
+  }
 
-  const currentPromo = resolvedPromotions[currentIndex]
+  const hasPromotions = resolvedPromotions.length > 0
+  const currentPromo = hasPromotions ? resolvedPromotions[currentIndex] : null
+  const displayText = currentPromo?.text || 'Free Shipping on Orders Over $500'
+  const displayLink = currentPromo?.link
+  const displayLinkText = currentPromo?.linkText || 'Shop Now'
+  const displayBgColor = currentPromo?.bgColor || palette.neutral[900]
 
   return (
     <Box
       sx={{
-        bgcolor: currentPromo.bgColor || palette.neutral[900],
+        bgcolor: displayBgColor,
         color: palette.neutral[50],
         py: 1.25,
-        position: 'relative',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1201,
       }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -93,7 +104,7 @@ export const PromoBanner = ({
             position: 'relative',
           }}
         >
-          {resolvedPromotions.length > 1 && (
+          {hasPromotions && resolvedPromotions.length > 1 && (
             <IconButton
               size="small"
               onClick={handlePrev}
@@ -126,31 +137,31 @@ export const PromoBanner = ({
                 textAlign: 'center',
               }}
             >
-              {currentPromo.text}
+              {displayText}
             </Typography>
 
-            {currentPromo.link && currentPromo.linkText && (
+            {displayLink && (
               <Typography
                 component={Link}
-                to={currentPromo.link}
+                to={displayLink}
                 sx={{
-                  color: palette.brand.primary,
+                  color: palette.neutral[50],
                   fontSize: '0.8rem',
                   fontWeight: 500,
                   textDecoration: 'underline',
                   textUnderlineOffset: 2,
                   whiteSpace: 'nowrap',
                   '&:hover': {
-                    color: palette.brand.secondary,
+                    color: palette.neutral[200],
                   },
                 }}
               >
-                {currentPromo.linkText}
+                {displayLinkText}
               </Typography>
             )}
           </Box>
 
-          {resolvedPromotions.length > 1 && (
+          {hasPromotions && resolvedPromotions.length > 1 && (
             <IconButton
               size="small"
               onClick={handleNext}
@@ -181,7 +192,7 @@ export const PromoBanner = ({
           </IconButton>
         </Box>
 
-        {resolvedPromotions.length > 1 && (
+        {hasPromotions && resolvedPromotions.length > 1 && (
           <Box
             sx={{
               display: 'flex',
@@ -198,7 +209,7 @@ export const PromoBanner = ({
                   width: 5,
                   height: 5,
                   borderRadius: '50%',
-                  bgcolor: index === currentIndex ? palette.brand.primary : 'rgba(250,250,249,0.3)',
+                  bgcolor: index === currentIndex ? palette.neutral[50] : 'rgba(250,250,249,0.3)',
                   cursor: 'pointer',
                   transition: 'background-color 0.2s ease',
                 }}

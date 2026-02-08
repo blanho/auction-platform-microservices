@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  
+  <data name="Search.NoResults" xml:space="preserve"><value>No results found</value></data>
+  <data name="Search.ResultsFound" xml:space="preserve"><value>{0} results found</value></data>
+  <data name="Search.InvalidQuery" xml:space="preserve"><value>Invalid search query</value></data>
+  <data name="Search.QueryTooShort" xml:space="preserve"><value>Search query must be at least {0} characters</value></data>
+  <data name="Search.QueryTooLong" xml:space="preserve"><value>Search query must not exceed {0} characters</value></data>
+  
+  <data name="Filter.InvalidCategory" xml:space="preserve"><value>Invalid category filter</value></data>
+  <data name="Filter.InvalidPriceRange" xml:space="preserve"><value>Invalid price range</value></data>
+  <data name="Filter.InvalidDateRange" xml:space="preserve"><value>Invalid date range</value></data>
+  <data name="Filter.InvalidStatus" xml:space="preserve"><value>Invalid status filter</value></data>
+  
+  <data name="Sort.InvalidField" xml:space="preserve"><value>Invalid sort field</value></data>
+  <data name="Sort.InvalidOrder" xml:space="preserve"><value>Invalid sort order</value></data>
+  
+  <data name="Index.Rebuilding" xml:space="preserve"><value>Search index is being rebuilt</value></data>
+  <data name="Index.RebuildComplete" xml:space="preserve"><value>Search index rebuild complete</value></data>
+  <data name="Index.RebuildFailed" xml:space="preserve"><value>Search index rebuild failed</value></data>
+  
+  <data name="Suggestion.NoSuggestions" xml:space="preserve"><value>No suggestions available</value></data>
+  
+  <data name="Validation.PageRequired" xml:space="preserve"><value>Page number is required</value></data>
+  <data name="Validation.PageSizeRequired" xml:space="preserve"><value>Page size is required</value></data>
+  <data name="Validation.InvalidPageNumber" xml:space="preserve"><value>Page number must be greater than zero</value></data>
+  <data name="Validation.InvalidPageSize" xml:space="preserve"><value>Page size must be between 1 and 100</value></data>
+</root>

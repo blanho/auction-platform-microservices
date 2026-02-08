@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <!-- Errors -->
+  <data name="Error.NotFound" xml:space="preserve"><value>要求されたリソースが見つかりませんでした。</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>リソースの現在の状態と競合が発生しました。</value></data>
+  <data name="Error.Unauthorized" xml:space="preserve"><value>このリソースにアクセスするには認証が必要です。</value></data>
+  <data name="Error.Forbidden" xml:space="preserve"><value>このリソースにアクセスする権限がありません。</value></data>
+  <data name="Error.ValidationFailed" xml:space="preserve"><value>1つ以上の検証エラーが発生しました。</value></data>
+  <data name="Error.InternalServerError" xml:space="preserve"><value>予期しないエラーが発生しました。後でもう一度お試しください。</value></data>
+  <data name="Error.BadRequest" xml:space="preserve"><value>リクエストが無効か、処理できません。</value></data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve"><value>サービスは一時的に利用できません。後でもう一度お試しください。</value></data>
+
+  <!-- Validation -->
+  <data name="Validation.Required" xml:space="preserve"><value>{0}フィールドは必須です。</value></data>
+  <data name="Validation.MaxLength" xml:space="preserve"><value>{0}フィールドは{1}文字を超えてはいけません。</value></data>
+  <data name="Validation.MinLength" xml:space="preserve"><value>{0}フィールドは少なくとも{1}文字必要です。</value></data>
+  <data name="Validation.InvalidEmail" xml:space="preserve"><value>メールアドレスが無効です。</value></data>
+  <data name="Validation.InvalidFormat" xml:space="preserve"><value>{0}フィールドの形式が無効です。</value></data>
+  <data name="Validation.MustBePositive" xml:space="preserve"><value>{0}フィールドは正の数でなければなりません。</value></data>
+  <data name="Validation.MustBeInRange" xml:space="preserve"><value>{0}フィールドは{1}から{2}の間でなければなりません。</value></data>
+  <data name="Validation.InvalidDate" xml:space="preserve"><value>{0}フィールドに無効な日付が含まれています。</value></data>
+  <data name="Validation.FutureDate" xml:space="preserve"><value>{0}フィールドは将来の日付でなければなりません。</value></data>
+  <data name="Validation.PastDate" xml:space="preserve"><value>{0}フィールドは過去の日付でなければなりません。</value></data>
+
+  <!-- Auction -->
+  <data name="Auction.NotFound" xml:space="preserve"><value>オークションが見つかりません。</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>このオークションはすでに終了しています。</value></data>
+  <data name="Auction.NotStarted" xml:space="preserve"><value>このオークションはまだ開始されていません。</value></data>
+  <data name="Auction.BidTooLow" xml:space="preserve"><value>入札額は現在の入札額{0}より高くなければなりません。</value></data>
+  <data name="Auction.CannotBidOwnAuction" xml:space="preserve"><value>自分のオークションに入札することはできません。</value></data>
+  <data name="Auction.InvalidStatus" xml:space="preserve"><value>オークションの状態がこの操作を許可していません。</value></data>
+  <data name="Auction.Created" xml:space="preserve"><value>オークションが正常に作成されました。</value></data>
+  <data name="Auction.Updated" xml:space="preserve"><value>オークションが正常に更新されました。</value></data>
+  <data name="Auction.Deleted" xml:space="preserve"><value>オークションが正常に削除されました。</value></data>
+
+  <!-- User -->
+  <data name="User.NotFound" xml:space="preserve"><value>ユーザーが見つかりません。</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>このメールアドレスのユーザーはすでに存在します。</value></data>
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>メールアドレスまたはパスワードが無効です。</value></data>
+  <data name="User.AccountLocked" xml:space="preserve"><value>アカウントがロックされています。サポートにお問い合わせください。</value></data>
+  <data name="User.EmailNotConfirmed" xml:space="preserve"><value>ログインする前にメールアドレスを確認してください。</value></data>
+  <data name="User.PasswordResetSent" xml:space="preserve"><value>パスワードリセットの手順がメールに送信されました。</value></data>
+  <data name="User.PasswordChanged" xml:space="preserve"><value>パスワードが正常に変更されました。</value></data>
+  <data name="User.ProfileUpdated" xml:space="preserve"><value>プロフィールが正常に更新されました。</value></data>
+
+  <!-- Payment -->
+  <data name="Payment.Failed" xml:space="preserve"><value>支払い処理に失敗しました。もう一度お試しください。</value></data>
+  <data name="Payment.Succeeded" xml:space="preserve"><value>支払いが正常に処理されました。</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>支払いを処理中です。</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>支払いが返金されました。</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>この取引を完了するための資金が不足しています。</value></data>
+
+  <!-- Common -->
+  <data name="Common.Success" xml:space="preserve"><value>操作が正常に完了しました。</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>操作に失敗しました。</value></data>
+  <data name="Common.Loading" xml:space="preserve"><value>読み込み中...</value></data>
+  <data name="Common.NoResults" xml:space="preserve"><value>結果が見つかりません。</value></data>
+  <data name="Common.OperationCompleted" xml:space="preserve"><value>操作が完了しました。</value></data>
+</root>

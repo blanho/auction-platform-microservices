@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/app/hooks/useAuth'
 import { notificationsApi } from '../api'
 import type {
   NotificationFilters,
@@ -22,38 +23,21 @@ export const notificationKeys = {
 }
 
 export const useNotifications = (filters: NotificationFilters) => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: notificationKeys.list(filters),
-    queryFn: async () => {
-      const allNotifications = await notificationsApi.getNotifications(filters)
-
-      const page = filters.page || 1
-      const pageSize = filters.pageSize || 20
-      const startIndex = (page - 1) * pageSize
-      const endIndex = startIndex + pageSize
-
-      const items = allNotifications.slice(startIndex, endIndex)
-      const totalCount = allNotifications.length
-      const totalPages = Math.ceil(totalCount / pageSize)
-
-      return {
-        items,
-        page,
-        pageSize,
-        totalCount,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      }
-    },
+    queryFn: () => notificationsApi.getNotifications(filters),
+    enabled: isAuthenticated,
   })
 }
 
 export const useNotificationSummary = () => {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: notificationKeys.summary(),
     queryFn: () => notificationsApi.getSummary(),
     refetchInterval: 30000,
+    enabled: isAuthenticated,
   })
 }
 
