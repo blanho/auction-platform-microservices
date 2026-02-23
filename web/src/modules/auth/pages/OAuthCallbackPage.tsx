@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { motion } from 'framer-motion'
 import { useOAuthExchange } from '../hooks'
@@ -101,6 +101,23 @@ export function OAuthCallbackPage() {
       >
         <Box sx={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
           <motion.div initial="initial" animate="animate" variants={fadeInUp}>
+            <Typography
+              component={Link}
+              to="/"
+              sx={{
+                display: 'block',
+                fontFamily: '"Playfair Display", serif',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: '1.75rem',
+                color: palette.neutral[900],
+                textDecoration: 'none',
+                mb: 6,
+              }}
+            >
+              TheAuction
+            </Typography>
+
             {errorMessage ? (
               <>
                 <Typography

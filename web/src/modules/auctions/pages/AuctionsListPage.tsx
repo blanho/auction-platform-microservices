@@ -22,6 +22,7 @@ import { Search, Timer } from '@mui/icons-material'
 import { formatTimeLeft } from '../utils'
 import { useAuctions, useActiveCategories } from '../hooks'
 import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
+import { palette, typography } from '@/shared/theme/tokens'
 
 export const AuctionsListPage = () => {
   const [searchParams] = useSearchParams()
@@ -92,52 +93,109 @@ export const AuctionsListPage = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   textDecoration: 'none',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer',
+                  border: `1px solid ${palette.neutral[200]}`,
+                  boxShadow: 'none',
+                  borderRadius: 0,
+                  transition: 'border-color 0.3s ease',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
+                    borderColor: palette.neutral[900],
+                  },
+                  '&:hover .auction-card-image': {
+                    transform: 'scale(1.03)',
                   },
                 }}
               >
-                <Box sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'relative', overflow: 'hidden' }}>
                   <CardMedia
+                    className="auction-card-image"
                     component="img"
                     image={auction.primaryImageUrl || '/placeholder.jpg'}
                     alt={auction.title}
-                    sx={{ height: 180, objectFit: 'cover' }}
+                    sx={{
+                      height: 200,
+                      objectFit: 'cover',
+                      transition: 'transform 0.6s ease',
+                    }}
                   />
                   <StatusBadge
                     status={auction.status.replace('-', ' ')}
                     sx={{
                       position: 'absolute',
-                      top: 8,
-                      right: 8,
+                      top: 12,
+                      right: 12,
                       textTransform: 'capitalize',
                     }}
                   />
                 </Box>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600} noWrap gutterBottom>
-                    {auction.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
+                  <Typography
+                    sx={{
+                      color: palette.neutral[500],
+                      fontSize: '0.625rem',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      fontWeight: typography.fontWeight.medium,
+                      mb: 0.5,
+                    }}
+                  >
                     {auction.categoryName}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                    <Timer fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    sx={{
+                      fontWeight: typography.fontWeight.medium,
+                      fontSize: '0.9rem',
+                      color: palette.neutral[900],
+                      lineHeight: 1.4,
+                      mb: 1.5,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {auction.title}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
+                    <Timer sx={{ fontSize: 14, color: palette.neutral[400] }} />
+                    <Typography sx={{ fontSize: '0.75rem', color: palette.neutral[500] }}>
                       {formatTimeLeft(auction.endTime)}
                     </Typography>
                   </Box>
-                  <Typography variant="h6" fontWeight={700} color="primary">
-                    ${auction.currentBid.toLocaleString()}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {auction.bidCount} bids
-                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Typography
+                      sx={{
+                        fontWeight: typography.fontWeight.semibold,
+                        fontSize: '1rem',
+                        color: palette.neutral[900],
+                      }}
+                    >
+                      ${auction.currentBid.toLocaleString()}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: palette.neutral[400] }}>
+                      {auction.bidCount} bids
+                    </Typography>
+                  </Box>
                 </CardContent>
-                <Box sx={{ p: 2, pt: 0 }}>
-                  <Button variant="contained" fullWidth>
+                <Box sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      borderColor: palette.neutral[900],
+                      color: palette.neutral[900],
+                      fontSize: '0.75rem',
+                      fontWeight: typography.fontWeight.medium,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      borderRadius: 0,
+                      py: 1,
+                      '&:hover': {
+                        bgcolor: palette.neutral[900],
+                        color: palette.neutral[0],
+                        borderColor: palette.neutral[900],
+                      },
+                    }}
+                  >
                     View Details
                   </Button>
                 </Box>
@@ -161,11 +219,32 @@ export const AuctionsListPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+      <Box sx={{ mb: 5 }}>
+        <Typography
+          sx={{
+            color: palette.neutral[500],
+            letterSpacing: '0.2em',
+            fontSize: '0.6875rem',
+            fontWeight: typography.fontWeight.medium,
+            textTransform: 'uppercase',
+            mb: 1.5,
+          }}
+        >
+          Explore
+        </Typography>
+        <Typography
+          variant="h3"
+          sx={{
+            fontFamily: typography.fontFamily.display,
+            fontWeight: typography.fontWeight.regular,
+            color: palette.neutral[900],
+            fontSize: { xs: '1.75rem', md: '2.5rem' },
+            mb: 1,
+          }}
+        >
           Browse Auctions
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography sx={{ color: palette.neutral[500], fontSize: '1rem' }}>
           Find unique items and place your bids
         </Typography>
       </Box>
