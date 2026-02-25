@@ -2,7 +2,7 @@
 # Bidding Service Dockerfile
 # ==============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
 # Copy project files for restore
