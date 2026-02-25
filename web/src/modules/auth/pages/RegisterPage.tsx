@@ -157,7 +157,7 @@ export function RegisterPage() {
 
   const handleGoogleLogin = () => {
     const baseUrl = import.meta.env.VITE_API_URL || ''
-    const returnUrl = encodeURIComponent(globalThis.location.origin + '/auth/callback')
+    const returnUrl = encodeURIComponent(`${globalThis.location.origin}/auth/callback`)
     globalThis.location.href = `${baseUrl}/api/auth/external-login/Google?returnUrl=${returnUrl}`
   }
 

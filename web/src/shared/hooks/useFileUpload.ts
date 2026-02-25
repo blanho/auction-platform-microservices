@@ -295,9 +295,3 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
     remainingSlots,
   }
 }
-
-export function useDeleteFile() {
-  return useMutation({
-    mutationFn: (fileId: string) => storageApi.deleteFile(fileId),
-  })
-}

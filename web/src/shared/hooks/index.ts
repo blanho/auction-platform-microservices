@@ -1,3 +1,3 @@
 export { usePagination } from './usePagination'
 export type { UsePaginationOptions, UsePaginationReturn, PaginationInfo } from './usePagination'
-export { useFileUpload, useDeleteFile } from './useFileUpload'
+export { useFileUpload } from './useFileUpload'

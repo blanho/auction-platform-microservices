@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Typography, IconButton, Chip, Skeleton } from '@mui/material'
 import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
@@ -38,12 +38,13 @@ export const AuctionProductCard = ({
   isFavorited = false,
 }: AuctionProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isImageLoaded, setIsImageLoaded] = useState(images.length === 0)
+  const [imageLoadedForUrl, setImageLoadedForUrl] = useState<string | null>(null)
   const [isHovered, setIsHovered] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [isEndingSoon, setIsEndingSoon] = useState(false)
   const currentImage = images[currentImageIndex]
   const currentPrice = currentBid > 0 ? currentBid : startingPrice ?? 0
+  const isImageLoaded = useMemo(() => !currentImage || imageLoadedForUrl === currentImage, [currentImage, imageLoadedForUrl])
 
   useEffect(() => {
     const updateTimeLeft = () => {
@@ -57,13 +58,9 @@ export const AuctionProductCard = ({
     return () => clearInterval(interval)
   }, [endTime])
 
-  useEffect(() => {
-    if (!currentImage) {
-      setIsImageLoaded(true)
-      return
-    }
-    setIsImageLoaded(false)
-  }, [currentImage])
+  const handleImageLoad = () => {
+    setImageLoadedForUrl(currentImage)
+  }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (images.length <= 1) {return}
@@ -127,7 +124,7 @@ export const AuctionProductCard = ({
               component="img"
               src={currentImage}
               alt={title}
-              onLoad={() => setIsImageLoaded(true)}
+              onLoad={handleImageLoad}
               sx={{
                 width: '100%',
                 height: '100%',

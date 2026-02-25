@@ -54,11 +54,7 @@ export const PromoBanner = ({
     return () => clearInterval(interval)
   }, [autoRotate, isPaused, resolvedPromotions.length, rotateInterval])
 
-  useEffect(() => {
-    if (currentIndex >= resolvedPromotions.length) {
-      setCurrentIndex(0)
-    }
-  }, [currentIndex, resolvedPromotions.length])
+  const safeCurrentIndex = currentIndex >= resolvedPromotions.length ? 0 : currentIndex
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + resolvedPromotions.length) % resolvedPromotions.length)
@@ -78,7 +74,7 @@ export const PromoBanner = ({
     return null
   }
 
-  const currentPromo = resolvedPromotions[currentIndex]
+  const currentPromo = resolvedPromotions[safeCurrentIndex]
   const displayText = currentPromo.text
   const displayLink = currentPromo.link
   const displayLinkText = currentPromo.linkText || 'Shop Now'
@@ -214,7 +210,7 @@ export const PromoBanner = ({
                   width: 5,
                   height: 5,
                   borderRadius: '50%',
-                  bgcolor: index === currentIndex ? palette.neutral[50] : 'rgba(250,250,249,0.3)',
+                  bgcolor: index === safeCurrentIndex ? palette.neutral[50] : 'rgba(250,250,249,0.3)',
                   cursor: 'pointer',
                   transition: 'background-color 0.2s ease',
                 }}

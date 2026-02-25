@@ -19,8 +19,5 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Templates\auction_import_template.xlsx" />
-  </ItemGroup>
 
 </Project>

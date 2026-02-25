@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Container,
@@ -25,21 +25,13 @@ import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
 import { palette, typography } from '@/shared/theme/tokens'
 
 export const AuctionsListPage = () => {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
-  const [category, setCategory] = useState(() => searchParams.get('categoryId') ?? 'all')
+  const category = useMemo(() => searchParams.get('categoryId') ?? 'all', [searchParams])
   const [sortBy, setSortBy] = useState('ending-soon')
   const [page, setPage] = useState(1)
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
-
-  useEffect(() => {
-    const categoryId = searchParams.get('categoryId')
-    const nextCategory = categoryId ?? 'all'
-    if (nextCategory !== category) {
-      setCategory(nextCategory)
-    }
-  }, [searchParams, category])
 
   const { data, isLoading, isError, refetch } = useAuctions({
     search: searchQuery || undefined,
@@ -275,7 +267,15 @@ export const AuctionsListPage = () => {
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
-          <Select value={category} label="Category" onChange={(e) => setCategory(e.target.value)}>
+          <Select value={category} label="Category" onChange={(e) => {
+            const value = e.target.value
+            if (value === 'all') {
+              searchParams.delete('categoryId')
+            } else {
+              searchParams.set('categoryId', value)
+            }
+            setSearchParams(searchParams)
+          }}>
             <MenuItem value="all">All Categories</MenuItem>
             {categories.map((cat) => (
               <MenuItem key={cat.id} value={cat.id}>

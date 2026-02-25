@@ -1,3 +1,5 @@
+using Common.Contracts.Events;
+
 namespace StorageService.Contracts.Events;
 
 public record FileUploadedEvent : IVersionedEvent

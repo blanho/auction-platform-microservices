@@ -125,7 +125,7 @@ class HttpService {
             onTokenRefreshed(accessToken)
             originalRequest.headers.Authorization = `Bearer ${accessToken}`
             return this.client(originalRequest)
-          } catch (refreshError) {
+          } catch (_refreshError) {
             onTokenRefreshed(null)
             clearAuthStorage()
             return Promise.reject(error)

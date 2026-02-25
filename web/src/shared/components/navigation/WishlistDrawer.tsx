@@ -7,7 +7,6 @@ import {
   IconButton,
   Button,
   Skeleton,
-  Divider,
 } from '@mui/material'
 import {
   Close,
