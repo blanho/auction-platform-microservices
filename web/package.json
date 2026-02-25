@@ -39,24 +39,24 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@tailwindcss/vite": "^4.1.18",
-    "@types/lodash": "^4.17.23",
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/lodash": "^4.17.24",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.3.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.2",
+    "@vitejs/plugin-react": "^5.1.4",
+    "eslint": "^10.0.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.26",
-    "globals": "^16.5.0",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.2.4"
   }
 }
