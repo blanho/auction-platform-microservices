@@ -560,33 +560,36 @@ kubectl apply -k deploy/kubernetes/overlays/staging
 kubectl apply -k deploy/kubernetes/overlays/production
 ```
 
-Base manifests include: `namespace`, `configmap`, `secrets` (template), `ingress`, `rbac`, `priority-classes`, per-service Deployments and Services.
+**Kubernetes features:**
+- Pod Security Standards (restricted)
+- Resource quotas (50 CPU / 100Gi memory)
+- Pod Disruption Budgets
+- Prometheus ServiceMonitors
+- Priority classes
+- RBAC configuration
+- Ingress with TLS
 
 ---
 
-## Observability
+## 📊 Observability
 
-```mermaid
-graph LR
-    Services["All Microservices"]
-    SEQ["Seq\nlocalhost:5341\nStructured Logs"]
-    JAG["Jaeger\nlocalhost:16686\nDistributed Traces"]
-    HLT["Health Endpoints\n/health\n/health/ready\n/health/live"]
+| Tool | Purpose | Access |
+|------|---------|--------|
+| **Seq** | Centralized log aggregation & search | http://localhost:5341 |
+| **Serilog** | Structured logging with correlation IDs | — |
+| **OpenTelemetry** | Distributed tracing (OTLP export) | — |
+| **Prometheus** | Metrics collection (K8s) | — |
+| **SonarCloud** | Static code analysis & coverage | — |
 
-    Services -->|Serilog sink| SEQ
-    Services -->|OTLP gRPC :4317| JAG
-    Services --> HLT
+### Health Checks
+
+Every service exposes health check endpoints:
+
 ```
-
-| Tool | Access | Purpose |
-|---|---|---|
-| **Seq** | http://localhost:5341 | Structured log search and alerting |
-| **Jaeger** | http://localhost:16686 | Distributed trace visualisation |
-| **Health checks** | `GET /health` on each service | Liveness / readiness probes |
-| **OpenAPI / Scalar** | `GET /scalar` (dev only) | Interactive API docs per service |
-| **RabbitMQ UI** | http://localhost:15672 | Queue / exchange monitoring |
-
-OpenTelemetry instrumentation covers: ASP.NET Core, HttpClient, EF Core, MassTransit — all correlated via trace/span IDs.
+GET /health        # Overall health
+GET /health/ready  # Readiness probe
+GET /health/live   # Liveness probe
+```
 
 ---
 
@@ -604,18 +607,3 @@ tests/
 dotnet test --logger "console;verbosity=normal"
 dotnet test --collect:"XPlat Code Coverage"
 ```
-
----
-
-## Code Quality
-
-| Tool | Scope | Config |
-|---|---|---|
-| **SonarQube** | Backend static analysis | `sonar-project.properties` |
-| **ESLint 9** | Frontend TypeScript | `web/eslint.config.js` |
-| **Prettier 3** | Frontend formatting | `web/.prettierrc` |
-| **Husky + lint-staged** | Pre-commit hooks | `web/.husky/` |
-| **FluentValidation** | Backend request validation | Per command/query |
-
-> See [.github/copilot-instructions.md](.github/copilot-instructions.md) for code style rules:  
-> **no inline comments**, self-documenting method/variable names, SOLID principles.
