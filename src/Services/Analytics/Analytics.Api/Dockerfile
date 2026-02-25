@@ -1,44 +1,53 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
-EXPOSE 8080
+# =============================================================================
+# Analytics Service Dockerfile
+# Multi-stage build for optimized production image
+# =============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /src
 
-# Copy solution file and project files for restore
-COPY ["Auction.sln", "./"]
-COPY ["AnalyticsService/AnalyticsService.csproj", "AnalyticsService/"]
-COPY ["Common/Common.Core/Common.Core.csproj", "Common/Common.Core/"]
-COPY ["Common/Common.Domain/Common.Domain.csproj", "Common/Common.Domain/"]
-COPY ["Common/Common.Messaging/Common.Messaging.csproj", "Common/Common.Messaging/"]
-COPY ["Common/Common.Audit/Common.Audit.csproj", "Common/Common.Audit/"]
-COPY ["Common/Common.Storage/Common.Storage.csproj", "Common/Common.Storage/"]
-COPY ["Common/Common.Scheduling/Common.Scheduling.csproj", "Common/Common.Scheduling/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
+COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
+COPY ["src/Services/Analytics/Analytics.Api/Analytics.Api.csproj", "src/Services/Analytics/Analytics.Api/"]
+COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
+COPY ["src/Contracts/AuctionService.Contracts/AuctionService.Contracts.csproj", "src/Contracts/AuctionService.Contracts/"]
+COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
+COPY ["src/Contracts/PaymentService.Contracts/PaymentService.Contracts.csproj", "src/Contracts/PaymentService.Contracts/"]
 
-# Restore packages
-RUN dotnet restore "AnalyticsService/AnalyticsService.csproj"
+RUN dotnet restore "src/Services/Analytics/Analytics.Api/Analytics.Api.csproj" --runtime linux-musl-x64
 
-# Copy everything else
-COPY . .
+COPY ["src/", "src/"]
 
-# Build
-WORKDIR "/src/AnalyticsService"
-RUN dotnet build "AnalyticsService.csproj" -c Release -o /app/build
+WORKDIR "/src/src/Services/Analytics/Analytics.Api"
+RUN dotnet publish "Analytics.Api.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    --runtime linux-musl-x64 \
+    --self-contained false
 
-FROM build AS publish
-RUN dotnet publish "AnalyticsService.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -s /bin/sh -D appuser
 
-# Create uploads directory
-RUN mkdir -p /app/uploads/files /app/uploads/temp
+RUN apk add --no-cache curl tzdata icu-libs
 
-COPY --from=publish /app/publish .
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
+    ASPNETCORE_URLS=http://+:8080 \
+    ASPNETCORE_ENVIRONMENT=Production
 
-USER $APP_UID
+EXPOSE 8080
+EXPOSE 8081
 
-ENTRYPOINT ["dotnet", "AnalyticsService.dll"]
+COPY --from=build /app/publish .
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+USER appuser
+
+ENTRYPOINT ["dotnet", "Analytics.Api.dll"]
