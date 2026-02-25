@@ -70,5 +70,11 @@ images:
     newTag: staging
   - name: auction-platform/analytics-api
     newTag: staging
+  - name: auction-platform/search-api
+    newTag: staging
+  - name: auction-platform/storage-api
+    newTag: staging
+  - name: auction-platform/job-api
+    newTag: staging
   - name: auction-platform/gateway-api
     newTag: staging

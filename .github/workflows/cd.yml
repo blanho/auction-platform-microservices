@@ -1,0 +1,198 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/auction-platform
+
+jobs:
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - name: identity-api
+            context: .
+            dockerfile: src/Services/Identity/Identity.Api/Dockerfile
+          - name: auction-api
+            context: .
+            dockerfile: src/Services/Auction/Auction.Api/Dockerfile
+          - name: bidding-api
+            context: .
+            dockerfile: src/Services/Bidding/Bidding.Api/Dockerfile
+          - name: payment-api
+            context: .
+            dockerfile: src/Services/Payment/Payment.Api/Dockerfile
+          - name: notification-api
+            context: .
+            dockerfile: src/Services/Notification/Notification.Api/Dockerfile
+          - name: analytics-api
+            context: .
+            dockerfile: src/Services/Analytics/Analytics.Api/Dockerfile
+          - name: search-api
+            context: .
+            dockerfile: src/Services/Search/Search.Api/Dockerfile
+          - name: storage-api
+            context: .
+            dockerfile: src/Services/Storage/Storage.Api/Dockerfile
+          - name: job-api
+            context: .
+            dockerfile: src/Services/Job/Job.Api/Dockerfile
+          - name: gateway-api
+            context: .
+            dockerfile: src/Gateway/Gateway.Api/Dockerfile
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ github.run_number }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-images
+    environment:
+      name: staging
+      url: https://staging.auction-platform.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd deploy/kubernetes
+          
+          # Update image tags
+          export IMAGE_TAG=${{ github.sha }}
+          
+          # Apply staging overlay
+          kubectl kustomize overlays/staging | \
+            sed "s/:latest/:${IMAGE_TAG:0:7}/g" | \
+            kubectl apply -f -
+          
+          # Wait for rollout
+          kubectl rollout status deployment -n auction-platform --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests against staging..."
+          # Add your smoke test commands here
+          sleep 10
+          curl -f https://staging-api.auction-platform.com/health || exit 1
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://auction-platform.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd deploy/kubernetes
+          
+          export IMAGE_TAG=${{ github.sha }}
+          
+          # Apply production overlay with canary deployment
+          kubectl kustomize overlays/production | \
+            sed "s/:latest/:${IMAGE_TAG:0:7}/g" | \
+            kubectl apply -f -
+          
+          # Progressive rollout
+          for deployment in identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api; do
+            echo "Rolling out $deployment..."
+            kubectl rollout status deployment/$deployment -n auction-platform --timeout=300s
+          done
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying production deployment..."
+          sleep 30
+          curl -f https://api.auction-platform.com/health || exit 1
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful!"
+          # Add Slack/Teams notification here
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed, initiating rollback..."
+          kubectl rollout undo deployment -n auction-platform

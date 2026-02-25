@@ -37,3 +37,6 @@ data:
   NOTIFICATION_SERVICE_URL: "http://notification-api:80"
   IDENTITY_SERVICE_URL: "http://identity-api:80"
   ANALYTICS_SERVICE_URL: "http://analytics-api:80"
+  SEARCH_SERVICE_URL: "http://search-api:80"
+  STORAGE_SERVICE_URL: "http://storage-api:80"
+  JOB_SERVICE_URL: "http://job-api:80"

@@ -19,6 +19,9 @@ resources:
   - services/notification-api.yaml
   - services/identity-api.yaml
   - services/analytics-api.yaml
+  - services/search-api.yaml
+  - services/storage-api.yaml
+  - services/job-api.yaml
   - services/gateway-api.yaml
   - services/pdb.yaml
   - infrastructure/postgres.yaml

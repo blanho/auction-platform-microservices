@@ -61,25 +61,47 @@ configMapGenerator:
       - ASPNETCORE_ENVIRONMENT=Production
       - LOG_LEVEL=Warning
 
+secretGenerator:
+  - name: auction-platform-secrets
+    behavior: merge
+    literals:
+      - POSTGRES_USER=CHANGE_ME
+      - POSTGRES_PASSWORD=CHANGE_ME
+      - REDIS_PASSWORD=CHANGE_ME
+      - RABBITMQ_USER=CHANGE_ME
+      - RABBITMQ_PASSWORD=CHANGE_ME
+      - JWT_SECRET=CHANGE_ME_MIN_32_CHARS_FOR_PRODUCTION
+      - STRIPE_SECRET_KEY=CHANGE_ME
+      - STRIPE_WEBHOOK_SECRET=CHANGE_ME
+
 images:
   - name: auction-platform/auction-api
-    newName: ghcr.io/your-org/auction-api
+    newName: ghcr.io/blanho/auction-platform/auction-api
     newTag: v1.0.0
   - name: auction-platform/bidding-api
-    newName: ghcr.io/your-org/bidding-api
+    newName: ghcr.io/blanho/auction-platform/bidding-api
     newTag: v1.0.0
   - name: auction-platform/payment-api
-    newName: ghcr.io/your-org/payment-api
+    newName: ghcr.io/blanho/auction-platform/payment-api
     newTag: v1.0.0
   - name: auction-platform/notification-api
-    newName: ghcr.io/your-org/notification-api
+    newName: ghcr.io/blanho/auction-platform/notification-api
     newTag: v1.0.0
   - name: auction-platform/identity-api
-    newName: ghcr.io/your-org/identity-api
+    newName: ghcr.io/blanho/auction-platform/identity-api
     newTag: v1.0.0
   - name: auction-platform/analytics-api
-    newName: ghcr.io/your-org/analytics-api
+    newName: ghcr.io/blanho/auction-platform/analytics-api
+    newTag: v1.0.0
+  - name: auction-platform/search-api
+    newName: ghcr.io/blanho/auction-platform/search-api
+    newTag: v1.0.0
+  - name: auction-platform/storage-api
+    newName: ghcr.io/blanho/auction-platform/storage-api
+    newTag: v1.0.0
+  - name: auction-platform/job-api
+    newName: ghcr.io/blanho/auction-platform/job-api
     newTag: v1.0.0
   - name: auction-platform/gateway-api
-    newName: ghcr.io/your-org/gateway-api
+    newName: ghcr.io/blanho/auction-platform/gateway-api
     newTag: v1.0.0
