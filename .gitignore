@@ -470,6 +470,91 @@ next-env.d.ts
 
 keys
 
+# ============================================================
+# Frontend — Vite / React / TypeScript
+# ============================================================
+web/dist/
+web/.vite/
+web/coverage/
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+web/storybook-static/
+web/.turbo/
+web/.cache/
+
+# ============================================================
+# Backend — .NET Sensitive Config & Secrets
+# ============================================================
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/appsettings.Testing.json
+**/appsettings.Local.json
+**/secrets.json
+**/.secrets/
+**/Properties/launchSettings.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.cert
+**/*.crt
+
+# ============================================================
+# Deploy — Docker
+# ============================================================
+docker-compose.override.yml
+**/docker-compose.override.yml
+**/docker-compose.local.yml
+deploy/config/appsettings.Production.json
+deploy/config/appsettings.Staging.json
+
+# ============================================================
+# Deploy — Kubernetes
+# ============================================================
+kubeconfig
+*.kubeconfig
+*kubeconfig*
+**/*-secret-values.yaml
+**/secrets-generated.yaml
+**/*-secrets.yaml
+**/*-secret.yaml
+!deploy/kubernetes/base/secrets.yaml
+
+# ============================================================
+# Deploy — Terraform (if adopted)
+# ============================================================
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfvars
+**/*.tfvars.json
+!**/*.tfvars.example
+.terraform.lock.hcl
+
+# ============================================================
+# Code Analysis — SonarQube
+# ============================================================
+.sonarqube/
+.scannerwork/
+.sonar/
+
+# ============================================================
+# Test Results & Coverage (recursive)
+# ============================================================
+**/coverage/
+**/TestResults/
+**/*.coverlet.json
+lcov.info
+.nyc_output/
+**/*.lcov
+coverage-final.json
+
+# ============================================================
+# macOS (recursive, all nested folders)
+# ============================================================
+**/.DS_Store
+
 # AI Instructions / Copilot / Cursor
 .github/copilot-instructions.md
 .github/prompts/
