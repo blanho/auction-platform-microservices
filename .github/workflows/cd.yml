@@ -64,7 +64,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.meta.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -107,7 +107,7 @@ jobs:
       name: staging
       url: https://staging.auction-platform.com
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
@@ -150,7 +150,7 @@ jobs:
       name: production
       url: https://auction-platform.com
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
