@@ -8,5 +8,8 @@ public enum JobType
     PaymentCycle = 3,
     DataExport = 4,
     BulkNotification = 5,
-    AnalyticsAggregation = 6
+    AnalyticsAggregation = 6,
+    AuctionImport = 7,
+    BulkAuctionUpdate = 8,
+    BulkFileUpload = 9
 }

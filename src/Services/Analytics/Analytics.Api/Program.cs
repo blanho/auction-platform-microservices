@@ -39,7 +39,10 @@ builder.Services
     .AddCommonUtilities()
     .AddUtilityScheduling(builder.Configuration)
     .AddAnalyticsMessaging(builder.Configuration)
-    .AddAnalyticsAuthentication(builder.Configuration, builder.Environment)
+    .AddJwtAuthentication(builder.Configuration, builder.Environment, options =>
+    {
+        options.MapInboundClaims = false;
+    })
     .AddRbacAuthorization()
     .AddCoreAuthorization();
 

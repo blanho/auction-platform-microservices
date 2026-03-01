@@ -10,42 +10,18 @@
     <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
-  <!-- 
-    BuildingBlocks.Infrastructure contains:
-    - Data: Repository base classes, EF Core extensions, Unit of Work
-    - Caching: Redis abstractions and implementations
-    - Locking: Distributed locking (RedLock)
-    - Messaging: MassTransit configuration, consumers base
-    - Logging: Serilog configuration
-    - Observability: OpenTelemetry setup
-    - Scheduling: Quartz.NET configuration
-    - Storage: Blob storage abstractions
-    - Audit: Audit logging
-    - Localization: Resource management
-    
-    This is the largest BuildingBlock - all infrastructure concerns consolidated
-  -->
-
   <ItemGroup>
-    <!-- Entity Framework -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     
-    <!-- Messaging -->
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
     
-    <!-- Caching -->
     <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.2" />
     
-    <!-- Locking -->
-    <PackageReference Include="RedLock.net" Version="2.3.2" />
-    
-    <!-- Resilience -->
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
     
-    <!-- Logging & Observability -->
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
@@ -54,23 +30,15 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
     
-    <!-- gRPC -->
     <PackageReference Include="Grpc.Net.ClientFactory" Version="2.70.0" />
     
-    <!-- Scheduling -->
     <PackageReference Include="Quartz" Version="3.14.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
     
-    <!-- Storage -->
     <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
     
-    <!-- Excel -->
-    <PackageReference Include="ClosedXML" Version="0.104.2" />
-    
-    <!-- PDF -->
     <PackageReference Include="QuestPDF" Version="2024.12.2" />
     
-    <!-- Localization -->
     <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.2" />
   </ItemGroup>
 

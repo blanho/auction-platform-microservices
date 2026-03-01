@@ -10,23 +10,40 @@ namespace Notification.Infrastructure.Consumers;
 public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
 {
     private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
     private readonly ILogger<BidRejectedConsumer> _logger;
 
     public BidRejectedConsumer(
         INotificationService notificationService,
+        IIdempotencyService idempotency,
         ILogger<BidRejectedConsumer> logger)
     {
         _notificationService = notificationService;
+        _idempotency = idempotency;
         _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<BidRejectedEvent> context)
     {
         var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"bid-rejected-{@event.BidId}";
 
         _logger.LogInformation(
             "Processing BidRejected event for bid {BidId} by {Bidder}",
             @event.BidId, @event.BidderUsername);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("BidRejected already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
 
         await _notificationService.CreateNotificationAsync(
             new CreateNotificationDto
@@ -45,6 +62,8 @@ public class BidRejectedConsumer : IConsumer<BidRejectedEvent>
                 AuctionId = @event.AuctionId,
                 BidId = @event.BidId
             },
-            context.CancellationToken);
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
     }
 }

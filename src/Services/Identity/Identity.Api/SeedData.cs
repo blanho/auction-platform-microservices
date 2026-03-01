@@ -34,7 +34,7 @@ public static class SeedData
 
     private static async Task EnsureRolesExistAsync(RoleManager<IdentityRole> roleMgr)
     {
-        foreach (var roleName in AppRoles.AllRoles)
+        foreach (var roleName in Roles.AllRoles)
         {
             if (!await roleMgr.RoleExistsAsync(roleName))
             {
@@ -52,9 +52,9 @@ public static class SeedData
     {
         var rolePermissionMap = new Dictionary<string, HashSet<string>>
         {
-            [AppRoles.User] = RolePermissions.GetPermissionsForRole(Roles.User),
-            [AppRoles.Seller] = RolePermissions.GetPermissionsForRole(Roles.Seller),
-            [AppRoles.Admin] = RolePermissions.GetPermissionsForRole(Roles.Admin),
+            [Roles.User] = RolePermissions.GetPermissionsForRole(Roles.User),
+            [Roles.Seller] = RolePermissions.GetPermissionsForRole(Roles.Seller),
+            [Roles.Admin] = RolePermissions.GetPermissionsForRole(Roles.Admin),
         };
 
         foreach (var (roleName, permissions) in rolePermissionMap)
@@ -114,7 +114,7 @@ public static class SeedData
                 throw new ConfigurationException(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(admin, AppRoles.Admin);
+            result = await userMgr.AddToRoleAsync(admin, Roles.Admin);
             if (!result.Succeeded)
             {
                 throw new ConfigurationException(result.Errors.First().Description);
@@ -123,7 +123,7 @@ public static class SeedData
             result = await userMgr.AddClaimsAsync(admin, new Claim[]
             {
                 new(ClaimTypes.Name, "System Administrator"),
-                new(ClaimTypes.Role, AppRoles.Admin),
+                new(ClaimTypes.Role, Roles.Admin),
             });
             if (!result.Succeeded)
             {
@@ -155,7 +155,7 @@ public static class SeedData
                 throw new ConfigurationException(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(seller, AppRoles.Seller);
+            result = await userMgr.AddToRoleAsync(seller, Roles.Seller);
             if (!result.Succeeded)
             {
                 throw new ConfigurationException(result.Errors.First().Description);
@@ -164,7 +164,7 @@ public static class SeedData
             result = await userMgr.AddClaimsAsync(seller, new Claim[]
             {
                 new(ClaimTypes.Name, "Demo Seller"),
-                new(ClaimTypes.Role, AppRoles.Seller),
+                new(ClaimTypes.Role, Roles.Seller),
             });
             if (!result.Succeeded)
             {
@@ -207,7 +207,7 @@ public static class SeedData
                 throw new ConfigurationException(result.Errors.First().Description);
             }
 
-            result = await userMgr.AddToRoleAsync(user, AppRoles.User);
+            result = await userMgr.AddToRoleAsync(user, Roles.User);
             if (!result.Succeeded)
             {
                 throw new ConfigurationException(result.Errors.First().Description);
@@ -216,7 +216,7 @@ public static class SeedData
             result = await userMgr.AddClaimsAsync(user, new Claim[]
             {
                 new(ClaimTypes.Name, fullName),
-                new(ClaimTypes.Role, AppRoles.User),
+                new(ClaimTypes.Role, Roles.User),
             });
             if (!result.Succeeded)
             {

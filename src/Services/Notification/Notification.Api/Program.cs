@@ -40,7 +40,23 @@ builder.Services.AddCQRS(typeof(Notification.Application.Features.Notifications.
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();
 builder.Services.AddNotificationCors(builder.Configuration);
-builder.Services.AddNotificationAuthentication(builder.Configuration, builder.Environment);
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment, options =>
+{
+    options.MapInboundClaims = false;
+    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"].ToString();
+            if (!string.IsNullOrEmpty(accessToken) &&
+                context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddDbContext<NotificationDbContext>(options =>
@@ -97,7 +113,6 @@ app.UseHttpsRedirection();
 app.UseCors("SignalRCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseAccessAuthorization();
 app.MapCarter();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");

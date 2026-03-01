@@ -41,8 +41,8 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
             message.Username,
             string.Join(", ", message.Roles));
 
-        var hadSellerRole = message.Roles.Contains(AppRoles.Seller);
-        var hasAdminRole = message.Roles.Contains(AppRoles.Admin);
+        var hadSellerRole = message.Roles.Contains(Roles.Seller);
+        var hasAdminRole = message.Roles.Contains(Roles.Admin);
 
         if (hadSellerRole || hasAdminRole)
         {

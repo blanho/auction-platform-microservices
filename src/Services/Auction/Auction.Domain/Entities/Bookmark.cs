@@ -3,7 +3,7 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Auctions.Domain.Entities;
 
-public class Bookmark : BaseEntity
+public class Bookmark : AggregateRoot
 {
     public Guid UserId { get; set; }
     public string Username { get; set; } = string.Empty;

@@ -3,7 +3,7 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Domain.Entities;
 
-public class Bid : BaseEntity
+public class Bid : AggregateRoot
 {
     public Guid AuctionId { get; private set; }
     public Guid BidderId { get; private set; }
@@ -77,6 +77,15 @@ public class Bid : BaseEntity
     public void AcceptBelowReserve()
     {
         Status = BidStatus.AcceptedBelowReserve;
+
+        AddDomainEvent(new BidAcceptedBelowReserveDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            BidderUsername = BidderUsername,
+            Amount = Amount
+        });
     }
 
     public void Reject(string reason)
@@ -121,5 +130,13 @@ public class Bid : BaseEntity
     public void MarkAsTooLow()
     {
         Status = BidStatus.TooLow;
+
+        AddDomainEvent(new BidMarkedTooLowDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            Amount = Amount
+        });
     }
 }

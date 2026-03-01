@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Configuration;
 using Serilog.Context;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -289,99 +288,4 @@ public static class LoggingExtensions
         "fatal" or "critical" => LogEventLevel.Fatal,
         _ => LogEventLevel.Information
     };
-}
-
-public static class CorrelationIdEnricher
-{
-    public static LoggerConfiguration WithCorrelationId(this LoggerEnrichmentConfiguration enrichConfig)
-    {
-        return enrichConfig.FromLogContext();
-    }
-}
-
-public static class PerformanceLogger
-{
-    public static IDisposable TimeOperation(string operationName, params (string Key, object Value)[] properties)
-    {
-        return new OperationTimer(operationName, properties);
-    }
-
-    private sealed class OperationTimer : IDisposable
-    {
-        private readonly string _operationName;
-        private readonly Stopwatch _stopwatch;
-        private readonly (string Key, object Value)[] _properties;
-        private bool _disposed;
-
-        public OperationTimer(string operationName, (string Key, object Value)[] properties)
-        {
-            _operationName = operationName;
-            _properties = properties;
-            _stopwatch = Stopwatch.StartNew();
-
-            Log.Debug("Starting operation: {OperationName}", operationName);
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _stopwatch.Stop();
-            var elapsed = _stopwatch.ElapsedMilliseconds;
-
-            using var _ = _properties.Length > 0
-                ? LogContext.PushProperty("OperationProperties", _properties.ToDictionary(p => p.Key, p => p.Value))
-                : null;
-
-            if (elapsed > 1000)
-            {
-                Log.Warning("Slow operation: {OperationName} completed in {ElapsedMs}ms", _operationName, elapsed);
-            }
-            else
-            {
-                Log.Debug("Operation: {OperationName} completed in {ElapsedMs}ms", _operationName, elapsed);
-            }
-
-            _disposed = true;
-        }
-    }
-}
-
-public static class StructuredLogExtensions
-{
-    public static void LogAudit(this ILogger logger, string action, string entityType, string entityId, string? userId = null)
-    {
-        Log.ForContext("AuditAction", action)
-           .ForContext("EntityType", entityType)
-           .ForContext("EntityId", entityId)
-           .ForContext("AuditUserId", userId)
-           .Information("AUDIT: {Action} on {EntityType} ({EntityId}) by {UserId}", action, entityType, entityId, userId ?? "System");
-    }
-
-    public static void LogSecurityEvent(string eventType, string? userId, string? ipAddress, bool success, string? details = null)
-    {
-        var level = success ? LogEventLevel.Information : LogEventLevel.Warning;
-
-        Log.ForContext("SecurityEventType", eventType)
-           .ForContext("SecurityUserId", userId)
-           .ForContext("IpAddress", ipAddress)
-           .ForContext("Success", success)
-           .Write(level, "SECURITY: {EventType} - User: {UserId}, IP: {IpAddress}, Success: {Success}, Details: {Details}",
-               eventType, userId ?? "Anonymous", ipAddress, success, details);
-    }
-
-    public static void LogIntegrationEvent(string eventName, string source, string destination, bool success, long? durationMs = null)
-    {
-        var level = success ? LogEventLevel.Information : LogEventLevel.Error;
-
-        Log.ForContext("IntegrationEvent", eventName)
-           .ForContext("Source", source)
-           .ForContext("Destination", destination)
-           .ForContext("DurationMs", durationMs)
-           .Write(level, "INTEGRATION: {EventName} from {Source} to {Destination} - Success: {Success}, Duration: {DurationMs}ms",
-               eventName, source, destination, success, durationMs);
-    }
 }

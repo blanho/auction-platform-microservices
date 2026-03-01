@@ -42,18 +42,10 @@ public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, Ord
             sellerId: request.SellerId,
             sellerUsername: request.SellerUsername,
             itemTitle: request.ItemTitle,
-            winningBid: request.WinningBid);
-
-        if (request.ShippingCost.HasValue)
-            order.SetShippingCost(request.ShippingCost.Value);
-
-        if (!string.IsNullOrWhiteSpace(request.ShippingAddress))
-            order.SetShippingAddress(request.ShippingAddress);
-
-        if (!string.IsNullOrWhiteSpace(request.BuyerNotes))
-            order.AddBuyerNotes(request.BuyerNotes);
-
-        order.RaiseCreatedEvent();
+            winningBid: request.WinningBid,
+            shippingCost: request.ShippingCost,
+            shippingAddress: request.ShippingAddress,
+            buyerNotes: request.BuyerNotes);
 
         var createdOrder = await _repository.AddAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

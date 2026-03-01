@@ -3,8 +3,6 @@ using Auctions.Application.DTOs;
 using Auctions.Application.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
-// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 using BuildingBlocks.Application.CQRS;
 using BuildingBlocks.Application.Abstractions;
 

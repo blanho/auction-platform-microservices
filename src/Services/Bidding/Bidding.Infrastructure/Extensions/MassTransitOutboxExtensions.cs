@@ -44,7 +44,7 @@ public static class MassTransitOutboxExtensions
                     h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
                     h.ContinuationTimeout(TimeSpan.FromSeconds(20));
                 });
-                cfg.UseMessageRetry(r => r.Immediate(5));
+                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
                 cfg.ConfigureEndpoints(context);
             });
         });

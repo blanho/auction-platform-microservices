@@ -56,9 +56,13 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
             ? (JobPriority)message.Priority
             : JobPriority.Normal;
 
-        var totalItems = message.Items.Count > 0
-            ? message.Items.Count
-            : 1;
+        var isBulkJob = message.TotalItems > 0 && message.Items.Count == 0;
+
+        var totalItems = isBulkJob
+            ? message.TotalItems
+            : message.Items.Count > 0
+                ? message.Items.Count
+                : 1;
 
         var job = Job.Create(
             jobType,
@@ -71,17 +75,20 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
 
         await _jobRepository.CreateAsync(job, context.CancellationToken);
 
-        if (message.Items.Count > 0)
+        if (!isBulkJob)
         {
-            var items = message.Items
-                .Select(i => job.AddItem(i.PayloadJson, i.SequenceNumber))
-                .ToList();
-            await _jobItemRepository.AddRangeAsync(items, context.CancellationToken);
-        }
-        else
-        {
-            var singleItem = job.AddItem(message.PayloadJson, 1);
-            await _jobItemRepository.AddRangeAsync([singleItem], context.CancellationToken);
+            if (message.Items.Count > 0)
+            {
+                var items = message.Items
+                    .Select(i => job.AddItem(i.PayloadJson, i.SequenceNumber))
+                    .ToList();
+                await _jobItemRepository.AddRangeAsync(items, context.CancellationToken);
+            }
+            else
+            {
+                var singleItem = job.AddItem(message.PayloadJson, 1);
+                await _jobItemRepository.AddRangeAsync([singleItem], context.CancellationToken);
+            }
         }
 
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);

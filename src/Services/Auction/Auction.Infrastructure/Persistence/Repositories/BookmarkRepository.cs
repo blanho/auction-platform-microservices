@@ -127,10 +127,9 @@ public class BookmarkRepository : IBookmarkRepository
 
     public async Task<Bookmark> AddAsync(Bookmark bookmark, CancellationToken cancellationToken = default)
     {
-        bookmark.CreatedAt = _dateTime.UtcNow;
-        bookmark.CreatedBy = bookmark.UserId;
-        bookmark.AddedAt = _dateTime.UtcNow;
-        bookmark.IsDeleted = false;
+        var utcNow = _dateTime.UtcNow;
+        bookmark.SetCreatedAudit(bookmark.UserId, utcNow);
+        bookmark.AddedAt = utcNow;
 
         await _context.Bookmarks.AddAsync(bookmark, cancellationToken);
         return bookmark;
@@ -138,8 +137,7 @@ public class BookmarkRepository : IBookmarkRepository
 
     public Task UpdateAsync(Bookmark bookmark, CancellationToken cancellationToken = default)
     {
-        bookmark.UpdatedAt = _dateTime.UtcNow;
-        bookmark.UpdatedBy = bookmark.UserId;
+        bookmark.SetUpdatedAudit(bookmark.UserId, _dateTime.UtcNow);
         _context.Bookmarks.Update(bookmark);
         return Task.CompletedTask;
     }
@@ -149,9 +147,7 @@ public class BookmarkRepository : IBookmarkRepository
         var bookmark = await _context.Bookmarks.FindAsync([id], cancellationToken);
         if (bookmark != null)
         {
-            bookmark.IsDeleted = true;
-            bookmark.DeletedAt = _dateTime.UtcNow;
-            bookmark.DeletedBy = bookmark.UserId;
+            bookmark.MarkAsDeleted(bookmark.UserId, _dateTime.UtcNow);
             _context.Bookmarks.Update(bookmark);
         }
     }
@@ -161,9 +157,7 @@ public class BookmarkRepository : IBookmarkRepository
         var bookmark = await GetByUserAndAuctionAsync(userId, auctionId, type, cancellationToken);
         if (bookmark != null)
         {
-            bookmark.IsDeleted = true;
-            bookmark.DeletedAt = _dateTime.UtcNow;
-            bookmark.DeletedBy = userId;
+            bookmark.MarkAsDeleted(userId, _dateTime.UtcNow);
             _context.Bookmarks.Update(bookmark);
         }
     }

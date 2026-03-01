@@ -277,7 +277,7 @@ public class TokenGenerationService : ITokenGenerationService
             new("email", user.Email ?? string.Empty)
         };
 
-        var effectiveRoles = roles.Any() ? roles : new List<string> { AppRoles.User };
+        var effectiveRoles = roles.Any() ? roles : new List<string> { Roles.User };
 
         foreach (var role in effectiveRoles)
         {

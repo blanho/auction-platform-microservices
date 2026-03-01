@@ -84,7 +84,7 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> UpdateAsync(Order order)
     {
-        order.UpdatedAt = DateTimeOffset.UtcNow;
+        order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Orders.Update(order);
         return order;
     }

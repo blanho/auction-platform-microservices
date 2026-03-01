@@ -3,7 +3,7 @@ using Notification.Domain.Enums;
 
 namespace Notification.Domain.Entities;
 
-public class Notification : BaseEntity
+public class Notification : AggregateRoot
 {
     public string UserId { get; private set; } = string.Empty;
     public string Username { get; private set; } = string.Empty;

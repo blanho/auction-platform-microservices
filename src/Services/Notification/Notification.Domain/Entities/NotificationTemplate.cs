@@ -1,6 +1,6 @@
 namespace Notification.Domain.Entities;
 
-public class NotificationTemplate : BaseEntity
+public class NotificationTemplate : AggregateRoot
 {
 
     public string Key { get; private set; } = string.Empty;

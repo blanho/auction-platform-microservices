@@ -71,7 +71,6 @@ app.MapCustomHealthChecks();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseAccessAuthorization();
 
 var storageSettings = builder.Configuration.GetSection(FileStorageSettings.SectionName).Get<FileStorageSettings>();
 if (storageSettings?.Provider == "Local")

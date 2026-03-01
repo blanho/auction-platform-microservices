@@ -3,8 +3,6 @@ using Auctions.Application.DTOs;
 using AutoMapper;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
-// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
-// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.DeactivateAuction;
 

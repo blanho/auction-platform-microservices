@@ -39,9 +39,6 @@ public static class ExceptionHandlingMiddleware
         return app;
     }
 
-    public static IApplicationBuilder UseCommonExceptionHandling(this IApplicationBuilder app)
-        => UseAppExceptionHandling(app);
-
     private static Task WriteProblemDetailsAsync(HttpContext context, AppException ex)
     {
         var status = ex switch

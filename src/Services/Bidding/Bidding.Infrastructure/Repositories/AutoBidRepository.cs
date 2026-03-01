@@ -72,9 +72,7 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task<AutoBid> CreateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
-        autoBid.CreatedAt = _dateTime.UtcNow;
-        autoBid.CreatedBy = autoBid.UserId;
-        autoBid.IsDeleted = false;
+        autoBid.SetCreatedAudit(autoBid.UserId, _dateTime.UtcNow);
 
         await _context.AutoBids.AddAsync(autoBid, cancellationToken);
         return autoBid;
@@ -85,9 +83,7 @@ public class AutoBidRepository : IAutoBidRepository
         var utcNow = _dateTime.UtcNow;
         foreach (var autoBid in autoBids)
         {
-            autoBid.CreatedAt = utcNow;
-            autoBid.CreatedBy = autoBid.UserId;
-            autoBid.IsDeleted = false;
+            autoBid.SetCreatedAudit(autoBid.UserId, utcNow);
         }
         await _context.AutoBids.AddRangeAsync(autoBids, cancellationToken);
         return autoBids;
@@ -100,8 +96,7 @@ public class AutoBidRepository : IAutoBidRepository
 
     public Task UpdateAsync(AutoBid autoBid, CancellationToken cancellationToken = default)
     {
-        autoBid.UpdatedAt = _dateTime.UtcNow;
-        autoBid.UpdatedBy = autoBid.UserId;
+        autoBid.SetUpdatedAudit(autoBid.UserId, _dateTime.UtcNow);
         _context.AutoBids.Update(autoBid);
         return Task.CompletedTask;
     }
@@ -111,8 +106,7 @@ public class AutoBidRepository : IAutoBidRepository
         var utcNow = _dateTime.UtcNow;
         foreach (var autoBid in autoBids)
         {
-            autoBid.UpdatedAt = utcNow;
-            autoBid.UpdatedBy = autoBid.UserId;
+            autoBid.SetUpdatedAudit(autoBid.UserId, utcNow);
         }
         _context.AutoBids.UpdateRange(autoBids);
         return Task.CompletedTask;
@@ -126,9 +120,7 @@ public class AutoBidRepository : IAutoBidRepository
         
         if (autoBid != null)
         {
-            autoBid.IsDeleted = true;
-            autoBid.DeletedAt = _dateTime.UtcNow;
-            autoBid.DeletedBy = _auditContext.UserId;
+            autoBid.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
         }
     }
 
@@ -141,9 +133,7 @@ public class AutoBidRepository : IAutoBidRepository
 
         foreach (var autoBid in autoBids)
         {
-            autoBid.IsDeleted = true;
-            autoBid.DeletedAt = utcNow;
-            autoBid.DeletedBy = _auditContext.UserId;
+            autoBid.MarkAsDeleted(_auditContext.UserId, utcNow);
         }
         _context.AutoBids.UpdateRange(autoBids);
     }

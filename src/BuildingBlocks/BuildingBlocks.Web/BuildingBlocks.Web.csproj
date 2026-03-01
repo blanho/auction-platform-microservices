@@ -10,45 +10,24 @@
     <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
-  <!-- 
-    BuildingBlocks.Web contains:
-    - Authorization: Permission-based auth, policies
-    - Configuration: App settings helpers, options patterns
-    - Constants: Shared constants (policies, headers, etc.)
-    - Exceptions: Global exception handling, problem details
-    - Extensions: WebApplication extensions, service registration
-    - HealthChecks: Health check configuration
-    - Middleware: Correlation ID, request logging, etc.
-    - RateLimiting: Rate limiting configuration
-    - OpenApi: Swagger/OpenAPI configuration
-    - Utilities: Web-specific utilities
-    
-    This is the entry point for API projects
-  -->
-
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Authentication -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
     
-    <!-- OpenAPI -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
     
-    <!-- API Versioning -->
     <PackageReference Include="Asp.Versioning.Http" Version="8.1.1" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
     
-    <!-- Health Checks -->
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.RabbitMQ" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     
-    <!-- OpenTelemetry -->
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.0" />
@@ -57,7 +36,6 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.10.0" />
     
-    <!-- Serilog Logging -->
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
@@ -67,7 +45,6 @@
     <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
     
-    <!-- Rate Limiting is built into .NET 7+ -->
   </ItemGroup>
 
   <ItemGroup>

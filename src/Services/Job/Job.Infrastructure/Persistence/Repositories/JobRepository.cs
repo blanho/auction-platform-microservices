@@ -127,15 +127,12 @@ public class JobRepository : IJobRepository
 
     public async Task<Job> CreateAsync(Job job, CancellationToken cancellationToken = default)
     {
-        job.CreatedAt = _dateTime.UtcNowOffset;
-        job.CreatedBy = _auditContext.UserId;
-        job.IsDeleted = false;
+        var utcNow = _dateTime.UtcNowOffset;
+        job.SetCreatedAudit(_auditContext.UserId, utcNow);
 
         foreach (var item in job.Items)
         {
-            item.CreatedAt = _dateTime.UtcNowOffset;
-            item.CreatedBy = _auditContext.UserId;
-            item.IsDeleted = false;
+            item.SetCreatedAudit(_auditContext.UserId, utcNow);
         }
 
         await _context.Jobs.AddAsync(job, cancellationToken);
@@ -144,8 +141,7 @@ public class JobRepository : IJobRepository
 
     public Task UpdateAsync(Job job, CancellationToken cancellationToken = default)
     {
-        job.UpdatedAt = _dateTime.UtcNowOffset;
-        job.UpdatedBy = _auditContext.UserId;
+        job.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
         _context.Jobs.Update(job);
         return Task.CompletedTask;
     }

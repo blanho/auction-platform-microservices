@@ -47,6 +47,9 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
         builder.HasIndex(x => new { x.IsActive, x.DisplayOrder });
 
         builder.HasIndex(x => new { x.IsActive, x.IsFeatured });
+
+        builder.Property(x => x.Files)
+            .HasColumnType("jsonb");
     }
 }
 

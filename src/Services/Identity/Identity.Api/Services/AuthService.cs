@@ -57,8 +57,8 @@ public class AuthService(
             return Result.Failure<UserDto>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Registration failed", errors));
         }
 
-        await userService.EnsureRoleExistsAsync(AppRoles.User);
-        var roleResult = await userService.AddToRoleAsync(user, AppRoles.User);
+        await userService.EnsureRoleExistsAsync(Roles.User);
+        var roleResult = await userService.AddToRoleAsync(user, Roles.User);
         if (!roleResult.Succeeded)
         {
             logger.LogWarning("Failed to assign default role to {Username}", request.Username);
@@ -76,19 +76,19 @@ public class AuthService(
             Email = user.Email!,
             EmailConfirmed = false,
             FullName = user.FullName,
-            Role = AppRoles.User,
+            Role = Roles.User,
             ConfirmationLink = confirmationLink
         });
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
-            UserAuditData.FromUser(user, [AppRoles.User]),
+            UserAuditData.FromUser(user, [Roles.User]),
             AuditAction.Created);
 
         logger.LogInformation("User {Username} registered successfully, awaiting email confirmation", request.Username);
 
         var userDto = mapper.Map<UserDto>(user);
-        userDto.Roles = [AppRoles.User];
+        userDto.Roles = [Roles.User];
 
         return Result.Success(userDto);
     }
@@ -383,8 +383,8 @@ public class AuthService(
                 return Result.Failure<ExternalAuthResult>(IdentityErrors.WithIdentityErrors("Auth.RegistrationFailed", "Failed to create account", errors));
             }
 
-            await userService.EnsureRoleExistsAsync(AppRoles.User);
-            await userService.AddToRoleAsync(user, AppRoles.User);
+            await userService.EnsureRoleExistsAsync(Roles.User);
+            await userService.AddToRoleAsync(user, Roles.User);
 
             await mediator.Publish(new UserCreatedDomainEvent
             {
@@ -393,7 +393,7 @@ public class AuthService(
                 Email = user.Email!,
                 EmailConfirmed = true,
                 FullName = user.FullName,
-                Role = AppRoles.User
+                Role = Roles.User
             });
 
             await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>

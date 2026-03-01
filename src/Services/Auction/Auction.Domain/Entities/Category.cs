@@ -1,11 +1,10 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Auctions.Domain.Entities;
 
-public class Category : BaseEntity
+public class Category : AggregateRoot
 {
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
@@ -13,7 +12,6 @@ public class Category : BaseEntity
     public string Icon { get; set; } = "fa-box";
     public string? Description { get; set; }
 
-    [Column(TypeName = "jsonb")]
     public List<MediaFile> Files { get; set; } = new();
 
     public int DisplayOrder { get; set; }

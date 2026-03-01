@@ -4,7 +4,7 @@ using BuildingBlocks.Domain.Exceptions;
 
 namespace Payment.Domain.Entities;
 
-public class Wallet : BaseEntity
+public class Wallet : AggregateRoot
 {
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
@@ -20,7 +20,7 @@ public class Wallet : BaseEntity
 
     public static Wallet Create(Guid userId, string username, string currency = "USD")
     {
-        return new Wallet
+        var wallet = new Wallet
         {
             Id = Guid.NewGuid(),
             UserId = userId,
@@ -31,6 +31,16 @@ public class Wallet : BaseEntity
             IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
         };
+
+        wallet.AddDomainEvent(new WalletCreatedDomainEvent
+        {
+            WalletId = wallet.Id,
+            UserId = userId,
+            Username = username,
+            Currency = currency
+        });
+
+        return wallet;
     }
 
     public void Deposit(decimal amount)
@@ -38,6 +48,14 @@ public class Wallet : BaseEntity
         GuardActive();
         GuardPositiveAmount(amount);
         Balance += amount;
+
+        AddDomainEvent(new FundsDepositedDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance
+        });
     }
 
     public void Withdraw(decimal amount)
@@ -52,6 +70,14 @@ public class Wallet : BaseEntity
         }
 
         Balance -= amount;
+
+        AddDomainEvent(new FundsWithdrawnDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance
+        });
     }
 
     public void HoldFunds(decimal amount)
@@ -66,6 +92,14 @@ public class Wallet : BaseEntity
         }
 
         HeldAmount += amount;
+
+        AddDomainEvent(new FundsHeldDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void ReleaseFunds(decimal amount)
@@ -80,6 +114,14 @@ public class Wallet : BaseEntity
         }
 
         HeldAmount -= amount;
+
+        AddDomainEvent(new FundsReleasedDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void DeductFromHeld(decimal amount)
@@ -95,6 +137,15 @@ public class Wallet : BaseEntity
 
         HeldAmount -= amount;
         Balance -= amount;
+
+        AddDomainEvent(new FundsDeductedFromHeldDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void Activate() => IsActive = true;

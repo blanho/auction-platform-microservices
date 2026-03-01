@@ -29,7 +29,7 @@ public class WalletRepository : IWalletRepository
 
     public async Task<Wallet> UpdateAsync(Wallet wallet)
     {
-        wallet.UpdatedAt = DateTimeOffset.UtcNow;
+        wallet.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Wallets.Update(wallet);
         return wallet;
     }

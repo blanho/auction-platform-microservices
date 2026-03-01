@@ -2,7 +2,7 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Domain.Entities;
 
-public class AutoBid : BaseEntity
+public class AutoBid : AggregateRoot
 {
     public Guid AuctionId { get; private set; }
     public Guid UserId { get; private set; }

@@ -176,9 +176,7 @@ public class ReviewRepository : IReviewRepository
 
     public async Task<Review> CreateAsync(Review review, CancellationToken cancellationToken = default)
     {
-        review.CreatedAt = _dateTime.UtcNow;
-        review.CreatedBy = _auditContext.UserId;
-        review.IsDeleted = false;
+        review.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
 
         await _context.Reviews.AddAsync(review, cancellationToken);
 
@@ -187,7 +185,7 @@ public class ReviewRepository : IReviewRepository
 
     public Task UpdateAsync(Review review, CancellationToken cancellationToken = default)
     {
-        review.UpdatedAt = _dateTime.UtcNow;
+        review.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
         _context.Reviews.Update(review);
 
         return Task.CompletedTask;
@@ -205,8 +203,7 @@ public class ReviewRepository : IReviewRepository
             return;
         }
 
-        review.IsDeleted = true;
-        review.UpdatedAt = _dateTime.UtcNow;
+        review.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
     }
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)

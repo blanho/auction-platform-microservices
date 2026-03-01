@@ -410,19 +410,19 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<SellerStatusResponse>(IdentityErrors.User.NotFound);
 
-        if (roles.Contains(AppRoles.Seller))
+        if (roles.Contains(Roles.Seller))
             return Result.Failure<SellerStatusResponse>(IdentityErrors.User.AlreadySeller);
 
-        if (roles.Contains(AppRoles.Admin))
+        if (roles.Contains(Roles.Admin))
             return Result.Failure<SellerStatusResponse>(IdentityErrors.User.AdminHasSellerPrivileges);
 
-        await EnsureRoleExistsAsync(AppRoles.Seller);
+        await EnsureRoleExistsAsync(Roles.Seller);
 
-        var result = await _userManager.AddToRoleAsync(user, AppRoles.Seller);
+        var result = await _userManager.AddToRoleAsync(user, Roles.Seller);
         if (!result.Succeeded)
             return Result.Failure<SellerStatusResponse>(IdentityErrors.User.SellerUpgradeFailed);
 
-        var updatedRoles = roles.Append(AppRoles.Seller).ToList();
+        var updatedRoles = roles.Append(Roles.Seller).ToList();
 
         await _mediator.Publish(new UserRoleChangedDomainEvent
         {
@@ -448,12 +448,12 @@ public class UserService : IUserService
         if (user == null)
             return Result.Failure<SellerStatusResponse>(IdentityErrors.User.NotFound);
 
-        var isSeller = roles.Contains(AppRoles.Seller) || roles.Contains(AppRoles.Admin);
+        var isSeller = roles.Contains(Roles.Seller) || roles.Contains(Roles.Admin);
 
         return Result.Success(new SellerStatusResponse
         {
             IsSeller = isSeller,
-            CanBecomeSeller = !isSeller && roles.Contains(AppRoles.User),
+            CanBecomeSeller = !isSeller && roles.Contains(Roles.User),
             Roles = roles.ToList()
         });
     }

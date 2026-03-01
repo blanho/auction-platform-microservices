@@ -72,9 +72,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<Bid> CreateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
-            bid.CreatedAt = _dateTime.UtcNow;
-            bid.CreatedBy = _auditContext.UserId;
-            bid.IsDeleted = false;
+            bid.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
 
             await _context.Bids.AddAsync(bid, cancellationToken);
             return bid;
@@ -85,9 +83,7 @@ namespace Bidding.Infrastructure.Repositories
             var utcNow = _dateTime.UtcNow;
             foreach (var bid in bids)
             {
-                bid.CreatedAt = utcNow;
-                bid.CreatedBy = _auditContext.UserId;
-                bid.IsDeleted = false;
+                bid.SetCreatedAudit(_auditContext.UserId, utcNow);
             }
             await _context.Bids.AddRangeAsync(bids, cancellationToken);
             return bids;
@@ -95,8 +91,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
         {
-            bid.UpdatedAt = _dateTime.UtcNow;
-            bid.UpdatedBy = _auditContext.UserId;
+            bid.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
             _context.Bids.Update(bid);
             return Task.CompletedTask;
         }
@@ -106,8 +101,7 @@ namespace Bidding.Infrastructure.Repositories
             var utcNow = _dateTime.UtcNow;
             foreach (var bid in bids)
             {
-                bid.UpdatedAt = utcNow;
-                bid.UpdatedBy = _auditContext.UserId;
+                bid.SetUpdatedAudit(_auditContext.UserId, utcNow);
             }
             _context.Bids.UpdateRange(bids);
             return Task.CompletedTask;
@@ -121,9 +115,7 @@ namespace Bidding.Infrastructure.Repositories
             
             if (bid != null)
             {
-                bid.IsDeleted = true;
-                bid.DeletedAt = _dateTime.UtcNow;
-                bid.DeletedBy = _auditContext.UserId;
+                bid.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             }
         }
 
@@ -136,9 +128,7 @@ namespace Bidding.Infrastructure.Repositories
 
             foreach (var bid in bids)
             {
-                bid.IsDeleted = true;
-                bid.DeletedAt = utcNow;
-                bid.DeletedBy = _auditContext.UserId;
+                bid.MarkAsDeleted(_auditContext.UserId, utcNow);
             }
             _context.Bids.UpdateRange(bids);
         }

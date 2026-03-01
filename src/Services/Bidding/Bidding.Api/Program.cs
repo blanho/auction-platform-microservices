@@ -44,7 +44,7 @@ builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
 builder.Services.AddGrpcClients(builder.Configuration, builder.Environment);
-builder.Services.AddBiddingAuthentication(builder.Configuration, builder.Environment);
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddBiddingRateLimiting();
@@ -77,7 +77,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
-app.UseAccessAuthorization();
 app.MapCarter();
 
 if (app.Environment.IsDevelopment())

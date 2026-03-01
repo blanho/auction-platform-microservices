@@ -2,8 +2,6 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
-// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
-// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.UpdateAuction;
 

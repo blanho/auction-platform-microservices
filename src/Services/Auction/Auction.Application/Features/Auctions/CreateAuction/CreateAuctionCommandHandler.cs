@@ -4,8 +4,6 @@ using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
-// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
-// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.CreateAuction;
 
@@ -39,8 +37,6 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.SellerUsername, _dateTime.UtcNow);
 
         var auction = CreateAuctionEntity(request);
-        
-        auction.RaiseCreatedEvent();
 
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 

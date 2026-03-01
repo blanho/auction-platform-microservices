@@ -38,14 +38,12 @@ public class AuctionViewRepository : IAuctionViewRepository
     {
         var view = new AuctionView
         {
-            Id = Guid.NewGuid(),
             AuctionId = auctionId,
             UserId = userId,
             IpAddress = ipAddress,
-            ViewedAt = _dateTime.UtcNow,
-            CreatedAt = _dateTime.UtcNow,
-            IsDeleted = false
+            ViewedAt = _dateTime.UtcNow
         };
+        view.SetCreatedAudit(Guid.Empty, _dateTime.UtcNow);
 
         await _context.AuctionViews.AddAsync(view, cancellationToken);
     }

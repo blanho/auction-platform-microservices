@@ -1,6 +1,5 @@
 using BuildingBlocks.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BuildingBlocks.Web.Extensions;
@@ -25,15 +24,6 @@ public static class AuthorizationExtensions
         return services;
     }
 
-    public static IServiceCollection AddPermissionBasedAuthorization(this IServiceCollection services)
-        => services.AddRbacAuthorization();
-
-    public static IServiceCollection AddResourceBasedAuthorization(this IServiceCollection services)
-        => services.AddRbacAuthorization();
-
     public static IServiceCollection AddCoreAuthorization(this IServiceCollection services)
         => services.AddRbacAuthorization();
-
-    public static IApplicationBuilder UseAccessAuthorization(this IApplicationBuilder app)
-        => app;
 }

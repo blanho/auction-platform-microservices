@@ -1,11 +1,12 @@
 #nullable enable
 using Auctions.Domain.Events;
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Exceptions;
 using Auctions.Domain.Enums;
 
 namespace Auctions.Domain.Entities;
 
-public class Auction : BaseEntity
+public class Auction : AggregateRoot
 {
     private Auction() { }
     public decimal ReservePrice { get; private set; }
@@ -32,9 +33,9 @@ public class Auction : BaseEntity
     public static Auction Create(CreateAuctionParams createParams)
     {
         if (createParams.BuyNowPrice.HasValue && createParams.BuyNowPrice.Value <= createParams.ReservePrice)
-            throw new InvalidOperationException("Buy now price must be greater than reserve price");
+            throw new DomainInvariantException("Buy now price must be greater than reserve price");
 
-        return new Auction
+        var auction = new Auction
         {
             Id = Guid.NewGuid(),
             SellerId = createParams.SellerId,
@@ -47,6 +48,18 @@ public class Auction : BaseEntity
             IsFeatured = createParams.IsFeatured,
             Status = Status.Live
         };
+
+        auction.AddDomainEvent(new AuctionCreatedDomainEvent
+        {
+            AuctionId = auction.Id,
+            SellerId = auction.SellerId,
+            SellerUsername = auction.SellerUsername,
+            Title = auction.Item.Title,
+            ReservePrice = auction.ReservePrice,
+            AuctionEnd = auction.AuctionEnd
+        });
+
+        return auction;
     }
 
     public static Auction CreateScheduled(
@@ -91,7 +104,7 @@ public class Auction : BaseEntity
     public void UpdateReservePrice(decimal newPrice)
     {
         if (Status != Status.Live || CurrentHighBid.HasValue)
-            throw new InvalidOperationException("Cannot change reserve price after bids have been placed");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change reserve price after bids have been placed");
 
         ReservePrice = newPrice;
     }
@@ -99,10 +112,10 @@ public class Auction : BaseEntity
     public void UpdateBuyNowPrice(decimal? newPrice)
     {
         if (Status == Status.Finished)
-            throw new InvalidOperationException("Cannot change buy now price on finished auction");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change buy now price on finished auction");
 
         if (newPrice.HasValue && newPrice.Value <= ReservePrice)
-            throw new InvalidOperationException("Buy now price must be greater than reserve price");
+            throw new DomainInvariantException("Buy now price must be greater than reserve price");
 
         BuyNowPrice = newPrice;
     }
@@ -110,21 +123,17 @@ public class Auction : BaseEntity
     public void ExtendAuctionEnd(TimeSpan extension)
     {
         if (Status != Status.Live)
-            throw new InvalidOperationException("Can only extend live auctions");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Can only extend live auctions");
 
         AuctionEnd = AuctionEnd.Add(extension);
     }
 
-    public void RaiseCreatedEvent()
+    public void Delete()
     {
-        AddDomainEvent(new AuctionCreatedDomainEvent
+        AddDomainEvent(new AuctionDeletedDomainEvent
         {
             AuctionId = Id,
-            SellerId = SellerId,
-            SellerUsername = SellerUsername,
-            Title = Item.Title,
-            ReservePrice = ReservePrice,
-            AuctionEnd = AuctionEnd
+            SellerId = SellerId
         });
     }
 
@@ -211,15 +220,6 @@ public class Auction : BaseEntity
         });
     }
 
-    public void RaiseDeletedEvent()
-    {
-        AddDomainEvent(new AuctionDeletedDomainEvent
-        {
-            AuctionId = Id,
-            SellerId = SellerId
-        });
-    }
-
     public void UpdateHighBid(decimal bidAmount, Guid? bidderId = null, string? bidderUsername = null)
     {
         CurrentHighBid = bidAmount;
@@ -228,12 +228,20 @@ public class Auction : BaseEntity
             WinnerId = bidderId;
             WinnerUsername = bidderUsername;
         }
+
+        AddDomainEvent(new AuctionHighBidUpdatedDomainEvent
+        {
+            AuctionId = Id,
+            BidAmount = bidAmount,
+            BidderId = bidderId,
+            BidderUsername = bidderUsername
+        });
     }
 
     public void Cancel(string reason)
     {
         if (Status == Status.Finished)
-            throw new InvalidOperationException("Cannot cancel finished auction");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot cancel finished auction");
 
         var oldStatus = Status;
         Status = Status.Cancelled;

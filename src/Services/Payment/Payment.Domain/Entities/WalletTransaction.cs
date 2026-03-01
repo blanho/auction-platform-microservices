@@ -4,6 +4,8 @@ namespace Payment.Domain.Entities;
 
 public class WalletTransaction : BaseEntity
 {
+    private WalletTransaction() { }
+
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
     public TransactionType Type { get; private set; }
@@ -28,9 +30,8 @@ public class WalletTransaction : BaseEntity
         string? referenceType = null,
         string? paymentMethod = null)
     {
-        return new WalletTransaction
+        var transaction = new WalletTransaction
         {
-            Id = Guid.NewGuid(),
             UserId = userId,
             Username = username,
             Type = type,
@@ -43,6 +44,7 @@ public class WalletTransaction : BaseEntity
             Status = TransactionStatus.Pending,
             CreatedAt = DateTimeOffset.UtcNow
         };
+        return transaction;
     }
 
     public void MarkAsProcessing() => Status = TransactionStatus.Processing;

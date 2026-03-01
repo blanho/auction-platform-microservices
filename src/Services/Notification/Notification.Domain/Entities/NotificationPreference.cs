@@ -1,6 +1,6 @@
 namespace Notification.Domain.Entities;
 
-public class NotificationPreference : BaseEntity
+public class NotificationPreference : AggregateRoot
 {
     public string UserId { get; private set; } = string.Empty;
     public bool EmailEnabled { get; private set; } = true;

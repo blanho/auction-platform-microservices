@@ -5,14 +5,41 @@ namespace BuildingBlocks.Domain.Entities;
 
 public abstract class BaseEntity : IAuditableEntity
 {
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public DateTimeOffset? UpdatedAt { get; set; }
-    public Guid UpdatedBy { get; set; }
-    public bool IsDeleted { get; set; } = false;
-    public DateTimeOffset? DeletedAt { get; set; }
-    public Guid DeletedBy { get; set; }
+    public Guid Id { get; protected set; } = Guid.NewGuid();
+    public DateTimeOffset CreatedAt { get; protected set; }
+    public Guid CreatedBy { get; protected set; }
+    public DateTimeOffset? UpdatedAt { get; protected set; }
+    public Guid UpdatedBy { get; protected set; }
+    public bool IsDeleted { get; protected set; }
+    public DateTimeOffset? DeletedAt { get; protected set; }
+    public Guid DeletedBy { get; protected set; }
+
+    public void SetCreatedAudit(Guid userId, DateTimeOffset timestamp)
+    {
+        CreatedBy = userId;
+        CreatedAt = timestamp;
+        IsDeleted = false;
+    }
+
+    public void SetUpdatedAudit(Guid userId, DateTimeOffset timestamp)
+    {
+        UpdatedBy = userId;
+        UpdatedAt = timestamp;
+    }
+
+    public void MarkAsDeleted(Guid userId, DateTimeOffset timestamp)
+    {
+        IsDeleted = true;
+        DeletedBy = userId;
+        DeletedAt = timestamp;
+    }
+
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedAt = null;
+        DeletedBy = Guid.Empty;
+    }
 
     private readonly List<IDomainEvent> _domainEvents = new();
 

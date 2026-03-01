@@ -24,7 +24,7 @@ public class ObservabilityOptions
 
 public static class ObservabilityExtensions
 {
-    public static readonly ActivitySource ActivitySource = new("AuctionService.Activity");
+    public static readonly ActivitySource ActivitySource = new("AuctionPlatform.Activity");
 
     public static IServiceCollection AddObservability(
         this IServiceCollection services,

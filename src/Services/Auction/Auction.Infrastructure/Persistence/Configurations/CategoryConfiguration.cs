@@ -53,6 +53,9 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(x => x.ParentCategoryId);
         builder.HasIndex(x => new { x.IsActive, x.DisplayOrder });
+
+        builder.Property(x => x.Files)
+            .HasColumnType("jsonb");
     }
 }
 

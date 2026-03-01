@@ -92,11 +92,10 @@ public class JobItemRepository : IJobItemRepository
     public async Task AddRangeAsync(
         IEnumerable<JobItem> items, CancellationToken cancellationToken = default)
     {
+        var utcNow = _dateTime.UtcNowOffset;
         foreach (var item in items)
         {
-            item.CreatedAt = _dateTime.UtcNowOffset;
-            item.CreatedBy = _auditContext.UserId;
-            item.IsDeleted = false;
+            item.SetCreatedAudit(_auditContext.UserId, utcNow);
         }
 
         await _context.JobItems.AddRangeAsync(items, cancellationToken);
@@ -114,9 +113,7 @@ public class JobItemRepository : IJobItemRepository
         foreach (var (payloadJson, sequenceNumber) in items)
         {
             var jobItem = JobItem.Create(jobId, payloadJson, sequenceNumber, maxRetryCount);
-            jobItem.CreatedAt = _dateTime.UtcNowOffset;
-            jobItem.CreatedBy = _auditContext.UserId;
-            jobItem.IsDeleted = false;
+            jobItem.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
             batch.Add(jobItem);
 
             if (batch.Count >= batchSize)
@@ -147,8 +144,7 @@ public class JobItemRepository : IJobItemRepository
 
     public Task UpdateAsync(JobItem item, CancellationToken cancellationToken = default)
     {
-        item.UpdatedAt = _dateTime.UtcNowOffset;
-        item.UpdatedBy = _auditContext.UserId;
+        item.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
         _context.JobItems.Update(item);
         return Task.CompletedTask;
     }
@@ -162,8 +158,7 @@ public class JobItemRepository : IJobItemRepository
         foreach (var item in failedItems)
         {
             item.ResetForRetry();
-            item.UpdatedAt = _dateTime.UtcNowOffset;
-            item.UpdatedBy = _auditContext.UserId;
+            item.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
         }
     }
 }

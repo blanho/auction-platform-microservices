@@ -89,16 +89,14 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<Brand> AddAsync(Brand brand, CancellationToken cancellationToken = default)
         {
-            brand.CreatedAt = _dateTime.UtcNow;
-            brand.CreatedBy = _auditContext.UserId;
-            brand.IsDeleted = false;
+            brand.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
             await _context.Brands.AddAsync(brand, cancellationToken);
             return brand;
         }
 
         public Task UpdateAsync(Brand brand, CancellationToken cancellationToken = default)
         {
-            brand.UpdatedAt = _dateTime.UtcNow;
+            brand.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
             _context.Brands.Update(brand);
             return Task.CompletedTask;
         }
@@ -112,9 +110,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             if (brand != null)
             {
-                brand.IsDeleted = true;
-                brand.DeletedAt = _dateTime.UtcNow;
-                brand.DeletedBy = _auditContext.UserId;
+                brand.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             }
         }
     }

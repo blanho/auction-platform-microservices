@@ -1,8 +1,6 @@
 using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
-// using BuildingBlocks.Infrastructure.Caching; // Use BuildingBlocks.Application.Abstractions instead
-// using BuildingBlocks.Infrastructure.Repository; // Use BuildingBlocks.Application.Abstractions instead
 
 namespace Auctions.Application.Commands.DeleteAuction;
 
@@ -41,7 +39,7 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
             return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to delete this auction"));
         }
 
-        auction.RaiseDeletedEvent();
+        auction.Delete();
 
         await _repository.DeleteAsync(auction, cancellationToken);
 

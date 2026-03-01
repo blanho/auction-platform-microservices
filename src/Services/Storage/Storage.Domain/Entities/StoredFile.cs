@@ -2,7 +2,7 @@ using Storage.Domain.Enums;
 
 namespace Storage.Domain.Entities;
 
-public class StoredFile : BaseEntity
+public class StoredFile : AggregateRoot
 {
     public string FileName { get; set; } = string.Empty;
     public string StoredFileName { get; set; } = string.Empty;

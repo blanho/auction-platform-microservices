@@ -1,6 +1,7 @@
 using Auction.Domain.Tests.Builders;
 using Auctions.Domain.Events;
 using Auctions.Domain.Enums;
+using BuildingBlocks.Domain.Exceptions;
 
 namespace Auction.Domain.Tests.Entities;
 
@@ -56,7 +57,7 @@ public class AuctionTests
             .WithBuyNowPrice(50m)
             .Build();
 
-        action.Should().Throw<InvalidOperationException>()
+        action.Should().Throw<DomainInvariantException>()
             .WithMessage("*Buy now price must be greater than reserve price*");
     }
 
@@ -68,7 +69,7 @@ public class AuctionTests
             .WithBuyNowPrice(100m)
             .Build();
 
-        action.Should().Throw<InvalidOperationException>()
+        action.Should().Throw<DomainInvariantException>()
             .WithMessage("*Buy now price must be greater than reserve price*");
     }
 
@@ -115,7 +116,7 @@ public class AuctionTests
 
         var action = () => auction.UpdateBuyNowPrice(50m);
 
-        action.Should().Throw<InvalidOperationException>()
+        action.Should().Throw<DomainInvariantException>()
             .WithMessage("*Buy now price must be greater than reserve price*");
     }
 
@@ -134,11 +135,9 @@ public class AuctionTests
     }
 
     [Fact]
-    public void RaiseCreatedEvent_ShouldAddDomainEvent()
+    public void Create_ShouldRaiseCreatedDomainEvent()
     {
         var auction = AuctionBuilder.Default().Build();
-
-        auction.RaiseCreatedEvent();
 
         auction.DomainEvents.Should().ContainSingle();
         auction.DomainEvents.First().Should().BeOfType<AuctionCreatedDomainEvent>();
@@ -148,6 +147,7 @@ public class AuctionTests
     public void ChangeStatus_ShouldUpdateStatusAndRaiseEvent()
     {
         var auction = AuctionBuilder.Default().Build();
+        auction.ClearDomainEvents();
 
         auction.ChangeStatus(Status.Finished);
 
@@ -163,6 +163,7 @@ public class AuctionTests
     public void Finish_WithWinner_ShouldSetWinnerAndRaiseEvent()
     {
         var auction = AuctionBuilder.Default().Build();
+        auction.ClearDomainEvents();
         var winnerId = Guid.NewGuid();
         var winnerUsername = "winner";
         var soldAmount = 150m;
@@ -194,6 +195,7 @@ public class AuctionTests
             .WithReservePrice(100m)
             .WithBuyNowPrice(500m)
             .Build();
+        auction.ClearDomainEvents();
         var buyerId = Guid.NewGuid();
         var buyerUsername = "buyer";
 
@@ -227,6 +229,7 @@ public class AuctionTests
     public void Cancel_WhenLive_ShouldSetCancelledStatus()
     {
         var auction = AuctionBuilder.Default().Build();
+        auction.ClearDomainEvents();
 
         auction.Cancel("Test cancellation");
 

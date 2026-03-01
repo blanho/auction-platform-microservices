@@ -61,7 +61,7 @@ public static class MassTransitOutboxExtensions
                     e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
                 });
 
-                cfg.UseMessageRetry(r => r.Immediate(5));
+                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
                 cfg.ConfigureEndpoints(context);
             });
         });

@@ -150,15 +150,12 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
-            auction.CreatedAt = _dateTime.UtcNow;
-            auction.CreatedBy = _auditContext.UserId;
-            auction.IsDeleted = false;
+            var utcNow = _dateTime.UtcNow;
+            auction.SetCreatedAudit(_auditContext.UserId, utcNow);
 
             if (auction.Item != null)
             {
-                auction.Item.CreatedAt = _dateTime.UtcNow;
-                auction.Item.CreatedBy = _auditContext.UserId;
-                auction.Item.IsDeleted = false;
+                auction.Item.SetCreatedAudit(_auditContext.UserId, utcNow);
             }
 
             await _context.Auctions.AddAsync(auction, cancellationToken);
@@ -168,8 +165,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
-            auction.UpdatedAt = _dateTime.UtcNow;
-            auction.UpdatedBy = _auditContext.UserId;
+            auction.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
 
             _context.Auctions.Update(auction);
             return Task.CompletedTask;
@@ -184,17 +180,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             if (auction != null)
             {
-                auction.IsDeleted = true;
-                auction.DeletedAt = _dateTime.UtcNow;
-                auction.DeletedBy = _auditContext.UserId;
+                auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             }
         }
 
         public Task DeleteAsync(Auction auction, CancellationToken cancellationToken = default)
         {
-            auction.IsDeleted = true;
-            auction.DeletedAt = _dateTime.UtcNow;
-            auction.DeletedBy = _auditContext.UserId;
+            auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             return Task.CompletedTask;
         }
 

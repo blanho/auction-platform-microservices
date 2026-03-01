@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Infrastructure.Configuration;
 using Notification.Infrastructure.Consumers;
+using Notification.Infrastructure.Messaging.Consumers;
 using Notification.Infrastructure.Persistence;
 
 namespace Notification.Infrastructure.Messaging;
@@ -90,6 +91,46 @@ public static class MassTransitConfiguration
             {
                 cfg.UseMessageRetry(r => r
                     .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<BidAcceptedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<BidRejectedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<OutbidConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<SecurityAlertConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<MarkAllNotificationsReadConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: 3, minInterval: TimeSpan.FromSeconds(2), maxInterval: TimeSpan.FromMinutes(1), intervalDelta: TimeSpan.FromSeconds(5))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -187,6 +228,52 @@ public static class MassTransitConfiguration
                     e.ConfigureConsumer<UserLoginConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-bid-accepted", e =>
+                {
+                    e.ConfigureConsumer<BidAcceptedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-bid-rejected", e =>
+                {
+                    e.ConfigureConsumer<BidRejectedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-outbid", e =>
+                {
+                    e.ConfigureConsumer<OutbidConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-security-alert", e =>
+                {
+                    e.ConfigureConsumer<SecurityAlertConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r
+                        .Intervals(
+                            TimeSpan.FromSeconds(5),
+                            TimeSpan.FromSeconds(30),
+                            TimeSpan.FromMinutes(5),
+                            TimeSpan.FromMinutes(30),
+                            TimeSpan.FromHours(1)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-mark-all-read", e =>
+                {
+                    e.ConfigureConsumer<MarkAllNotificationsReadConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30)));
                     e.UseInMemoryOutbox(context);
                 });
 

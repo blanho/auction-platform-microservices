@@ -106,9 +106,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default)
         {
-            category.CreatedAt = _dateTime.UtcNow;
-            category.CreatedBy = _auditContext.UserId;
-            category.IsDeleted = false;
+            category.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
             
             await _context.Categories.AddAsync(category, cancellationToken);
             
@@ -117,15 +115,14 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
         {
-            category.UpdatedAt = _dateTime.UtcNow;
+            category.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
             _context.Categories.Update(category);
             await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
         {
-            category.IsDeleted = true;
-            category.DeletedAt = _dateTime.UtcNow;
+            category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             _context.Categories.Update(category);
             await Task.CompletedTask;
         }
@@ -138,8 +135,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 return;
             }
 
-            category.IsDeleted = true;
-            category.DeletedAt = _dateTime.UtcNow;
+            category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
             _context.Categories.Update(category);
         }
 

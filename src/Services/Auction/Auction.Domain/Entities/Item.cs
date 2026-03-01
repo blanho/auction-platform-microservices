@@ -1,6 +1,5 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Auctions.Domain.Entities;
 
@@ -21,10 +20,8 @@ public class Item : BaseEntity
     public Auction? Auction { get; private set; }
     public Guid AuctionId { get; private set; }
 
-    [Column(TypeName = "jsonb")]
     public List<MediaFile> Files { get; private set; } = new();
 
-    [Column(TypeName = "jsonb")]
     public Dictionary<string, string> Attributes { get; private set; } = new();
 
     private Item() { }

@@ -8,6 +8,7 @@ public record RequestJobCommand
     public string PayloadJson { get; init; } = string.Empty;
     public int Priority { get; init; }
     public int MaxRetryCount { get; init; } = 3;
+    public int TotalItems { get; init; }
     public List<RequestJobItemPayload> Items { get; init; } = [];
 }
 

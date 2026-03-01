@@ -52,6 +52,12 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.BrandId);
         builder.HasIndex(x => x.Title);
         builder.HasIndex(x => x.Condition);
+
+        builder.Property(x => x.Files)
+            .HasColumnType("jsonb");
+
+        builder.Property(x => x.Attributes)
+            .HasColumnType("jsonb");
     }
 }
 

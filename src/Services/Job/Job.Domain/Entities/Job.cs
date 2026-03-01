@@ -5,7 +5,7 @@ using Jobs.Domain.Events;
 
 namespace Jobs.Domain.Entities;
 
-public class Job : BaseEntity
+public class Job : AggregateRoot
 {
     public JobType Type { get; private set; }
     public JobStatus Status { get; private set; }
@@ -24,6 +24,9 @@ public class Job : BaseEntity
 
     private readonly List<JobItem> _items = new();
     public IReadOnlyCollection<JobItem> Items => _items.AsReadOnly();
+
+    private readonly List<JobExecutionLog> _executionLogs = new();
+    public IReadOnlyCollection<JobExecutionLog> ExecutionLogs => _executionLogs.AsReadOnly();
 
     private Job() { }
 
@@ -230,6 +233,7 @@ public class Job : BaseEntity
             throw new InvalidEntityStateException(nameof(Job), Status.ToString(),
                 "Can only retry a failed or partially completed job.");
 
+        var previousStatus = Status;
         Status = JobStatus.Pending;
         ErrorMessage = null;
         StartedAt = null;
@@ -237,6 +241,32 @@ public class Job : BaseEntity
         FailedItems = 0;
         CompletedItems = 0;
         ProgressPercentage = 0;
+
+        AddExecutionLog(JobExecutionLog.CreateStateTransition(
+            Id, previousStatus, JobStatus.Pending, "Job reset for retry."));
+    }
+
+    public void AddExecutionLog(JobExecutionLog log)
+    {
+        if (log.JobId != Id)
+            throw new DomainInvariantException("Execution log must belong to this job.");
+
+        _executionLogs.Add(log);
+    }
+
+    public void LogInformation(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null, TimeSpan? duration = null)
+    {
+        _executionLogs.Add(JobExecutionLog.CreateInformation(Id, message, context, duration));
+    }
+
+    public void LogWarning(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null)
+    {
+        _executionLogs.Add(JobExecutionLog.CreateWarning(Id, message, context));
+    }
+
+    public void LogError(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null)
+    {
+        _executionLogs.Add(JobExecutionLog.CreateError(Id, message, context));
     }
 
     private void RecalculateProgress()

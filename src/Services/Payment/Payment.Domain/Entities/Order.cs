@@ -5,7 +5,7 @@ using Payment.Domain.Events;
 
 namespace Payment.Domain.Entities;
 
-public class Order : BaseEntity
+public class Order : AggregateRoot
 {
     private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> AllowedTransitions = new()
     {
@@ -56,13 +56,18 @@ public class Order : BaseEntity
         string sellerUsername,
         string itemTitle,
         decimal winningBid,
-        decimal? platformFeePercent = null)
+        decimal? platformFeePercent = null,
+        decimal? shippingCost = null,
+        string? shippingAddress = null,
+        string? buyerNotes = null)
     {
         decimal? platformFee = platformFeePercent.HasValue
             ? winningBid * platformFeePercent.Value / 100
             : null;
 
-        return new Order
+        var totalAmount = winningBid + (shippingCost ?? 0);
+
+        var order = new Order
         {
             Id = Guid.NewGuid(),
             AuctionId = auctionId,
@@ -72,12 +77,29 @@ public class Order : BaseEntity
             SellerUsername = sellerUsername,
             ItemTitle = itemTitle,
             WinningBid = winningBid,
-            TotalAmount = winningBid,
+            TotalAmount = totalAmount,
             PlatformFee = platformFee,
+            ShippingCost = shippingCost,
+            ShippingAddress = shippingAddress,
+            BuyerNotes = buyerNotes,
             Status = OrderStatus.PaymentPending,
             PaymentStatus = PaymentStatus.Pending,
             CreatedAt = DateTimeOffset.UtcNow
         };
+
+        order.AddDomainEvent(new OrderCreatedDomainEvent
+        {
+            OrderId = order.Id,
+            AuctionId = order.AuctionId,
+            BuyerId = order.BuyerId,
+            BuyerUsername = order.BuyerUsername,
+            SellerId = order.SellerId,
+            SellerUsername = order.SellerUsername,
+            ItemTitle = order.ItemTitle,
+            TotalAmount = order.TotalAmount
+        });
+
+        return order;
     }
 
     public void SetShippingAddress(string address) => ShippingAddress = address;
@@ -91,21 +113,6 @@ public class Order : BaseEntity
     public void AddBuyerNotes(string notes) => BuyerNotes = notes;
 
     public void AddSellerNotes(string notes) => SellerNotes = notes;
-
-    public void RaiseCreatedEvent()
-    {
-        AddDomainEvent(new OrderCreatedDomainEvent
-        {
-            OrderId = Id,
-            AuctionId = AuctionId,
-            BuyerId = BuyerId,
-            BuyerUsername = BuyerUsername,
-            SellerId = SellerId,
-            SellerUsername = SellerUsername,
-            ItemTitle = ItemTitle,
-            TotalAmount = TotalAmount
-        });
-    }
 
     public void ChangeStatus(OrderStatus newStatus)
     {
