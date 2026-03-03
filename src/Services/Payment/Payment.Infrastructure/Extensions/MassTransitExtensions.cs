@@ -19,6 +19,7 @@ public static class MassTransitExtensions
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
             x.AddConsumer<CreateBuyNowOrderConsumer>();
+            x.AddConsumer<GenerateOrderReportConsumer>();
 
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
             {
@@ -48,22 +49,55 @@ public static class MassTransitExtensions
                 cfg.ReceiveEndpoint("payment-auction-finished", e =>
                 {
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
                 cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
                 {
                     e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
                 
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                });
+                
+                cfg.ReceiveEndpoint("payment-generate-order-report", e =>
+                {
+                    e.ConfigureConsumer<GenerateOrderReportConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(2)));
+                    e.PrefetchCount = 4;
                 });
 
-                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

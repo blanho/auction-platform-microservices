@@ -19,6 +19,7 @@ public static class MassTransitOutboxExtensions
         services.AddMassTransit(x =>
         {
             x.AddConsumer<AuctionFinishedConsumer>();
+            x.AddConsumer<ProcessAutoBidsConsumer>();
 
             x.AddEntityFrameworkOutbox<BidDbContext>(o =>
             {
@@ -44,7 +45,17 @@ public static class MassTransitOutboxExtensions
                     h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
                     h.ContinuationTimeout(TimeSpan.FromSeconds(20));
                 });
-                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

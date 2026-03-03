@@ -49,6 +49,8 @@ export function UserDashboardPage() {
   const { data: sellerAnalytics, isLoading: sellerLoading } = useSellerAnalytics(timeRange)
   const { data: quickStats, isLoading: quickLoading } = useQuickStats()
 
+  const hasSellerData = sellerAnalytics && (sellerAnalytics.totalAuctions > 0 || sellerAnalytics.totalRevenue > 0)
+
   const handleTimeRangeChange = (_: React.MouseEvent<HTMLElement>, newRange: TimeRange | null) => {
     if (newRange) {
       setTimeRange(newRange)

@@ -64,6 +64,11 @@ internal static class ServiceCollectionExtensions
                     h.Password(rabbitConfig["Password"] ?? "guest");
                 });
 
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
                 cfg.UseMessageRetry(r => r.Exponential(
                     retryLimit: 3,
                     minInterval: TimeSpan.FromMilliseconds(200),

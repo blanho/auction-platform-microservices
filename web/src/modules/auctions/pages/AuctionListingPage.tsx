@@ -168,7 +168,7 @@ export const AuctionListingPage = () => {
                     {category.name}
                   </Typography>
                   <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
-                    ({category.count})
+                    ({category.auctionCount ?? 0})
                   </Typography>
                 </Box>
               }

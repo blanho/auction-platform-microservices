@@ -1,4 +1,6 @@
-namespace Bidding.Application.Features.Bids.Commands.PlaceBid;
+using BuildingBlocks.Domain.Constants;
+
+namespace Bidding.Application.Features.Bids.PlaceBid;
 
 public class PlaceBidCommandValidator : AbstractValidator<PlaceBidCommand>
 {
@@ -6,26 +8,26 @@ public class PlaceBidCommandValidator : AbstractValidator<PlaceBidCommand>
     {
         RuleFor(x => x.AuctionId)
             .NotEmpty()
-            .WithMessage("Auction ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Auction ID"));
 
         RuleFor(x => x.BidderId)
             .NotEmpty()
-            .WithMessage("Bidder ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Bidder ID"));
 
         RuleFor(x => x.BidderUsername)
             .NotEmpty()
-            .WithMessage("Bidder username is required")
-            .MaximumLength(256)
-            .WithMessage("Bidder username cannot exceed 256 characters");
+            .WithMessage(ValidationConstants.Messages.Required("Bidder username"))
+            .MaximumLength(ValidationConstants.StringLength.Username)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Bidder username", ValidationConstants.StringLength.Username));
 
         RuleFor(x => x.Amount)
             .GreaterThan(0)
-            .WithMessage("Bid amount must be greater than 0")
+            .WithMessage(ValidationConstants.Messages.MustBePositive("Bid amount"))
             .LessThanOrEqualTo(10_000_000)
-            .WithMessage("Bid amount cannot exceed 10 million");
+            .WithMessage(ValidationConstants.Messages.OutOfRange("Bid amount", 0, 10_000_000));
 
         RuleFor(x => x.IdempotencyKey)
             .NotEmpty()
-            .WithMessage("Idempotency key is required");
+            .WithMessage(ValidationConstants.Messages.Required("Idempotency key"));
     }
 }

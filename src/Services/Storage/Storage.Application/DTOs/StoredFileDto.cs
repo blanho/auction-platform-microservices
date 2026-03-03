@@ -17,3 +17,18 @@ public record FileUrlDto(
     Guid FileId,
     string Url
 );
+
+public record PresignedUploadDto(
+    string FileId,
+    string StoredFileName,
+    string UploadUrl,
+    Dictionary<string, string> Headers,
+    DateTimeOffset ExpiresAt
+);
+
+public record PresignedDownloadDto(
+    string DownloadUrl,
+    string FileName,
+    string ContentType,
+    DateTimeOffset ExpiresAt
+);

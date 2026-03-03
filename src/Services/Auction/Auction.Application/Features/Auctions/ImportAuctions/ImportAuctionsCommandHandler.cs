@@ -1,12 +1,11 @@
 using System.Diagnostics;
 using Auctions.Application.DTOs;
-using Auctions.Application.Features.Auctions.ImportAuctions;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Domain.Constants;
 
-namespace Auctions.Application.Commands.ImportAuctions;
+namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsCommand, ImportAuctionsResult>
 {

@@ -46,7 +46,7 @@ const FILTER_CONFIG: FilterPanelConfig = {
 }
 
 export function BrandsManagementPage() {
-  const pagination = usePagination<BrandFilter>({ pageSize: 10 })
+  const pagination = usePagination<BrandFilter>({ defaultPageSize: 10 })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<Brand | null>(null)
@@ -73,8 +73,6 @@ export function BrandsManagementPage() {
     sortOrder: pagination.sortOrder,
     search: pagination.filter.search,
   })
-
-  const items = useMemo(() => brandsData?.items ?? [], [brandsData?.items])
 
   const createMutation = useCreateBrand()
   const updateMutation = useUpdateBrand()
@@ -275,14 +273,12 @@ export function BrandsManagementPage() {
 
             <DataTable
               columns={columns}
-              data={items}
+              data={brandsData}
               sortBy={pagination.sortBy}
               sortOrder={pagination.sortOrder}
               onSort={pagination.handleSort}
               page={pagination.page}
               pageSize={pagination.pageSize}
-              totalCount={brandsData?.totalCount ?? 0}
-              totalPages={brandsData?.totalPages ?? 0}
               onPageChange={pagination.setPage}
               onPageSizeChange={pagination.setPageSize}
               onRowClick={(row) => handleOpenDialog(row)}

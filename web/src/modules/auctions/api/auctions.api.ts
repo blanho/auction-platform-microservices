@@ -102,4 +102,26 @@ export const auctionsApi = {
       hasPreviousPage: data.hasPreviousPage,
     }
   },
+
+  async buyNow(id: string): Promise<{ orderId: string; success: boolean }> {
+    const response = await http.post<{ orderId: string; success: boolean }>(
+      `/auctions/${id}/buy-now`
+    )
+    return response.data
+  },
+
+  async cancelAuction(id: string, reason?: string): Promise<void> {
+    await http.post(`/auctions/${id}/cancel`, { reason })
+  },
+
+  async extendAuction(
+    id: string,
+    newEndTime: string
+  ): Promise<{ auctionId: string; newEndTime: string }> {
+    const response = await http.post<{ auctionId: string; newEndTime: string }>(
+      `/auctions/${id}/extend`,
+      { newEndTime }
+    )
+    return response.data
+  },
 }

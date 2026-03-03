@@ -11,5 +11,7 @@ public enum JobType
     AnalyticsAggregation = 6,
     AuctionImport = 7,
     BulkAuctionUpdate = 8,
-    BulkFileUpload = 9
+    BulkFileUpload = 9,
+    ReportGeneration = 10,
+    ImageProcessing = 11
 }

@@ -16,3 +16,4 @@ global using Auctions.Infrastructure.Persistence.Repositories;
 global using AuctionService.Contracts.Events;
 global using BidService.Contracts.Events;
 global using OrchestrationService.Contracts.Events;
+global using StorageService.Contracts.Events;

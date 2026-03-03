@@ -1,6 +1,7 @@
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using MassTransit;
+using Microsoft.Extensions.Options;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
@@ -13,6 +14,7 @@ public class UploadMultipleFilesCommandHandler(
     IStoredFileRepository repository,
     IUnitOfWork unitOfWork,
     IPublishEndpoint publishEndpoint,
+    IOptions<FileStorageSettings> storageSettings,
     ILogger<UploadMultipleFilesCommandHandler> logger)
     : ICommandHandler<UploadMultipleFilesCommand, BatchUploadResultDto>
 {
@@ -25,19 +27,20 @@ public class UploadMultipleFilesCommandHandler(
         logger.LogDebug("Uploading {Count} files with max {Concurrency} concurrent",
             request.Files.Count, MaxConcurrentUploads);
 
+        var provider = ResolveStorageProvider(storageSettings.Value.Provider);
         var storedFiles = new StoredFile[request.Files.Count];
         using var semaphore = new SemaphoreSlim(MaxConcurrentUploads);
 
         var uploadTasks = request.Files.Select((file, index) =>
-            UploadSingleFileAsync(semaphore, file, request, index, storedFiles, cancellationToken));
+            UploadSingleFileAsync(semaphore, file, request, index, storedFiles, provider, cancellationToken));
 
         await Task.WhenAll(uploadTasks);
 
         await repository.AddRangeAsync(storedFiles.ToList(), cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var publishTasks = storedFiles.Select(storedFile =>
-            publishEndpoint.Publish(new FileUploadedEvent
+        foreach (var storedFile in storedFiles)
+        {
+            await publishEndpoint.Publish(new FileUploadedEvent
             {
                 FileId = storedFile.Id,
                 FileName = storedFile.FileName,
@@ -46,9 +49,10 @@ public class UploadMultipleFilesCommandHandler(
                 Url = storedFile.Url,
                 OwnerId = storedFile.OwnerId,
                 UploadedAt = storedFile.CreatedAt
-            }, cancellationToken));
+            }, cancellationToken);
+        }
 
-        await Task.WhenAll(publishTasks);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Uploaded {Count} files", storedFiles.Length);
 
@@ -62,6 +66,7 @@ public class UploadMultipleFilesCommandHandler(
         UploadMultipleFilesCommand request,
         int index,
         StoredFile[] results,
+        StorageProvider provider,
         CancellationToken cancellationToken)
     {
         await semaphore.WaitAsync(cancellationToken);
@@ -86,13 +91,18 @@ public class UploadMultipleFilesCommandHandler(
                 uploadResult.Url,
                 request.SubFolder,
                 request.OwnerId,
-                StorageProvider.Local);
+                provider);
         }
         finally
         {
             semaphore.Release();
         }
     }
+
+    private static StorageProvider ResolveStorageProvider(string providerName) =>
+        string.Equals(providerName, "AzureBlob", StringComparison.OrdinalIgnoreCase)
+            ? StorageProvider.AzureBlob
+            : StorageProvider.Local;
 
     private static StoredFileDto MapToDto(StoredFile file) =>
         new(file.Id, file.FileName, file.ContentType, file.FileSize,

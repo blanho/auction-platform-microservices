@@ -183,12 +183,12 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
             <Typography color="text.secondary">Loading reviews...</Typography>
           </Box>
         )}
-        {!reviewsQuery.isLoading && reviewsQuery.data?.data.length === 0 && (
+        {!reviewsQuery.isLoading && (reviewsQuery.data?.data?.length ?? 0) === 0 && (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography color="text.secondary">No reviews yet</Typography>
           </Box>
         )}
-        {!reviewsQuery.isLoading && reviewsQuery.data?.data.length > 0 && (
+        {!reviewsQuery.isLoading && (reviewsQuery.data?.data?.length ?? 0) > 0 && (
           <AnimatePresence mode="wait">
             <Stack spacing={3}>
               {reviewsQuery.data?.data.map((review) => (

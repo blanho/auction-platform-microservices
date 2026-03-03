@@ -37,16 +37,14 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
                 return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
             }
 
-            var category = new Category
-            {
-                Name = request.Name,
-                Slug = request.Slug,
-                Icon = request.Icon,
-                Description = request.Description,
-                DisplayOrder = request.DisplayOrder,
-                IsActive = request.IsActive,
-                ParentCategoryId = request.ParentCategoryId
-            };
+            var category = Category.Create(
+                request.Name,
+                request.Slug,
+                request.Icon,
+                request.Description,
+                request.DisplayOrder,
+                request.IsActive,
+                request.ParentCategoryId);
 
             var createdCategory = await _repository.CreateAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

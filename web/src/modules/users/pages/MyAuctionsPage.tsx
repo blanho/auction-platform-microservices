@@ -49,6 +49,8 @@ import {
   PlayArrow,
   FileDownload,
   FileUpload,
+  MoreTime,
+  DoNotDisturb,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import {
@@ -56,6 +58,8 @@ import {
   useActivateAuction,
   useDeactivateAuction,
   useDeleteAuction,
+  useCancelAuction,
+  useExtendAuction,
 } from '@/modules/auctions/hooks'
 import {
   ExportAuctionsDialog,
@@ -140,6 +144,10 @@ export function MyAuctionsPage() {
     message: string
     severity: 'success' | 'error'
   }>({ open: false, message: '', severity: 'success' })
+  const [cancelDialog, setCancelDialog] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [extendDialog, setExtendDialog] = useState<{ id: string; currentEndTime: string } | null>(null)
+  const [newEndTime, setNewEndTime] = useState('')
 
   const statusFilter = STATUS_TAB_MAP[tabValue]
 
@@ -155,6 +163,8 @@ export function MyAuctionsPage() {
   const activateAuction = useActivateAuction()
   const deactivateAuction = useDeactivateAuction()
   const deleteAuctionMutation = useDeleteAuction()
+  const cancelAuctionMutation = useCancelAuction()
+  const extendAuctionMutation = useExtendAuction()
 
   const auctions = auctionsData?.items ?? []
   const totalCount = auctionsData?.totalCount ?? 0
@@ -226,6 +236,42 @@ export function MyAuctionsPage() {
         setSnackbar({ open: true, message: 'Failed to deactivate auction', severity: 'error' })
       },
     })
+  }
+
+  const handleCancelAuction = () => {
+    if (cancelDialog) {
+      cancelAuctionMutation.mutate(
+        { id: cancelDialog, reason: cancelReason || undefined },
+        {
+          onSuccess: () => {
+            setSnackbar({ open: true, message: 'Auction cancelled successfully', severity: 'success' })
+            setCancelDialog(null)
+            setCancelReason('')
+          },
+          onError: () => {
+            setSnackbar({ open: true, message: 'Failed to cancel auction', severity: 'error' })
+          },
+        }
+      )
+    }
+  }
+
+  const handleExtendAuction = () => {
+    if (extendDialog && newEndTime) {
+      extendAuctionMutation.mutate(
+        { id: extendDialog.id, newEndTime },
+        {
+          onSuccess: () => {
+            setSnackbar({ open: true, message: 'Auction extended successfully', severity: 'success' })
+            setExtendDialog(null)
+            setNewEndTime('')
+          },
+          onError: () => {
+            setSnackbar({ open: true, message: 'Failed to extend auction', severity: 'error' })
+          },
+        }
+      )
+    }
   }
 
   if (isLoading) {
@@ -673,6 +719,32 @@ export function MyAuctionsPage() {
             Deactivate
           </MenuItem>
         )}
+        {menuAnchor?.auction.status === 'active' && (
+          <MenuItem
+            onClick={() => {
+              setExtendDialog({
+                id: menuAnchor.auction.id,
+                currentEndTime: menuAnchor.auction.endTime,
+              })
+              setMenuAnchor(null)
+            }}
+          >
+            <MoreTime sx={{ mr: 1.5, fontSize: 20, color: palette.semantic.info }} />
+            Extend Time
+          </MenuItem>
+        )}
+        {menuAnchor?.auction.status === 'active' && (
+          <MenuItem
+            onClick={() => {
+              setCancelDialog(menuAnchor.auction.id)
+              setMenuAnchor(null)
+            }}
+            sx={{ color: palette.semantic.warning }}
+          >
+            <DoNotDisturb sx={{ mr: 1.5, fontSize: 20 }} />
+            Cancel Auction
+          </MenuItem>
+        )}
         {(menuAnchor?.auction.status === 'draft' || menuAnchor?.auction.status === 'pending') && (
           <MenuItem
             onClick={() => handleActivate(menuAnchor.auction.id)}
@@ -721,13 +793,145 @@ export function MyAuctionsPage() {
           <Button
             variant="contained"
             onClick={handleDeleteAuction}
+            disabled={deleteAuctionMutation.isPending}
             sx={{
               bgcolor: palette.semantic.error,
               textTransform: 'none',
               '&:hover': { bgcolor: palette.semantic.errorHover },
             }}
           >
-            Delete
+            {deleteAuctionMutation.isPending ? (
+              <CircularProgress size={20} sx={{ color: 'white' }} />
+            ) : (
+              'Delete'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(cancelDialog)}
+        onClose={() => {
+          setCancelDialog(null)
+          setCancelReason('')
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>Cancel Auction</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
+            Are you sure you want to cancel this auction? This action cannot be undone and all
+            active bids will be voided.
+          </Typography>
+          <TextField
+            fullWidth
+            label="Reason for cancellation (optional)"
+            multiline
+            rows={3}
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            placeholder="E.g., Item no longer available, Found damage on item..."
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={() => {
+              setCancelDialog(null)
+              setCancelReason('')
+            }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
+            Keep Auction
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCancelAuction}
+            disabled={cancelAuctionMutation.isPending}
+            sx={{
+              bgcolor: palette.semantic.warning,
+              color: palette.neutral[900],
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#D97706' },
+            }}
+          >
+            {cancelAuctionMutation.isPending ? (
+              <CircularProgress size={20} />
+            ) : (
+              'Cancel Auction'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(extendDialog)}
+        onClose={() => {
+          setExtendDialog(null)
+          setNewEndTime('')
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>Extend Auction</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
+            Extend the end time for this auction. The new end time must be after the current end
+            time.
+          </Typography>
+          {extendDialog && (
+            <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600], mb: 2 }}>
+              Current end time:{' '}
+              <strong>
+                {new Date(extendDialog.currentEndTime).toLocaleString()}
+              </strong>
+            </Typography>
+          )}
+          <TextField
+            fullWidth
+            label="New End Time"
+            type="datetime-local"
+            value={newEndTime}
+            onChange={(e) => setNewEndTime(e.target.value)}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: {
+                min: extendDialog
+                  ? new Date(extendDialog.currentEndTime).toISOString().slice(0, 16)
+                  : undefined,
+              },
+            }}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={() => {
+              setExtendDialog(null)
+              setNewEndTime('')
+            }}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleExtendAuction}
+            disabled={extendAuctionMutation.isPending || !newEndTime}
+            sx={{
+              bgcolor: palette.semantic.info,
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#0284C7' },
+            }}
+          >
+            {extendAuctionMutation.isPending ? (
+              <CircularProgress size={20} sx={{ color: 'white' }} />
+            ) : (
+              'Extend Auction'
+            )}
           </Button>
         </DialogActions>
       </Dialog>

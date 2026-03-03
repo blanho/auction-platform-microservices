@@ -1,13 +1,13 @@
 using Bidding.Application.DTOs;
-using Bidding.Application.Errors;
 using Bidding.Application.Features.Bids.GetBidById;
 using Bidding.Application.Features.Bids.GetBidHistory;
+using Bidding.Application.Features.Bids.GetBidIncrement;
+using Bidding.Application.Features.Bids.GetBidStats;
 using Bidding.Application.Features.Bids.GetWinningBids;
-using Bidding.Application.Features.Bids.Commands.PlaceBid;
-using Bidding.Application.Features.Bids.Queries.GetBidsForAuction;
-using Bidding.Application.Features.Bids.Queries.GetMyBids;
+using Bidding.Application.Features.Bids.PlaceBid;
+using Bidding.Application.Features.Bids.GetBidsForAuction;
+using Bidding.Application.Features.Bids.GetMyBids;
 using Bidding.Application.Features.Bids.RetractBid;
-using Bidding.Application.Helpers;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
@@ -70,6 +70,11 @@ public class BidEndpoints : ICarterModule
         group.MapGet("/increment/{currentBid:decimal}", GetBidIncrementInfo)
             .WithName("GetBidIncrementInfo")
             .Produces<BidIncrementInfoDto>(StatusCodes.Status200OK);
+
+        group.MapGet("/stats", GetBidStats)
+            .WithName("GetBidStats")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
+            .Produces<BidStatsResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> PlaceBid(
@@ -175,16 +180,26 @@ public class BidEndpoints : ICarterModule
         return result.ToOkResult();
     }
 
-    private static IResult GetBidIncrementInfo(decimal currentBid)
+    private static async Task<IResult> GetBidIncrementInfo(
+        decimal currentBid,
+        IMediator mediator,
+        CancellationToken ct)
     {
-        var minimumIncrement = BidIncrementHelper.GetIncrement(currentBid);
-        var minimumNextBid = BidIncrementHelper.GetMinimumNextBid(currentBid);
+        var query = new GetBidIncrementQuery(currentBid);
+        var result = await mediator.Send(query, ct);
+        return result.ToOkResult();
+    }
 
-        return Results.Ok(new BidIncrementInfoDto
-        {
-            CurrentBid = currentBid,
-            MinimumIncrement = minimumIncrement,
-            MinimumNextBid = minimumNextBid
-        });
+    private static async Task<IResult> GetBidStats(
+        HttpContext context,
+        IMediator mediator,
+        [FromQuery] int days = BidDefaults.DefaultDaysForStats,
+        [FromQuery] int topLimit = BidDefaults.DefaultTopBiddersLimit,
+        CancellationToken ct = default)
+    {
+        var username = UserHelper.GetUsername(context.User);
+        var query = new GetBidStatsQuery(username, days, topLimit);
+        var result = await mediator.Send(query, ct);
+        return result.ToOkResult();
     }
 }

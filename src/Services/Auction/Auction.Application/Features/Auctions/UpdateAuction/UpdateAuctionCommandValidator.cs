@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.UpdateAuction;
+namespace Auctions.Application.Features.Auctions.UpdateAuction;
 
 public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionCommand>
 {
@@ -38,7 +38,28 @@ public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionComm
         {
             RuleFor(x => x.YearManufactured)
                 .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
-                .WithMessage($"Year must be between 1900 and {DateTime.UtcNow.Year + 1}");
+                .WithMessage(ValidationConstants.Messages.OutOfRange("Year manufactured", 1900, DateTime.UtcNow.Year + 1));
+        });
+
+        When(x => x.ReservePrice.HasValue, () =>
+        {
+            RuleFor(x => x.ReservePrice!.Value)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Reserve price must be zero or greater");
+        });
+
+        When(x => x.BuyNowPrice.HasValue, () =>
+        {
+            RuleFor(x => x.BuyNowPrice!.Value)
+                .GreaterThan(0)
+                .WithMessage("Buy now price must be greater than zero");
+        });
+
+        When(x => x.AuctionEnd.HasValue, () =>
+        {
+            RuleFor(x => x.AuctionEnd!.Value)
+                .GreaterThan(DateTimeOffset.UtcNow)
+                .WithMessage("Auction end date must be in the future");
         });
     }
 }

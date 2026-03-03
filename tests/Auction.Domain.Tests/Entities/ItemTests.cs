@@ -141,13 +141,11 @@ public class ItemTests
     public void AddFile_ShouldAddMediaFileToCollection()
     {
         var item = ItemBuilder.Default().Build();
-        var mediaFile = new MediaFile
-        {
-            FileId = Guid.NewGuid(),
-            FileType = "image/jpeg",
-            DisplayOrder = 1,
-            IsPrimary = true
-        };
+        var mediaFile = MediaFile.Create(
+            Guid.NewGuid(),
+            "image/jpeg",
+            1,
+            true);
 
         item.AddFile(mediaFile);
 

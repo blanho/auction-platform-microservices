@@ -23,20 +23,6 @@ public class PlatformHealthStatus
     public int QueueJobCount { get; set; }
 }
 
-public class AdminDashboardStatsDto
-{
-    public decimal TotalRevenue { get; set; }
-    public decimal RevenueChange { get; set; }
-    public int ActiveUsers { get; set; }
-    public decimal ActiveUsersChange { get; set; }
-    public int LiveAuctions { get; set; }
-    public decimal LiveAuctionsChange { get; set; }
-    public int PendingReports { get; set; }
-    public decimal PendingReportsChange { get; set; }
-    public int TotalOrders { get; set; }
-    public int CompletedOrders { get; set; }
-}
-
 public class AdminRecentActivityDto
 {
     public string Id { get; set; } = string.Empty;

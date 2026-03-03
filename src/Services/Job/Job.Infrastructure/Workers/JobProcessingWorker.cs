@@ -1,6 +1,7 @@
 using BuildingBlocks.Application.Abstractions;
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Enums;
+using Jobs.Domain.Constants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,8 @@ public class JobProcessingWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<JobProcessingWorker> _logger;
-    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(10);
-    private readonly TimeSpan _stuckJobTimeout = TimeSpan.FromMinutes(30);
+    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(JobDefaults.Worker.PollingIntervalSeconds);
+    private readonly TimeSpan _stuckJobTimeout = TimeSpan.FromMinutes(JobDefaults.Worker.StuckJobTimeoutMinutes);
     private readonly int _batchSize = 5;
 
     public JobProcessingWorker(

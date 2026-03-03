@@ -44,21 +44,23 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
                 {
                     return Result.Failure<BrandDto>(AuctionErrors.Brand.SlugExists(newSlug));
                 }
-                brand.Name = request.Name;
-                brand.Slug = newSlug;
+
+                brand.Update(
+                    name: request.Name,
+                    slug: newSlug,
+                    description: request.Description,
+                    displayOrder: request.DisplayOrder,
+                    isActive: request.IsActive,
+                    isFeatured: request.IsFeatured);
             }
-
-            if (request.Description != null)
-                brand.Description = request.Description;
-
-            if (request.DisplayOrder.HasValue)
-                brand.DisplayOrder = request.DisplayOrder.Value;
-
-            if (request.IsActive.HasValue)
-                brand.IsActive = request.IsActive.Value;
-
-            if (request.IsFeatured.HasValue)
-                brand.IsFeatured = request.IsFeatured.Value;
+            else
+            {
+                brand.Update(
+                    description: request.Description,
+                    displayOrder: request.DisplayOrder,
+                    isActive: request.IsActive,
+                    isFeatured: request.IsFeatured);
+            }
 
             await _repository.UpdateAsync(brand, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

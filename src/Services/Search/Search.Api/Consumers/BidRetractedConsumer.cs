@@ -35,16 +35,17 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
             ["lastSyncedAt"] = _dateTime.UtcNowOffset.ToString("o")
         };
 
-        var success = await _indexService.PartialUpdateAsync(
+        var result = await _indexService.PartialUpdateAsync(
             message.AuctionId,
             partialDocument,
             context.CancellationToken);
 
-        if (!success)
+        if (result.IsFailure)
         {
             _logger.LogWarning(
-                "Failed to update search index after bid retraction for auction {AuctionId}",
-                message.AuctionId);
+                "Failed to update search index after bid retraction for auction {AuctionId}: {Error}",
+                message.AuctionId,
+                result.Error);
         }
     }
 }

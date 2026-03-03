@@ -34,6 +34,7 @@ import {
   ArrowBack,
 } from '@mui/icons-material'
 import { http } from '@/services/http'
+import { InlineAlert } from '@/shared/ui'
 import { fadeInUp, staggerContainer, staggerItem, scaleIn } from '@/shared/lib/animations'
 
 const sellerSchema = z.object({

@@ -408,7 +408,7 @@ export const router = createBrowserRouter([
       {
         path: '/admin/roles',
         element: (
-          <ProtectedRoute permissions={['users:manage-roles']}>
+          <ProtectedRoute permissions={['users:manage']}>
             {withSuspense(RolePermissionsPage)}
           </ProtectedRoute>
         ),

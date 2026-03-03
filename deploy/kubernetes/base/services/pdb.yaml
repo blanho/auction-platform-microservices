@@ -74,3 +74,36 @@ spec:
   selector:
     matchLabels:
       app: analytics-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: search-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: search-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: storage-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: storage-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: job-api-pdb
+  namespace: auction-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: job-api

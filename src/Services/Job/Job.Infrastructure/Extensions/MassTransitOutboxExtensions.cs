@@ -1,5 +1,6 @@
     using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Messaging;
+using Jobs.Domain.Constants;
 using Jobs.Infrastructure.Messaging.Consumers;
 using Jobs.Infrastructure.Persistence;
 using MassTransit;
@@ -22,11 +23,13 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<AddJobItemsBatchConsumer>();
             x.AddConsumer<FinalizeJobInitializationConsumer>();
             x.AddConsumer<ReportJobItemBatchResultConsumer>();
+            x.AddConsumer<ReportJobBatchProgressConsumer>();
+            x.AddConsumer<FailJobByCorrelationConsumer>();
 
             x.AddEntityFrameworkOutbox<JobDbContext>(o =>
             {
                 o.UsePostgres();
-                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.QueryDelay = TimeSpan.FromSeconds(JobDefaults.Outbox.QueryDelaySeconds);
                 o.UseBusOutbox();
             });
 
@@ -44,33 +47,49 @@ public static class MassTransitOutboxExtensions
                 {
                     h.Username(username);
                     h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(20));
+                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(JobDefaults.Connection.RequestTimeoutSeconds));
+                    h.ContinuationTimeout(TimeSpan.FromSeconds(JobDefaults.Connection.ContinuationTimeoutSeconds));
                 });
 
                 cfg.ReceiveEndpoint("job-requests", e =>
                 {
                     e.ConfigureConsumer<RequestJobConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-results", e =>
                 {
                     e.ConfigureConsumer<ReportJobItemResultConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000, 10000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 5,
+                        minInterval: TimeSpan.FromMilliseconds(200),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                     e.PrefetchCount = 16;
                 });
 
                 cfg.ReceiveEndpoint("job-streaming-init", e =>
                 {
                     e.ConfigureConsumer<InitializeStreamingJobConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-batches", e =>
                 {
                     e.ConfigureConsumer<AddJobItemsBatchConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                     e.PrefetchCount = 4;
                     e.ConcurrentMessageLimit = 2;
                 });
@@ -78,17 +97,56 @@ public static class MassTransitOutboxExtensions
                 cfg.ReceiveEndpoint("job-finalize-init", e =>
                 {
                     e.ConfigureConsumer<FinalizeJobInitializationConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-batch-results", e =>
                 {
                     e.ConfigureConsumer<ReportJobItemBatchResultConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(500, 1000, 5000, 10000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 5,
+                        minInterval: TimeSpan.FromMilliseconds(200),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                     e.PrefetchCount = 8;
                 });
 
-                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
+                cfg.ReceiveEndpoint("job-batch-progress", e =>
+                {
+                    e.ConfigureConsumer<ReportJobBatchProgressConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                    e.PrefetchCount = 8;
+                });
+
+                cfg.ReceiveEndpoint("job-fail-by-correlation", e =>
+                {
+                    e.ConfigureConsumer<FailJobByCorrelationConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                });
+
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

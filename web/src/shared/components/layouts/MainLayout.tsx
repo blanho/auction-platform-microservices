@@ -201,7 +201,7 @@ export const MainLayout = () => {
               }}
             >
               <SearchAutocomplete
-                placeholder={t('search.placeholder') || 'Search auctions...'}
+                placeholder={t('search') || 'Search auctions...'}
                 onSearch={(query) => navigate(`/auctions?search=${encodeURIComponent(query)}`)}
               />
             </Box>

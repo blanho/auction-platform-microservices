@@ -14,7 +14,7 @@ public class AutoBid : AggregateRoot
 
     public static AutoBid Create(Guid auctionId, Guid userId, string username, decimal maxAmount)
     {
-        return new AutoBid
+        var autoBid = new AutoBid
         {
             Id = Guid.NewGuid(),
             AuctionId = auctionId,
@@ -25,11 +25,30 @@ public class AutoBid : AggregateRoot
             IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
         };
+
+        autoBid.AddDomainEvent(new AutoBidCreatedDomainEvent
+        {
+            AutoBidId = autoBid.Id,
+            AuctionId = auctionId,
+            UserId = userId,
+            Username = username,
+            MaxAmount = maxAmount
+        });
+
+        return autoBid;
     }
 
     public void UpdateMaxAmount(decimal newMaxAmount)
     {
         MaxAmount = newMaxAmount;
+
+        AddDomainEvent(new AutoBidMaxAmountUpdatedDomainEvent
+        {
+            AutoBidId = Id,
+            AuctionId = AuctionId,
+            UserId = UserId,
+            NewMaxAmount = newMaxAmount
+        });
     }
 
     public void RecordBid(decimal amount)
@@ -41,11 +60,25 @@ public class AutoBid : AggregateRoot
     public void Activate()
     {
         IsActive = true;
+
+        AddDomainEvent(new AutoBidActivatedDomainEvent
+        {
+            AutoBidId = Id,
+            AuctionId = AuctionId,
+            UserId = UserId
+        });
     }
 
     public void Deactivate()
     {
         IsActive = false;
+
+        AddDomainEvent(new AutoBidDeactivatedDomainEvent
+        {
+            AutoBidId = Id,
+            AuctionId = AuctionId,
+            UserId = UserId
+        });
     }
 
     public bool CanBid(decimal currentHighBid)

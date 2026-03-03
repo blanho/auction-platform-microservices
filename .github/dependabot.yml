@@ -51,6 +51,30 @@ updates:
     directory: "/src/Services/Payment/Payment.Api"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Services/Notification/Notification.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Services/Analytics/Analytics.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Services/Search/Search.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Services/Storage/Storage.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Services/Job/Job.Api"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/src/Gateway/Gateway.Api"
+    schedule:
+      interval: "weekly"
 
   # npm (frontend)
   - package-ecosystem: "npm"

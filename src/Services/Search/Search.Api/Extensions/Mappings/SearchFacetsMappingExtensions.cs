@@ -1,4 +1,5 @@
 using Elastic.Clients.Elasticsearch.Aggregations;
+using Search.Api.Constants;
 using Search.Api.Models;
 
 namespace Search.Api.Extensions.Mappings;
@@ -7,62 +8,54 @@ public static class SearchFacetsMappingExtensions
 {
     public static SearchFacets? ToFacets(this AggregateDictionary? aggregations)
     {
-        if (aggregations == null)
+        if (aggregations is null)
             return null;
 
-        var facets = new SearchFacets();
-
-        if (aggregations.TryGetValue("categories", out var catAgg) &&
-            catAgg is StringTermsAggregate catTerms)
+        return new SearchFacets
         {
-            facets.Categories = catTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
+            Categories = ExtractTermBuckets(aggregations, AggregationNames.Categories),
+            Brands = ExtractTermBuckets(aggregations, AggregationNames.Brands),
+            Conditions = ExtractTermBuckets(aggregations, AggregationNames.Conditions),
+            Statuses = ExtractTermBuckets(aggregations, AggregationNames.Statuses),
+            PriceRange = ExtractPriceRangeFacet(aggregations)
+        };
+    }
 
-        if (aggregations.TryGetValue("brands", out var brandAgg) &&
-            brandAgg is StringTermsAggregate brandTerms)
+    private static List<FacetBucket> ExtractTermBuckets(
+        AggregateDictionary aggregations, 
+        string aggregationName)
+    {
+        if (!aggregations.TryGetValue(aggregationName, out var aggregate))
+            return new List<FacetBucket>();
+
+        if (aggregate is not StringTermsAggregate termsAggregate)
+            return new List<FacetBucket>();
+
+        return termsAggregate.Buckets
+            .Select(MapToFacetBucket)
+            .ToList();
+    }
+
+    private static FacetBucket MapToFacetBucket(StringTermsBucket bucket) =>
+        new()
         {
-            facets.Brands = brandTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
+            Key = bucket.Key.ToString() ?? string.Empty,
+            Count = bucket.DocCount
+        };
 
-        if (aggregations.TryGetValue("conditions", out var condAgg) &&
-            condAgg is StringTermsAggregate condTerms)
+    private static PriceRangeFacet? ExtractPriceRangeFacet(AggregateDictionary aggregations)
+    {
+        if (!aggregations.TryGetValue(AggregationNames.PriceStats, out var aggregate))
+            return null;
+
+        if (aggregate is not StatsAggregate priceStats)
+            return null;
+
+        return new PriceRangeFacet
         {
-            facets.Conditions = condTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("statuses", out var statusAgg) &&
-            statusAgg is StringTermsAggregate statusTerms)
-        {
-            facets.Statuses = statusTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("price_stats", out var priceAgg) &&
-            priceAgg is StatsAggregate priceStats)
-        {
-            facets.PriceRange = new PriceRangeFacet
-            {
-                Min = (decimal)(priceStats.Min ?? 0),
-                Max = (decimal)(priceStats.Max ?? 0),
-                Avg = (decimal)(priceStats.Avg ?? 0)
-            };
-        }
-
-        return facets;
+            Min = (decimal)(priceStats.Min ?? 0),
+            Max = (decimal)(priceStats.Max ?? 0),
+            Avg = (decimal)(priceStats.Avg ?? 0)
+        };
     }
 }

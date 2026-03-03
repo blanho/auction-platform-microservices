@@ -129,7 +129,6 @@ public class BookmarkRepository : IBookmarkRepository
     {
         var utcNow = _dateTime.UtcNow;
         bookmark.SetCreatedAudit(bookmark.UserId, utcNow);
-        bookmark.AddedAt = utcNow;
 
         await _context.Bookmarks.AddAsync(bookmark, cancellationToken);
         return bookmark;

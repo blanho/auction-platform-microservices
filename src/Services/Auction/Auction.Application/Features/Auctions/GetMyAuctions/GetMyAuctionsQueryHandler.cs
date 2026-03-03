@@ -3,7 +3,7 @@ using Auctions.Application.Services;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Queries.GetMyAuctions;
+namespace Auctions.Application.Features.Auctions.GetMyAuctions;
 
 public class GetMyAuctionsQueryHandler : IQueryHandler<GetMyAuctionsQuery, PaginatedResult<AuctionDto>>
 {

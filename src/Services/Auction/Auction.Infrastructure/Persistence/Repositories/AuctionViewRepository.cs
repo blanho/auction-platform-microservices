@@ -36,13 +36,7 @@ public class AuctionViewRepository : IAuctionViewRepository
 
     public async Task RecordViewAsync(Guid auctionId, string? userId, string? ipAddress, CancellationToken cancellationToken = default)
     {
-        var view = new AuctionView
-        {
-            AuctionId = auctionId,
-            UserId = userId,
-            IpAddress = ipAddress,
-            ViewedAt = _dateTime.UtcNow
-        };
+        var view = AuctionView.Create(auctionId, userId, ipAddress, _dateTime.UtcNow);
         view.SetCreatedAudit(Guid.Empty, _dateTime.UtcNow);
 
         await _context.AuctionViews.AddAsync(view, cancellationToken);

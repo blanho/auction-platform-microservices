@@ -81,7 +81,31 @@ public static class ValidationConstants
         public static string InvalidFormat(string fieldName)
             => $"{fieldName} has an invalid format";
 
+        public static string Invalid(string fieldName)
+            => $"Invalid {fieldName.ToLowerInvariant()}";
+
+        public static string MustBePositive(string fieldName)
+            => $"{fieldName} must be greater than 0";
+
+        public static string MustBeNonNegative(string fieldName)
+            => $"{fieldName} must be non-negative";
+
         public static string OutOfRange(string fieldName, decimal min, decimal max)
             => $"{fieldName} must be between {min} and {max}";
+
+        public static string OutOfRange(string fieldName, int min, int max)
+            => $"{fieldName} must be between {min} and {max}";
+
+        public static string InvalidEnumValue(string fieldName)
+            => $"Invalid {fieldName.ToLowerInvariant()}";
+
+        public static string MustBeAtLeast(string fieldName, int count)
+            => $"At least {count} {fieldName.ToLowerInvariant()} is required";
+
+        public static string MustNotExceed(string fieldName, int count)
+            => $"Maximum {count:N0} {fieldName.ToLowerInvariant()} allowed";
+
+        public static string MustContainAtLeastOne(string fieldName)
+            => $"At least one {fieldName.ToLowerInvariant()} is required";
     }
 }

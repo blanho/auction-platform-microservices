@@ -28,4 +28,7 @@ public static class StorageErrors
 
     public static readonly Error DeleteFailed =
         Error.Create("Storage.DeleteFailed", "Failed to delete file from storage");
+
+    public static readonly Error PresignedUrlNotSupported =
+        Error.Create("Storage.PresignedUrlNotSupported", "Presigned URL generation is not supported by the current storage provider");
 }

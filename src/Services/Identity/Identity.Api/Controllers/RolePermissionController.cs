@@ -76,8 +76,10 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IResult> RevokePermission(Guid roleId, string permission, CancellationToken cancellationToken)
     {
-        await _rolePermissionService.RevokePermissionAsync(roleId, permission, cancellationToken);
-        return Results.NoContent();
+        var result = await _rolePermissionService.RevokePermissionAsync(roleId, permission, cancellationToken);
+        return result
+            ? Results.NoContent()
+            : Results.NotFound(ProblemDetailsHelper.NotFound("Role", roleId.ToString()));
     }
 
     [HttpPut("{roleId:guid}/permissions")]

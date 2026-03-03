@@ -164,7 +164,7 @@ export function DataTable<T extends { id?: string }>({
       return (
         <TableEmptyStateRow
           colSpan={visibleColumns.length + (selectable ? 1 : 0)}
-          message={error.message || 'An error occurred'}
+          title={error.message || 'An error occurred'}
         />
       )
     }
@@ -182,7 +182,7 @@ export function DataTable<T extends { id?: string }>({
       return (
         <TableEmptyStateRow
           colSpan={visibleColumns.length + (selectable ? 1 : 0)}
-          message={emptyMessage}
+          title={emptyMessage}
           icon={emptyIcon}
         />
       )

@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -12,6 +12,12 @@ import {
   Snackbar,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
 } from '@mui/material'
 import { InlineAlert } from '@/shared/ui'
 import {
@@ -28,15 +34,23 @@ import { BidSection, BidSectionSkeleton } from '../components/BidSection'
 import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
 import { ProductTabs, ProductTabsSkeleton } from '../components/ProductTabs'
 import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
-import { useAuctionSignalR, useAuction } from '../hooks'
-import { useAutoBidForAuction } from '@/modules/bidding/hooks'
+import { useAuctionSignalR, useAuction, useBuyNow, useToggleWatchlist } from '../hooks'
+import { useRecordView } from '../hooks/useViews'
+import { useAutoBidForAuction, usePlaceBid } from '@/modules/bidding/hooks'
 import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: auction, isLoading } = useAuction(id)
+  const navigate = useNavigate()
+  const { data: auction, isLoading } = useAuction(id ?? '')
   const { isAuthenticated } = useAuth()
   const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
+  const buyNowMutation = useBuyNow()
+  const toggleWatchlistMutation = useToggleWatchlist()
+  const placeBidMutation = usePlaceBid()
+  const recordView = useRecordView()
+  const hasRecordedView = useRef(false)
+  const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
   const [snackbar, setSnackbar] = useState<{
     open: boolean
     message: string
@@ -49,13 +63,37 @@ export function AuctionDetailPage() {
 
   useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
 
+  useEffect(() => {
+    if (id && !isLoading && auction && !hasRecordedView.current) {
+      hasRecordedView.current = true
+      recordView.mutate(id)
+    }
+  }, [id, isLoading, auction, recordView])
+
   const handleToggleFavorite = useCallback(() => {
-    setSnackbar({
-      open: true,
-      message: auction?.isWatching ? 'Removed from watchlist' : 'Added to watchlist',
-      severity: 'success',
-    })
-  }, [auction?.isWatching])
+    if (!id) {
+      return
+    }
+    toggleWatchlistMutation.mutate(
+      { auctionId: id, isInWatchlist: auction?.isWatching ?? false },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            open: true,
+            message: auction?.isWatching ? 'Removed from watchlist' : 'Added to watchlist',
+            severity: 'success',
+          })
+        },
+        onError: () => {
+          setSnackbar({
+            open: true,
+            message: 'Failed to update watchlist',
+            severity: 'error',
+          })
+        },
+      }
+    )
+  }, [id, auction?.isWatching, toggleWatchlistMutation])
 
   const handleShare = useCallback(() => {
     navigator.clipboard.writeText(globalThis.location.href)
@@ -66,21 +104,62 @@ export function AuctionDetailPage() {
     })
   }, [])
 
-  const handlePlaceBid = useCallback(async () => {
-    setSnackbar({
-      open: true,
-      message: 'Bid placed successfully',
-      severity: 'success',
-    })
-  }, [])
+  const handlePlaceBid = useCallback(
+    async (amount: number) => {
+      if (!id) {
+        return
+      }
+      placeBidMutation.mutate(
+        { auctionId: id, amount },
+        {
+          onSuccess: () => {
+            setSnackbar({
+              open: true,
+              message: 'Bid placed successfully!',
+              severity: 'success',
+            })
+          },
+          onError: (error) => {
+            setSnackbar({
+              open: true,
+              message: error instanceof Error ? error.message : 'Failed to place bid',
+              severity: 'error',
+            })
+          },
+        }
+      )
+    },
+    [id, placeBidMutation]
+  )
 
   const handleBuyNow = useCallback(async () => {
-    setSnackbar({
-      open: true,
-      message: 'Redirecting to checkout...',
-      severity: 'info',
-    })
+    setBuyNowDialogOpen(true)
   }, [])
+
+  const confirmBuyNow = useCallback(async () => {
+    if (!id) {
+      return
+    }
+    buyNowMutation.mutate(id, {
+      onSuccess: () => {
+        setBuyNowDialogOpen(false)
+        setSnackbar({
+          open: true,
+          message: 'Purchase successful! Redirecting to order...',
+          severity: 'success',
+        })
+        setTimeout(() => navigate('/account/orders'), 2000)
+      },
+      onError: () => {
+        setBuyNowDialogOpen(false)
+        setSnackbar({
+          open: true,
+          message: 'Purchase failed. Please try again.',
+          severity: 'error',
+        })
+      },
+    })
+  }, [id, buyNowMutation, navigate])
 
   if (isLoading || !auction) {
     return <AuctionDetailPageSkeleton />
@@ -292,6 +371,69 @@ export function AuctionDetailPage() {
           <ReviewsSection sellerId={auction.seller.id} auctionId={auction.id} />
         </Box>
       </Container>
+
+      <Dialog
+        open={buyNowDialogOpen}
+        onClose={() => setBuyNowDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
+          Confirm Purchase
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: palette.neutral[600], mb: 2 }}>
+            You are about to purchase this item at the Buy Now price.
+          </Typography>
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: palette.neutral[50],
+              borderRadius: 2,
+              border: `1px solid ${palette.neutral[200]}`,
+            }}
+          >
+            <Typography sx={{ fontWeight: 600, color: palette.neutral[900], mb: 1 }}>
+              {auction?.title}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: palette.brand.primary,
+              }}
+            >
+              ${auction?.buyNowPrice?.toLocaleString()}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={() => setBuyNowDialogOpen(false)}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={confirmBuyNow}
+            disabled={buyNowMutation.isPending}
+            sx={{
+              bgcolor: palette.brand.primary,
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 4,
+              '&:hover': { bgcolor: '#A16207' },
+            }}
+          >
+            {buyNowMutation.isPending ? (
+              <CircularProgress size={20} sx={{ color: 'white' }} />
+            ) : (
+              'Confirm Purchase'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Auctions.Application.Commands.QueueAuctionExport;
+namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 
 public class QueueAuctionExportCommandValidator : AbstractValidator<QueueAuctionExportCommand>
 {

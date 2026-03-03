@@ -28,6 +28,9 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<UserUpdatedConsumer>();
             x.AddConsumer<UserRoleChangedConsumer>();
 
+            x.AddConsumer<FileUploadedConsumer>();
+            x.AddConsumer<FileDeletedConsumer>();
+
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {
                 o.UsePostgres();
@@ -58,10 +61,35 @@ public static class MassTransitOutboxExtensions
                     e.ConfigureConsumer<ReserveAuctionForBuyNowConsumer>(context);
                     e.ConfigureConsumer<CompleteBuyNowAuctionConsumer>(context);
                     e.ConfigureConsumer<ReleaseAuctionReservationConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
-                cfg.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000, 10000));
+                cfg.ReceiveEndpoint("auction-file-events", e =>
+                {
+                    e.ConfigureConsumer<FileUploadedConsumer>(context);
+                    e.ConfigureConsumer<FileDeletedConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                });
+
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

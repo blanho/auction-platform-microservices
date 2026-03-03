@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.CreateAuction;
+namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public record CreateAuctionCommand(
     string Title,

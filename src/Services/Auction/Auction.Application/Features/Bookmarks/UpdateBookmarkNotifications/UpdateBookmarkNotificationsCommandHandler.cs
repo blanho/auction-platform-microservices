@@ -2,7 +2,7 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.Bookmarks.UpdateBookmarkNotifications;
+namespace Auctions.Application.Features.Bookmarks.UpdateBookmarkNotifications;
 
 public class UpdateBookmarkNotificationsCommandHandler : ICommandHandler<UpdateBookmarkNotificationsCommand>
 {

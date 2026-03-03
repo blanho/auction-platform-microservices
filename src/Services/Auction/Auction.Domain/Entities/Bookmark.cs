@@ -5,14 +5,38 @@ namespace Auctions.Domain.Entities;
 
 public class Bookmark : AggregateRoot
 {
-    public Guid UserId { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public Guid AuctionId { get; set; }
-    public Auction? Auction { get; set; }
-    public DateTimeOffset AddedAt { get; set; } = DateTimeOffset.UtcNow;
-    public BookmarkType Type { get; set; } = BookmarkType.Watchlist;
-    public bool NotifyOnBid { get; set; } = true;
-    public bool NotifyOnEnd { get; set; } = true;
+    public Guid UserId { get; private set; }
+    public string Username { get; private set; } = string.Empty;
+    public Guid AuctionId { get; private set; }
+    public Auction? Auction { get; private set; }
+    public DateTimeOffset AddedAt { get; private set; }
+    public BookmarkType Type { get; private set; }
+    public bool NotifyOnBid { get; private set; }
+    public bool NotifyOnEnd { get; private set; }
+
+    private Bookmark() { }
+
+    public static Bookmark Create(
+        Guid userId,
+        string username,
+        Guid auctionId,
+        BookmarkType type,
+        bool notifyOnBid = true,
+        bool notifyOnEnd = true)
+    {
+        return new Bookmark
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Username = username,
+            AuctionId = auctionId,
+            Type = type,
+            NotifyOnBid = notifyOnBid,
+            NotifyOnEnd = notifyOnEnd,
+            AddedAt = DateTimeOffset.UtcNow
+        };
+    }
+
     public void UpdateNotificationSettings(bool notifyOnBid, bool notifyOnEnd)
     {
         NotifyOnBid = notifyOnBid;

@@ -1,6 +1,7 @@
 using Analytics.Api.Data;
 using Analytics.Api.Endpoints;
 using Analytics.Api.Extensions.DependencyInjection;
+using Carter;
 using Analytics.Api.Middleware;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
@@ -53,6 +54,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "AnalyticsService:";
 });
 
+builder.Services.AddCarter();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -91,6 +93,7 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCustomHealthChecks();
+app.MapCarter();
 app.MapControllers();
 
 app.Run();

@@ -4,7 +4,7 @@ using AutoMapper;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.DeactivateAuction;
+namespace Auctions.Application.Features.Auctions.DeactivateAuction;
 
 public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuctionCommand, AuctionDto>
 {

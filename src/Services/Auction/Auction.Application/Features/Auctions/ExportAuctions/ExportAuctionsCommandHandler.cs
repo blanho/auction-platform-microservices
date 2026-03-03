@@ -1,7 +1,7 @@
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 
-namespace Auctions.Application.Commands.ExportAuctions;
+namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsCommand, ExportAuctionsResult>
 {

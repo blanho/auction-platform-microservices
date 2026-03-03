@@ -97,6 +97,9 @@ spec:
         - podSelector:
             matchLabels:
               tier: messaging
+        - podSelector:
+            matchLabels:
+              tier: observability
       ports:
         - protocol: TCP
 ---

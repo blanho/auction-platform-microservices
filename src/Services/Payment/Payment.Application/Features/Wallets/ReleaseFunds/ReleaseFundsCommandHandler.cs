@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Wallets.ReleaseFunds;
@@ -17,7 +18,7 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
     private readonly ILogger<ReleaseFundsCommandHandler> _logger;
     private readonly IDistributedLock _distributedLock;
 
-    private static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan LockExpiry = WalletDefaults.Lock.StandardExpiry;
 
     public ReleaseFundsCommandHandler(
         IWalletRepository walletRepository,

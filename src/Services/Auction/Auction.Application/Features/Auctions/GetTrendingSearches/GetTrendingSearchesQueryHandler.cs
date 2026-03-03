@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Queries.GetTrendingSearches;
+namespace Auctions.Application.Features.Auctions.GetTrendingSearches;
 
 public class GetTrendingSearchesQueryHandler : IQueryHandler<GetTrendingSearchesQuery, List<TrendingSearchDto>>
 {

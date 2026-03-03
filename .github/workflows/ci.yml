@@ -78,55 +78,6 @@ jobs:
             src/**/bin/Release/**/publish/
           retention-days: 5
 
-  code-quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Cache SonarQube
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-
-      - name: Download coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: test-results
-          path: coverage
-
-      - name: SonarQube Analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          dotnet sonarscanner begin \
-            /k:"auction-platform" \
-            /d:sonar.host.url="${SONAR_HOST_URL}" \
-            /d:sonar.token="${SONAR_TOKEN}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage/**/coverage.opencover.xml"
-          dotnet build ${{ env.SOLUTION_PATH }} -c Release --no-incremental
-          dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
-
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -161,8 +112,29 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     strategy:
+      fail-fast: false
       matrix:
-        service: [auction-api, bidding-api, identity-api]
+        service:
+          - name: identity-api
+            dockerfile: src/Services/Identity/Identity.Api/Dockerfile
+          - name: auction-api
+            dockerfile: src/Services/Auction/Auction.Api/Dockerfile
+          - name: bidding-api
+            dockerfile: src/Services/Bidding/Bidding.Api/Dockerfile
+          - name: payment-api
+            dockerfile: src/Services/Payment/Payment.Api/Dockerfile
+          - name: notification-api
+            dockerfile: src/Services/Notification/Notification.Api/Dockerfile
+          - name: analytics-api
+            dockerfile: src/Services/Analytics/Analytics.Api/Dockerfile
+          - name: search-api
+            dockerfile: src/Services/Search/Search.Api/Dockerfile
+          - name: storage-api
+            dockerfile: src/Services/Storage/Storage.Api/Dockerfile
+          - name: job-api
+            dockerfile: src/Services/Job/Job.Api/Dockerfile
+          - name: gateway-api
+            dockerfile: src/Gateway/Gateway.Api/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
@@ -171,16 +143,15 @@ jobs:
 
       - name: Build image for scanning
         run: |
-          SERVICE_PATH=$(echo "${{ matrix.service }}" | sed 's/-api//')
-          docker build -t scan-${{ matrix.service }}:${{ github.sha }} \
-            -f src/Services/${SERVICE_PATH^}/${SERVICE_PATH^}.Api/Dockerfile .
+          docker build -t scan-${{ matrix.service.name }}:${{ github.sha }} \
+            -f ${{ matrix.service.dockerfile }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'scan-${{ matrix.service }}:${{ github.sha }}'
+          image-ref: 'scan-${{ matrix.service.name }}:${{ github.sha }}'
           format: 'sarif'
-          output: 'trivy-results-${{ matrix.service }}.sarif'
+          output: 'trivy-results-${{ matrix.service.name }}.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
           ignore-unfixed: true
@@ -189,99 +160,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
-          name: coverage-reports
-          path: coverage/**/coverage.opencover.xml
-
-  sonarqube:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup Java (required for SonarScanner)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
-
-      - name: Download coverage reports
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-reports
-          path: coverage
-
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          dotnet sonarscanner begin \
-            /k:"auction-platform" \
-            /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.cs.opencover.reportsPaths="coverage/**/coverage.opencover.xml" \
-            /d:sonar.coverage.exclusions="**/*Tests*/**,**/Migrations/**" \
-            /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/wwwroot/**"
-          
-          dotnet build ${{ env.SOLUTION_PATH }} -c Release --no-incremental
-          
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-
-  docker-build:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        service:
-          - { name: identity-api, path: src/Services/Identity/Identity.Api }
-          - { name: auction-api, path: src/Services/Auction/Auction.Api }
-          - { name: bidding-api, path: src/Services/Bidding/Bidding.Api }
-          - { name: payment-api, path: src/Services/Payment/Payment.Api }
-          - { name: notification-api, path: src/Services/Notification/Notification.Api }
-          - { name: analytics-api, path: src/Services/Analytics/Analytics.Api }
-          - { name: search-api, path: src/Services/Search/Search.Api }
-          - { name: gateway-api, path: src/Gateway/Gateway.Api }
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.REGISTRY_URL }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ matrix.service.path }}/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.REGISTRY_URL }}/auction-platform/${{ matrix.service.name }}:${{ github.sha }}
-            ${{ secrets.REGISTRY_URL }}/auction-platform/${{ matrix.service.name }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          sarif_file: 'trivy-results-${{ matrix.service.name }}.sarif'

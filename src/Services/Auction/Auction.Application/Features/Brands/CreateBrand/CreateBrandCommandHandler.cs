@@ -38,15 +38,12 @@ public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, Bra
                 return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{slug}' already exists"));
             }
 
-            var brand = new Brand
-            {
-                Name = request.Name,
-                Slug = slug,
-                Description = request.Description,
-                DisplayOrder = request.DisplayOrder,
-                IsFeatured = request.IsFeatured,
-                IsActive = true
-            };
+            var brand = Brand.Create(
+                request.Name,
+                slug,
+                request.Description,
+                request.DisplayOrder,
+                request.IsFeatured);
 
             var createdBrand = await _repository.AddAsync(brand, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

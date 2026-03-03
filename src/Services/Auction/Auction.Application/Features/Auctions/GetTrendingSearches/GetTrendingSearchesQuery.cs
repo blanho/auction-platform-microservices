@@ -1,6 +1,6 @@
 using Auctions.Application.DTOs;
 
-namespace Auctions.Application.Queries.GetTrendingSearches;
+namespace Auctions.Application.Features.Auctions.GetTrendingSearches;
 
 public record GetTrendingSearchesQuery(int Limit) : IQuery<List<TrendingSearchDto>>;
 

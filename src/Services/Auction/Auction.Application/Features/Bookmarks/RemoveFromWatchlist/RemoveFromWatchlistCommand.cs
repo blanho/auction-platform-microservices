@@ -1,4 +1,4 @@
-namespace Auctions.Application.Commands.Bookmarks.RemoveFromWatchlist;
+namespace Auctions.Application.Features.Bookmarks.RemoveFromWatchlist;
 
 public record RemoveFromWatchlistCommand(
     Guid AuctionId,

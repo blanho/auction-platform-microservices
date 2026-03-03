@@ -8,7 +8,6 @@ using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using IdentityUserHelper = Identity.Api.Helpers.UserHelper;
 
 namespace Identity.Api.Controllers;
 
@@ -55,11 +54,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetSellerStatus(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _userService.GetSellerStatusAsync(userId, cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -72,11 +67,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> ApplyForSeller([FromBody] BecomeSellerRequest request, CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _userService.ApplyForSellerAsync(userId, request.AcceptTerms, cancellationToken);
 
         if (!result.IsSuccess)

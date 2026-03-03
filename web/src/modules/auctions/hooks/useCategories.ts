@@ -95,15 +95,3 @@ export function useBulkUpdateCategories() {
     },
   })
 }
-
-export function useImportCategories() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (file: File) => categoriesApi.importCategories(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: categoryKeys.tree() })
-    },
-  })
-}

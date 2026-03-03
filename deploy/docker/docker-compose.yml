@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
-      POSTGRES_MULTIPLE_DATABASES: auction_db,bid_db,payment_db,notification_db,identity_db,analytics_db,storage_db
+      POSTGRES_MULTIPLE_DATABASES: auction_db,bid_db,payment_db,notification_db,identity_db,analytics_db,storage_db,job_db
     ports:
       - "5432:5432"
     volumes:
@@ -100,6 +100,11 @@ services:
       - "5341:80"
     volumes:
       - seq_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     networks:
       - auction-network
 
@@ -136,10 +141,39 @@ services:
         condition: service_healthy
       search-api:
         condition: service_healthy
+      payment-api:
+        condition: service_healthy
+      notification-api:
+        condition: service_healthy
+      analytics-api:
+        condition: service_healthy
+      storage-api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
+      retries: 3
+    networks:
+      - auction-network
+
+  web-frontend:
+    build:
+      context: ../..
+      dockerfile: web/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    container_name: auction-web-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
       retries: 3
     networks:
       - auction-network
@@ -381,6 +415,35 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=storage_db;Username=postgres;Password=postgres123
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      Serilog__WriteTo__0__Name: Seq
+      Serilog__WriteTo__0__Args__serverUrl: http://seq:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - auction-network
+
+  job-api:
+    build:
+      context: ../..
+      dockerfile: src/Services/Job/Job.Api/Dockerfile
+    container_name: job-api
+    restart: unless-stopped
+    ports:
+      - "5006:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=job_db;Username=postgres;Password=postgres123
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest

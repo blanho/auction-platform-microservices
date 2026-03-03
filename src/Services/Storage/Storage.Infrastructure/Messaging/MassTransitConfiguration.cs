@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Storage.Infrastructure.Configuration;
+using Storage.Infrastructure.Messaging.Consumers;
 using Storage.Infrastructure.Persistence;
 
 namespace Storage.Infrastructure.Messaging;
@@ -17,6 +18,8 @@ public static class MassTransitConfiguration
 
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<ImageProcessingTriggerConsumer>();
+
             x.AddEntityFrameworkOutbox<StorageDbContext>(o =>
             {
                 o.UsePostgres();
@@ -34,8 +37,26 @@ public static class MassTransitConfiguration
                     h.Heartbeat(TimeSpan.FromSeconds(30));
                 });
 
-                cfg.UseMessageRetry(r => r
-                    .Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+                cfg.ReceiveEndpoint("storage-image-processing", e =>
+                {
+                    e.ConfigureConsumer<ImageProcessingTriggerConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                });
+
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
 
                 cfg.UseDelayedMessageScheduler();
                 cfg.ConfigureEndpoints(context);

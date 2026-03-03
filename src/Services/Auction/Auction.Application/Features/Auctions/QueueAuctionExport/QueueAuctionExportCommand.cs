@@ -1,7 +1,7 @@
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.CQRS;
 
-namespace Auctions.Application.Commands.QueueAuctionExport;
+namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 
 public record QueueAuctionExportCommand(
     Guid RequestedBy,

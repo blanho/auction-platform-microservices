@@ -66,6 +66,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Determine commit SHA
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            SHA="${{ github.event.workflow_run.head_sha }}"
+          else
+            SHA="${{ github.sha }}"
+          fi
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -82,14 +93,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
           tags: |
-            type=sha,prefix=
+            type=raw,value=${{ steps.vars.outputs.short_sha }}
             type=ref,event=branch
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.service.context }}
+          context: .
           file: ${{ matrix.service.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -119,27 +130,54 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
 
+      - name: Determine image tag
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            SHA="${{ github.event.workflow_run.head_sha }}"
+          else
+            SHA="${{ github.sha }}"
+          fi
+          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Deploy to Kubernetes
         run: |
+          IMAGE_TAG="${{ steps.vars.outputs.short_sha }}"
+          REGISTRY="${{ env.REGISTRY }}"
+          PREFIX="${{ env.IMAGE_PREFIX }}"
+
           cd deploy/kubernetes
-          
-          # Update image tags
-          export IMAGE_TAG=${{ github.sha }}
-          
-          # Apply staging overlay
-          kubectl kustomize overlays/staging | \
-            sed "s/:latest/:${IMAGE_TAG:0:7}/g" | \
-            kubectl apply -f -
-          
-          # Wait for rollout
-          kubectl rollout status deployment -n auction-platform --timeout=300s
+
+          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
+          MANIFEST=$(kubectl kustomize overlays/staging)
+
+          for service in "${SERVICES[@]}"; do
+            MANIFEST=$(echo "$MANIFEST" | sed "s|image: auction-platform/${service}:.*|image: ${REGISTRY}/${PREFIX}/${service}:${IMAGE_TAG}|g")
+          done
+
+          echo "$MANIFEST" | kubectl apply -f -
+
+          kubectl rollout status deployment -n auction-platform-staging --timeout=300s
 
       - name: Run smoke tests
         run: |
-          echo "Running smoke tests against staging..."
-          # Add your smoke test commands here
-          sleep 10
-          curl -f https://staging-api.auction-platform.com/health || exit 1
+          SERVICES=(identity-api auction-api bidding-api payment-api gateway-api)
+          FAILED=0
+
+          for service in "${SERVICES[@]}"; do
+            READY=$(kubectl get deploy "staging-${service}" -n auction-platform-staging -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+            if [[ "$READY" -lt 1 ]]; then
+              echo "❌ staging-${service} has no ready replicas"
+              FAILED=1
+            else
+              echo "✅ staging-${service} is ready (${READY} replicas)"
+            fi
+          done
+
+          if [[ $FAILED -eq 1 ]]; then
+            echo "::error::Smoke tests failed"
+            exit 1
+          fi
 
   deploy-production:
     name: Deploy to Production
@@ -162,37 +200,60 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
 
+      - name: Determine image tag
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            SHA="${{ github.event.workflow_run.head_sha }}"
+          else
+            SHA="${{ github.sha }}"
+          fi
+          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+
       - name: Deploy to Kubernetes
         run: |
+          IMAGE_TAG="${{ steps.vars.outputs.short_sha }}"
+          REGISTRY="${{ env.REGISTRY }}"
+          PREFIX="${{ env.IMAGE_PREFIX }}"
+
           cd deploy/kubernetes
-          
-          export IMAGE_TAG=${{ github.sha }}
-          
-          # Apply production overlay with canary deployment
-          kubectl kustomize overlays/production | \
-            sed "s/:latest/:${IMAGE_TAG:0:7}/g" | \
-            kubectl apply -f -
-          
-          # Progressive rollout
-          for deployment in identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api; do
+
+          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
+          MANIFEST=$(kubectl kustomize overlays/production)
+
+          for service in "${SERVICES[@]}"; do
+            MANIFEST=$(echo "$MANIFEST" | sed "s|image: .*/${service}:[^ ]*|image: ${REGISTRY}/${PREFIX}/${service}:${IMAGE_TAG}|g")
+          done
+
+          echo "$MANIFEST" | kubectl apply -f -
+
+          for deployment in "${SERVICES[@]}"; do
             echo "Rolling out $deployment..."
             kubectl rollout status deployment/$deployment -n auction-platform --timeout=300s
           done
 
       - name: Verify deployment
         run: |
-          echo "Verifying production deployment..."
-          sleep 30
-          curl -f https://api.auction-platform.com/health || exit 1
+          SERVICES=(identity-api auction-api bidding-api payment-api gateway-api)
+
+          for service in "${SERVICES[@]}"; do
+            READY=$(kubectl get deploy "${service}" -n auction-platform -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+            if [[ "$READY" -lt 1 ]]; then
+              echo "❌ ${service} has no ready replicas"
+              exit 1
+            fi
+            echo "✅ ${service} is ready (${READY} replicas)"
+          done
 
       - name: Notify on success
         if: success()
-        run: |
-          echo "✅ Production deployment successful!"
-          # Add Slack/Teams notification here
+        run: echo "✅ Production deployment successful!"
 
       - name: Rollback on failure
         if: failure()
         run: |
           echo "❌ Deployment failed, initiating rollback..."
-          kubectl rollout undo deployment -n auction-platform
+          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
+          for deployment in "${SERVICES[@]}"; do
+            kubectl rollout undo deployment/$deployment -n auction-platform || true
+          done

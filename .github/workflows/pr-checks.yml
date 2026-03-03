@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  SOLUTION_PATH: 'auction.sln'
+
 jobs:
   lint:
     name: Lint & Format
@@ -44,6 +47,3 @@ jobs:
           if echo "$CHANGED_FILES" | grep -q "Contracts/"; then
             echo "::warning::API contracts modified - ensure backward compatibility"
           fi
-
-env:
-  SOLUTION_PATH: 'auction.sln'

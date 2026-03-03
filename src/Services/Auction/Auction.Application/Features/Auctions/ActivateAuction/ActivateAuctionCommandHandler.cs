@@ -4,7 +4,7 @@ using AutoMapper;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.ActivateAuction;
+namespace Auctions.Application.Features.Auctions.ActivateAuction;
 
 public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionCommand, AuctionDto>
 {

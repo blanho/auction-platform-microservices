@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
 namespace Auctions.Application.Features.Categories.DeleteCategory;
@@ -7,7 +8,7 @@ public class DeleteCategoryCommandValidator : AbstractValidator<DeleteCategoryCo
     public DeleteCategoryCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Category ID is required");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Category ID"));
     }
 }
 

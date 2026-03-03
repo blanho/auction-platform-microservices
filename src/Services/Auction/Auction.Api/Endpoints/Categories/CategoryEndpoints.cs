@@ -3,10 +3,12 @@ using Auctions.Api.Extensions;
 using Auctions.Application.Features.Categories.BulkUpdateCategories;
 using Auctions.Application.Features.Categories.CreateCategory;
 using Auctions.Application.Features.Categories.DeleteCategory;
+using Auctions.Application.Features.Categories.GetCategoryTree;
 using Auctions.Application.Features.Categories.UpdateCategory;
 using Auctions.Application.Features.Categories.GetCategories;
 using Auctions.Application.Features.Categories.GetCategoryById;
 using Auctions.Application.DTOs;
+using Auctions.Application.DTOs.Categories;
 using BuildingBlocks.Web.Authorization;
 using Carter;
 using MediatR;
@@ -26,6 +28,11 @@ public class CategoryEndpoints : ICarterModule
             .WithName("GetCategories")
             .AllowAnonymous()
             .Produces<List<CategoryDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/tree", GetCategoryTree)
+            .WithName("GetCategoryTree")
+            .AllowAnonymous()
+            .Produces<List<CategoryTreeDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}", GetCategoryById)
             .WithName("GetCategoryById")
@@ -66,6 +73,17 @@ public class CategoryEndpoints : ICarterModule
         CancellationToken ct = default)
     {
         var query = new GetCategoriesQuery(activeOnly, includeCount);
+        var result = await mediator.Send(query, ct);
+
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> GetCategoryTree(
+        bool activeOnly = true,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
+    {
+        var query = new GetCategoryTreeQuery(activeOnly);
         var result = await mediator.Send(query, ct);
 
         return result.ToOkResult();

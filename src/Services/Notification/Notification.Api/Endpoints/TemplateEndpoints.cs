@@ -1,9 +1,9 @@
 using Carter;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using Notification.Application.DTOs;
 using Notification.Application.Features.Templates.GetTemplates;
 using Notification.Application.Features.Templates.GetActiveTemplates;
@@ -57,7 +57,7 @@ public class TemplateEndpoints : ICarterModule
             .WithSummary("Check if a template with the given key exists");
     }
 
-    private static async Task<Ok<PaginatedResult<TemplateDto>>> GetAllTemplates(
+    private static async Task<IResult> GetAllTemplates(
         int page,
         int pageSize,
         ISender sender,
@@ -65,39 +65,39 @@ public class TemplateEndpoints : ICarterModule
     {
         var query = new GetTemplatesQuery(page, pageSize);
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<List<TemplateDto>>> GetActiveTemplates(
+    private static async Task<IResult> GetActiveTemplates(
         ISender sender,
         CancellationToken ct)
     {
         var query = new GetActiveTemplatesQuery();
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<TemplateDto>> GetTemplateByKey(
+    private static async Task<IResult> GetTemplateByKey(
         string key,
         ISender sender,
         CancellationToken ct)
     {
         var query = new GetTemplateByKeyQuery(key);
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<TemplateDto>> GetTemplateById(
+    private static async Task<IResult> GetTemplateById(
         Guid id,
         ISender sender,
         CancellationToken ct)
     {
         var query = new GetTemplateByIdQuery(id);
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Created<TemplateDto>> CreateTemplate(
+    private static async Task<IResult> CreateTemplate(
         CreateTemplateDto dto,
         ISender sender,
         CancellationToken ct)
@@ -112,10 +112,11 @@ public class TemplateEndpoints : ICarterModule
             dto.PushTitle,
             dto.PushBody);
         var result = await sender.Send(command, ct);
-        return TypedResults.Created($"/api/v1/notifications/templates/{result.Value.Key}", result.Value);
+        return result.ToApiResult(value =>
+            Results.Created($"/api/v1/notifications/templates/{value.Key}", value));
     }
 
-    private static async Task<Ok<TemplateDto>> UpdateTemplate(
+    private static async Task<IResult> UpdateTemplate(
         Guid id,
         UpdateTemplateDto dto,
         ISender sender,
@@ -132,26 +133,26 @@ public class TemplateEndpoints : ICarterModule
             dto.PushBody,
             dto.IsActive);
         var result = await sender.Send(command, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<NoContent> DeleteTemplate(
+    private static async Task<IResult> DeleteTemplate(
         Guid id,
         ISender sender,
         CancellationToken ct)
     {
         var command = new DeleteTemplateCommand(id);
-        await sender.Send(command, ct);
-        return TypedResults.NoContent();
+        var result = await sender.Send(command, ct);
+        return result.ToNoContentResult();
     }
 
-    private static async Task<Ok<bool>> CheckTemplateExists(
+    private static async Task<IResult> CheckTemplateExists(
         string key,
         ISender sender,
         CancellationToken ct)
     {
         var query = new CheckTemplateExistsQuery(key);
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 }

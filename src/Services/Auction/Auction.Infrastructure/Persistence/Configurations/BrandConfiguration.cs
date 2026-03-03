@@ -50,6 +50,9 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
 
         builder.Property(x => x.Files)
             .HasColumnType("jsonb");
+
+        builder.Navigation(x => x.Items)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

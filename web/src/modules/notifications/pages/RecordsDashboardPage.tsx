@@ -85,7 +85,7 @@ const FILTER_CONFIG: FilterPanelConfig = {
 }
 
 export function RecordsDashboardPage() {
-  const pagination = usePagination<NotificationRecordFilter>({ pageSize: 20 })
+  const pagination = usePagination<NotificationRecordFilter>({ defaultPageSize: 20 })
   const { data: recordsData, isLoading, refetch } = useRecords({
     page: pagination.page,
     pageSize: pagination.pageSize,
@@ -94,8 +94,6 @@ export function RecordsDashboardPage() {
     ...pagination.filter,
   })
   const { data: stats } = useRecordStats()
-
-  const items = useMemo(() => recordsData?.items ?? [], [recordsData?.items])
 
   const columns: ColumnConfig<NotificationRecord>[] = useMemo(
     () => [
@@ -294,15 +292,13 @@ export function RecordsDashboardPage() {
 
         <DataTable
           columns={columns}
-          data={items}
+          data={recordsData}
           isLoading={isLoading}
           sortBy={pagination.sortBy}
           sortOrder={pagination.sortOrder}
           onSort={pagination.handleSort}
           page={pagination.page}
           pageSize={pagination.pageSize}
-          totalCount={recordsData?.totalCount ?? 0}
-          totalPages={recordsData?.totalPages ?? 0}
           onPageChange={pagination.setPage}
           onPageSizeChange={pagination.setPageSize}
           emptyMessage="No notification records found"

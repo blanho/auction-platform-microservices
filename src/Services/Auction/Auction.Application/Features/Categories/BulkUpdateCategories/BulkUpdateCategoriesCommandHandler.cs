@@ -37,7 +37,10 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
                     continue;
                 }
 
-                category.IsActive = request.IsActive;
+                if (request.IsActive)
+                    category.Activate();
+                else
+                    category.Deactivate();
                 await _repository.UpdateAsync(category, cancellationToken);
                 updatedCount++;
             }

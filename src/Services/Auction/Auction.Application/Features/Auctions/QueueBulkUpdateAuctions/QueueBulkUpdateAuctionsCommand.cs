@@ -1,6 +1,6 @@
 using BuildingBlocks.Application.CQRS;
 
-namespace Auctions.Application.Commands.QueueBulkUpdateAuctions;
+namespace Auctions.Application.Features.Auctions.QueueBulkUpdateAuctions;
 
 public record QueueBulkUpdateAuctionsCommand(
     Guid RequestedBy,

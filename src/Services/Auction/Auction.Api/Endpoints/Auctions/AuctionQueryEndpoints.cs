@@ -1,10 +1,10 @@
 #nullable enable
 using Auctions.Application.DTOs;
 using Auctions.Application.DTOs.Auctions;
-using Auctions.Application.Queries.GetAuctionById;
-using Auctions.Application.Queries.GetAuctionsByIds;
-using Auctions.Application.Queries.GetAuctions;
-using Auctions.Application.Queries.GetMyAuctions;
+using Auctions.Application.Features.Auctions.GetAuctionById;
+using Auctions.Application.Features.Auctions.GetAuctionsByIds;
+using Auctions.Application.Features.Auctions.GetAuctions;
+using Auctions.Application.Features.Auctions.GetMyAuctions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using Carter;

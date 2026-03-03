@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Notification.Api.Constants;
-using System.Security.Claims;
+using BuildingBlocks.Web.Authorization;
 
 namespace Notification.Api.Hubs;
 
@@ -17,9 +17,7 @@ public class NotificationHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? Context.User?.FindFirst("sub")?.Value
-                    ?? Context.User?.FindFirst("username")?.Value;
+        var userId = Context.User?.GetUserId();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -33,9 +31,7 @@ public class NotificationHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? Context.User?.FindFirst("sub")?.Value
-                    ?? Context.User?.FindFirst("username")?.Value;
+        var userId = Context.User?.GetUserId();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -48,8 +44,7 @@ public class NotificationHub : Hub
 
     public async Task JoinUserGroup(string userId)
     {
-        var authenticatedUserId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                                ?? Context.User?.FindFirst("sub")?.Value;
+        var authenticatedUserId = Context.User?.GetUserId();
 
         if (authenticatedUserId != userId)
             throw new HubException("Cannot join another user's notification group.");
@@ -60,8 +55,7 @@ public class NotificationHub : Hub
 
     public async Task LeaveUserGroup(string userId)
     {
-        var authenticatedUserId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                                ?? Context.User?.FindFirst("sub")?.Value;
+        var authenticatedUserId = Context.User?.GetUserId();
 
         if (authenticatedUserId != userId)
             throw new HubException("Cannot leave another user's notification group.");

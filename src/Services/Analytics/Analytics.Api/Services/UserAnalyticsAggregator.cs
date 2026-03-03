@@ -115,4 +115,27 @@ public class UserAnalyticsAggregator : IUserAnalyticsAggregator
             EndingSoonChange = null
         };
     }
+
+    public async Task<TrendingSearchesResponse> GetTrendingSearchesAsync(
+        int limit = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var categories = await _auctionRepository.GetCategoryPerformanceAsync(
+            DateTimeOffset.UtcNow.AddDays(-7),
+            DateTimeOffset.UtcNow,
+            cancellationToken);
+
+        var searches = categories
+            .Where(c => !string.IsNullOrWhiteSpace(c.CategoryName))
+            .OrderByDescending(c => c.BidCount)
+            .Take(limit)
+            .Select(c => new TrendingSearchDto
+            {
+                Query = c.CategoryName,
+                Count = c.BidCount
+            })
+            .ToList();
+
+        return new TrendingSearchesResponse { Searches = searches };
+    }
 }

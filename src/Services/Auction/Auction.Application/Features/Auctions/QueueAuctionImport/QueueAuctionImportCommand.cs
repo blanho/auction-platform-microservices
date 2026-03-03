@@ -1,7 +1,7 @@
 using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
 
-namespace Auctions.Application.Commands.QueueAuctionImport;
+namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public record QueueAuctionImportCommand(
     Guid SellerId,

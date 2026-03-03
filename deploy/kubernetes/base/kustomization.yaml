@@ -27,6 +27,9 @@ resources:
   - infrastructure/postgres.yaml
   - infrastructure/redis.yaml
   - infrastructure/rabbitmq.yaml
+  - infrastructure/elasticsearch.yaml
+  - infrastructure/jaeger.yaml
+  - infrastructure/seq.yaml
   - infrastructure/rate-limiting.yaml
   - monitoring/service-monitors.yaml
   - ingress.yaml

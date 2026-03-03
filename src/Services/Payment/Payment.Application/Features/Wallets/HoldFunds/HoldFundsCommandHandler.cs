@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Wallets.HoldFunds;
@@ -17,7 +18,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
     private readonly ILogger<HoldFundsCommandHandler> _logger;
     private readonly IDistributedLock _distributedLock;
 
-    private static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan LockExpiry = WalletDefaults.Lock.ExtendedExpiry;
 
     public HoldFundsCommandHandler(
         IWalletRepository walletRepository,

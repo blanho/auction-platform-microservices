@@ -1,9 +1,11 @@
 #nullable enable
-using System.Security.Claims;
+using Auctions.Application.Features.Views.RecordView;
 using Auctions.Application.DTOs.Views;
-using Auctions.Application.Interfaces;
-using BuildingBlocks.Infrastructure.Repository;
+using Auctions.Application.Features.Views.GetViewCount;
+using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Helpers;
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auctions.Api.Endpoints.Views;
@@ -28,27 +30,27 @@ public class ViewsEndpoints : ICarterModule
 
     private static async Task<IResult> RecordView(
         [FromRoute] Guid auctionId,
-        IAuctionViewRepository repository,
-        IUnitOfWork unitOfWork,
-        ClaimsPrincipal user,
         HttpContext httpContext,
+        IMediator mediator,
         CancellationToken ct)
     {
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = UserHelper.GetUserId(httpContext.User)?.ToString();
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
 
-        await repository.RecordViewAsync(auctionId, userId, ipAddress, ct);
-        await unitOfWork.SaveChangesAsync(ct);
+        var command = new RecordViewCommand(auctionId, userId, ipAddress);
+        var result = await mediator.Send(command, ct);
 
-        return Results.Ok(new RecordViewResponseDto { Success = true });
+        return result.ToApiResult(_ => Results.Ok(new RecordViewResponseDto { Success = true }));
     }
 
     private static async Task<IResult> GetViewCount(
         [FromRoute] Guid auctionId,
-        IAuctionViewRepository repository,
+        IMediator mediator,
         CancellationToken ct)
     {
-        var count = await repository.GetViewCountForAuctionAsync(auctionId, ct);
-        return Results.Ok(new ViewCountDto { AuctionId = auctionId, ViewCount = count });
+        var query = new GetViewCountQuery(auctionId);
+        var result = await mediator.Send(query, ct);
+
+        return result.ToOkResult();
     }
 }

@@ -134,6 +134,7 @@ public class ChangeTrackerAuditCollector : IAuditCollector
     {
         "DomainEvents",
         "RowVersion",
+        "Version",
         "ConcurrencyStamp"
     };
 

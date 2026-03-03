@@ -1,5 +1,5 @@
 using Bidding.Application.DTOs;
-using Bidding.Application.Features.Bids.Commands.PlaceBid;
+using Bidding.Application.Features.Bids.PlaceBid;
 using Bidding.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;
 

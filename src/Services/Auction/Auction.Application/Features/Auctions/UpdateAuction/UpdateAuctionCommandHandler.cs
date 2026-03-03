@@ -3,7 +3,7 @@ using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.UpdateAuction;
+namespace Auctions.Application.Features.Auctions.UpdateAuction;
 
 public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand, bool>
 {
@@ -76,6 +76,43 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 auction.Item.SetAttribute(attr.Key, attr.Value);
             }
             modifiedFields.Add(nameof(auction.Item.Attributes));
+        }
+
+        if (request.ReservePrice.HasValue && request.ReservePrice.Value != auction.ReservePrice)
+        {
+            auction.UpdateReservePrice(request.ReservePrice.Value);
+            modifiedFields.Add(nameof(auction.ReservePrice));
+        }
+
+        if (request.BuyNowPrice != null && request.BuyNowPrice != auction.BuyNowPrice)
+        {
+            auction.UpdateBuyNowPrice(request.BuyNowPrice);
+            modifiedFields.Add(nameof(auction.BuyNowPrice));
+        }
+
+        if (request.CategoryId.HasValue && request.CategoryId != auction.Item.CategoryId)
+        {
+            auction.Item.UpdateCategory(request.CategoryId);
+            modifiedFields.Add("CategoryId");
+        }
+
+        if (request.BrandId.HasValue && request.BrandId != auction.Item.BrandId)
+        {
+            auction.Item.UpdateBrand(request.BrandId);
+            modifiedFields.Add("BrandId");
+        }
+
+        if (request.IsFeatured.HasValue && request.IsFeatured.Value != auction.IsFeatured)
+        {
+            auction.SetFeatured(request.IsFeatured.Value);
+            modifiedFields.Add(nameof(auction.IsFeatured));
+        }
+
+        if (request.AuctionEnd.HasValue && request.AuctionEnd.Value != auction.AuctionEnd)
+        {
+            var extension = request.AuctionEnd.Value - auction.AuctionEnd;
+            auction.ExtendAuctionEnd(extension);
+            modifiedFields.Add(nameof(auction.AuctionEnd));
         }
 
         auction.RaiseUpdatedEvent(modifiedFields);

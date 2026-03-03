@@ -1,16 +1,26 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.QueueAuctionImport;
+namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public class QueueAuctionImportCommandValidator : AbstractValidator<QueueAuctionImportCommand>
 {
+    private const int MaxRowsPerBatch = 10_000;
+
     public QueueAuctionImportCommandValidator()
     {
-        RuleFor(x => x.SellerId).NotEmpty();
-        RuleFor(x => x.SellerUsername).NotEmpty();
-        RuleFor(x => x.Currency).NotEmpty();
-        RuleFor(x => x.Rows).NotEmpty()
-            .Must(rows => rows.Count <= 10000)
-            .WithMessage("Import cannot exceed 10,000 rows per batch.");
+        RuleFor(x => x.SellerId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
+
+        RuleFor(x => x.SellerUsername)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"));
+
+        RuleFor(x => x.Currency)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Currency"));
+
+        RuleFor(x => x.Rows)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.MustContainAtLeastOne("Row"))
+            .Must(rows => rows.Count <= MaxRowsPerBatch)
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Rows", MaxRowsPerBatch));
     }
 }

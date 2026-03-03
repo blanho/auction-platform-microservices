@@ -7,6 +7,7 @@ public interface IUserAnalyticsAggregator
     Task<UserDashboardStatsDto> GetUserDashboardStatsAsync(string username, CancellationToken cancellationToken = default);
     Task<SellerAnalyticsDto> GetSellerAnalyticsAsync(string username, string timeRange, CancellationToken cancellationToken = default);
     Task<QuickStatsDto> GetQuickStatsAsync(CancellationToken cancellationToken = default);
+    Task<TrendingSearchesResponse> GetTrendingSearchesAsync(int limit = 10, CancellationToken cancellationToken = default);
 }
 
 public record UserDashboardStatsDto
@@ -62,4 +63,15 @@ public record QuickStatsDto
     public decimal? ActiveUsersChange { get; init; }
     public int EndingSoon { get; init; }
     public decimal? EndingSoonChange { get; init; }
+}
+
+public record TrendingSearchDto
+{
+    public string Query { get; init; } = string.Empty;
+    public int Count { get; init; }
+}
+
+public record TrendingSearchesResponse
+{
+    public List<TrendingSearchDto> Searches { get; init; } = [];
 }

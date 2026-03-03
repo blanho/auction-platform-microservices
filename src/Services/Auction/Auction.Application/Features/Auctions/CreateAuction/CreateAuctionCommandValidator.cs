@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.CreateAuction;
+namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionCommand>
 {
@@ -31,25 +31,26 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
         {
             RuleFor(x => x.YearManufactured)
                 .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
-                .WithMessage($"Year must be between 1900 and {DateTime.UtcNow.Year + 1}");
+                .WithMessage(ValidationConstants.Messages.OutOfRange("Year manufactured", 1900, DateTime.UtcNow.Year + 1));
         });
 
         RuleFor(x => x.ReservePrice)
-            .GreaterThanOrEqualTo(0).WithMessage("Reserve price must be non-negative");
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationConstants.Messages.MustBeNonNegative("Reserve price"));
 
         RuleFor(x => x.AuctionEnd)
             .GreaterThan(DateTimeOffset.UtcNow.AddHours(1))
-            .WithMessage("Auction end date must be at least 1 hour in the future");
+            .WithMessage(ValidationConstants.Messages.MustBeAtLeast("Auction end date", 1));
 
         RuleFor(x => x.SellerUsername)
-            .NotEmpty().WithMessage("Seller is required");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"));
 
         RuleFor(x => x.SellerId)
-            .NotEmpty().WithMessage("Seller ID is required");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
 
         RuleFor(x => x.Currency)
-            .NotEmpty().WithMessage("Currency is required")
-            .MaximumLength(3).WithMessage("Currency must be a valid 3-letter code");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Currency"))
+            .MaximumLength(ValidationConstants.MinLength.ShortCode + 1)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Currency", ValidationConstants.MinLength.ShortCode + 1));
     }
 }
 

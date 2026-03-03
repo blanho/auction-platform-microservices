@@ -2,7 +2,7 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.DeleteAuction;
+namespace Auctions.Application.Features.Auctions.DeleteAuction;
 
 public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand, bool>
 {

@@ -1,25 +1,27 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.ExportAuctions;
+namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public class ExportAuctionsCommandValidator : AbstractValidator<ExportAuctionsCommand>
 {
     public ExportAuctionsCommandValidator()
     {
         RuleFor(x => x.Format)
-            .IsInEnum().WithMessage("Invalid export format specified.");
+            .IsInEnum().WithMessage(ValidationConstants.Messages.InvalidEnumValue("Export format"));
 
         When(x => x.StartDate.HasValue && x.EndDate.HasValue, () =>
         {
             RuleFor(x => x)
                 .Must(x => x.EndDate!.Value > x.StartDate!.Value)
-                .WithMessage("End date must be after start date.");
+                .WithMessage(ValidationConstants.Messages.Invalid("Date range"));
         });
 
         When(x => x.SellerFilter != null, () =>
         {
             RuleFor(x => x.SellerFilter)
-                .MaximumLength(100).WithMessage("Seller filter must not exceed 100 characters.");
+                .MaximumLength(ValidationConstants.StringLength.Standard)
+                .WithMessage(ValidationConstants.Messages.MaxLength("Seller filter", ValidationConstants.StringLength.Standard));
         });
     }
 }

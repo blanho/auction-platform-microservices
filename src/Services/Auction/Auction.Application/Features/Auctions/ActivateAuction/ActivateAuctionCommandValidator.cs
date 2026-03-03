@@ -1,6 +1,7 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.ActivateAuction;
+namespace Auctions.Application.Features.Auctions.ActivateAuction;
 
 public class ActivateAuctionCommandValidator : AbstractValidator<ActivateAuctionCommand>
 {
@@ -8,7 +9,7 @@ public class ActivateAuctionCommandValidator : AbstractValidator<ActivateAuction
     {
         RuleFor(x => x.AuctionId)
             .NotEmpty()
-            .WithMessage("Auction ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Auction ID"));
     }
 }
 

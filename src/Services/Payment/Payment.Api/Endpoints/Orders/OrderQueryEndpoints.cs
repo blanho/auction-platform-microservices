@@ -1,6 +1,7 @@
 using Carter;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -70,7 +71,7 @@ public class OrderQueryEndpoints : ICarterModule
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.View));
     }
 
-    private static async Task<Results<Ok<OrderDto>, NotFound, BadRequest<ProblemDetails>>> GetById(
+    private static async Task<IResult> GetById(
         Guid id,
         IMediator mediator,
         CancellationToken cancellationToken)
@@ -78,16 +79,10 @@ public class OrderQueryEndpoints : ICarterModule
         var query = new GetOrderByIdQuery(id);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Ok<OrderDto>, NotFound, BadRequest<ProblemDetails>>> GetByAuctionId(
+    private static async Task<IResult> GetByAuctionId(
         Guid auctionId,
         IMediator mediator,
         CancellationToken cancellationToken)
@@ -95,16 +90,10 @@ public class OrderQueryEndpoints : ICarterModule
         var query = new GetOrderByAuctionIdQuery(auctionId);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<OrderDto>>, BadRequest<ProblemDetails>>> GetByBuyer(
+    private static async Task<IResult> GetByBuyer(
         string username,
         int page,
         int pageSize,
@@ -118,20 +107,14 @@ public class OrderQueryEndpoints : ICarterModule
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value is null)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
-
-        httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
-        httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Items);
+        return result.ToApiResult(paginatedResult =>
+        {
+            AppendPaginationHeaders(httpContext, paginatedResult.TotalCount, paginatedResult.Page, paginatedResult.PageSize);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<OrderDto>>, BadRequest<ProblemDetails>>> GetBySeller(
+    private static async Task<IResult> GetBySeller(
         string username,
         int page,
         int pageSize,
@@ -145,29 +128,21 @@ public class OrderQueryEndpoints : ICarterModule
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value is null)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
-
-        httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
-        httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Items);
+        return result.ToApiResult(paginatedResult =>
+        {
+            AppendPaginationHeaders(httpContext, paginatedResult.TotalCount, paginatedResult.Page, paginatedResult.PageSize);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<OrderDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult>> GetMyPurchases(
+    private static async Task<IResult> GetMyPurchases(
         int page,
         int pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var username = httpContext.User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
-            return TypedResults.Unauthorized();
+        var username = UserHelper.GetUsername(httpContext.User);
 
         var query = new GetOrdersByBuyerQuery(
             username, 
@@ -175,29 +150,21 @@ public class OrderQueryEndpoints : ICarterModule
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value is null)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
-
-        httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
-        httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Items);
+        return result.ToApiResult(paginatedResult =>
+        {
+            AppendPaginationHeaders(httpContext, paginatedResult.TotalCount, paginatedResult.Page, paginatedResult.PageSize);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<OrderDto>>, BadRequest<ProblemDetails>, UnauthorizedHttpResult>> GetMySales(
+    private static async Task<IResult> GetMySales(
         int page,
         int pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var username = httpContext.User.Identity?.Name;
-        if (string.IsNullOrEmpty(username))
-            return TypedResults.Unauthorized();
+        var username = UserHelper.GetUsername(httpContext.User);
 
         var query = new GetOrdersBySellerQuery(
             username, 
@@ -205,20 +172,14 @@ public class OrderQueryEndpoints : ICarterModule
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value is null)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
-
-        httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
-        httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Items);
+        return result.ToApiResult(paginatedResult =>
+        {
+            AppendPaginationHeaders(httpContext, paginatedResult.TotalCount, paginatedResult.Page, paginatedResult.PageSize);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<OrderDto>>, BadRequest<ProblemDetails>>> GetAll(
+    private static async Task<IResult> GetAll(
         [AsParameters] GetAllOrdersFilter filter,
         IMediator mediator,
         HttpContext httpContext,
@@ -234,29 +195,27 @@ public class OrderQueryEndpoints : ICarterModule
 
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value is null)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(Error.NullValue));
-
-        httpContext.Response.Headers.Append(TotalCountHeader, result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append(PageHeader, result.Value.Page.ToString());
-        httpContext.Response.Headers.Append(PageSizeHeader, result.Value.PageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Items);
+        return result.ToApiResult(paginatedResult =>
+        {
+            AppendPaginationHeaders(httpContext, paginatedResult.TotalCount, paginatedResult.Page, paginatedResult.PageSize);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<OrderStatsDto>, BadRequest<ProblemDetails>>> GetStats(
+    private static async Task<IResult> GetStats(
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var query = new GetOrderStatsQuery();
         var result = await mediator.Send(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
+    }
 
-        return TypedResults.Ok(result.Value);
+    private static void AppendPaginationHeaders(HttpContext httpContext, int totalCount, int page, int pageSize)
+    {
+        httpContext.Response.Headers.Append(TotalCountHeader, totalCount.ToString());
+        httpContext.Response.Headers.Append(PageHeader, page.ToString());
+        httpContext.Response.Headers.Append(PageSizeHeader, pageSize.ToString());
     }
 }

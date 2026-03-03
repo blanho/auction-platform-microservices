@@ -27,7 +27,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import type { FilterField, FilterPanelConfig } from '@/shared/types/filter.types'
 
-export interface FilterPanelProps<TFilter extends Record<string, unknown>> {
+export interface FilterPanelProps<TFilter extends object = Record<string, unknown>> {
   config: FilterPanelConfig
   value: TFilter
   onChange: (filter: TFilter) => void
@@ -37,7 +37,7 @@ export interface FilterPanelProps<TFilter extends Record<string, unknown>> {
   sx?: SxProps<Theme>
 }
 
-export function FilterPanel<TFilter extends Record<string, unknown>>({
+export function FilterPanel<TFilter extends object = Record<string, unknown>>({
   config,
   value,
   onChange,
@@ -49,7 +49,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
   const [isExpanded, setIsExpanded] = useState(config.defaultExpanded ?? true)
 
   const activeFilterCount = useMemo(() => {
-    return Object.entries(value).filter(
+    return Object.entries(value as Record<string, unknown>).filter(
       ([_, v]) => v !== undefined && v !== null && v !== ''
     ).length
   }, [value])
@@ -63,9 +63,9 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
 
   const handleClearField = useCallback(
     (key: string) => {
-      const newValue = { ...value }
+      const newValue = { ...value } as Record<string, unknown>
       delete newValue[key]
-      onChange(newValue)
+      onChange(newValue as TFilter)
     },
     [value, onChange]
   )
@@ -77,7 +77,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
 
   const renderField = useCallback(
     (field: FilterField) => {
-      const fieldValue = value[field.key]
+      const fieldValue = (value as Record<string, unknown>)[field.key]
       const gridSize = field.gridSize ?? { xs: 12, sm: 6, md: 4, lg: 3 }
 
       switch (field.type) {
@@ -173,7 +173,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                   size="small"
                   type="date"
                   label={`${field.label} From`}
-                  value={(value[field.startKey] as string) ?? ''}
+                  value={((value as Record<string, unknown>)[field.startKey] as string) ?? ''}
                   onChange={(e) => handleFieldChange(field.startKey, e.target.value || undefined)}
                   slotProps={{
                     inputLabel: { shrink: true },
@@ -187,7 +187,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                   size="small"
                   type="date"
                   label={`${field.label} To`}
-                  value={(value[field.endKey] as string) ?? ''}
+                  value={((value as Record<string, unknown>)[field.endKey] as string) ?? ''}
                   onChange={(e) => handleFieldChange(field.endKey, e.target.value || undefined)}
                   slotProps={{
                     inputLabel: { shrink: true },
@@ -206,7 +206,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                   size="small"
                   type="number"
                   label={`Min ${field.label}`}
-                  value={(value[field.minKey] as number) ?? ''}
+                  value={((value as Record<string, unknown>)[field.minKey] as number) ?? ''}
                   onChange={(e) =>
                     handleFieldChange(
                       field.minKey,
@@ -223,7 +223,7 @@ export function FilterPanel<TFilter extends Record<string, unknown>>({
                   size="small"
                   type="number"
                   label={`Max ${field.label}`}
-                  value={(value[field.maxKey] as number) ?? ''}
+                  value={((value as Record<string, unknown>)[field.maxKey] as number) ?? ''}
                   onChange={(e) =>
                     handleFieldChange(
                       field.maxKey,

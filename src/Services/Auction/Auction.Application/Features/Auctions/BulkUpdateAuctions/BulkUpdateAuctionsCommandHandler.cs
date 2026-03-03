@@ -3,7 +3,7 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.BulkUpdateAuctions;
+namespace Auctions.Application.Features.Auctions.BulkUpdateAuctions;
 
 public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctionsCommand, int>
 {

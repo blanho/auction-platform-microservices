@@ -42,7 +42,9 @@ builder.Services.AddReverseProxy()
 builder.Services.AddGatewayRateLimiter();
 builder.Services.AddGatewayAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddAuthorization();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("GatewayService is running"),
+        tags: new[] { "self", "ready" });
 builder.Services.AddGatewayCors(builder.Configuration);
 
 var app = builder.Build();
@@ -63,8 +65,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();
-app.MapHealthChecks("/health").AllowAnonymous();
-app.MapHealthChecks("/health/ready").AllowAnonymous();
-app.MapHealthChecks("/health/live").AllowAnonymous();
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("self")
+}).AllowAnonymous();
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+}).AllowAnonymous();
+
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+}).AllowAnonymous();
 
 await app.RunAsync();

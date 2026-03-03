@@ -561,7 +561,7 @@ export function CheckoutPage() {
                     </Stack>
                   </>
                 )}
-                {!existingOrderLoading && !existingOrder && (
+                {!checkingOrder && !existingOrder && (
                   <Box sx={{ py: 4, textAlign: 'center' }}>
                     <ShoppingCart sx={{ fontSize: 48, color: 'grey.300', mb: 2 }} />
                     <Typography variant="body2" color="text.secondary">

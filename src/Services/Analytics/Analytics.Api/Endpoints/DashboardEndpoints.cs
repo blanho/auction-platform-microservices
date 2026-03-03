@@ -17,7 +17,7 @@ public class DashboardEndpoints : ICarterModule
         group.MapGet("/stats", GetDashboardStats)
             .WithName("GetDashboardStats")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewPlatform))
-            .Produces<AdminDashboardStatsDto>();
+            .Produces<DashboardStats>();
 
         group.MapGet("/activity", GetRecentActivity)
             .WithName("GetRecentActivity")
@@ -30,27 +30,12 @@ public class DashboardEndpoints : ICarterModule
             .Produces<PlatformHealthDto>();
     }
 
-    private static async Task<Ok<AdminDashboardStatsDto>> GetDashboardStats(
+    private static async Task<Ok<DashboardStats>> GetDashboardStats(
         IDashboardStatsService dashboardStatsService,
         CancellationToken cancellationToken)
     {
         var stats = await dashboardStatsService.GetStatsAsync(cancellationToken);
-
-        var dto = new AdminDashboardStatsDto
-        {
-            TotalRevenue = stats.TotalRevenue,
-            RevenueChange = stats.RevenueChange,
-            ActiveUsers = stats.ActiveUsers,
-            ActiveUsersChange = stats.ActiveUsersChange,
-            LiveAuctions = stats.LiveAuctions,
-            LiveAuctionsChange = stats.LiveAuctionsChange,
-            PendingReports = stats.PendingReports,
-            PendingReportsChange = stats.PendingReportsChange,
-            TotalOrders = stats.TotalOrders,
-            CompletedOrders = stats.CompletedOrders
-        };
-
-        return TypedResults.Ok(dto);
+        return TypedResults.Ok(stats);
     }
 
     private static async Task<Ok<List<AdminRecentActivityDto>>> GetRecentActivity(
@@ -63,7 +48,7 @@ public class DashboardEndpoints : ICarterModule
         var activities = auditLogs.Select(log => new AdminRecentActivityDto
         {
             Id = log.Id.ToString(),
-            Type = MapAuditActionToType(log.Action),
+            Type = log.EntityType.ToLowerInvariant(),
             Message = $"{log.Action} on {log.EntityType}",
             Timestamp = log.Timestamp,
             Status = "info",
@@ -89,16 +74,5 @@ public class DashboardEndpoints : ICarterModule
         };
 
         return TypedResults.Ok(dto);
-    }
-
-    private static string MapAuditActionToType(AuditAction action)
-    {
-        return action switch
-        {
-            AuditAction.Created => "auction",
-            AuditAction.Updated => "user",
-            AuditAction.Deleted => "report",
-            _ => "info"
-        };
     }
 }

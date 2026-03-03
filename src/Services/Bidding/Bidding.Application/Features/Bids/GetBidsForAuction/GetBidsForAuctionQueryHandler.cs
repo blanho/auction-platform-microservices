@@ -4,7 +4,7 @@ using Bidding.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS;
 
-namespace Bidding.Application.Features.Bids.Queries.GetBidsForAuction;
+namespace Bidding.Application.Features.Bids.GetBidsForAuction;
 
 public class GetBidsForAuctionQueryHandler : IQueryHandler<GetBidsForAuctionQuery, PaginatedResult<BidDto>>
 {

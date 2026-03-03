@@ -76,6 +76,7 @@ public static class ServiceExtensions
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BidPlacedConsumer>();
             x.AddConsumer<HighestBidUpdatedConsumer>();
+            x.AddConsumer<AuctionHighBidUpdatedConsumer>();
             x.AddConsumer<BidRetractedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -94,8 +95,11 @@ public static class ServiceExtensions
                     h.Password(rabbitPass);
                 });
 
-                cfg.UseMessageRetry(r => r
-                    .Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
 
                 cfg.ReceiveEndpoint("search-auction-created", e =>
                 {
@@ -155,6 +159,15 @@ public static class ServiceExtensions
                 {
                     e.ConfigureConsumer<BidRetractedConsumer>(context);
                     e.PrefetchCount = 32;
+                    e.UseDelayedRedelivery(r => r.Intervals(
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(30)));
+                });
+
+                cfg.ReceiveEndpoint("search-auction-high-bid", e =>
+                {
+                    e.ConfigureConsumer<AuctionHighBidUpdatedConsumer>(context);
+                    e.PrefetchCount = 64;
                     e.UseDelayedRedelivery(r => r.Intervals(
                         TimeSpan.FromSeconds(5),
                         TimeSpan.FromSeconds(30)));

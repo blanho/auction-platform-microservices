@@ -3,7 +3,7 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.Bookmarks.AddToWatchlist;
+namespace Auctions.Application.Features.Bookmarks.AddToWatchlist;
 
 public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistCommand, BookmarkItemDto>
 {
@@ -36,16 +36,13 @@ public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistComman
         if (exists)
             return Result.Failure<BookmarkItemDto>(AuctionErrors.Bookmark.AlreadyExists);
 
-        var bookmark = new Bookmark
-        {
-            UserId = request.UserId,
-            Username = request.Username,
-            AuctionId = request.AuctionId,
-            Type = BookmarkType.Watchlist,
-            NotifyOnBid = request.NotifyOnBid,
-            NotifyOnEnd = request.NotifyOnEnd,
-            AddedAt = DateTimeOffset.UtcNow
-        };
+        var bookmark = Bookmark.Create(
+            request.UserId,
+            request.Username,
+            request.AuctionId,
+            BookmarkType.Watchlist,
+            request.NotifyOnBid,
+            request.NotifyOnEnd);
 
         await _bookmarkRepository.AddAsync(bookmark, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

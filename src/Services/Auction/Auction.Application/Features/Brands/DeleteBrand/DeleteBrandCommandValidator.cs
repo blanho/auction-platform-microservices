@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
 namespace Auctions.Application.Features.Brands.DeleteBrand;
@@ -8,7 +9,7 @@ public class DeleteBrandCommandValidator : AbstractValidator<DeleteBrandCommand>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Brand ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Brand ID"));
     }
 }
 

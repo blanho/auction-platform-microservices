@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Carter;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -43,42 +44,34 @@ public class WalletEndpoints : ICarterModule
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Wallets.Withdraw));
     }
 
-    private static async Task<Results<Ok<WalletDto>, NotFound, BadRequest<ProblemDetails>>> GetWallet(
+    private static async Task<IResult> GetWallet(
         string username,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new GetWalletQuery { Username = username }, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Created<WalletDto>, Conflict<ProblemDetails>>> CreateWallet(
+    private static async Task<IResult> CreateWallet(
         string username,
         ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserIdFromClaims(user);
+        var userId = UserHelper.GetUserId(user) ?? Guid.Empty;
         var result = await mediator.Send(new CreateWalletCommand
         {
             UserId = userId,
             Username = username
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.Conflict(ProblemDetailsHelper.FromError(result.Error!));
-
-        return TypedResults.Created($"/api/v1/wallets/{username}", result.Value);
+        return result.ToApiResult(wallet =>
+            Results.Created($"/api/v1/wallets/{username}", wallet));
     }
 
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound<ProblemDetails>, BadRequest<ProblemDetails>>> Deposit(
+    private static async Task<IResult> Deposit(
         string username,
         DepositDto dto,
         IMediator mediator,
@@ -92,17 +85,10 @@ public class WalletEndpoints : ICarterModule
             Description = dto.Description
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            if (result.Error?.Code == "Wallet.NotFound")
-                return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error));
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound<ProblemDetails>, BadRequest<ProblemDetails>>> Withdraw(
+    private static async Task<IResult> Withdraw(
         string username,
         WithdrawDto dto,
         IMediator mediator,
@@ -116,19 +102,6 @@ public class WalletEndpoints : ICarterModule
             Description = dto.Description
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            if (result.Error?.Code == "Wallet.NotFound")
-                return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error));
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return TypedResults.Ok(result.Value);
-    }
-
-    private static Guid GetUserIdFromClaims(ClaimsPrincipal user)
-    {
-        var userIdClaim = user.FindFirst("sub")?.Value ?? user.FindFirst("id")?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return result.ToOkResult();
     }
 }

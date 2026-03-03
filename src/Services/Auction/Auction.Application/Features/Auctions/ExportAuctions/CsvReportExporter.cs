@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Auctions.Application.Commands.ExportAuctions;
+namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public class CsvReportExporter : IReportExporter
 {

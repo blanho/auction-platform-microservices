@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Auctions.Application.Commands.ExportAuctions;
+namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public class JsonReportExporter : IReportExporter
 {

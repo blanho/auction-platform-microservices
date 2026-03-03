@@ -2,7 +2,7 @@ using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.Bookmarks.RemoveFromWatchlist;
+namespace Auctions.Application.Features.Bookmarks.RemoveFromWatchlist;
 
 public class RemoveFromWatchlistCommandHandler : ICommandHandler<RemoveFromWatchlistCommand>
 {

@@ -30,7 +30,8 @@ import {
   useRecentSearches,
   useClearRecentSearches,
 } from '../hooks'
-import type { SearchFilters, SearchResult } from '../types'
+import { InlineAlert } from '@/shared/ui'
+import type { SearchFilters, SearchResult, SearchResultType } from '../types'
 import { getResultIcon } from '../utils'
 import { formatCurrency } from '@/shared/utils/formatters'
 import { palette } from '@/shared/theme/tokens'
@@ -541,7 +542,7 @@ export function SearchPage() {
                 </Button>
               </Box>
             )}
-            {!isSearching && searchResults?.results && searchResults.results.length > 0 && (
+            {!isLoading && searchResults?.results && searchResults.results.length > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {searchResults?.results?.map((result) => (
                   <SearchResultCard key={result.id} result={result} />

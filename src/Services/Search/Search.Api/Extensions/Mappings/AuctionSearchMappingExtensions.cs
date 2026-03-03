@@ -1,4 +1,5 @@
 using Elastic.Clients.Elasticsearch.Core.Search;
+using Search.Api.Constants;
 using Search.Api.Documents;
 using Search.Api.Models;
 
@@ -12,7 +13,7 @@ public static class AuctionSearchMappingExtensions
         {
             Id = doc.Id,
             Title = doc.Title,
-            Description = doc.Description?.Length > 200 ? doc.Description[..200] + "..." : doc.Description,
+            Description = TruncateDescription(doc.Description),
             ThumbnailUrl = doc.ThumbnailUrl,
             CurrentPrice = doc.CurrentPrice,
             BuyNowPrice = doc.BuyNowPrice,
@@ -26,9 +27,7 @@ public static class AuctionSearchMappingExtensions
             SellerId = doc.SellerId,
             SellerUsername = doc.SellerUsername,
             Score = hit?.Score,
-            Highlights = hit?.Highlight?.ToDictionary(
-                h => h.Key,
-                h => h.Value.ToList())
+            Highlights = ExtractHighlights(hit)
         };
     }
 
@@ -39,5 +38,24 @@ public static class AuctionSearchMappingExtensions
         return documents
             .Zip(hits, (doc, hit) => doc.ToResult(hit))
             .ToList();
+    }
+
+    private static string? TruncateDescription(string? description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return description;
+
+        if (description.Length <= SearchDefaults.MaxDescriptionPreviewLength)
+            return description;
+
+        return description[..SearchDefaults.MaxDescriptionPreviewLength] + "...";
+    }
+
+    private static Dictionary<string, List<string>>? ExtractHighlights(Hit<AuctionDocument>? hit)
+    {
+        if (hit?.Highlight is null)
+            return null;
+
+        return hit.Highlight.ToDictionary(h => h.Key, h => h.Value.ToList());
     }
 }

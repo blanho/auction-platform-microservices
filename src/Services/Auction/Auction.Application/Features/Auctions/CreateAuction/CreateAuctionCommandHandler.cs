@@ -5,7 +5,7 @@ using BuildingBlocks.Application.Abstractions;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.CreateAuction;
+namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand, AuctionDto>
 {
@@ -80,13 +80,11 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         {
             foreach (var file in request.Files)
             {
-                auction.Item.AddFile(new MediaFile
-                {
-                    FileId = file.FileId,
-                    FileType = file.FileType,
-                    DisplayOrder = file.DisplayOrder,
-                    IsPrimary = file.IsPrimary
-                });
+                auction.Item.AddFile(MediaFile.Create(
+                    file.FileId,
+                    file.FileType,
+                    file.DisplayOrder,
+                    file.IsPrimary));
             }
         }
 

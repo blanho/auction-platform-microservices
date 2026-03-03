@@ -8,6 +8,7 @@ import {
   Typography,
   TextField,
 } from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
 import { getAdminUserDisplayName } from '../../utils'
 import type { AdminUser } from '../../types'
 

@@ -1,4 +1,5 @@
 import {
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -11,7 +12,7 @@ import {
   Divider,
 } from '@mui/material'
 import { Security, PhonelinkLock, Key, Refresh, Block } from '@mui/icons-material'
-import { getAdminUserDisplayName } from '../../utils'
+import { getAdminUserDisplayName, getRecoveryCodesColor } from '../../utils'
 import { InlineAlert, StatusBadge } from '@/shared/ui'
 import type { AdminUser, User2FAStatus } from '../../types'
 

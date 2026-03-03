@@ -8,6 +8,8 @@ using BuildingBlocks.Web.Helpers;
 using Storage.Api.Helpers;
 using Storage.Application.DTOs;
 using Storage.Application.Features.Files.DeleteFile;
+using Storage.Application.Features.Files.GeneratePresignedDownload;
+using Storage.Application.Features.Files.GeneratePresignedUpload;
 using Storage.Application.Features.Files.GetFileById;
 using Storage.Application.Features.Files.GetFileUrl;
 using Storage.Application.Features.Files.UploadFile;
@@ -54,6 +56,17 @@ public class FileEndpoints : ICarterModule
             .WithSummary("Delete a file")
             .WithOpenApi()
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Delete));
+
+        group.MapPost("/presigned-upload", GeneratePresignedUpload)
+            .WithName("GeneratePresignedUpload")
+            .WithSummary("Generate a presigned URL for direct client-side upload")
+            .WithOpenApi()
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Storage.Upload));
+
+        group.MapGet("/{fileId:guid}/download-url", GeneratePresignedDownload)
+            .WithName("GeneratePresignedDownload")
+            .WithSummary("Generate a presigned download URL with time-limited access")
+            .WithOpenApi();
     }
 
     private static async Task<Results<Ok<StoredFileDto>, BadRequest<ProblemDetails>>> UploadFile(
@@ -93,6 +106,11 @@ public class FileEndpoints : ICarterModule
             ownerId);
 
         var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
 
         return TypedResults.Ok(result.Value);
     }
@@ -147,10 +165,15 @@ public class FileEndpoints : ICarterModule
         var command = new UploadMultipleFilesCommand(fileItems, subFolder, ownerId);
         var result = await sender.Send(command, cancellationToken);
 
+        if (result.IsFailure)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
         return TypedResults.Ok(result.Value);
     }
 
-    private static async Task<Results<Ok<StoredFileDto>, NotFound>> GetFile(
+    private static async Task<Results<Ok<StoredFileDto>, NotFound<ProblemDetails>>> GetFile(
         Guid fileId,
         ISender sender,
         CancellationToken cancellationToken)
@@ -160,13 +183,13 @@ public class FileEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return TypedResults.Ok(result.Value);
     }
 
-    private static async Task<Results<Ok<FileUrlDto>, NotFound>> GetFileUrl(
+    private static async Task<Results<Ok<FileUrlDto>, NotFound<ProblemDetails>>> GetFileUrl(
         Guid fileId,
         ISender sender,
         CancellationToken cancellationToken)
@@ -176,13 +199,13 @@ public class FileEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return TypedResults.Ok(result.Value);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteFile(
+    private static async Task<Results<NoContent, NotFound<ProblemDetails>>> DeleteFile(
         Guid fileId,
         ISender sender,
         CancellationToken cancellationToken)
@@ -192,9 +215,40 @@ public class FileEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            return TypedResults.NotFound();
+            return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return TypedResults.NoContent();
+    }
+
+    private static async Task<Results<Ok<PresignedUploadDto>, BadRequest<ProblemDetails>>> GeneratePresignedUpload(
+        [FromBody] GeneratePresignedUploadCommand command,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return TypedResults.Ok(result.Value);
+    }
+
+    private static async Task<Results<Ok<PresignedDownloadDto>, NotFound<ProblemDetails>>> GeneratePresignedDownload(
+        Guid fileId,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new GeneratePresignedDownloadQuery(fileId);
+        var result = await sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return TypedResults.Ok(result.Value);
     }
 }

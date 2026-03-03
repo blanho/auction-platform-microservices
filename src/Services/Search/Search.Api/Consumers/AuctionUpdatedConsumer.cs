@@ -46,14 +46,14 @@ public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
         if (message.Condition != null)
             partialDocument["condition"] = message.Condition;
 
-        var success = await _indexService.PartialUpdateAsync(
+        var result = await _indexService.PartialUpdateAsync(
             message.Id,
             partialDocument,
             context.CancellationToken);
 
-        if (!success)
+        if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to update auction {AuctionId} - document may not exist", message.Id);
+            _logger.LogWarning("Failed to update auction {AuctionId}: {Error}", message.Id, result.Error);
         }
         else
         {

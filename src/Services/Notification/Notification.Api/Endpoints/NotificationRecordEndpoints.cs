@@ -1,10 +1,10 @@
 using Carter;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using Notification.Application.DTOs;
 using Notification.Application.Features.NotificationRecords.GetNotificationRecords;
 using Notification.Application.Features.NotificationRecords.GetNotificationRecordById;
@@ -38,7 +38,7 @@ public class NotificationRecordEndpoints : ICarterModule
             .WithSummary("Get notification record statistics");
     }
 
-    private static async Task<Ok<PaginatedResult<NotificationRecordDto>>> GetRecords(
+    private static async Task<IResult> GetRecords(
         [AsParameters] NotificationRecordFilterRequest request,
         ISender sender,
         CancellationToken ct)
@@ -54,23 +54,21 @@ public class NotificationRecordEndpoints : ICarterModule
             request.PageSize ?? 20);
 
         var result = await sender.Send(query, ct);
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Ok<NotificationRecordDto>, NotFound>> GetRecordById(
+    private static async Task<IResult> GetRecordById(
         Guid id,
         ISender sender,
         CancellationToken ct)
     {
         var query = new GetNotificationRecordByIdQuery(id);
         var result = await sender.Send(query, ct);
-        
-        return result.Value is null
-            ? TypedResults.NotFound()
-            : TypedResults.Ok(result.Value);
+
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<PaginatedResult<NotificationRecordDto>>> GetRecordsByUser(
+    private static async Task<IResult> GetRecordsByUser(
         Guid userId,
         string? channel,
         int page,
@@ -80,17 +78,17 @@ public class NotificationRecordEndpoints : ICarterModule
     {
         var query = new GetNotificationRecordsByUserQuery(userId, channel, Page: page, PageSize: pageSize);
         var result = await sender.Send(query, ct);
-        
-        return TypedResults.Ok(result.Value);
+
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<NotificationRecordStatsDto>> GetRecordStats(
+    private static async Task<IResult> GetRecordStats(
         ISender sender,
         CancellationToken ct)
     {
         var query = new GetNotificationRecordStatsQuery();
         var result = await sender.Send(query, ct);
-        
-        return TypedResults.Ok(result.Value);
+
+        return result.ToOkResult();
     }
 }

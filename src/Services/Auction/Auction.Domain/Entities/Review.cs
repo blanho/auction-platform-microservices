@@ -1,26 +1,32 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Domain.Entities;
 
 public class Review : AggregateRoot
 {
-    public Guid AuctionId { get; set; }
-    public Auction? Auction { get; set; }
-    public Guid? OrderId { get; set; }
+    private const int MinRating = 1;
+    private const int MaxRating = 5;
 
-    public Guid ReviewerId { get; set; }
-    public string ReviewerUsername { get; set; } = string.Empty;
+    public Guid AuctionId { get; private set; }
+    public Auction? Auction { get; private set; }
+    public Guid? OrderId { get; private set; }
 
-    public Guid ReviewedUserId { get; set; }
-    public string ReviewedUsername { get; set; } = string.Empty;
+    public Guid ReviewerId { get; private set; }
+    public string ReviewerUsername { get; private set; } = string.Empty;
 
-    public int Rating { get; set; }
+    public Guid ReviewedUserId { get; private set; }
+    public string ReviewedUsername { get; private set; } = string.Empty;
 
-    public string? Title { get; set; }
-    public string? Comment { get; set; }
-    public string? SellerResponse { get; set; }
-    public DateTimeOffset? SellerResponseAt { get; set; }
+    public int Rating { get; private set; }
+
+    public string? Title { get; private set; }
+    public string? Comment { get; private set; }
+    public string? SellerResponse { get; private set; }
+    public DateTimeOffset? SellerResponseAt { get; private set; }
+
+    private Review() { }
 
     public static Review Create(
         Guid auctionId,
@@ -34,8 +40,12 @@ public class Review : AggregateRoot
         string? title,
         string? comment)
     {
-        var review = new Review
+        if (rating is < MinRating or > MaxRating)
+            throw new DomainInvariantException($"Rating must be between {MinRating} and {MaxRating}");
+
+        return new Review
         {
+            Id = Guid.NewGuid(),
             AuctionId = auctionId,
             Auction = auction,
             OrderId = orderId,
@@ -47,17 +57,28 @@ public class Review : AggregateRoot
             Title = title,
             Comment = comment
         };
-        return review;
     }
-    public void AddSellerResponse(string response)
+
+    public void AddSellerResponse(string response, DateTimeOffset? respondedAt = null)
     {
+        if (string.IsNullOrWhiteSpace(response))
+            throw new DomainInvariantException("Seller response cannot be empty");
+
         SellerResponse = response;
-        SellerResponseAt = DateTimeOffset.UtcNow;
+        SellerResponseAt = respondedAt ?? DateTimeOffset.UtcNow;
     }
 
     public void RemoveSellerResponse()
     {
         SellerResponse = null;
         SellerResponseAt = null;
+    }
+
+    public void UpdateRating(int rating)
+    {
+        if (rating is < MinRating or > MaxRating)
+            throw new DomainInvariantException($"Rating must be between {MinRating} and {MaxRating}");
+
+        Rating = rating;
     }
 }

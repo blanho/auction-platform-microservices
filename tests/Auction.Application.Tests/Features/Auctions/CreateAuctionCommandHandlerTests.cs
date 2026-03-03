@@ -1,4 +1,4 @@
-using Auctions.Application.Commands.CreateAuction;
+using Auctions.Application.Features.Auctions.CreateAuction;
 using Auctions.Application.DTOs;
 using Auctions.Application.Interfaces;
 using AutoMapper;

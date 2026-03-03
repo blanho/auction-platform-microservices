@@ -37,7 +37,7 @@ import {
   OpenInNew,
 } from '@mui/icons-material'
 import { useMyBids, useMyAutoBids, useCancelAutoBid } from '../hooks'
-import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
+import { InlineAlert, TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 import { useUpdateAutoBid } from '../hooks/useAutoBids'
 import { formatCurrency } from '@/shared/utils'
 import type { AutoBid } from '../types'

@@ -152,14 +152,14 @@ export function AllNotificationsPage() {
             </TableHead>
             <TableBody>
               {isLoading && <TableSkeletonRows rows={10} columns={6} />}
-              {!isLoading && data?.items.length === 0 && (
+              {!isLoading && (data?.items?.length ?? 0) === 0 && (
                 <TableEmptyStateRow
                   colSpan={6}
                   title="No notifications found"
                   cellSx={{ py: 8 }}
                 />
               )}
-              {!isLoading && data?.items.length > 0 && (
+              {!isLoading && (data?.items?.length ?? 0) > 0 && (
                 data?.items.map((notification: Notification) => (
                   <TableRow
                     key={notification.id}
@@ -244,7 +244,7 @@ export function AllNotificationsPage() {
             <Pagination
               count={data.totalPages}
               page={filters.page}
-              onChange={(_, p) => handleFilterChange('page', p)}
+              onChange={(_, p) => setFilters((prev) => ({ ...prev, page: p }))}
               color="primary"
             />
           </Box>

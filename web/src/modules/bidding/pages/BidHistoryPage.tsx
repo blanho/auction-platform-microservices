@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Chip, Container, Stack } from '@mui/material'
 import { AccessTime } from '@mui/icons-material'
 import { useBidHistory } from '../hooks/useBids'
-import { BidStatus, type Bid } from '../types'
+import { BidStatus, type BidHistory } from '../types'
 import { formatCurrency, formatDateTime } from '@/shared/utils'
 import { StatusBadge, DataTable, FilterPanel } from '@/shared/ui'
 import { usePagination } from '@/shared/hooks'
@@ -57,12 +57,12 @@ export function BidHistoryPage() {
     page: pagination.page,
     pageSize: pagination.pageSize,
     auctionId: pagination.filter.auctionId,
-    status: pagination.filter.status,
+    status: pagination.filter.status as BidStatus | undefined,
     fromDate: pagination.filter.dateFrom,
     toDate: pagination.filter.dateTo,
   })
 
-  const columns: ColumnConfig<Bid>[] = useMemo(
+  const columns: ColumnConfig<BidHistory>[] = useMemo(
     () => [
       {
         key: 'auctionTitle',

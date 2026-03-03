@@ -2,7 +2,7 @@ using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-namespace Auctions.Application.Queries.GetAuctionById;
+namespace Auctions.Application.Features.Auctions.GetAuctionById;
 
 public class GetAuctionByIdQueryHandler : IQueryHandler<GetAuctionByIdQuery, AuctionDto>
 {

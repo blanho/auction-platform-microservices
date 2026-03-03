@@ -1,6 +1,6 @@
 using Auctions.Domain.Enums;
 
-namespace Auctions.Application.Commands.ExportAuctions;
+namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public record ExportAuctionsCommand(
     ExportFormat Format,

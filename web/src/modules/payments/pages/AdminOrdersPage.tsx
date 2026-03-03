@@ -417,7 +417,7 @@ export function AdminOrdersPage() {
                   </TableRow>
                 </TableHead>
                 {isLoading && <OrderTableSkeleton />}
-                {!isLoading && ordersData?.items.length === 0 && (
+                {!isLoading && (ordersData?.items?.length ?? 0) === 0 && (
                   <TableBody>
                     <TableEmptyStateRow
                       colSpan={7}
@@ -428,7 +428,7 @@ export function AdminOrdersPage() {
                     />
                   </TableBody>
                 )}
-                {!isLoading && ordersData?.items.length > 0 && (
+                {!isLoading && (ordersData?.items?.length ?? 0) > 0 && (
                   <TableBody
                     component={motion.tbody}
                     variants={staggerContainer}

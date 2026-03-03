@@ -1,6 +1,7 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.ImportAuctions;
+namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public class ImportAuctionsCommandValidator : AbstractValidator<ImportAuctionsCommand>
 {
@@ -9,22 +10,23 @@ public class ImportAuctionsCommandValidator : AbstractValidator<ImportAuctionsCo
     public ImportAuctionsCommandValidator()
     {
         RuleFor(x => x.SellerId)
-            .NotEmpty().WithMessage("SellerId is required.");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
 
         RuleFor(x => x.SellerUsername)
-            .NotEmpty().WithMessage("SellerUsername is required.");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"));
 
         RuleFor(x => x.CorrelationId)
-            .NotEmpty().WithMessage("CorrelationId is required for tracking the import.");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Correlation ID"));
 
         RuleFor(x => x.Currency)
-            .NotEmpty().WithMessage("Currency is required.")
-            .MaximumLength(3).WithMessage("Currency must be a 3-letter code.");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Currency"))
+            .MaximumLength(ValidationConstants.MinLength.ShortCode + 1)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Currency", ValidationConstants.MinLength.ShortCode + 1));
 
         RuleFor(x => x.Rows)
-            .NotNull().WithMessage("Rows collection is required.")
-            .Must(rows => rows.Count > 0).WithMessage("At least one row is required.")
+            .NotNull().WithMessage(ValidationConstants.Messages.Required("Rows"))
+            .Must(rows => rows.Count > 0).WithMessage(ValidationConstants.Messages.MustContainAtLeastOne("Row"))
             .Must(rows => rows.Count <= MaxRowsPerImport)
-            .WithMessage($"Cannot import more than {MaxRowsPerImport:N0} rows in a single batch.");
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Rows", MaxRowsPerImport));
     }
 }

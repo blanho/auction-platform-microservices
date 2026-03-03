@@ -243,7 +243,7 @@ export const WinningBidsPage = () => {
             )}
           </>
         )}
-        {!isLoading && (!data || data.length === 0) && (
+        {!isLoading && (!data || data.items.length === 0) && (
           <Card
             sx={{
               p: 6,

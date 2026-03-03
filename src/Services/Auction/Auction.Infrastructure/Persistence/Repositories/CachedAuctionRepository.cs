@@ -1,5 +1,6 @@
 #nullable enable
 using Auctions.Application.DTOs;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
@@ -22,8 +23,8 @@ public class CachedAuctionRepository :
     private readonly AuctionRepository _inner;
     private readonly ICacheService _cache;
     private readonly ILogger<CachedAuctionRepository> _logger;
-    private static readonly TimeSpan SingleAuctionTtl = TimeSpan.FromMinutes(10);
-    private static readonly TimeSpan AuctionListTtl = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan SingleAuctionTtl = TimeSpan.FromMinutes(AuctionDefaults.Cache.SingleAuctionTtlMinutes);
+    private static readonly TimeSpan AuctionListTtl = TimeSpan.FromMinutes(AuctionDefaults.Cache.AuctionListTtlMinutes);
 
     public CachedAuctionRepository(AuctionRepository inner, ICacheService cache, ILogger<CachedAuctionRepository> logger)
     {

@@ -2,6 +2,7 @@ using Carter;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Web.Authorization;
 using System.Security.Claims;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Endpoints;

@@ -139,7 +139,7 @@ class HttpService {
     )
   }
 
-  get<T>(url: string, config?: { params?: Record<string, unknown> }) {
+  get<T>(url: string, config?: { params?: object }) {
     return this.client.get<T>(url, config)
   }
 

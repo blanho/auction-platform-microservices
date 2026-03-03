@@ -8,6 +8,8 @@ public interface IFileStorageService
     Task<string?> GetUrlAsync(string fileId, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string fileId, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(string fileId, CancellationToken cancellationToken = default);
+    Task<PresignedUploadResult?> GenerateUploadSasTokenAsync(PresignedUploadRequest request, CancellationToken cancellationToken = default);
+    Task<PresignedDownloadResult?> GenerateDownloadSasTokenAsync(string fileId, TimeSpan? expiry = null, CancellationToken cancellationToken = default);
 }
 
 public record FileUploadRequest(
@@ -35,4 +37,27 @@ public record FileDownloadResult(
     string FileName,
     string ContentType,
     long FileSize
+);
+
+public record PresignedUploadRequest(
+    string FileName,
+    string ContentType,
+    long FileSize,
+    string? SubFolder = null,
+    Guid? OwnerId = null
+);
+
+public record PresignedUploadResult(
+    string FileId,
+    string StoredFileName,
+    string UploadUrl,
+    Dictionary<string, string> Headers,
+    DateTimeOffset ExpiresAt
+);
+
+public record PresignedDownloadResult(
+    string DownloadUrl,
+    string FileName,
+    string ContentType,
+    DateTimeOffset ExpiresAt
 );

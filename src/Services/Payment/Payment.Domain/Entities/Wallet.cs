@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
 
@@ -8,9 +7,6 @@ public class Wallet : AggregateRoot
 {
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
-
-    [Timestamp]
-    public uint RowVersion { get; private set; }
 
     public decimal Balance { get; private set; }
     public decimal HeldAmount { get; private set; }

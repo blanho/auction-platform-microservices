@@ -21,7 +21,7 @@ public class CreateBrandCommandValidator : AbstractValidator<CreateBrandCommand>
             .WithMessage(ValidationConstants.Messages.MaxLength("Description", ValidationConstants.StringLength.Extended));
 
         RuleFor(x => x.DisplayOrder)
-            .GreaterThanOrEqualTo(0).WithMessage("Display order must be non-negative");
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationConstants.Messages.MustBeNonNegative("Display order"));
     }
 }
 

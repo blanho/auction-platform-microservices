@@ -30,7 +30,7 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
-builder.Services.AddCQRS(typeof(Auctions.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
+builder.Services.AddCQRS(typeof(Auctions.Application.Features.Auctions.CreateAuction.CreateAuctionCommand).Assembly);
 builder.Services.AddAuditServices(builder.Configuration, "auction-service");
 builder.Services.AddAuctionScheduling(builder.Configuration);
 builder.Services.AddCommonApiVersioning();

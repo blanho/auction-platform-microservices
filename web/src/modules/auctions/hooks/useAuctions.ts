@@ -110,3 +110,42 @@ export const useDeactivateAuction = () => {
     },
   })
 }
+
+export const useBuyNow = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => auctionsApi.buyNow(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+    },
+  })
+}
+
+export const useCancelAuction = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      auctionsApi.cancelAuction(id, reason),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.my({}) })
+    },
+  })
+}
+
+export const useExtendAuction = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, newEndTime }: { id: string; newEndTime: string }) =>
+      auctionsApi.extendAuction(id, newEndTime),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+    },
+  })
+}

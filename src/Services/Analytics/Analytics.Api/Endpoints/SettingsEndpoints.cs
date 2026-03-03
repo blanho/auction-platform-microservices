@@ -6,6 +6,7 @@ using Analytics.Api.Interfaces;
 using Analytics.Api.Enums;
 using Analytics.Api.Extensions.DependencyInjection;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 
 namespace Analytics.Api.Endpoints;
@@ -68,9 +69,7 @@ public class SettingsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await settingService.GetSettingsAsync(category, cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetSetting(
@@ -79,9 +78,7 @@ public class SettingsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await settingService.GetSettingByIdAsync(id, cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Setting", id));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetSettingByKey(
@@ -90,9 +87,7 @@ public class SettingsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await settingService.GetSettingByKeyAsync(key, cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateSetting(
@@ -103,10 +98,7 @@ public class SettingsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await settingService.CreateSettingAsync(dto, username, cancellationToken);
-        
-        return result.IsSuccess
-            ? Results.Created($"/api/v1/settings/{result.Value!.Id}", result.Value)
-            : Results.Conflict(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(value => Results.Created($"/api/v1/settings/{value!.Id}", value));
     }
 
     private static async Task<IResult> UpdateSetting(
@@ -118,10 +110,7 @@ public class SettingsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await settingService.UpdateSettingAsync(id, dto, username, cancellationToken);
-        
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Setting", id));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> DeleteSetting(
@@ -130,9 +119,7 @@ public class SettingsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await settingService.DeleteSettingAsync(id, cancellationToken);
-        return result.IsSuccess
-            ? Results.NoContent()
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Setting", id));
+        return result.ToNoContentResult();
     }
 
     private static async Task<IResult> BulkUpdateSettings(
@@ -143,10 +130,7 @@ public class SettingsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await settingService.BulkUpdateSettingsAsync(dto.Settings, username, cancellationToken);
-        
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToNoContentResult();
     }
 }
 

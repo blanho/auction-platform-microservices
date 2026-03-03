@@ -84,11 +84,11 @@ export const FreshArrivalsSection = () => {
                           mb: 2,
                         }}
                       >
-                        {auction.imageUrl ? (
+                        {auction.primaryImageUrl ? (
                           <Box
                             component="img"
                             className="auction-image"
-                            src={auction.imageUrl}
+                            src={auction.primaryImageUrl}
                             alt={auction.title}
                             sx={{
                               width: '100%',
@@ -137,7 +137,7 @@ export const FreshArrivalsSection = () => {
                           color: '#78716C',
                         }}
                       >
-                        {formatCurrency(auction.currentPrice || auction.startingPrice)}
+                        {formatCurrency(auction.currentBid || auction.startingPrice)}
                       </Typography>
                     </Box>
                   </motion.div>

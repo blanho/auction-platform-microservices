@@ -4,7 +4,7 @@ using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.CQRS;
 
-namespace Bidding.Application.Features.Bids.Queries.GetMyBids;
+namespace Bidding.Application.Features.Bids.GetMyBids;
 
 public record GetMyBidsQuery(
     string Username,

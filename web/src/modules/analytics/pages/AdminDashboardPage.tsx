@@ -46,7 +46,7 @@ import {
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
 import { getHealthIcon, getHealthColor } from '../utils'
-import type { StatCardConfig } from '../types'
+import type { StatCardConfig, CategoryBreakdown } from '../types'
 
 const statCards: StatCardConfig[] = [
   {

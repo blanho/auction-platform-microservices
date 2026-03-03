@@ -2,7 +2,7 @@ using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
 using MassTransit;
 
-namespace Auctions.Application.Commands.QueueAuctionExport;
+namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 
 public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExportCommand, BackgroundJobResult>
 {

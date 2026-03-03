@@ -48,3 +48,24 @@ export interface FileValidationError {
   file: File
   reason: string
 }
+
+export interface PresignedUploadRequest {
+  fileName: string
+  contentType: string
+  fileSize: number
+  subFolder?: string
+  ownerId?: string
+}
+
+export interface PresignedUploadDto {
+  fileId: string
+  uploadUrl: string
+  headers: Record<string, string>
+  expiresAt: string
+}
+
+export interface PresignedDownloadDto {
+  fileId: string
+  downloadUrl: string
+  expiresAt: string
+}

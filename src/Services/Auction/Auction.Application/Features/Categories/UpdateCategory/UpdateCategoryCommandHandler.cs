@@ -47,13 +47,14 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
                 return Result.Failure<CategoryDto>(AuctionErrors.Category.SelfParent);
             }
 
-            category.Name = request.Name;
-            category.Slug = request.Slug;
-            category.Icon = request.Icon;
-            category.Description = request.Description;
-            category.DisplayOrder = request.DisplayOrder;
-            category.IsActive = request.IsActive;
-            category.ParentCategoryId = request.ParentCategoryId;
+            category.Update(
+                request.Name,
+                request.Slug,
+                request.Icon,
+                request.Description,
+                request.DisplayOrder,
+                request.IsActive,
+                request.ParentCategoryId);
 
             await _repository.UpdateAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

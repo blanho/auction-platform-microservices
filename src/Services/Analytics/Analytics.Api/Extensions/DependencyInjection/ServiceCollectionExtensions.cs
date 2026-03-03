@@ -73,6 +73,12 @@ public static class ServiceCollectionExtensions
             x.AddConsumer<BidPlacedAnalyticsConsumer>();
             x.AddConsumer<BidPlacedBatchConsumer>();
             x.AddConsumer<HighestBidUpdatedAnalyticsConsumer>();
+            x.AddConsumer<BidAcceptedAnalyticsConsumer>();
+            x.AddConsumer<BidRejectedAnalyticsConsumer>();
+            x.AddConsumer<BidRetractedAnalyticsConsumer>();
+            x.AddConsumer<OutbidAnalyticsConsumer>();
+            x.AddConsumer<BidBelowReserveAnalyticsConsumer>();
+            x.AddConsumer<BidTooLowAnalyticsConsumer>();
             x.AddConsumer<PaymentCompletedAnalyticsConsumer>();
             x.AddConsumer<OrderCreatedAnalyticsConsumer>();
             x.AddConsumer<OrderShippedAnalyticsConsumer>();
@@ -145,6 +151,12 @@ public static class ServiceCollectionExtensions
                     .SetTimeLimit(TimeSpan.FromSeconds(1)));
             });
             e.ConfigureConsumer<HighestBidUpdatedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BidAcceptedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BidRejectedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BidRetractedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<OutbidAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BidBelowReserveAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BidTooLowAnalyticsConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: 128, concurrentLimit: 32);
         });
     }
@@ -163,6 +175,11 @@ public static class ServiceCollectionExtensions
 
     private static void ConfigureRetryAndConcurrency(this IRabbitMqReceiveEndpointConfigurator e, int prefetchCount, int concurrentLimit)
     {
+        e.UseDelayedRedelivery(r => r.Intervals(
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(30),
+            TimeSpan.FromMinutes(2)));
+
         e.UseMessageRetry(r => r.Exponential(
             retryLimit: 5,
             minInterval: TimeSpan.FromMilliseconds(100),

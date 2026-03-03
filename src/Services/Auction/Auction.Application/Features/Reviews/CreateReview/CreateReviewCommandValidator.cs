@@ -15,14 +15,16 @@ public class CreateReviewCommandValidator : AbstractValidator<CreateReviewComman
 
         RuleFor(x => x.ReviewerUsername)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Reviewer username"))
-            .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Reviewer username", 256));
+            .MaximumLength(ValidationConstants.StringLength.Username)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Reviewer username", ValidationConstants.StringLength.Username));
 
         RuleFor(x => x.ReviewedUserId)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Reviewed user ID"));
 
         RuleFor(x => x.ReviewedUsername)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Reviewed username"))
-            .MaximumLength(256).WithMessage(ValidationConstants.Messages.MaxLength("Reviewed username", 256));
+            .MaximumLength(ValidationConstants.StringLength.Username)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Reviewed username", ValidationConstants.StringLength.Username));
 
         RuleFor(x => x.Rating)
             .InclusiveBetween(ValidationConstants.NumericRange.MinRating, ValidationConstants.NumericRange.MaxRating)

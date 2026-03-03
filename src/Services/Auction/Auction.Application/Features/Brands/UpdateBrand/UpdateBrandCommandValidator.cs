@@ -26,7 +26,7 @@ public class UpdateBrandCommandValidator : AbstractValidator<UpdateBrandCommand>
             .When(x => x.Description != null);
 
         RuleFor(x => x.DisplayOrder)
-            .GreaterThanOrEqualTo(0).WithMessage("Display order must be non-negative")
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationConstants.Messages.MustBeNonNegative("Display order"))
             .When(x => x.DisplayOrder.HasValue);
     }
 }

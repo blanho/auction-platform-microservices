@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Domain.Entities;
@@ -11,9 +10,6 @@ public class Bid : AggregateRoot
     public decimal Amount { get; private set; }
     public DateTimeOffset BidTime { get; private set; }
     public BidStatus Status { get; private set; }
-
-    [Timestamp]
-    public uint RowVersion { get; private set; }
 
     private Bid() { }
 

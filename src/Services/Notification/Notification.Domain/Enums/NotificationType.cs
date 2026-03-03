@@ -17,15 +17,25 @@ public enum NotificationType
     BidLost = 23,
     BidAccepted = 24,
     BidRejected = 25,
+    AutoBidCreated = 26,
+    AutoBidActivated = 27,
+    AutoBidDeactivated = 28,
+    BidBelowReserve = 29,
 
     PaymentReceived = 30,
     PaymentFailed = 31,
     PaymentRefunded = 32,
+    WalletCreated = 33,
+    FundsDeposited = 34,
+    FundsWithdrawn = 35,
 
     WelcomeMessage = 40,
     AccountVerified = 41,
     PasswordChanged = 42,
 
     SystemAlert = 50,
-    Maintenance = 51
+    Maintenance = 51,
+
+    JobCompleted = 60,
+    JobFailed = 61
 }

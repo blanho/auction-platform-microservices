@@ -1,4 +1,4 @@
-using Auctions.Application.Commands.ExportAuctions;
+using Auctions.Application.Features.Auctions.ExportAuctions;
 using Auctions.Application.DTOs.Auctions;
 using Auctions.Application.Enums;
 using Auctions.Application.Interfaces;

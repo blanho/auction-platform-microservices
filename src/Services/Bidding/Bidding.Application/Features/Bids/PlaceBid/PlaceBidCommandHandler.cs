@@ -2,7 +2,7 @@ using Bidding.Application.DTOs;
 using Bidding.Application.Interfaces;
 using BuildingBlocks.Application.CQRS;
 
-namespace Bidding.Application.Features.Bids.Commands.PlaceBid;
+namespace Bidding.Application.Features.Bids.PlaceBid;
 
 public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 {

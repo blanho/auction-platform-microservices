@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import {
   Box,
   Card,
@@ -13,7 +13,28 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material'
-import { ExpandMore, CheckCircle, RadioButtonUnchecked, SelectAll, DeselectOutlined } from '@mui/icons-material'
+import {
+  ExpandMore,
+  CheckCircle,
+  RadioButtonUnchecked,
+  SelectAll,
+  DeselectOutlined,
+  LocalOffer,
+  Gavel,
+  People,
+  Inventory,
+  CreditCard,
+  AccountBalanceWallet,
+  BarChart,
+  CloudUpload,
+  Notifications,
+  Star,
+  Assessment,
+  Category,
+  Business,
+  HistoryEdu,
+  Settings,
+} from '@mui/icons-material'
 import { PermissionToggle } from './PermissionToggle'
 import type { PermissionDefinition, RoleDto, PermissionCategory } from '../../types'
 
@@ -39,22 +60,24 @@ function groupByCategory(definitions: readonly PermissionDefinition[]): Permissi
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Auctions: '🏷️',
-  Bids: '💰',
-  Users: '👥',
-  Orders: '📦',
-  Payments: '💳',
-  Wallet: '👛',
-  Analytics: '📊',
-  Storage: '📁',
-  Notifications: '🔔',
-  Reviews: '⭐',
-  Reports: '📋',
-  Categories: '🗂️',
-  Brands: '🏢',
-  Audit: '📜',
+const CATEGORY_ICONS: Record<string, ReactNode> = {
+  Auctions: <LocalOffer sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Bids: <Gavel sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Users: <People sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Orders: <Inventory sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Payments: <CreditCard sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Wallet: <AccountBalanceWallet sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Analytics: <BarChart sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Storage: <CloudUpload sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Notifications: <Notifications sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Reviews: <Star sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Reports: <Assessment sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Categories: <Category sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Brands: <Business sx={{ fontSize: 20, color: 'primary.main' }} />,
+  Audit: <HistoryEdu sx={{ fontSize: 20, color: 'primary.main' }} />,
 }
+
+const DEFAULT_ICON = <Settings sx={{ fontSize: 20, color: 'text.secondary' }} />
 
 export function PermissionsPanel({
   role,
@@ -120,9 +143,7 @@ export function PermissionsPanel({
                     sx={{ width: '100%', pr: 2 }}
                   >
                     <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <Typography fontSize={20}>
-                        {CATEGORY_ICONS[category.name] || '⚙️'}
-                      </Typography>
+                      {CATEGORY_ICONS[category.name] || DEFAULT_ICON}
                       <Typography fontWeight={500}>{category.name}</Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>

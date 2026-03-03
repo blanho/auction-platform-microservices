@@ -1,10 +1,12 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Carter;
 using Jobs.Application.DTOs;
 using Jobs.Application.Features.Jobs.CancelJob;
 using Jobs.Application.Features.Jobs.CreateJob;
 using Jobs.Application.Features.Jobs.GetJob;
+using Jobs.Application.Features.Jobs.GetJobHistory;
 using Jobs.Application.Features.Jobs.GetJobItems;
 using Jobs.Application.Features.Jobs.GetJobs;
 using Jobs.Application.Features.Jobs.RetryJob;
@@ -44,6 +46,11 @@ public class JobEndpoints : ICarterModule
             .Produces<PaginatedResult<JobItemDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/{id:guid}/history", GetJobHistory)
+            .WithName("GetJobHistory")
+            .Produces<JobHistoryDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+
         group.MapPost("/{id:guid}/cancel", CancelJob)
             .WithName("CancelJob")
             .Produces<JobDto>(StatusCodes.Status200OK)
@@ -63,7 +70,7 @@ public class JobEndpoints : ICarterModule
         IMediator mediator,
         CancellationToken ct)
     {
-        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+        var userId = httpContext.User.GetRequiredUserIdGuid();
 
         if (!Enum.TryParse<JobType>(request.Type, true, out var jobType))
             return Results.BadRequest(ProblemDetailsHelper.FromError(
@@ -145,6 +152,31 @@ public class JobEndpoints : ICarterModule
             itemStatus = parsedStatus;
 
         var query = new GetJobItemsQuery(id, itemStatus, page, pageSize);
+        var result = await services.Mediator.Send(query, services.CancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error!.Code.Contains("NotFound"))
+                return Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> GetJobHistory(
+        Guid id,
+        [FromQuery] string? logLevel,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [AsParameters] JobsQueryServices services = default!)
+    {
+        JobLogLevel? parsedLogLevel = null;
+        if (!string.IsNullOrEmpty(logLevel) && Enum.TryParse<JobLogLevel>(logLevel, true, out var level))
+            parsedLogLevel = level;
+
+        var query = new GetJobHistoryQuery(id, page, pageSize, parsedLogLevel);
         var result = await services.Mediator.Send(query, services.CancellationToken);
 
         if (!result.IsSuccess)

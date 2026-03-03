@@ -1,4 +1,4 @@
-namespace Auctions.Application.Commands.ImportAuctions;
+namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public record ImportAuctionsCommand(
     Guid SellerId,

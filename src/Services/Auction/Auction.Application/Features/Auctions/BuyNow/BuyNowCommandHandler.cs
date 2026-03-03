@@ -2,9 +2,10 @@ using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.Abstractions.Locking;
 using Auctions.Domain.Enums;
+using Auctions.Domain.Constants;
 using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.BuyNow;
+namespace Auctions.Application.Features.Auctions.BuyNow;
 
 public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultDto>
 {
@@ -32,8 +33,8 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
         var lockKey = $"auction:buynow:{request.AuctionId}";
         await using var lockHandle = await _distributedLock.AcquireAsync(
             lockKey,
-            expiry: TimeSpan.FromSeconds(30),
-            wait: TimeSpan.FromSeconds(5),
+            expiry: TimeSpan.FromSeconds(AuctionDefaults.Lock.ExpirySeconds),
+            wait: TimeSpan.FromSeconds(AuctionDefaults.Lock.WaitSeconds),
             cancellationToken);
 
         if (lockHandle == null)

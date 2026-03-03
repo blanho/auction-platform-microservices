@@ -1,6 +1,7 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notification.Domain.Constants;
 using Notification.Infrastructure.Configuration;
 using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Messaging.Consumers;
@@ -26,10 +27,10 @@ public static class MassTransitConfiguration
 
                 cfg.UseMessageRetry(r => r
                     .Exponential(
-                        retryLimit: 5,
-                        minInterval: TimeSpan.FromSeconds(5),
-                        maxInterval: TimeSpan.FromMinutes(5),
-                        intervalDelta: TimeSpan.FromSeconds(10))
+                        retryLimit: NotificationDefaults.Messaging.RetryLimit,
+                        minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds),
+                        maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes),
+                        intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex =>
 
                         !IsPermanentError(ex)));
@@ -41,10 +42,10 @@ public static class MassTransitConfiguration
             {
                 cfg.UseMessageRetry(r => r
                     .Exponential(
-                        retryLimit: 5,
-                        minInterval: TimeSpan.FromSeconds(5),
-                        maxInterval: TimeSpan.FromMinutes(5),
-                        intervalDelta: TimeSpan.FromSeconds(10))
+                        retryLimit: NotificationDefaults.Messaging.RetryLimit,
+                        minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds),
+                        maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes),
+                        intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
 
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
@@ -54,10 +55,10 @@ public static class MassTransitConfiguration
             {
                 cfg.UseMessageRetry(r => r
                     .Exponential(
-                        retryLimit: 5,
-                        minInterval: TimeSpan.FromSeconds(5),
-                        maxInterval: TimeSpan.FromMinutes(5),
-                        intervalDelta: TimeSpan.FromSeconds(10))
+                        retryLimit: NotificationDefaults.Messaging.RetryLimit,
+                        minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds),
+                        maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes),
+                        intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
 
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
@@ -66,7 +67,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<PasswordChangedConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -74,7 +75,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<TwoFactorEnabledConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -82,7 +83,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<TwoFactorDisabledConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -90,7 +91,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<UserLoginConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -98,7 +99,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<BidAcceptedConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -106,7 +107,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<BidRejectedConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -114,7 +115,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<OutbidConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -122,7 +123,7 @@ public static class MassTransitConfiguration
             x.AddConsumer<SecurityAlertConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 5, minInterval: TimeSpan.FromSeconds(5), maxInterval: TimeSpan.FromMinutes(5), intervalDelta: TimeSpan.FromSeconds(10))
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -130,7 +131,99 @@ public static class MassTransitConfiguration
             x.AddConsumer<MarkAllNotificationsReadConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
-                    .Exponential(retryLimit: 3, minInterval: TimeSpan.FromSeconds(2), maxInterval: TimeSpan.FromMinutes(1), intervalDelta: TimeSpan.FromSeconds(5))
+                    .Exponential(retryLimit: NotificationDefaults.LightRetry.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.LightRetry.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.LightRetry.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.LightRetry.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<SendBulkNotificationConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(
+                        retryLimit: NotificationDefaults.BulkRetry.RetryLimit,
+                        minInterval: TimeSpan.FromSeconds(NotificationDefaults.BulkRetry.MinIntervalSeconds),
+                        maxInterval: TimeSpan.FromMinutes(NotificationDefaults.BulkRetry.MaxIntervalMinutes),
+                        intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.BulkRetry.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(2);
+            });
+
+            x.AddConsumer<AutoBidCreatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AutoBidActivatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AutoBidDeactivatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<BidBelowReserveConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<BidTooLowConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<WalletCreatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<FundsDepositedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<FundsWithdrawnConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<JobCompletedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<JobFailedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
                     .Handle<Exception>(ex => !IsPermanentError(ex)));
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
@@ -274,6 +367,57 @@ public static class MassTransitConfiguration
                     e.ConfigureConsumer<MarkAllNotificationsReadConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-bulk-send", e =>
+                {
+                    e.ConfigureConsumer<SendBulkNotificationConsumer>(context);
+                    e.PrefetchCount = 1;
+                    e.UseConcurrencyLimit(2);
+                    e.UseDelayedRedelivery(r => r
+                        .Intervals(
+                            TimeSpan.FromMinutes(1),
+                            TimeSpan.FromMinutes(5),
+                            TimeSpan.FromMinutes(15)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-autobid", e =>
+                {
+                    e.ConfigureConsumer<AutoBidCreatedConsumer>(context);
+                    e.ConfigureConsumer<AutoBidActivatedConsumer>(context);
+                    e.ConfigureConsumer<AutoBidDeactivatedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-bid-status", e =>
+                {
+                    e.ConfigureConsumer<BidBelowReserveConsumer>(context);
+                    e.ConfigureConsumer<BidTooLowConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-wallet", e =>
+                {
+                    e.ConfigureConsumer<WalletCreatedConsumer>(context);
+                    e.ConfigureConsumer<FundsDepositedConsumer>(context);
+                    e.ConfigureConsumer<FundsWithdrawnConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-job", e =>
+                {
+                    e.ConfigureConsumer<JobCompletedConsumer>(context);
+                    e.ConfigureConsumer<JobFailedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
                 });
 

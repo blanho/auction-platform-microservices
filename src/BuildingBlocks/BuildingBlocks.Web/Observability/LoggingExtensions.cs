@@ -172,7 +172,7 @@ public static class LoggingExtensions
             InlineFields = true,
             EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog |
                                EmitEventFailureHandling.RaiseCallback,
-            FailureCallback = (e, ex) => Console.Error.WriteLine($"Elasticsearch log failure: {ex?.Message}")
+            FailureCallback = e => Console.Error.WriteLine($"Elasticsearch log failure: {e.RenderMessage()}")
         };
 
         if (!string.IsNullOrEmpty(options.Elasticsearch.Username))
@@ -211,9 +211,9 @@ public static class LoggingExtensions
 
     private static void EnrichDiagnosticContext(IDiagnosticContext diagnosticContext, HttpContext httpContext)
     {
-        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? string.Empty);
         diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
-        diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString());
+        diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
         diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
         diagnosticContext.Set("RequestProtocol", httpContext.Request.Protocol);
 
@@ -224,8 +224,8 @@ public static class LoggingExtensions
 
         if (httpContext.User.Identity?.IsAuthenticated == true)
         {
-            diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value);
-            diagnosticContext.Set("Username", httpContext.User.FindFirst("username")?.Value);
+            diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value ?? string.Empty);
+            diagnosticContext.Set("Username", httpContext.User.FindFirst("username")?.Value ?? string.Empty);
         }
 
         var activity = Activity.Current;

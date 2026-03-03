@@ -1,10 +1,10 @@
 import { Chip } from '@mui/material'
 import type { ChipProps } from '@mui/material'
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
 
-interface StatusBadgeProps extends Omit<ChipProps, 'label'> {
+interface StatusBadgeProps extends Omit<ChipProps, 'label' | 'icon'> {
   status: string
-  icon?: ReactNode
+  icon?: ReactElement
   colorMap?: Record<string, { bg: string; color: string }>
   fallbackColor?: { bg: string; color: string }
 }

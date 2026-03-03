@@ -1,4 +1,3 @@
-using Auctions.Application.Commands.ImportAuctions;
 using Auctions.Application.Features.Auctions.ImportAuctions;
 using Auctions.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;

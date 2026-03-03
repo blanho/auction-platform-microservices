@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Web;
-using IdentityUserHelper = Identity.Api.Helpers.UserHelper;
 using EnvironmentHelper = Identity.Api.Helpers.EnvironmentHelper;
 using CookieHelper = Identity.Api.Helpers.CookieHelper;
 using HttpContextHelper = Identity.Api.Helpers.HttpContextHelper;
@@ -167,7 +166,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IResult> Logout(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserIdString() ?? string.Empty;
+        var userId = User.GetRequiredUserIdString();
         var refreshToken = CookieHelper.GetRefreshTokenFromCookie(Request) ?? string.Empty;
 
         await _authService.LogoutAsync(userId, refreshToken);
@@ -181,11 +180,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> LogoutAll(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         await _authService.LogoutAllAsync(userId);
         CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
         return Results.Ok();
@@ -197,10 +192,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetCurrentUser(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserIdString();
-        if (string.IsNullOrEmpty(userId))
-            return Results.Unauthorized();
-
+        var userId = User.GetRequiredUserIdString();
         var result = await _authService.GetCurrentUserAsync(userId);
         return result.IsSuccess
             ? Results.Ok(result.Value)

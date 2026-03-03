@@ -22,6 +22,7 @@ import {
   Tooltip,
 } from '@mui/material'
 import { FlashOn, Edit, Delete, Add } from '@mui/icons-material'
+import { InlineAlert } from '@/shared/ui'
 import {
   useMyAutoBids,
   useToggleAutoBid,
@@ -456,7 +457,7 @@ export const AutoBidManagementPage = () => {
             )}
           </>
         )}
-        {!isLoading && (!data || data.length === 0) && (
+        {!isLoading && (!data || data.autoBids.length === 0) && (
           <Card
             sx={{
               p: 6,

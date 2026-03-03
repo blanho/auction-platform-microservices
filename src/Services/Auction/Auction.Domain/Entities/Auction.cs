@@ -8,6 +8,18 @@ namespace Auctions.Domain.Entities;
 
 public class Auction : AggregateRoot
 {
+    private static readonly Dictionary<Status, HashSet<Status>> AllowedTransitions = new()
+    {
+        [Status.Draft] = [Status.Scheduled, Status.Live, Status.Cancelled],
+        [Status.Scheduled] = [Status.Live, Status.Cancelled],
+        [Status.Live] = [Status.Finished, Status.ReservedNotMet, Status.Cancelled, Status.ReservedForBuyNow],
+        [Status.ReservedForBuyNow] = [Status.Finished, Status.Live, Status.Cancelled],
+        [Status.Finished] = [],
+        [Status.ReservedNotMet] = [],
+        [Status.Inactive] = [Status.Live, Status.Cancelled],
+        [Status.Cancelled] = [],
+    };
+
     private Auction() { }
     public decimal ReservePrice { get; private set; }
     public decimal? BuyNowPrice { get; private set; }
@@ -120,6 +132,11 @@ public class Auction : AggregateRoot
         BuyNowPrice = newPrice;
     }
 
+    public void SetFeatured(bool isFeatured)
+    {
+        IsFeatured = isFeatured;
+    }
+
     public void ExtendAuctionEnd(TimeSpan extension)
     {
         if (Status != Status.Live)
@@ -139,6 +156,8 @@ public class Auction : AggregateRoot
 
     public void ChangeStatus(Status newStatus)
     {
+        GuardValidTransition(newStatus);
+
         var oldStatus = Status;
         Status = newStatus;
         AddDomainEvent(new AuctionStatusChangedDomainEvent
@@ -240,8 +259,7 @@ public class Auction : AggregateRoot
 
     public void Cancel(string reason)
     {
-        if (Status == Status.Finished)
-            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot cancel finished auction");
+        GuardValidTransition(Status.Cancelled);
 
         var oldStatus = Status;
         Status = Status.Cancelled;
@@ -257,6 +275,20 @@ public class Auction : AggregateRoot
             ReservePrice = ReservePrice,
             AuctionEnd = AuctionEnd
         });
+    }
+
+    public bool CanTransitionTo(Status newStatus)
+    {
+        return AllowedTransitions.TryGetValue(Status, out var allowed) && allowed.Contains(newStatus);
+    }
+
+    private void GuardValidTransition(Status newStatus)
+    {
+        if (!CanTransitionTo(newStatus))
+            throw new InvalidEntityStateException(
+                nameof(Auction),
+                Status.ToString(),
+                $"Cannot transition from {Status} to {newStatus}");
     }
 
     public void UpdateSellerUsername(string newUsername)

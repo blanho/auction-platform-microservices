@@ -6,6 +6,7 @@ using Analytics.Api.Interfaces;
 using Analytics.Api.Extensions.DependencyInjection;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 
 namespace Analytics.Api.Endpoints;
@@ -61,9 +62,7 @@ public class ReportsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await reportService.GetReportsAsync(queryParams, cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetReport(
@@ -72,9 +71,7 @@ public class ReportsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await reportService.GetReportByIdAsync(id, cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Report", id));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateReport(
@@ -85,10 +82,7 @@ public class ReportsEndpoints : ICarterModule
     {
         var username = UserHelper.GetUsername(httpContext.User);
         var result = await reportService.CreateReportAsync(username, dto, cancellationToken);
-        
-        return result.IsSuccess
-            ? Results.Created($"/api/v1/reports/{result.Value!.Id}", result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(value => Results.Created($"/api/v1/reports/{value!.Id}", value));
     }
 
     private static async Task<IResult> UpdateReportStatus(
@@ -100,10 +94,7 @@ public class ReportsEndpoints : ICarterModule
     {
         var adminUsername = UserHelper.GetUsername(httpContext.User);
         var result = await reportService.UpdateReportStatusAsync(id, dto, adminUsername, cancellationToken);
-        
-        return result.IsSuccess
-            ? Results.NoContent()
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Report", id));
+        return result.ToNoContentResult();
     }
 
     private static async Task<IResult> DeleteReport(
@@ -112,9 +103,7 @@ public class ReportsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await reportService.DeleteReportAsync(id, cancellationToken);
-        return result.IsSuccess
-            ? Results.NoContent()
-            : Results.NotFound(ProblemDetailsHelper.NotFound("Report", id));
+        return result.ToNoContentResult();
     }
 
     private static async Task<IResult> GetStats(
@@ -122,8 +111,6 @@ public class ReportsEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var result = await reportService.GetReportStatsAsync(cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 }

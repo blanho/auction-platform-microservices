@@ -5,6 +5,7 @@ namespace: auction-platform
 
 resources:
   - ../../base
+  - external-secrets.yaml
 
 commonLabels:
   environment: production
@@ -53,26 +54,16 @@ patches:
     target:
       kind: StatefulSet
       name: postgres
-
-configMapGenerator:
-  - name: auction-platform-config
-    behavior: merge
-    literals:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - LOG_LEVEL=Warning
-
-secretGenerator:
-  - name: auction-platform-secrets
-    behavior: merge
-    literals:
-      - POSTGRES_USER=CHANGE_ME
-      - POSTGRES_PASSWORD=CHANGE_ME
-      - REDIS_PASSWORD=CHANGE_ME
-      - RABBITMQ_USER=CHANGE_ME
-      - RABBITMQ_PASSWORD=CHANGE_ME
-      - JWT_SECRET=CHANGE_ME_MIN_32_CHARS_FOR_PRODUCTION
-      - STRIPE_SECRET_KEY=CHANGE_ME
-      - STRIPE_WEBHOOK_SECRET=CHANGE_ME
+  - patch: |-
+      - op: replace
+        path: /data/ASPNETCORE_ENVIRONMENT
+        value: Production
+      - op: replace
+        path: /data/Logging__MinimumLevel
+        value: Warning
+    target:
+      kind: ConfigMap
+      name: auction-platform-config
 
 images:
   - name: auction-platform/auction-api

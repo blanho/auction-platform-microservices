@@ -56,6 +56,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(x => x.Files)
             .HasColumnType("jsonb");
+
+        builder.Navigation(x => x.SubCategories)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(x => x.Items)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

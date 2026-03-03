@@ -2,6 +2,7 @@
 using BuildingBlocks.Application.Abstractions.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IO;
 
 namespace BuildingBlocks.Infrastructure.Storage;
 
@@ -13,6 +14,8 @@ public static class StorageServiceExtensions
             ?? new FileStorageSettings();
 
         services.Configure<FileStorageSettings>(configuration.GetSection(FileStorageSettings.SectionName));
+
+        services.AddSingleton<RecyclableMemoryStreamManager>();
 
         if (string.Equals(settings.Provider, "AzureBlob", StringComparison.OrdinalIgnoreCase))
         {

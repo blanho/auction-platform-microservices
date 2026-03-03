@@ -33,28 +33,30 @@ public class AdminEndpoints : ICarterModule
         [FromServices] IIndexManagementService indexService,
         CancellationToken ct)
     {
-        var success = await indexService.EnsureIndexExistsAsync(ct);
-        return success
+        var result = await indexService.EnsureIndexExistsAsync(ct);
+        return result.IsSuccess
             ? Results.Ok(new { message = "Index ready" })
-            : Results.Problem("Failed to create index");
+            : Results.Problem($"Failed to create index: {result.Error}");
     }
 
     private static async Task<IResult> RecreateIndex(
         [FromServices] IIndexManagementService indexService,
         CancellationToken ct)
     {
-        await indexService.RecreateIndexAsync(ct);
-        return Results.Ok(new { message = "Index recreated" });
+        var result = await indexService.RecreateIndexAsync(ct);
+        return result.IsSuccess
+            ? Results.Ok(new { message = "Index recreated" })
+            : Results.Problem($"Failed to recreate index: {result.Error}");
     }
 
     private static async Task<IResult> GetIndexStats(
         [FromServices] IIndexManagementService indexService,
         CancellationToken ct)
     {
-        var stats = await indexService.GetIndexStatsAsync(ct);
-        return stats != null
-            ? Results.Ok(stats)
-            : Results.NotFound();
+        var result = await indexService.GetIndexStatsAsync(ct);
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.Problem($"Failed to get index stats: {result.Error}");
     }
 
     private static async Task<IResult> GetHealth(

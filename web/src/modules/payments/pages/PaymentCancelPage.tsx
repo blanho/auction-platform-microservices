@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Container, Card, Typography, Box, Button, Stack } from '@mui/material'
+import { Alert, Container, Card, Typography, Box, Button, Stack } from '@mui/material'
 import { Cancel, Refresh, SupportAgent, Home, ShoppingCart } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'

@@ -1,4 +1,4 @@
-namespace Auctions.Application.Commands.Bookmarks.UpdateBookmarkNotifications;
+namespace Auctions.Application.Features.Bookmarks.UpdateBookmarkNotifications;
 
 public record UpdateBookmarkNotificationsCommand(
     Guid AuctionId,
