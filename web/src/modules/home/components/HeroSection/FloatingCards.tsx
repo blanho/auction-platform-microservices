@@ -6,10 +6,12 @@ import { colors, typography, shadows, transitions } from '@/shared/theme/tokens'
 import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
 import { formatCurrency, formatTimeLeft } from '@/modules/auctions/utils'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const FloatingCards = () => {
   const { data: featuredData } = useFeaturedAuctions(2)
   const featuredAuctions = useMemo(() => featuredData?.items ?? [], [featuredData?.items])
+  const { t } = useTranslation('home')
 
   if (featuredAuctions.length === 0) {
     return null
@@ -107,7 +109,7 @@ export const FloatingCards = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
                   <Typography variant="caption" sx={{ color: colors.text.disabled, fontSize: '0.65rem' }}>
-                    Current Bid
+                    {t('floatingCards.currentBid')}
                   </Typography>
                   <Typography
                     variant="h6"
@@ -117,7 +119,7 @@ export const FloatingCards = () => {
                   </Typography>
                 </Box>
                 <Chip
-                  label={`${primary.bidCount} bids`}
+                  label={t('floatingCards.bidsCount', { count: primary.bidCount })}
                   size="small"
                   sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: colors.text.secondary, fontSize: '0.7rem' }}
                 />

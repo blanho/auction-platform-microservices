@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { motion } from 'framer-motion'
 import { useOAuthExchange } from '../hooks'
@@ -8,6 +9,7 @@ import { getErrorMessage } from '@/services/http'
 import { fadeInUp } from '@/shared/lib/animations'
 
 export function OAuthCallbackPage() {
+  const { t } = useTranslation('auth')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [mutationError, setMutationError] = useState<string | null>(null)
@@ -129,7 +131,7 @@ export function OAuthCallbackPage() {
                     mb: 2,
                   }}
                 >
-                  Authentication Failed
+                  {t('oauth.authenticationFailed')}
                 </Typography>
                 <Typography
                   sx={{
@@ -145,7 +147,7 @@ export function OAuthCallbackPage() {
                     fontSize: '0.875rem',
                   }}
                 >
-                  Redirecting to login...
+                  {t('oauth.redirectingToLogin')}
                 </Typography>
               </>
             ) : (
@@ -166,7 +168,7 @@ export function OAuthCallbackPage() {
                     mb: 2,
                   }}
                 >
-                  Completing sign in...
+                  {t('oauth.completingSignIn')}
                 </Typography>
                 <Typography
                   sx={{
@@ -174,7 +176,7 @@ export function OAuthCallbackPage() {
                     fontSize: '0.9375rem',
                   }}
                 >
-                  Please wait while we verify your account
+                  {t('oauth.pleaseWait')}
                 </Typography>
               </>
             )}

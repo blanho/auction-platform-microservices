@@ -3,6 +3,7 @@ using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using Identity.Api.Data;
+using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
 using Identity.Api.Grpc;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,7 @@ internal static class HostingExtensions
             .AddBackgroundJobs(builder.Configuration)
             .AddIdentityAuthentication(builder.Configuration, builder.Environment)
             .AddCommonUtilities()
+            .AddAppLocalization<IdentityResources>()
             .AddAuditServices(builder.Configuration, "identity-service");
 
         builder.Services.AddObservability(builder.Configuration);
@@ -71,53 +73,7 @@ internal static class HostingExtensions
 
         app.UseCorrelationId();
         app.UseSerilogRequestLogging();
-
-        app.UseExceptionHandler(errorApp =>
-        {
-            errorApp.Run(async context =>
-            {
-                var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
-                var exception = exceptionFeature?.Error;
-                var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-                var statusCode = exception switch
-                {
-                    BuildingBlocks.Web.Exceptions.NotFoundException => StatusCodes.Status404NotFound,
-                    BuildingBlocks.Web.Exceptions.UnauthorizedAppException => StatusCodes.Status401Unauthorized,
-                    BuildingBlocks.Web.Exceptions.ForbiddenAppException => StatusCodes.Status403Forbidden,
-                    BuildingBlocks.Web.Exceptions.ValidationAppException => StatusCodes.Status400BadRequest,
-                    ArgumentException => StatusCodes.Status400BadRequest,
-                    UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
-                    _ => StatusCodes.Status500InternalServerError
-                };
-
-                if (statusCode == StatusCodes.Status500InternalServerError)
-                {
-                    logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
-                }
-
-                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
-                {
-                    Title = statusCode switch
-                    {
-                        StatusCodes.Status404NotFound => "Resource not found",
-                        StatusCodes.Status401Unauthorized => "Unauthorized",
-                        StatusCodes.Status403Forbidden => "Access denied",
-                        StatusCodes.Status400BadRequest => "Invalid request",
-                        _ => "An unexpected error occurred"
-                    },
-                    Detail = statusCode == StatusCodes.Status500InternalServerError && !app.Environment.IsDevelopment()
-                        ? "An internal server error occurred. Please try again later."
-                        : exception?.Message,
-                    Status = statusCode,
-                    Instance = context.Request.Path
-                };
-
-                context.Response.StatusCode = statusCode;
-                context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsJsonAsync(problem);
-            });
-        });
+        app.UseAppExceptionHandling();
 
         var allowedOrigins = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"];

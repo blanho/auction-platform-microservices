@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Box, Container, Typography, Button } from '@mui/material'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 const editorialImages = [
   'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80',
@@ -18,11 +19,15 @@ interface EditorialSectionProps {
 }
 
 export const EditorialSection = ({
-  title = 'Timeless Elegance',
-  subtitle = 'Discover pieces that transcend seasons. The key is investing in quality that lasts generations.',
-  buttonText = 'Shop The Edit',
+  title,
+  subtitle,
+  buttonText,
   buttonLink = '/auctions?featured=true',
 }: EditorialSectionProps) => {
+  const { t } = useTranslation('home')
+  const resolvedTitle = title ?? t('editorial.defaultTitle')
+  const resolvedSubtitle = subtitle ?? t('editorial.defaultSubtitle')
+  const resolvedButtonText = buttonText ?? t('editorial.defaultButton')
   return (
     <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: '#F5F5F4' }}>
       <Container maxWidth="xl">
@@ -43,7 +48,7 @@ export const EditorialSection = ({
                 mb: 2,
               }}
             >
-              Offbeat Elements
+              {t('editorial.sectionTitle')}
             </Typography>
             <Typography
               sx={{
@@ -54,7 +59,7 @@ export const EditorialSection = ({
                 mx: 'auto',
               }}
             >
-              One unexpected texture or detail can transform an entire look.
+              {t('editorial.sectionSubtitle')}
             </Typography>
           </Box>
         </motion.div>
@@ -122,7 +127,7 @@ export const EditorialSection = ({
                   mb: 2,
                 }}
               >
-                {title}
+                {resolvedTitle}
               </Typography>
               <Typography
                 sx={{
@@ -133,7 +138,7 @@ export const EditorialSection = ({
                   lineHeight: 1.6,
                 }}
               >
-                {subtitle}
+                {resolvedSubtitle}
               </Typography>
               <Button
                 component={Link}
@@ -157,7 +162,7 @@ export const EditorialSection = ({
                   },
                 }}
               >
-                {buttonText}
+                {resolvedButtonText}
               </Button>
             </Box>
           </Box>

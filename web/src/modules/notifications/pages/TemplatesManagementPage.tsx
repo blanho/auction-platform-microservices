@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -60,6 +61,8 @@ const CHANNEL_COLORS: Record<NotificationChannel, string> = {
 }
 
 export function TemplatesManagementPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const [page, setPage] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<NotificationTemplate | null>(null)

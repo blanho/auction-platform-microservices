@@ -4,6 +4,7 @@ import { Box, Container, Typography, Grid } from '@mui/material'
 import { useMemo } from 'react'
 import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const CollectionsSection = () => {
   const { data: categoriesData } = useActiveCategories()
@@ -13,6 +14,7 @@ export const CollectionsSection = () => {
     const selected = (withImages.length ? withImages : source).slice(0, 4)
     return selected
   }, [categoriesData])
+  const { t } = useTranslation('home')
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
@@ -38,7 +40,7 @@ export const CollectionsSection = () => {
                 textTransform: 'uppercase',
               }}
             >
-              Curated Collections
+              {t('collections.label')}
             </Typography>
             <Typography
               variant="h2"
@@ -49,7 +51,7 @@ export const CollectionsSection = () => {
                 fontSize: { xs: '1.75rem', md: '2.5rem' },
               }}
             >
-              Featured Galleries
+              {t('collections.title')}
             </Typography>
           </Box>
         </motion.div>
@@ -57,7 +59,7 @@ export const CollectionsSection = () => {
         {collections.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
             <Typography sx={{ color: '#A8A29E', fontSize: '0.9rem' }}>
-              No collections available right now.
+              {t('collections.empty')}
             </Typography>
           </Box>
         ) : (
@@ -134,7 +136,7 @@ export const CollectionsSection = () => {
                         {collection.name}
                       </Typography>
                       <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
-                        {collection.auctionCount ?? 0} items
+                        {t('collections.itemCount', { count: collection.auctionCount ?? 0 })}
                       </Typography>
                     </Box>
                   </Box>

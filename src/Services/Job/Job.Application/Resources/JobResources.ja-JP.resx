@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Job.NotFound" xml:space="preserve"><value>ジョブが見つかりません。</value></data>
+  <data name="Job.Duplicate" xml:space="preserve"><value>相関ID '{0}' のジョブはすでに存在します。</value></data>
+  <data name="Job.InvalidType" xml:space="preserve"><value>'{0}' は有効なジョブタイプではありません。</value></data>
+  <data name="Job.CannotCancel" xml:space="preserve"><value>ステータス '{0}' のジョブはキャンセルできません。</value></data>
+  <data name="Job.CannotRetry" xml:space="preserve"><value>ステータス '{0}' のジョブは再試行できません。</value></data>
+  <data name="Job.StartFailed" xml:space="preserve"><value>ジョブの開始に失敗しました: {0}</value></data>
+  <data name="Job.ProcessingFailed" xml:space="preserve"><value>ジョブの処理に失敗しました: {0}</value></data>
+  <data name="JobItem.NotFound" xml:space="preserve"><value>ジョブアイテムが見つかりません。</value></data>
+  <data name="JobItem.AlreadyProcessed" xml:space="preserve"><value>ジョブアイテム {0} はすでに処理済みです。</value></data>
+  <data name="JobItem.ProcessingFailed" xml:space="preserve"><value>ジョブアイテムの処理に失敗しました: {0}</value></data>
+</root>

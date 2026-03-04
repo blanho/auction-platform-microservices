@@ -1,4 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { palette } from '@/shared/theme/tokens'
 
 interface LoadingScreenProps {
@@ -7,9 +8,12 @@ interface LoadingScreenProps {
 }
 
 export const LoadingScreen = ({
-  message = 'Loading...',
+  message,
   fullScreen = true,
 }: LoadingScreenProps) => {
+  const { t } = useTranslation()
+  const displayMessage = message || t('loading')
+
   return (
     <Box
       sx={{
@@ -48,7 +52,7 @@ export const LoadingScreen = ({
           fontWeight: 500,
         }}
       >
-        {message}
+        {displayMessage}
       </Typography>
     </Box>
   )

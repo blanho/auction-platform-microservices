@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import {
   Container,
@@ -227,6 +228,8 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
 }
 
 export function OrdersPage() {
+
+  const { t: _t } = useTranslation('payments')
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [tabValue, setTabValue] = useState(tabParam === 'sales' ? 1 : 0)

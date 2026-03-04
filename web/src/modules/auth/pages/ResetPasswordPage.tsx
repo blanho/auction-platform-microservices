@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
@@ -81,6 +82,7 @@ const passwordRequirements: PasswordRequirement[] = [
 ]
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation('auth')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [resetSuccess, setResetSuccess] = useState(false)
@@ -196,11 +198,11 @@ export function ResetPasswordPage() {
                   mb: 2,
                 }}
               >
-                Invalid Reset Link
+                {t('resetPassword.invalidLink')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
-                This password reset link is invalid or has expired. Please request a new one.
+                {t('resetPassword.invalidLinkMessage')}
               </Typography>
 
               <Button
@@ -225,7 +227,7 @@ export function ResetPasswordPage() {
                   },
                 }}
               >
-                Request New Link
+                {t('resetPassword.requestNewLink')}
               </Button>
             </motion.div>
           </Box>
@@ -311,11 +313,11 @@ export function ResetPasswordPage() {
                   mb: 2,
                 }}
               >
-                Password Reset!
+                {t('resetPassword.successTitle')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
-                Your password has been successfully reset. You'll be redirected to login shortly.
+                {t('resetPassword.successMessage')}
               </Typography>
 
               <Button
@@ -340,7 +342,7 @@ export function ResetPasswordPage() {
                   },
                 }}
               >
-                Sign In Now
+                {t('resetPassword.signInNow')}
               </Button>
             </motion.div>
           </Box>
@@ -451,7 +453,7 @@ export function ResetPasswordPage() {
                   },
                 }}
               >
-                Back to login
+                {t('resetPassword.backToLogin')}
               </Button>
             </motion.div>
 
@@ -499,7 +501,7 @@ export function ResetPasswordPage() {
                   mb: 1,
                 }}
               >
-                Set New Password
+                {t('resetPassword.title')}
               </Typography>
 
               <Typography
@@ -508,14 +510,14 @@ export function ResetPasswordPage() {
                   mb: 4,
                 }}
               >
-                Create a strong password for your account
+                {t('resetPassword.subtitle')}
               </Typography>
             </motion.div>
 
             {resetPassword.isError && (
               <motion.div variants={staggerItem}>
                 <InlineAlert severity="error" sx={{ mb: 3, borderRadius: 0 }}>
-                  Something went wrong. Please try again.
+                  {t('errors.generic')}
                 </InlineAlert>
               </motion.div>
             )}
@@ -527,7 +529,7 @@ export function ResetPasswordPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="New Password"
+                  label={t('resetPassword.newPasswordLabel')}
                   type="password"
                   showPasswordToggle
                   sx={{ ...inputStyles, mb: 2 }}
@@ -551,7 +553,7 @@ export function ResetPasswordPage() {
                       letterSpacing: '0.05em',
                     }}
                   >
-                    Password Requirements
+                    {t('resetPassword.passwordRequirements')}
                   </Typography>
                   <Stack spacing={0.75}>
                     {passwordRequirements.map((req) => {
@@ -589,7 +591,7 @@ export function ResetPasswordPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Confirm Password"
+                  label={t('resetPassword.confirmPasswordLabel')}
                   type="password"
                   showPasswordToggle
                   sx={{ ...inputStyles, mb: 4 }}
@@ -624,7 +626,7 @@ export function ResetPasswordPage() {
                   {isSubmitting || resetPassword.isPending ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Reset Password'
+                    t('resetPassword.submit')
                   )}
                 </Button>
               </form>

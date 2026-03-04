@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -51,6 +52,8 @@ import {
 import type { AdminUser, UserFilters, UserActionDialog } from '../types'
 
 export function UsersManagementPage() {
+
+  const { t: _t } = useTranslation('users')
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)

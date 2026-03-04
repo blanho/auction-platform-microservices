@@ -3,6 +3,7 @@ import { Box, Container, Typography } from '@mui/material'
 import { useMemo } from 'react'
 import { useBrands } from '@/modules/auctions/hooks/useBrands'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const TrustedBrandsSection = () => {
   const { data: featuredBrandsData } = useBrands({ activeOnly: true, featuredOnly: true, page: 1, pageSize: 8 })
@@ -13,6 +14,8 @@ export const TrustedBrandsSection = () => {
     const active = activeBrandsData?.items ?? []
     return featured.length > 0 ? featured : active
   }, [featuredBrandsData?.items, activeBrandsData?.items])
+
+  const { t } = useTranslation('home')
 
   if (brands.length === 0) {
     return null
@@ -40,7 +43,7 @@ export const TrustedBrandsSection = () => {
                 textTransform: 'uppercase',
               }}
             >
-              Trusted by Leading Auction Houses
+              {t('trustedBrands.title')}
             </Typography>
           </Box>
           <Box

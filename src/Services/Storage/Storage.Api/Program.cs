@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.Extensions;
+using Storage.Application.Resources;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Infrastructure.Storage;
@@ -26,6 +27,7 @@ builder.Services.ValidateStandardConfiguration(
 var applicationAssembly = typeof(Storage.Application.DTOs.StoredFileDto).Assembly;
 
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<StorageResources>();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 builder.Services.AddCQRS(typeof(Storage.Application.Features.Files.UploadFile.UploadFileCommand).Assembly);

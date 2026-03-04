@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
 namespace Notification.Application.Features.Templates.UpdateTemplate;
@@ -7,42 +8,42 @@ public class UpdateTemplateCommandValidator : AbstractValidator<UpdateTemplateCo
     public UpdateTemplateCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Template ID is required");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Template ID"));
 
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Template name is required")
-            .MaximumLength(200).WithMessage("Template name must not exceed 200 characters");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Template name"))
+            .MaximumLength(200).WithMessage(ValidationConstants.Messages.MaxLength("Template name", 200));
 
         RuleFor(x => x.Subject)
-            .NotEmpty().WithMessage("Subject is required")
-            .MaximumLength(500).WithMessage("Subject must not exceed 500 characters");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Subject"))
+            .MaximumLength(500).WithMessage(ValidationConstants.Messages.MaxLength("Subject", 500));
 
         RuleFor(x => x.Body)
-            .NotEmpty().WithMessage("Body is required")
-            .MaximumLength(10000).WithMessage("Body must not exceed 10000 characters");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Body"))
+            .MaximumLength(10000).WithMessage(ValidationConstants.Messages.MaxLength("Body", 10000));
 
         When(x => !string.IsNullOrWhiteSpace(x.Description), () =>
         {
             RuleFor(x => x.Description)
-                .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters");
+                .MaximumLength(1000).WithMessage(ValidationConstants.Messages.MaxLength("Description", 1000));
         });
 
         When(x => !string.IsNullOrWhiteSpace(x.SmsBody), () =>
         {
             RuleFor(x => x.SmsBody)
-                .MaximumLength(160).WithMessage("SMS body must not exceed 160 characters");
+                .MaximumLength(160).WithMessage(ValidationConstants.Messages.MaxLength("SMS body", 160));
         });
 
         When(x => !string.IsNullOrWhiteSpace(x.PushTitle), () =>
         {
             RuleFor(x => x.PushTitle)
-                .MaximumLength(100).WithMessage("Push title must not exceed 100 characters");
+                .MaximumLength(100).WithMessage(ValidationConstants.Messages.MaxLength("Push title", 100));
         });
 
         When(x => !string.IsNullOrWhiteSpace(x.PushBody), () =>
         {
             RuleFor(x => x.PushBody)
-                .MaximumLength(500).WithMessage("Push body must not exceed 500 characters");
+                .MaximumLength(500).WithMessage(ValidationConstants.Messages.MaxLength("Push body", 500));
         });
     }
 }

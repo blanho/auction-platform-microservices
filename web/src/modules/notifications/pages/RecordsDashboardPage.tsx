@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Container, Typography, Card, Grid, Chip } from '@mui/material'
 import {
   TrendingUp,
@@ -85,6 +86,8 @@ const FILTER_CONFIG: FilterPanelConfig = {
 }
 
 export function RecordsDashboardPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const pagination = usePagination<NotificationRecordFilter>({ defaultPageSize: 20 })
   const { data: recordsData, isLoading, refetch } = useRecords({
     page: pagination.page,

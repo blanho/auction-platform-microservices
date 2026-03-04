@@ -5,10 +5,12 @@ import { East } from '@mui/icons-material'
 import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
 import { typography } from '@/shared/theme/tokens'
 import { formatCurrency } from '@/shared/utils/formatters'
+import { useTranslation } from 'react-i18next'
 
 export const FreshArrivalsSection = () => {
   const { data: auctionsData } = useFeaturedAuctions(6)
   const auctions = auctionsData?.items ?? []
+  const { t } = useTranslation('home')
 
   return (
     <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: '#FFFFFF' }}>
@@ -30,7 +32,7 @@ export const FreshArrivalsSection = () => {
                 mb: 2,
               }}
             >
-              So Much New
+              {t('freshArrivals.title')}
             </Typography>
             <Typography
               sx={{
@@ -39,7 +41,7 @@ export const FreshArrivalsSection = () => {
                 color: '#57534E',
               }}
             >
-              10,000+ fresh finds are in (and they're really, really good).
+              {t('freshArrivals.subtitle')}
             </Typography>
           </Box>
         </motion.div>
@@ -47,7 +49,7 @@ export const FreshArrivalsSection = () => {
         {auctions.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
             <Typography sx={{ color: '#A8A29E', fontSize: '0.9375rem' }}>
-              New arrivals coming soon.
+              {t('freshArrivals.empty')}
             </Typography>
           </Box>
         ) : (
@@ -160,7 +162,7 @@ export const FreshArrivalsSection = () => {
                   '&:hover': { color: '#78716C', bgcolor: 'transparent' },
                 }}
               >
-                Shop All New Arrivals
+                {t('freshArrivals.shopAll')}
               </Button>
             </Box>
           </>

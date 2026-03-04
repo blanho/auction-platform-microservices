@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Localization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Notification.Api.Constants;
@@ -9,10 +10,12 @@ namespace Notification.Api.Hubs;
 public class NotificationHub : Hub
 {
     private readonly ILogger<NotificationHub> _logger;
+    private readonly ILocalizationService _localizer;
 
-    public NotificationHub(ILogger<NotificationHub> logger)
+    public NotificationHub(ILogger<NotificationHub> logger, ILocalizationService localizer)
     {
         _logger = logger;
+        _localizer = localizer;
     }
 
     public override async Task OnConnectedAsync()
@@ -47,7 +50,7 @@ public class NotificationHub : Hub
         var authenticatedUserId = Context.User?.GetUserId();
 
         if (authenticatedUserId != userId)
-            throw new HubException("Cannot join another user's notification group.");
+            throw new HubException(_localizer.GetString(LocalizationKeys.Notification.JoinForbidden));
 
         await Groups.AddToGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} joined user group {UserId}", Context.ConnectionId, userId);
@@ -58,7 +61,7 @@ public class NotificationHub : Hub
         var authenticatedUserId = Context.User?.GetUserId();
 
         if (authenticatedUserId != userId)
-            throw new HubException("Cannot leave another user's notification group.");
+            throw new HubException(_localizer.GetString(LocalizationKeys.Notification.LeaveForbidden));
 
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} left user group {UserId}", Context.ConnectionId, userId);

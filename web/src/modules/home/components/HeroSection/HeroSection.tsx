@@ -6,6 +6,7 @@ import { East } from '@mui/icons-material'
 import { HeroStats } from './HeroStats'
 import { useHomeMetrics } from '../../hooks/useHomeMetrics'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const HeroSection = () => {
   const heroRef = useRef<HTMLDivElement>(null)
@@ -13,14 +14,15 @@ export const HeroSection = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 80])
   const { activeAuctionsCount, categoriesCount, featuredBrandsCount } = useHomeMetrics()
+  const { t } = useTranslation('home')
 
   const stats = useMemo(
     () => [
-      { label: 'Live Auctions', value: activeAuctionsCount, suffix: '+' },
-      { label: 'Categories', value: categoriesCount },
-      { label: 'Trusted Brands', value: featuredBrandsCount, suffix: '+' },
+      { label: t('hero.stats.liveAuctions'), value: activeAuctionsCount, suffix: '+' },
+      { label: t('hero.stats.categories'), value: categoriesCount },
+      { label: t('hero.stats.trustedBrands'), value: featuredBrandsCount, suffix: '+' },
     ],
-    [activeAuctionsCount, categoriesCount, featuredBrandsCount]
+    [activeAuctionsCount, categoriesCount, featuredBrandsCount, t]
   )
 
   const handleScrollDown = () => {
@@ -89,7 +91,7 @@ export const HeroSection = () => {
                   mb: 4,
                 }}
               >
-                Authenticated Luxury Consignment
+                {t('hero.badge')}
               </Typography>
             </motion.div>
 
@@ -110,9 +112,9 @@ export const HeroSection = () => {
                   letterSpacing: '-0.02em',
                 }}
               >
-                The Art of
+                {t('hero.titleLine1')}
                 <br />
-                Collecting
+                {t('hero.titleLine2')}
               </Typography>
             </motion.div>
 
@@ -133,9 +135,7 @@ export const HeroSection = () => {
                   fontSize: { xs: '0.9rem', md: '1rem' },
                 }}
               >
-                A curated marketplace where extraordinary meets exceptional.
-                Discover rare timepieces, masterpiece artworks, and vintage
-                collectibles — all authenticated by world-class experts.
+                {t('hero.subtitle')}
               </Typography>
             </motion.div>
 
@@ -174,7 +174,7 @@ export const HeroSection = () => {
                     },
                   }}
                 >
-                  Explore Auctions
+                  {t('hero.cta')}
                 </Button>
                 <Button
                   variant="outlined"
@@ -198,7 +198,7 @@ export const HeroSection = () => {
                     },
                   }}
                 >
-                  How It Works
+                  {t('hero.secondaryCta')}
                 </Button>
               </Stack>
             </motion.div>

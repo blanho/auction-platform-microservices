@@ -1,4 +1,6 @@
+using System.Globalization;
 using Gateway.Api.Extensions;
+using Microsoft.AspNetCore.Localization;
 using Serilog;
 using Yarp.ReverseProxy.Transforms;
 
@@ -47,8 +49,19 @@ builder.Services.AddHealthChecks()
         tags: new[] { "self", "ready" });
 builder.Services.AddGatewayCors(builder.Configuration);
 
+var supportedCultures = new[] { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.ApplyCurrentCultureToResponseHeaders = true;
+});
+
 var app = builder.Build();
 
+app.UseRequestLocalization();
 app.UseGatewayExceptionHandler();
 app.UseSecurityHeaders();
 app.UseCorrelationId();

@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -29,6 +30,8 @@ import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
 
 export function NotificationsPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const [activeTab, setActiveTab] = useState(0)
   const [filters, setFilters] = useState<NotificationFilters>({
     page: 1,

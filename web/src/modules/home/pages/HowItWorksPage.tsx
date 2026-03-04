@@ -10,76 +10,27 @@ import {
   ArrowForward,
 } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 const steps = [
-  {
-    icon: <PersonAdd sx={{ fontSize: 48 }} />,
-    step: '01',
-    title: 'Create Your Account',
-    description:
-      'Sign up in minutes with your email. Verify your identity to start bidding or selling on our platform.',
-  },
-  {
-    icon: <Search sx={{ fontSize: 48 }} />,
-    step: '02',
-    title: 'Discover & Browse',
-    description:
-      'Explore thousands of curated items across categories. Use filters to find exactly what you are looking for.',
-  },
-  {
-    icon: <Gavel sx={{ fontSize: 48 }} />,
-    step: '03',
-    title: 'Place Your Bids',
-    description:
-      'Set your maximum bid and let our system bid automatically, or bid manually in real-time auctions.',
-  },
-  {
-    icon: <EmojiEvents sx={{ fontSize: 48 }} />,
-    step: '04',
-    title: 'Win the Auction',
-    description:
-      'Get notified instantly when you win. Review your purchase details and proceed to checkout.',
-  },
-  {
-    icon: <Payment sx={{ fontSize: 48 }} />,
-    step: '05',
-    title: 'Secure Payment',
-    description:
-      'Pay securely through our protected payment system. Multiple payment options available.',
-  },
-  {
-    icon: <LocalShipping sx={{ fontSize: 48 }} />,
-    step: '06',
-    title: 'Receive Your Item',
-    description:
-      'Track your shipment in real-time. All items are insured and professionally packaged.',
-  },
+  { icon: <PersonAdd sx={{ fontSize: 48 }} />, step: '01', key: '1' },
+  { icon: <Search sx={{ fontSize: 48 }} />, step: '02', key: '2' },
+  { icon: <Gavel sx={{ fontSize: 48 }} />, step: '03', key: '3' },
+  { icon: <EmojiEvents sx={{ fontSize: 48 }} />, step: '04', key: '4' },
+  { icon: <Payment sx={{ fontSize: 48 }} />, step: '05', key: '5' },
+  { icon: <LocalShipping sx={{ fontSize: 48 }} />, step: '06', key: '6' },
 ]
 
 const sellerSteps = [
-  {
-    number: '01',
-    title: 'List Your Item',
-    description: 'Upload photos, write a description, and set your starting price and reserve.',
-  },
-  {
-    number: '02',
-    title: 'Get Verified',
-    description: 'Our experts review and authenticate your item for buyer confidence.',
-  },
-  {
-    number: '03',
-    title: 'Watch Bids Come In',
-    description: 'Monitor your auction in real-time and engage with potential buyers.',
-  },
-  {
-    number: '04',
-    title: 'Complete the Sale',
-    description: 'Ship the item using our partnered carriers and receive your payment securely.',
-  },
+  { number: '01', key: '1' },
+  { number: '02', key: '2' },
+  { number: '03', key: '3' },
+  { number: '04', key: '4' },
 ]
 
 export const HowItWorksPage = () => {
+  const { t } = useTranslation('home')
+
   return (
     <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh' }}>
       <Box sx={{ bgcolor: palette.neutral[900], py: { xs: 12, md: 16 }, mb: { xs: 8, md: 12 } }}>
@@ -89,7 +40,7 @@ export const HowItWorksPage = () => {
               variant="overline"
               sx={{ color: palette.brand.primary, letterSpacing: 4, mb: 2, display: 'block' }}
             >
-              GETTING STARTED
+              {t('howItWorksPage.badge')}
             </Typography>
             <Typography
               variant="h2"
@@ -100,10 +51,10 @@ export const HowItWorksPage = () => {
                 fontSize: { xs: '2.5rem', md: '3.5rem' },
               }}
             >
-              How It Works
+              {t('howItWorksPage.title')}
             </Typography>
             <Typography variant="h6" sx={{ color: 'rgba(250,250,249,0.7)', fontWeight: 400 }}>
-              From discovery to delivery, we make collecting simple and secure.
+              {t('howItWorksPage.subtitle')}
             </Typography>
           </Box>
         </Container>
@@ -115,14 +66,13 @@ export const HowItWorksPage = () => {
             variant="overline"
             sx={{ color: palette.neutral[700], letterSpacing: 3, display: 'block', mb: 1 }}
           >
-            FOR BUYERS
+            {t('howItWorksPage.buyersLabel')}
           </Typography>
           <Typography variant="h3" sx={{ color: palette.neutral[900], fontWeight: 400, mb: 2 }}>
-            Your Journey to Discovery
+            {t('howItWorksPage.buyersTitle')}
           </Typography>
           <Typography variant="body1" sx={{ color: palette.neutral[700], maxWidth: 600 }}>
-            Whether you are a seasoned collector or first-time buyer, our platform makes it easy to
-            find and acquire extraordinary items.
+            {t('howItWorksPage.buyersSubtitle')}
           </Typography>
         </Box>
 
@@ -153,10 +103,10 @@ export const HowItWorksPage = () => {
                   variant="h6"
                   sx={{ color: palette.neutral[900], fontWeight: 500, mb: 1.5 }}
                 >
-                  {step.title}
+                  {t(`howItWorksPage.steps.${step.key}.title`)}
                 </Typography>
                 <Typography variant="body2" sx={{ color: palette.neutral[700], lineHeight: 1.7 }}>
-                  {step.description}
+                  {t(`howItWorksPage.steps.${step.key}.description`)}
                 </Typography>
               </Box>
             </Grid>
@@ -172,18 +122,16 @@ export const HowItWorksPage = () => {
                 variant="overline"
                 sx={{ color: palette.brand.primary, letterSpacing: 3, display: 'block', mb: 2 }}
               >
-                FOR SELLERS
+                {t('howItWorksPage.sellersLabel')}
               </Typography>
               <Typography variant="h3" sx={{ color: palette.neutral[50], fontWeight: 400, mb: 3 }}>
-                Turn Treasures into Profit
+                {t('howItWorksPage.sellersTitle')}
               </Typography>
               <Typography
                 variant="body1"
                 sx={{ color: 'rgba(250,250,249,0.7)', mb: 4, lineHeight: 1.8 }}
               >
-                Reach a global audience of collectors and enthusiasts. Our platform handles
-                authentication, payments, and shipping coordination so you can focus on what
-                matters.
+                {t('howItWorksPage.sellersSubtitle')}
               </Typography>
               <Button
                 variant="outlined"
@@ -203,7 +151,7 @@ export const HowItWorksPage = () => {
                   },
                 }}
               >
-                Start Selling Today
+                {t('howItWorksPage.startSelling')}
               </Button>
             </Grid>
             <Grid size={{ xs: 12, md: 7 }}>
@@ -230,10 +178,10 @@ export const HowItWorksPage = () => {
                         variant="h6"
                         sx={{ color: palette.neutral[50], fontWeight: 500, mb: 0.5 }}
                       >
-                        {step.title}
+                        {t(`howItWorksPage.sellerSteps.${step.key}.title`)}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'rgba(250,250,249,0.6)' }}>
-                        {step.description}
+                        {t(`howItWorksPage.sellerSteps.${step.key}.description`)}
                       </Typography>
                     </Box>
                   </Box>
@@ -248,14 +196,13 @@ export const HowItWorksPage = () => {
         <Container maxWidth="md">
           <Box sx={{ textAlign: 'center', p: { xs: 6, md: 10 }, bgcolor: '#FFFFFF' }}>
             <Typography variant="h4" sx={{ color: palette.neutral[900], fontWeight: 400, mb: 2 }}>
-              Ready to get started?
+              {t('howItWorksPage.ctaTitle')}
             </Typography>
             <Typography
               variant="body1"
               sx={{ color: palette.neutral[700], mb: 4, maxWidth: 500, mx: 'auto' }}
             >
-              Join our community of collectors and sellers. Create your account today and discover
-              your next treasure.
+              {t('howItWorksPage.ctaSubtitle')}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
@@ -275,7 +222,7 @@ export const HowItWorksPage = () => {
                   '&:hover': { bgcolor: '#A16207' },
                 }}
               >
-                Create Account
+                {t('howItWorksPage.ctaButton')}
               </Button>
               <Button
                 variant="outlined"
@@ -296,7 +243,7 @@ export const HowItWorksPage = () => {
                   },
                 }}
               >
-                Browse Auctions
+                {t('howItWorksPage.ctaSecondary')}
               </Button>
             </Box>
           </Box>

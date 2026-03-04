@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import { Shield, Refresh, NavigateNext } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   useRoles,
   usePermissionDefinitions,
@@ -25,6 +26,8 @@ import { RoleCard, RoleCardSkeleton, PermissionsPanel, PermissionsPanelSkeleton 
 import type { RoleDto } from '../types'
 
 export function RolePermissionsPage() {
+
+  const { t: _t } = useTranslation('users')
   const [selectedRole, setSelectedRole] = useState<RoleDto | null>(null)
   const [loadingPermission, setLoadingPermission] = useState<string | null>(null)
   const [snackbar, setSnackbar] = useState<{

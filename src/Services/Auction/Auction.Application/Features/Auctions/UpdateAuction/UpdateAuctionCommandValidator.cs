@@ -45,21 +45,21 @@ public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionComm
         {
             RuleFor(x => x.ReservePrice!.Value)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage("Reserve price must be zero or greater");
+                .WithMessage(ValidationConstants.Messages.MustBeNonNegative("Reserve price"));
         });
 
         When(x => x.BuyNowPrice.HasValue, () =>
         {
             RuleFor(x => x.BuyNowPrice!.Value)
                 .GreaterThan(0)
-                .WithMessage("Buy now price must be greater than zero");
+                .WithMessage(ValidationConstants.Messages.MustBePositive("Buy now price"));
         });
 
         When(x => x.AuctionEnd.HasValue, () =>
         {
             RuleFor(x => x.AuctionEnd!.Value)
                 .GreaterThan(DateTimeOffset.UtcNow)
-                .WithMessage("Auction end date must be in the future");
+                .WithMessage(ValidationConstants.Messages.Invalid("Auction end date must be in the future"));
         });
     }
 }

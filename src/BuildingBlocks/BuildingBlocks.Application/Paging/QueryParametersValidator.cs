@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
 namespace BuildingBlocks.Application.Paging;
@@ -9,18 +10,18 @@ public class QueryParametersValidator : AbstractValidator<QueryParameters>
     {
         RuleFor(x => x.Page)
             .GreaterThanOrEqualTo(1)
-            .WithMessage("Page must be greater than or equal to 1");
+            .WithMessage(ValidationConstants.Messages.MustBeAtLeast("Page", 1));
 
         RuleFor(x => x.PageSize)
             .GreaterThanOrEqualTo(1)
-            .WithMessage("PageSize must be greater than or equal to 1")
+            .WithMessage(ValidationConstants.Messages.MustBeAtLeast("PageSize", 1))
             .LessThanOrEqualTo(PaginationDefaults.MaxPageSize)
-            .WithMessage($"PageSize must not exceed {PaginationDefaults.MaxPageSize}");
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("PageSize", PaginationDefaults.MaxPageSize));
 
         RuleFor(x => x.SortBy)
             .MaximumLength(100)
             .When(x => x.SortBy != null)
-            .WithMessage("SortBy field name is too long");
+            .WithMessage(ValidationConstants.Messages.MaxLength("SortBy", 100));
     }
 }
 

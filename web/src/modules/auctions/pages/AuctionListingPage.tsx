@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -27,25 +28,26 @@ import { palette } from '@/shared/theme/tokens'
 import { AuctionProductCard, AuctionProductCardSkeleton } from '../components/AuctionProductCard'
 import { useAuctions, useActiveCategories } from '../hooks'
 
-const conditions = [
-  { value: 'new', label: 'New' },
-  { value: 'like-new', label: 'Like New' },
-  { value: 'excellent', label: 'Excellent' },
-  { value: 'good', label: 'Good' },
-  { value: 'fair', label: 'Fair' },
-]
-
-const sortOptions = [
-  { value: 'ending-soon', label: 'Ending Soon' },
-  { value: 'newly-listed', label: 'Newly Listed' },
-  { value: 'price-low', label: 'Price: Low to High' },
-  { value: 'price-high', label: 'Price: High to Low' },
-  { value: 'most-bids', label: 'Most Bids' },
-]
-
 export const AuctionListingPage = () => {
+  const { t } = useTranslation('auctions')
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+
+  const conditions = [
+    { value: 'new', label: t('condition.new') },
+    { value: 'like-new', label: t('condition.likeNew') },
+    { value: 'excellent', label: t('condition.excellent') },
+    { value: 'good', label: t('condition.good') },
+    { value: 'fair', label: t('condition.fair') },
+  ]
+
+  const sortOptions = [
+    { value: 'ending-soon', label: t('sort.endingSoon') },
+    { value: 'newly-listed', label: t('sort.newest') },
+    { value: 'price-low', label: t('sort.priceLowToHigh') },
+    { value: 'price-high', label: t('sort.priceHighToLow') },
+    { value: 'most-bids', label: t('sort.mostBids') },
+  ]
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -102,7 +104,7 @@ export const AuctionListingPage = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 500, color: palette.neutral[900] }}>
-          Filters
+          {t('filter.title')}
         </Typography>
         {isMobile && (
           <IconButton onClick={() => setFilterDrawerOpen(false)}>
@@ -123,7 +125,7 @@ export const AuctionListingPage = () => {
             '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
           }}
         >
-          Clear All Filters
+          {t('filter.clearAll')}
         </Button>
       )}
 
@@ -139,7 +141,7 @@ export const AuctionListingPage = () => {
             fontSize: '0.7rem',
           }}
         >
-          Category
+          {t('filter.category')}
         </Typography>
         <FormGroup>
           {categories.map((category) => (
@@ -192,7 +194,7 @@ export const AuctionListingPage = () => {
             fontSize: '0.7rem',
           }}
         >
-          Price Range
+          {t('filter.priceRange')}
         </Typography>
         <Slider
           value={priceRange}
@@ -234,7 +236,7 @@ export const AuctionListingPage = () => {
             fontSize: '0.7rem',
           }}
         >
-          Condition
+          {t('filter.condition')}
         </Typography>
         <FormGroup>
           {conditions.map((condition) => (
@@ -283,7 +285,7 @@ export const AuctionListingPage = () => {
         }
         label={
           <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
-            Verified Sellers Only
+            {t('filter.verifiedSellersOnly')}
           </Typography>
         }
       />
@@ -306,9 +308,9 @@ export const AuctionListingPage = () => {
               '&:hover': { color: palette.neutral[900] },
             }}
           >
-            Home
+            {t('common:nav.home')}
           </MuiLink>
-          <Typography sx={{ color: palette.neutral[900] }}>All Auctions</Typography>
+          <Typography sx={{ color: palette.neutral[900] }}>{t('browse')}</Typography>
         </Breadcrumbs>
 
         <Box sx={{ mb: 6 }}>
@@ -322,10 +324,10 @@ export const AuctionListingPage = () => {
               mb: 1,
             }}
           >
-            All Auctions
+            {t('browse')}
           </Typography>
           <Typography variant="body1" sx={{ color: palette.neutral[500] }}>
-            {data?.totalCount || 0} items available
+            {t('itemsAvailable', { count: data?.totalCount || 0 })}
           </Typography>
         </Box>
 
@@ -371,7 +373,7 @@ export const AuctionListingPage = () => {
                   }}
                   variant="outlined"
                 >
-                  Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                  {t('filter.title')} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
 
                 {activeFiltersCount > 0 && (
@@ -396,7 +398,7 @@ export const AuctionListingPage = () => {
                     })}
                     {verifiedOnly && (
                       <Chip
-                        label="Verified Only"
+                        label={t('filter.verifiedOnly')}
                         size="small"
                         onDelete={() => setVerifiedOnly(false)}
                         sx={{
@@ -507,7 +509,7 @@ export const AuctionListingPage = () => {
                   },
                 }}
               >
-                Load More
+                {t('common:actions.loadMore')}
               </Button>
             </Box>
           </Grid>
@@ -537,7 +539,7 @@ export const AuctionListingPage = () => {
               '&:hover': { bgcolor: palette.neutral[700] },
             }}
           >
-            Apply Filters
+            {t('filter.apply')}
           </Button>
         </Box>
       </Drawer>

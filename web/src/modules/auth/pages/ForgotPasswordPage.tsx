@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
@@ -49,6 +50,7 @@ const inputStyles = {
 }
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation('auth')
   const [emailSent, setEmailSent] = useState(false)
   const [sentEmail, setSentEmail] = useState('')
   const forgotPassword = useForgotPassword()
@@ -149,11 +151,11 @@ export function ForgotPasswordPage() {
                   mb: 2,
                 }}
               >
-                Check Your Email
+                {t('forgotPassword.checkEmail')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-                We've sent password reset instructions to
+                {t('forgotPassword.resetInstructionsSent')}
               </Typography>
 
               <Typography
@@ -168,7 +170,7 @@ export function ForgotPasswordPage() {
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mb: 5 }}>
-                If you don't see the email, check your spam folder.
+                {t('forgotPassword.checkSpam')}
               </Typography>
 
               <Stack spacing={2}>
@@ -194,7 +196,7 @@ export function ForgotPasswordPage() {
                     },
                   }}
                 >
-                  Back to Login
+                  {t('forgotPassword.backToLogin')}
                 </Button>
 
                 <Button
@@ -210,7 +212,7 @@ export function ForgotPasswordPage() {
                     },
                   }}
                 >
-                  Try a different email
+                  {t('forgotPassword.tryDifferentEmail')}
                 </Button>
               </Stack>
             </motion.div>
@@ -320,7 +322,7 @@ export function ForgotPasswordPage() {
                   },
                 }}
               >
-                Back to login
+                {t('forgotPassword.backToLogin')}
               </Button>
             </motion.div>
 
@@ -353,7 +355,7 @@ export function ForgotPasswordPage() {
                   mb: 1,
                 }}
               >
-                Forgot Password?
+                {t('forgotPassword.title')}
               </Typography>
 
               <Typography
@@ -362,14 +364,14 @@ export function ForgotPasswordPage() {
                   mb: 4,
                 }}
               >
-                No worries, we'll send you reset instructions
+                {t('forgotPassword.subtitle')}
               </Typography>
             </motion.div>
 
             {forgotPassword.isError && (
               <motion.div variants={staggerItem}>
                 <InlineAlert severity="error" sx={{ mb: 3, borderRadius: 0 }}>
-                  Something went wrong. Please try again.
+                  {t('errors.generic')}
                 </InlineAlert>
               </motion.div>
             )}
@@ -381,7 +383,7 @@ export function ForgotPasswordPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Email Address"
+                  label={t('forgotPassword.emailLabel')}
                   type="email"
                   sx={{ ...inputStyles, mb: 4 }}
                 />
@@ -415,7 +417,7 @@ export function ForgotPasswordPage() {
                   {isSubmitting || forgotPassword.isPending ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Reset Password'
+                    t('forgotPassword.submit')
                   )}
                 </Button>
               </form>
@@ -430,7 +432,7 @@ export function ForgotPasswordPage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Remember your password?{' '}
+                {t('forgotPassword.rememberPassword')}{' '}
                 <Typography
                   component={Link}
                   to="/login"
@@ -442,7 +444,7 @@ export function ForgotPasswordPage() {
                     '&:hover': { color: palette.neutral[600] },
                   }}
                 >
-                  Sign in
+                  {t('login.submit')}
                 </Typography>
               </Typography>
             </motion.div>

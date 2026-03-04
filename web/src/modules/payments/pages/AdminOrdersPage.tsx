@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -228,6 +229,8 @@ const STATUS_FILTER_OPTIONS = [
 ]
 
 export function AdminOrdersPage() {
+
+  const { t: _t } = useTranslation('payments')
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)

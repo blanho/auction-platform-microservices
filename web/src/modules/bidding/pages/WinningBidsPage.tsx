@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Card,
@@ -20,6 +21,8 @@ import { BID_CONSTANTS } from '../constants'
 import { formatCurrency, formatRelativeTime } from '@/shared/utils'
 
 export const WinningBidsPage = () => {
+
+  const { t: _t } = useTranslation('bidding')
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const pageSize = BID_CONSTANTS.PAGE_SIZE

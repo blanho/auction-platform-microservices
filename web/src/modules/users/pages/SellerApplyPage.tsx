@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -71,6 +72,8 @@ const benefits = [
 ]
 
 export function SellerApplyPage() {
+
+  const { t: _t } = useTranslation('users')
   const [success, setSuccess] = useState(false)
 
   const {

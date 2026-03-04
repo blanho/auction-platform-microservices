@@ -5,10 +5,12 @@ import { East } from '@mui/icons-material'
 import { useMemo } from 'react'
 import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const CategoriesSection = () => {
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => (categoriesData ?? []).slice(0, 6), [categoriesData])
+  const { t } = useTranslation('home')
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FAFAF9', position: 'relative' }}>
@@ -43,7 +45,7 @@ export const CategoriesSection = () => {
                   textTransform: 'uppercase',
                 }}
               >
-                Explore
+                {t('categories.label')}
               </Typography>
               <Typography
                 variant="h2"
@@ -54,7 +56,7 @@ export const CategoriesSection = () => {
                   fontSize: { xs: '1.75rem', md: '2.5rem' },
                 }}
               >
-                Browse by Category
+                {t('categories.title')}
               </Typography>
             </Box>
             <Button
@@ -71,7 +73,7 @@ export const CategoriesSection = () => {
                 '&:hover': { color: '#78716C' },
               }}
             >
-              All Categories
+              {t('categories.viewAll')}
             </Button>
           </Box>
         </motion.div>
@@ -79,7 +81,7 @@ export const CategoriesSection = () => {
         {categories.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#A8A29E' }}>
-              No categories available right now.
+              {t('categories.empty')}
             </Typography>
           </Box>
         ) : (
@@ -159,7 +161,7 @@ export const CategoriesSection = () => {
                         {category.name}
                       </Typography>
                       <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', mt: 0.5 }}>
-                        {category.auctionCount ?? 0} items
+                        {t('categories.itemCount', { count: category.auctionCount ?? 0 })}
                       </Typography>
                     </Box>
                   </Box>

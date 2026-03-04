@@ -1,11 +1,9 @@
-using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using Carter;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Search.Api.Extensions.DependencyInjection;
+using Search.Api.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.ValidateStandardConfiguration(
@@ -21,6 +19,7 @@ builder.Services.AddCarter();
 builder.Services.AddSearchServices(builder.Configuration);
 builder.Services.AddSearchMessaging(builder.Configuration);
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<SearchResources>();
 builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddAuthorization();
 builder.Services.AddCustomHealthChecks(
@@ -41,57 +40,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseCorrelationId();
 app.UseRequestTracing();
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
-        var exception = exceptionFeature?.Error;
-        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-        var statusCode = exception switch
-        {
-            BuildingBlocks.Web.Exceptions.NotFoundException => StatusCodes.Status404NotFound,
-            BuildingBlocks.Web.Exceptions.UnauthorizedAppException => StatusCodes.Status401Unauthorized,
-            BuildingBlocks.Web.Exceptions.ForbiddenAppException => StatusCodes.Status403Forbidden,
-            BuildingBlocks.Web.Exceptions.ValidationAppException => StatusCodes.Status400BadRequest,
-            BuildingBlocks.Web.Exceptions.ConflictException => StatusCodes.Status409Conflict,
-            ArgumentException or ArgumentNullException => StatusCodes.Status400BadRequest,
-            _ => StatusCodes.Status500InternalServerError
-        };
-
-        if (statusCode == StatusCodes.Status500InternalServerError)
-            logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
-
-        var problem = new ProblemDetails
-        {
-            Title = statusCode switch
-            {
-                StatusCodes.Status404NotFound => "Resource not found",
-                StatusCodes.Status401Unauthorized => "Unauthorized",
-                StatusCodes.Status403Forbidden => "Access denied",
-                StatusCodes.Status400BadRequest => "Invalid request",
-                StatusCodes.Status409Conflict => "Resource conflict",
-                _ => "An unexpected error occurred"
-            },
-            Detail = statusCode == StatusCodes.Status500InternalServerError && !app.Environment.IsDevelopment()
-                ? "An internal server error occurred. Please try again later."
-                : exception?.Message,
-            Status = statusCode,
-            Instance = context.Request.Path
-        };
-
-        context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(problem);
-    });
-});
+app.UseAppExceptionHandling();
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCustomHealthChecks();
 app.MapCarter();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

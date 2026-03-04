@@ -1,4 +1,5 @@
 import { Box, Typography, Button } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import {
   Add,
   Search,
@@ -32,45 +33,14 @@ interface EmptyStateProps {
   icon?: ReactNode
 }
 
-const variantConfig: Record<
-  EmptyStateVariant,
-  { icon: ReactNode; title: string; description: string }
-> = {
-  default: {
-    icon: <Inbox sx={{ fontSize: 64 }} />,
-    title: 'No data yet',
-    description: 'There is nothing here at the moment.',
-  },
-  auctions: {
-    icon: <Gavel sx={{ fontSize: 64 }} />,
-    title: 'No auctions found',
-    description: 'Create your first auction and start selling to collectors worldwide.',
-  },
-  bids: {
-    icon: <Gavel sx={{ fontSize: 64 }} />,
-    title: 'No bids yet',
-    description: "You haven't placed any bids. Start exploring auctions to find unique items.",
-  },
-  notifications: {
-    icon: <Notifications sx={{ fontSize: 64 }} />,
-    title: 'All caught up!',
-    description: 'You have no new notifications at the moment.',
-  },
-  search: {
-    icon: <Search sx={{ fontSize: 64 }} />,
-    title: 'No results found',
-    description: "Try adjusting your search or filters to find what you're looking for.",
-  },
-  favorites: {
-    icon: <FavoriteBorder sx={{ fontSize: 64 }} />,
-    title: 'No favorites yet',
-    description: 'Save items you love to keep track of them and get notified of updates.',
-  },
-  orders: {
-    icon: <ShoppingBag sx={{ fontSize: 64 }} />,
-    title: 'No orders yet',
-    description: 'Win an auction to see your orders here.',
-  },
+const variantIcons: Record<EmptyStateVariant, ReactNode> = {
+  default: <Inbox sx={{ fontSize: 64 }} />,
+  auctions: <Gavel sx={{ fontSize: 64 }} />,
+  bids: <Gavel sx={{ fontSize: 64 }} />,
+  notifications: <Notifications sx={{ fontSize: 64 }} />,
+  search: <Search sx={{ fontSize: 64 }} />,
+  favorites: <FavoriteBorder sx={{ fontSize: 64 }} />,
+  orders: <ShoppingBag sx={{ fontSize: 64 }} />,
 }
 
 export function EmptyState({
@@ -80,10 +50,10 @@ export function EmptyState({
   action,
   icon,
 }: EmptyStateProps) {
-  const config = variantConfig[variant]
-  const displayIcon = icon || config.icon
-  const displayTitle = title || config.title
-  const displayDescription = description || config.description
+  const { t } = useTranslation()
+  const displayIcon = icon || variantIcons[variant]
+  const displayTitle = title || t(`emptyState.${variant}.title`)
+  const displayDescription = description || t(`emptyState.${variant}.description`)
 
   return (
     <Box

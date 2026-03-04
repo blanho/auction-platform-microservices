@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -35,6 +36,7 @@ import type { AutoBid, UpdateAutoBidRequest } from '../types'
 import { palette } from '@/shared/theme/tokens'
 
 export const AutoBidManagementPage = () => {
+  const { t } = useTranslation('bidding')
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [activeOnly, setActiveOnly] = useState<boolean | undefined>(undefined)
@@ -109,7 +111,7 @@ export const AutoBidManagementPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <InlineAlert severity="error">Failed to load auto bids. Please try again.</InlineAlert>
+        <InlineAlert severity="error">{t('messages.loadFailed')}</InlineAlert>
       </Container>
     )
   }
@@ -143,11 +145,11 @@ export const AutoBidManagementPage = () => {
                   variant="h3"
                   sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
                 >
-                  Auto Bid Manager
+                  {t('autoBid.title')}
                 </Typography>
               </Stack>
               <Typography variant="body1" color="text.secondary">
-                Configure and manage your automatic bidding strategies
+                {t('autoBid.description')}
               </Typography>
             </Box>
             <Button
@@ -165,7 +167,7 @@ export const AutoBidManagementPage = () => {
                 },
               }}
             >
-              Create Auto Bid
+              {t('autoBid.create')}
             </Button>
           </Stack>
         </Box>
@@ -185,7 +187,7 @@ export const AutoBidManagementPage = () => {
               variant="body2"
               sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, color: '#64748B' }}
             >
-              Show:
+              {t('filter.show')}:
             </Typography>
             <Button
               variant={activeOnly === undefined ? 'contained' : 'outlined'}
@@ -199,7 +201,7 @@ export const AutoBidManagementPage = () => {
                 }),
               }}
             >
-              All
+              {t('filter.all')}
             </Button>
             <Button
               variant={activeOnly === true ? 'contained' : 'outlined'}
@@ -213,7 +215,7 @@ export const AutoBidManagementPage = () => {
                 }),
               }}
             >
-              Active Only
+              {t('filter.active')}
             </Button>
             <Button
               variant={activeOnly === false ? 'contained' : 'outlined'}
@@ -227,7 +229,7 @@ export const AutoBidManagementPage = () => {
                 }),
               }}
             >
-              Inactive Only
+              {t('filter.inactive')}
             </Button>
           </Stack>
         </Card>
@@ -278,7 +280,7 @@ export const AutoBidManagementPage = () => {
                             }}
                           />
                           <Chip
-                            label={autoBid.isActive ? 'ACTIVE' : 'INACTIVE'}
+                            label={autoBid.isActive ? t('status.active') : t('status.inactive')}
                             size="small"
                             sx={{
                               background: autoBid.isActive
@@ -307,7 +309,7 @@ export const AutoBidManagementPage = () => {
                           mb: 0.5,
                         }}
                       >
-                        Auction ID
+                        {t('autoBid.auctionId')}
                       </Typography>
                       <Typography
                         variant="body1"
@@ -330,7 +332,7 @@ export const AutoBidManagementPage = () => {
                             variant="caption"
                             sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
                           >
-                            Max Amount
+                            {t('autoBid.maxAmount')}
                           </Typography>
                           <Typography
                             variant="h6"
@@ -349,7 +351,7 @@ export const AutoBidManagementPage = () => {
                             variant="caption"
                             sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
                           >
-                            Current Bid
+                            {t('placeBid.currentBid')}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -380,7 +382,7 @@ export const AutoBidManagementPage = () => {
                               variant="caption"
                               sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
                             >
-                              Last Bid
+                              {t('autoBid.lastBid')}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -393,7 +395,7 @@ export const AutoBidManagementPage = () => {
                       </Stack>
 
                       <Stack direction="row" spacing={1}>
-                        <Tooltip title="Edit">
+                        <Tooltip title={t('actions.edit')}>
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(autoBid)}
@@ -408,7 +410,7 @@ export const AutoBidManagementPage = () => {
                             <Edit sx={{ width: 16, height: 16 }} />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title={t('actions.delete')}>
                           <IconButton
                             size="small"
                             onClick={() => handleDelete(autoBid)}
@@ -470,10 +472,10 @@ export const AutoBidManagementPage = () => {
           >
             <FlashOn sx={{ width: 80, height: 80, color: '#CBD5E1', margin: '0 auto 16px' }} />
             <Typography variant="h6" sx={{ fontFamily: 'Russo One', color: '#64748B', mb: 2 }}>
-              No Auto Bids Configured
+              {t('autoBid.empty.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={3}>
-              Set up automatic bidding to stay competitive without constant monitoring
+              {t('autoBid.empty.description')}
             </Typography>
             <Button
               variant="contained"
@@ -489,7 +491,7 @@ export const AutoBidManagementPage = () => {
                 },
               }}
             >
-              Browse Auctions
+              {t('actions.browseAuctions')}
             </Button>
           </Card>
         )}
@@ -509,13 +511,13 @@ export const AutoBidManagementPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>Edit Auto Bid</DialogTitle>
+        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>{t('autoBid.editTitle')}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} mt={2}>
             <TextField
               fullWidth
               type="number"
-              label="Max Amount"
+              label={t('autoBid.maxAmount')}
               value={editForm.maxAmount || ''}
               onChange={(e) => setEditForm({ ...editForm, maxAmount: Number(e.target.value) })}
               sx={{
@@ -527,7 +529,7 @@ export const AutoBidManagementPage = () => {
             <TextField
               fullWidth
               type="number"
-              label="Bid Increment"
+              label={t('autoBid.bidIncrement')}
               value={editForm.bidIncrement || ''}
               onChange={(e) => setEditForm({ ...editForm, bidIncrement: Number(e.target.value) })}
               sx={{
@@ -540,7 +542,7 @@ export const AutoBidManagementPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} sx={{ fontFamily: 'Chakra Petch' }}>
-            Cancel
+            {t('placeBid.cancel')}
           </Button>
           <Button
             onClick={handleSaveEdit}
@@ -552,7 +554,7 @@ export const AutoBidManagementPage = () => {
               fontWeight: 600,
             }}
           >
-            Save Changes
+            {t('actions.saveChanges')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -571,15 +573,15 @@ export const AutoBidManagementPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>Confirm Delete</DialogTitle>
+        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>{t('autoBid.confirmDelete')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ fontFamily: 'Chakra Petch' }}>
-            Are you sure you want to cancel this auto bid? This action cannot be undone.
+            {t('autoBid.deleteWarning')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)} sx={{ fontFamily: 'Chakra Petch' }}>
-            Cancel
+            {t('placeBid.cancel')}
           </Button>
           <Button
             onClick={confirmDelete}
@@ -594,7 +596,7 @@ export const AutoBidManagementPage = () => {
               },
             }}
           >
-            Delete
+            {t('actions.delete')}
           </Button>
         </DialogActions>
       </Dialog>

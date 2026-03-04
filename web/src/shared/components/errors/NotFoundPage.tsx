@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Box, Container, Typography, Button, Stack } from '@mui/material'
 import { Home, Search, ArrowBack } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 
 export const NotFoundPage = () => {
+  const { t } = useTranslation()
+
   return (
     <Box
       sx={{
@@ -48,7 +51,7 @@ export const NotFoundPage = () => {
               mb: 2,
             }}
           >
-            Page Not Found
+            {t('errors.notFoundTitle')}
           </Typography>
 
           <Typography
@@ -60,8 +63,7 @@ export const NotFoundPage = () => {
               mx: 'auto',
             }}
           >
-            The page you're looking for seems to have gone to auction. It might have been sold,
-            moved, or never existed.
+            {t('errors.notFoundMessage')}
           </Typography>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
@@ -79,7 +81,7 @@ export const NotFoundPage = () => {
                 '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
-              Go Home
+              {t('goHome')}
             </Button>
             <Button
               variant="outlined"
@@ -99,7 +101,7 @@ export const NotFoundPage = () => {
                 },
               }}
             >
-              Browse Auctions
+              {t('browseAuctions')}
             </Button>
           </Stack>
 
@@ -113,7 +115,7 @@ export const NotFoundPage = () => {
               '&:hover': { bgcolor: 'transparent', color: palette.neutral[900] },
             }}
           >
-            Go Back
+            {t('goBack')}
           </Button>
         </Box>
       </Container>

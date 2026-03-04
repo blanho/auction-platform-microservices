@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -42,6 +43,7 @@ interface NavItem {
 
 export const MegaMenu = () => {
   const location = useLocation()
+  const { t } = useTranslation()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -84,30 +86,30 @@ export const MegaMenu = () => {
 
     return [
       {
-        title: 'By Category',
+        title: t('megaMenu.byCategory'),
         items: byCategoryItems,
       },
       {
-        title: 'By Status',
+        title: t('megaMenu.byStatus'),
         items: [
-          { name: 'Ending Today', path: '/auctions?ending=today' },
-          { name: 'Ending This Week', path: '/auctions?ending=week' },
-          { name: 'Newly Listed', path: '/auctions?sort=new' },
-          { name: 'No Reserve', path: '/auctions?reserve=none' },
-          { name: 'Buy Now Available', path: '/auctions?buyNow=true' },
+          { name: t('megaMenu.endingToday'), path: '/auctions?ending=today' },
+          { name: t('megaMenu.endingThisWeek'), path: '/auctions?ending=week' },
+          { name: t('megaMenu.newlyListed'), path: '/auctions?sort=new' },
+          { name: t('megaMenu.noReserve'), path: '/auctions?reserve=none' },
+          { name: t('megaMenu.buyNowAvailable'), path: '/auctions?buyNow=true' },
         ],
       },
       {
-        title: 'Price Range',
+        title: t('megaMenu.priceRange'),
         items: [
-          { name: 'Under $500', path: '/auctions?maxPrice=500' },
-          { name: '$500 - $2,000', path: '/auctions?minPrice=500&maxPrice=2000' },
-          { name: '$2,000 - $10,000', path: '/auctions?minPrice=2000&maxPrice=10000' },
-          { name: 'Over $10,000', path: '/auctions?minPrice=10000' },
+          { name: t('megaMenu.under500'), path: '/auctions?maxPrice=500' },
+          { name: t('megaMenu.range500to2000'), path: '/auctions?minPrice=500&maxPrice=2000' },
+          { name: t('megaMenu.range2000to10000'), path: '/auctions?minPrice=2000&maxPrice=10000' },
+          { name: t('megaMenu.over10000'), path: '/auctions?minPrice=10000' },
         ],
       },
     ]
-  }, [flattenCategories, buildCategoryLink])
+  }, [flattenCategories, buildCategoryLink, t])
 
   const categoriesMenuCategories: MegaMenuCategory[] = useMemo(() => {
     return topCategories.slice(0, 4).map((category) => {
@@ -135,7 +137,7 @@ export const MegaMenu = () => {
 
     return [
       {
-        label: 'Auctions',
+        label: t('nav.auctions'),
         path: '/auctions',
         megaMenu: {
           categories: auctionsMenuCategories,
@@ -143,16 +145,16 @@ export const MegaMenu = () => {
         },
       },
       {
-        label: 'Categories',
+        label: t('nav.categories'),
         path: '/categories',
         megaMenu: {
           categories: categoriesMenuCategories,
         },
       },
-      { label: 'How It Works', path: '/how-it-works' },
-      { label: 'Sell', path: '/sell' },
+      { label: t('nav.howItWorks'), path: '/how-it-works' },
+      { label: t('nav.sell'), path: '/sell' },
     ]
-  }, [auctionsMenuCategories, categoriesMenuCategories, featuredCategory, buildCategoryLink])
+  }, [auctionsMenuCategories, categoriesMenuCategories, featuredCategory, buildCategoryLink, t])
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>, label: string) => {
     if (timeoutRef.current) {
@@ -360,7 +362,7 @@ export const MegaMenu = () => {
                                 letterSpacing: 1,
                               }}
                             >
-                              Shop Now →
+                              {t('shopNow')} →
                             </Typography>
                           </Box>
                         </Box>
@@ -389,7 +391,7 @@ export const MegaMenu = () => {
                         '&:hover': { color: palette.brand.primary },
                       }}
                     >
-                      View All {activeItem?.label} →
+                      {t('megaMenu.viewAll', { label: activeItem?.label })}
                     </Typography>
                   </Box>
                 </Container>

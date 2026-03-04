@@ -3,6 +3,7 @@ import { Box, Typography, IconButton } from '@mui/material'
 import { KeyboardArrowUp, Close } from '@mui/icons-material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 interface Offer {
   id: string
@@ -11,27 +12,30 @@ interface Offer {
   code?: string
 }
 
-const defaultOffers: Offer[] = [
-  {
-    id: '1',
-    title: 'Welcome Offer',
-    description: 'Get 10% off your first purchase with code WELCOME10',
-    code: 'WELCOME10',
-  },
-  {
-    id: '2',
-    title: 'Free Shipping',
-    description: 'Free shipping on orders over $500',
-  },
-]
-
 interface ExclusiveOffersBarProps {
   offers?: Offer[]
 }
 
-export const ExclusiveOffersBar = ({ offers = defaultOffers }: ExclusiveOffersBarProps) => {
+export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarProps) => {
+  const { t } = useTranslation('home')
   const [isExpanded, setIsExpanded] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
+
+  const translatedDefaults: Offer[] = [
+    {
+      id: '1',
+      title: t('exclusiveOffers.welcomeOfferTitle'),
+      description: t('exclusiveOffers.welcomeOfferDescription'),
+      code: 'WELCOME10',
+    },
+    {
+      id: '2',
+      title: t('exclusiveOffers.freeShippingTitle'),
+      description: t('exclusiveOffers.freeShippingDescription'),
+    },
+  ]
+
+  const offers = offersProp ?? translatedDefaults
 
   if (!isVisible || offers.length === 0) {
     return null
@@ -71,9 +75,9 @@ export const ExclusiveOffersBar = ({ offers = defaultOffers }: ExclusiveOffersBa
           }}
         >
           <Box component="span" sx={{ color: '#E8E4B8', mr: 1 }}>
-            NEW:
+            {t('exclusiveOffers.new')}
           </Box>
-          Your Exclusive Offers
+          {t('exclusiveOffers.title')}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -83,7 +87,7 @@ export const ExclusiveOffersBar = ({ offers = defaultOffers }: ExclusiveOffersBa
               fontSize: '0.875rem',
             }}
           >
-            {offers.length} Offer{offers.length !== 1 ? 's' : ''}
+            {t('exclusiveOffers.offerCount', { count: offers.length })}
           </Typography>
           <IconButton
             size="small"

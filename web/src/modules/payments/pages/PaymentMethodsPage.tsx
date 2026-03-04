@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -289,6 +290,8 @@ function PaymentMethodsSkeleton() {
 }
 
 export function PaymentMethodsPage() {
+
+  const { t: _t } = useTranslation('payments')
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 

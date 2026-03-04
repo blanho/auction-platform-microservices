@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Box,
@@ -349,6 +350,8 @@ function ReviewsTabContent({
 }
 
 export function SellerProfilePage() {
+
+  const { t: _t } = useTranslation('users')
   const { sellerId } = useParams<{ sellerId: string }>()
   const [activeTab, setActiveTab] = useState(0)
 

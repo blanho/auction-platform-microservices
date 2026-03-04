@@ -10,14 +10,6 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
@@ -29,37 +21,19 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
-  
-  <data name="Notification.NotFound" xml:space="preserve"><value>Notification not found</value></data>
-  <data name="Notification.Sent" xml:space="preserve"><value>Notification sent successfully</value></data>
-  <data name="Notification.MarkedAsRead" xml:space="preserve"><value>Notification marked as read</value></data>
-  <data name="Notification.AllMarkedAsRead" xml:space="preserve"><value>All notifications marked as read</value></data>
-  <data name="Notification.Deleted" xml:space="preserve"><value>Notification deleted</value></data>
-  <data name="Notification.Failed" xml:space="preserve"><value>Failed to send notification</value></data>
-  
-  <data name="Email.Sent" xml:space="preserve"><value>Email sent successfully</value></data>
-  <data name="Email.Failed" xml:space="preserve"><value>Failed to send email</value></data>
-  <data name="Email.InvalidRecipient" xml:space="preserve"><value>Invalid email recipient</value></data>
-  <data name="Email.SubjectRequired" xml:space="preserve"><value>Email subject is required</value></data>
-  <data name="Email.BodyRequired" xml:space="preserve"><value>Email body is required</value></data>
-  
-  <data name="Sms.Sent" xml:space="preserve"><value>SMS sent successfully</value></data>
-  <data name="Sms.Failed" xml:space="preserve"><value>Failed to send SMS</value></data>
-  <data name="Sms.InvalidNumber" xml:space="preserve"><value>Invalid phone number</value></data>
-  
-  <data name="Push.Sent" xml:space="preserve"><value>Push notification sent successfully</value></data>
-  <data name="Push.Failed" xml:space="preserve"><value>Failed to send push notification</value></data>
-  <data name="Push.DeviceNotRegistered" xml:space="preserve"><value>Device not registered for push notifications</value></data>
-  
-  <data name="Template.NotFound" xml:space="preserve"><value>Notification template not found</value></data>
-  <data name="Template.InvalidParameters" xml:space="preserve"><value>Invalid template parameters</value></data>
-  
-  <data name="Preference.Updated" xml:space="preserve"><value>Notification preferences updated</value></data>
-  <data name="Preference.NotFound" xml:space="preserve"><value>Notification preferences not found</value></data>
-  
-  <data name="Subject.AuctionWon" xml:space="preserve"><value>Congratulations! You won the auction</value></data>
-  <data name="Subject.Outbid" xml:space="preserve"><value>You have been outbid</value></data>
-  <data name="Subject.AuctionEnding" xml:space="preserve"><value>Auction ending soon</value></data>
-  <data name="Subject.PaymentReceived" xml:space="preserve"><value>Payment received</value></data>
-  <data name="Subject.WelcomeEmail" xml:space="preserve"><value>Welcome to our platform</value></data>
+  <data name="Notification.NotFound" xml:space="preserve"><value>Notification not found.</value></data>
+  <data name="Notification.Unauthorized" xml:space="preserve"><value>You are not authorized to access this notification.</value></data>
+  <data name="Notification.SendFailed" xml:space="preserve"><value>Failed to send notification: {0}</value></data>
+  <data name="Notification.MarkReadFailed" xml:space="preserve"><value>Failed to mark notification as read: {0}</value></data>
+  <data name="Notification.JoinForbidden" xml:space="preserve"><value>Cannot join another user's notification group.</value></data>
+  <data name="Notification.LeaveForbidden" xml:space="preserve"><value>Cannot leave another user's notification group.</value></data>
+  <data name="Template.NotFound" xml:space="preserve"><value>Notification template not found.</value></data>
+  <data name="Template.KeyExists" xml:space="preserve"><value>Template with key '{0}' already exists.</value></data>
+  <data name="Template.CreateFailed" xml:space="preserve"><value>Failed to create template: {0}</value></data>
+  <data name="Template.UpdateFailed" xml:space="preserve"><value>Failed to update template: {0}</value></data>
+  <data name="Template.DeleteFailed" xml:space="preserve"><value>Failed to delete template: {0}</value></data>
+  <data name="Preference.NotFound" xml:space="preserve"><value>Notification preference not found.</value></data>
+  <data name="Preference.UpdateFailed" xml:space="preserve"><value>Failed to update preference: {0}</value></data>
+  <data name="Email.SendFailed" xml:space="preserve"><value>Failed to send email: {0}</value></data>
+  <data name="Email.InvalidRecipient" xml:space="preserve"><value>Invalid email recipient.</value></data>
 </root>

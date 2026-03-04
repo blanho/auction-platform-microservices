@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Box,
@@ -48,20 +49,21 @@ interface NavItem {
   children?: NavItem[]
 }
 
-const navItems: NavItem[] = [
-  { path: '/admin', label: 'Dashboard', icon: <Dashboard /> },
-  { path: '/admin/users', label: 'Users', icon: <People /> },
-  { path: '/admin/auctions', label: 'Auctions', icon: <Gavel /> },
-  { path: '/admin/categories', label: 'Categories', icon: <Category /> },
-  { path: '/admin/brands', label: 'Brands', icon: <Store /> },
-  { path: '/admin/orders', label: 'Orders', icon: <Receipt /> },
-  { path: '/admin/reports', label: 'Reports', icon: <Flag /> },
-  { path: '/admin/analytics', label: 'Analytics', icon: <BarChart /> },
-  { path: '/admin/settings', label: 'Settings', icon: <Settings /> },
-]
-
 export function AdminLayout() {
   const theme = useTheme()
+  const { t } = useTranslation()
+
+  const navItems: NavItem[] = [
+    { path: '/admin', label: t('admin.dashboard'), icon: <Dashboard /> },
+    { path: '/admin/users', label: t('admin.users'), icon: <People /> },
+    { path: '/admin/auctions', label: t('admin.auctions'), icon: <Gavel /> },
+    { path: '/admin/categories', label: t('admin.categories'), icon: <Category /> },
+    { path: '/admin/brands', label: t('admin.brands'), icon: <Store /> },
+    { path: '/admin/orders', label: t('admin.orders'), icon: <Receipt /> },
+    { path: '/admin/reports', label: t('admin.reports'), icon: <Flag /> },
+    { path: '/admin/analytics', label: t('admin.analytics'), icon: <BarChart /> },
+    { path: '/admin/settings', label: t('admin.settings'), icon: <Settings /> },
+  ]
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null)
@@ -100,7 +102,7 @@ export function AdminLayout() {
             color: 'primary.main',
           }}
         >
-          Admin Panel
+          {t('admin.panelTitle')}
         </Typography>
       </Box>
 
@@ -146,7 +148,7 @@ export function AdminLayout() {
           <ListItemIcon sx={{ minWidth: 44 }}>
             <Gavel />
           </ListItemIcon>
-          <ListItemText primary="Back to Site" />
+          <ListItemText primary={t('backToSite')} />
         </ListItemButton>
       </Box>
     </Box>
@@ -202,7 +204,7 @@ export function AdminLayout() {
                 navigate('/profile')
               }}
             >
-              Profile
+              {t('nav.profile')}
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -210,12 +212,12 @@ export function AdminLayout() {
                 navigate('/settings')
               }}
             >
-              Settings
+              {t('nav.settings')}
             </MenuItem>
             <Divider />
             <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1, fontSize: 18 }} />
-              Logout
+              {t('nav.logout')}
             </MenuItem>
           </Menu>
         </Toolbar>

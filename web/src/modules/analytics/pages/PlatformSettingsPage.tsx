@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -70,6 +71,8 @@ const CATEGORY_ICONS: Record<SettingCategory, React.ReactElement> = {
 const CATEGORIES = Object.values(SETTING_CATEGORY) as SettingCategory[]
 
 export function PlatformSettingsPage() {
+
+  const { t: _t } = useTranslation('analytics')
   const [selectedCategory, setSelectedCategory] = useState<SettingCategory>('Platform')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)

@@ -1,30 +1,32 @@
+using BuildingBlocks.Application.Abstractions;
+
 namespace Storage.Application.Errors;
 
 public static class StorageErrors
 {
     public static Error FileNotFound(Guid fileId) =>
-        Error.Create("Storage.FileNotFound", $"File with ID '{fileId}' was not found");
+        LocalizableError.Localizable("Storage.FileNotFound", $"File with ID '{fileId}' was not found", fileId);
 
     public static Error FileNotFound(string fileId) =>
-        Error.Create("Storage.FileNotFound", $"File with ID '{fileId}' was not found");
+        LocalizableError.Localizable("Storage.FileNotFound", $"File with ID '{fileId}' was not found", fileId);
 
     public static readonly Error EmptyFile =
         Error.Create("Storage.EmptyFile", "File is empty");
 
     public static Error FileTooLarge(long maxSizeMb) =>
-        Error.Create("Storage.FileTooLarge", $"File size exceeds maximum allowed size of {maxSizeMb}MB");
+        LocalizableError.Localizable("Storage.FileTooLarge", $"File size exceeds maximum allowed size of {maxSizeMb}MB", maxSizeMb);
 
     public static Error InvalidExtension(string extension, string allowed) =>
-        Error.Create("Storage.InvalidExtension", $"File extension '{extension}' is not allowed. Allowed: {allowed}");
+        LocalizableError.Localizable("Storage.InvalidExtension", $"File extension '{extension}' is not allowed. Allowed: {allowed}", extension, allowed);
 
     public static Error InvalidContentType(string contentType) =>
-        Error.Create("Storage.InvalidContentType", $"Content type '{contentType}' is not allowed");
+        LocalizableError.Localizable("Storage.InvalidContentType", $"Content type '{contentType}' is not allowed", contentType);
 
     public static readonly Error NoFilesProvided =
         Error.Create("Storage.NoFiles", "No files provided");
 
     public static Error TooManyFiles(int max) =>
-        Error.Create("Storage.TooManyFiles", $"Maximum {max} files allowed per upload");
+        LocalizableError.Localizable("Storage.TooManyFiles", $"Maximum {max} files allowed per upload", max);
 
     public static readonly Error DeleteFailed =
         Error.Create("Storage.DeleteFailed", "Failed to delete file from storage");

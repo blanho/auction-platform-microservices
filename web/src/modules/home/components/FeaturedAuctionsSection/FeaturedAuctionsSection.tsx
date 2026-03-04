@@ -15,6 +15,7 @@ import { Timer, Favorite, FavoriteBorder, East, Refresh } from '@mui/icons-mater
 import { useFeaturedAuctions, useWatchlist, useToggleWatchlist } from '../../../auctions/hooks'
 import { formatTimeLeft, formatCurrency } from '../../../auctions/utils'
 import { colors, typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const FeaturedAuctionsSection = () => {
   const {
@@ -31,6 +32,7 @@ export const FeaturedAuctionsSection = () => {
     Array.isArray(watchlistData) ? watchlistData.map((item) => item.auctionId) : []
   )
   const toggleWatchlist = useToggleWatchlist()
+  const { t } = useTranslation('home')
 
   const handleToggleWatchlist = (auctionId: string) => {
     toggleWatchlist.mutate({
@@ -72,7 +74,7 @@ export const FeaturedAuctionsSection = () => {
                   mb: 2,
                 }}
               >
-                Featured
+                {t('featuredAuctions.label')}
               </Typography>
               <Typography
                 variant="h2"
@@ -83,7 +85,7 @@ export const FeaturedAuctionsSection = () => {
                   fontSize: { xs: '1.75rem', md: '2.5rem' },
                 }}
               >
-                Live Auctions
+                {t('featuredAuctions.title')}
               </Typography>
             </Box>
             <Button
@@ -100,7 +102,7 @@ export const FeaturedAuctionsSection = () => {
                 '&:hover': { color: '#78716C' },
               }}
             >
-              View All
+              {t('featuredAuctions.viewAll')}
             </Button>
           </Box>
         </motion.div>
@@ -117,12 +119,12 @@ export const FeaturedAuctionsSection = () => {
                     startIcon={<Refresh />}
                     onClick={() => refetch()}
                   >
-                    Retry
+                    {t('featuredAuctions.retry')}
                   </Button>
                 }
               >
-                Failed to load auctions.{' '}
-                {error instanceof Error ? error.message : 'Please try again.'}
+                {t('featuredAuctions.errorMessage')}{' '}
+                {error instanceof Error ? error.message : t('featuredAuctions.errorFallback')}
               </Alert>
             </Grid>
           ) : featuredLoading && (
@@ -138,7 +140,7 @@ export const FeaturedAuctionsSection = () => {
           {!isError && !featuredLoading && featuredAuctions.length === 0 && (
             <Grid size={{ xs: 12 }}>
               <Typography sx={{ color: '#A8A29E', textAlign: 'center', py: 8 }}>
-                No featured auctions available
+                {t('featuredAuctions.empty')}
               </Typography>
             </Grid>
           )}
@@ -275,7 +277,7 @@ export const FeaturedAuctionsSection = () => {
                           fontSize: '0.75rem',
                         }}
                       >
-                        {auction.bidCount} bids
+                        {t('featuredAuctions.bidsCount', { count: auction.bidCount })}
                       </Typography>
                     </Box>
                   </Box>

@@ -2,39 +2,18 @@ import { motion } from 'framer-motion'
 import { Box, Container, Typography, Grid } from '@mui/material'
 import { PersonAdd, Search, Gavel, LocalShipping } from '@mui/icons-material'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 const steps = [
-  {
-    key: 'register',
-    number: '01',
-    icon: <PersonAdd sx={{ fontSize: 24 }} />,
-    title: 'Create Account',
-    description: 'Sign up in seconds with your email. Verify your identity to unlock full bidding privileges.',
-  },
-  {
-    key: 'discover',
-    number: '02',
-    icon: <Search sx={{ fontSize: 24 }} />,
-    title: 'Discover Pieces',
-    description: 'Browse curated collections. Each item includes detailed provenance, condition reports, and expert authentication.',
-  },
-  {
-    key: 'bid',
-    number: '03',
-    icon: <Gavel sx={{ fontSize: 24 }} />,
-    title: 'Place Your Bid',
-    description: 'Bid in real-time with confidence. Set automatic bids, receive instant notifications, and track your auctions.',
-  },
-  {
-    key: 'win',
-    number: '04',
-    icon: <LocalShipping sx={{ fontSize: 24 }} />,
-    title: 'Win & Collect',
-    description: 'Secure checkout with escrow protection. Fully insured shipping ensures your treasure arrives safely.',
-  },
+  { key: 'step1', number: '01', icon: <PersonAdd sx={{ fontSize: 24 }} /> },
+  { key: 'step2', number: '02', icon: <Search sx={{ fontSize: 24 }} /> },
+  { key: 'step3', number: '03', icon: <Gavel sx={{ fontSize: 24 }} /> },
+  { key: 'step4', number: '04', icon: <LocalShipping sx={{ fontSize: 24 }} /> },
 ]
 
 export const HowItWorksSection = () => {
+  const { t } = useTranslation('home')
+
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
@@ -59,7 +38,7 @@ export const HowItWorksSection = () => {
                 textTransform: 'uppercase',
               }}
             >
-              How It Works
+              {t('howItWorks.label')}
             </Typography>
             <Typography
               variant="h2"
@@ -71,7 +50,7 @@ export const HowItWorksSection = () => {
                 mb: 2,
               }}
             >
-              Start Collecting in Four Steps
+              {t('howItWorks.title')}
             </Typography>
             <Typography
               sx={{
@@ -82,7 +61,7 @@ export const HowItWorksSection = () => {
                 lineHeight: 1.7,
               }}
             >
-              From registration to receiving your piece — a seamless experience
+              {t('howItWorks.subtitle')}
             </Typography>
           </Box>
         </motion.div>
@@ -145,7 +124,7 @@ export const HowItWorksSection = () => {
                       fontSize: '0.9375rem',
                     }}
                   >
-                    {step.title}
+                    {t(`howItWorks.${step.key}.title`)}
                   </Typography>
                   <Typography
                     sx={{
@@ -154,7 +133,7 @@ export const HowItWorksSection = () => {
                       fontSize: '0.8125rem',
                     }}
                   >
-                    {step.description}
+                    {t(`howItWorks.${step.key}.description`)}
                   </Typography>
                 </Box>
               </motion.div>

@@ -1,0 +1,38 @@
+{
+  "title": "検索",
+  "placeholder": "デザイナーやアイテムを検索",
+  "noResults": "結果が見つかりませんでした",
+  "noResultsDescription": "検索条件やフィルターを調整して、お探しのものを見つけてください。",
+  "resultsCount": "{{count}}件の結果",
+  "resultsCount_other": "{{count}}件の結果",
+  "searchingFor": "「{{query}}」の検索結果",
+
+  "filters": {
+    "title": "フィルター",
+    "category": "カテゴリー",
+    "priceRange": "価格帯",
+    "condition": "状態",
+    "status": "ステータス",
+    "brand": "ブランド",
+    "sortBy": "並べ替え",
+    "clearAll": "すべてのフィルターをクリア",
+    "apply": "フィルターを適用"
+  },
+
+  "sort": {
+    "relevance": "関連性",
+    "newest": "新着順",
+    "endingSoon": "終了間近",
+    "priceLowToHigh": "価格: 安い順",
+    "priceHighToLow": "価格: 高い順",
+    "mostBids": "入札数順"
+  },
+
+  "autocomplete": {
+    "recent": "最近の検索",
+    "trending": "トレンド",
+    "suggestions": "候補",
+    "clearRecent": "履歴をクリア",
+    "seeAll": "「{{query}}」のすべての結果を見る"
+  }
+}

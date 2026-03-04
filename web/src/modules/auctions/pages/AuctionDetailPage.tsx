@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -40,6 +41,7 @@ import { useAutoBidForAuction, usePlaceBid } from '@/modules/bidding/hooks'
 import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
+  const { t } = useTranslation('auctions')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: auction, isLoading } = useAuction(id ?? '')
@@ -80,14 +82,14 @@ export function AuctionDetailPage() {
         onSuccess: () => {
           setSnackbar({
             open: true,
-            message: auction?.isWatching ? 'Removed from watchlist' : 'Added to watchlist',
+            message: auction?.isWatching ? t('messages.removedFromWatchlist') : t('messages.addedToWatchlist'),
             severity: 'success',
           })
         },
         onError: () => {
           setSnackbar({
             open: true,
-            message: 'Failed to update watchlist',
+            message: t('watchlist.updateFailed'),
             severity: 'error',
           })
         },
@@ -99,10 +101,10 @@ export function AuctionDetailPage() {
     navigator.clipboard.writeText(globalThis.location.href)
     setSnackbar({
       open: true,
-      message: 'Link copied to clipboard',
+      message: t('messages.linkCopied'),
       severity: 'success',
     })
-  }, [])
+  }, [t])
 
   const handlePlaceBid = useCallback(
     async (amount: number) => {
@@ -115,14 +117,14 @@ export function AuctionDetailPage() {
           onSuccess: () => {
             setSnackbar({
               open: true,
-              message: 'Bid placed successfully!',
+              message: t('messages.bidPlaced'),
               severity: 'success',
             })
           },
           onError: (error) => {
             setSnackbar({
               open: true,
-              message: error instanceof Error ? error.message : 'Failed to place bid',
+              message: error instanceof Error ? error.message : t('messages.bidFailed'),
               severity: 'error',
             })
           },
@@ -145,7 +147,7 @@ export function AuctionDetailPage() {
         setBuyNowDialogOpen(false)
         setSnackbar({
           open: true,
-          message: 'Purchase successful! Redirecting to order...',
+          message: t('messages.purchaseSuccess'),
           severity: 'success',
         })
         setTimeout(() => navigate('/account/orders'), 2000)
@@ -154,7 +156,7 @@ export function AuctionDetailPage() {
         setBuyNowDialogOpen(false)
         setSnackbar({
           open: true,
-          message: 'Purchase failed. Please try again.',
+          message: t('messages.purchaseFailed'),
           severity: 'error',
         })
       },
@@ -183,8 +185,8 @@ export function AuctionDetailPage() {
             },
           }}
         >
-          <Link to="/">Home</Link>
-          <Link to="/auctions">Auctions</Link>
+          <Link to="/">{t('common:nav.home')}</Link>
+          <Link to="/auctions">{t('title')}</Link>
           {auction.category.parentName && (
             <Link to={`/categories/${auction.category.parentId}`}>
               {auction.category.parentName}
@@ -224,7 +226,7 @@ export function AuctionDetailPage() {
                 />
                 {auction.status === 'ending-soon' && (
                   <Chip
-                    label="Ending Soon"
+                    label={t('endingSoon')}
                     size="small"
                     sx={{ bgcolor: palette.semantic.errorLight, color: palette.semantic.error }}
                   />
@@ -253,11 +255,11 @@ export function AuctionDetailPage() {
                   sx={{ color: palette.neutral[500] }}
                 >
                   <Visibility fontSize="small" />
-                  <Typography variant="body2">{auction.watcherCount} watching</Typography>
+                  <Typography variant="body2">{auction.watcherCount} {t('detail.watching')}</Typography>
                 </Stack>
 
                 <Stack direction="row" spacing={0.5}>
-                  <Tooltip title="Share on Facebook">
+                  <Tooltip title={t('actions.shareOnFacebook')}>
                     <IconButton
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#1877F2' } }}
@@ -265,7 +267,7 @@ export function AuctionDetailPage() {
                       <Facebook fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Share on Twitter">
+                  <Tooltip title={t('actions.shareOnTwitter')}>
                     <IconButton
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#1DA1F2' } }}
@@ -273,7 +275,7 @@ export function AuctionDetailPage() {
                       <Twitter fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Pin on Pinterest">
+                  <Tooltip title={t('actions.pinOnPinterest')}>
                     <IconButton
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#E60023' } }}
@@ -281,7 +283,7 @@ export function AuctionDetailPage() {
                       <Pinterest fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Copy Link">
+                  <Tooltip title={t('actions.copyLink')}>
                     <IconButton
                       size="small"
                       onClick={handleShare}
@@ -319,7 +321,7 @@ export function AuctionDetailPage() {
                   onContact={() =>
                     setSnackbar({
                       open: true,
-                      message: 'Opening chat with seller...',
+                      message: t('messages.openingChat'),
                       severity: 'info',
                     })
                   }
@@ -366,7 +368,7 @@ export function AuctionDetailPage() {
               mb: 3,
             }}
           >
-            Seller Reviews
+            {t('reviews.title')}
           </Typography>
           <ReviewsSection sellerId={auction.seller.id} auctionId={auction.id} />
         </Box>
@@ -379,11 +381,11 @@ export function AuctionDetailPage() {
         fullWidth
       >
         <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
-          Confirm Purchase
+          {t('dialog.confirmPurchase')}
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ color: palette.neutral[600], mb: 2 }}>
-            You are about to purchase this item at the Buy Now price.
+            {t('dialog.buyNowDescription')}
           </Typography>
           <Box
             sx={{
@@ -412,7 +414,7 @@ export function AuctionDetailPage() {
             onClick={() => setBuyNowDialogOpen(false)}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -429,7 +431,7 @@ export function AuctionDetailPage() {
             {buyNowMutation.isPending ? (
               <CircularProgress size={20} sx={{ color: 'white' }} />
             ) : (
-              'Confirm Purchase'
+              t('dialog.confirmPurchaseButton')
             )}
           </Button>
         </DialogActions>

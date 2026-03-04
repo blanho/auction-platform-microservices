@@ -1,4 +1,5 @@
 import { forwardRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -67,14 +68,17 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
     onConfirm,
     title,
     message,
-    confirmLabel = 'Confirm',
-    cancelLabel = 'Cancel',
+    confirmLabel,
+    cancelLabel,
     variant = 'warning',
     loading = false,
   },
   ref
 ) {
+  const { t } = useTranslation()
   const config = variantConfig[variant]
+  const displayConfirmLabel = confirmLabel || t('confirm')
+  const displayCancelLabel = cancelLabel || t('cancel')
 
   return (
     <Dialog
@@ -117,7 +121,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
           disabled={loading}
           sx={{ color: palette.neutral[500], textTransform: 'none' }}
         >
-          {cancelLabel}
+          {displayCancelLabel}
         </Button>
         <Button
           variant="contained"
@@ -133,7 +137,7 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(func
             },
           }}
         >
-          {loading ? <CircularProgress size={20} color="inherit" /> : confirmLabel}
+          {loading ? <CircularProgress size={20} color="inherit" /> : displayConfirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

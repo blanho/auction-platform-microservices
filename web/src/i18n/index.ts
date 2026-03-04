@@ -15,6 +15,8 @@ const moduleTranslationLoaders: Record<string, Record<string, () => Promise<{ de
     notifications: () => import('../modules/notifications/i18n/en.json'),
     payments: () => import('../modules/payments/i18n/en.json'),
     analytics: () => import('../modules/analytics/i18n/en.json'),
+    jobs: () => import('../modules/jobs/i18n/en.json'),
+    search: () => import('../modules/search/i18n/en.json'),
   },
   ja: {
     auctions: () => import('../modules/auctions/i18n/ja.json'),
@@ -25,6 +27,8 @@ const moduleTranslationLoaders: Record<string, Record<string, () => Promise<{ de
     notifications: () => import('../modules/notifications/i18n/ja.json'),
     payments: () => import('../modules/payments/i18n/ja.json'),
     analytics: () => import('../modules/analytics/i18n/ja.json'),
+    jobs: () => import('../modules/jobs/i18n/ja.json'),
+    search: () => import('../modules/search/i18n/ja.json'),
   },
 }
 
@@ -65,6 +69,8 @@ export const moduleNamespaces = [
   'notifications',
   'payments',
   'analytics',
+  'jobs',
+  'search',
 ] as const
 
 export const supportedLanguages = [

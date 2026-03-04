@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -25,6 +26,8 @@ const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
 ]
 
 export function BroadcastNotificationPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const [formData, setFormData] = useState<BroadcastNotificationDto>({
     type: 'system',
     title: '',

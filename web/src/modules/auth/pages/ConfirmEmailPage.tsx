@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import {
@@ -14,6 +15,7 @@ import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function ConfirmEmailPage() {
+  const { t } = useTranslation('auth')
   const [searchParams] = useSearchParams()
   const [resendSuccess, setResendSuccess] = useState(false)
   const confirmEmail = useConfirmEmail()
@@ -112,12 +114,11 @@ export function ConfirmEmailPage() {
                   mb: 2,
                 }}
               >
-                Verify Your Email
+                {t('confirmEmail.title')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
-                Please check your inbox and click the verification link we sent to complete your
-                registration.
+                {t('confirmEmail.checkInbox')}
               </Typography>
 
               {email && !resendSuccess && (
@@ -142,7 +143,7 @@ export function ConfirmEmailPage() {
                   {resendConfirmation.isPending ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Resend Verification Email'
+                    t('confirmEmail.resend')
                   )}
                 </Button>
               )}
@@ -159,7 +160,7 @@ export function ConfirmEmailPage() {
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                     <CheckCircle sx={{ color: palette.semantic.success, fontSize: 20 }} />
                     <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
-                      Verification email sent! Check your inbox.
+                      {t('confirmEmail.resendSuccess')}
                     </Typography>
                   </Stack>
                 </Box>
@@ -187,7 +188,7 @@ export function ConfirmEmailPage() {
                   },
                 }}
               >
-                Go to Login
+                {t('confirmEmail.goToLogin')}
               </Button>
             </motion.div>
           </Box>
@@ -255,11 +256,11 @@ export function ConfirmEmailPage() {
                   mb: 2,
                 }}
               >
-                Verifying Email...
+                {t('confirmEmail.verifying')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500] }}>
-                Please wait while we confirm your email address.
+                {t('confirmEmail.pleaseWait')}
               </Typography>
             </motion.div>
           </Box>
@@ -386,11 +387,11 @@ export function ConfirmEmailPage() {
                   mb: 2,
                 }}
               >
-                Email Verified!
+                {t('confirmEmail.success')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
-                Your email has been successfully verified. You can now sign in to your account.
+                {t('confirmEmail.successMessage')}
               </Typography>
 
               <Button
@@ -415,7 +416,7 @@ export function ConfirmEmailPage() {
                   },
                 }}
               >
-                Sign In
+                {t('login.submit')}
               </Button>
             </motion.div>
           </Box>
@@ -495,11 +496,11 @@ export function ConfirmEmailPage() {
                   mb: 2,
                 }}
               >
-                Verification Failed
+                {t('confirmEmail.error')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 5 }}>
-                We couldn't verify your email. The link may have expired or is invalid.
+                {t('confirmEmail.errorMessage')}
               </Typography>
 
               {email && !resendSuccess && (
@@ -524,7 +525,7 @@ export function ConfirmEmailPage() {
                   {resendConfirmation.isPending ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Resend Verification Email'
+                    t('confirmEmail.resend')
                   )}
                 </Button>
               )}
@@ -541,7 +542,7 @@ export function ConfirmEmailPage() {
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                     <CheckCircle sx={{ color: palette.semantic.success, fontSize: 20 }} />
                     <Typography sx={{ color: palette.semantic.success, fontSize: '0.875rem' }}>
-                      Verification email sent! Check your inbox.
+                      {t('confirmEmail.resendSuccess')}
                     </Typography>
                   </Stack>
                 </Box>
@@ -569,7 +570,7 @@ export function ConfirmEmailPage() {
                   },
                 }}
               >
-                Back to Login
+                {t('confirmEmail.backToLogin')}
               </Button>
             </motion.div>
           </Box>

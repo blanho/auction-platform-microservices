@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import debounce from 'lodash/debounce'
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
@@ -65,6 +66,7 @@ const inputStyles = {
 }
 
 export function RegisterPage() {
+  const { t } = useTranslation('auth')
   const navigate = useNavigate()
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
@@ -238,11 +240,11 @@ export function RegisterPage() {
                   mb: 2,
                 }}
               >
-                Check Your Email
+                {t('confirmEmail.title')}
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-                We've sent a confirmation link to
+                {t('register.confirmationSent')}
               </Typography>
 
               <Typography
@@ -257,7 +259,7 @@ export function RegisterPage() {
               </Typography>
 
               <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mb: 5 }}>
-                Click the link in the email to verify your account and complete your registration.
+                {t('register.verifyEmailInstruction')}
               </Typography>
 
               <Stack spacing={2}>
@@ -282,11 +284,11 @@ export function RegisterPage() {
                     },
                   }}
                 >
-                  Go to Login
+                  {t('register.goToLogin')}
                 </Button>
 
                 <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem' }}>
-                  Didn't receive the email?{' '}
+                  {t('register.didntReceiveEmail')}{' '}
                   <Typography
                     component={Link}
                     to="/resend-confirmation"
@@ -298,7 +300,7 @@ export function RegisterPage() {
                       '&:hover': { color: palette.neutral[600] },
                     }}
                   >
-                    Resend confirmation
+                    {t('confirmEmail.resend')}
                   </Typography>
                 </Typography>
               </Stack>
@@ -447,7 +449,7 @@ export function RegisterPage() {
                   mb: 1,
                 }}
               >
-                Create Account
+                {t('register.title')}
               </Typography>
 
               <Typography
@@ -456,7 +458,7 @@ export function RegisterPage() {
                   mb: 4,
                 }}
               >
-                Join our community of collectors
+                {t('register.subtitle')}
               </Typography>
             </motion.div>
 
@@ -500,7 +502,7 @@ export function RegisterPage() {
                 }}
               >
                 <Typography sx={{ color: palette.neutral[400], fontSize: '0.8125rem' }}>
-                  or register with email
+                  {t('register.orRegisterWithEmail')}
                 </Typography>
               </Divider>
             </motion.div>
@@ -514,7 +516,7 @@ export function RegisterPage() {
                     <TextField
                       {...field}
                       fullWidth
-                      label="Username"
+                      label={t('register.displayNameLabel')}
                       onChange={(e) => {
                         field.onChange(e)
                         setUsernameValue(e.target.value)
@@ -536,7 +538,7 @@ export function RegisterPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Email Address"
+                  label={t('register.emailLabel')}
                   type="email"
                   sx={{ ...inputStyles, mb: 2 }}
                 />
@@ -546,7 +548,7 @@ export function RegisterPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Password"
+                  label={t('register.passwordLabel')}
                   type="password"
                   showPasswordToggle
                   sx={{ ...inputStyles, mb: 2 }}
@@ -557,7 +559,7 @@ export function RegisterPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Confirm Password"
+                  label={t('register.confirmPasswordLabel')}
                   type="password"
                   showPasswordToggle
                   sx={{ ...inputStyles, mb: 3 }}
@@ -578,7 +580,7 @@ export function RegisterPage() {
                     }
                     label={
                       <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600] }}>
-                        I agree to the{' '}
+                        {t('register.termsAgree')}{' '}
                         <Typography
                           component={Link}
                           to="/terms"
@@ -588,9 +590,9 @@ export function RegisterPage() {
                             textUnderlineOffset: 2,
                           }}
                         >
-                          Terms of Service
+                          {t('register.termsLink')}
                         </Typography>{' '}
-                        and{' '}
+                        {t('register.and')}{' '}
                         <Typography
                           component={Link}
                           to="/privacy"
@@ -600,14 +602,14 @@ export function RegisterPage() {
                             textUnderlineOffset: 2,
                           }}
                         >
-                          Privacy Policy
+                          {t('register.privacyPolicy')}
                         </Typography>
                       </Typography>
                     }
                   />
                   {!agreedToTerms && isSubmitting && (
                     <FormHelperText error>
-                      You must agree to the terms and conditions
+                      {t('validation.termsRequired')}
                     </FormHelperText>
                   )}
                 </Box>
@@ -641,7 +643,7 @@ export function RegisterPage() {
                   {isSubmitting || registerMutation.isPending ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Create Account'
+                    t('register.submit')
                   )}
                 </Button>
               </form>
@@ -656,7 +658,7 @@ export function RegisterPage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Already have an account?{' '}
+                {t('register.hasAccount')}{' '}
                 <Typography
                   component={Link}
                   to="/login"
@@ -668,7 +670,7 @@ export function RegisterPage() {
                     '&:hover': { color: palette.neutral[600] },
                   }}
                 >
-                  Sign in
+                  {t('register.signIn')}
                 </Typography>
               </Typography>
             </motion.div>

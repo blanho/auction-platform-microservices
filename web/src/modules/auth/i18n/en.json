@@ -1,69 +1,99 @@
 {
   "login": {
     "title": "Welcome Back",
-    "subtitle": "Sign in to your account",
-    "email": "Email",
-    "password": "Password",
+    "subtitle": "Sign in to your account to continue",
+    "emailLabel": "Email or Username",
+    "passwordLabel": "Password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "submit": "Sign In",
     "noAccount": "Don't have an account?",
-    "signUp": "Sign up",
-    "orContinueWith": "Or continue with",
+    "signUp": "Create account",
+    "orContinueWith": "or",
     "google": "Continue with Google",
     "facebook": "Continue with Facebook"
   },
 
   "register": {
     "title": "Create Account",
-    "subtitle": "Join our auction community",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
+    "subtitle": "Join our community of collectors",
+    "displayNameLabel": "Username",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "termsAgree": "I agree to the",
+    "termsLink": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "orRegisterWithEmail": "or register with email",
     "submit": "Create Account",
     "hasAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "confirmationSent": "We've sent a confirmation link to",
+    "verifyEmailInstruction": "Click the link in the email to verify your account and complete your registration.",
+    "goToLogin": "Go to Login",
+    "didntReceiveEmail": "Didn't receive the email?"
   },
 
   "forgotPassword": {
-    "title": "Forgot Password",
-    "subtitle": "Enter your email to reset your password",
-    "email": "Email",
-    "submit": "Send Reset Link",
-    "backToLogin": "Back to login",
-    "successTitle": "Email Sent",
-    "successMessage": "Check your email for password reset instructions"
+    "title": "Forgot Password?",
+    "subtitle": "No worries, we'll send you reset instructions",
+    "emailLabel": "Email Address",
+    "submit": "Reset Password",
+    "backToLogin": "← Back to login",
+    "checkEmail": "Check Your Email",
+    "resetInstructionsSent": "We've sent password reset instructions to",
+    "checkSpam": "If you don't see the email, check your spam folder.",
+    "tryDifferentEmail": "Try a different email",
+    "rememberPassword": "Remember your password?"
   },
 
   "resetPassword": {
-    "title": "Reset Password",
-    "subtitle": "Enter your new password",
-    "newPassword": "New Password",
-    "confirmPassword": "Confirm Password",
+    "title": "Set New Password",
+    "subtitle": "Create a strong password for your account",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "passwordRequirements": "Password Requirements",
     "submit": "Reset Password",
-    "successTitle": "Password Reset",
-    "successMessage": "Your password has been reset successfully"
+    "successTitle": "Password Reset!",
+    "successMessage": "Your password has been successfully reset. You'll be redirected to login shortly.",
+    "signInNow": "Sign In Now",
+    "invalidLink": "Invalid Reset Link",
+    "invalidLinkMessage": "This password reset link is invalid or has expired. Please request a new one.",
+    "requestNewLink": "Request New Link",
+    "backToLogin": "← Back to login"
   },
 
   "confirmEmail": {
-    "title": "Confirm Email",
-    "verifying": "Verifying your email...",
-    "successTitle": "Email Confirmed",
-    "successMessage": "Your email has been verified successfully",
-    "errorTitle": "Verification Failed",
-    "errorMessage": "Unable to verify your email. The link may have expired.",
-    "resendLink": "Resend verification email"
+    "title": "Verify Your Email",
+    "checkInbox": "Please check your inbox and click the verification link we sent to complete your registration.",
+    "verifying": "Verifying Email...",
+    "pleaseWait": "Please wait while we confirm your email address.",
+    "success": "Email Verified!",
+    "successMessage": "Your email has been successfully verified. You can now sign in to your account.",
+    "error": "Verification Failed",
+    "errorMessage": "We couldn't verify your email. The link may have expired or is invalid.",
+    "resend": "Resend Verification Email",
+    "resendSuccess": "Verification email sent! Check your inbox.",
+    "goToLogin": "Go to Login",
+    "backToLogin": "Back to Login"
   },
 
   "twoFactor": {
     "title": "Two-Factor Authentication",
     "subtitle": "Enter the 6-digit code from your authenticator app",
-    "code": "Verification Code",
-    "submit": "Verify",
+    "codeLabel": "Verification Code",
+    "submit": "Verify Code",
+    "resend": "Resend code",
+    "backToLogin": "← Back to login",
     "useBackupCode": "Use backup code instead"
+  },
+
+  "oauth": {
+    "authenticationFailed": "Authentication Failed",
+    "redirectingToLogin": "Redirecting to login...",
+    "completingSignIn": "Completing sign in...",
+    "pleaseWait": "Please wait while we verify your account"
   },
 
   "validation": {
@@ -72,13 +102,14 @@
     "passwordRequired": "Password is required",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMatch": "Passwords do not match",
-    "termsRequired": "You must agree to the terms"
+    "termsRequired": "You must agree to the terms and conditions"
   },
 
   "errors": {
     "invalidCredentials": "Invalid email or password",
     "accountLocked": "Account is locked. Please try again later.",
     "emailNotVerified": "Please verify your email first",
-    "tooManyAttempts": "Too many failed attempts. Please try again later."
+    "tooManyAttempts": "Too many failed attempts. Please try again later.",
+    "generic": "Something went wrong. Please try again."
   }
 }

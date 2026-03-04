@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { palette } from '@/shared/theme/tokens'
@@ -30,6 +31,8 @@ import type { UpdateProfileRequest } from '../types'
 import { usersApi } from '../api'
 
 export function ProfilePage() {
+
+  const { t: _t } = useTranslation('users')
   const [isEditing, setIsEditing] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [showSellerDialog, setShowSellerDialog] = useState(false)

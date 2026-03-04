@@ -52,7 +52,7 @@ export const MainLayout = () => {
   const navItems = [
     { label: t('nav.home'), path: '/', icon: <HomeIcon /> },
     { label: t('nav.auctions'), path: '/auctions', icon: <GavelIcon /> },
-    { label: 'Categories', path: '/categories', icon: <CategoryIcon /> },
+    { label: t('nav.categories'), path: '/categories', icon: <CategoryIcon /> },
   ]
 
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -88,7 +88,7 @@ export const MainLayout = () => {
           color: '#1C1917',
         }}
       >
-        THE AUCTION
+        {t('brandName')}
       </Typography>
       <Divider sx={{ borderColor: '#E7E5E4' }} />
       <List>
@@ -162,7 +162,7 @@ export const MainLayout = () => {
                 textDecoration: 'none',
               }}
             >
-              THE AUCTION
+              {t('brandName')}
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
@@ -228,7 +228,7 @@ export const MainLayout = () => {
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Account settings">
+                  <Tooltip title={t('auth.accountSettings')}>
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, ml: 1 }}>
                       <Avatar
                         alt={user?.displayName}
@@ -274,7 +274,7 @@ export const MainLayout = () => {
                       <ListItemIcon>
                         <PersonIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      <Typography sx={{ fontSize: '0.8125rem' }}>Profile</Typography>
+                      <Typography sx={{ fontSize: '0.8125rem' }}>{t('nav.profile')}</Typography>
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
@@ -285,14 +285,14 @@ export const MainLayout = () => {
                       <ListItemIcon>
                         <SettingsIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      <Typography sx={{ fontSize: '0.8125rem' }}>Settings</Typography>
+                      <Typography sx={{ fontSize: '0.8125rem' }}>{t('nav.settings')}</Typography>
                     </MenuItem>
                     <Divider sx={{ borderColor: '#E7E5E4' }} />
                     <MenuItem onClick={handleLogout}>
                       <ListItemIcon>
                         <LogoutIcon fontSize="small" sx={{ color: '#57534E' }} />
                       </ListItemIcon>
-                      <Typography sx={{ fontSize: '0.8125rem' }}>Logout</Typography>
+                      <Typography sx={{ fontSize: '0.8125rem' }}>{t('nav.logout')}</Typography>
                     </MenuItem>
                   </Menu>
                 </>
@@ -309,7 +309,7 @@ export const MainLayout = () => {
                       textTransform: 'uppercase',
                     }}
                   >
-                    Login
+                    {t('nav.login')}
                   </Button>
                   <Button
                     variant="contained"
@@ -327,7 +327,7 @@ export const MainLayout = () => {
                       '&:hover': { bgcolor: '#292524', boxShadow: 'none' },
                     }}
                   >
-                    Sign Up
+                    {t('signUp')}
                   </Button>
                 </>
               )}
@@ -377,7 +377,7 @@ export const MainLayout = () => {
               letterSpacing: '0.05em',
             }}
           >
-            © {new Date().getFullYear()} The Auction. All rights reserved.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </Typography>
         </Container>
       </Box>

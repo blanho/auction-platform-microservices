@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Chip, Container, Stack } from '@mui/material'
 import { AccessTime } from '@mui/icons-material'
@@ -45,6 +46,7 @@ const filterConfig: FilterPanelConfig = {
 }
 
 export function BidHistoryPage() {
+  const { t } = useTranslation('bidding')
   const navigate = useNavigate()
 
   const pagination = usePagination<BidFilter>({
@@ -164,11 +166,11 @@ export function BidHistoryPage() {
               variant="h3"
               sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
             >
-              Bid History
+              {t('bidHistory')}
             </Typography>
           </Stack>
           <Typography variant="body1" color="text.secondary">
-            Complete history of all your bids across all auctions
+            {t('bidHistoryDescription')}
           </Typography>
         </Box>
 
@@ -200,7 +202,7 @@ export function BidHistoryPage() {
             onPageSizeChange={pagination.setPageSize}
             onRowClick={(row) => navigate(`/auctions/${row.auctionId}`)}
             rowHover
-            emptyMessage="No bid history found"
+            emptyMessage={t('empty.noBidHistory')}
             sx={{
               '& .MuiPaper-root': {
                 background: 'rgba(255, 255, 255, 0.85)',

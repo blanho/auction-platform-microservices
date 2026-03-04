@@ -10,14 +10,6 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
@@ -29,28 +21,23 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
-  
-  <data name="Report.NotFound" xml:space="preserve"><value>レポートが見つかりません</value></data>
-  <data name="Report.Generated" xml:space="preserve"><value>レポートが生成されました</value></data>
-  <data name="Report.GenerationFailed" xml:space="preserve"><value>レポートの生成に失敗しました</value></data>
-  <data name="Report.InProgress" xml:space="preserve"><value>レポート生成中です</value></data>
-  <data name="Report.Scheduled" xml:space="preserve"><value>レポートがスケジュールされました</value></data>
-  <data name="Report.Cancelled" xml:space="preserve"><value>レポート生成がキャンセルされました</value></data>
-  
-  <data name="Dashboard.NoData" xml:space="preserve"><value>選択した期間のデータがありません</value></data>
-  <data name="Dashboard.Updated" xml:space="preserve"><value>ダッシュボードデータが更新されました</value></data>
-  
-  <data name="Metric.NotFound" xml:space="preserve"><value>メトリクスが見つかりません</value></data>
-  <data name="Metric.InvalidType" xml:space="preserve"><value>無効なメトリクスタイプです</value></data>
-  <data name="Metric.InvalidPeriod" xml:space="preserve"><value>無効な期間です</value></data>
-  
-  <data name="Export.Started" xml:space="preserve"><value>エクスポートを開始しました</value></data>
-  <data name="Export.Completed" xml:space="preserve"><value>エクスポートが完了しました</value></data>
-  <data name="Export.Failed" xml:space="preserve"><value>エクスポートに失敗しました</value></data>
-  <data name="Export.InvalidFormat" xml:space="preserve"><value>無効なエクスポート形式です</value></data>
-  
-  <data name="Validation.StartDateRequired" xml:space="preserve"><value>開始日は必須です</value></data>
-  <data name="Validation.EndDateRequired" xml:space="preserve"><value>終了日は必須です</value></data>
-  <data name="Validation.InvalidDateRange" xml:space="preserve"><value>終了日は開始日より後でなければなりません</value></data>
-  <data name="Validation.DateRangeTooLarge" xml:space="preserve"><value>期間は{0}日を超えることはできません</value></data>
+  <data name="Report.NotFound" xml:space="preserve"><value>レポートが見つかりません。</value></data>
+  <data name="Report.AlreadyResolved" xml:space="preserve"><value>レポートはすでに解決済みです。</value></data>
+  <data name="Report.CannotDeleteResolved" xml:space="preserve"><value>解決済みのレポートは削除できません。</value></data>
+  <data name="Report.InvalidStatus" xml:space="preserve"><value>無効なレポートステータス遷移です。</value></data>
+  <data name="Report.CreateFailed" xml:space="preserve"><value>レポートの作成に失敗しました。</value></data>
+  <data name="Report.UpdateFailed" xml:space="preserve"><value>レポートの更新に失敗しました。</value></data>
+  <data name="Report.DeleteFailed" xml:space="preserve"><value>レポートの削除に失敗しました。</value></data>
+  <data name="Setting.NotFound" xml:space="preserve"><value>設定が見つかりません。</value></data>
+  <data name="Setting.KeyExists" xml:space="preserve"><value>このキーの設定はすでに存在します。</value></data>
+  <data name="Setting.SystemSettingReadOnly" xml:space="preserve"><value>システム設定は変更できません。</value></data>
+  <data name="Setting.InvalidValue" xml:space="preserve"><value>無効な設定値です。</value></data>
+  <data name="Setting.CreateFailed" xml:space="preserve"><value>設定の作成に失敗しました。</value></data>
+  <data name="Setting.UpdateFailed" xml:space="preserve"><value>設定の更新に失敗しました。</value></data>
+  <data name="Setting.DeleteFailed" xml:space="preserve"><value>設定の削除に失敗しました。</value></data>
+  <data name="AuditLog.NotFound" xml:space="preserve"><value>監査ログが見つかりません。</value></data>
+  <data name="AuditLog.QueryFailed" xml:space="preserve"><value>監査ログのクエリに失敗しました。</value></data>
+  <data name="Analytics.QueryFailed" xml:space="preserve"><value>分析データの取得に失敗しました。</value></data>
+  <data name="Analytics.InvalidDateRange" xml:space="preserve"><value>無効な日付範囲が指定されました。</value></data>
+  <data name="Analytics.InvalidPeriod" xml:space="preserve"><value>無効な期間が指定されました。</value></data>
 </root>

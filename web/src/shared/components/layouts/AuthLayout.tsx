@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Box, Container, Paper, Typography, IconButton } from '@mui/material'
 import {
   Gavel as GavelIcon,
@@ -9,6 +10,7 @@ import { useThemeMode } from '@/app/providers'
 
 export const AuthLayout = () => {
   const { mode, toggleTheme } = useThemeMode()
+  const { t } = useTranslation()
 
   return (
     <Box
@@ -42,7 +44,7 @@ export const AuthLayout = () => {
         >
           <GavelIcon sx={{ fontSize: 32 }} />
           <Typography variant="h6" fontWeight={700}>
-            Auction
+            {t('brandNameItalic')}
           </Typography>
         </Box>
 
@@ -82,7 +84,7 @@ export const AuthLayout = () => {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Auction Platform. All rights reserved.
+          {t('footer.copyright', { year: new Date().getFullYear() })}
         </Typography>
       </Box>
     </Box>

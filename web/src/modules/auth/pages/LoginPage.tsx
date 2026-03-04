@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import {
@@ -75,6 +76,7 @@ const inputStyles = {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation('auth')
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -229,7 +231,7 @@ export function LoginPage() {
                   mb: 1,
                 }}
               >
-                Two-Factor Authentication
+                {t('twoFactor.title')}
               </Typography>
 
               <Typography
@@ -238,7 +240,7 @@ export function LoginPage() {
                   mb: 4,
                 }}
               >
-                Enter the 6-digit code from your authenticator app
+                {t('twoFactor.subtitle')}
               </Typography>
 
               {loginError && (
@@ -249,7 +251,7 @@ export function LoginPage() {
 
               <TextField
                 fullWidth
-                label="Verification Code"
+                label={t('twoFactor.codeLabel')}
                 value={twoFactorCode}
                 onChange={(e) => setTwoFactorCode(e.target.value.replaceAll(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
@@ -288,7 +290,7 @@ export function LoginPage() {
                   },
                 }}
               >
-                {isLoggingIn ? <CircularProgress size={20} color="inherit" /> : 'Verify Code'}
+                {isLoggingIn ? <CircularProgress size={20} color="inherit" /> : t('twoFactor.submit')}
               </Button>
 
               <Button
@@ -305,7 +307,7 @@ export function LoginPage() {
                   },
                 }}
               >
-                ← Back to login
+                {t('twoFactor.backToLogin')}
               </Button>
             </motion.div>
           </Box>
@@ -468,7 +470,7 @@ export function LoginPage() {
                   mb: 1,
                 }}
               >
-                Welcome Back
+                {t('login.title')}
               </Typography>
 
               <Typography
@@ -477,7 +479,7 @@ export function LoginPage() {
                   mb: 4,
                 }}
               >
-                Sign in to your account to continue
+                {t('login.subtitle')}
               </Typography>
             </motion.div>
 
@@ -507,7 +509,7 @@ export function LoginPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Email or Username"
+                  label={t('login.emailLabel')}
                   sx={{ ...inputStyles, mb: 2.5 }}
                 />
 
@@ -516,7 +518,7 @@ export function LoginPage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Password"
+                  label={t('login.passwordLabel')}
                   type="password"
                   showPasswordToggle
                   sx={{ ...inputStyles, mb: 2 }}
@@ -542,7 +544,7 @@ export function LoginPage() {
                     }
                     label={
                       <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600] }}>
-                        Remember me
+                        {t('login.rememberMe')}
                       </Typography>
                     }
                   />
@@ -557,7 +559,7 @@ export function LoginPage() {
                       '&:hover': { color: palette.neutral[600] },
                     }}
                   >
-                    Forgot password?
+                    {t('login.forgotPassword')}
                   </Typography>
                 </Stack>
 
@@ -590,7 +592,7 @@ export function LoginPage() {
                   {isSubmitting || isLoggingIn ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    'Sign In'
+                    t('login.submit')
                   )}
                 </Button>
               </form>
@@ -641,7 +643,7 @@ export function LoginPage() {
                   fontSize: '0.9375rem',
                 }}
               >
-                Don't have an account?{' '}
+                {t('login.noAccount')}{' '}
                 <Typography
                   component={Link}
                   to="/register"
@@ -653,7 +655,7 @@ export function LoginPage() {
                     '&:hover': { color: palette.neutral[600] },
                   }}
                 >
-                  Create account
+                  {t('login.signUp')}
                 </Typography>
               </Typography>
             </motion.div>

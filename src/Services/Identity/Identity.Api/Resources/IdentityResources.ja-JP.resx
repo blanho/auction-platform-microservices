@@ -10,14 +10,6 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
@@ -29,38 +21,62 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
-  
-  <data name="User.NotFound" xml:space="preserve"><value>ユーザーが見つかりません</value></data>
-  <data name="User.AlreadyExists" xml:space="preserve"><value>このメールアドレスのユーザーは既に存在します</value></data>
-  <data name="User.Created" xml:space="preserve"><value>ユーザーが作成されました</value></data>
-  <data name="User.Updated" xml:space="preserve"><value>ユーザーが更新されました</value></data>
-  <data name="User.Deleted" xml:space="preserve"><value>ユーザーが削除されました</value></data>
-  <data name="User.Deactivated" xml:space="preserve"><value>ユーザーアカウントが無効化されました</value></data>
-  <data name="User.EmailNotVerified" xml:space="preserve"><value>メールアドレスが確認されていません</value></data>
-  <data name="User.EmailVerified" xml:space="preserve"><value>メールが確認されました</value></data>
-  
-  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>メールアドレスまたはパスワードが正しくありません</value></data>
-  <data name="Auth.AccountLocked" xml:space="preserve"><value>アカウントがロックされています。しばらくしてから再試行してください</value></data>
-  <data name="Auth.AccountDisabled" xml:space="preserve"><value>アカウントが無効化されています</value></data>
-  <data name="Auth.LoginSuccessful" xml:space="preserve"><value>ログインしました</value></data>
-  <data name="Auth.LogoutSuccessful" xml:space="preserve"><value>ログアウトしました</value></data>
-  <data name="Auth.TokenExpired" xml:space="preserve"><value>セッションが期限切れです。再度ログインしてください</value></data>
-  <data name="Auth.TokenInvalid" xml:space="preserve"><value>無効な認証トークンです</value></data>
-  <data name="Auth.RefreshTokenExpired" xml:space="preserve"><value>リフレッシュトークンが期限切れです</value></data>
-  <data name="Auth.Unauthorized" xml:space="preserve"><value>この操作を行う権限がありません</value></data>
-  <data name="Auth.AccessDenied" xml:space="preserve"><value>アクセスが拒否されました</value></data>
-  
-  <data name="Password.Changed" xml:space="preserve"><value>パスワードが変更されました</value></data>
-  <data name="Password.ResetSent" xml:space="preserve"><value>パスワードリセットの手順をメールで送信しました</value></data>
-  <data name="Password.ResetSuccess" xml:space="preserve"><value>パスワードがリセットされました</value></data>
-  <data name="Password.InvalidCurrent" xml:space="preserve"><value>現在のパスワードが正しくありません</value></data>
-  <data name="Password.TooWeak" xml:space="preserve"><value>パスワードがセキュリティ要件を満たしていません</value></data>
-  <data name="Password.SameAsCurrent" xml:space="preserve"><value>新しいパスワードは現在のパスワードと異なる必要があります</value></data>
-  
-  <data name="Validation.EmailRequired" xml:space="preserve"><value>メールアドレスは必須です</value></data>
-  <data name="Validation.EmailInvalid" xml:space="preserve"><value>メールアドレスの形式が無効です</value></data>
-  <data name="Validation.PasswordRequired" xml:space="preserve"><value>パスワードは必須です</value></data>
-  <data name="Validation.PasswordLength" xml:space="preserve"><value>パスワードは8文字以上でなければなりません</value></data>
-  <data name="Validation.FirstNameRequired" xml:space="preserve"><value>名は必須です</value></data>
-  <data name="Validation.LastNameRequired" xml:space="preserve"><value>姓は必須です</value></data>
+  <data name="User.NotFound" xml:space="preserve"><value>ユーザーが見つかりません。</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>このメールアドレスのユーザーはすでに存在します。</value></data>
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>メールアドレスまたはパスワードが無効です。</value></data>
+  <data name="User.AccountLocked" xml:space="preserve"><value>アカウントがロックされています。サポートにお問い合わせください。</value></data>
+  <data name="User.EmailNotConfirmed" xml:space="preserve"><value>ログインする前にメールアドレスを確認してください。</value></data>
+  <data name="User.PasswordResetSent" xml:space="preserve"><value>パスワードリセットの手順がメールに送信されました。</value></data>
+  <data name="User.PasswordChanged" xml:space="preserve"><value>パスワードが正常に変更されました。</value></data>
+  <data name="User.ProfileUpdated" xml:space="preserve"><value>プロフィールが正常に更新されました。</value></data>
+  <data name="User.UpdateFailed" xml:space="preserve"><value>ユーザーの更新に失敗しました。</value></data>
+  <data name="User.DeleteFailed" xml:space="preserve"><value>ユーザーの削除に失敗しました。</value></data>
+  <data name="User.SuspendFailed" xml:space="preserve"><value>ユーザーの停止に失敗しました。</value></data>
+  <data name="User.UnsuspendFailed" xml:space="preserve"><value>ユーザーの停止解除に失敗しました。</value></data>
+  <data name="User.ActivateFailed" xml:space="preserve"><value>ユーザーの有効化に失敗しました。</value></data>
+  <data name="User.DeactivateFailed" xml:space="preserve"><value>ユーザーの無効化に失敗しました。</value></data>
+  <data name="User.RoleUpdateFailed" xml:space="preserve"><value>ユーザーロールの更新に失敗しました。</value></data>
+  <data name="User.CannotDeleteSelf" xml:space="preserve"><value>自分のアカウントは削除できません。</value></data>
+  <data name="User.AlreadySeller" xml:space="preserve"><value>すでに出品者です。</value></data>
+  <data name="User.AdminHasSellerPrivileges" xml:space="preserve"><value>管理者アカウントにはデフォルトで出品者権限があります。</value></data>
+  <data name="User.SellerUpgradeFailed" xml:space="preserve"><value>出品者へのアップグレードに失敗しました。</value></data>
+  <data name="User.InvalidToken" xml:space="preserve"><value>トークンにユーザーIDが見つかりません。</value></data>
+  <data name="Auth.UsernameExists" xml:space="preserve"><value>ユーザー名はすでに使用されています。</value></data>
+  <data name="Auth.EmailExists" xml:space="preserve"><value>このメールアドレスはすでに登録されています。</value></data>
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>ユーザー名またはパスワードが無効です。</value></data>
+  <data name="Auth.InvalidPassword" xml:space="preserve"><value>パスワードが無効です。</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>アカウントがロックされています。しばらくしてからお試しください。</value></data>
+  <data name="Auth.AccountLockedOut" xml:space="preserve"><value>アカウントがロックアウトされました。しばらくしてからお試しください。</value></data>
+  <data name="Auth.AccountSuspended" xml:space="preserve"><value>アカウントが停止されました。</value></data>
+  <data name="Auth.AccountInactive" xml:space="preserve"><value>アカウントがアクティブではありません。</value></data>
+  <data name="Auth.EmailNotConfirmed" xml:space="preserve"><value>メールが未確認です。受信トレイを確認してください。</value></data>
+  <data name="Auth.EmailAlreadyConfirmed" xml:space="preserve"><value>メールはすでに確認済みです。</value></data>
+  <data name="Auth.InvalidConfirmationLink" xml:space="preserve"><value>確認リンクが無効です。</value></data>
+  <data name="Auth.ConfirmationFailed" xml:space="preserve"><value>メール確認に失敗しました。リンクの有効期限が切れている可能性があります。</value></data>
+  <data name="Auth.InvalidResetRequest" xml:space="preserve"><value>無効なリセットリクエストです。</value></data>
+  <data name="Auth.ResetFailed" xml:space="preserve"><value>パスワードリセットに失敗しました。リンクの有効期限が切れている可能性があります。</value></data>
+  <data name="Auth.RegistrationFailed" xml:space="preserve"><value>登録に失敗しました。</value></data>
+  <data name="Auth.InvalidRefreshToken" xml:space="preserve"><value>無効または期限切れのリフレッシュトークンです。</value></data>
+  <data name="Auth.SecurityTermination" xml:space="preserve"><value>セキュリティ上の理由によりセッションが終了しました。</value></data>
+  <data name="Auth.SendEmailFailed" xml:space="preserve"><value>メールの送信に失敗しました。しばらくしてからお試しください。</value></data>
+  <data name="Auth.InvalidAuthCode" xml:space="preserve"><value>無効または期限切れの認証コードです。</value></data>
+  <data name="Auth.AuthCodeExchangeFailed" xml:space="preserve"><value>認証コードの交換に失敗しました。</value></data>
+  <data name="TwoFactor.NotEnabled" xml:space="preserve"><value>二要素認証が有効になっていません。</value></data>
+  <data name="TwoFactor.AlreadyEnabled" xml:space="preserve"><value>二要素認証はすでに有効です。</value></data>
+  <data name="TwoFactor.InvalidCode" xml:space="preserve"><value>無効な認証コードです。</value></data>
+  <data name="TwoFactor.InvalidRecoveryCode" xml:space="preserve"><value>無効なリカバリーコードです。</value></data>
+  <data name="TwoFactor.InvalidPassword" xml:space="preserve"><value>パスワードが無効です。</value></data>
+  <data name="TwoFactor.DisableFailed" xml:space="preserve"><value>二要素認証の無効化に失敗しました。</value></data>
+  <data name="TwoFactor.SetupFailed" xml:space="preserve"><value>二要素認証の設定に失敗しました。</value></data>
+  <data name="TwoFactor.AccountLocked" xml:space="preserve"><value>試行回数が多すぎるため、アカウントがロックされました。</value></data>
+  <data name="Profile.UpdateFailed" xml:space="preserve"><value>プロフィールの更新に失敗しました。</value></data>
+  <data name="Profile.AvatarUploadFailed" xml:space="preserve"><value>アバターのアップロードに失敗しました。</value></data>
+  <data name="Profile.PasswordChangeFailed" xml:space="preserve"><value>パスワードの変更に失敗しました。</value></data>
+  <data name="Profile.InvalidCurrentPassword" xml:space="preserve"><value>現在のパスワードが正しくありません。</value></data>
+  <data name="External.ProviderError" xml:space="preserve"><value>外部プロバイダーからのエラーです。</value></data>
+  <data name="External.EmailNotProvided" xml:space="preserve"><value>外部プロバイダーからメールが提供されませんでした。</value></data>
+  <data name="External.LinkFailed" xml:space="preserve"><value>外部アカウントの連携に失敗しました。</value></data>
+  <data name="External.UnlinkFailed" xml:space="preserve"><value>外部アカウントの連携解除に失敗しました。</value></data>
+  <data name="External.CannotUnlinkLastLogin" xml:space="preserve"><value>唯一のログイン方法を解除することはできません。</value></data>
+  <data name="External.ProcessFailed" xml:space="preserve"><value>外部ログインの処理に失敗しました。</value></data>
 </root>

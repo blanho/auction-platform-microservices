@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
@@ -76,6 +77,8 @@ type ShippingFormData = z.infer<typeof shippingSchema>
 const steps = ['Shipping', 'Payment', 'Confirmation']
 
 export function CheckoutPage() {
+
+  const { t: _t } = useTranslation('payments')
   const { auctionId } = useParams<{ auctionId: string }>()
   const navigate = useNavigate()
   const [activeStep, setActiveStep] = useState(0)

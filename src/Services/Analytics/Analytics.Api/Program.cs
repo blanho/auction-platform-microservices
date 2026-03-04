@@ -1,8 +1,8 @@
 using Analytics.Api.Data;
 using Analytics.Api.Endpoints;
 using Analytics.Api.Extensions.DependencyInjection;
+using Analytics.Api.Resources;
 using Carter;
-using Analytics.Api.Middleware;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
@@ -38,6 +38,7 @@ builder.Services
     .AddAnalyticsRepositories()
     .AddAnalyticsServices()
     .AddCommonUtilities()
+    .AddAppLocalization<AnalyticsResources>()
     .AddUtilityScheduling(builder.Configuration)
     .AddAnalyticsMessaging(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration, builder.Environment, options =>
@@ -64,8 +65,6 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
@@ -89,7 +88,7 @@ if (app.Environment.IsDevelopment())
 app.UseApiSecurityHeaders();
 app.UseCorrelationId();
 app.UseRequestTracing();
-app.UseExceptionHandler();
+app.UseAppExceptionHandling();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCustomHealthChecks();

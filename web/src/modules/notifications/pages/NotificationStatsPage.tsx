@@ -1,9 +1,12 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Container, Typography, Card, Grid } from '@mui/material'
 import { Notifications, MarkEmailUnread, Today, TrendingUp } from '@mui/icons-material'
 import { useNotificationStats } from '../hooks'
 import { Skeleton } from '@mui/material'
 
 export function NotificationStatsPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const { data: stats, isLoading } = useNotificationStats()
 
   const statCards = [

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Alert, Container, Card, Typography, Box, Button, Stack } from '@mui/material'
 import { Cancel, Refresh, SupportAgent, Home, ShoppingCart } from '@mui/icons-material'
@@ -7,6 +8,8 @@ import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function PaymentCancelPage() {
+
+  const { t: _t } = useTranslation('payments')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const orderId = searchParams.get('order_id')

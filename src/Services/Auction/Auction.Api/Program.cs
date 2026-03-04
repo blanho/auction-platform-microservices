@@ -1,4 +1,5 @@
 using Auctions.Api.Extensions.DependencyInjection;
+using Auctions.Application.Resources;
 using Auctions.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
@@ -24,6 +25,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<AuctionResources>();
 builder.Services.AddSanitization();
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 builder.Services.AddScoped<ICacheService, RedisCacheService>();

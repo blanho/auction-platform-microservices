@@ -1,67 +1,223 @@
 {
   "hero": {
-    "title": "Discover Rare & Unique Items",
-    "subtitle": "Join thousands of collectors and enthusiasts in our premium auction marketplace",
-    "cta": "Start Exploring",
-    "secondaryCta": "How It Works"
+    "badge": "Authenticated Luxury Consignment",
+    "titleLine1": "The Art of",
+    "titleLine2": "Collecting",
+    "subtitle": "A curated marketplace where extraordinary meets exceptional. Discover rare timepieces, masterpiece artworks, and vintage collectibles — all authenticated by world-class experts.",
+    "cta": "Explore Auctions",
+    "secondaryCta": "How It Works",
+    "stats": {
+      "liveAuctions": "Live Auctions",
+      "categories": "Categories",
+      "trustedBrands": "Trusted Brands"
+    }
+  },
+
+  "floatingCards": {
+    "currentBid": "Current Bid",
+    "bidsCount": "{{count}} bids"
+  },
+
+  "giftGuide": {
+    "title": "Real Finds For Real Collectors",
+    "subtitle": "They deserve the best. We make it easy to find — from one-of-a-kind watches to bucket-list bags.",
+    "forHer": "Shop For Her",
+    "jewelry": "Shop Jewelry",
+    "forHim": "Shop For Him",
+    "accessories": "Shop Accessories",
+    "watches": "Shop Watches"
+  },
+
+  "freshArrivals": {
+    "title": "So Much New",
+    "subtitle": "10,000+ fresh finds are in (and they're really, really good).",
+    "empty": "New arrivals coming soon.",
+    "shopAll": "Shop All New Arrivals"
+  },
+
+  "editorial": {
+    "sectionTitle": "Offbeat Elements",
+    "sectionSubtitle": "One unexpected texture or detail can transform an entire look.",
+    "defaultTitle": "Timeless Elegance",
+    "defaultSubtitle": "Discover pieces that transcend seasons. The key is investing in quality that lasts generations.",
+    "defaultButton": "Shop The Edit"
+  },
+
+  "featuredAuctions": {
+    "label": "Featured",
+    "title": "Live Auctions",
+    "viewAll": "View All",
+    "retry": "Retry",
+    "errorMessage": "Failed to load auctions.",
+    "errorFallback": "Please try again.",
+    "empty": "No featured auctions available",
+    "bidsCount": "{{count}} bids"
+  },
+
+  "categories": {
+    "label": "Explore",
+    "title": "Browse by Category",
+    "viewAll": "All Categories",
+    "empty": "No categories available right now.",
+    "itemCount": "{{count}} items"
   },
 
   "features": {
-    "title": "Why Choose Us",
-    "subtitle": "Experience the best auction platform",
+    "label": "Why Choose Us",
+    "title": "Built for Discerning Collectors",
+    "subtitle": "Every detail of our platform is crafted to deliver a premium auction experience",
+    "authenticated": {
+      "title": "Expert Authentication",
+      "description": "Every item verified by certified specialists before listing. Bid with absolute confidence."
+    },
+    "realtime": {
+      "title": "Real-Time Bidding",
+      "description": "Millisecond-precise auction engine. Never miss a moment with instant bid updates."
+    },
+    "transparent": {
+      "title": "Full Transparency",
+      "description": "Complete bid history, provenance tracking, and condition reports on every piece."
+    },
     "secure": {
-      "title": "Secure Transactions",
-      "description": "Your payments are protected with industry-leading security"
-    },
-    "verified": {
-      "title": "Verified Sellers",
-      "description": "All sellers are verified to ensure authenticity"
-    },
-    "support": {
-      "title": "24/7 Support",
-      "description": "Our team is here to help you anytime"
-    },
-    "global": {
-      "title": "Global Reach",
-      "description": "Buy and sell from anywhere in the world"
+      "title": "Secure Payments",
+      "description": "Escrow protection on every transaction. Your investment is safeguarded end-to-end."
     }
   },
 
   "howItWorks": {
-    "title": "How It Works",
-    "subtitle": "Start bidding in just a few steps",
+    "label": "How It Works",
+    "title": "Start Collecting in Four Steps",
+    "subtitle": "From registration to receiving your piece — a seamless experience",
     "step1": {
       "title": "Create Account",
-      "description": "Sign up for free and verify your identity"
+      "description": "Sign up in seconds with your email. Verify your identity to unlock full bidding privileges."
     },
     "step2": {
-      "title": "Find Items",
-      "description": "Browse thousands of unique items"
+      "title": "Discover Pieces",
+      "description": "Browse curated collections. Each item includes detailed provenance, condition reports, and expert authentication."
     },
     "step3": {
-      "title": "Place Bids",
-      "description": "Bid on items you love"
+      "title": "Place Your Bid",
+      "description": "Bid in real-time with confidence. Set automatic bids, receive instant notifications, and track your auctions."
     },
     "step4": {
-      "title": "Win & Enjoy",
-      "description": "Win auctions and receive your items"
+      "title": "Win & Collect",
+      "description": "Secure checkout with escrow protection. Fully insured shipping ensures your treasure arrives safely."
     }
   },
 
-  "categories": {
-    "title": "Popular Categories",
-    "viewAll": "View All Categories"
-  },
-
   "testimonials": {
-    "title": "What Our Users Say",
-    "subtitle": "Trusted by thousands of collectors worldwide"
+    "label": "Testimonials",
+    "title": "Trusted by Collectors Worldwide",
+    "items": {
+      "1": {
+        "name": "Alexandra Chen",
+        "role": "Art Collector",
+        "quote": "The authentication process gave me complete peace of mind. I acquired a piece I had been searching for over two years — flawlessly."
+      },
+      "2": {
+        "name": "Marcus Rothwell",
+        "role": "Vintage Watch Dealer",
+        "quote": "As a seller, the platform exposure is unmatched. My listings consistently attract serious, qualified bidders from around the world."
+      },
+      "3": {
+        "name": "Sofia Bergström",
+        "role": "Interior Designer",
+        "quote": "I source unique pieces for my clients here regularly. The curation quality and condition reports save me hours of due diligence."
+      }
+    }
   },
 
   "cta": {
-    "title": "Ready to Start?",
-    "subtitle": "Join our community and discover amazing items",
-    "button": "Get Started Free"
+    "label": "Start Your Collection",
+    "titleLine1": "Ready to Discover",
+    "titleLine2": "Your Next Treasure?",
+    "subtitle": "Join thousands of collectors worldwide. Start bidding on authenticated, extraordinary pieces today.",
+    "button": "Create Free Account",
+    "secondaryButton": "Browse Auctions"
+  },
+
+  "collections": {
+    "label": "Curated Collections",
+    "title": "Featured Galleries",
+    "empty": "No collections available right now.",
+    "itemCount": "{{count}} items"
+  },
+
+  "trustedBrands": {
+    "title": "Trusted by Leading Auction Houses"
+  },
+
+  "exclusiveOffers": {
+    "new": "NEW:",
+    "title": "Your Exclusive Offers",
+    "offerCount_one": "{{count}} Offer",
+    "offerCount_other": "{{count}} Offers",
+    "welcomeOfferTitle": "Welcome Offer",
+    "welcomeOfferDescription": "Get 10% off your first purchase with code WELCOME10",
+    "freeShippingTitle": "Free Shipping",
+    "freeShippingDescription": "Free shipping on orders over $500"
+  },
+
+  "howItWorksPage": {
+    "badge": "GETTING STARTED",
+    "title": "How It Works",
+    "subtitle": "From discovery to delivery, we make collecting simple and secure.",
+    "buyersLabel": "FOR BUYERS",
+    "buyersTitle": "Your Journey to Discovery",
+    "buyersSubtitle": "Whether you are a seasoned collector or first-time buyer, our platform makes it easy to find and acquire extraordinary items.",
+    "steps": {
+      "1": {
+        "title": "Create Your Account",
+        "description": "Sign up in minutes with your email. Verify your identity to start bidding or selling on our platform."
+      },
+      "2": {
+        "title": "Discover & Browse",
+        "description": "Explore thousands of curated items across categories. Use filters to find exactly what you are looking for."
+      },
+      "3": {
+        "title": "Place Your Bids",
+        "description": "Set your maximum bid and let our system bid automatically, or bid manually in real-time auctions."
+      },
+      "4": {
+        "title": "Win the Auction",
+        "description": "Get notified instantly when you win. Review your purchase details and proceed to checkout."
+      },
+      "5": {
+        "title": "Secure Payment",
+        "description": "Pay securely through our protected payment system. Multiple payment options available."
+      },
+      "6": {
+        "title": "Receive Your Item",
+        "description": "Track your shipment in real-time. All items are insured and professionally packaged."
+      }
+    },
+    "sellersLabel": "FOR SELLERS",
+    "sellersTitle": "Turn Treasures into Profit",
+    "sellersSubtitle": "Reach a global audience of collectors and enthusiasts. Our platform handles authentication, payments, and shipping coordination so you can focus on what matters.",
+    "startSelling": "Start Selling Today",
+    "sellerSteps": {
+      "1": {
+        "title": "List Your Item",
+        "description": "Upload photos, write a description, and set your starting price and reserve."
+      },
+      "2": {
+        "title": "Get Verified",
+        "description": "Our experts review and authenticate your item for buyer confidence."
+      },
+      "3": {
+        "title": "Watch Bids Come In",
+        "description": "Monitor your auction in real-time and engage with potential buyers."
+      },
+      "4": {
+        "title": "Complete the Sale",
+        "description": "Ship the item using our partnered carriers and receive your payment securely."
+      }
+    },
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Join our community of collectors and sellers. Create your account today and discover your next treasure.",
+    "ctaButton": "Create Account",
+    "ctaSecondary": "Browse Auctions"
   },
 
   "stats": {

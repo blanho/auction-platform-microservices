@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -90,6 +91,8 @@ const getTypeLabel = (type: ReportType) => {
 }
 
 export const ReportsPage = () => {
+
+  const { t: _t } = useTranslation('analytics')
   const [filters, setFilters] = useState<ReportQueryParams>({
     page: 1,
     pageSize: 10,

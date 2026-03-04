@@ -1,5 +1,7 @@
 using System.Net;
+using Gateway.Api.Resources;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Gateway.Api.Extensions;
 
@@ -16,6 +18,7 @@ public static class MiddlewareExtensions
             catch (Exception ex)
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                var localizer = context.RequestServices.GetService<IStringLocalizer<GatewayResources>>();
                 logger.LogError(ex, "Gateway error at {Path}", context.Request.Path);
 
                 var isDevelopment = app.Environment.IsDevelopment();
@@ -30,15 +33,21 @@ public static class MiddlewareExtensions
                 {
                     Title = statusCode switch
                     {
-                        HttpStatusCode.Unauthorized => "Unauthorized",
-                        HttpStatusCode.GatewayTimeout => "Gateway timeout",
-                        _ => "Gateway error"
+                        HttpStatusCode.Unauthorized => localizer?["Gateway.Unauthorized"]?.Value ?? "Unauthorized",
+                        HttpStatusCode.GatewayTimeout => localizer?["Gateway.Timeout"]?.Value ?? "Gateway timeout",
+                        _ => localizer?["Gateway.Error"]?.Value ?? "Gateway error"
                     },
-                    Detail = isDevelopment ? ex.Message : "An error occurred while processing your request.",
+                    Detail = isDevelopment ? ex.Message : localizer?["Gateway.ErrorDetail"]?.Value ?? "An error occurred while processing your request.",
                     Status = (int)statusCode,
                     Type = $"https://httpstatuses.com/{(int)statusCode}",
                     Instance = context.Request.Path
                 };
+
+                var correlationId = context.Response.Headers["X-Correlation-Id"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(correlationId))
+                {
+                    problem.Extensions["correlationId"] = correlationId;
+                }
 
                 context.Response.StatusCode = (int)statusCode;
                 context.Response.ContentType = "application/problem+json";

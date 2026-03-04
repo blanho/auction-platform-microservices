@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -68,6 +69,8 @@ const ACTION_OPTIONS = Object.values(AUDIT_ACTION).map((act) => ({
 }))
 
 export function AuditLogsPage() {
+
+  const { t: _t } = useTranslation('analytics')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(20)
   const [search, setSearch] = useState('')

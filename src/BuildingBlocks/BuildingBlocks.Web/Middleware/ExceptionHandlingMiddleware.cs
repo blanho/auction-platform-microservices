@@ -85,7 +85,7 @@ public static class ExceptionHandlingMiddleware
             DomainConflictException => (HttpStatusCode.Conflict, localizer?[LocalizationKeys.Errors.Conflict] ?? "Operation conflict"),
             InvalidEntityStateException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Invalid operation"),
             DomainInvariantException => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.ValidationFailed] ?? "Business rule violation"),
-            _ => (HttpStatusCode.BadRequest, "Domain error")
+            _ => (HttpStatusCode.BadRequest, localizer?[LocalizationKeys.Errors.BadRequest] ?? "Domain error")
         };
 
         var problem = new ProblemDetails

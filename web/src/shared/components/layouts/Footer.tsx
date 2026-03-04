@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -24,49 +25,6 @@ import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
 
-const footerLinks = {
-  shop: {
-    title: 'Shop',
-    links: [
-      { label: 'All Auctions', href: '/auctions' },
-      { label: 'Categories', href: '/categories' },
-      { label: 'Ending Soon', href: '/auctions?sort=ending-soon' },
-      { label: 'New Arrivals', href: '/auctions?sort=newest' },
-      { label: 'Buy Now', href: '/auctions?buyNow=true' },
-    ],
-  },
-  sell: {
-    title: 'Sell',
-    links: [
-      { label: 'Start Selling', href: '/sell' },
-      { label: 'Seller Center', href: '/seller-center' },
-      { label: 'Seller Guidelines', href: '/seller-guidelines' },
-      { label: 'Fees & Pricing', href: '/fees' },
-      { label: 'Success Stories', href: '/success-stories' },
-    ],
-  },
-  help: {
-    title: 'Help & Support',
-    links: [
-      { label: 'Help Center', href: '/help' },
-      { label: 'Contact Us', href: '/contact' },
-      { label: 'Bidding Guide', href: '/bidding-guide' },
-      { label: 'Shipping Info', href: '/shipping' },
-      { label: 'Returns & Refunds', href: '/returns' },
-    ],
-  },
-  company: {
-    title: 'Company',
-    links: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Press', href: '/press' },
-      { label: 'Sustainability', href: '/sustainability' },
-      { label: 'Affiliate Program', href: '/affiliates' },
-    ],
-  },
-}
-
 const socialLinks = [
   { icon: <Facebook />, href: 'https://facebook.com', label: 'Facebook' },
   { icon: <Twitter />, href: 'https://twitter.com', label: 'Twitter' },
@@ -76,14 +34,58 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [error, setError] = useState('')
 
+  const footerLinks = {
+    shop: {
+      title: t('footer.shop'),
+      links: [
+        { label: t('footer.allAuctions'), href: '/auctions' },
+        { label: t('nav.categories'), href: '/categories' },
+        { label: t('footer.endingSoon'), href: '/auctions?sort=ending-soon' },
+        { label: t('footer.newArrivals'), href: '/auctions?sort=newest' },
+        { label: t('footer.buyNow'), href: '/auctions?buyNow=true' },
+      ],
+    },
+    sell: {
+      title: t('footer.sell'),
+      links: [
+        { label: t('footer.startSelling'), href: '/sell' },
+        { label: t('footer.sellerCenter'), href: '/seller-center' },
+        { label: t('footer.sellerGuidelines'), href: '/seller-guidelines' },
+        { label: t('footer.feesPricing'), href: '/fees' },
+        { label: t('footer.successStories'), href: '/success-stories' },
+      ],
+    },
+    help: {
+      title: t('footer.helpSupport'),
+      links: [
+        { label: t('footer.help'), href: '/help' },
+        { label: t('footer.contact'), href: '/contact' },
+        { label: t('footer.biddingGuide'), href: '/bidding-guide' },
+        { label: t('footer.shippingInfo'), href: '/shipping' },
+        { label: t('footer.returnsRefunds'), href: '/returns' },
+      ],
+    },
+    company: {
+      title: t('footer.company'),
+      links: [
+        { label: t('footer.aboutUs'), href: '/about' },
+        { label: t('footer.careers'), href: '/careers' },
+        { label: t('footer.press'), href: '/press' },
+        { label: t('footer.sustainability'), href: '/sustainability' },
+        { label: t('footer.affiliateProgram'), href: '/affiliates' },
+      ],
+    },
+  }
+
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
     if (!email?.includes('@')) {
-      setError('Please enter a valid email address')
+      setError(t('validation.invalidEmail'))
       return
     }
     setIsSubscribed(true)
@@ -117,7 +119,7 @@ export function Footer() {
                 mb: 3,
               }}
             >
-              THE AUCTION
+              {t('brandName')}
             </Typography>
             <Typography
               variant="body2"
@@ -129,8 +131,7 @@ export function Footer() {
                 fontSize: '0.8125rem',
               }}
             >
-              Authenticated luxury consignment. Discover extraordinary pieces
-              from the world's most discerning collectors.
+              {t('footer.tagline')}
             </Typography>
 
             <Box component="form" onSubmit={handleSubscribe} sx={{ maxWidth: 360 }}>
@@ -144,12 +145,12 @@ export function Footer() {
                   fontSize: '0.6875rem',
                 }}
               >
-                Subscribe to Our Newsletter
+                {t('footer.newsletter')}
               </Typography>
 
               <Collapse in={isSubscribed}>
                 <InlineAlert severity="success" sx={{ mb: 2 }} onClose={() => setIsSubscribed(false)}>
-                  Thank you for subscribing!
+                  {t('footer.newsletterSuccess')}
                 </InlineAlert>
               </Collapse>
 
@@ -163,7 +164,7 @@ export function Footer() {
                 <TextField
                   fullWidth
                   size="small"
-                  placeholder="Enter your email"
+                  placeholder={t('footer.emailPlaceholder')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -287,7 +288,7 @@ export function Footer() {
         >
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 4 }}>
             <Typography variant="body2" sx={{ color: palette.neutral[600], fontSize: '0.75rem' }}>
-              © {new Date().getFullYear()} The Auction. All rights reserved.
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </Typography>
             <Stack direction="row" spacing={3}>
               <Typography
@@ -300,7 +301,7 @@ export function Footer() {
                   '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Privacy
+                {t('footer.privacy')}
               </Typography>
               <Typography
                 component={Link}
@@ -312,7 +313,7 @@ export function Footer() {
                   '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Terms
+                {t('footer.terms')}
               </Typography>
               <Typography
                 component={Link}
@@ -324,7 +325,7 @@ export function Footer() {
                   '&:hover': { color: palette.neutral[0] },
                 }}
               >
-                Cookies
+                {t('footer.cookies')}
               </Typography>
             </Stack>
           </Stack>
@@ -343,7 +344,7 @@ export function Footer() {
               },
             }}
           >
-            Back to Top
+            {t('backToTop')}
           </Button>
         </Stack>
       </Container>

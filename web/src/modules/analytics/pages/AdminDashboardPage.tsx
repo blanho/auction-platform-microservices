@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -84,6 +85,8 @@ const statCards: StatCardConfig[] = [
 ]
 
 export function AdminDashboardPage() {
+
+  const { t: _t } = useTranslation('analytics')
   const [period, setPeriod] = useState<string>('week')
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminDashboardStats()
   const { data: activityData, isLoading: activityLoading } = useDashboardActivity(10)

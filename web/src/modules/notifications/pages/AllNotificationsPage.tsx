@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -41,6 +42,8 @@ const STATUS_CONFIG: Record<
 }
 
 export function AllNotificationsPage() {
+
+  const { t: _t } = useTranslation('notifications')
   const [filters, setFilters] = useState<
     AdminNotificationFilters & { page: number; pageSize: number }
   >({

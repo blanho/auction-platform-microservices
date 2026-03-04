@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using BuildingBlocks.Application.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bidding.Api.Extensions.DependencyInjection;
@@ -30,12 +31,16 @@ internal static class RateLimitingExtensions
 
                 context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
 
+                var localizer = context.HttpContext.RequestServices.GetService<ILocalizationService>();
+                var title = localizer?.GetString(LocalizationKeys.RateLimit.TooManyRequests) ?? "Too Many Requests";
+                var detail = localizer?.GetString(LocalizationKeys.RateLimit.RetryAfter) ?? "Rate limit exceeded. Please retry after {0} seconds.";
+
                 await context.HttpContext.Response.WriteAsJsonAsync(new
                 {
                     Type = "https://tools.ietf.org/html/rfc6585#section-4",
-                    Title = "Too Many Requests",
+                    Title = title,
                     Status = 429,
-                    Detail = $"Rate limit exceeded. Please retry after {retryAfter} seconds.",
+                    Detail = string.Format(detail, retryAfter),
                     RetryAfter = retryAfter
                 }, cancellationToken);
             };

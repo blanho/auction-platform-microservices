@@ -1,4 +1,5 @@
 using Payment.Api.Extensions.DependencyInjection;
+using Payment.Application.Resources;
 using Payment.Infrastructure.Extensions;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
@@ -22,6 +23,7 @@ builder.AddApplicationLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<PaymentResources>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");

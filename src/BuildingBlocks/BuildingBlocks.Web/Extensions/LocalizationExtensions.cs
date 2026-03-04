@@ -14,6 +14,14 @@ public static class LocalizationExtensions
         this IServiceCollection services,
         Action<LocalizationOptions>? configure = null)
     {
+        return services.AddAppLocalization<SharedResources>(configure);
+    }
+
+    public static IServiceCollection AddAppLocalization<TServiceResources>(
+        this IServiceCollection services,
+        Action<LocalizationOptions>? configure = null)
+        where TServiceResources : class
+    {
         var options = new LocalizationOptions();
         configure?.Invoke(options);
 
@@ -24,7 +32,7 @@ public static class LocalizationExtensions
             localizationOptions.ResourcesPath = options.ResourcesPath;
         });
 
-        services.AddScoped<ILocalizationService, AppLocalizationService>();
+        services.AddScoped<ILocalizationService, CompositeLocalizationService<TServiceResources>>();
 
         if (options.EnableRequestLocalization)
         {

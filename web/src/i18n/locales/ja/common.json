@@ -1,5 +1,7 @@
 {
   "appName": "オークションプラットフォーム",
+  "brandName": "THE AUCTION",
+  "brandNameItalic": "TheAuction",
   "loading": "読み込み中...",
   "error": "エラーが発生しました",
   "retry": "再試行",
@@ -28,31 +30,49 @@
   "noResults": "結果が見つかりませんでした",
   "required": "必須",
   "optional": "任意",
-
+  "refresh": "更新",
+  "tryAgain": "もう一度試す",
+  "goHome": "ホームへ",
+  "goBack": "戻る",
+  "browseAuctions": "オークションを探す",
+  "exploreAuctions": "オークションを見る",
+  "shopNow": "今すぐ購入",
+  "sellWithUs": "出品する",
+  "signIn": "ログイン",
+  "signUp": "新規登録",
+  "signOut": "ログアウト",
+  "createAccount": "アカウント作成",
+  "backToTop": "トップへ戻る",
+  "backToSite": "サイトへ戻る",
   "nav": {
     "home": "ホーム",
     "auctions": "オークション",
     "myBids": "入札履歴",
+    "myAuctions": "マイオークション",
     "watchlist": "ウォッチリスト",
+    "wallet": "ウォレット",
     "profile": "プロフィール",
+    "myProfile": "マイプロフィール",
     "settings": "設定",
     "notifications": "通知",
     "dashboard": "ダッシュボード",
     "admin": "管理者",
     "login": "ログイン",
     "register": "新規登録",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "categories": "カテゴリー",
+    "howItWorks": "使い方",
+    "sell": "出品"
   },
-
   "validation": {
     "required": "この項目は必須です",
     "email": "有効なメールアドレスを入力してください",
     "minLength": "{{min}}文字以上で入力してください",
     "maxLength": "{{max}}文字以内で入力してください",
     "passwordMatch": "パスワードが一致しません",
-    "invalidFormat": "形式が正しくありません"
+    "invalidFormat": "形式が正しくありません",
+    "invalidEmail": "有効なメールアドレスを入力してください"
   },
-
   "time": {
     "now": "たった今",
     "seconds": "{{count}}秒",
@@ -65,9 +85,12 @@
     "days_other": "{{count}}日",
     "ago": "{{time}}前",
     "remaining": "残り{{time}}",
-    "ended": "終了"
+    "ended": "終了",
+    "left": "残り",
+    "daysHoursLeft": "{{days}}日{{hours}}時間残り",
+    "hoursMinutesLeft": "{{hours}}時間{{minutes}}分残り",
+    "minutesLeft": "{{minutes}}分残り"
   },
-
   "currency": {
     "usd": "米ドル",
     "eur": "ユーロ",
@@ -75,7 +98,6 @@
     "jpy": "円",
     "vnd": "ベトナムドン"
   },
-
   "status": {
     "active": "有効",
     "inactive": "無効",
@@ -84,13 +106,135 @@
     "cancelled": "キャンセル済み",
     "failed": "失敗"
   },
-
   "footer": {
     "copyright": "© {{year}} オークションプラットフォーム. 全著作権所有.",
     "aboutUs": "会社概要",
     "contact": "お問い合わせ",
     "terms": "利用規約",
     "privacy": "プライバシーポリシー",
-    "help": "ヘルプセンター"
+    "help": "ヘルプセンター",
+    "cookies": "Cookie",
+    "tagline": "認証済み高級委託販売。世界中の目利きのあるコレクターからの特別な作品を発見しましょう。",
+    "newsletter": "ニュースレターを購読",
+    "newsletterSuccess": "ご購読ありがとうございます！",
+    "emailPlaceholder": "メールアドレスを入力",
+    "shop": "ショップ",
+    "allAuctions": "全オークション",
+    "endingSoon": "まもなく終了",
+    "newArrivals": "新着",
+    "buyNow": "即決",
+    "sell": "出品",
+    "startSelling": "出品を始める",
+    "sellerCenter": "出品者センター",
+    "sellerGuidelines": "出品ガイドライン",
+    "feesPricing": "手数料・料金",
+    "successStories": "成功事例",
+    "helpSupport": "ヘルプ・サポート",
+    "biddingGuide": "入札ガイド",
+    "shippingInfo": "配送情報",
+    "returnsRefunds": "返品・返金",
+    "company": "会社情報",
+    "careers": "採用情報",
+    "press": "プレス",
+    "sustainability": "サステナビリティ",
+    "affiliateProgram": "アフィリエイトプログラム"
+  },
+  "errors": {
+    "notFoundTitle": "ページが見つかりません",
+    "notFoundMessage": "お探しのページはオークションに出品されたようです。売却済み、移動済み、または存在しない可能性があります。",
+    "unauthorizedTitle": "アクセス拒否",
+    "unauthorizedMessage": "このページへのアクセス権限がありません。間違いだと思われる場合は管理者にお問い合わせください。",
+    "boundaryTitle": "問題が発生しました",
+    "boundaryMessage": "予期しないエラーが発生しました。もう一度お試しいただくか、ページを更新してください。",
+    "defaultTitle": "問題が発生しました",
+    "defaultMessage": "予期しないエラーが発生しました。もう一度お試しください。",
+    "loginFailed": "ログインに失敗しました",
+    "twoFactorFailed": "二要素認証に失敗しました",
+    "registrationFailed": "登録に失敗しました"
+  },
+  "emptyState": {
+    "default": {
+      "title": "データがありません",
+      "description": "現在、ここには何もありません。"
+    },
+    "auctions": {
+      "title": "オークションが見つかりません",
+      "description": "最初のオークションを作成して、世界中のコレクターに販売しましょう。"
+    },
+    "bids": {
+      "title": "入札履歴がありません",
+      "description": "まだ入札していません。オークションを探索してユニークなアイテムを見つけましょう。"
+    },
+    "notifications": {
+      "title": "すべて確認済み！",
+      "description": "現在、新しい通知はありません。"
+    },
+    "search": {
+      "title": "結果が見つかりません",
+      "description": "検索条件やフィルターを調整して、お探しのものを見つけてください。"
+    },
+    "favorites": {
+      "title": "お気に入りがありません",
+      "description": "気になるアイテムを保存して、更新情報を受け取りましょう。"
+    },
+    "orders": {
+      "title": "注文がありません",
+      "description": "オークションに落札すると、ここに注文が表示されます。"
+    }
+  },
+  "wishlist": {
+    "title": "ウィッシュリスト",
+    "itemsSaved": "{{count}}件保存済み",
+    "itemsSaved_other": "{{count}}件保存済み",
+    "empty": "ウィッシュリストは空です",
+    "emptyDescription": "オークションのハートアイコンをクリックしてお気に入りを保存",
+    "viewAll": "保存済みアイテムをすべて見る",
+    "bid": "{{count}}件の入札",
+    "bid_other": "{{count}}件の入札"
+  },
+  "auth": {
+    "verifyingAuth": "認証を確認中...",
+    "accountSettings": "アカウント設定"
+  },
+  "admin": {
+    "panelTitle": "管理パネル",
+    "dashboard": "ダッシュボード",
+    "users": "ユーザー",
+    "auctions": "オークション",
+    "categories": "カテゴリー",
+    "brands": "ブランド",
+    "orders": "注文",
+    "reports": "レポート",
+    "analytics": "分析",
+    "settings": "設定"
+  },
+  "landing": {
+    "greeting": "{{name}}さん、こんにちは ",
+    "shopNewItems": "新着アイテムを先行購入",
+    "searchPlaceholder": "デザイナーやアイテムを検索",
+    "newArrivals": "新着",
+    "designers": "デザイナー",
+    "women": "レディース",
+    "men": "メンズ",
+    "jewelry": "ジュエリー",
+    "watches": "時計",
+    "art": "アート",
+    "home": "ホーム",
+    "sale": "セール"
+  },
+  "megaMenu": {
+    "byCategory": "カテゴリー別",
+    "byStatus": "ステータス別",
+    "priceRange": "価格帯",
+    "endingToday": "本日終了",
+    "endingThisWeek": "今週終了",
+    "newlyListed": "新規出品",
+    "noReserve": "最低落札価格なし",
+    "buyNowAvailable": "即決可能",
+    "under500": "$500以下",
+    "range500to2000": "$500 - $2,000",
+    "range2000to10000": "$2,000 - $10,000",
+    "over10000": "$10,000以上",
+    "viewAll": "{{label}}をすべて見る →"
   }
 }

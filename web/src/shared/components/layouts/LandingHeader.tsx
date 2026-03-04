@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   AppBar,
   Box,
@@ -35,20 +36,9 @@ import { palette } from '@/shared/theme/tokens'
 import { WishlistDrawer } from '../navigation/WishlistDrawer'
 import { LanguageSwitcher } from '../inputs'
 
-const categoryLinks = [
-  { label: 'New Arrivals', path: '/auctions?sort=newest' },
-  { label: 'Designers', path: '/categories/designers' },
-  { label: 'Women', path: '/categories/women' },
-  { label: 'Men', path: '/categories/men' },
-  { label: 'Jewelry', path: '/categories/jewelry' },
-  { label: 'Watches', path: '/categories/watches' },
-  { label: 'Art', path: '/categories/art' },
-  { label: 'Home', path: '/categories/home' },
-  { label: 'Sale', path: '/auctions?sale=true' },
-]
-
 export const LandingHeader = () => {
   const { user, isAuthenticated, logout } = useAuth()
+  const { t } = useTranslation()
   const { data: notificationSummary } = useNotificationSummary()
   const { data: watchlistCount } = useWatchlistCount()
   const navigate = useNavigate()
@@ -58,6 +48,18 @@ export const LandingHeader = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [searchValue, setSearchValue] = useState('')
   const [wishlistOpen, setWishlistOpen] = useState(false)
+
+  const categoryLinks = [
+    { label: t('landing.newArrivals'), path: '/auctions?sort=newest' },
+    { label: t('landing.designers'), path: '/categories/designers' },
+    { label: t('landing.women'), path: '/categories/women' },
+    { label: t('landing.men'), path: '/categories/men' },
+    { label: t('landing.jewelry'), path: '/categories/jewelry' },
+    { label: t('landing.watches'), path: '/categories/watches' },
+    { label: t('landing.art'), path: '/categories/art' },
+    { label: t('landing.home'), path: '/categories/home' },
+    { label: t('landing.sale'), path: '/auctions?sale=true' },
+  ]
 
   const handleWishlistOpen = () => {
     if (isAuthenticated) {
@@ -116,7 +118,7 @@ export const LandingHeader = () => {
             fontStyle: 'italic',
           }}
         >
-          TheAuction
+          {t('brandNameItalic')}
         </Typography>
         <IconButton onClick={() => setMobileOpen(false)} sx={{ color: palette.neutral[900] }}>
           <CloseIcon />
@@ -137,7 +139,7 @@ export const LandingHeader = () => {
           }}
         >
           <InputBase
-            placeholder="Search for designers or items"
+            placeholder={t('landing.searchPlaceholder')}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             sx={{ flex: 1, fontSize: '0.875rem' }}
@@ -195,7 +197,7 @@ export const LandingHeader = () => {
             '&:hover': { bgcolor: palette.neutral[800] },
           }}
         >
-          Sell With Us
+          {t('sellWithUs')}
         </Button>
       </Box>
 
@@ -216,7 +218,7 @@ export const LandingHeader = () => {
               '&:hover': { bgcolor: palette.neutral[900], color: palette.neutral[0] },
             }}
           >
-            Sign Out
+            {t('signOut')}
           </Button>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -237,7 +239,7 @@ export const LandingHeader = () => {
                 '&:hover': { bgcolor: palette.neutral[800] },
               }}
             >
-              Create Account
+              {t('createAccount')}
             </Button>
             <Button
               fullWidth
@@ -255,7 +257,7 @@ export const LandingHeader = () => {
                 borderRadius: 0,
               }}
             >
-              Sign In
+              {t('signIn')}
             </Button>
           </Box>
         )}
@@ -296,7 +298,7 @@ export const LandingHeader = () => {
                   color: palette.neutral[900],
                 }}
               >
-                Hi {user?.displayName || user?.email?.split('@')[0]},{' '}
+                {t('landing.greeting', { name: user?.displayName || user?.email?.split('@')[0] })}{' '}
                 <Typography
                   component={Link}
                   to="/auctions?sort=newest"
@@ -308,9 +310,8 @@ export const LandingHeader = () => {
                     '&:hover': { color: palette.neutral[600] },
                   }}
                 >
-                  shop new items 24 hours in advance
+                  {t('landing.shopNewItems')}
                 </Typography>
-                !
               </Typography>
             </Container>
           </Box>
@@ -358,7 +359,7 @@ export const LandingHeader = () => {
                     fontStyle: 'italic',
                   }}
                 >
-                  TheAuction
+                  {t('brandNameItalic')}
                 </Typography>
               </Box>
 
@@ -385,7 +386,7 @@ export const LandingHeader = () => {
                 }}
               >
                 <InputBase
-                  placeholder="Search for designers or items"
+                  placeholder={t('landing.searchPlaceholder')}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   sx={{
@@ -433,7 +434,7 @@ export const LandingHeader = () => {
                     },
                   }}
                 >
-                  Sell With Us
+                  {t('sellWithUs')}
                 </Button>
 
                 <Box
@@ -524,7 +525,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        My Profile
+                        {t('nav.myProfile')}
                       </MenuItem>
                       <MenuItem
                         component={Link}
@@ -536,7 +537,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        My Bids
+                        {t('nav.myBids')}
                       </MenuItem>
                       <MenuItem
                         component={Link}
@@ -548,7 +549,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        My Auctions
+                        {t('nav.myAuctions')}
                       </MenuItem>
                       <MenuItem
                         component={Link}
@@ -560,7 +561,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        Wallet
+                        {t('nav.wallet')}
                       </MenuItem>
                       <Divider sx={{ borderColor: palette.neutral[200] }} />
                       <MenuItem
@@ -573,7 +574,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        Settings
+                        {t('nav.settings')}
                       </MenuItem>
                       <MenuItem
                         onClick={handleLogout}
@@ -583,7 +584,7 @@ export const LandingHeader = () => {
                           '&:hover': { bgcolor: palette.neutral[50] },
                         }}
                       >
-                        Sign Out
+                        {t('signOut')}
                       </MenuItem>
                     </Menu>
                   </>

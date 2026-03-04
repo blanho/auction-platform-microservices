@@ -28,6 +28,7 @@ import { useAuth } from '@/app/hooks/useAuth'
 import { InlineAlert } from '@/shared/ui'
 import { formatRelativeTime } from '@/shared/utils/formatters'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 interface TabPanelProps {
   readonly children?: React.ReactNode
@@ -240,6 +241,8 @@ function GivenReviewsContent({
 }
 
 export function MyReviewsPage() {
+
+  const { t: _t } = useTranslation('users')
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState(0)
   const [responseDialogOpen, setResponseDialogOpen] = useState(false)

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth, usePermissions } from '@/app/providers'
 import type { Permission } from '@/shared/permissions'
 import { LoadingScreen } from '@/shared/ui'
@@ -23,11 +24,12 @@ export const ProtectedRoute = ({
   const { isAuthenticated, isLoading, status } = useAuth()
   const { canAny, canAll } = usePermissions()
   const location = useLocation()
+  const { t } = useTranslation()
 
   const hasCheckedAuth = status !== 'idle' && status !== 'loading'
 
   if (isLoading && !hasCheckedAuth) {
-    return fallback ?? <LoadingScreen message="Verifying authentication..." />
+    return fallback ?? <LoadingScreen message={t('auth.verifyingAuth')} />
   }
 
   if (status === 'loading' && hasCheckedAuth) {

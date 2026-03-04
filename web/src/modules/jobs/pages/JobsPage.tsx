@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -126,6 +127,8 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50]
 const DEFAULT_PAGE_SIZE = 10
 
 export function JobsPage() {
+
+  const { t: _t } = useTranslation('jobs')
   const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')

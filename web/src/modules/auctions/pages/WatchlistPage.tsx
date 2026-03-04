@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Container,
@@ -46,6 +47,7 @@ interface WatchlistCardProps {
 }
 
 function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardProps>) {
+  const { t } = useTranslation('auctions')
   const auction = item.auction
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
@@ -182,7 +184,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
               ${auction.currentPrice.toLocaleString()}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {auction.bidCount} bids
+              {t('detail.bidCount', { count: auction.bidCount })}
             </Typography>
           </Box>
         </Box>
@@ -199,7 +201,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
             to={`/auctions/${auction.id}`}
             sx={{ flexGrow: 1, mr: 1 }}
           >
-            Place Bid
+            {t('actions.placeBid')}
           </Button>
           <IconButton size="small" onClick={handleMenuOpen}>
             <MoreVert fontSize="small" />
@@ -209,7 +211,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
               <ListItemIcon>
                 <Visibility fontSize="small" />
               </ListItemIcon>
-              <ListItemText>View Details</ListItemText>
+              <ListItemText>{t('viewDetails')}</ListItemText>
             </MenuItem>
             <MenuItem onClick={toggleNotifications}>
               <ListItemIcon>
@@ -220,7 +222,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
                 )}
               </ListItemIcon>
               <ListItemText>
-                {notificationsEnabled ? 'Disable Alerts' : 'Enable Alerts'}
+                {notificationsEnabled ? t('watchlist.disableAlerts') : t('watchlist.enableAlerts')}
               </ListItemText>
             </MenuItem>
             <Divider />
@@ -234,7 +236,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
               <ListItemIcon>
                 <Delete fontSize="small" color="error" />
               </ListItemIcon>
-              <ListItemText>Remove</ListItemText>
+              <ListItemText>{t('common:actions.remove')}</ListItemText>
             </MenuItem>
           </Menu>
         </Box>
@@ -244,6 +246,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
 }
 
 export function WatchlistPage() {
+  const { t } = useTranslation('auctions')
   const [sortBy, setSortBy] = useState<'ending-soon' | 'newest' | 'price-low' | 'price-high'>(
     'ending-soon'
   )
@@ -275,10 +278,10 @@ export function WatchlistPage() {
                 mb: 1,
               }}
             >
-              My Watchlist
+              {t('watchlist.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Keep track of auctions you're interested in
+              {t('watchlist.description')}
             </Typography>
           </Box>
         </motion.div>
@@ -296,10 +299,10 @@ export function WatchlistPage() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <FormControl size="small" sx={{ minWidth: 160 }}>
-                  <InputLabel>Sort By</InputLabel>
+                  <InputLabel>{t('filter.sortBy')}</InputLabel>
                   <Select
                     value={sortBy}
-                    label="Sort By"
+                    label={t('filter.sortBy')}
                     onChange={(e) => {
                       const value = e.target.value
                       if (
@@ -313,17 +316,17 @@ export function WatchlistPage() {
                     }}
                     startAdornment={<Sort sx={{ mr: 1, color: 'action.active' }} />}
                   >
-                    <MenuItem value="ending-soon">Ending Soon</MenuItem>
-                    <MenuItem value="newest">Recently Added</MenuItem>
-                    <MenuItem value="price-low">Price: Low to High</MenuItem>
-                    <MenuItem value="price-high">Price: High to Low</MenuItem>
+                    <MenuItem value="ending-soon">{t('sort.endingSoon')}</MenuItem>
+                    <MenuItem value="newest">{t('watchlist.recentlyAdded')}</MenuItem>
+                    <MenuItem value="price-low">{t('sort.priceLowToHigh')}</MenuItem>
+                    <MenuItem value="price-high">{t('sort.priceHighToLow')}</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-                  {data?.length || 0} items
+                  {t('watchlist.itemCount', { count: data?.length || 0 })}
                 </Typography>
                 <IconButton
                   size="small"
@@ -347,7 +350,7 @@ export function WatchlistPage() {
         {error && (
           <motion.div variants={staggerItem}>
             <InlineAlert severity="error" sx={{ mb: 3 }}>
-              Failed to load watchlist. Please try again.
+              {t('errors.failedToLoadWatchlist')}
             </InlineAlert>
           </motion.div>
         )}
@@ -373,13 +376,13 @@ export function WatchlistPage() {
             <Card sx={{ p: 6, textAlign: 'center' }}>
               <FavoriteBorder sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
-                Your watchlist is empty
+                {t('watchlist.empty')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Start adding auctions you're interested in to keep track of them
+                {t('watchlist.emptyDescription')}
               </Typography>
               <Button variant="contained" component={Link} to="/auctions">
-                Browse Auctions
+                {t('browse')}
               </Button>
             </Card>
           </motion.div>

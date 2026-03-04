@@ -1,4 +1,5 @@
 using Jobs.Api.Extensions.DependencyInjection;
+using Jobs.Application.Resources;
 using Jobs.Infrastructure.Extensions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
@@ -23,6 +24,7 @@ builder.AddApplicationLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<JobResources>();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddCQRS(typeof(Jobs.Application.Features.Jobs.CreateJob.CreateJobCommand).Assembly);

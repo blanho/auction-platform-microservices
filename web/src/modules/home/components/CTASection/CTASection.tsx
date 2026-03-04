@@ -3,8 +3,11 @@ import { motion } from 'framer-motion'
 import { Box, Container, Typography, Button, Stack } from '@mui/material'
 import { East } from '@mui/icons-material'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 export const CTASection = () => {
+  const { t } = useTranslation('home')
+
   return (
     <Box sx={{ py: { xs: 12, md: 20 }, bgcolor: '#1C1917', position: 'relative' }}>
       <Container maxWidth="md" sx={{ position: 'relative' }}>
@@ -25,7 +28,7 @@ export const CTASection = () => {
                 mb: 4,
               }}
             >
-              Start Your Collection
+              {t('cta.label')}
             </Typography>
             <Typography
               variant="h3"
@@ -38,9 +41,9 @@ export const CTASection = () => {
                 lineHeight: 1.2,
               }}
             >
-              Ready to Discover
+              {t('cta.titleLine1')}
               <br />
-              Your Next Treasure?
+              {t('cta.titleLine2')}
             </Typography>
             <Typography
               sx={{
@@ -52,8 +55,7 @@ export const CTASection = () => {
                 lineHeight: 1.7,
               }}
             >
-              Join thousands of collectors worldwide. Start bidding on authenticated,
-              extraordinary pieces today.
+              {t('cta.subtitle')}
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
               <Button
@@ -80,7 +82,7 @@ export const CTASection = () => {
                   },
                 }}
               >
-                Create Free Account
+                {t('cta.button')}
               </Button>
               <Button
                 variant="outlined"
@@ -104,7 +106,7 @@ export const CTASection = () => {
                   },
                 }}
               >
-                Browse Auctions
+                {t('cta.secondaryButton')}
               </Button>
             </Stack>
           </Box>

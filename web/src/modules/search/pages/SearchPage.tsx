@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -120,6 +121,8 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
 )
 
 export function SearchPage() {
+
+  const { t: _t } = useTranslation('search')
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get('q') || '')
   const inputRef = useRef<HTMLInputElement>(null)

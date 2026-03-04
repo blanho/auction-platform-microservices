@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -32,6 +33,7 @@ import type { Category } from '../api/categories.api'
 import { categorySchema, type CategoryFormData } from '../schemas'
 
 export function CategoriesManagementPage() {
+  const { t } = useTranslation('auctions')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -141,7 +143,7 @@ export function CategoriesManagementPage() {
           </TableCell>
           <TableCell>
             <Chip
-              label={`${category.auctionCount ?? 0} auctions`}
+              label={t('detail.bidCount', { count: category.auctionCount ?? 0 }).replace('bids', t('title').toLowerCase())}
               size="small"
               variant="outlined"
             />
@@ -186,7 +188,7 @@ export function CategoriesManagementPage() {
                 color: 'primary.main',
               }}
             >
-              Categories
+              {t('categories.title')}
             </Typography>
             <Button
               variant="contained"
@@ -197,7 +199,7 @@ export function CategoriesManagementPage() {
                 '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
-              Add Category
+              {t('categories.addCategory')}
             </Button>
           </Box>
         </motion.div>
@@ -208,10 +210,10 @@ export function CategoriesManagementPage() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Auctions</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell>{t('categories.category')}</TableCell>
+                    <TableCell>{t('title')}</TableCell>
+                    <TableCell>{t('form.description')}</TableCell>
+                    <TableCell align="right">{t('common:actions.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -226,7 +228,7 @@ export function CategoriesManagementPage() {
       </motion.div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
+        <DialogTitle>{editingCategory ? t('categories.editCategory') : t('categories.addCategory')}</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 1 }}>
@@ -236,7 +238,7 @@ export function CategoriesManagementPage() {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Category Name"
+                    label={t('categories.categoryName')}
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}
@@ -250,10 +252,10 @@ export function CategoriesManagementPage() {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Slug"
+                    label={t('categories.slug')}
                     fullWidth
                     error={!!errors.slug}
-                    helperText={errors.slug?.message || 'URL-friendly identifier'}
+                    helperText={errors.slug?.message || t('categories.slugHelper')}
                   />
                 )}
               />
@@ -262,13 +264,13 @@ export function CategoriesManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="Description" fullWidth multiline rows={3} />
+                  <TextField {...field} label={t('form.description')} fullWidth multiline rows={3} />
                 )}
               />
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => setDialogOpen(false)}>{t('common:actions.cancel')}</Button>
             <Button
               type="submit"
               variant="contained"
@@ -278,7 +280,7 @@ export function CategoriesManagementPage() {
                 '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
-              {editingCategory ? 'Update' : 'Create'}
+              {editingCategory ? t('common:actions.update') : t('common:actions.create')}
             </Button>
           </DialogActions>
         </form>

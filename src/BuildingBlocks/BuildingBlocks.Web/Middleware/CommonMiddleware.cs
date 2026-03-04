@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -72,6 +73,7 @@ public static class MiddlewareExtensions
 {
     public static IApplicationBuilder UseCorrelationId(this IApplicationBuilder app)
     {
+        app.UseAppLocalization();
         return app.UseMiddleware<CorrelationIdMiddleware>();
     }
 

@@ -53,6 +53,7 @@ import {
   DoNotDisturb,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   useMyAuctions,
   useActivateAuction,
@@ -126,6 +127,8 @@ const STATUS_TAB_MAP: (AuctionStatus | undefined)[] = [
 ]
 
 export function MyAuctionsPage() {
+
+  const { t: _t } = useTranslation('users')
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(0)

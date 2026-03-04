@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Box, Container, Typography, Button, Stack } from '@mui/material'
 import { Home, ArrowBack } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 
 export const UnauthorizedPage = () => {
+  const { t } = useTranslation()
+
   return (
     <Box
       sx={{
@@ -48,7 +51,7 @@ export const UnauthorizedPage = () => {
               mb: 2,
             }}
           >
-            Access Denied
+            {t('errors.unauthorizedTitle')}
           </Typography>
 
           <Typography
@@ -60,8 +63,7 @@ export const UnauthorizedPage = () => {
               mx: 'auto',
             }}
           >
-            You do not have permission to access this page. Please contact an administrator if you
-            believe this is a mistake.
+            {t('errors.unauthorizedMessage')}
           </Typography>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
@@ -79,7 +81,7 @@ export const UnauthorizedPage = () => {
                 '&:hover': { bgcolor: palette.neutral[700] },
               }}
             >
-              Go Home
+              {t('goHome')}
             </Button>
             <Button
               variant="outlined"
@@ -98,7 +100,7 @@ export const UnauthorizedPage = () => {
                 },
               }}
             >
-              Go Back
+              {t('goBack')}
             </Button>
           </Stack>
         </Box>

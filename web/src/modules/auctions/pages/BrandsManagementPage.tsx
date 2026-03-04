@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -31,22 +32,23 @@ interface BrandFilter {
   search?: string
 }
 
-const FILTER_CONFIG: FilterPanelConfig = {
-  fields: [
-    {
-      key: 'search',
-      label: 'Search',
-      type: 'text',
-      placeholder: 'Search brands...',
-      gridSize: { xs: 12, sm: 6, md: 4 },
-    },
-  ],
-  collapsible: false,
-  showClearButton: true,
-}
-
 export function BrandsManagementPage() {
+  const { t } = useTranslation('auctions')
   const pagination = usePagination<BrandFilter>({ defaultPageSize: 10 })
+
+  const FILTER_CONFIG: FilterPanelConfig = {
+    fields: [
+      {
+        key: 'search',
+        label: t('common:actions.search'),
+        type: 'text',
+        placeholder: t('brands.searchPlaceholder'),
+        gridSize: { xs: 12, sm: 6, md: 4 },
+      },
+    ],
+    collapsible: false,
+    showClearButton: true,
+  }
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
   const [deleteDialog, setDeleteDialog] = useState<Brand | null>(null)
@@ -98,7 +100,7 @@ export function BrandsManagementPage() {
     () => [
       {
         key: 'name',
-        header: 'Brand',
+        header: t('brands.brandName'),
         sortable: true,
         sortKey: 'name',
         render: (_, row) => (
@@ -130,7 +132,7 @@ export function BrandsManagementPage() {
       },
       {
         key: 'slug',
-        header: 'Slug',
+        header: t('brands.slug'),
         sortable: true,
         sortKey: 'slug',
         render: (_, row) => (
@@ -141,14 +143,14 @@ export function BrandsManagementPage() {
       },
       {
         key: 'auctionCount',
-        header: 'Auctions',
+        header: t('title'),
         sortable: true,
         sortKey: 'auctionCount',
         render: (_, row) => row.auctionCount ?? 0,
       },
       {
         key: 'websiteUrl',
-        header: 'Website',
+        header: t('brands.websiteUrl'),
         render: (_, row) =>
           row.websiteUrl ? (
             <Typography
@@ -168,7 +170,7 @@ export function BrandsManagementPage() {
       },
       {
         key: 'actions',
-        header: 'Actions',
+        header: t('common:actions.actions'),
         align: 'right',
         render: (_, row) => (
           <Box>
@@ -245,7 +247,7 @@ export function BrandsManagementPage() {
                 color: 'primary.main',
               }}
             >
-              Brands
+              {t('brands.title')}
             </Typography>
             <Button
               variant="contained"
@@ -256,7 +258,7 @@ export function BrandsManagementPage() {
                 '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
-              Add Brand
+              {t('brands.addBrand')}
             </Button>
           </Box>
         </motion.div>
@@ -282,14 +284,14 @@ export function BrandsManagementPage() {
               onPageChange={pagination.setPage}
               onPageSizeChange={pagination.setPageSize}
               onRowClick={(row) => handleOpenDialog(row)}
-              emptyMessage="No brands found"
+              emptyMessage={t('brands.noBrands')}
             />
           </Card>
         </motion.div>
       </motion.div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingBrand ? 'Edit Brand' : 'Add Brand'}</DialogTitle>
+        <DialogTitle>{editingBrand ? t('brands.editBrand') : t('brands.addBrand')}</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 1 }}>
@@ -299,7 +301,7 @@ export function BrandsManagementPage() {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Brand Name"
+                    label={t('brands.brandName')}
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}
@@ -313,10 +315,10 @@ export function BrandsManagementPage() {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Slug"
+                    label={t('brands.slug')}
                     fullWidth
                     error={!!errors.slug}
-                    helperText={errors.slug?.message || 'URL-friendly identifier'}
+                    helperText={errors.slug?.message || t('brands.slugHelper')}
                   />
                 )}
               />
@@ -325,7 +327,7 @@ export function BrandsManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="Description" fullWidth multiline rows={3} />
+                  <TextField {...field} label={t('form.description')} fullWidth multiline rows={3} />
                 )}
               />
 
@@ -335,7 +337,7 @@ export function BrandsManagementPage() {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Website URL"
+                    label={t('brands.websiteUrl')}
                     fullWidth
                     error={!!errors.websiteUrl}
                     helperText={errors.websiteUrl?.message}
@@ -346,7 +348,7 @@ export function BrandsManagementPage() {
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => setDialogOpen(false)}>{t('common:actions.cancel')}</Button>
             <Button
               type="submit"
               variant="contained"
@@ -356,28 +358,28 @@ export function BrandsManagementPage() {
                 '&:hover': { bgcolor: palette.brand.hover },
               }}
             >
-              {editingBrand ? 'Update' : 'Create'}
+              {editingBrand ? t('common:actions.update') : t('common:actions.create')}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
 
       <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
-        <DialogTitle>Delete Brand</DialogTitle>
+        <DialogTitle>{t('brands.deleteBrand')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{deleteDialog?.name}"? This action cannot be undone.
+            {t('brands.deleteConfirmation', { name: deleteDialog?.name })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog(null)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialog(null)}>{t('common:actions.cancel')}</Button>
           <Button
             variant="contained"
             color="error"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
           >
-            Delete
+            {t('common:actions.delete')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,4 +1,5 @@
 import { Box, Typography, Button, Stack } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { Warning, Refresh, Home } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
@@ -11,11 +12,15 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Something went wrong',
-  message = 'We encountered an unexpected error. Please try again.',
+  title,
+  message,
   onRetry,
   showHomeButton = false,
 }: ErrorStateProps) {
+  const { t } = useTranslation()
+  const displayTitle = title || t('errors.defaultTitle')
+  const displayMessage = message || t('errors.defaultMessage')
+
   return (
     <Box
       sx={{
@@ -51,7 +56,7 @@ export function ErrorState({
           mb: 1,
         }}
       >
-        {title}
+        {displayTitle}
       </Typography>
 
       <Typography
@@ -61,7 +66,7 @@ export function ErrorState({
           mb: 3,
         }}
       >
-        {message}
+        {displayMessage}
       </Typography>
 
       <Stack direction="row" spacing={2}>
@@ -77,7 +82,7 @@ export function ErrorState({
               '&:hover': { bgcolor: palette.neutral[700] },
             }}
           >
-            Try Again
+            {t('tryAgain')}
           </Button>
         )}
         {showHomeButton && (
@@ -94,7 +99,7 @@ export function ErrorState({
               '&:hover': { borderColor: palette.neutral[900] },
             }}
           >
-            Go Home
+            {t('goHome')}
           </Button>
         )}
       </Stack>

@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Bidding.Application.Features.AutoBids.CreateAutoBid;
 
 public class CreateAutoBidCommandValidator : AbstractValidator<CreateAutoBidCommand>
@@ -6,25 +8,25 @@ public class CreateAutoBidCommandValidator : AbstractValidator<CreateAutoBidComm
     {
         RuleFor(x => x.AuctionId)
             .NotEmpty()
-            .WithMessage("Auction ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Auction ID"));
 
         RuleFor(x => x.UserId)
             .NotEmpty()
-            .WithMessage("User ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("User ID"));
 
         RuleFor(x => x.Username)
             .NotEmpty()
-            .WithMessage("Username is required");
+            .WithMessage(ValidationConstants.Messages.Required("Username"));
 
         RuleFor(x => x.MaxAmount)
             .GreaterThan(0)
-            .WithMessage("Max amount must be greater than zero")
+            .WithMessage(ValidationConstants.Messages.MustBePositive("Max amount"))
             .LessThanOrEqualTo(10_000_000)
-            .WithMessage("Max amount cannot exceed $10,000,000");
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Max amount", 10_000_000));
 
         RuleFor(x => x.IncrementAmount)
             .GreaterThan(0)
             .When(x => x.IncrementAmount.HasValue)
-            .WithMessage("Increment amount must be greater than zero");
+            .WithMessage(ValidationConstants.Messages.MustBePositive("Increment amount"));
     }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -133,6 +134,8 @@ function OrderStepIcon({ icon, ...props }: Readonly<OrderStepIconProps>) {
 }
 
 export function OrderDetailPage() {
+
+  const { t: _t } = useTranslation('payments')
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
   const [showShipDialog, setShowShipDialog] = useState(false)

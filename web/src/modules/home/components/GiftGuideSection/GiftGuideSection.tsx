@@ -2,41 +2,44 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Box, Container, Typography, Button, Grid } from '@mui/material'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 const giftCategories = [
   {
     id: 'for-her',
-    title: 'Shop For Her',
+    titleKey: 'giftGuide.forHer',
     image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80',
     link: '/auctions?category=women',
   },
   {
     id: 'jewelry',
-    title: 'Shop Jewelry',
+    titleKey: 'giftGuide.jewelry',
     image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&q=80',
     link: '/auctions?category=jewelry',
   },
   {
     id: 'for-him',
-    title: 'Shop For Him',
+    titleKey: 'giftGuide.forHim',
     image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&q=80',
     link: '/auctions?category=men',
   },
   {
     id: 'accessories',
-    title: 'Shop Accessories',
+    titleKey: 'giftGuide.accessories',
     image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400&q=80',
     link: '/auctions?category=accessories',
   },
   {
     id: 'watches',
-    title: 'Shop Watches',
+    titleKey: 'giftGuide.watches',
     image: 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=400&q=80',
     link: '/auctions?category=watches',
   },
 ]
 
 export const GiftGuideSection = () => {
+  const { t } = useTranslation('home')
+
   return (
     <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: '#FFFFFF' }}>
       <Container maxWidth="xl">
@@ -57,7 +60,7 @@ export const GiftGuideSection = () => {
                 mb: 2,
               }}
             >
-              Real Finds For Real Collectors
+              {t('giftGuide.title')}
             </Typography>
             <Typography
               sx={{
@@ -68,7 +71,7 @@ export const GiftGuideSection = () => {
                 mx: 'auto',
               }}
             >
-              They deserve the best. We make it easy to find — from one-of-a-kind watches to bucket-list bags.
+              {t('giftGuide.subtitle')}
             </Typography>
           </Box>
         </motion.div>
@@ -108,7 +111,7 @@ export const GiftGuideSection = () => {
                     <Box
                       component="img"
                       src={category.image}
-                      alt={category.title}
+                      alt={t(category.titleKey)}
                       sx={{
                         width: '100%',
                         height: '100%',
@@ -139,7 +142,7 @@ export const GiftGuideSection = () => {
                       },
                     }}
                   >
-                    {category.title}
+                    {t(category.titleKey)}
                   </Button>
                 </Box>
               </motion.div>

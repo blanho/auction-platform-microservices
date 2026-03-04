@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import i18next from 'i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Drawer,
@@ -38,7 +40,7 @@ function formatTimeLeft(endTime: string): string {
   const diffMs = end.getTime() - now.getTime()
 
   if (diffMs <= 0) {
-    return 'Ended'
+    return i18next.t('time.ended')
   }
 
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -46,15 +48,16 @@ function formatTimeLeft(endTime: string): string {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
 
   if (days > 0) {
-    return `${days}d ${hours}h left`
+    return i18next.t('time.daysHoursLeft', { days, hours })
   }
   if (hours > 0) {
-    return `${hours}h ${minutes}m left`
+    return i18next.t('time.hoursMinutesLeft', { hours, minutes })
   }
-  return `${minutes}m left`
+  return i18next.t('time.minutesLeft', { minutes })
 }
 
 function WishlistItemCard({ item, onRemove, isRemoving, onClose }: Readonly<WishlistItemCardProps>) {
+  const { t } = useTranslation()
   const { auction } = item
 
   return (
@@ -148,7 +151,7 @@ function WishlistItemCard({ item, onRemove, isRemoving, onClose }: Readonly<Wish
               {formatCurrency(auction.currentPrice)}
             </Typography>
             <Typography sx={{ fontSize: '0.75rem', color: palette.neutral[500] }}>
-              {auction.bidCount} {auction.bidCount === 1 ? 'bid' : 'bids'}
+              {t('wishlist.bid', { count: auction.bidCount })}
             </Typography>
           </Box>
         </Box>
@@ -191,6 +194,7 @@ function WishlistSkeleton() {
 }
 
 export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>) {
+  const { t } = useTranslation()
   const { data: watchlist, isLoading } = useWatchlist()
   const { data: watchlistCount } = useWatchlistCount()
   const removeMutation = useRemoveFromWatchlist()
@@ -240,10 +244,10 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
                 color: palette.neutral[900],
               }}
             >
-              Wishlist
+              {t('wishlist.title')}
             </Typography>
             <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500], mt: 0.25 }}>
-              {itemCount} {itemCount === 1 ? 'item' : 'items'} saved
+              {t('wishlist.itemsSaved', { count: itemCount })}
             </Typography>
           </Box>
           <IconButton
@@ -300,7 +304,7 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
                   mb: 1,
                 }}
               >
-                Your wishlist is empty
+                {t('wishlist.empty')}
               </Typography>
               <Typography
                 sx={{
@@ -311,7 +315,7 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
                   mb: 3,
                 }}
               >
-                Save items you love by clicking the heart icon on any auction
+                {t('wishlist.emptyDescription')}
               </Typography>
               <Button
                 component={Link}
@@ -334,7 +338,7 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
                   },
                 }}
               >
-                Explore Auctions
+                {t('exploreAuctions')}
               </Button>
             </Box>
           )}
@@ -384,7 +388,7 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
                 },
               }}
             >
-              View All Saved Items
+              {t('wishlist.viewAll')}
             </Button>
           </Box>
         )}

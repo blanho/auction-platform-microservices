@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Container,
@@ -25,6 +26,7 @@ import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
 import { palette, typography } from '@/shared/theme/tokens'
 
 export const AuctionsListPage = () => {
+  const { t } = useTranslation('auctions')
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const category = useMemo(() => searchParams.get('categoryId') ?? 'all', [searchParams])
@@ -52,8 +54,8 @@ export const AuctionsListPage = () => {
     if (isError) {
       return (
         <ErrorState
-          title="Failed to load auctions"
-          message="We couldn't load the auctions. Please try again."
+          title={t('errors.failedToLoadAuctions')}
+          message={t('errors.couldntLoadAuctions')}
           onRetry={() => refetch()}
         />
       )
@@ -64,7 +66,7 @@ export const AuctionsListPage = () => {
         <EmptyState
           variant="auctions"
           action={{
-            label: 'Create Auction',
+            label: t('createAuction'),
             href: '/auctions/create',
           }}
         />
@@ -164,7 +166,7 @@ export const AuctionsListPage = () => {
                       ${auction.currentBid.toLocaleString()}
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: palette.neutral[400] }}>
-                      {auction.bidCount} bids
+                      {t('detail.bidCount', { count: auction.bidCount })}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -188,7 +190,7 @@ export const AuctionsListPage = () => {
                       },
                     }}
                   >
-                    View Details
+                    {t('viewDetails')}
                   </Button>
                 </Box>
               </Card>
@@ -222,7 +224,7 @@ export const AuctionsListPage = () => {
             mb: 1.5,
           }}
         >
-          Explore
+          {t('explore')}
         </Typography>
         <Typography
           variant="h3"
@@ -234,10 +236,10 @@ export const AuctionsListPage = () => {
             mb: 1,
           }}
         >
-          Browse Auctions
+          {t('browse')}
         </Typography>
         <Typography sx={{ color: palette.neutral[500], fontSize: '1rem' }}>
-          Find unique items and place your bids
+          {t('findUniqueItems')}
         </Typography>
       </Box>
 
@@ -250,7 +252,7 @@ export const AuctionsListPage = () => {
         }}
       >
         <TextField
-          placeholder="Search auctions..."
+          placeholder={t('search.placeholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{ flexGrow: 1, minWidth: 200 }}
@@ -266,8 +268,8 @@ export const AuctionsListPage = () => {
         />
 
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Category</InputLabel>
-          <Select value={category} label="Category" onChange={(e) => {
+          <InputLabel>{t('filter.category')}</InputLabel>
+          <Select value={category} label={t('filter.category')} onChange={(e) => {
             const value = e.target.value
             if (value === 'all') {
               searchParams.delete('categoryId')
@@ -276,7 +278,7 @@ export const AuctionsListPage = () => {
             }
             setSearchParams(searchParams)
           }}>
-            <MenuItem value="all">All Categories</MenuItem>
+            <MenuItem value="all">{t('filter.allCategories')}</MenuItem>
             {categories.map((cat) => (
               <MenuItem key={cat.id} value={cat.id}>
                 {cat.name}
@@ -286,13 +288,13 @@ export const AuctionsListPage = () => {
         </FormControl>
 
         <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Sort By</InputLabel>
-          <Select value={sortBy} label="Sort By" onChange={(e) => setSortBy(e.target.value)}>
-            <MenuItem value="ending-soon">Ending Soon</MenuItem>
-            <MenuItem value="newest">Newest</MenuItem>
-            <MenuItem value="price-low">Price: Low to High</MenuItem>
-            <MenuItem value="price-high">Price: High to Low</MenuItem>
-            <MenuItem value="popular">Most Bids</MenuItem>
+          <InputLabel>{t('filter.sortBy')}</InputLabel>
+          <Select value={sortBy} label={t('filter.sortBy')} onChange={(e) => setSortBy(e.target.value)}>
+            <MenuItem value="ending-soon">{t('sort.endingSoon')}</MenuItem>
+            <MenuItem value="newest">{t('sort.newest')}</MenuItem>
+            <MenuItem value="price-low">{t('sort.priceLowToHigh')}</MenuItem>
+            <MenuItem value="price-high">{t('sort.priceHighToLow')}</MenuItem>
+            <MenuItem value="popular">{t('sort.mostBids')}</MenuItem>
           </Select>
         </FormControl>
       </Box>

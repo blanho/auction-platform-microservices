@@ -1,4 +1,5 @@
 using Bidding.Api.Extensions.DependencyInjection;
+using Bidding.Application.Resources;
 using Bidding.Domain.Constants;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
@@ -30,6 +31,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis")
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<BiddingResources>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;

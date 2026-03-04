@@ -10,14 +10,6 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
               <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
@@ -29,38 +21,36 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
-  
-  <data name="Payment.NotFound" xml:space="preserve"><value>支払いが見つかりません</value></data>
-  <data name="Payment.Successful" xml:space="preserve"><value>支払いが完了しました</value></data>
-  <data name="Payment.Failed" xml:space="preserve"><value>支払いに失敗しました</value></data>
-  <data name="Payment.Pending" xml:space="preserve"><value>支払い処理中です</value></data>
-  <data name="Payment.Cancelled" xml:space="preserve"><value>支払いがキャンセルされました</value></data>
-  <data name="Payment.Refunded" xml:space="preserve"><value>支払いが返金されました</value></data>
-  <data name="Payment.AlreadyProcessed" xml:space="preserve"><value>支払いは既に処理されています</value></data>
-  <data name="Payment.InvalidAmount" xml:space="preserve"><value>無効な支払金額です</value></data>
-  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>残高が不足しています</value></data>
-  <data name="Payment.CardDeclined" xml:space="preserve"><value>カードが拒否されました</value></data>
-  <data name="Payment.CardExpired" xml:space="preserve"><value>カードの有効期限が切れています</value></data>
-  <data name="Payment.InvalidCard" xml:space="preserve"><value>カード情報が無効です</value></data>
-  
-  <data name="Refund.NotFound" xml:space="preserve"><value>返金が見つかりません</value></data>
-  <data name="Refund.Successful" xml:space="preserve"><value>返金が完了しました</value></data>
-  <data name="Refund.Failed" xml:space="preserve"><value>返金に失敗しました</value></data>
-  <data name="Refund.Pending" xml:space="preserve"><value>返金処理中です</value></data>
-  <data name="Refund.AlreadyProcessed" xml:space="preserve"><value>返金は既に処理されています</value></data>
-  <data name="Refund.ExceedsPayment" xml:space="preserve"><value>返金額が元の支払額を超えています</value></data>
-  
-  <data name="Transaction.NotFound" xml:space="preserve"><value>取引が見つかりません</value></data>
-  <data name="Transaction.Created" xml:space="preserve"><value>取引が作成されました</value></data>
-  <data name="Transaction.Completed" xml:space="preserve"><value>取引が完了しました</value></data>
-  
-  <data name="PaymentMethod.NotFound" xml:space="preserve"><value>支払い方法が見つかりません</value></data>
-  <data name="PaymentMethod.Added" xml:space="preserve"><value>支払い方法が追加されました</value></data>
-  <data name="PaymentMethod.Removed" xml:space="preserve"><value>支払い方法が削除されました</value></data>
-  <data name="PaymentMethod.SetAsDefault" xml:space="preserve"><value>デフォルトの支払い方法に設定されました</value></data>
-  
-  <data name="Validation.AmountRequired" xml:space="preserve"><value>金額は必須です</value></data>
-  <data name="Validation.AmountPositive" xml:space="preserve"><value>金額は正の数でなければなりません</value></data>
-  <data name="Validation.CurrencyRequired" xml:space="preserve"><value>通貨は必須です</value></data>
-  <data name="Validation.PaymentMethodRequired" xml:space="preserve"><value>支払い方法は必須です</value></data>
+  <data name="Payment.Failed" xml:space="preserve"><value>支払い処理に失敗しました。もう一度お試しください。</value></data>
+  <data name="Payment.Succeeded" xml:space="preserve"><value>支払いが正常に処理されました。</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>支払いを処理中です。</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>支払いが返金されました。</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>この取引を完了するための資金が不足しています。</value></data>
+  <data name="Payment.ProcessingFailed" xml:space="preserve"><value>支払い処理に失敗しました: {0}</value></data>
+  <data name="Payment.RefundFailed" xml:space="preserve"><value>返金に失敗しました: {0}</value></data>
+  <data name="Payment.InvalidAmount" xml:space="preserve"><value>無効な支払い金額です。</value></data>
+  <data name="Order.NotFound" xml:space="preserve"><value>注文が見つかりません。</value></data>
+  <data name="Order.AlreadyExists" xml:space="preserve"><value>注文はすでに存在します。</value></data>
+  <data name="Order.AlreadyPaid" xml:space="preserve"><value>注文はすでに支払い済みです。</value></data>
+  <data name="Order.Cancelled" xml:space="preserve"><value>注文はキャンセルされました。</value></data>
+  <data name="Order.InvalidStatus" xml:space="preserve"><value>この操作には注文ステータスが無効です。</value></data>
+  <data name="Order.InvalidData" xml:space="preserve"><value>必要な注文データが不足しています。</value></data>
+  <data name="Order.NotPaid" xml:space="preserve"><value>注文はまだ支払われていません。</value></data>
+  <data name="Order.AlreadyShipped" xml:space="preserve"><value>注文はすでに発送済みです。</value></data>
+  <data name="Order.AlreadyDelivered" xml:space="preserve"><value>注文はすでに配達済みです。</value></data>
+  <data name="Order.NotShipped" xml:space="preserve"><value>注文はまだ発送されていません。</value></data>
+  <data name="Order.CreateFailed" xml:space="preserve"><value>注文の作成に失敗しました: {0}</value></data>
+  <data name="Order.UpdateFailed" xml:space="preserve"><value>注文の更新に失敗しました: {0}</value></data>
+  <data name="Wallet.NotFound" xml:space="preserve"><value>ウォレットが見つかりません。</value></data>
+  <data name="Wallet.AlreadyExists" xml:space="preserve"><value>このユーザーのウォレットはすでに存在します。</value></data>
+  <data name="Wallet.Busy" xml:space="preserve"><value>ウォレットは現在処理中です。もう一度お試しください。</value></data>
+  <data name="Wallet.InsufficientBalance" xml:space="preserve"><value>ウォレット残高が不足しています。</value></data>
+  <data name="Wallet.InsufficientHeldAmount" xml:space="preserve"><value>解放するための保留額が不足しています。</value></data>
+  <data name="Wallet.ConcurrencyConflict" xml:space="preserve"><value>ウォレットが別の操作で変更されました。もう一度お試しください。</value></data>
+  <data name="Wallet.CreateFailed" xml:space="preserve"><value>ウォレットの作成に失敗しました: {0}</value></data>
+  <data name="Stripe.SessionCreationFailed" xml:space="preserve"><value>決済セッションの作成に失敗しました: {0}</value></data>
+  <data name="Stripe.WebhookProcessingFailed" xml:space="preserve"><value>決済Webhookの処理に失敗しました: {0}</value></data>
+  <data name="Stripe.InvalidWebhookSignature" xml:space="preserve"><value>無効なWebhook署名です。</value></data>
+  <data name="Transaction.NotFound" xml:space="preserve"><value>取引が見つかりません。</value></data>
+  <data name="Transaction.Failed" xml:space="preserve"><value>取引に失敗しました: {0}</value></data>
 </root>

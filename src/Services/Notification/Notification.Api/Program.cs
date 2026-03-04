@@ -1,5 +1,6 @@
 using Carter;
 using Notification.Api.Extensions.DependencyInjection;
+using Notification.Application.Resources;
 using Notification.Api.Hubs;
 using Notification.Api.Services;
 using Notification.Application.Interfaces;
@@ -30,6 +31,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?
 var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
 
 builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<NotificationResources>();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 builder.Services.AddAutoMapper(applicationAssembly);

@@ -31,6 +31,7 @@ import {
   Add,
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   RevenueChart,
@@ -44,6 +45,8 @@ import type { TimeRange } from '../utils/date.utils'
 import type { TrendDataPoint, CategoryBreakdown } from '../types'
 
 export function UserDashboardPage() {
+
+  const { t: _t } = useTranslation('analytics')
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
   const { data: userStats, isLoading: userLoading, error: userError } = useUserDashboard()
   const { data: sellerAnalytics, isLoading: sellerLoading } = useSellerAnalytics(timeRange)

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -87,6 +88,7 @@ function AuctionFormSkeleton() {
 }
 
 export function AuctionFormPage() {
+  const { t } = useTranslation('auctions')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
@@ -247,24 +249,24 @@ export function AuctionFormPage() {
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert
           severity="error"
-          title="Failed to Load Auction"
+          title={t('errors.failedToLoadAuction')}
         >
-          Unable to load auction data. Please try again.
+          {t('errors.unableToLoadAuction')}
           <Button color="inherit" size="small" onClick={() => globalThis.location.reload()} sx={{ ml: 1 }}>
-            Retry
+            {t('common:actions.retry')}
           </Button>
         </InlineAlert>
       </Container>
     )
   }
 
-  const pageTitle = isEditMode ? 'Edit Auction' : 'Create New Auction'
+  const pageTitle = isEditMode ? t('editAuction') : t('createAuction')
   
   const getSubmitButtonText = () => {
     if (isEditMode) {
-      return isSubmitting ? 'Updating...' : 'Update Auction'
+      return isSubmitting ? t('form.updating') : t('form.updateAuction')
     }
-    return isSubmitting ? 'Creating...' : 'Create Auction'
+    return isSubmitting ? t('form.creating') : t('createAuction')
   }
   const submitButtonText = getSubmitButtonText()
 
@@ -284,10 +286,10 @@ export function AuctionFormPage() {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Auction Title"
-                    placeholder="Enter a descriptive title for your auction"
+                    label={t('form.title')}
+                    placeholder={t('form.titlePlaceholder')}
                     error={Boolean(errors.title)}
-                    helperText={errors.title?.message || 'Min 10 characters, max 200'}
+                    helperText={errors.title?.message || t('form.titleHelper')}
                     required
                     slotProps={{ htmlInput: { maxLength: 200 } }}
                   />
@@ -302,12 +304,12 @@ export function AuctionFormPage() {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Description"
-                    placeholder="Describe your item in detail - condition, history, specifications..."
+                    label={t('form.description')}
+                    placeholder={t('form.descriptionPlaceholder')}
                     multiline
                     rows={6}
                     error={Boolean(errors.description)}
-                    helperText={errors.description?.message || 'Min 50 characters, max 4000'}
+                    helperText={errors.description?.message || t('form.descriptionHelper')}
                     required
                     slotProps={{ htmlInput: { maxLength: 4000 } }}
                   />
@@ -320,8 +322,8 @@ export function AuctionFormPage() {
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth error={Boolean(errors.categoryId)} required>
-                    <InputLabel id="category-label">Category</InputLabel>
-                    <Select {...field} labelId="category-label" label="Category">
+                    <InputLabel id="category-label">{t('form.category')}</InputLabel>
+                    <Select {...field} labelId="category-label" label={t('form.category')}>
                       {categories.map((cat) => (
                         <MenuItem key={cat.id} value={cat.id}>
                           {cat.name}
@@ -349,8 +351,8 @@ export function AuctionFormPage() {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="Brand (Optional)"
-                          placeholder="Select or search brand"
+                          label={t('form.brandOptional')}
+                          placeholder={t('form.selectBrand')}
                         />
                       )}
                     />
@@ -370,8 +372,8 @@ export function AuctionFormPage() {
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth>
-                    <InputLabel id="condition-label">Condition</InputLabel>
-                    <Select {...field} labelId="condition-label" label="Condition">
+                    <InputLabel id="condition-label">{t('form.condition')}</InputLabel>
+                    <Select {...field} labelId="condition-label" label={t('form.condition')}>
                       {ITEM_CONDITIONS.map((cond) => (
                         <MenuItem key={cond.value} value={cond.value}>
                           <Box>
@@ -400,8 +402,8 @@ export function AuctionFormPage() {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        label="Year Manufactured (Optional)"
-                        placeholder="Select year"
+                        label={t('form.yearManufacturedOptional')}
+                        placeholder={t('form.selectYear')}
                       />
                     )}
                   />
@@ -409,18 +411,17 @@ export function AuctionFormPage() {
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <InlineAlert severity="info" title="Item Details" sx={{ mt: 1 }}>
-                Providing accurate condition and year helps buyers make informed decisions and can
-                increase trust in your listing.
+              <InlineAlert severity="info" title={t('form.itemDetails')} sx={{ mt: 1 }}>
+                {t('form.itemDetailsHelper')}
               </InlineAlert>
             </Grid>
             {!isEditMode && (
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                  Photos & Files
+                  {t('form.photosFiles')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Add photos of your item. The first image will be used as the cover photo.
+                  {t('form.photosFilesHelper')}
                 </Typography>
                 <FileUploadZone
                   attachments={attachments}
@@ -440,7 +441,7 @@ export function AuctionFormPage() {
         if (isEditMode) {
           return (
             <InlineAlert severity="info">
-              Pricing and duration cannot be modified after auction creation.
+              {t('form.pricingNotModifiable')}
             </InlineAlert>
           )
         }
@@ -454,7 +455,7 @@ export function AuctionFormPage() {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Starting Price"
+                    label={t('form.startingPrice')}
                     type="number"
                     slotProps={{
                       input: {
@@ -465,7 +466,7 @@ export function AuctionFormPage() {
                     error={Boolean((errors as Record<string, { message?: string }>).reservePrice)}
                     helperText={
                       (errors as Record<string, { message?: string }>).reservePrice?.message ||
-                      'Minimum bid amount'
+                      t('form.startingPriceHelper')
                     }
                     required
                   />
@@ -478,8 +479,8 @@ export function AuctionFormPage() {
                 control={control}
                 render={({ field }) => (
                   <FormControl fullWidth>
-                    <InputLabel id="currency-label">Currency</InputLabel>
-                    <Select {...field} labelId="currency-label" label="Currency">
+                    <InputLabel id="currency-label">{t('form.currency')}</InputLabel>
+                    <Select {...field} labelId="currency-label" label={t('form.currency')}>
                       {CURRENCIES.map((cur) => (
                         <MenuItem key={cur.value} value={cur.value}>
                           {cur.label}
@@ -498,7 +499,7 @@ export function AuctionFormPage() {
                     onChange={(e) => setEnableBuyNow(e.target.checked)}
                   />
                 }
-                label="Enable Buy Now Price"
+                label={t('form.enableBuyNow')}
               />
               {enableBuyNow && (
                 <Controller
@@ -508,7 +509,7 @@ export function AuctionFormPage() {
                     <TextField
                       {...field}
                       fullWidth
-                      label="Buy Now Price"
+                      label={t('form.buyNowPrice')}
                       type="number"
                       slotProps={{
                         input: {
@@ -519,7 +520,7 @@ export function AuctionFormPage() {
                       error={Boolean((errors as Record<string, { message?: string }>).buyNowPrice)}
                       helperText={
                         (errors as Record<string, { message?: string }>).buyNowPrice?.message ||
-                        'Price for immediate purchase (must be higher than starting price)'
+                        t('form.buyNowPriceHelper')
                       }
                       sx={{ mt: 2 }}
                     />
@@ -530,7 +531,7 @@ export function AuctionFormPage() {
             <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle1" gutterBottom>
-                Auction Duration
+                {t('form.auctionDuration')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                 {AUCTION_DURATIONS.map((duration) => (
@@ -552,7 +553,7 @@ export function AuctionFormPage() {
                   <TextField
                     {...field}
                     fullWidth
-                    label="Auction End Time"
+                    label={t('form.auctionEnd')}
                     type="datetime-local"
                     slotProps={{
                       inputLabel: { shrink: true },
@@ -560,7 +561,7 @@ export function AuctionFormPage() {
                     error={Boolean((errors as Record<string, { message?: string }>).auctionEnd)}
                     helperText={
                       (errors as Record<string, { message?: string }>).auctionEnd?.message ||
-                      'When the auction will end'
+                      t('form.auctionEndHelper')
                     }
                     required
                   />
@@ -573,14 +574,13 @@ export function AuctionFormPage() {
       case 3:
         return (
           <Box>
-            <InlineAlert severity="info" title="Review Your Auction" sx={{ mb: 3 }}>
-              Please review all the details before {isEditMode ? 'updating' : 'creating'} your
-              auction.
+            <InlineAlert severity="info" title={t('formSteps.review')} sx={{ mb: 3 }}>
+              {isEditMode ? t('form.reviewUpdateDescription') : t('form.reviewCreateDescription')}
             </InlineAlert>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Title
+                  {t('form.title')}
                 </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
                   {watchedValues.title || '-'}
@@ -588,7 +588,7 @@ export function AuctionFormPage() {
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Description
+                  {t('form.description')}
                 </Typography>
                 <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                   {watchedValues.description || '-'}
@@ -596,7 +596,7 @@ export function AuctionFormPage() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary">
-                  Category
+                  {t('form.category')}
                 </Typography>
                 <Typography variant="body1">
                   {categories.find((c) => c.id === watchedValues.categoryId)?.name || '-'}
@@ -605,7 +605,7 @@ export function AuctionFormPage() {
               {!isEditMode && 'brandId' in watchedValues && watchedValues.brandId && (
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Brand
+                    {t('form.brand')}
                   </Typography>
                   <Typography variant="body1">
                     {brands.find((b) => b.id === watchedValues.brandId)
@@ -616,7 +616,7 @@ export function AuctionFormPage() {
               {watchedValues.condition && (
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Condition
+                    {t('form.condition')}
                   </Typography>
                   <Typography variant="body1">
                     {ITEM_CONDITIONS.find((c) => c.value === watchedValues.condition)?.label || '-'}
@@ -626,7 +626,7 @@ export function AuctionFormPage() {
               {watchedValues.yearManufactured && (
                 <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" color="text.secondary">
-                    Year Manufactured
+                    {t('detail.yearManufactured')}
                   </Typography>
                   <Typography variant="body1">{watchedValues.yearManufactured}</Typography>
                 </Grid>
@@ -636,7 +636,7 @@ export function AuctionFormPage() {
                   {attachments.length > 0 && (
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" color="text.secondary">
-                        Files Attached
+                        {t('form.filesAttached')}
                       </Typography>
                       <Typography variant="body1">
                         {`${attachments.length} file(s)`}
@@ -645,7 +645,7 @@ export function AuctionFormPage() {
                   )}
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Starting Price
+                      {t('form.startingPrice')}
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600, color: 'primary.main' }}>
                       ${watchedValues.reservePrice}
@@ -654,7 +654,7 @@ export function AuctionFormPage() {
                   {enableBuyNow && watchedValues.buyNowPrice && (
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" color="text.secondary">
-                        Buy Now Price
+                        {t('form.buyNowPrice')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 600, color: 'success.main' }}>
                         ${watchedValues.buyNowPrice}
@@ -663,7 +663,7 @@ export function AuctionFormPage() {
                   )}
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Auction End
+                      {t('form.auctionEnd')}
                     </Typography>
                     <Typography variant="body1">
                       {new Date(
@@ -673,7 +673,7 @@ export function AuctionFormPage() {
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Currency
+                      {t('form.currency')}
                     </Typography>
                     <Typography variant="body1">
                       {CURRENCIES.find(
@@ -698,12 +698,12 @@ export function AuctionFormPage() {
         <motion.div variants={fadeInUp}>
           <Breadcrumbs sx={{ mb: 2 }}>
             <MuiLink component={Link} to="/" color="inherit" underline="hover">
-              Home
+              {t('common:nav.home')}
             </MuiLink>
             <MuiLink component={Link} to="/my-auctions" color="inherit" underline="hover">
-              My Auctions
+              {t('myAuctions')}
             </MuiLink>
-            <Typography color="text.primary">{isEditMode ? 'Edit' : 'Create'}</Typography>
+            <Typography color="text.primary">{isEditMode ? t('common:actions.edit') : t('common:actions.create')}</Typography>
           </Breadcrumbs>
 
           <Typography
@@ -719,8 +719,8 @@ export function AuctionFormPage() {
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 4 }}>
             {isEditMode
-              ? 'Update your auction details below'
-              : 'Fill in the details below to list your item for auction'}
+              ? t('form.editDescription')
+              : t('form.createDescription')}
           </Typography>
         </motion.div>
 
@@ -755,11 +755,11 @@ export function AuctionFormPage() {
                   startIcon={<ArrowBack />}
                   sx={{ visibility: activeStep === 0 ? 'hidden' : 'visible' }}
                 >
-                  Back
+                  {t('common:actions.back')}
                 </Button>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button variant="outlined" onClick={() => navigate('/my-auctions')}>
-                    Cancel
+                    {t('common:actions.cancel')}
                   </Button>
                   {activeStep === FORM_STEPS.length - 1 ? (
                     <Button
@@ -786,7 +786,7 @@ export function AuctionFormPage() {
                         '&:hover': { bgcolor: palette.neutral[700] },
                       }}
                     >
-                      Next
+                      {t('common:actions.next')}
                     </Button>
                   )}
                 </Box>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Container,
@@ -49,6 +50,8 @@ import { getTransactionIcon } from '../utils'
 import { formatCurrency } from '@/shared/utils/formatters'
 
 export function WalletPage() {
+
+  const { t: _t } = useTranslation('payments')
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState(0)
   const [showDepositDialog, setShowDepositDialog] = useState(false)

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
   Box,
@@ -43,49 +44,8 @@ import { formatCurrency } from '@/shared/utils'
 import type { AutoBid } from '../types'
 import { palette } from '@/shared/theme/tokens'
 
-const getStatusChip = (status: string, isWinning: boolean) => {
-  if (isWinning) {
-    return (
-      <Chip
-        icon={<EmojiEvents sx={{ fontSize: 16 }} />}
-        label="Winning"
-        size="small"
-        sx={{ bgcolor: '#DCFCE7', color: '#166534' }}
-      />
-    )
-  }
-
-  switch (status) {
-    case 'active':
-      return (
-        <Chip
-          icon={<TrendingDown sx={{ fontSize: 16 }} />}
-          label="Outbid"
-          size="small"
-          sx={{ bgcolor: '#FEF3C7', color: '#92400E' }}
-        />
-      )
-    case 'ended':
-      return (
-        <Chip
-          icon={<AccessTime sx={{ fontSize: 16 }} />}
-          label="Ended"
-          size="small"
-          sx={{ bgcolor: '#F3F4F6', color: '#6B7280' }}
-        />
-      )
-    default:
-      return (
-        <Chip
-          label={status}
-          size="small"
-          sx={{ bgcolor: '#F3F4F6', color: '#6B7280', textTransform: 'capitalize' }}
-        />
-      )
-  }
-}
-
 export function MyBidsPage() {
+  const { t } = useTranslation('bidding')
   const [activeTab, setActiveTab] = useState(0)
   const [editAutoBid, setEditAutoBid] = useState<AutoBid | null>(null)
   const [newMaxAmount, setNewMaxAmount] = useState('')
@@ -94,6 +54,48 @@ export function MyBidsPage() {
   const { data: autoBids, isLoading: autoBidsLoading } = useMyAutoBids()
   const cancelAutoBid = useCancelAutoBid()
   const updateAutoBid = useUpdateAutoBid()
+
+  const getStatusChip = (status: string, isWinning: boolean) => {
+    if (isWinning) {
+      return (
+        <Chip
+          icon={<EmojiEvents sx={{ fontSize: 16 }} />}
+          label={t('status.winning')}
+          size="small"
+          sx={{ bgcolor: '#DCFCE7', color: '#166534' }}
+        />
+      )
+    }
+
+    switch (status) {
+      case 'active':
+        return (
+          <Chip
+            icon={<TrendingDown sx={{ fontSize: 16 }} />}
+            label={t('status.outbid')}
+            size="small"
+            sx={{ bgcolor: '#FEF3C7', color: '#92400E' }}
+          />
+        )
+      case 'ended':
+        return (
+          <Chip
+            icon={<AccessTime sx={{ fontSize: 16 }} />}
+            label={t('status.ended')}
+            size="small"
+            sx={{ bgcolor: '#F3F4F6', color: '#6B7280' }}
+          />
+        )
+      default:
+        return (
+          <Chip
+            label={status}
+            size="small"
+            sx={{ bgcolor: '#F3F4F6', color: '#6B7280', textTransform: 'capitalize' }}
+          />
+        )
+    }
+  }
 
   let emptyMessage = "You haven't placed any bids yet"
   if (activeTab === 1) {

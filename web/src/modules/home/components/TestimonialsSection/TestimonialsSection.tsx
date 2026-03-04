@@ -2,32 +2,13 @@ import { motion } from 'framer-motion'
 import { Box, Container, Typography, Grid, Avatar } from '@mui/material'
 import { FormatQuote } from '@mui/icons-material'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
-const testimonials = [
-  {
-    id: 'testimonial-1',
-    name: 'Alexandra Chen',
-    role: 'Art Collector',
-    avatar: '',
-    quote: 'The authentication process gave me complete peace of mind. I acquired a piece I had been searching for over two years — flawlessly.',
-  },
-  {
-    id: 'testimonial-2',
-    name: 'Marcus Rothwell',
-    role: 'Vintage Watch Dealer',
-    avatar: '',
-    quote: 'As a seller, the platform exposure is unmatched. My listings consistently attract serious, qualified bidders from around the world.',
-  },
-  {
-    id: 'testimonial-3',
-    name: 'Sofia Bergström',
-    role: 'Interior Designer',
-    avatar: '',
-    quote: 'I source unique pieces for my clients here regularly. The curation quality and condition reports save me hours of due diligence.',
-  },
-]
+const testimonialIds = ['1', '2', '3']
 
 export const TestimonialsSection = () => {
+  const { t } = useTranslation('home')
+
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FAFAF9', position: 'relative' }}>
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
@@ -52,7 +33,7 @@ export const TestimonialsSection = () => {
                 textTransform: 'uppercase',
               }}
             >
-              Testimonials
+              {t('testimonials.label')}
             </Typography>
             <Typography
               variant="h2"
@@ -63,14 +44,14 @@ export const TestimonialsSection = () => {
                 fontSize: { xs: '1.75rem', md: '2.5rem' },
               }}
             >
-              Trusted by Collectors Worldwide
+              {t('testimonials.title')}
             </Typography>
           </Box>
         </motion.div>
 
         <Grid container spacing={4}>
-          {testimonials.map((testimonial, index) => (
-            <Grid size={{ xs: 12, md: 4 }} key={testimonial.id}>
+          {testimonialIds.map((id, index) => (
+            <Grid size={{ xs: 12, md: 4 }} key={id}>
               <motion.div
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -108,11 +89,10 @@ export const TestimonialsSection = () => {
                       mb: 4,
                     }}
                   >
-                    {testimonial.quote}
+                    {t(`testimonials.items.${id}.quote`)}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
-                      src={testimonial.avatar}
                       sx={{
                         width: 40,
                         height: 40,
@@ -123,7 +103,7 @@ export const TestimonialsSection = () => {
                         fontSize: '0.875rem',
                       }}
                     >
-                      {testimonial.name.charAt(0)}
+                      {t(`testimonials.items.${id}.name`).charAt(0)}
                     </Avatar>
                     <Box>
                       <Typography
@@ -133,7 +113,7 @@ export const TestimonialsSection = () => {
                           fontSize: '0.8125rem',
                         }}
                       >
-                        {testimonial.name}
+                        {t(`testimonials.items.${id}.name`)}
                       </Typography>
                       <Typography
                         sx={{
@@ -142,7 +122,7 @@ export const TestimonialsSection = () => {
                           letterSpacing: '0.05em',
                         }}
                       >
-                        {testimonial.role}
+                        {t(`testimonials.items.${id}.role`)}
                       </Typography>
                     </Box>
                   </Box>

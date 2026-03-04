@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
+using Gateway.Api.Resources;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Localization;
 using Serilog;
 
 namespace Gateway.Api.Extensions;
@@ -100,10 +102,14 @@ public static class RateLimiterExtensions
             context.HttpContext.Connection.RemoteIpAddress,
             context.HttpContext.Request.Path);
 
+        var localizer = context.HttpContext.RequestServices.GetService<IStringLocalizer<GatewayResources>>();
+        var errorTitle = localizer?["Gateway.RateLimitExceeded"].Value ?? "Too many requests";
+        var errorDetail = localizer?["Gateway.RateLimitRetryAfter"].Value ?? "Rate limit exceeded. Please try again later.";
+
         await context.HttpContext.Response.WriteAsJsonAsync(new
         {
-            error = "Too many requests",
-            message = "Rate limit exceeded. Please try again later.",
+            error = errorTitle,
+            message = string.Format(errorDetail, retryAfter),
             retryAfterSeconds = int.Parse(retryAfter)
         }, cancellationToken: token);
     }

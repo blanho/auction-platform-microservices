@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
+import i18next from 'i18next'
 import { ErrorState } from '@/shared/ui'
 
 interface ErrorBoundaryProps {
@@ -44,8 +45,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       return (
         <ErrorState
-          title="Something went wrong"
-          message="An unexpected error occurred. Please try again or refresh the page."
+          title={i18next.t('errors.boundaryTitle')}
+          message={i18next.t('errors.boundaryMessage')}
           onRetry={this.handleReset}
           showHomeButton
         />

@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using BuildingBlocks.Application.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Identity.Api.Extensions.DependencyInjection;
@@ -52,9 +53,12 @@ internal static class RateLimitingExtensions
 
                 context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
 
+                var localizer = context.HttpContext.RequestServices.GetService<ILocalizationService>();
+                var errorMessage = localizer?.GetString(LocalizationKeys.RateLimit.TooManyRequests) ?? "Too many requests. Please try again later.";
+
                 await context.HttpContext.Response.WriteAsJsonAsync(new
                 {
-                    error = "Too many requests. Please try again later.",
+                    error = errorMessage,
                     retryAfterSeconds = retryAfter
                 }, cancellationToken);
             };

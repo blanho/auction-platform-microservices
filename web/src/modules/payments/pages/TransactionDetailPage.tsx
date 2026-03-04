@@ -1,4 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Container,
@@ -39,6 +40,8 @@ const formatDateLong = (dateString: string) => {
 }
 
 export function TransactionDetailPage() {
+
+  const { t: _t } = useTranslation('payments')
   const { transactionId } = useParams<{ transactionId: string }>()
   const navigate = useNavigate()
 

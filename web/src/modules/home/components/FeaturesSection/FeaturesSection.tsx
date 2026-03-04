@@ -3,36 +3,18 @@ import { Box, Container, Typography, Grid } from '@mui/material'
 import { VerifiedUser, Speed, Visibility, AccountBalanceWallet } from '@mui/icons-material'
 import { useMemo } from 'react'
 import { typography } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
-const featureData = [
-  {
-    key: 'authenticated',
-    icon: <VerifiedUser sx={{ fontSize: 28 }} />,
-    title: 'Expert Authentication',
-    description: 'Every item verified by certified specialists before listing. Bid with absolute confidence.',
-  },
-  {
-    key: 'realtime',
-    icon: <Speed sx={{ fontSize: 28 }} />,
-    title: 'Real-Time Bidding',
-    description: 'Millisecond-precise auction engine. Never miss a moment with instant bid updates.',
-  },
-  {
-    key: 'transparent',
-    icon: <Visibility sx={{ fontSize: 28 }} />,
-    title: 'Full Transparency',
-    description: 'Complete bid history, provenance tracking, and condition reports on every piece.',
-  },
-  {
-    key: 'secure',
-    icon: <AccountBalanceWallet sx={{ fontSize: 28 }} />,
-    title: 'Secure Payments',
-    description: 'Escrow protection on every transaction. Your investment is safeguarded end-to-end.',
-  },
+const featureItems = [
+  { key: 'authenticated', icon: <VerifiedUser sx={{ fontSize: 28 }} /> },
+  { key: 'realtime', icon: <Speed sx={{ fontSize: 28 }} /> },
+  { key: 'transparent', icon: <Visibility sx={{ fontSize: 28 }} /> },
+  { key: 'secure', icon: <AccountBalanceWallet sx={{ fontSize: 28 }} /> },
 ]
 
 export const FeaturesSection = () => {
-  const features = useMemo(() => featureData, [])
+  const { t } = useTranslation('home')
+  const features = useMemo(() => featureItems, [])
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FAFAF9', position: 'relative' }}>
@@ -58,7 +40,7 @@ export const FeaturesSection = () => {
                 textTransform: 'uppercase',
               }}
             >
-              Why Choose Us
+              {t('features.label')}
             </Typography>
             <Typography
               variant="h2"
@@ -70,7 +52,7 @@ export const FeaturesSection = () => {
                 mb: 2,
               }}
             >
-              Built for Discerning Collectors
+              {t('features.title')}
             </Typography>
             <Typography
               sx={{
@@ -81,7 +63,7 @@ export const FeaturesSection = () => {
                 lineHeight: 1.7,
               }}
             >
-              Every detail of our platform is crafted to deliver a premium auction experience
+              {t('features.subtitle')}
             </Typography>
           </Box>
         </motion.div>
@@ -130,7 +112,7 @@ export const FeaturesSection = () => {
                       fontSize: '0.9375rem',
                     }}
                   >
-                    {feature.title}
+                    {t(`features.${feature.key}.title`)}
                   </Typography>
                   <Typography
                     sx={{
@@ -139,7 +121,7 @@ export const FeaturesSection = () => {
                       fontSize: '0.8125rem',
                     }}
                   >
-                    {feature.description}
+                    {t(`features.${feature.key}.description`)}
                   </Typography>
                 </Box>
               </motion.div>
