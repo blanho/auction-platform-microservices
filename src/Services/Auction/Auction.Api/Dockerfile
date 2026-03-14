@@ -45,7 +45,7 @@ RUN dotnet publish "Auction.Api.csproj" \
     --self-contained false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
 # Security: Run as non-root user
