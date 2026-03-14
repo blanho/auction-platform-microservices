@@ -1,13 +1,18 @@
-# 🏷️ Auction Platform — Microservices
+# Auction Platform — Microservices
 
-A production-grade, event-driven auction platform built with **.NET 9 microservices** and a **React 19 frontend**.  
-The system supports real-time bidding, automated auction completion sagas, buy-now flows, integrated payments, push/email/SMS notifications, full-text search, file storage, analytics, and scheduled jobs — all behind a unified API gateway.
+A production-grade, event-driven auction platform built with **.NET 9 microservices** and a **React 19 frontend**.
+The system supports real-time bidding, automated auction lifecycle sagas, buy-now flows, integrated payments, multi-channel notifications, full-text search, file storage, analytics, and scheduled jobs — all behind a unified API gateway.
+
+[![CI](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml)
+[![CD](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=auction-platform-microservices&metric=alert_status)](https://sonarcloud.io/summary/overall?id=auction-platform-microservices)
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [System Architecture Diagram](#system-architecture-diagram)
 - [Service Map](#service-map)
 - [Tech Stack](#tech-stack)
 - [Communication Patterns](#communication-patterns)
@@ -17,105 +22,129 @@ The system supports real-time bidding, automated auction completion sagas, buy-n
   - [Buy-Now Flow](#3-buy-now-flow)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Local Development (Docker Compose)](#local-development-docker-compose)
-  - [Running Individually](#running-individually)
 - [Environment Variables](#environment-variables)
 - [API Gateway Routes](#api-gateway-routes)
-- [Kubernetes Deployment](#kubernetes-deployment)
+- [Cloud and Deployment](#cloud-and-deployment)
 - [Observability](#observability)
 - [Testing](#testing)
 - [Code Quality](#code-quality)
+- [Documentation](#documentation)
 
 ---
 
 ## Architecture Overview
 
-> Diagrams below are written in **Mermaid** and render natively on GitHub.  
-> To edit visually, paste any block into [Mermaid Live](https://mermaid.live) or import into Lucidchart via **Insert → Advanced → Mermaid**.
+The platform follows a **domain-driven microservices** architecture with strict bounded contexts. Each service owns its data, communicates asynchronously through RabbitMQ (via MassTransit), and exposes REST endpoints through a centralized YARP API gateway. Multi-step business transactions are coordinated by saga state machines. The React frontend connects via REST and receives real-time updates through SignalR WebSockets.
+
+**Core architectural patterns:**
+
+| Pattern | Implementation |
+|---|---|
+| Domain-Driven Design | Bounded contexts per service, aggregates, value objects, domain events |
+| CQRS | Separate command/query models via MediatR |
+| Event Sourcing | Domain events as source of truth (where applicable) |
+| Saga Orchestration | MassTransit state machines with compensating actions |
+| Transactional Outbox | Guaranteed message delivery via EF Core outbox |
+| API Gateway | YARP reverse proxy with JWT validation and rate limiting |
+
+---
+
+## System Architecture Diagram
+
+> Diagrams are written in **Mermaid** and render natively on GitHub.
+> To edit visually, paste any block into [Mermaid Live](https://mermaid.live).
 
 ```mermaid
 graph TB
-    Browser["🌐 Browser / Mobile"]
-
-    subgraph Frontend["Frontend — React 19 + Vite"]
-        UI["React SPA\nTypeScript · MUI · TanStack Query\nSignalR · Recharts · i18next"]
+    subgraph Clients
+        Browser["Browser / Mobile"]
     end
 
-    subgraph Gateway["API Gateway"]
-        GW["YARP Reverse Proxy\n:6001\nJWT Auth · Rate Limiting\nCORS · Security Headers"]
+    subgraph Frontend
+        SPA["React 19 SPA<br/>TypeScript / MUI / TanStack Query<br/>SignalR / i18next"]
     end
 
-    subgraph Services["Backend Microservices (.NET 9)"]
+    subgraph Gateway
+        GW["YARP Reverse Proxy<br/>JWT Auth / Rate Limiting<br/>CORS / Security Headers"]
+    end
+
+    subgraph Services["Microservices (.NET 9)"]
         direction TB
-        AUC["🔨 Auction Service\n:5001 HTTP | :5011 gRPC"]
-        BID["💰 Bidding Service\n:5002 HTTP | :5012 gRPC"]
-        PAY["💳 Payment Service\n:5004"]
-        NOT["🔔 Notification Service\n:5005\nSignalR Hub"]
-        IDN["🔐 Identity Service\n:5001\nJWT · OAuth"]
-        SRC["🔍 Search Service\n:5008"]
-        STR["📁 Storage Service\n:5009"]
-        ANA["📊 Analytics Service\n:5007"]
-        JOB["⚙️ Job Service\n:5006"]
-        ORC["🎭 Orchestration\n(Saga Runner)\nMassTransit StateMachine"]
+        IDN["Identity Service"]
+        AUC["Auction Service"]
+        BID["Bidding Service"]
+        PAY["Payment Service"]
+        NOT["Notification Service<br/>(SignalR Hub)"]
+        SRC["Search Service"]
+        STR["Storage Service"]
+        ANA["Analytics Service"]
+        JOB["Job Service"]
+        ORC["Orchestration<br/>(Saga State Machines)"]
     end
 
-    subgraph Infrastructure["Infrastructure"]
-        PG[("🐘 PostgreSQL 16\nPer-service databases")]
-        RD[("⚡ Redis 7\nCaching · Distributed Lock\nSession")]
-        RMQ[("🐇 RabbitMQ 3.13\nMessage Broker")]
-        ES[("🔎 Elasticsearch 8\nFull-text Index")]
-        SEQ["📋 Seq\nLog Aggregation"]
-        JAG["🔭 Jaeger\nDistributed Tracing (OTLP)"]
+    subgraph Data["Data Stores"]
+        PG[("PostgreSQL 16<br/>Per-service databases")]
+        RD[("Redis 7<br/>Cache / Distributed Lock")]
+        ES[("Elasticsearch 8<br/>Full-text Index")]
+    end
+
+    subgraph Messaging
+        RMQ[("RabbitMQ 3.13<br/>Message Broker")]
+    end
+
+    subgraph Observability
+        SEQ["Seq — Log Aggregation"]
+        OTEL["OpenTelemetry — Tracing"]
+        PROM["Prometheus — Metrics"]
     end
 
     subgraph External["External Services"]
-        STRIPE["Stripe\nPayment Processing"]
-        SENDGRID["SendGrid\nEmail"]
-        TWILIO["Twilio\nSMS"]
-        FIREBASE["Firebase\nPush Notifications"]
-        AZURE_BLOB["Azure Blob Storage\n(optional)"]
-        GOOGLE["Google OAuth"]
-        FACEBOOK["Facebook OAuth"]
+        STRIPE["Stripe"]
+        SENDGRID["SendGrid"]
+        TWILIO["Twilio"]
+        FIREBASE["Firebase"]
+        AZURE["Azure Blob Storage"]
+        OAUTH["Google / Facebook OAuth"]
     end
 
-    Browser -->|HTTPS| Frontend
-    Frontend -->|REST / WebSocket| GW
-    GW -->|HTTP REST| AUC & BID & PAY & NOT & IDN & SRC & STR & ANA & JOB
+    Browser -->|HTTPS| SPA
+    SPA -->|REST / WebSocket| GW
+    GW -->|HTTP| IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB
     GW -->|WebSocket| NOT
 
     AUC <-->|gRPC| BID
-    AUC & BID & PAY & NOT & IDN & SRC & STR & ANA & JOB & ORC <-->|AMQP| RMQ
+    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & ORC <-->|AMQP| RMQ
 
-    AUC & BID & PAY & NOT & IDN & STR & ANA & JOB --> PG
+    IDN & AUC & BID & PAY & NOT & STR & ANA & JOB --> PG
     AUC & BID & NOT --> RD
     SRC --> ES
-    NOT --> SENDGRID & TWILIO & FIREBASE
-    PAY --> STRIPE
-    STR --> AZURE_BLOB
-    IDN --> GOOGLE & FACEBOOK
 
-    Services --> SEQ
-    Services --> JAG
+    PAY --> STRIPE
+    NOT --> SENDGRID & TWILIO & FIREBASE
+    STR --> AZURE
+    IDN --> OAUTH
+
+    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB --> SEQ
+    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB --> OTEL
 ```
 
 ---
 
 ## Service Map
 
-| Service | Port (HTTP) | gRPC Port | Database | Responsibilities |
+| Service | Port | gRPC | Database | Responsibilities |
 |---|---|---|---|---|
-| **Identity** | 5001 | — | `identity_db` | JWT issuance, OAuth (Google/Facebook), user management |
+| **Identity** | 5001 | — | `identity_db` | JWT issuance, OAuth (Google / Facebook), user management |
 | **Auction** | 5002 | 5011 | `auction_db` | Auction CRUD, categories, brands, bookmarks, reviews, media |
 | **Bidding** | 5003 | 5012 | `bid_db` | Place bids, auto-bids, bid history, retract bid |
-| **Payment** | 5004 | — | `payment_db` | Stripe integration, order processing, refunds |
+| **Payment** | 5004 | — | `payment_db` | Stripe integration, wallets, order processing, refunds |
 | **Notification** | 5005 | — | `notification_db` | Email (SendGrid), SMS (Twilio), Push (Firebase), SignalR hub |
 | **Job** | 5006 | — | `job_db` | Scheduled background tasks (auction lifecycle, cleanup) |
 | **Analytics** | 5007 | — | `analytics_db` | Event ingestion, reporting, dashboards |
 | **Search** | 5008 | — | Elasticsearch | Full-text auction search, filtering, facets |
 | **Storage** | 5009 | — | `storage_db` | File upload, validation, Azure Blob / local storage |
 | **Gateway** | 6001 | — | — | YARP reverse proxy, JWT validation, rate limiting |
-| **Orchestration** | — | — | `saga_db` (RMQ) | MassTransit sagas: AuctionCompletion, BuyNow |
+| **Orchestration** | — | — | RMQ state | MassTransit sagas: AuctionCompletion, BuyNow |
 
 ---
 
@@ -125,8 +154,8 @@ graph TB
 
 | Category | Technology |
 |---|---|
-| Runtime | .NET 9 |
-| Architecture | Clean Architecture (Domain · Application · Infrastructure · API) |
+| Runtime | .NET 9, C# |
+| Architecture | Clean Architecture (Domain / Application / Infrastructure / API) |
 | API | ASP.NET Core Minimal API + Carter |
 | CQRS / Mediator | MediatR |
 | ORM | Entity Framework Core 9 |
@@ -135,26 +164,19 @@ graph TB
 | Saga Orchestration | MassTransit StateMachine |
 | gRPC | Grpc.AspNetCore / Grpc.Net.Client |
 | API Gateway | YARP (Yet Another Reverse Proxy) |
-| Auth | Custom JWT (HS256/RS256), OAuth2 |
+| Auth | Custom JWT (HS256 / RS256), OAuth2 (Google, Facebook) |
 | Caching | Redis (StackExchange.Redis) |
 | Distributed Lock | Redis (Redlock pattern) |
-| Search | Elasticsearch 8 (NEST / Elastic.Clients.Elasticsearch) |
-| Logging | Serilog → Seq |
+| Search | Elasticsearch 8 (Elastic.Clients.Elasticsearch) |
+| Logging | Serilog → Seq / Elasticsearch |
 | Tracing | OpenTelemetry → Jaeger (OTLP) |
 | Validation | FluentValidation |
-| Resilience | Polly |
+| Resilience | Polly (circuit breaker, retry, timeout, bulkhead) |
 | Scheduling | Hangfire / Quartz (Job Service) |
 | Payment | Stripe .NET SDK |
-| Email | SendGrid |
-| SMS | Twilio |
-| Push Notifications | Firebase Admin SDK |
-| File Storage | Local or Azure Blob Storage |
-| Audit | Custom audit publisher (EF ChangeTracker) |
-| API Versioning | Asp.Versioning |
-| OpenAPI | Scalar / Swashbuckle |
+| Email / SMS / Push | SendGrid, Twilio, Firebase Admin SDK |
+| File Storage | Azure Blob Storage / Local |
 | Testing | xUnit, NSubstitute, FluentAssertions |
-| Containerization | Docker + Docker Compose |
-| Orchestration | Kubernetes + Kustomize |
 
 ### Frontend
 
@@ -173,10 +195,7 @@ graph TB
 | Charts | Recharts 3 |
 | i18n | i18next + react-i18next |
 | HTTP Client | Axios |
-| File Upload | react-dropzone |
-| Linting | ESLint 9 |
-| Formatting | Prettier 3 |
-| Git Hooks | Husky + lint-staged |
+| Linting / Formatting | ESLint 9, Prettier 3, Husky + lint-staged |
 
 ---
 
@@ -184,43 +203,41 @@ graph TB
 
 ```mermaid
 graph LR
-    subgraph Sync["Synchronous"]
-        REST["REST over HTTP/1.1\n(via YARP Gateway)"]
-        GRPC["gRPC / HTTP2\n(service-to-service)"]
+    subgraph Synchronous
+        REST["REST / HTTP 1.1<br/>(via YARP Gateway)"]
+        GRPC["gRPC / HTTP 2<br/>(service-to-service)"]
     end
 
-    subgraph Async["Asynchronous"]
-        AMQP["RabbitMQ / AMQP\n(MassTransit events)"]
-        SAGA["Saga State Machine\n(compensating transactions)"]
-        OUTBOX["Transactional Outbox\n(at-least-once delivery)"]
+    subgraph Asynchronous
+        OUTBOX["Transactional Outbox<br/>(at-least-once delivery)"]
+        AMQP["RabbitMQ / AMQP<br/>(MassTransit)"]
+        SAGA["Saga State Machine<br/>(compensating txns)"]
     end
 
-    subgraph Realtime["Real-time"]
-        WS["SignalR WebSocket\n(Notification Hub)"]
+    subgraph Realtime
+        WS["SignalR WebSocket<br/>(Notification Hub)"]
     end
 
-    Frontend --"REST"--> REST
-    REST --"routed"--> AUC_BID_etc["Auction / Bidding /\nPayment / Identity\n/ Search / Storage"]
-    AUC_BID_etc --"gRPC\nAuction ↔ Bidding"--> GRPC
-    AUC_BID_etc --"publish domain events"--> OUTBOX
-    OUTBOX --"relay"--> AMQP
-    AMQP --"consume"--> SAGA
-    AMQP --"consume"--> Subscribers["Search / Notification\n/ Analytics / Orchestration"]
-    Subscribers --"real-time push"--> WS
-    WS --"push"--> Frontend
+    Frontend["React SPA"] --REST--> REST
+    REST --routed--> Backends["Auction / Bidding /<br/>Payment / Identity /<br/>Search / Storage"]
+    Backends --gRPC--> GRPC
+    Backends --domain events--> OUTBOX
+    OUTBOX --relay--> AMQP
+    AMQP --consume--> SAGA
+    AMQP --consume--> Subscribers["Search / Notification /<br/>Analytics / Orchestration"]
+    Subscribers --push--> WS
+    WS --real-time--> Frontend
 ```
-
-### Pattern Details
 
 | Pattern | Where Used | Purpose |
 |---|---|---|
-| **REST (HTTP/1.1)** | Frontend → Gateway → Services | Standard CRUD, queries |
-| **gRPC (HTTP/2)** | Auction ↔ Bidding | Low-latency cross-service queries (e.g. validate auction exists before bid) |
-| **MassTransit + RabbitMQ** | All services | Async domain events, commands, integration events |
-| **Transactional Outbox** | Auction, Bidding, Payment | Guarantee message is published only after DB commit |
-| **Saga (StateMachine)** | Orchestration service | Coordinate multi-step transactions with compensation |
-| **SignalR** | Notification → Browser | Real-time bid updates, auction status, notifications |
-| **CQRS** | All domain services | Separate read/write models via MediatR |
+| REST (HTTP/1.1) | Frontend → Gateway → Services | Standard CRUD operations and queries |
+| gRPC (HTTP/2) | Auction ↔ Bidding | Low-latency cross-service queries (validate auction before bid) |
+| MassTransit + RabbitMQ | All services | Async domain events, integration events, commands |
+| Transactional Outbox | Auction, Bidding, Payment | Guarantee message delivery after DB commit |
+| Saga (StateMachine) | Orchestration service | Multi-step transactions with compensating actions |
+| SignalR | Notification → Browser | Real-time bid updates, auction status, notifications |
+| CQRS | All domain services | Separate read/write models via MediatR |
 
 ---
 
@@ -231,51 +248,47 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant B as Browser
-    participant GW as Gateway (YARP)
+    participant GW as Gateway
     participant BID as Bidding Service
-    participant AUC as Auction Service (gRPC)
-    participant DB as bid_db (PostgreSQL)
+    participant AUC as Auction Service
+    participant DB as bid_db
     participant MQ as RabbitMQ
     participant SRC as Search Service
     participant NOT as Notification Service
-    participant WS as SignalR Hub
 
     B->>GW: POST /bids {auctionId, amount}
-    GW->>BID: forward (JWT validated)
+    GW->>BID: Forward (JWT validated)
     BID->>AUC: gRPC ValidateAuction(auctionId)
     AUC-->>BID: AuctionDetails (status, reserve, endTime)
     BID->>BID: Apply domain rules (min increment, active status)
-    BID->>DB: Save Bid + Outbox message
+    BID->>DB: Save Bid + Outbox message (single transaction)
     DB-->>BID: OK
-    BID-->>GW: 201 Created BidDto
+    BID-->>GW: 201 Created
     GW-->>B: 201 Created
 
     Note over BID,MQ: Outbox relay (background)
     BID->>MQ: Publish BidPlacedEvent
 
-    par Fanout
-        MQ->>SRC: BidPlacedEvent → update search index
-        MQ->>NOT: BidPlacedEvent → notify outbid users
-        MQ->>AUC: BidPlacedEvent → update current price
+    par Event Fanout
+        MQ->>SRC: Update search index (current price)
+        MQ->>NOT: Notify outbid users
+        MQ->>AUC: Update current price on auction
     end
 
-    NOT->>WS: Push to SignalR group "auction:{id}"
-    WS-->>B: Real-time bid update
+    NOT->>B: SignalR push to auction group
 ```
-
----
 
 ### 2. Auction Completion Saga
 
 ```mermaid
 stateDiagram-v2
     [*] --> CreatingOrder : AuctionCompletionSagaStarted
-    CreatingOrder --> SendingNotifications : AuctionWinnerOrderCreated
-    CreatingOrder --> Compensating : AuctionWinnerOrderFailed
+    CreatingOrder --> SendingNotifications : OrderCreated
+    CreatingOrder --> Compensating : OrderFailed
     CreatingOrder --> Failed : Timeout (10 min)
-    SendingNotifications --> Completed : AuctionCompletionNotificationsSent
-    SendingNotifications --> Failed : AuctionCompletionNotificationsFailed
-    Compensating --> [*] : AuctionCompletionReverted
+    SendingNotifications --> Completed : NotificationsSent
+    SendingNotifications --> Failed : NotificationsFailed
+    Compensating --> [*] : Reverted
     Completed --> [*]
     Failed --> [*]
 ```
@@ -289,21 +302,19 @@ sequenceDiagram
     participant NOT as Notification Service
     participant AUC as Auction Service
 
-    JOB->>MQ: AuctionFinishedEvent (scheduled trigger)
+    JOB->>MQ: AuctionFinishedEvent (scheduled)
     MQ->>ORC: Start AuctionCompletionSaga
-    ORC->>MQ: Publish CreateAuctionWinnerOrder
-    MQ->>PAY: Consume → create order record
-    PAY->>MQ: AuctionWinnerOrderCreated
+    ORC->>MQ: CreateAuctionWinnerOrder
+    MQ->>PAY: Create order record
+    PAY->>MQ: OrderCreated
 
-    ORC->>MQ: Publish SendAuctionCompletionNotifications
-    MQ->>NOT: Consume → email winner + seller
-    NOT->>MQ: AuctionCompletionNotificationsSent
+    ORC->>MQ: SendCompletionNotifications
+    MQ->>NOT: Email winner + seller
+    NOT->>MQ: NotificationsSent
 
     ORC->>AUC: Mark auction Finished
-    ORC-->>MQ: Saga Complete
+    Note over ORC: Saga Complete
 ```
-
----
 
 ### 3. Buy-Now Flow
 
@@ -313,14 +324,14 @@ sequenceDiagram
     participant GW as Gateway
     participant AUC as Auction Service
     participant MQ as RabbitMQ
-    participant ORC as Orchestration (BuyNow Saga)
+    participant ORC as Orchestration (Saga)
     participant PAY as Payment Service
     participant NOT as Notification Service
 
     B->>GW: POST /auctions/{id}/buy-now
-    GW->>AUC: forward
-    AUC->>AUC: Validate BuyNow eligible, set ReservedForBuyNow
-    AUC->>MQ: Publish BuyNowExecutedEvent (via Outbox)
+    GW->>AUC: Forward
+    AUC->>AUC: Validate BuyNow eligibility
+    AUC->>MQ: BuyNowExecutedEvent (via Outbox)
     AUC-->>B: 200 OK
 
     MQ->>ORC: Start BuyNow Saga
@@ -336,70 +347,72 @@ sequenceDiagram
 
 ```
 auction-platform-microservices/
-├── Directory.Build.props             # Shared build properties (TFM, Nullable, etc.)
-├── Directory.Packages.props          # Centralized NuGet package versions
-├── global.json                       # Pin .NET SDK version
+├── Directory.Build.props              # Shared MSBuild properties
+├── Directory.Packages.props           # Centralized NuGet package versions
+├── global.json                        # Pinned .NET SDK version
 ├── auction.sln
 │
 ├── src/
-│   ├── BuildingBlocks/               # Shared cross-cutting libraries
-│   │   ├── BuildingBlocks.Domain/    # Base entities, domain events, value objects
-│   │   ├── BuildingBlocks.Application/  # CQRS abstractions, behaviors, paging, filtering
-│   │   ├── BuildingBlocks.Infrastructure/  # EF, Redis, MassTransit, Audit, Resilience
-│   │   └── BuildingBlocks.Web/       # Auth, rate limiting, middleware, health checks
+│   ├── BuildingBlocks/                # Shared cross-cutting libraries
+│   │   ├── BuildingBlocks.Domain/     # Base entities, domain events, value objects
+│   │   ├── BuildingBlocks.Application/# CQRS abstractions, behaviors, paging, filtering
+│   │   ├── BuildingBlocks.Infrastructure/ # EF, Redis, MassTransit, Audit, Resilience
+│   │   └── BuildingBlocks.Web/        # Auth, rate limiting, middleware, health checks
 │   │
-│   ├── Contracts/                    # Cross-cutting shared contracts only
-│   │   └── Common.Contracts/         # Shared event base types, common enums
+│   ├── Contracts/
+│   │   └── Common.Contracts/          # Shared event base types, common enums
 │   │
 │   ├── Services/
-│   │   ├── Auction/
-│   │   │   ├── Auction.Contracts/    # Message contracts (co-located with service)
-│   │   │   ├── Auction.Domain/       # Entities, Enums, Domain Events
-│   │   │   ├── Auction.Application/  # Commands, Queries, DTOs, Event Handlers
-│   │   │   ├── Auction.Infrastructure/ # EF DbContext, Repositories, MassTransit
-│   │   │   ├── Auction.Api/          # Minimal API Endpoints, gRPC, Carter Modules
-│   │   │   └── tests/                # Co-located tests
-│   │   │       ├── Auction.Domain.Tests/
-│   │   │       └── Auction.Application.Tests/
-│   │   ├── Bidding/    (same layering + co-located contracts & tests)
-│   │   ├── Payment/    (same layering)
-│   │   ├── Notification/ (same layering)
+│   │   ├── Auction/                   # Domain / Application / Infrastructure / API / tests
+│   │   ├── Bidding/
+│   │   ├── Payment/
+│   │   ├── Notification/
 │   │   ├── Identity/
 │   │   ├── Search/
-│   │   ├── Storage/    (same layering)
+│   │   ├── Storage/
 │   │   ├── Analytics/
-│   │   └── Job/        (same layering)
+│   │   └── Job/
 │   │
 │   ├── Gateway/
-│   │   └── Gateway.Api/              # YARP config, JWT middleware, rate limits
+│   │   └── Gateway.Api/               # YARP config, JWT middleware, rate limiting
 │   │
 │   └── Orchestration/
-│       ├── Orchestration.Contracts/  # Saga event contracts
-│       └── Orchestration.Sagas/      # MassTransit saga state machines
+│       ├── Orchestration.Contracts/   # Saga event contracts
+│       └── Orchestration.Sagas/       # MassTransit saga state machines
 │
-├── web/                              # React 19 SPA
-│   ├── src/
-│   │   ├── modules/                  # Feature modules (auctions, bidding, auth, ...)
-│   │   ├── shared/                   # Shared components, hooks, utils, theme
-│   │   ├── services/                 # API clients
-│   │   ├── config/                   # App config, env
-│   │   └── i18n/                     # Translations
-│   └── vite.config.ts
+├── web/                               # React 19 SPA
+│   └── src/
+│       ├── modules/                   # Feature modules (auctions, bidding, auth, payments)
+│       ├── shared/                    # Shared components, hooks, utils, theme
+│       ├── services/                  # API clients, SignalR connection
+│       ├── config/                    # Environment config
+│       └── i18n/                      # Translations (en, vi)
 │
-├── docs/                             # Architecture docs, ADRs
+├── docs/                              # Architecture and onboarding documentation
 │
 └── deploy/
     ├── docker/
-    │   ├── docker-compose.yml        # Full local stack
+    │   ├── docker-compose.yml         # Full local development stack
     │   └── scripts/init-databases.sh
     ├── config/
     │   └── appsettings.Production.template.json
     └── kubernetes/
-        ├── base/                     # Kustomize base manifests
-        └── overlays/
-            ├── dev/
-            ├── staging/
-            └── production/
+        ├── base/                      # Kustomize base manifests
+        └── overlays/                  # dev / staging / production
+```
+
+Each microservice follows **Clean Architecture** layering:
+
+```
+Services/{Name}/
+├── {Name}.Contracts/       # Message contracts (co-located with service)
+├── {Name}.Domain/          # Entities, Value Objects, Domain Events, Enums
+├── {Name}.Application/     # Commands, Queries, Handlers, DTOs, Validators
+├── {Name}.Infrastructure/  # EF DbContext, Repositories, External Service Clients
+├── {Name}.Api/             # Minimal API Endpoints (Carter), gRPC, DI Configuration
+└── tests/
+    ├── {Name}.Domain.Tests/
+    └── {Name}.Application.Tests/
 ```
 
 ---
@@ -415,88 +428,60 @@ auction-platform-microservices/
 | [Docker Desktop](https://www.docker.com/products/docker-desktop) | 24+ |
 | [Docker Compose](https://docs.docker.com/compose/) | v2 |
 
----
-
 ### Local Development (Docker Compose)
 
-**1. Clone & configure environment**
-
 ```bash
-git clone https://github.com/your-org/auction-platform-microservices.git
+# 1. Clone
+git clone https://github.com/blanho/auction-platform-microservices.git
 cd auction-platform-microservices
-cp .env.example .env
-# Fill in all required values in .env
+
+# 2. Configure environment
+cp .env.example .env          # Fill in required values
+
+# 3. Start everything
+docker compose -f deploy/docker/docker-compose.yml up -d
+
+# 4. Verify health
+docker compose -f deploy/docker/docker-compose.yml ps
+
+# 5. Start the frontend dev server
+cd web && npm install && npm run dev
 ```
 
-**2. Start the full infrastructure + services**
-
-```bash
-docker-compose -f deploy/docker/docker-compose.yml up -d
-```
-
-**3. Verify all services are healthy**
-
-```bash
-docker-compose -f deploy/docker/docker-compose.yml ps
-```
-
-**4. Start the frontend**
-
-```bash
-cd web
-npm install
-npm run dev
-# App: http://localhost:5173
-```
-
-#### Service URLs (Docker)
+### Local Service URLs
 
 | Service | URL |
 |---|---|
-| Gateway (API entry point) | http://localhost:6001 |
-| Identity Service | http://localhost:5001 |
-| Auction Service | http://localhost:5002 |
-| Bidding Service | http://localhost:5003 |
-| Payment Service | http://localhost:5004 |
-| Notification Service | http://localhost:5005 |
-| Analytics Service | http://localhost:5007 |
-| Search Service | http://localhost:5008 |
-| Storage Service | http://localhost:5009 |
+| Frontend (dev) | http://localhost:5173 |
+| API Gateway | http://localhost:6001 |
+| Identity | http://localhost:5001 |
+| Auction | http://localhost:5002 |
+| Bidding | http://localhost:5003 |
+| Payment | http://localhost:5004 |
+| Notification | http://localhost:5005 |
+| Analytics | http://localhost:5007 |
+| Search | http://localhost:5008 |
+| Storage | http://localhost:5009 |
 | RabbitMQ Management | http://localhost:15672 |
 | Elasticsearch | http://localhost:9200 |
-| Seq (logs) | http://localhost:5341 |
-| Frontend (dev) | http://localhost:5173 |
-
----
+| Seq (Logs) | http://localhost:5341 |
 
 ### Running Individually
 
-**Backend — single service**
-
 ```bash
-# Copy and configure appsettings.Development.json for the target service
-cd src/Services/Auction/Auction.Api
-dotnet run
-```
+# Single backend service
+cd src/Services/Auction/Auction.Api && dotnet run
 
-**Frontend**
+# Frontend
+cd web && npm install && npm run dev
 
-```bash
-cd web
-npm install
-npm run dev
-```
-
-**Run tests**
-
-```bash
-# All backend tests
+# All tests
 dotnet test
 
-# Single suite
-dotnet test tests/Auction.Application.Tests
+# Specific test project
+dotnet test src/Services/Auction/tests/Auction.Application.Tests
 
-# Frontend lint + typecheck
+# Frontend validation
 cd web && npm run validate
 ```
 
@@ -504,7 +489,7 @@ cd web && npm run validate
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in all values. Key variables:
+Copy `.env.example` to `.env` and fill in all values:
 
 | Variable | Description |
 |---|---|
@@ -519,80 +504,199 @@ Copy `.env.example` to `.env` and fill in all values. Key variables:
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase service account JSON |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | Facebook OAuth |
-| `FRONTEND_URL` | e.g. `https://your-domain.com` |
-| `GATEWAY_URL` | e.g. `https://api.your-domain.com` |
-
-See [.env.example](.env.example) for the full list and generation hints.
+| `FRONTEND_URL` | Frontend origin (e.g. `https://your-domain.com`) |
+| `GATEWAY_URL` | API gateway URL (e.g. `https://api.your-domain.com`) |
 
 ---
 
 ## API Gateway Routes
 
-All client traffic enters through the YARP gateway on `:6001`. JWT tokens are validated at the gateway before forwarding.
+All client traffic enters through the YARP gateway on port **6001**. JWT tokens are validated at the gateway before forwarding.
 
-| Public Path | Upstream Service | Notes |
+| Route | Upstream | Notes |
 |---|---|---|
-| `/auctions/{**}` | Auction Service | Rate limited |
-| `/categories/{**}` | Auction Service | |
-| `/brands/{**}` | Auction Service | |
-| `/bookmarks/{**}` | Auction Service | Auth required |
-| `/reviews/{**}` | Auction Service | |
-| `/bids/{**}` | Bidding Service | Rate limited |
-| `/autobids/{**}` | Bidding Service | Rate limited |
-| `/payments/{**}` | Payment Service | |
-| `/identity/{**}` | Identity Service | |
-| `/search/{**}` | Search Service | |
-| `/storage/{**}` | Storage Service | |
-| `/analytics/{**}` | Analytics Service | |
-| `/hubs/{**}` | Notification Service | WebSocket upgrade |
+| `/auctions/**` | Auction Service | Rate limited |
+| `/categories/**` | Auction Service | |
+| `/brands/**` | Auction Service | |
+| `/bookmarks/**` | Auction Service | Auth required |
+| `/reviews/**` | Auction Service | |
+| `/bids/**` | Bidding Service | Rate limited |
+| `/autobids/**` | Bidding Service | Rate limited |
+| `/payments/**` | Payment Service | Auth required |
+| `/identity/**` | Identity Service | |
+| `/search/**` | Search Service | |
+| `/storage/**` | Storage Service | Auth required |
+| `/analytics/**` | Analytics Service | Auth required |
+| `/hubs/**` | Notification Service | WebSocket |
 
 ---
 
-## Kubernetes Deployment
+## Cloud and Deployment
 
-The `deploy/kubernetes` directory uses **Kustomize** with three overlays:
+### Docker Compose (Local)
 
-```bash
-# Development
-kubectl apply -k deploy/kubernetes/overlays/dev
+`deploy/docker/docker-compose.yml` defines the complete local stack:
+- **6 infrastructure services** — PostgreSQL, Redis, RabbitMQ, Elasticsearch, Seq, Jaeger
+- **10 application containers** — all microservices + gateway
+- **1 frontend container** — Nginx-served React SPA
+- Health checks on every container, named volumes, shared bridge network
 
-# Staging
-kubectl apply -k deploy/kubernetes/overlays/staging
+### Kubernetes (Production)
 
-# Production
-kubectl apply -k deploy/kubernetes/overlays/production
+`deploy/kubernetes/` uses **Kustomize** with environment overlays:
+
+```mermaid
+graph TB
+    subgraph Base["base/"]
+        NS["Namespace: auction-platform"]
+        CFG["ConfigMap + Secrets"]
+        ING["Ingress with TLS"]
+        RBAC["RBAC + PriorityClasses"]
+
+        subgraph SvcK8s["services/ (10 Deployments)"]
+            S["auction-api / bidding-api / payment-api<br/>notification-api / identity-api / analytics-api<br/>search-api / storage-api / job-api / gateway-api<br/>+ PodDisruptionBudgets"]
+        end
+
+        subgraph InfraK8s["infrastructure/ (7 resources)"]
+            I["PostgreSQL / Redis / RabbitMQ<br/>Elasticsearch / Jaeger / Seq / Rate Limiting"]
+        end
+
+        subgraph MonK8s["monitoring/"]
+            M["Prometheus ServiceMonitors"]
+        end
+    end
+
+    subgraph Overlays["overlays/"]
+        DEV["dev<br/>Minimal resources, debug logging"]
+        STG["staging<br/>Moderate resources, staging config"]
+        PROD["production<br/>3 replicas (gateway, bidding)<br/>100Gi PG storage, resource limits<br/>GHCR images, ExternalSecrets"]
+    end
+
+    DEV --> Base
+    STG --> Base
+    PROD --> Base
 ```
 
-**Kubernetes features:**
-- Pod Security Standards (restricted)
-- Resource quotas (50 CPU / 100Gi memory)
-- Pod Disruption Budgets
-- Prometheus ServiceMonitors
-- Priority classes
-- RBAC configuration
-- Ingress with TLS
+```bash
+kubectl apply -k deploy/kubernetes/overlays/dev         # Development
+kubectl apply -k deploy/kubernetes/overlays/staging      # Staging
+kubectl apply -k deploy/kubernetes/overlays/production   # Production
+```
+
+**Production specifics:**
+- Gateway and Bidding: **3 replicas** for high availability
+- Resource limits: 512Mi–1Gi memory, 200m–1000m CPU per service
+- PostgreSQL: **100Gi** persistent storage, 2–4Gi memory
+- Container images: `ghcr.io/blanho/auction-platform/{service}:v1.0.0`
+- External Secrets for credential management
+- Pod Disruption Budgets for zero-downtime rolling updates
+
+### CI/CD Pipelines
+
+GitHub Actions workflows in `.github/workflows/`:
+
+```mermaid
+graph LR
+    PR["Pull Request"] --> PRC["pr-checks.yml<br/>Build + Test + Lint"]
+    Push["Push to main"] --> CI["ci.yml<br/>Build + Test + Coverage"]
+    CI --> SONAR["sonarcloud.yml<br/>Quality Gate"]
+    CI --> CD["cd.yml<br/>Docker Build + GHCR Push + K8s Deploy"]
+    CRON["Cron Schedule"] --> SCHED["scheduled.yml<br/>Vulnerability Scans"]
+```
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| `ci.yml` | Push to main | Build all services, run tests, collect coverage |
+| `cd.yml` | CI success | Build Docker images, push to GHCR, deploy to Kubernetes |
+| `pr-checks.yml` | Pull request | Validate build, tests, and lint before merge |
+| `sonarcloud.yml` | CI pipeline | Static analysis, enforce quality gate |
+| `scheduled.yml` | Cron | Dependency vulnerability scans |
+
+### Deployment Topology
+
+```mermaid
+graph TB
+    subgraph Internet
+        Users["Users"]
+    end
+
+    subgraph K8s["Kubernetes Cluster"]
+        ING["Ingress Controller<br/>TLS Termination"]
+
+        subgraph App["Application Tier"]
+            GW["Gateway x3"]
+            AUC["Auction"]
+            BID["Bidding x3"]
+            PAY["Payment"]
+            NOT["Notification"]
+            IDN["Identity"]
+            SRC["Search"]
+            STR["Storage"]
+            ANA["Analytics"]
+            JOB["Job"]
+        end
+
+        subgraph DataLayer["Data Tier"]
+            PG["PostgreSQL<br/>StatefulSet / 100Gi"]
+            RD["Redis"]
+            RMQ["RabbitMQ<br/>StatefulSet"]
+            ES["Elasticsearch<br/>StatefulSet"]
+        end
+
+        subgraph Obs["Observability"]
+            SEQ["Seq"]
+            JAG["Jaeger"]
+            PROM["Prometheus"]
+        end
+    end
+
+    subgraph Ext["External"]
+        STRIPE["Stripe"]
+        SG["SendGrid"]
+        TW["Twilio"]
+        FB["Firebase"]
+        AZ["Azure Blob"]
+    end
+
+    Users -->|HTTPS| ING
+    ING --> GW
+    GW --> AUC & BID & PAY & NOT & IDN & SRC & STR & ANA & JOB
+    AUC & BID & PAY & NOT & IDN & STR & ANA & JOB --> PG
+    AUC & BID & NOT --> RD
+    SRC --> ES
+    App --> RMQ
+    PAY --> STRIPE
+    NOT --> SG & TW & FB
+    STR --> AZ
+    App --> SEQ & JAG
+    PROM --> App
+```
 
 ---
 
-## 📊 Observability
+## Observability
 
 | Tool | Purpose | Access |
-|------|---------|--------|
-| **Seq** | Centralized log aggregation & search | http://localhost:5341 |
-| **Serilog** | Structured logging with correlation IDs | — |
-| **OpenTelemetry** | Distributed tracing (OTLP export) | — |
-| **Prometheus** | Metrics collection (K8s) | — |
-| **SonarCloud** | Static code analysis & coverage | — |
+|---|---|---|
+| Seq | Centralized structured log aggregation | http://localhost:5341 |
+| Serilog | Structured logging with correlation IDs | Per-service config |
+| OpenTelemetry | Distributed tracing (OTLP) | Jaeger UI |
+| Prometheus | Metrics collection (K8s ServiceMonitors) | Grafana dashboards |
+| SonarCloud | Static code analysis and coverage | [Dashboard](https://sonarcloud.io/summary/overall?id=auction-platform-microservices) |
 
-### Health Checks
-
-Every service exposes health check endpoints:
+**Health check endpoints** (every service):
 
 ```
 GET /health        # Overall health
-GET /health/ready  # Readiness probe
-GET /health/live   # Liveness probe
+GET /health/ready  # Readiness probe (K8s)
+GET /health/live   # Liveness probe (K8s)
 ```
+
+**Production logging** (`deploy/config/appsettings.Production.template.json`):
+- Console + Elasticsearch sinks (Seq disabled in production)
+- JSON format with service name enrichment
+- Minimum level: Warning
+- OpenTelemetry traces exported to configurable OTLP endpoint
 
 ---
 
@@ -600,13 +704,41 @@ GET /health/live   # Liveness probe
 
 ```
 tests/
-├── Auction.Domain.Tests/       # Domain entity & value-object unit tests
-├── Auction.Application.Tests/  # Command/query handler tests (NSubstitute mocks)
-├── Bidding.Domain.Tests/       # Bid domain logic tests
-└── Bidding.Application.Tests/  # Bidding handlers (PlaceBid, AutoBid, ...)
+├── Auction.Domain.Tests/         # Domain entity and value object unit tests
+├── Auction.Application.Tests/    # Command/query handler tests
+├── Bidding.Domain.Tests/         # Bid domain logic tests
+└── Bidding.Application.Tests/    # Bidding handler tests
 ```
 
 ```bash
-dotnet test --logger "console;verbosity=normal"
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test --logger "console;verbosity=normal"    # All tests
+dotnet test --collect:"XPlat Code Coverage"        # With coverage
+cd web && npm run validate                         # Frontend
 ```
+
+---
+
+## Code Quality
+
+- **SonarCloud** — automated quality gate on every push
+- **ESLint 9** + **Prettier 3** — frontend style enforcement
+- **Husky + lint-staged** — pre-commit hooks
+- **FluentValidation** — request validation on all command handlers
+- **Directory.Packages.props** — centralized NuGet version pinning
+
+---
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Architecture Guide](docs/architecture.md) | System design, bounded contexts, data flow, design decisions |
+| [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
+| [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
+| [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
+
+---
+
+## License
+
+This project is for educational and portfolio purposes.
