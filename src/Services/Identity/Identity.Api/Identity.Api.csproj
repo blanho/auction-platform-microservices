@@ -32,6 +32,7 @@
     <Protobuf Include="..\Identity.Contracts\Grpc\user_stats.proto" GrpcServices="Server" ProtoRoot="..\Identity.Contracts" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Identity.Contracts\IdentityService.Contracts.csproj" />
