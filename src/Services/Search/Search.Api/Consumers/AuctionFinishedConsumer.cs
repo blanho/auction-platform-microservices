@@ -43,14 +43,15 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             partialDocument["currentPrice"] = message.SoldAmount;
         }
 
-        var success = await _indexService.PartialUpdateAsync(
+        var result = await _indexService.PartialUpdateAsync(
             message.AuctionId,
             partialDocument,
             context.CancellationToken);
 
-        if (!success)
+        if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to update finished auction {AuctionId}", message.AuctionId);
+            _logger.LogWarning("Failed to update finished auction {AuctionId}: {Error}",
+                message.AuctionId, result.Error);
         }
         else
         {

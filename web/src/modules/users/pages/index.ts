@@ -1,0 +1,8 @@
+export { ProfilePage } from './ProfilePage'
+export { SettingsPage } from './SettingsPage'
+export { MyAuctionsPage } from './MyAuctionsPage'
+export { SellerApplyPage } from './SellerApplyPage'
+export { UsersManagementPage } from './UsersManagementPage'
+export { SellerProfilePage } from './SellerProfilePage'
+export { MyReviewsPage } from './MyReviewsPage'
+export { RolePermissionsPage } from './RolePermissionsPage'

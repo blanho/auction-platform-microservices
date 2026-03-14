@@ -1,0 +1,68 @@
+using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
+using Payment.Application.Errors;
+using Payment.Application.Interfaces;
+using Payment.Domain.Entities;
+
+namespace Payment.Application.Features.Orders.CreateOrder;
+
+public class CreateOrderCommandHandler : ICommandHandler<CreateOrderCommand, OrderDto>
+{
+    private readonly IOrderRepository _repository;
+    private readonly IMapper _mapper;
+    private readonly ILogger<CreateOrderCommandHandler> _logger;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
+
+    public CreateOrderCommandHandler(
+        IOrderRepository repository,
+        IMapper mapper,
+        ILogger<CreateOrderCommandHandler> logger,
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
+    {
+        _repository = repository;
+        _mapper = mapper;
+        _logger = logger;
+        _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
+    }
+
+    public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Creating order for auction {AuctionId}", request.AuctionId);
+
+        var existingOrder = await _repository.GetByAuctionIdAsync(request.AuctionId);
+        if (existingOrder != null)
+        {
+            return Result.Failure<OrderDto>(PaymentErrors.Order.AlreadyExistsForAuction(request.AuctionId));
+        }
+
+        var order = Order.Create(
+            auctionId: request.AuctionId,
+            buyerId: request.BuyerId,
+            buyerUsername: request.BuyerUsername,
+            sellerId: request.SellerId,
+            sellerUsername: request.SellerUsername,
+            itemTitle: request.ItemTitle,
+            winningBid: request.WinningBid,
+            shippingCost: request.ShippingCost,
+            shippingAddress: request.ShippingAddress,
+            buyerNotes: request.BuyerNotes);
+
+        var createdOrder = await _repository.AddAsync(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            createdOrder.Id,
+            OrderAuditData.FromOrder(createdOrder),
+            AuditAction.Created,
+            cancellationToken: cancellationToken);
+
+        _logger.LogDebug("Created order {OrderId} for auction {AuctionId}", createdOrder.Id, request.AuctionId);
+
+        return _mapper.Map<OrderDto>(createdOrder);
+    }
+}

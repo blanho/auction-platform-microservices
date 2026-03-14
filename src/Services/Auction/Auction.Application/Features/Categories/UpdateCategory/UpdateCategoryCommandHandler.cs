@@ -1,23 +1,21 @@
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.UpdateCategory;
+namespace Auctions.Application.Features.Categories.UpdateCategory;
 
 public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryCommand, CategoryDto>
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<UpdateCategoryCommandHandler> _logger;
+    private readonly ILogger<UpdateCategoryCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateCategoryCommandHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<UpdateCategoryCommandHandler> logger,
+        ILogger<UpdateCategoryCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -33,26 +31,30 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         try
         {
             var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+            if (category == null)
+            {
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
+            }
 
             var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
             if (slugExists)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SlugExists", $"A category with slug '{request.Slug}' already exists"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
             }
 
             if (request.ParentCategoryId == request.Id)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SelfParent", "A category cannot be its own parent"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SelfParent);
             }
 
-            category.Name = request.Name;
-            category.Slug = request.Slug;
-            category.Icon = request.Icon;
-            category.Description = request.Description;
-            category.ImageUrl = request.ImageUrl;
-            category.DisplayOrder = request.DisplayOrder;
-            category.IsActive = request.IsActive;
-            category.ParentCategoryId = request.ParentCategoryId;
+            category.Update(
+                request.Name,
+                request.Slug,
+                request.Icon,
+                request.Description,
+                request.DisplayOrder,
+                request.IsActive,
+                request.ParentCategoryId);
 
             await _repository.UpdateAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -64,12 +66,12 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         }
         catch (KeyNotFoundException)
         {
-            return Result.Failure<CategoryDto>(Error.Create("Category.NotFound", $"Category with ID '{request.Id}' not found"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
         }
         catch (Exception ex)
         {
             _logger.LogError("Failed to update category {CategoryId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<CategoryDto>(Error.Create("Category.UpdateFailed", $"Failed to update category: {ex.Message}"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.UpdateFailed(ex.Message));
         }
     }
 }

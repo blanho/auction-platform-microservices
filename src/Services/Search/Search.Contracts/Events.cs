@@ -1,6 +1,8 @@
-namespace Search.Contracts;
+using Common.Contracts.Events;
 
-public record SearchIndexRebuiltEvent
+namespace SearchService.Contracts;
+
+public record SearchIndexRebuiltEvent : IVersionedEvent
 {
     public int Version => 1;
 
@@ -10,7 +12,7 @@ public record SearchIndexRebuiltEvent
     public TimeSpan Duration { get; init; }
 }
 
-public record SearchIndexErrorEvent
+public record SearchIndexErrorEvent : IVersionedEvent
 {
     public int Version => 1;
 

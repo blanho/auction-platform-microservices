@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.CreateCategory;
+namespace Auctions.Application.Features.Categories.CreateCategory;
 
 public record CreateCategoryCommand(
     string Name,

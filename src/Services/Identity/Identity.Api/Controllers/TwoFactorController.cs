@@ -5,7 +5,6 @@ using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using IdentityUserHelper = Identity.Api.Helpers.UserHelper;
 
 namespace Identity.Api.Controllers;
 
@@ -27,11 +26,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetStatus(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _twoFactorService.GetStatusAsync(userId);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -44,11 +39,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> SetupAuthenticator(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _twoFactorService.SetupAuthenticatorAsync(userId);
 
         if (!result.IsSuccess)
@@ -67,11 +58,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> EnableAuthenticator([FromBody] Enable2FARequest request, CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _twoFactorService.EnableAuthenticatorAsync(userId, request.Code);
 
         if (!result.IsSuccess)
@@ -90,11 +77,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> DisableAuthenticator([FromBody] Disable2FARequest request, CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _twoFactorService.DisableAuthenticatorAsync(userId, request.Password);
 
         if (!result.IsSuccess)
@@ -137,11 +120,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GenerateRecoveryCodes(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _twoFactorService.GenerateRecoveryCodesAsync(userId);
 
         if (!result.IsSuccess)

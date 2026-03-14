@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.DeactivateAuction;
+namespace Auctions.Application.Features.Auctions.DeactivateAuction;
 
 public class DeactivateAuctionCommandValidator : AbstractValidator<DeactivateAuctionCommand>
 {

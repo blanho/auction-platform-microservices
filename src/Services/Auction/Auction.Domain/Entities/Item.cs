@@ -5,49 +5,49 @@ namespace Auctions.Domain.Entities;
 
 public class Item : BaseEntity
 {
-    private string _title = string.Empty;
-    private string _description = string.Empty;
+    public string Title { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
 
-    public string Title
+    public string? Condition { get; private set; }
+    public int? YearManufactured { get; private set; }
+
+    public Guid? CategoryId { get; private set; }
+    public Category? Category { get; private set; }
+
+    public Guid? BrandId { get; private set; }
+    public Brand? Brand { get; private set; }
+
+    public Auction? Auction { get; private set; }
+    public Guid AuctionId { get; private set; }
+
+    public List<MediaFile> Files { get; private set; } = new();
+
+    public Dictionary<string, string> Attributes { get; private set; } = new();
+
+    private Item() { }
+
+    public static Item Create(
+        string title,
+        string description,
+        string? condition = null,
+        int? yearManufactured = null,
+        Guid? categoryId = null,
+        Guid? brandId = null)
     {
-        get => _title;
-        set
+        return new Item
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Title cannot be empty", nameof(value));
-            if (value.Length > 200)
-                throw new ArgumentException("Title cannot exceed 200 characters", nameof(value));
-            _title = value;
-        }
+            Id = Guid.NewGuid(),
+            Title = title,
+            Description = description,
+            Condition = condition,
+            YearManufactured = yearManufactured,
+            CategoryId = categoryId,
+            BrandId = brandId,
+            Files = new List<MediaFile>(),
+            Attributes = new Dictionary<string, string>()
+        };
     }
 
-    public string Description
-    {
-        get => _description;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Description cannot be empty", nameof(value));
-            if (value.Length > 4000)
-                throw new ArgumentException("Description cannot exceed 4000 characters", nameof(value));
-            _description = value;
-        }
-    }
-
-    public string? Condition { get; set; }
-    public int? YearManufactured { get; set; }
-
-    public Guid? CategoryId { get; set; }
-    public Category? Category { get; set; }
-
-    public Guid? BrandId { get; set; }
-    public Brand? Brand { get; set; }
-
-    public Auction? Auction { get; set; }
-    public Guid AuctionId { get; set; }
-
-    public List<ItemFileInfo> Files { get; set; } = new();
-    public Dictionary<string, string> Attributes { get; set; } = new();
     public void UpdateDetails(string title, string description, string? condition = null, int? yearManufactured = null)
     {
         Title = title;
@@ -56,9 +56,38 @@ public class Item : BaseEntity
         YearManufactured = yearManufactured;
     }
 
-    public void AddFile(ItemFileInfo file)
+    public void UpdateTitle(string title)
     {
-        ArgumentNullException.ThrowIfNull(file);
+        Title = title;
+    }
+
+    public void UpdateDescription(string description)
+    {
+        Description = description;
+    }
+
+    public void UpdateCondition(string? condition)
+    {
+        Condition = condition;
+    }
+
+    public void UpdateYearManufactured(int? yearManufactured)
+    {
+        YearManufactured = yearManufactured;
+    }
+
+    public void UpdateCategory(Guid? categoryId)
+    {
+        CategoryId = categoryId;
+    }
+
+    public void UpdateBrand(Guid? brandId)
+    {
+        BrandId = brandId;
+    }
+
+    public void AddFile(MediaFile file)
+    {
         Files.Add(file);
     }
 
@@ -73,8 +102,6 @@ public class Item : BaseEntity
 
     public void SetAttribute(string key, string value)
     {
-        if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Attribute key cannot be empty", nameof(key));
         Attributes[key] = value;
     }
 
@@ -88,8 +115,8 @@ public class Item : BaseEntity
         return new Item
         {
             Id = source.Id,
-            _title = source._title,
-            _description = source._description,
+            Title = source.Title,
+            Description = source.Description,
             Condition = source.Condition,
             YearManufactured = source.YearManufactured,
             CategoryId = source.CategoryId,

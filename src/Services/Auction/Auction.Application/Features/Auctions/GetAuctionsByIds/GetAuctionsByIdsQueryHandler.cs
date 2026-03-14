@@ -1,22 +1,19 @@
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Queries.GetAuctionsByIds;
+namespace Auctions.Application.Features.Auctions.GetAuctionsByIds;
 
 public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery, IEnumerable<AuctionDto>>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionQueryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<GetAuctionsByIdsQueryHandler> _logger;
+    private readonly ILogger<GetAuctionsByIdsQueryHandler> _logger;
 
     public GetAuctionsByIdsQueryHandler(
-        IAuctionRepository repository,
+        IAuctionQueryRepository repository,
         IMapper mapper,
-        IAppLogger<GetAuctionsByIdsQueryHandler> logger)
+        ILogger<GetAuctionsByIdsQueryHandler> logger)
     {
         _repository = repository;
         _mapper = mapper;
@@ -25,25 +22,17 @@ public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery,
 
     public async Task<Result<IEnumerable<AuctionDto>>> Handle(GetAuctionsByIdsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching {Count} auctions by IDs", request.Ids.Count());
+        var idList = request.Ids.ToList();
+        _logger.LogDebug("Fetching {Count} auctions by IDs", idList.Count);
 
-        try
+        if (idList.Count == 0)
         {
-            var idList = request.Ids.ToList();
-            if (idList.Count == 0)
-            {
-                return Result.Success(Enumerable.Empty<AuctionDto>());
-            }
+            return Result.Success(Enumerable.Empty<AuctionDto>());
+        }
 
-            var auctions = await _repository.GetByIdsAsync(idList, cancellationToken);
-            var dtos = _mapper.Map<IEnumerable<AuctionDto>>(auctions);
-            return Result.Success(dtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to fetch auctions by IDs: {Error}", ex.Message);
-            return Result.Failure<IEnumerable<AuctionDto>>(Error.Create("Auctions.FetchFailed", $"Failed to fetch auctions: {ex.Message}"));
-        }
+        var auctions = await _repository.GetByIdsAsync(idList, cancellationToken);
+        var dtos = auctions.Select(a => _mapper.Map<AuctionDto>(a)).ToList();
+        return Result.Success<IEnumerable<AuctionDto>>(dtos);
     }
 }
 

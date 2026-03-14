@@ -1,4 +1,6 @@
-using UnitOfWork = BuildingBlocks.Application.Abstractions.Persistence.IUnitOfWork;
+using Bidding.Application.DTOs.Audit;
+using Bidding.Application.Errors;
+using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Bidding.Application.Features.AutoBids.CreateAutoBid;
 
@@ -6,22 +8,25 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
 {
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
-    private readonly UnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateAutoBidCommandHandler> _logger;
+    private readonly ILogger<CreateAutoBidCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
-        UnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IMapper mapper,
-        IAppLogger<CreateAutoBidCommandHandler> logger)
+        ILogger<CreateAutoBidCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _bidRepository = bidRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<CreateAutoBidResult>> Handle(CreateAutoBidCommand request, CancellationToken cancellationToken)
@@ -32,7 +37,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         var existingAutoBid = await _repository.GetActiveAutoBidAsync(request.AuctionId, request.UserId, cancellationToken);
         if (existingAutoBid != null)
         {
-            return Result.Failure<CreateAutoBidResult>(Error.Create("AutoBid.AlreadyExists", "You already have an active auto-bid for this auction. Please update or cancel it first."));
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.AutoBid.AlreadyExists);
         }
 
         var currentHighBid = await _bidRepository.GetHighestBidForAuctionAsync(request.AuctionId, cancellationToken);
@@ -40,7 +45,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
 
         if (request.MaxAmount <= currentHighAmount)
         {
-            return Result.Failure<CreateAutoBidResult>(Error.Create("AutoBid.MaxAmountTooLow", $"Max amount must be higher than current bid ({currentHighAmount:C})"));
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.AutoBid.MaxAmountTooLow(currentHighAmount));
         }
 
         var autoBid = AutoBid.Create(
@@ -52,10 +57,16 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         await _repository.CreateAsync(autoBid, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await _auditPublisher.PublishAsync(
+            autoBid.Id,
+            AutoBidAuditData.FromAutoBid(autoBid),
+            AuditAction.Created,
+            cancellationToken: cancellationToken);
+
         _logger.LogInformation("Auto-bid {AutoBidId} created successfully for auction {AuctionId}",
             autoBid.Id, request.AuctionId);
 
-        var dto = _mapper.Map<AutoBidDto>(autoBid);
+        var dto = autoBid.ToDto();
         return Result<CreateAutoBidResult>.Success(CreateAutoBidResult.Succeeded(dto));
     }
 }

@@ -1,0 +1,41 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark All as Read",
+  "clearAll": "Clear All",
+  "settings": "Notification Settings",
+  "empty": "No notifications",
+  "emptyDescription": "You're all caught up!",
+
+  "types": {
+    "bid": "Bid",
+    "outbid": "Outbid",
+    "won": "Auction Won",
+    "ended": "Auction Ended",
+    "payment": "Payment",
+    "shipping": "Shipping",
+    "message": "Message",
+    "system": "System"
+  },
+
+  "messages": {
+    "newBid": "New bid of {{amount}} on {{auction}}",
+    "outbid": "You've been outbid on {{auction}}",
+    "auctionWon": "Congratulations! You won {{auction}}",
+    "auctionEnded": "{{auction}} has ended",
+    "paymentReceived": "Payment received for {{auction}}",
+    "itemShipped": "Your item has been shipped",
+    "newMessage": "New message from {{sender}}"
+  },
+
+  "preferences": {
+    "title": "Notification Preferences",
+    "email": "Email Notifications",
+    "push": "Push Notifications",
+    "sms": "SMS Notifications",
+    "bidUpdates": "Bid Updates",
+    "auctionAlerts": "Auction Alerts",
+    "priceDrops": "Price Drops",
+    "newListings": "New Listings",
+    "marketing": "Marketing & Promotions"
+  }
+}

@@ -1,9 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Domain.Entities;
 
-public class Bid : BaseEntity
+public class Bid : AggregateRoot
 {
     public Guid AuctionId { get; private set; }
     public Guid BidderId { get; private set; }
@@ -11,9 +10,6 @@ public class Bid : BaseEntity
     public decimal Amount { get; private set; }
     public DateTimeOffset BidTime { get; private set; }
     public BidStatus Status { get; private set; }
-
-    [Timestamp]
-    public uint RowVersion { get; private set; }
 
     private Bid() { }
 
@@ -77,6 +73,15 @@ public class Bid : BaseEntity
     public void AcceptBelowReserve()
     {
         Status = BidStatus.AcceptedBelowReserve;
+
+        AddDomainEvent(new BidAcceptedBelowReserveDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            BidderUsername = BidderUsername,
+            Amount = Amount
+        });
     }
 
     public void Reject(string reason)
@@ -93,8 +98,41 @@ public class Bid : BaseEntity
         });
     }
 
+    public void Retract(
+        string reason,
+        bool wasHighestBid,
+        Guid? newHighestBidId = null,
+        decimal? newHighestAmount = null,
+        Guid? newHighestBidderId = null,
+        string? newHighestBidderUsername = null)
+    {
+        Status = BidStatus.Rejected;
+        AddDomainEvent(new BidRetractedDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            BidderUsername = BidderUsername,
+            Amount = Amount,
+            Reason = reason,
+            WasHighestBid = wasHighestBid,
+            NewHighestBidId = newHighestBidId,
+            NewHighestAmount = newHighestAmount,
+            NewHighestBidderId = newHighestBidderId,
+            NewHighestBidderUsername = newHighestBidderUsername
+        });
+    }
+
     public void MarkAsTooLow()
     {
         Status = BidStatus.TooLow;
+
+        AddDomainEvent(new BidMarkedTooLowDomainEvent
+        {
+            BidId = Id,
+            AuctionId = AuctionId,
+            BidderId = BidderId,
+            Amount = Amount
+        });
     }
 }

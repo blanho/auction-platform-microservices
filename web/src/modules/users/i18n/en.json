@@ -1,0 +1,81 @@
+{
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "bio": "Bio",
+    "location": "Location",
+    "avatar": "Profile Picture",
+    "changeAvatar": "Change Picture",
+    "memberSince": "Member since {{date}}",
+    "verified": "Verified",
+    "notVerified": "Not Verified"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "account": "Account Settings",
+    "security": "Security",
+    "notifications": "Notification Preferences",
+    "privacy": "Privacy",
+    "language": "Language",
+    "theme": "Theme",
+    "deleteAccount": "Delete Account"
+  },
+
+  "security": {
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "twoFactor": "Two-Factor Authentication",
+    "enableTwoFactor": "Enable 2FA",
+    "disableTwoFactor": "Disable 2FA",
+    "sessions": "Active Sessions",
+    "logoutAll": "Logout All Devices"
+  },
+
+  "seller": {
+    "title": "Seller Dashboard",
+    "applyToSell": "Apply to Become a Seller",
+    "sellerStatus": "Seller Status",
+    "approved": "Approved",
+    "pending": "Pending Approval",
+    "rejected": "Application Rejected",
+    "totalSales": "Total Sales",
+    "activeListings": "Active Listings",
+    "rating": "Seller Rating"
+  },
+
+  "myAuctions": {
+    "title": "My Auctions",
+    "active": "Active",
+    "ended": "Ended",
+    "draft": "Draft",
+    "createNew": "Create New Auction",
+    "noAuctions": "You haven't created any auctions yet"
+  },
+
+  "admin": {
+    "users": "User Management",
+    "allUsers": "All Users",
+    "searchUsers": "Search users...",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "ban": "Ban User",
+    "unban": "Unban User",
+    "makeAdmin": "Make Admin",
+    "removeAdmin": "Remove Admin"
+  },
+
+  "messages": {
+    "profileUpdated": "Profile updated successfully",
+    "passwordChanged": "Password changed successfully",
+    "settingsSaved": "Settings saved",
+    "avatarUpdated": "Profile picture updated"
+  }
+}

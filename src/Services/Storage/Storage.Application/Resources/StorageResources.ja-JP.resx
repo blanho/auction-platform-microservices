@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Storage.FileNotFound" xml:space="preserve"><value>ID '{0}' のファイルが見つかりません。</value></data>
+  <data name="Storage.EmptyFile" xml:space="preserve"><value>ファイルが空です。</value></data>
+  <data name="Storage.FileTooLarge" xml:space="preserve"><value>ファイルサイズが最大許容サイズ {0}MB を超えています。</value></data>
+  <data name="Storage.InvalidExtension" xml:space="preserve"><value>ファイル拡張子 '{0}' は許可されていません。許可: {1}</value></data>
+  <data name="Storage.InvalidContentType" xml:space="preserve"><value>コンテンツタイプ '{0}' は許可されていません。</value></data>
+  <data name="Storage.NoFiles" xml:space="preserve"><value>ファイルが提供されていません。</value></data>
+  <data name="Storage.TooManyFiles" xml:space="preserve"><value>アップロードは最大{0}ファイルまでです。</value></data>
+  <data name="Storage.DeleteFailed" xml:space="preserve"><value>ストレージからのファイル削除に失敗しました。</value></data>
+  <data name="Storage.PresignedUrlNotSupported" xml:space="preserve"><value>現在のストレージプロバイダーでは署名付きURL生成はサポートされていません。</value></data>
+</root>

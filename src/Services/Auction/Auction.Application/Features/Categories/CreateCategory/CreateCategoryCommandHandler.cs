@@ -1,24 +1,22 @@
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.CreateCategory;
+namespace Auctions.Application.Features.Categories.CreateCategory;
 
 public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryCommand, CategoryDto>
 {
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateCategoryCommandHandler> _logger;
+    private readonly ILogger<CreateCategoryCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateCategoryCommandHandler(
         ICategoryRepository repository,
         IMapper mapper,
-        IAppLogger<CreateCategoryCommandHandler> logger,
+        ILogger<CreateCategoryCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -36,20 +34,17 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
             var slugExists = await _repository.SlugExistsAsync(request.Slug, null, cancellationToken);
             if (slugExists)
             {
-                return Result.Failure<CategoryDto>(Error.Create("Category.SlugExists", $"A category with slug '{request.Slug}' already exists"));
+                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
             }
 
-            var category = new Category
-            {
-                Name = request.Name,
-                Slug = request.Slug,
-                Icon = request.Icon,
-                Description = request.Description,
-                ImageUrl = request.ImageUrl,
-                DisplayOrder = request.DisplayOrder,
-                IsActive = request.IsActive,
-                ParentCategoryId = request.ParentCategoryId
-            };
+            var category = Category.Create(
+                request.Name,
+                request.Slug,
+                request.Icon,
+                request.Description,
+                request.DisplayOrder,
+                request.IsActive,
+                request.ParentCategoryId);
 
             var createdCategory = await _repository.CreateAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -62,7 +57,7 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
         catch (Exception ex)
         {
             _logger.LogError("Failed to create category {Name}: {Error}", request.Name, ex.Message);
-            return Result.Failure<CategoryDto>(Error.Create("Category.CreateFailed", $"Failed to create category: {ex.Message}"));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.CreateFailed(ex.Message));
         }
     }
 }

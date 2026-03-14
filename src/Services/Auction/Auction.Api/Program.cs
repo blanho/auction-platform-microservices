@@ -1,78 +1,48 @@
-using Auctions.Api.Extensions;
-using Auctions.Infrastructure.Persistence;
+using Auctions.Api.Extensions.DependencyInjection;
+using Auctions.Application.Resources;
 using Auctions.Infrastructure.Extensions;
+using BuildingBlocks.Application.Abstractions;
+using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Infrastructure.Extensions;
-
+using BuildingBlocks.Application.Extensions;
 using Carter;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.ValidateStandardConfiguration(
+    builder.Configuration,
+    "AuctionService",
+    requiresDatabase: true,
+    requiresRedis: true,
+    requiresRabbitMQ: true,
+    requiresIdentity: true);
+
 builder.AddApplicationLogging();
 
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+
 builder.Services.AddObservability(builder.Configuration);
-
 builder.Services.AddCommonUtilities();
-
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-});
+builder.Services.AddAppLocalization<AuctionResources>();
+builder.Services.AddSanitization();
+builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
-
+builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddApplicationServices(builder.Configuration);
-builder.Services.AddGrpcClients();
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
-
-builder.Services.AddCQRS(typeof(Auctions.Application.Commands.CreateAuction.CreateAuctionCommand).Assembly);
-
-builder.Services.AddAuditServices(builder.Configuration);
-
-builder.Services.AddSeeders();
-
+builder.Services.AddCQRS(typeof(Auctions.Application.Features.Auctions.CreateAuction.CreateAuctionCommand).Assembly);
+builder.Services.AddAuditServices(builder.Configuration, "auction-service");
 builder.Services.AddAuctionScheduling(builder.Configuration);
-
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
-
 builder.Services.AddCarter();
-
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
-
-builder.Services.AddGrpcClient<Storage.Api.Protos.StorageGrpc.StorageGrpcClient>(options =>
-{
-    options.Address = new Uri(builder.Configuration["GrpcServices:Storage"] ?? "http://localhost:5007");
-});
-
-var identityAuthority = builder.Configuration["Identity:Authority"];
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.Authority = identityAuthority;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = identityAuthority,
-        ValidateAudience = true,
-        ValidAudience = "auctionApp",
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromMinutes(1),
-        NameClaimType = "name",
-        RoleClaimType = "role"
-    };
-});
-
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
-
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"] ?? "guest"}:{builder.Configuration["RabbitMQ:Password"] ?? "guest"}@{builder.Configuration["RabbitMQ:Host"] ?? "localhost"}:5672",
@@ -81,30 +51,30 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-await app.Services.SeedDatabaseAsync();
-
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))
 {
     app.UsePathBase(pathBase);
 }
 
+app.UseApiSecurityHeaders();
+app.UseCorrelationId();
 app.UseRequestTracing();
 app.UseAppExceptionHandling();
 app.MapCustomHealthChecks();
-
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseAccessAuthorization();
-
 app.MapCarter();
-app.MapGrpcService<Auctions.Api.Services.Grpc.AuctionGrpcService>();
-app.MapGrpcReflectionService();
+app.MapGrpcService<Auctions.Api.Grpc.AuctionGrpcService>();
 
-app.UseCommonOpenApi();
-app.UseCommonSwaggerUI("Auction Service");
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+    app.UseCommonOpenApi();
+    app.UseCommonSwaggerUI("Auction Service");
+}
 
-app.Run();
-public partial class Program { }
+await app.RunAsync();
+
+public static partial class Program { }

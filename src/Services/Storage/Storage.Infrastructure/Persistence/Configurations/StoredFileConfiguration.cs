@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Storage.Domain.Entities;
+using Storage.Domain.Enums;
 
 namespace Storage.Infrastructure.Persistence.Configurations;
 
@@ -8,66 +9,63 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
 {
     public void Configure(EntityTypeBuilder<StoredFile> builder)
     {
-        builder.ToTable("stored_files");
+        builder.HasKey(x => x.Id);
 
-        builder.HasKey(f => f.Id);
+        builder.Property(x => x.FileName)
+            .IsRequired()
+            .HasMaxLength(255);
 
-        builder.Property(f => f.FileName)
-            .HasMaxLength(500)
-            .IsRequired();
+        builder.Property(x => x.StoredFileName)
+            .IsRequired()
+            .HasMaxLength(500);
 
-        builder.Property(f => f.OriginalFileName)
-            .HasMaxLength(500)
-            .IsRequired();
-
-        builder.Property(f => f.ContentType)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(f => f.Size)
-            .IsRequired();
-
-        builder.Property(f => f.Provider)
-            .HasConversion<string>()
-            .HasMaxLength(20)
-            .IsRequired();
-
-        builder.Property(f => f.StoragePath)
-            .HasMaxLength(1000)
-            .IsRequired();
-
-        builder.Property(f => f.BucketName)
-            .HasMaxLength(200);
-
-        builder.Property(f => f.Checksum)
+        builder.Property(x => x.ContentType)
+            .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(f => f.OwnerService)
-            .HasMaxLength(100)
+        builder.Property(x => x.FileSize)
             .IsRequired();
 
-        builder.Property(f => f.OwnerId)
-            .HasMaxLength(100);
+        builder.Property(x => x.Url)
+            .IsRequired()
+            .HasMaxLength(2048);
 
-        builder.Property(f => f.UploadedBy)
-            .HasMaxLength(256);
+        builder.Property(x => x.SubFolder)
+            .HasMaxLength(255);
 
-        builder.Property(f => f.Status)
-            .HasConversion<string>()
-            .HasMaxLength(20)
-            .IsRequired();
+        builder.Property(x => x.OwnerId);
 
-        builder.Property(f => f.FailureReason)
-            .HasMaxLength(1000);
+        builder.Property(x => x.Status)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasDefaultValue(FileStatus.Pending);
 
-        builder.Property(f => f.Metadata)
+        builder.Property(x => x.Provider)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasDefaultValue(StorageProvider.Local);
+
+        builder.Property(x => x.Checksum)
+            .HasMaxLength(128);
+
+        builder.Property(x => x.Metadata)
             .HasColumnType("jsonb");
 
-        builder.HasIndex(f => f.Status);
-        builder.HasIndex(f => new { f.OwnerService, f.OwnerId });
-        builder.HasIndex(f => f.CreatedAt);
-        builder.HasIndex(f => f.ExpiresAt);
-        builder.HasIndex(f => f.UploadedBy);
-        builder.HasIndex(f => f.Checksum);
+        builder.Property(x => x.CreatedAt)
+            .IsRequired();
+
+        builder.Property(x => x.UpdatedAt);
+
+        builder.Property(x => x.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.HasIndex(x => x.OwnerId);
+        builder.HasIndex(x => x.Status);
+        builder.HasIndex(x => x.CreatedAt);
+        builder.HasIndex(x => x.StoredFileName).IsUnique();
+        builder.HasIndex(x => new { x.OwnerId, x.Status });
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

@@ -1,5 +1,5 @@
 using MassTransit;
-using Orchestration.Sagas.AuctionCompletion.Events;
+using OrchestrationService.Contracts.Events;
 
 namespace Orchestration.Sagas.AuctionCompletion;
 
@@ -18,6 +18,8 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
     public Event<AuctionCompletionNotificationsFailed> NotificationsFailed { get; private set; } = null!;
     public Event<AuctionCompletionReverted> CompletionReverted { get; private set; } = null!;
 
+    public Schedule<AuctionCompletionSagaState, AuctionCompletionSagaTimedOut> SagaTimeout { get; private set; } = null!;
+
     public AuctionCompletionSagaStateMachine()
     {
         InstanceState(x => x.CurrentState);
@@ -28,6 +30,12 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
         Event(() => NotificationsSent, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => NotificationsFailed, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => CompletionReverted, e => e.CorrelateById(m => m.Message.CorrelationId));
+
+        Schedule(() => SagaTimeout, instance => instance.TimeoutTokenId, s =>
+        {
+            s.Delay = TimeSpan.FromMinutes(10);
+            s.Received = r => r.CorrelateById(m => m.Message.CorrelationId);
+        });
 
         Initially(
             When(SagaStarted)
@@ -41,6 +49,12 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                     context.Saga.WinningBidAmount = context.Message.WinningBidAmount;
                     context.Saga.ItemTitle = context.Message.ItemTitle;
                     context.Saga.StartedAt = context.Message.AuctionEndedAt;
+                })
+                .Schedule(SagaTimeout, context => new AuctionCompletionSagaTimedOut
+                {
+                    CorrelationId = context.Saga.CorrelationId,
+                    AuctionId = context.Saga.AuctionId,
+                    TimedOutAt = DateTimeOffset.UtcNow.AddMinutes(10)
                 })
                 .Publish(context => new CreateAuctionWinnerOrder
                 {
@@ -98,6 +112,7 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                     context.Saga.NotificationsSentAt = context.Message.SentAt;
                     context.Saga.CompletedAt = DateTimeOffset.UtcNow;
                 })
+                .Unschedule(SagaTimeout)
                 .Publish(context => new AuctionCompletionSagaCompleted
                 {
                     CorrelationId = context.Saga.CorrelationId,
@@ -115,6 +130,7 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     context.Saga.CompletedAt = DateTimeOffset.UtcNow;
                 })
+                .Unschedule(SagaTimeout)
                 .Publish(context => new AuctionCompletionSagaCompleted
                 {
                     CorrelationId = context.Saga.CorrelationId,
@@ -134,6 +150,7 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     context.Saga.CompletedAt = context.Message.RevertedAt;
                 })
+                .Unschedule(SagaTimeout)
                 .Publish(context => new AuctionCompletionSagaCompleted
                 {
                     CorrelationId = context.Saga.CorrelationId,
@@ -145,6 +162,38 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 })
                 .TransitionTo(Failed)
                 .Finalize()
+        );
+
+        DuringAny(
+            When(SagaTimeout.Received)
+                .Then(context =>
+                {
+                    context.Saga.FailureReason = "Transaction timed out after 10 minutes";
+                    context.Saga.CompletedAt = DateTimeOffset.UtcNow;
+                })
+                .IfElse(
+                    context => context.Saga.CurrentState == nameof(CreatingOrder),
+                    binder => binder
+                        .Publish(context => new RevertAuctionCompletion
+                        {
+                            CorrelationId = context.Saga.CorrelationId,
+                            AuctionId = context.Saga.AuctionId,
+                            Reason = "Transaction timed out"
+                        })
+                        .TransitionTo(Compensating),
+                    binder => binder
+                        .Publish(context => new AuctionCompletionSagaCompleted
+                        {
+                            CorrelationId = context.Saga.CorrelationId,
+                            AuctionId = context.Saga.AuctionId,
+                            OrderId = null,
+                            Success = false,
+                            FailureReason = context.Saga.FailureReason,
+                            CompletedAt = context.Saga.CompletedAt ?? DateTimeOffset.UtcNow
+                        })
+                        .TransitionTo(Failed)
+                        .Finalize()
+                )
         );
 
         SetCompletedWhenFinalized();

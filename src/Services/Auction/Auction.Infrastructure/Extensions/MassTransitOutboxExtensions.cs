@@ -1,10 +1,9 @@
 using Auctions.Infrastructure.Persistence;
-using Auctions.Infrastructure.Messaging;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Orchestration.Sagas.BuyNow;
 using Auctions.Infrastructure.Messaging.Consumers;
 
 namespace Auctions.Infrastructure.Extensions;
@@ -18,7 +17,7 @@ public static class MassTransitOutboxExtensions
         services.AddMassTransit(x =>
         {
             x.AddConsumer<BidPlacedConsumer>();
-            x.AddConsumer<FileUploadedConsumer>();
+            x.AddConsumer<BidRetractedConsumer>();
 
             x.AddConsumer<ReserveAuctionForBuyNowConsumer>();
             x.AddConsumer<CompleteBuyNowAuctionConsumer>();
@@ -29,13 +28,8 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<UserUpdatedConsumer>();
             x.AddConsumer<UserRoleChangedConsumer>();
 
-            x.AddSagaStateMachine<BuyNowSagaStateMachine, BuyNowSagaState>()
-                .EntityFrameworkRepository(r =>
-                {
-                    r.ConcurrencyMode = ConcurrencyMode.Optimistic;
-                    r.ExistingDbContext<AuctionDbContext>();
-                    r.UsePostgres();
-                });
+            x.AddConsumer<FileUploadedConsumer>();
+            x.AddConsumer<FileDeletedConsumer>();
 
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {
@@ -46,11 +40,15 @@ public static class MassTransitOutboxExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"] ?? "localhost";
-                var username = configuration["RabbitMQ:Username"] ?? "guest";
-                var password = configuration["RabbitMQ:Password"] ?? "guest";
+                var host = configuration["RabbitMQ:Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
+                var username = configuration["RabbitMQ:Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
+                var password = configuration["RabbitMQ:Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
+                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, "/", h =>
+                cfg.Host(host, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);
@@ -63,19 +61,39 @@ public static class MassTransitOutboxExtensions
                     e.ConfigureConsumer<ReserveAuctionForBuyNowConsumer>(context);
                     e.ConfigureConsumer<CompleteBuyNowAuctionConsumer>(context);
                     e.ConfigureConsumer<ReleaseAuctionReservationConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
-                cfg.ReceiveEndpoint("buy-now-saga-state", e =>
+                cfg.ReceiveEndpoint("auction-file-events", e =>
                 {
-                    e.ConfigureSaga<BuyNowSagaState>(context);
+                    e.ConfigureConsumer<FileUploadedConsumer>(context);
+                    e.ConfigureConsumer<FileDeletedConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
-                cfg.UseMessageRetry(r => r.Immediate(5));
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });
-        services.AddScoped<IEventPublisher, OutboxEventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         return services;
     }
 }

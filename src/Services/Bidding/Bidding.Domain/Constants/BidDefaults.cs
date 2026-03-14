@@ -2,7 +2,6 @@ namespace Bidding.Domain.Constants;
 
 public static class BidDefaults
 {
-
     public const int DefaultDaysForStats = 30;
     public const int DefaultTopBiddersLimit = 10;
 
@@ -21,4 +20,11 @@ public static class BidDefaults
     public const int ApiRateLimitPerMinute = 100;
 
     public const int MaxAutoBidRecursionDepth = 10;
+    public const int MaxActiveBidsPerUser = 100;
+
+    public const int RetractWindowMinutes = 5;
+
+    public const int DefaultPage = 1;
+    public const int DefaultPageSize = 20;
+    public const int MaxPageSize = 100;
 }

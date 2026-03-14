@@ -1,0 +1,41 @@
+{
+  "title": "通知",
+  "markAllRead": "すべて既読にする",
+  "clearAll": "すべて消去",
+  "settings": "通知設定",
+  "empty": "通知はありません",
+  "emptyDescription": "すべて確認済みです！",
+
+  "types": {
+    "bid": "入札",
+    "outbid": "入札負け",
+    "won": "落札",
+    "ended": "オークション終了",
+    "payment": "支払い",
+    "shipping": "配送",
+    "message": "メッセージ",
+    "system": "システム"
+  },
+
+  "messages": {
+    "newBid": "{{auction}}に{{amount}}の入札がありました",
+    "outbid": "{{auction}}で入札負けしました",
+    "auctionWon": "おめでとうございます！{{auction}}を落札しました",
+    "auctionEnded": "{{auction}}が終了しました",
+    "paymentReceived": "{{auction}}の支払いを受け取りました",
+    "itemShipped": "商品が発送されました",
+    "newMessage": "{{sender}}からの新しいメッセージ"
+  },
+
+  "preferences": {
+    "title": "通知設定",
+    "email": "メール通知",
+    "push": "プッシュ通知",
+    "sms": "SMS通知",
+    "bidUpdates": "入札更新",
+    "auctionAlerts": "オークションアラート",
+    "priceDrops": "価格引き下げ",
+    "newListings": "新規出品",
+    "marketing": "マーケティング・プロモーション"
+  }
+}

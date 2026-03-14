@@ -1,10 +1,10 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
 using AuctionService.Contracts.Events;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Messaging.Consumers;
 
@@ -48,7 +48,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             buyerUsername: message.WinnerUsername,
             sellerId: message.SellerId,
             sellerUsername: message.SellerUsername,
-            itemTitle: string.Empty,
+            itemTitle: message.ItemTitle,
             winningBid: message.SoldAmount ?? 0);
 
         await _orderRepository.AddAsync(order);

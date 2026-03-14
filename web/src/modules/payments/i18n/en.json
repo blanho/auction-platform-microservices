@@ -1,0 +1,61 @@
+{
+  "title": "Payments",
+  "paymentMethods": "Payment Methods",
+  "addPaymentMethod": "Add Payment Method",
+  "billingHistory": "Billing History",
+  "pendingPayments": "Pending Payments",
+
+  "method": {
+    "creditCard": "Credit Card",
+    "debitCard": "Debit Card",
+    "bankTransfer": "Bank Transfer",
+    "paypal": "PayPal",
+    "crypto": "Cryptocurrency"
+  },
+
+  "card": {
+    "number": "Card Number",
+    "expiry": "Expiry Date",
+    "cvv": "CVV",
+    "name": "Name on Card",
+    "default": "Default",
+    "setDefault": "Set as Default",
+    "remove": "Remove Card"
+  },
+
+  "checkout": {
+    "title": "Checkout",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total",
+    "payNow": "Pay Now",
+    "processing": "Processing..."
+  },
+
+  "status": {
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "cancelled": "Cancelled"
+  },
+
+  "messages": {
+    "paymentSuccess": "Payment successful",
+    "paymentFailed": "Payment failed. Please try again.",
+    "cardAdded": "Card added successfully",
+    "cardRemoved": "Card removed",
+    "refundInitiated": "Refund initiated"
+  },
+
+  "invoice": {
+    "title": "Invoice",
+    "invoiceNumber": "Invoice #{{number}}",
+    "date": "Date",
+    "dueDate": "Due Date",
+    "download": "Download Invoice",
+    "print": "Print"
+  }
+}

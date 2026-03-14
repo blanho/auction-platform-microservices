@@ -1,9 +1,19 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Constants;
+
 namespace Bidding.Application.Features.Bids.GetWinningBids;
 
 public record GetWinningBidsQuery(
     Guid UserId,
-    int Page = 1,
-    int PageSize = 20) : IQuery<PagedResult<WinningBidDto>>;
+    Guid? AuctionId = null,
+    bool? IsPaid = null,
+    DateTimeOffset? FromDate = null,
+    DateTimeOffset? ToDate = null,
+    int Page = PaginationDefaults.DefaultPage,
+    int PageSize = PaginationDefaults.DefaultPageSize,
+    string? SortBy = null,
+    bool SortDescending = true
+) : IQuery<PaginatedResult<WinningBidDto>>;
 
 public record WinningBidDto
 {
@@ -14,15 +24,4 @@ public record WinningBidDto
     public DateTimeOffset WonAt { get; init; }
     public string PaymentStatus { get; init; } = string.Empty;
     public bool IsPaid { get; init; }
-}
-
-public record PagedResult<T>
-{
-    public List<T> Items { get; init; } = new();
-    public int TotalCount { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    public bool HasNextPage => Page < TotalPages;
-    public bool HasPreviousPage => Page > 1;
 }

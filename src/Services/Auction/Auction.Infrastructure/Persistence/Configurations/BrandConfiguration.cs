@@ -19,9 +19,6 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(x => x.LogoUrl)
-            .HasMaxLength(500);
-
         builder.Property(x => x.Description)
             .HasMaxLength(1000);
 
@@ -50,6 +47,12 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
         builder.HasIndex(x => new { x.IsActive, x.DisplayOrder });
 
         builder.HasIndex(x => new { x.IsActive, x.IsFeatured });
+
+        builder.Property(x => x.Files)
+            .HasColumnType("jsonb");
+
+        builder.Navigation(x => x.Items)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

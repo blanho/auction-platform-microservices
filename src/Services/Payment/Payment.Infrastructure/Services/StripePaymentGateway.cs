@@ -4,9 +4,9 @@ using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Infrastructure.Configuration;
-using BuildingBlocks.Infrastructure.Repository;
 using Stripe;
 using Stripe.Checkout;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Services;
 

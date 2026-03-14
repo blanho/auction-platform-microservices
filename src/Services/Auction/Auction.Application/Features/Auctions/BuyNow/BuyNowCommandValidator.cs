@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.BuyNow;
+namespace Auctions.Application.Features.Auctions.BuyNow;
 
 public class BuyNowCommandValidator : AbstractValidator<BuyNowCommand>
 {

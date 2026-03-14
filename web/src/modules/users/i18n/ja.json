@@ -1,0 +1,81 @@
+{
+  "profile": {
+    "title": "プロフィール",
+    "editProfile": "プロフィール編集",
+    "firstName": "名",
+    "lastName": "姓",
+    "email": "メールアドレス",
+    "phone": "電話番号",
+    "bio": "自己紹介",
+    "location": "所在地",
+    "avatar": "プロフィール画像",
+    "changeAvatar": "画像を変更",
+    "memberSince": "{{date}}から利用",
+    "verified": "認証済み",
+    "notVerified": "未認証"
+  },
+
+  "settings": {
+    "title": "設定",
+    "account": "アカウント設定",
+    "security": "セキュリティ",
+    "notifications": "通知設定",
+    "privacy": "プライバシー",
+    "language": "言語",
+    "theme": "テーマ",
+    "deleteAccount": "アカウント削除"
+  },
+
+  "security": {
+    "changePassword": "パスワード変更",
+    "currentPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "confirmPassword": "新しいパスワード（確認）",
+    "twoFactor": "二要素認証",
+    "enableTwoFactor": "2FAを有効化",
+    "disableTwoFactor": "2FAを無効化",
+    "sessions": "アクティブセッション",
+    "logoutAll": "すべてのデバイスからログアウト"
+  },
+
+  "seller": {
+    "title": "出品者ダッシュボード",
+    "applyToSell": "出品者として申請",
+    "sellerStatus": "出品者ステータス",
+    "approved": "承認済み",
+    "pending": "承認待ち",
+    "rejected": "申請却下",
+    "totalSales": "総売上",
+    "activeListings": "出品中",
+    "rating": "出品者評価"
+  },
+
+  "myAuctions": {
+    "title": "マイオークション",
+    "active": "開催中",
+    "ended": "終了",
+    "draft": "下書き",
+    "createNew": "新規オークション作成",
+    "noAuctions": "まだオークションを作成していません"
+  },
+
+  "admin": {
+    "users": "ユーザー管理",
+    "allUsers": "全ユーザー",
+    "searchUsers": "ユーザーを検索...",
+    "role": "役割",
+    "status": "ステータス",
+    "actions": "アクション",
+    "ban": "ユーザーを禁止",
+    "unban": "禁止を解除",
+    "makeAdmin": "管理者にする",
+    "removeAdmin": "管理者権限を削除"
+  },
+
+  "messages": {
+    "profileUpdated": "プロフィールを更新しました",
+    "passwordChanged": "パスワードを変更しました",
+    "settingsSaved": "設定を保存しました",
+    "avatarUpdated": "プロフィール画像を更新しました"
+  }
+}

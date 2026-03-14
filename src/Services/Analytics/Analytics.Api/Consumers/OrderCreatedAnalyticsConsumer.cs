@@ -53,7 +53,7 @@ public class OrderCreatedAnalyticsConsumer : IConsumer<OrderCreatedEvent>
             IsRefunded = false,
 
             EventType = "OrderCreated",
-            EventVersion = (short)@event.Version
+            EventVersion = 1
         };
 
         _context.FactPayments.Add(fact);

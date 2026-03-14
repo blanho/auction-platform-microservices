@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="Gateway.Error" xml:space="preserve">
+    <value>ゲートウェイエラー</value>
+  </data>
+  <data name="Gateway.Timeout" xml:space="preserve">
+    <value>ゲートウェイタイムアウト</value>
+  </data>
+  <data name="Gateway.Unauthorized" xml:space="preserve">
+    <value>認証されていません</value>
+  </data>
+  <data name="Gateway.ErrorDetail" xml:space="preserve">
+    <value>リクエストの処理中にエラーが発生しました。</value>
+  </data>
+  <data name="Gateway.RateLimitExceeded" xml:space="preserve">
+    <value>リクエストが多すぎます。しばらくしてからもう一度お試しください。</value>
+  </data>
+  <data name="Gateway.RateLimitRetryAfter" xml:space="preserve">
+    <value>レート制限を超えました。{0}秒後に再試行してください。</value>
+  </data>
+</root>

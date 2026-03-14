@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-
 namespace Bidding.Infrastructure.Persistence.Configurations;
 
 public class AutoBidConfiguration : IEntityTypeConfiguration<AutoBid>

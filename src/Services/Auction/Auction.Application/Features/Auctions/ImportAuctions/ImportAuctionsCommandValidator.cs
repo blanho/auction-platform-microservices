@@ -1,25 +1,32 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.ImportAuctions;
+namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public class ImportAuctionsCommandValidator : AbstractValidator<ImportAuctionsCommand>
 {
+    private const int MaxRowsPerImport = 10_000;
+
     public ImportAuctionsCommandValidator()
     {
-        RuleFor(x => x.Auctions)
-            .NotEmpty()
-            .WithMessage(ValidationConstants.Messages.Required("Auctions"));
+        RuleFor(x => x.SellerId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
 
-        RuleFor(x => x.Auctions)
-            .Must(auctions => auctions.Count <= ValidationConstants.CollectionSize.MaxImportSize)
-            .WithMessage($"Cannot import more than {ValidationConstants.CollectionSize.MaxImportSize} auctions at once");
+        RuleFor(x => x.SellerUsername)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"));
 
-        RuleFor(x => x.Seller)
-            .NotEmpty()
-            .WithMessage(ValidationConstants.Messages.Required("Seller"))
-            .MaximumLength(ValidationConstants.StringLength.Username)
-            .WithMessage(ValidationConstants.Messages.MaxLength("Seller", ValidationConstants.StringLength.Username));
+        RuleFor(x => x.CorrelationId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Correlation ID"));
+
+        RuleFor(x => x.Currency)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Currency"))
+            .MaximumLength(ValidationConstants.MinLength.ShortCode + 1)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Currency", ValidationConstants.MinLength.ShortCode + 1));
+
+        RuleFor(x => x.Rows)
+            .NotNull().WithMessage(ValidationConstants.Messages.Required("Rows"))
+            .Must(rows => rows.Count > 0).WithMessage(ValidationConstants.Messages.MustContainAtLeastOne("Row"))
+            .Must(rows => rows.Count <= MaxRowsPerImport)
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Rows", MaxRowsPerImport));
     }
 }
-

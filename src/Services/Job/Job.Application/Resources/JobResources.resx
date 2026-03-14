@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Job.NotFound" xml:space="preserve"><value>Job not found.</value></data>
+  <data name="Job.Duplicate" xml:space="preserve"><value>A job with correlation ID '{0}' already exists.</value></data>
+  <data name="Job.InvalidType" xml:space="preserve"><value>'{0}' is not a valid job type.</value></data>
+  <data name="Job.CannotCancel" xml:space="preserve"><value>Cannot cancel a job with status '{0}'.</value></data>
+  <data name="Job.CannotRetry" xml:space="preserve"><value>Cannot retry a job with status '{0}'.</value></data>
+  <data name="Job.StartFailed" xml:space="preserve"><value>Failed to start job: {0}</value></data>
+  <data name="Job.ProcessingFailed" xml:space="preserve"><value>Job processing failed: {0}</value></data>
+  <data name="JobItem.NotFound" xml:space="preserve"><value>Job item not found.</value></data>
+  <data name="JobItem.AlreadyProcessed" xml:space="preserve"><value>Job item {0} has already been processed.</value></data>
+  <data name="JobItem.ProcessingFailed" xml:space="preserve"><value>Failed to process job item: {0}</value></data>
+</root>

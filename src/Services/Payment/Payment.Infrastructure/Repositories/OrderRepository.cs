@@ -1,8 +1,15 @@
 
+using System.Linq.Expressions;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
+using Payment.Application.Filtering;
+using Payment.Application.Helpers;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using Payment.Domain.Enums;
 using Payment.Infrastructure.Persistence;
 
 namespace Payment.Infrastructure.Repositories;
@@ -11,6 +18,16 @@ public class OrderRepository : IOrderRepository
 {
     private readonly PaymentDbContext _context;
 
+    private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap = 
+        new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["createdat"] = o => o.CreatedAt,
+        ["totalamount"] = o => o.TotalAmount,
+        ["status"] = o => o.Status,
+        ["paidat"] = o => o.PaidAt!,
+        ["itemtitle"] = o => o.ItemTitle
+    };
+
     public OrderRepository(PaymentDbContext context)
     {
         _context = context;
@@ -18,32 +35,45 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> GetByIdAsync(Guid id)
     {
-        return await _context.Orders.FindAsync(id);
+        return await _context.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id);
     }
 
     public async Task<Order> GetByAuctionIdAsync(Guid auctionId)
     {
-        return await _context.Orders.FirstOrDefaultAsync(o => o.AuctionId == auctionId);
+        return await _context.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.AuctionId == auctionId);
     }
 
-    public async Task<IEnumerable<Order>> GetByBuyerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
+    public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)
     {
-        return await _context.Orders
-            .Where(o => o.BuyerUsername == username)
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        return await GetOrdersByQueryParamsAsync(queryParams);
     }
 
-    public async Task<IEnumerable<Order>> GetBySellerUsernameAsync(string username, int page = PaginationDefaults.DefaultPage, int pageSize = PaginationDefaults.DefaultPageSize)
+    public async Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams)
     {
-        return await _context.Orders
-            .Where(o => o.SellerUsername == username)
-            .OrderByDescending(o => o.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        return await GetOrdersByQueryParamsAsync(queryParams);
+    }
+
+    private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams)
+    {
+        var query = _context.Orders.AsNoTracking();
+        
+        if (queryParams.Filter != null)
+        {
+            query = queryParams.Filter.Apply(query);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplyPaging(queryParams)
             .ToListAsync();
+
+        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
     public async Task<Order> AddAsync(Order order)
@@ -54,19 +84,23 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order> UpdateAsync(Order order)
     {
-        order.UpdatedAt = DateTimeOffset.UtcNow;
+        order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Orders.Update(order);
         return order;
     }
 
     public async Task<int> GetCountByBuyerUsernameAsync(string username)
     {
-        return await _context.Orders.CountAsync(o => o.BuyerUsername == username);
+        return await _context.Orders
+            .AsNoTracking()
+            .CountAsync(o => o.BuyerUsername == username);
     }
 
     public async Task<int> GetCountBySellerUsernameAsync(string username)
     {
-        return await _context.Orders.CountAsync(o => o.SellerUsername == username);
+        return await _context.Orders
+            .AsNoTracking()
+            .CountAsync(o => o.SellerUsername == username);
     }
 
     public async Task<RevenueStatsDto> GetRevenueStatsAsync(
@@ -79,7 +113,7 @@ public class OrderRepository : IOrderRepository
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var query = _context.Orders.AsQueryable();
+        var query = _context.Orders.AsNoTracking().AsQueryable();
         
         if (startDate.HasValue)
             query = query.Where(o => o.CreatedAt >= startDate.Value);
@@ -119,6 +153,7 @@ public class OrderRepository : IOrderRepository
         var startDate = DateTimeOffset.UtcNow.AddDays(-days);
 
         var dailyStats = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => o.PaidAt.Value.Date)
             .Select(g => new DailyRevenueStatDto(
@@ -135,9 +170,10 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<TopSellerDto>> GetTopSellersAsync(int limit, string period, CancellationToken cancellationToken = default)
     {
-        var startDate = GetPeriodStartDate(period);
+        var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
         var topSellers = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.SellerId, o.SellerUsername })
             .Select(g => new TopSellerDto(
@@ -156,9 +192,10 @@ public class OrderRepository : IOrderRepository
 
     public async Task<List<TopBuyerDto>> GetTopBuyersAsync(int limit, string period, CancellationToken cancellationToken = default)
     {
-        var startDate = GetPeriodStartDate(period);
+        var startDate = DateTimeHelper.GetPeriodStartDate(period);
 
         var topBuyers = await _context.Orders
+            .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.BuyerId, o.BuyerUsername })
             .Select(g => new TopBuyerDto(
@@ -174,16 +211,50 @@ public class OrderRepository : IOrderRepository
         return topBuyers;
     }
 
-    private static DateTimeOffset GetPeriodStartDate(string period)
+    public async Task<PaginatedResult<Order>> GetAllAsync(
+        OrderQueryParams queryParams,
+        CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        return period.ToLower() switch
+        var query = _context.Orders.AsNoTracking();
+        
+        if (queryParams.Filter != null)
         {
-            "day" => now.AddDays(-1),
-            "week" => now.AddDays(-7),
-            "month" => now.AddMonths(-1),
-            "year" => now.AddYears(-1),
-            _ => now.AddMonths(-1)
-        };
+            query = queryParams.Filter.Apply(query);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .ApplySorting(queryParams, OrderSortMap, o => o.CreatedAt)
+            .ApplyPaging(queryParams)
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
+    }
+
+    public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
+    {
+        var orders = await _context.Orders
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var totalRevenue = orders.Where(o => o.PaymentStatus == PaymentStatus.Completed).Sum(o => o.TotalAmount);
+        var completedOrdersCount = orders.Count(o => o.PaymentStatus == PaymentStatus.Completed);
+        var averageOrderValue = completedOrdersCount > 0 ? totalRevenue / completedOrdersCount : 0;
+
+        return new OrderStatsDto(
+            orders.Count,
+            orders.Count(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.PaymentPending),
+            orders.Count(o => o.Status == OrderStatus.Paid),
+            orders.Count(o => o.Status == OrderStatus.Processing),
+            orders.Count(o => o.Status == OrderStatus.Shipped),
+            orders.Count(o => o.Status == OrderStatus.Delivered),
+            orders.Count(o => o.Status == OrderStatus.Completed),
+            orders.Count(o => o.Status == OrderStatus.Cancelled),
+            orders.Count(o => o.Status == OrderStatus.Disputed),
+            orders.Count(o => o.Status == OrderStatus.Refunded),
+            totalRevenue,
+            averageOrderValue
+        );
     }
 }

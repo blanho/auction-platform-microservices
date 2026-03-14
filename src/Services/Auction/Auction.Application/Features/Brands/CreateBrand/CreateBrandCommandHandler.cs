@@ -1,23 +1,21 @@
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
-namespace Auctions.Application.Commands.CreateBrand;
+using BuildingBlocks.Application.Helpers;
+using Microsoft.Extensions.Logging;
+namespace Auctions.Application.Features.Brands.CreateBrand;
 
 public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, BrandDto>
 {
     private readonly IBrandRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateBrandCommandHandler> _logger;
+    private readonly ILogger<CreateBrandCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateBrandCommandHandler(
         IBrandRepository repository,
         IMapper mapper,
-        IAppLogger<CreateBrandCommandHandler> logger,
+        ILogger<CreateBrandCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -40,16 +38,12 @@ public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, Bra
                 return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{slug}' already exists"));
             }
 
-            var brand = new Brand
-            {
-                Name = request.Name,
-                Slug = slug,
-                LogoUrl = request.LogoUrl,
-                Description = request.Description,
-                DisplayOrder = request.DisplayOrder,
-                IsFeatured = request.IsFeatured,
-                IsActive = true
-            };
+            var brand = Brand.Create(
+                request.Name,
+                slug,
+                request.Description,
+                request.DisplayOrder,
+                request.IsFeatured);
 
             var createdBrand = await _repository.AddAsync(brand, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

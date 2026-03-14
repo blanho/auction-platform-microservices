@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Error.NotFound" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>A conflict occurred with the current state of the resource.</value></data>
+  <data name="Error.Unauthorized" xml:space="preserve"><value>Authentication is required to access this resource.</value></data>
+  <data name="Error.Forbidden" xml:space="preserve"><value>You do not have permission to access this resource.</value></data>
+  <data name="Error.ValidationFailed" xml:space="preserve"><value>One or more validation errors occurred.</value></data>
+  <data name="Error.InternalServerError" xml:space="preserve"><value>An unexpected error occurred. Please try again later.</value></data>
+  <data name="Error.BadRequest" xml:space="preserve"><value>The request was invalid or cannot be processed.</value></data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve"><value>The service is temporarily unavailable. Please try again later.</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>The {0} field is required.</value></data>
+  <data name="Validation.MaxLength" xml:space="preserve"><value>The {0} field must not exceed {1} characters.</value></data>
+  <data name="Validation.MinLength" xml:space="preserve"><value>The {0} field must be at least {1} characters.</value></data>
+  <data name="Validation.InvalidEmail" xml:space="preserve"><value>The email address is not valid.</value></data>
+  <data name="Validation.InvalidFormat" xml:space="preserve"><value>The {0} field has an invalid format.</value></data>
+  <data name="Validation.MustBePositive" xml:space="preserve"><value>The {0} field must be a positive number.</value></data>
+  <data name="Validation.MustBeInRange" xml:space="preserve"><value>The {0} field must be between {1} and {2}.</value></data>
+  <data name="Validation.InvalidDate" xml:space="preserve"><value>The {0} field contains an invalid date.</value></data>
+  <data name="Validation.FutureDate" xml:space="preserve"><value>The {0} field must be a future date.</value></data>
+  <data name="Validation.PastDate" xml:space="preserve"><value>The {0} field must be a past date.</value></data>
+  <data name="Common.Success" xml:space="preserve"><value>Operation completed successfully.</value></data>
+  <data name="Common.Failed" xml:space="preserve"><value>Operation failed.</value></data>
+  <data name="Common.Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Common.NoResults" xml:space="preserve"><value>No results found.</value></data>
+  <data name="Common.OperationCompleted" xml:space="preserve"><value>The operation has been completed.</value></data>
+  <data name="RateLimit.TooManyRequests" xml:space="preserve"><value>Too many requests.</value></data>
+  <data name="RateLimit.RetryAfter" xml:space="preserve"><value>Rate limit exceeded. Please retry after {0} seconds.</value></data>
+</root>

@@ -1,10 +1,10 @@
 #nullable enable
 using Auctions.Application.DTOs;
 using Auctions.Application.DTOs.Auctions;
-using Auctions.Application.Queries.GetAuctionById;
-using Auctions.Application.Queries.GetAuctionsByIds;
-using Auctions.Application.Queries.GetAuctions;
-using Auctions.Application.Queries.GetMyAuctions;
+using Auctions.Application.Features.Auctions.GetAuctionById;
+using Auctions.Application.Features.Auctions.GetAuctionsByIds;
+using Auctions.Application.Features.Auctions.GetAuctions;
+using Auctions.Application.Features.Auctions.GetMyAuctions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using Carter;
@@ -53,7 +53,7 @@ public class AuctionQueryEndpoints : ICarterModule
         var query = new GetAuctionsQuery(
             request.Status, request.Seller, request.Winner, request.SearchTerm,
             request.Category, request.IsFeatured,
-            request.PageNumber, request.PageSize, request.OrderBy, request.Descending);
+            request.Page, request.PageSize, request.OrderBy, request.Descending ?? false);
 
         var result = await mediator.Send(query, ct);
 
@@ -63,14 +63,18 @@ public class AuctionQueryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetFeaturedAuctions(
-        int pageSize,
-        IMediator mediator,
-        CancellationToken ct)
+        int page = 1,
+        int pageSize = 8,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
+        var validPage = page > 0 ? page : 1;
+        var validPageSize = pageSize > 0 && pageSize <= 50 ? pageSize : 8;
+
         var query = new GetAuctionsQuery(
             null, null, null, null,
             null, true,
-            1, pageSize > 0 ? pageSize : 8, "auctionEnd", false);
+            validPage, validPageSize, "auctionEnd", false);
 
         var result = await mediator.Send(query, ct);
 
@@ -91,10 +95,10 @@ public class AuctionQueryEndpoints : ICarterModule
             username,
             request.Status,
             request.SearchTerm,
-            request.PageNumber,
-            request.PageSize,
+            request.Page ?? 1,
+            request.PageSize ?? 10,
             request.OrderBy,
-            request.Descending);
+            request.Descending ?? false);
 
         var result = await mediator.Send(query, ct);
 
@@ -121,7 +125,19 @@ public class AuctionQueryEndpoints : ICarterModule
         IMediator mediator,
         CancellationToken ct)
     {
-        var query = new GetAuctionsByIdsQuery(ids);
+        if (ids == null || ids.Count == 0)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(
+                Error.Create("Validation.Empty", "At least one auction ID is required")));
+        }
+
+        if (ids.Count > 100)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.FromError(
+                Error.Create("Validation.TooMany", "Maximum 100 auction IDs allowed per request")));
+        }
+
+        var query = new GetAuctionsByIdsQuery(ids.Distinct().ToList());
         var result = await mediator.Send(query, ct);
 
         return result.IsSuccess

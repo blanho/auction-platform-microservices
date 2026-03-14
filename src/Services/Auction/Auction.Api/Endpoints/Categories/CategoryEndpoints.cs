@@ -1,11 +1,14 @@
 #nullable enable
-using Auctions.Application.Commands.BulkUpdateCategories;
-using Auctions.Application.Commands.CreateCategory;
-using Auctions.Application.Commands.DeleteCategory;
-using Auctions.Application.Commands.ImportCategories;
-using Auctions.Application.Commands.UpdateCategory;
+using Auctions.Api.Extensions;
+using Auctions.Application.Features.Categories.BulkUpdateCategories;
+using Auctions.Application.Features.Categories.CreateCategory;
+using Auctions.Application.Features.Categories.DeleteCategory;
+using Auctions.Application.Features.Categories.GetCategoryTree;
+using Auctions.Application.Features.Categories.UpdateCategory;
+using Auctions.Application.Features.Categories.GetCategories;
+using Auctions.Application.Features.Categories.GetCategoryById;
 using Auctions.Application.DTOs;
-using Auctions.Application.Queries.GetCategories;
+using Auctions.Application.DTOs.Categories;
 using BuildingBlocks.Web.Authorization;
 using Carter;
 using MediatR;
@@ -25,6 +28,17 @@ public class CategoryEndpoints : ICarterModule
             .WithName("GetCategories")
             .AllowAnonymous()
             .Produces<List<CategoryDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/tree", GetCategoryTree)
+            .WithName("GetCategoryTree")
+            .AllowAnonymous()
+            .Produces<List<CategoryTreeDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/{id:guid}", GetCategoryById)
+            .WithName("GetCategoryById")
+            .AllowAnonymous()
+            .Produces<CategoryDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/", CreateCategory)
             .WithName("CreateCategory")
@@ -50,26 +64,29 @@ public class CategoryEndpoints : ICarterModule
             .WithMetadata(new RequireAdminAttribute())
             .Produces<int>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
-
-        group.MapPost("/import", ImportCategories)
-            .WithName("ImportCategories")
-            .WithMetadata(new RequireAdminAttribute())
-            .Produces<ImportCategoriesResultDto>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> GetCategories(
-        bool activeOnly,
-        bool includeCount,
-        IMediator mediator,
-        CancellationToken ct)
+        bool activeOnly = true,
+        bool includeCount = false,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
         var query = new GetCategoriesQuery(activeOnly, includeCount);
         var result = await mediator.Send(query, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> GetCategoryTree(
+        bool activeOnly = true,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
+    {
+        var query = new GetCategoryTreeQuery(activeOnly);
+        var result = await mediator.Send(query, ct);
+
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateCategory(
@@ -89,9 +106,8 @@ public class CategoryEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.CreatedAtRoute("GetCategories", new { id = result.Value!.Id }, result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(category => 
+            Results.CreatedAtRoute("GetCategories", new { id = category.Id }, category));
     }
 
     private static async Task<IResult> UpdateCategory(
@@ -113,14 +129,7 @@ public class CategoryEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Category.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> DeleteCategory(
@@ -131,14 +140,7 @@ public class CategoryEndpoints : ICarterModule
         var command = new DeleteCategoryCommand(id);
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Category.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.NoContent();
+        return result.ToNoContentResult();
     }
 
     private static async Task<IResult> BulkUpdateCategories(
@@ -149,28 +151,19 @@ public class CategoryEndpoints : ICarterModule
         var command = new BulkUpdateCategoriesCommand(dto.CategoryIds, dto.IsActive);
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
-    private static async Task<IResult> ImportCategories(
-        ImportCategoriesDto dto,
+
+    private static async Task<IResult> GetCategoryById(
+        Guid id,
         IMediator mediator,
         CancellationToken ct)
     {
-        var command = new ImportCategoriesCommand(dto.Categories);
-        var result = await mediator.Send(command, ct);
+        var query = new GetCategoryByIdQuery(id);
+        var result = await mediator.Send(query, ct);
 
-        if (!result.IsSuccess)
-            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        return Results.Ok(new ImportCategoriesResultDto
-        {
-            SuccessCount = result.Value!.SuccessCount,
-            FailureCount = result.Value.FailureCount,
-            Errors = result.Value.Errors
-        });
+        return result.ToOkResult();
     }
 }
 

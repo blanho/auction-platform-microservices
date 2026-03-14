@@ -1,21 +1,25 @@
-using BuildingBlocks.Domain.Enums;
+using Auctions.Application.Helpers;
+using Auctions.Domain.Enums;
+using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+[DisallowConcurrentExecution]
 public class AuctionEndingSoonNotificationJob : BaseJob
 {
     public const string JobId = "auction-ending-soon";
     public const string Description = "Sends notifications for auctions ending soon";
 
-    private static readonly TimeSpan[] NotificationThresholds = new[]
-    {
+    private static readonly TimeSpan[] NotificationThresholds =
+    [
         TimeSpan.FromHours(1),
         TimeSpan.FromMinutes(15),
         TimeSpan.FromMinutes(5)
-    };
+    ];
 
     public AuctionEndingSoonNotificationJob(
         ILogger<AuctionEndingSoonNotificationJob> logger,
@@ -28,9 +32,10 @@ public class AuctionEndingSoonNotificationJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
-        var bookmarkRepository = scopedProvider.GetRequiredService<IUserAuctionBookmarkRepository>();
+        var repository = scopedProvider.GetRequiredService<IAuctionSchedulerRepository>();
+        var bookmarkRepository = scopedProvider.GetRequiredService<IBookmarkRepository>();
         var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
+        var dbContext = scopedProvider.GetRequiredService<AuctionDbContext>();
 
         var utcNow = DateTime.UtcNow;
         var notificationsSent = 0;
@@ -62,7 +67,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
 
                     var itemTitle = auction.Item?.Title ?? "Auction";
 
-                    var timeRemaining = GetTimeRemainingText(threshold);
+                    var timeRemaining = TimeHelper.GetTimeRemainingText(threshold);
                     var endingSoonEvent = new AuctionEndingSoonEvent
                     {
                         AuctionId = auction.Id,
@@ -75,10 +80,6 @@ public class AuctionEndingSoonNotificationJob : BaseJob
 
                     await eventPublisher.PublishAsync(endingSoonEvent, cancellationToken);
                     notificationsSent++;
-
-                    Logger.LogDebug(
-                        "Sent ending soon notification for auction {AuctionId}, {TimeRemaining} remaining, {WatcherCount} watchers",
-                        auction.Id, timeRemaining, watchers.Count);
                 }
                 catch (Exception ex)
                 {
@@ -87,19 +88,14 @@ public class AuctionEndingSoonNotificationJob : BaseJob
                         auction.Id);
                 }
             }
+
+            dbContext.ChangeTracker.Clear();
         }
 
         if (notificationsSent > 0)
         {
             Logger.LogInformation("Sent {Count} auction ending soon notifications", notificationsSent);
         }
-    }
-
-    private static string GetTimeRemainingText(TimeSpan threshold)
-    {
-        if (threshold.TotalHours >= 1)
-            return $"{(int)threshold.TotalHours} hour";
-        return $"{(int)threshold.TotalMinutes} minutes";
     }
 }
 

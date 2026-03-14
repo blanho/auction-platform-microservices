@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Repository;
 using MediatR;
 using NotificationUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
 

@@ -8,18 +8,6 @@ public sealed class RequirePermissionAttribute(string permission) : AuthorizeAtt
     public string Permission { get; } = permission;
 }
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-public sealed class HasPermissionAttribute(string permission) : AuthorizeAttribute($"Permission:{permission}")
-{
-    public string Permission { get; } = permission;
-}
-
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-public sealed class AccessAttribute(string permission) : AuthorizeAttribute($"Permission:{permission}")
-{
-    public string Permission { get; } = permission;
-}
-
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class RequireAdminAttribute : AuthorizeAttribute
 {

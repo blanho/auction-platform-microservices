@@ -12,5 +12,6 @@ public record AuctionFinishedDomainEvent : DomainEvent
     public string? WinnerUsername { get; init; }
     public decimal? SoldAmount { get; init; }
     public bool ItemSold { get; init; }
+    public string ItemTitle { get; init; } = string.Empty;
 }
 

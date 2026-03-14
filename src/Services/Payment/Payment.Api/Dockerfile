@@ -14,8 +14,8 @@ COPY ["src/Services/Payment/Payment.Application/Payment.Application.csproj", "sr
 COPY ["src/Services/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj", "src/Services/Payment/Payment.Infrastructure/"]
 COPY ["src/Services/Payment/Payment.Api/Payment.Api.csproj", "src/Services/Payment/Payment.Api/"]
 COPY ["src/Services/Payment/Payment.Contracts/Payment.Contracts.csproj", "src/Services/Payment/Payment.Contracts/"]
-COPY ["src/Contracts/AuctionService.Contracts/AuctionService.Contracts.csproj", "src/Contracts/AuctionService.Contracts/"]
-COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
+COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
+COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
 
 RUN dotnet restore "src/Services/Payment/Payment.Api/Payment.Api.csproj" --runtime linux-musl-x64
 

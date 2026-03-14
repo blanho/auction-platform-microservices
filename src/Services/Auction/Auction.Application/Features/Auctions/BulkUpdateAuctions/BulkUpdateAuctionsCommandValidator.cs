@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.BulkUpdateAuctions;
+namespace Auctions.Application.Features.Auctions.BulkUpdateAuctions;
 
 public class BulkUpdateAuctionsCommandValidator : AbstractValidator<BulkUpdateAuctionsCommand>
 {
@@ -17,7 +17,7 @@ public class BulkUpdateAuctionsCommandValidator : AbstractValidator<BulkUpdateAu
 
         RuleForEach(x => x.AuctionIds)
             .NotEmpty()
-            .WithMessage("Auction ID cannot be empty");
+            .WithMessage(ValidationConstants.Messages.Required("Auction ID"));
 
         RuleFor(x => x.Reason)
             .MaximumLength(ValidationConstants.StringLength.Reason)

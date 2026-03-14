@@ -34,7 +34,8 @@ public class AuctionFinishedDomainEventHandler : INotificationHandler<AuctionFin
             WinnerId = notification.WinnerId,
             WinnerUsername = notification.WinnerUsername,
             SoldAmount = notification.SoldAmount,
-            ItemSold = notification.ItemSold
+            ItemSold = notification.ItemSold,
+            ItemTitle = notification.ItemTitle
         }, cancellationToken);
     }
 }

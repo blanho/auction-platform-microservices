@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Report.NotFound" xml:space="preserve"><value>Report not found.</value></data>
+  <data name="Report.AlreadyResolved" xml:space="preserve"><value>Report is already resolved.</value></data>
+  <data name="Report.CannotDeleteResolved" xml:space="preserve"><value>Cannot delete a resolved report.</value></data>
+  <data name="Report.InvalidStatus" xml:space="preserve"><value>Invalid report status transition.</value></data>
+  <data name="Report.CreateFailed" xml:space="preserve"><value>Failed to create report.</value></data>
+  <data name="Report.UpdateFailed" xml:space="preserve"><value>Failed to update report.</value></data>
+  <data name="Report.DeleteFailed" xml:space="preserve"><value>Failed to delete report.</value></data>
+  <data name="Setting.NotFound" xml:space="preserve"><value>Setting not found.</value></data>
+  <data name="Setting.KeyExists" xml:space="preserve"><value>Setting with this key already exists.</value></data>
+  <data name="Setting.SystemSettingReadOnly" xml:space="preserve"><value>System settings cannot be modified.</value></data>
+  <data name="Setting.InvalidValue" xml:space="preserve"><value>Invalid setting value.</value></data>
+  <data name="Setting.CreateFailed" xml:space="preserve"><value>Failed to create setting.</value></data>
+  <data name="Setting.UpdateFailed" xml:space="preserve"><value>Failed to update setting.</value></data>
+  <data name="Setting.DeleteFailed" xml:space="preserve"><value>Failed to delete setting.</value></data>
+  <data name="AuditLog.NotFound" xml:space="preserve"><value>Audit log not found.</value></data>
+  <data name="AuditLog.QueryFailed" xml:space="preserve"><value>Failed to query audit logs.</value></data>
+  <data name="Analytics.QueryFailed" xml:space="preserve"><value>Failed to retrieve analytics data.</value></data>
+  <data name="Analytics.InvalidDateRange" xml:space="preserve"><value>Invalid date range specified.</value></data>
+  <data name="Analytics.InvalidPeriod" xml:space="preserve"><value>Invalid period specified.</value></data>
+</root>

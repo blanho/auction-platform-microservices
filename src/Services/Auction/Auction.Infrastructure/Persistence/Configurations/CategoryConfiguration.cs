@@ -27,9 +27,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(x => x.Description)
             .HasMaxLength(500);
 
-        builder.Property(x => x.ImageUrl)
-            .HasMaxLength(500);
-
         builder.Property(x => x.DisplayOrder)
             .IsRequired()
             .HasDefaultValue(0);
@@ -56,6 +53,15 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.HasIndex(x => x.ParentCategoryId);
         builder.HasIndex(x => new { x.IsActive, x.DisplayOrder });
+
+        builder.Property(x => x.Files)
+            .HasColumnType("jsonb");
+
+        builder.Navigation(x => x.SubCategories)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(x => x.Items)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

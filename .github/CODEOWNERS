@@ -1,0 +1,24 @@
+# Default owners for everything
+* @your-team/backend-team
+
+# Infrastructure
+/deploy/ @your-team/devops-team
+/.github/ @your-team/devops-team
+
+# Services
+/src/Services/Identity/ @your-team/identity-team
+/src/Services/Payment/ @your-team/payment-team
+/src/Services/Auction/ @your-team/auction-team
+/src/Services/Bidding/ @your-team/auction-team
+/src/Services/Notification/ @your-team/notification-team
+/src/Services/Analytics/ @your-team/analytics-team
+/src/Services/Search/ @your-team/search-team
+/src/Services/Storage/ @your-team/platform-team
+/src/Services/Job/ @your-team/platform-team
+/src/Gateway/ @your-team/platform-team
+
+# Building Blocks (shared code)
+/src/BuildingBlocks/ @your-team/platform-team
+
+# Contracts (API changes need extra review)
+/src/Contracts/ @your-team/backend-team @your-team/platform-team

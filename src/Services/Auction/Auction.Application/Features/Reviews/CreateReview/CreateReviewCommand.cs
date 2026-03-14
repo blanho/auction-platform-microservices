@@ -1,5 +1,7 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.CreateReview;
+using BuildingBlocks.Application.CQRS;
+
+namespace Auctions.Application.Features.Reviews.CreateReview;
 
 public record CreateReviewCommand(
     Guid AuctionId,

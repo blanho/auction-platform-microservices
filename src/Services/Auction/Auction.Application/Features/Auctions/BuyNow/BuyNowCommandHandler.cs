@@ -1,106 +1,102 @@
+using Auctions.Application.DTOs.Audit;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
-using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Locking;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
-using Microsoft.EntityFrameworkCore;
+using Auctions.Domain.Enums;
+using Auctions.Domain.Constants;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.BuyNow;
+namespace Auctions.Application.Features.Auctions.BuyNow;
 
 public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultDto>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IMapper _mapper;
-    private readonly IAppLogger<BuyNowCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
+    private readonly IAuctionWriteRepository _repository;
+    private readonly ILogger<BuyNowCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
     private readonly IDistributedLock _distributedLock;
+    private readonly IAuditPublisher _auditPublisher;
 
     public BuyNowCommandHandler(
-        IAuctionRepository repository,
-        IMapper mapper,
-        IAppLogger<BuyNowCommandHandler> logger,
-        IDateTimeProvider dateTime,
+        IAuctionWriteRepository repository,
+        ILogger<BuyNowCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
-        IDistributedLock distributedLock)
+        IDistributedLock distributedLock,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
-        _mapper = mapper;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
         _distributedLock = distributedLock;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<BuyNowResultDto>> Handle(BuyNowCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Processing Buy Now for auction {AuctionId} by buyer {Buyer}",
-            request.AuctionId, request.BuyerUsername);
+        _logger.LogInformation("Processing Buy Now for auction {AuctionId}", request.AuctionId);
 
         var lockKey = $"auction:buynow:{request.AuctionId}";
         await using var lockHandle = await _distributedLock.AcquireAsync(
             lockKey,
-            expiry: TimeSpan.FromSeconds(30),
-            wait: TimeSpan.FromSeconds(5),
+            expiry: TimeSpan.FromSeconds(AuctionDefaults.Lock.ExpirySeconds),
+            wait: TimeSpan.FromSeconds(AuctionDefaults.Lock.WaitSeconds),
             cancellationToken);
 
         if (lockHandle == null)
         {
             _logger.LogWarning("Failed to acquire lock for BuyNow on auction {AuctionId}", request.AuctionId);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Conflict", "Another buyer is currently processing this purchase. Please try again."));
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Conflict);
         }
 
         try
         {
-            var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
+
+            var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
 
             if (auction == null)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("Auction.NotFound", "Auction not found"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.Auction.NotFound);
             }
 
             if (!auction.IsBuyNowAvailable)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.NotAvailable", "Buy Now is not available for this auction"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.NotAvailable);
             }
 
-            if (auction.SellerUsername == request.BuyerUsername)
+            if (auction.SellerId == request.BuyerId)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.OwnAuction", "You cannot buy your own auction"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.OwnAuction);
             }
 
             if (auction.Status != Status.Live)
             {
-                return Result.Failure<BuyNowResultDto>(
-                    Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active"));
+                return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.AuctionNotLive);
             }
+
+            var oldAuctionData = AuctionAuditData.FromAuction(auction);
 
             auction.ExecuteBuyNow(request.BuyerId, request.BuyerUsername);
 
             await _repository.UpdateAsync(auction, cancellationToken);
 
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                auction,
-                AuditAction.Updated,
-                cancellationToken: cancellationToken);
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Buy Now completed for auction {AuctionId}. Buyer: {Buyer}, Price: {Price}",
-                auction.Id, request.BuyerUsername, auction.BuyNowPrice);
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                AuctionAuditData.FromAuction(auction),
+                AuditAction.Updated,
+                oldAuctionData,
+                new Dictionary<string, object>
+                {
+                    ["Action"] = "BuyNow",
+                    ["BuyerId"] = request.BuyerId,
+                    ["BuyerUsername"] = request.BuyerUsername,
+                    ["Price"] = auction.BuyNowPrice!.Value
+                },
+                cancellationToken);
+
+            _logger.LogInformation("Buy Now completed for auction {AuctionId}. Price: {Price}",
+                auction.Id, auction.BuyNowPrice);
 
             return Result<BuyNowResultDto>.Success(new BuyNowResultDto
             {
@@ -112,18 +108,15 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 Success = true
             });
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            _logger.LogWarning("Concurrency conflict in BuyNow for auction {AuctionId}: {Error}",
-                request.AuctionId, ex.Message);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Conflict", "This item was just purchased by someone else. Please try another auction."));
+            _logger.LogWarning(ex, "Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);
         }
         catch (Exception ex)
         {
-            _logger.LogError("Buy Now failed for auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            return Result.Failure<BuyNowResultDto>(
-                Error.Create("BuyNow.Failed", $"Failed to process Buy Now: {ex.Message}"));
+            _logger.LogError(ex, "Buy Now failed for auction {AuctionId}", request.AuctionId);
+            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Failed("An unexpected error occurred. Please try again."));
         }
     }
 }

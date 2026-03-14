@@ -15,6 +15,7 @@ public static class HealthCheckExtensions
         string? redisConnectionString = null,
         string? rabbitMqConnectionString = null,
         string? databaseConnectionString = null,
+        string? elasticsearchUri = null,
         string serviceName = "Service")
     {
         var builder = services.AddHealthChecks();
@@ -30,13 +31,14 @@ public static class HealthCheckExtensions
 
         if (!string.IsNullOrEmpty(rabbitMqConnectionString))
         {
-            builder.AddRabbitMQ(sp =>
+
+            builder.AddRabbitMQ(async sp =>
             {
                 var factory = new RabbitMQ.Client.ConnectionFactory
                 {
                     Uri = new Uri(rabbitMqConnectionString)
                 };
-                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+                return await factory.CreateConnectionAsync();
             }, name: "rabbitmq",
                 failureStatus: HealthStatus.Degraded,
                 tags: new[] { "messaging", "ready" });
@@ -47,6 +49,13 @@ public static class HealthCheckExtensions
             builder.AddNpgSql(databaseConnectionString, name: "postgresql",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: new[] { "db", "ready" });
+        }
+
+        if (!string.IsNullOrEmpty(elasticsearchUri))
+        {
+            builder.AddElasticsearch(elasticsearchUri, name: "elasticsearch",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: new[] { "db", "search", "ready" });
         }
 
         return services;

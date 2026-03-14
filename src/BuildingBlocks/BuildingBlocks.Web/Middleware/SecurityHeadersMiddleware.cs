@@ -28,7 +28,7 @@ public class SecurityHeadersMiddleware
 
         headers.Append("Permissions-Policy", _options.PermissionsPolicy);
 
-        if (_options.EnableHsts && !context.Request.IsHttps)
+        if (_options.EnableHsts && context.Request.IsHttps)
         {
             headers.Append("Strict-Transport-Security",
                 $"max-age={_options.HstsMaxAge}; includeSubDomains; preload");

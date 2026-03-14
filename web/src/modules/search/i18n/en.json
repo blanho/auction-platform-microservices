@@ -1,0 +1,38 @@
+{
+  "title": "Search",
+  "placeholder": "Search for designers or items",
+  "noResults": "No results found",
+  "noResultsDescription": "Try adjusting your search or filters to find what you're looking for.",
+  "resultsCount": "{{count}} result found",
+  "resultsCount_other": "{{count}} results found",
+  "searchingFor": "Showing results for \"{{query}}\"",
+
+  "filters": {
+    "title": "Filters",
+    "category": "Category",
+    "priceRange": "Price Range",
+    "condition": "Condition",
+    "status": "Status",
+    "brand": "Brand",
+    "sortBy": "Sort By",
+    "clearAll": "Clear All Filters",
+    "apply": "Apply Filters"
+  },
+
+  "sort": {
+    "relevance": "Relevance",
+    "newest": "Newest First",
+    "endingSoon": "Ending Soon",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "mostBids": "Most Bids"
+  },
+
+  "autocomplete": {
+    "recent": "Recent Searches",
+    "trending": "Trending",
+    "suggestions": "Suggestions",
+    "clearRecent": "Clear Recent",
+    "seeAll": "See all results for \"{{query}}\""
+  }
+}

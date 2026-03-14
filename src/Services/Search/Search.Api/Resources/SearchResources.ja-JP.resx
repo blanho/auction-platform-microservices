@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Search.Failed" xml:space="preserve"><value>検索に失敗しました: {0}</value></data>
+  <data name="Search.InvalidQuery" xml:space="preserve"><value>無効な検索クエリです。</value></data>
+  <data name="Search.IndexNotReady" xml:space="preserve"><value>検索インデックスの準備ができていません。</value></data>
+  <data name="Auction.IndexFailed" xml:space="preserve"><value>オークション {0} のインデックス作成に失敗しました。</value></data>
+  <data name="Auction.RemoveFailed" xml:space="preserve"><value>オークション {0} のインデックスからの削除に失敗しました。</value></data>
+  <data name="Index.CreateFailed" xml:space="preserve"><value>インデックスの作成に失敗しました: {0}</value></data>
+  <data name="Index.RebuildFailed" xml:space="preserve"><value>インデックスの再構築に失敗しました: {0}</value></data>
+  <data name="Index.HealthCheckFailed" xml:space="preserve"><value>インデックスヘルスチェックに失敗しました: {0}</value></data>
+  <data name="Index.NotFound" xml:space="preserve"><value>インデックス '{0}' が見つかりません。</value></data>
+  <data name="Suggestion.Failed" xml:space="preserve"><value>サジェストの取得に失敗しました: {0}</value></data>
+  <data name="IndexError.IndexingFailed" xml:space="preserve"><value>オークション {0} のインデックス作成に失敗しました: {1}</value></data>
+  <data name="IndexError.DocumentNotFound" xml:space="preserve"><value>オークションドキュメント {0} がインデックスに見つかりません。</value></data>
+  <data name="IndexError.UpdateFailed" xml:space="preserve"><value>オークション {0} の更新に失敗しました: {1}</value></data>
+  <data name="IndexError.DeleteFailed" xml:space="preserve"><value>オークション {0} の削除に失敗しました: {1}</value></data>
+  <data name="IndexError.BulkIndexFailed" xml:space="preserve"><value>{0}件のドキュメントの一括インデックスに失敗しました: {1}</value></data>
+  <data name="IndexError.ConnectionFailed" xml:space="preserve"><value>検索エンジンへの接続に失敗しました: {0}</value></data>
+  <data name="IndexError.IndexCreationFailed" xml:space="preserve"><value>インデックス {0} の作成に失敗しました: {1}</value></data>
+</root>

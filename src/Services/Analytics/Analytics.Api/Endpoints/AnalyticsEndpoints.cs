@@ -28,27 +28,37 @@ public class AnalyticsEndpoints : ICarterModule
 
         group.MapGet("/trends/revenue", GetRevenueTrend)
             .WithName("GetRevenueTrend")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewRevenue))
             .Produces<List<TrendDataPoint>>();
 
         group.MapGet("/trends/auctions", GetAuctionTrend)
             .WithName("GetAuctionTrend")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewAuctions))
             .Produces<List<TrendDataPoint>>();
 
         group.MapGet("/categories", GetCategoryPerformance)
             .WithName("GetCategoryPerformance")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewCategories))
             .Produces<List<CategoryBreakdown>>();
 
         group.MapGet("/auctions", GetAuctionMetrics)
             .WithName("GetAuctionMetrics")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewAuctions))
             .Produces<AuctionMetrics>();
 
         group.MapGet("/bids", GetBidMetrics)
             .WithName("GetBidMetrics")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewBids))
             .Produces<BidMetrics>();
 
         group.MapGet("/revenue", GetRevenueMetrics)
             .WithName("GetRevenueMetrics")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewRevenue))
             .Produces<RevenueMetrics>();
+
+        group.MapGet("/daily-stats", GetAggregatedDailyStats)
+            .WithName("GetAggregatedDailyStats")
+            .Produces<AggregatedDailyStatsDto>();
     }
 
     private static async Task<Ok<PlatformAnalyticsDto>> GetAnalytics(
@@ -178,5 +188,15 @@ public class AnalyticsEndpoints : ICarterModule
 
         var metrics = await analyticsService.GetRevenueMetricsAsync(query, cancellationToken);
         return TypedResults.Ok(metrics);
+    }
+
+    private static async Task<Ok<AggregatedDailyStatsDto>> GetAggregatedDailyStats(
+        DateOnly? startDate,
+        DateOnly? endDate,
+        IAnalyticsService analyticsService,
+        CancellationToken cancellationToken)
+    {
+        var stats = await analyticsService.GetAggregatedDailyStatsAsync(startDate, endDate, cancellationToken);
+        return TypedResults.Ok(stats);
     }
 }

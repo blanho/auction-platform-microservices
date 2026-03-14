@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Bidding.Application.Features.Bids.RetractBid;
 
 public class RetractBidCommandValidator : AbstractValidator<RetractBidCommand>
@@ -6,16 +8,16 @@ public class RetractBidCommandValidator : AbstractValidator<RetractBidCommand>
     {
         RuleFor(x => x.BidId)
             .NotEmpty()
-            .WithMessage("Bid ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Bid ID"));
 
         RuleFor(x => x.UserId)
             .NotEmpty()
-            .WithMessage("User ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("User ID"));
 
         RuleFor(x => x.Reason)
             .NotEmpty()
-            .WithMessage("Reason for retraction is required")
-            .MaximumLength(500)
-            .WithMessage("Reason cannot exceed 500 characters");
+            .WithMessage(ValidationConstants.Messages.Required("Reason for retraction"))
+            .MaximumLength(ValidationConstants.StringLength.Reason)
+            .WithMessage(ValidationConstants.Messages.MaxLength("Reason", ValidationConstants.StringLength.Reason));
     }
 }

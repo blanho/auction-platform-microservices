@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Bidding.Application.Features.AutoBids.UpdateAutoBid;
 
 public class UpdateAutoBidCommandValidator : AbstractValidator<UpdateAutoBidCommand>
@@ -6,16 +8,16 @@ public class UpdateAutoBidCommandValidator : AbstractValidator<UpdateAutoBidComm
     {
         RuleFor(x => x.AutoBidId)
             .NotEmpty()
-            .WithMessage("Auto-bid ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("Auto-bid ID"));
 
         RuleFor(x => x.UserId)
             .NotEmpty()
-            .WithMessage("User ID is required");
+            .WithMessage(ValidationConstants.Messages.Required("User ID"));
 
         RuleFor(x => x.NewMaxAmount)
             .GreaterThan(0)
-            .WithMessage("New max amount must be greater than zero")
+            .WithMessage(ValidationConstants.Messages.MustBePositive("New max amount"))
             .LessThanOrEqualTo(10_000_000)
-            .WithMessage("Max amount cannot exceed $10,000,000");
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Max amount", 10_000_000));
     }
 }

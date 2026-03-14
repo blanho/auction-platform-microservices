@@ -1,6 +1,8 @@
 using Elastic.Clients.Elasticsearch;
 using Search.Api.Documents;
+using Search.Api.Errors;
 using Search.Api.Interfaces;
+using Result = BuildingBlocks.Application.Abstractions.Result;
 
 namespace Search.Api.Services;
 
@@ -19,7 +21,7 @@ public class AuctionIndexService : IAuctionIndexService
         _logger = logger;
     }
 
-    public async Task<bool> IndexAsync(AuctionDocument document, CancellationToken ct = default)
+    public async Task<Result> IndexAsync(AuctionDocument document, CancellationToken ct = default)
     {
         var indexName = IndexManagementService.GetIndexName();
         document.LastSyncedAt = DateTimeOffset.UtcNow;
@@ -36,20 +38,22 @@ public class AuctionIndexService : IAuctionIndexService
             {
                 _logger.LogError("Failed to index auction {AuctionId}: {Error}",
                     document.Id, response.DebugInformation);
-                return false;
+                return Result.Failure(IndexErrors.IndexingFailed(document.Id, response.DebugInformation));
             }
 
             _logger.LogDebug("Indexed auction {AuctionId}", document.Id);
-            return true;
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error indexing auction {AuctionId}", document.Id);
-            return false;
+            return Result.Failure(IndexErrors.IndexingFailed(document.Id, ex.Message));
         }
     }
 
-    public async Task<BulkIndexResult> BulkIndexAsync(IEnumerable<AuctionDocument> documents, CancellationToken ct = default)
+    public async Task<Result<BulkIndexResult>> BulkIndexAsync(
+        IEnumerable<AuctionDocument> documents, 
+        CancellationToken ct = default)
     {
         var indexName = IndexManagementService.GetIndexName();
         var now = DateTimeOffset.UtcNow;
@@ -70,7 +74,8 @@ public class AuctionIndexService : IAuctionIndexService
             if (!response.IsValidResponse)
             {
                 _logger.LogError("Bulk index failed: {Error}", response.DebugInformation);
-                return new BulkIndexResult(0, documentList.Count, new List<string> { response.DebugInformation });
+                return Result.Failure<BulkIndexResult>(
+                    IndexErrors.BulkIndexFailed(documentList.Count, response.DebugInformation));
             }
 
             var errors = response.ItemsWithErrors
@@ -86,44 +91,51 @@ public class AuctionIndexService : IAuctionIndexService
                 "Bulk indexed {Indexed} documents, {Failed} failed",
                 result.Indexed, result.Failed);
 
-            return result;
+            return Result.Success(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in bulk index");
-            return new BulkIndexResult(0, documentList.Count, new List<string> { ex.Message });
+            return Result.Failure<BulkIndexResult>(
+                IndexErrors.BulkIndexFailed(documentList.Count, ex.Message));
         }
     }
 
-    public async Task<bool> PartialUpdateAsync(Guid auctionId, object partialDocument, CancellationToken ct = default)
+    public async Task<Result> PartialUpdateAsync(
+        Guid auctionId, 
+        object partialDocument, 
+        CancellationToken ct = default)
     {
         var indexName = IndexManagementService.GetIndexName();
 
         try
         {
-            var response = await _client.UpdateAsync<AuctionDocument, object>(indexName, auctionId.ToString(), u => u
-                .Doc(partialDocument)
-                .DocAsUpsert(false)
-                .RetryOnConflict(3),
-            ct);
+            var response = await _client.UpdateAsync<AuctionDocument, object>(
+                indexName, 
+                auctionId.ToString(), 
+                u => u
+                    .Doc(partialDocument)
+                    .DocAsUpsert(false)
+                    .RetryOnConflict(3),
+                ct);
 
             if (!response.IsValidResponse)
             {
                 _logger.LogError("Failed to partially update auction {AuctionId}: {Error}",
                     auctionId, response.DebugInformation);
-                return false;
+                return Result.Failure(IndexErrors.UpdateFailed(auctionId, response.DebugInformation));
             }
 
-            return true;
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error partially updating auction {AuctionId}", auctionId);
-            return false;
+            return Result.Failure(IndexErrors.UpdateFailed(auctionId, ex.Message));
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid auctionId, CancellationToken ct = default)
+    public async Task<Result> DeleteAsync(Guid auctionId, CancellationToken ct = default)
     {
         var indexName = IndexManagementService.GetIndexName();
 
@@ -135,50 +147,56 @@ public class AuctionIndexService : IAuctionIndexService
             {
                 _logger.LogError("Failed to delete auction {AuctionId}: {Error}",
                     auctionId, response.DebugInformation);
-                return false;
+                return Result.Failure(IndexErrors.DeleteFailed(auctionId, response.DebugInformation));
             }
 
             _logger.LogDebug("Deleted auction {AuctionId} from index", auctionId);
-            return true;
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting auction {AuctionId}", auctionId);
-            return false;
+            return Result.Failure(IndexErrors.DeleteFailed(auctionId, ex.Message));
         }
     }
 
-    public async Task<bool> UpdateBidInfoAsync(Guid auctionId, decimal currentPrice, int bidCount, CancellationToken ct = default)
+    public async Task<Result> UpdateBidInfoAsync(
+        Guid auctionId, 
+        decimal currentPrice, 
+        int bidCount, 
+        CancellationToken ct = default)
     {
         var indexName = IndexManagementService.GetIndexName();
 
         try
         {
-
-            var response = await _client.UpdateAsync<AuctionDocument, object>(indexName, auctionId.ToString(), u => u
-                .Script(s => s
-                    .Source("ctx._source.currentPrice = params.price; ctx._source.bidCount = params.count; ctx._source.lastSyncedAt = params.syncedAt")
-                    .Lang("painless")
-                    .Params(p => p
-                        .Add("price", currentPrice)
-                        .Add("count", bidCount)
-                        .Add("syncedAt", DateTimeOffset.UtcNow.ToString("o"))))
-                .RetryOnConflict(5),
-            ct);
+            var response = await _client.UpdateAsync<AuctionDocument, object>(
+                indexName, 
+                auctionId.ToString(), 
+                u => u
+                    .Script(s => s
+                        .Source("ctx._source.currentPrice = params.price; ctx._source.bidCount = params.count; ctx._source.lastSyncedAt = params.syncedAt")
+                        .Lang("painless")
+                        .Params(p => p
+                            .Add("price", currentPrice)
+                            .Add("count", bidCount)
+                            .Add("syncedAt", DateTimeOffset.UtcNow.ToString("o"))))
+                    .RetryOnConflict(5),
+                ct);
 
             if (!response.IsValidResponse)
             {
                 _logger.LogWarning("Failed to update bid info for auction {AuctionId}: {Error}",
                     auctionId, response.DebugInformation);
-                return false;
+                return Result.Failure(IndexErrors.UpdateFailed(auctionId, response.DebugInformation));
             }
 
-            return true;
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating bid info for auction {AuctionId}", auctionId);
-            return false;
+            return Result.Failure(IndexErrors.UpdateFailed(auctionId, ex.Message));
         }
     }
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Payment.Failed" xml:space="preserve"><value>支払い処理に失敗しました。もう一度お試しください。</value></data>
+  <data name="Payment.Succeeded" xml:space="preserve"><value>支払いが正常に処理されました。</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>支払いを処理中です。</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>支払いが返金されました。</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>この取引を完了するための資金が不足しています。</value></data>
+  <data name="Payment.ProcessingFailed" xml:space="preserve"><value>支払い処理に失敗しました: {0}</value></data>
+  <data name="Payment.RefundFailed" xml:space="preserve"><value>返金に失敗しました: {0}</value></data>
+  <data name="Payment.InvalidAmount" xml:space="preserve"><value>無効な支払い金額です。</value></data>
+  <data name="Order.NotFound" xml:space="preserve"><value>注文が見つかりません。</value></data>
+  <data name="Order.AlreadyExists" xml:space="preserve"><value>注文はすでに存在します。</value></data>
+  <data name="Order.AlreadyPaid" xml:space="preserve"><value>注文はすでに支払い済みです。</value></data>
+  <data name="Order.Cancelled" xml:space="preserve"><value>注文はキャンセルされました。</value></data>
+  <data name="Order.InvalidStatus" xml:space="preserve"><value>この操作には注文ステータスが無効です。</value></data>
+  <data name="Order.InvalidData" xml:space="preserve"><value>必要な注文データが不足しています。</value></data>
+  <data name="Order.NotPaid" xml:space="preserve"><value>注文はまだ支払われていません。</value></data>
+  <data name="Order.AlreadyShipped" xml:space="preserve"><value>注文はすでに発送済みです。</value></data>
+  <data name="Order.AlreadyDelivered" xml:space="preserve"><value>注文はすでに配達済みです。</value></data>
+  <data name="Order.NotShipped" xml:space="preserve"><value>注文はまだ発送されていません。</value></data>
+  <data name="Order.CreateFailed" xml:space="preserve"><value>注文の作成に失敗しました: {0}</value></data>
+  <data name="Order.UpdateFailed" xml:space="preserve"><value>注文の更新に失敗しました: {0}</value></data>
+  <data name="Wallet.NotFound" xml:space="preserve"><value>ウォレットが見つかりません。</value></data>
+  <data name="Wallet.AlreadyExists" xml:space="preserve"><value>このユーザーのウォレットはすでに存在します。</value></data>
+  <data name="Wallet.Busy" xml:space="preserve"><value>ウォレットは現在処理中です。もう一度お試しください。</value></data>
+  <data name="Wallet.InsufficientBalance" xml:space="preserve"><value>ウォレット残高が不足しています。</value></data>
+  <data name="Wallet.InsufficientHeldAmount" xml:space="preserve"><value>解放するための保留額が不足しています。</value></data>
+  <data name="Wallet.ConcurrencyConflict" xml:space="preserve"><value>ウォレットが別の操作で変更されました。もう一度お試しください。</value></data>
+  <data name="Wallet.CreateFailed" xml:space="preserve"><value>ウォレットの作成に失敗しました: {0}</value></data>
+  <data name="Stripe.SessionCreationFailed" xml:space="preserve"><value>決済セッションの作成に失敗しました: {0}</value></data>
+  <data name="Stripe.WebhookProcessingFailed" xml:space="preserve"><value>決済Webhookの処理に失敗しました: {0}</value></data>
+  <data name="Stripe.InvalidWebhookSignature" xml:space="preserve"><value>無効なWebhook署名です。</value></data>
+  <data name="Transaction.NotFound" xml:space="preserve"><value>取引が見つかりません。</value></data>
+  <data name="Transaction.Failed" xml:space="preserve"><value>取引に失敗しました: {0}</value></data>
+</root>

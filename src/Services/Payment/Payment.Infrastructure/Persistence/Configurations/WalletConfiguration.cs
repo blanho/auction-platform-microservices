@@ -10,7 +10,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.RowVersion)
+        builder.Property(x => x.Version)
             .IsRowVersion();
 
         builder.Property(x => x.Username)

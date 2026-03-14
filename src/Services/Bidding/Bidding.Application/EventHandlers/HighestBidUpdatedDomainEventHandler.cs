@@ -19,20 +19,20 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
 
     public async Task Handle(HighestBidUpdatedDomainEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Highest bid updated for Auction {AuctionId}: {NewAmount} by {BidderUsername}",
+        _logger.LogDebug(
+            "Highest bid updated for Auction {AuctionId}: {NewAmount}",
             notification.AuctionId,
-            notification.NewHighestAmount,
-            notification.BidderUsername);
+            notification.NewHighestAmount);
 
-        await _eventPublisher.PublishAsync(new BidPlacedEvent
+        await _eventPublisher.PublishAsync(new HighestBidUpdatedEvent
         {
             Id = notification.BidId,
             AuctionId = notification.AuctionId,
             BidderId = notification.BidderId,
-            Bidder = notification.BidderUsername,
+            BidderUsername = notification.BidderUsername,
+            NewHighestAmount = notification.NewHighestAmount,
+            PreviousHighestAmount = notification.PreviousHighestAmount,
             BidTime = DateTimeOffset.UtcNow,
-            BidAmount = notification.NewHighestAmount,
             BidStatus = "Accepted"
         }, cancellationToken);
 
@@ -40,9 +40,8 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
             !string.IsNullOrEmpty(notification.PreviousBidderUsername) &&
             notification.PreviousBidderId != notification.BidderId)
         {
-            _logger.LogInformation(
-                "Publishing OutbidIntegrationEvent for previous bidder {PreviousBidder} on auction {AuctionId}",
-                notification.PreviousBidderUsername,
+            _logger.LogDebug(
+                "Publishing OutbidEvent for auction {AuctionId}",
                 notification.AuctionId);
 
             await _eventPublisher.PublishAsync(new OutbidEvent

@@ -1,25 +1,25 @@
 namespace Notification.Domain.Entities;
 
-public class NotificationTemplate : BaseEntity
+public class NotificationTemplate : AggregateRoot
 {
 
     public string Key { get; private set; } = string.Empty;
 
     public string Name { get; private set; } = string.Empty;
 
-    public string? Description { get; set; }
+    public string? Description { get; private set; }
 
-    public string Subject { get; set; } = string.Empty;
+    public string Subject { get; private set; } = string.Empty;
 
-    public string Body { get; set; } = string.Empty;
+    public string Body { get; private set; } = string.Empty;
 
-    public string? SmsBody { get; set; }
+    public string? SmsBody { get; private set; }
 
-    public string? PushTitle { get; set; }
+    public string? PushTitle { get; private set; }
 
-    public string? PushBody { get; set; }
+    public string? PushBody { get; private set; }
 
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; private set; } = true;
 
     private NotificationTemplate() { }
 
@@ -33,18 +33,6 @@ public class NotificationTemplate : BaseEntity
         string? pushTitle = null,
         string? pushBody = null)
     {
-        if (string.IsNullOrWhiteSpace(key))
-            throw new ArgumentException("Template key is required", nameof(key));
-
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Template name is required", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(subject))
-            throw new ArgumentException("Subject is required", nameof(subject));
-
-        if (string.IsNullOrWhiteSpace(body))
-            throw new ArgumentException("Body is required", nameof(body));
-
         return new NotificationTemplate
         {
             Id = Guid.NewGuid(),

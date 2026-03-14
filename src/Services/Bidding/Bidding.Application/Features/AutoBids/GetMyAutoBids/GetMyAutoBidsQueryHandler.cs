@@ -1,42 +1,54 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Paging;
+
 namespace Bidding.Application.Features.AutoBids.GetMyAutoBids;
 
-public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAutoBidsResult>
+public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, PaginatedResult<MyAutoBidDto>>
 {
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
-    private readonly IAppLogger<GetMyAutoBidsQueryHandler> _logger;
+    private readonly ILogger<GetMyAutoBidsQueryHandler> _logger;
 
     public GetMyAutoBidsQueryHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
-        IAppLogger<GetMyAutoBidsQueryHandler> logger)
+        ILogger<GetMyAutoBidsQueryHandler> logger)
     {
         _repository = repository;
         _bidRepository = bidRepository;
         _logger = logger;
     }
 
-    public async Task<Result<MyAutoBidsResult>> Handle(GetMyAutoBidsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<MyAutoBidDto>>> Handle(GetMyAutoBidsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting auto-bids for user {UserId}, page {Page}", 
-            request.UserId, request.Page);
+        _logger.LogDebug("Getting auto-bids for user {UserId}, page {Page}", request.UserId, request.Page);
 
-        var autoBids = await _repository.GetAutoBidsByUserAsync(
-            request.UserId, 
-            request.ActiveOnly, 
-            request.Page, 
-            request.PageSize, 
-            cancellationToken);
-
-        var totalCount = await _repository.GetAutoBidsCountForUserAsync(request.UserId, request.ActiveOnly, cancellationToken);
-        var activeCount = await _repository.GetAutoBidsCountForUserAsync(request.UserId, true, cancellationToken);
+        var queryParams = new AutoBidQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new AutoBidFilter
+            {
+                AuctionId = request.AuctionId,
+                IsActive = request.IsActive,
+                MinMaxAmount = request.MinMaxAmount,
+                MaxMaxAmount = request.MaxMaxAmount,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
+        
+        var result = await _repository.GetAutoBidsByUserAsync(request.UserId, queryParams, cancellationToken);
 
         var items = new List<MyAutoBidDto>();
-        decimal totalCommitted = 0;
+        var auctionIds = result.Items.Select(x => x.AuctionId).Distinct().ToList();
+        var highestBids = await _bidRepository.GetHighestBidsForAuctionsAsync(auctionIds, cancellationToken);
 
-        foreach (var autoBid in autoBids)
+        foreach (var autoBid in result.Items)
         {
-            var highestBid = await _bidRepository.GetHighestBidForAuctionAsync(autoBid.AuctionId, cancellationToken);
+            highestBids.TryGetValue(autoBid.AuctionId, out var highestBid);
             var isWinning = highestBid?.BidderId == autoBid.UserId;
             
             items.Add(new MyAutoBidDto
@@ -53,21 +65,9 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, MyAut
                 AuctionEndTime = null,
                 CreatedAt = autoBid.CreatedAt
             });
-
-            if (autoBid.IsActive)
-            {
-                totalCommitted += autoBid.MaxAmount - autoBid.CurrentBidAmount;
-            }
         }
 
-        return Result<MyAutoBidsResult>.Success(new MyAutoBidsResult
-        {
-            Items = items,
-            TotalCount = totalCount,
-            Page = request.Page,
-            PageSize = request.PageSize,
-            ActiveCount = activeCount,
-            TotalCommitted = totalCommitted
-        });
+        return Result<PaginatedResult<MyAutoBidDto>>.Success(
+            new PaginatedResult<MyAutoBidDto>(items, result.TotalCount, result.Page, result.PageSize));
     }
 }

@@ -1,0 +1,488 @@
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Breadcrumbs,
+  Chip,
+  Stack,
+  Skeleton,
+  Snackbar,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
+} from '@mui/material'
+import { InlineAlert } from '@/shared/ui'
+import {
+  NavigateNext,
+  Visibility,
+  ContentCopy,
+  Facebook,
+  Twitter,
+  Pinterest,
+} from '@mui/icons-material'
+import { palette } from '@/shared/theme/tokens'
+import { ImageGallery, ImageGallerySkeleton } from '../components/ImageGallery'
+import { BidSection, BidSectionSkeleton } from '../components/BidSection'
+import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
+import { ProductTabs, ProductTabsSkeleton } from '../components/ProductTabs'
+import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
+import { useAuctionSignalR, useAuction, useBuyNow, useToggleWatchlist } from '../hooks'
+import { useRecordView } from '../hooks/useViews'
+import { useAutoBidForAuction, usePlaceBid } from '@/modules/bidding/hooks'
+import { useAuth } from '@/app/providers'
+
+export function AuctionDetailPage() {
+  const { t } = useTranslation('auctions')
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { data: auction, isLoading } = useAuction(id ?? '')
+  const { isAuthenticated } = useAuth()
+  const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
+  const buyNowMutation = useBuyNow()
+  const toggleWatchlistMutation = useToggleWatchlist()
+  const placeBidMutation = usePlaceBid()
+  const recordView = useRecordView()
+  const hasRecordedView = useRef(false)
+  const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error' | 'info'
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  })
+
+  useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
+
+  useEffect(() => {
+    if (id && !isLoading && auction && !hasRecordedView.current) {
+      hasRecordedView.current = true
+      recordView.mutate(id)
+    }
+  }, [id, isLoading, auction, recordView])
+
+  const handleToggleFavorite = useCallback(() => {
+    if (!id) {
+      return
+    }
+    toggleWatchlistMutation.mutate(
+      { auctionId: id, isInWatchlist: auction?.isWatching ?? false },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            open: true,
+            message: auction?.isWatching ? t('messages.removedFromWatchlist') : t('messages.addedToWatchlist'),
+            severity: 'success',
+          })
+        },
+        onError: () => {
+          setSnackbar({
+            open: true,
+            message: t('watchlist.updateFailed'),
+            severity: 'error',
+          })
+        },
+      }
+    )
+  }, [id, auction?.isWatching, toggleWatchlistMutation])
+
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(globalThis.location.href)
+    setSnackbar({
+      open: true,
+      message: t('messages.linkCopied'),
+      severity: 'success',
+    })
+  }, [t])
+
+  const handlePlaceBid = useCallback(
+    async (amount: number) => {
+      if (!id) {
+        return
+      }
+      placeBidMutation.mutate(
+        { auctionId: id, amount },
+        {
+          onSuccess: () => {
+            setSnackbar({
+              open: true,
+              message: t('messages.bidPlaced'),
+              severity: 'success',
+            })
+          },
+          onError: (error) => {
+            setSnackbar({
+              open: true,
+              message: error instanceof Error ? error.message : t('messages.bidFailed'),
+              severity: 'error',
+            })
+          },
+        }
+      )
+    },
+    [id, placeBidMutation]
+  )
+
+  const handleBuyNow = useCallback(async () => {
+    setBuyNowDialogOpen(true)
+  }, [])
+
+  const confirmBuyNow = useCallback(async () => {
+    if (!id) {
+      return
+    }
+    buyNowMutation.mutate(id, {
+      onSuccess: () => {
+        setBuyNowDialogOpen(false)
+        setSnackbar({
+          open: true,
+          message: t('messages.purchaseSuccess'),
+          severity: 'success',
+        })
+        setTimeout(() => navigate('/account/orders'), 2000)
+      },
+      onError: () => {
+        setBuyNowDialogOpen(false)
+        setSnackbar({
+          open: true,
+          message: t('messages.purchaseFailed'),
+          severity: 'error',
+        })
+      },
+    })
+  }, [id, buyNowMutation, navigate])
+
+  if (isLoading || !auction) {
+    return <AuctionDetailPageSkeleton />
+  }
+
+  return (
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
+      <Container maxWidth="xl" sx={{ pt: 3 }}>
+        <Breadcrumbs
+          separator={<NavigateNext fontSize="small" />}
+          sx={{
+            mb: 3,
+            '& a': {
+              color: palette.neutral[500],
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              '&:hover': {
+                color: palette.neutral[900],
+                textDecoration: 'underline',
+              },
+            },
+          }}
+        >
+          <Link to="/">{t('common:nav.home')}</Link>
+          <Link to="/auctions">{t('title')}</Link>
+          {auction.category.parentName && (
+            <Link to={`/categories/${auction.category.parentId}`}>
+              {auction.category.parentName}
+            </Link>
+          )}
+          <Link to={`/categories/${auction.category.id}`}>{auction.category.name}</Link>
+          <Typography sx={{ color: palette.neutral[900], fontSize: '0.875rem' }}>
+            {auction.title.length > 40 ? `${auction.title.slice(0, 40)}...` : auction.title}
+          </Typography>
+        </Breadcrumbs>
+
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, lg: 7 }}>
+            <ImageGallery
+              images={auction.images}
+              title={auction.title}
+              isFavorite={auction.isWatching}
+              onToggleFavorite={handleToggleFavorite}
+              onShare={handleShare}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, lg: 5 }}>
+            <Box sx={{ position: 'sticky', top: 100 }}>
+              <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                <Chip
+                  label={auction.categoryName}
+                  size="small"
+                  component={Link}
+                  to={`/categories/${auction.categoryId}`}
+                  sx={{
+                    cursor: 'pointer',
+                    bgcolor: palette.neutral[100],
+                    color: palette.neutral[700],
+                    '&:hover': { bgcolor: palette.neutral[100] },
+                  }}
+                />
+                {auction.status === 'ending-soon' && (
+                  <Chip
+                    label={t('endingSoon')}
+                    size="small"
+                    sx={{ bgcolor: palette.semantic.errorLight, color: palette.semantic.error }}
+                  />
+                )}
+              </Stack>
+
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  fontFamily: '"Playfair Display", serif',
+                  fontWeight: 600,
+                  color: palette.neutral[900],
+                  lineHeight: 1.2,
+                  mb: 1,
+                }}
+              >
+                {auction.title}
+              </Typography>
+
+              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={0.5}
+                  sx={{ color: palette.neutral[500] }}
+                >
+                  <Visibility fontSize="small" />
+                  <Typography variant="body2">{auction.watcherCount} {t('detail.watching')}</Typography>
+                </Stack>
+
+                <Stack direction="row" spacing={0.5}>
+                  <Tooltip title={t('actions.shareOnFacebook')}>
+                    <IconButton
+                      size="small"
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#1877F2' } }}
+                    >
+                      <Facebook fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('actions.shareOnTwitter')}>
+                    <IconButton
+                      size="small"
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#1DA1F2' } }}
+                    >
+                      <Twitter fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('actions.pinOnPinterest')}>
+                    <IconButton
+                      size="small"
+                      sx={{ color: palette.neutral[500], '&:hover': { color: '#E60023' } }}
+                    >
+                      <Pinterest fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t('actions.copyLink')}>
+                    <IconButton
+                      size="small"
+                      onClick={handleShare}
+                      sx={{
+                        color: palette.neutral[500],
+                        '&:hover': { color: palette.neutral[900] },
+                      }}
+                    >
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
+
+              <BidSection
+                auctionId={auction.id}
+                auctionTitle={auction.title}
+                currentBid={auction.currentBid}
+                startingPrice={auction.startingPrice}
+                buyNowPrice={auction.buyNowPrice}
+                bidCount={auction.bidCount}
+                endTime={auction.endTime}
+                status={auction.status}
+                userBid={auction.userBid}
+                existingAutoBid={
+                  autoBid ? { maxAmount: autoBid.maxAmount, isActive: autoBid.isActive } : undefined
+                }
+                onPlaceBid={handlePlaceBid}
+                onBuyNow={handleBuyNow}
+              />
+
+              <Box sx={{ mt: 3 }}>
+                <SellerInfo
+                  seller={auction.seller}
+                  onContact={() =>
+                    setSnackbar({
+                      open: true,
+                      message: t('messages.openingChat'),
+                      severity: 'info',
+                    })
+                  }
+                />
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 6 }}>
+          <ProductTabs
+            description={auction.description}
+            bids={auction.bids}
+            specifications={{
+              Dimensions: '78"W x 18"D x 32"H',
+              Material: 'Solid Teak',
+              Era: '1960s',
+              Origin: 'Denmark',
+              Condition: 'Professionally Restored',
+              Style: 'Mid-Century Modern',
+            }}
+            shippingInfo={{
+              method: 'White Glove Delivery',
+              cost: 250,
+              estimatedDays: '7-14 business days',
+              locations: ['United States', 'Canada'],
+            }}
+            returnPolicy={{
+              accepted: true,
+              period: 14,
+              conditions:
+                'Item must be returned in original condition. Buyer responsible for return shipping costs. Refund will be processed within 5 business days of receiving the item.',
+            }}
+          />
+        </Box>
+
+        <Box sx={{ mt: 6 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: '"Playfair Display", serif',
+              fontWeight: 600,
+              color: palette.neutral[900],
+              mb: 3,
+            }}
+          >
+            {t('reviews.title')}
+          </Typography>
+          <ReviewsSection sellerId={auction.seller.id} auctionId={auction.id} />
+        </Box>
+      </Container>
+
+      <Dialog
+        open={buyNowDialogOpen}
+        onClose={() => setBuyNowDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontFamily: '"Playfair Display", serif', fontWeight: 600 }}>
+          {t('dialog.confirmPurchase')}
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: palette.neutral[600], mb: 2 }}>
+            {t('dialog.buyNowDescription')}
+          </Typography>
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: palette.neutral[50],
+              borderRadius: 2,
+              border: `1px solid ${palette.neutral[200]}`,
+            }}
+          >
+            <Typography sx={{ fontWeight: 600, color: palette.neutral[900], mb: 1 }}>
+              {auction?.title}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: palette.brand.primary,
+              }}
+            >
+              ${auction?.buyNowPrice?.toLocaleString()}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={() => setBuyNowDialogOpen(false)}
+            sx={{ color: palette.neutral[500], textTransform: 'none' }}
+          >
+            {t('common:actions.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={confirmBuyNow}
+            disabled={buyNowMutation.isPending}
+            sx={{
+              bgcolor: palette.brand.primary,
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 4,
+              '&:hover': { bgcolor: '#A16207' },
+            }}
+          >
+            {buyNowMutation.isPending ? (
+              <CircularProgress size={20} sx={{ color: 'white' }} />
+            ) : (
+              t('dialog.confirmPurchaseButton')
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <InlineAlert
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </InlineAlert>
+      </Snackbar>
+    </Box>
+  )
+}
+
+function AuctionDetailPageSkeleton() {
+  return (
+    <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
+      <Container maxWidth="xl" sx={{ pt: 3 }}>
+        <Skeleton width={300} height={20} sx={{ mb: 3 }} />
+
+        <Grid container spacing={4}>
+          <Grid size={{ xs: 12, lg: 7 }}>
+            <ImageGallerySkeleton />
+          </Grid>
+
+          <Grid size={{ xs: 12, lg: 5 }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+              <Skeleton width={80} height={24} sx={{ borderRadius: 3 }} />
+            </Stack>
+            <Skeleton width="100%" height={40} sx={{ mb: 1 }} />
+            <Skeleton width="80%" height={40} sx={{ mb: 1 }} />
+            <Skeleton width={150} height={20} sx={{ mb: 3 }} />
+            <BidSectionSkeleton />
+            <Box sx={{ mt: 3 }}>
+              <SellerInfoSkeleton />
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 6 }}>
+          <ProductTabsSkeleton />
+        </Box>
+      </Container>
+    </Box>
+  )
+}

@@ -1,25 +1,28 @@
-namespace Bidding.Application.DTOs
+namespace Bidding.Application.DTOs;
+
+public record AutoBidDto(
+    Guid Id,
+    Guid AuctionId,
+    Guid UserId,
+    string Username,
+    decimal MaxAmount,
+    decimal CurrentBidAmount,
+    bool IsActive,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? LastBidAt
+);
+
+public record CreateAutoBidDto
 {
-    public record AutoBidDto(
-        Guid Id,
-        Guid AuctionId,
-        Guid UserId,
-        string Username,
-        decimal MaxAmount,
-        decimal CurrentBidAmount,
-        bool IsActive,
-        DateTimeOffset CreatedAt,
-        DateTimeOffset? LastBidAt
-    );
+    public Guid AuctionId { get; init; }
+    public decimal MaxAmount { get; init; }
+    public decimal? BidIncrement { get; init; }
+}
 
-    public record CreateAutoBidDto(
-        Guid AuctionId,
-        decimal MaxAmount
-    );
-
-    public record UpdateAutoBidDto(
-        decimal MaxAmount,
-        bool? IsActive
-    );
+public record UpdateAutoBidDto
+{
+    public decimal MaxAmount { get; init; }
+    public decimal? BidIncrement { get; init; }
+    public bool? IsActive { get; init; }
 }
 

@@ -1,105 +1,47 @@
 #nullable enable
+using System.Linq.Expressions;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Application.Constants;
-using BuildingBlocks.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Paging;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
 {
-    public class AuctionRepository : IAuctionRepository
+    public class AuctionRepository : 
+        IAuctionQueryRepository,
+        IAuctionWriteRepository,
+        IAuctionSchedulerRepository,
+        IAuctionUserRepository,
+        IAuctionExportRepository,
+        IAuctionAnalyticsRepository
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
+        private readonly IAuditContext _auditContext;
 
-        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime)
+        private static readonly Dictionary<string, Expression<Func<Auction, object>>> AuctionSortMap =
+            new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["price"] = x => x.CurrentHighBid ?? x.ReservePrice,
+            ["enddate"] = x => x.AuctionEnd,
+            ["createdat"] = x => x.CreatedAt,
+            ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
+        };
+
+        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
             _context = context;
             _dateTime = dateTime;
+            _auditContext = auditContext;
         }
 
-        public async Task<List<Auction>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<Auction> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            var auction = await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-            
-            return auction ?? throw new KeyNotFoundException($"Auction with ID {id} not found");
-        }
-
-        public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
-        {
-            auction.CreatedAt = _dateTime.UtcNow;
-            auction.CreatedBy = SystemGuids.System;
-            auction.IsDeleted = false;
-            
-            if (auction.Item != null)
-            {
-                auction.Item.CreatedAt = _dateTime.UtcNow;
-                auction.Item.CreatedBy = SystemGuids.System;
-                auction.Item.IsDeleted = false;
-            }
-            
-            await _context.Auctions.AddAsync(auction, cancellationToken);
-            
-            return auction;
-        }
-
-        public async Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
-        {
-            auction.UpdatedAt = _dateTime.UtcNow;
-            auction.UpdatedBy = SystemGuids.System;
-            
-            _context.Auctions.Update(auction);
-            await Task.CompletedTask;
-        }
-
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            var auction = await GetByIdAsync(id, cancellationToken);
-            if (auction != null)
-            {
-                auction.IsDeleted = true;
-                auction.DeletedAt = _dateTime.UtcNow;
-                auction.DeletedBy = SystemGuids.System;
-                
-                _context.Auctions.Update(auction);
-            }
-        }
-
-        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
-        }
-
-        public async Task<(List<Auction> Items, int TotalCount)> GetPagedAsync(
-            string? status = null,
-            string? seller = null,
-            string? winner = null,
-            string? searchTerm = null,
-            string? category = null,
-            bool? isFeatured = null,
-            string? orderBy = null,
-            bool descending = true,
-            int pageNumber = PaginationDefaults.DefaultPage,
-            int pageSize = PaginationDefaults.DefaultPageSize,
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            int page,
+            int pageSize,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Auctions
@@ -108,83 +50,162 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
+                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
+        }
+
+        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+            AuctionFilterDto filter,
+            CancellationToken cancellationToken = default)
+        {
+            var filterParams = filter.Filter;
+
+            var query = _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .AsSplitQuery()
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Status>(status, true, out var statusEnum))
+            if (!string.IsNullOrEmpty(filterParams.Status) && Enum.TryParse<Status>(filterParams.Status, true, out var statusEnum))
             {
                 query = query.Where(x => x.Status == statusEnum);
             }
 
-            if (!string.IsNullOrEmpty(seller))
+            if (!string.IsNullOrEmpty(filterParams.Seller))
             {
-                query = query.Where(x => x.SellerUsername == seller);
+                query = query.Where(x => x.SellerUsername == filterParams.Seller);
             }
 
-            if (!string.IsNullOrEmpty(winner))
+            if (!string.IsNullOrEmpty(filterParams.Winner))
             {
-                query = query.Where(x => x.WinnerUsername == winner);
+                query = query.Where(x => x.WinnerUsername == filterParams.Winner);
             }
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrEmpty(filterParams.SearchTerm))
             {
-                var term = searchTerm.ToLower();
-                query = query.Where(x => 
+                var term = $"%{filterParams.SearchTerm}%";
+                query = query.Where(x =>
                     x.Item != null && (
-                        x.Item.Title.ToLower().Contains(term) ||
-                        (x.Item.Description != null && x.Item.Description.ToLower().Contains(term))
+                        EF.Functions.ILike(x.Item.Title, term) ||
+                        (x.Item.Description != null && EF.Functions.ILike(x.Item.Description, term))
                     ));
             }
 
-            if (!string.IsNullOrEmpty(category))
+            if (!string.IsNullOrEmpty(filterParams.Category))
             {
-                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == category);
+                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filterParams.Category);
             }
 
-            if (isFeatured.HasValue)
+            if (filterParams.IsFeatured.HasValue)
             {
-                query = query.Where(x => x.IsFeatured == isFeatured.Value);
+                query = query.Where(x => x.IsFeatured == filterParams.IsFeatured.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = orderBy?.ToLower() switch
-            {
-                "price" => descending 
-                    ? query.OrderByDescending(x => x.CurrentHighBid ?? x.ReservePrice)
-                    : query.OrderBy(x => x.CurrentHighBid ?? x.ReservePrice),
-                "enddate" => descending 
-                    ? query.OrderByDescending(x => x.AuctionEnd)
-                    : query.OrderBy(x => x.AuctionEnd),
-                "createdat" => descending 
-                    ? query.OrderByDescending(x => x.CreatedAt)
-                    : query.OrderBy(x => x.CreatedAt),
-                "title" => descending 
-                    ? query.OrderByDescending(x => x.Item != null ? x.Item.Title : string.Empty)
-                    : query.OrderBy(x => x.Item != null ? x.Item.Title : string.Empty),
-                _ => descending 
-                    ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                    : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt)
-            };
+            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
 
             var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .ApplyPaging(filter)
                 .ToListAsync(cancellationToken);
 
-            return (items, totalCount);
+            return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
+        }
+
+        public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
+        {
+            var utcNow = _dateTime.UtcNow;
+            auction.SetCreatedAudit(_auditContext.UserId, utcNow);
+
+            if (auction.Item != null)
+            {
+                auction.Item.SetCreatedAudit(_auditContext.UserId, utcNow);
+            }
+
+            await _context.Auctions.AddAsync(auction, cancellationToken);
+
+            return auction;
+        }
+
+        public Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
+        {
+            auction.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
+
+            _context.Auctions.Update(auction);
+            return Task.CompletedTask;
+        }
+
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+
+            var auction = await _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+            if (auction != null)
+            {
+                auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
+            }
+        }
+
+        public Task DeleteAsync(Auction auction, CancellationToken cancellationToken = default)
+        {
+            auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
+            return Task.CompletedTask;
+        }
+
+        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
         }
 
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         {
             var now = _dateTime.UtcNow;
-            
+
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
-                    && x.AuctionEnd < now 
-                    && x.Status != Status.Finished 
+                .Where(x => !x.IsDeleted
+                    && x.AuctionEnd < now
+                    && x.Status != Status.Finished
                     && x.Status != Status.ReservedNotMet
-                    && x.Status != Status.Inactive)
+                    && x.Status != Status.Inactive
+                    && x.Status != Status.Cancelled
+                    && x.Status != Status.ReservedForBuyNow)
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
         }
@@ -192,10 +213,10 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default)
         {
             var now = _dateTime.UtcNow;
-            
+
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
-                    && x.AuctionEnd < now 
+                .Where(x => !x.IsDeleted
+                    && x.AuctionEnd < now
                     && x.Status == Status.Live)
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
@@ -211,6 +232,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             var query = _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (status.HasValue)
@@ -241,21 +263,21 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
+                .Where(x => !x.IsDeleted
                     && x.Status == Status.Scheduled)
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<List<Auction>> GetAuctionsEndingBetweenAsync(
-            DateTime startTime, 
-            DateTime endTime, 
+            DateTime startTime,
+            DateTime endTime,
             CancellationToken cancellationToken = default)
         {
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
+                .Where(x => !x.IsDeleted
                     && x.Status == Status.Live
-                    && x.AuctionEnd >= startTime 
+                    && x.AuctionEnd >= startTime
                     && x.AuctionEnd <= endTime)
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
@@ -272,11 +294,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             var now = _dateTime.UtcNow;
             var endingSoonThreshold = now.AddHours(24);
-            
+
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
-                    && x.Status == Status.Live 
-                    && x.AuctionEnd >= now 
+                .Where(x => !x.IsDeleted
+                    && x.Status == Status.Live
+                    && x.AuctionEnd >= now
                     && x.AuctionEnd <= endingSoonThreshold)
                 .CountAsync(cancellationToken);
         }
@@ -310,6 +332,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
                 .Take(limit)
@@ -328,15 +351,16 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions
-                .Where(x => !x.IsDeleted 
+                .Where(x => !x.IsDeleted
                     && x.Status == Status.Live
-                    && x.AuctionEnd >= start 
+                    && x.AuctionEnd >= start
                     && x.AuctionEnd < end)
                 .CountAsync(cancellationToken);
         }
@@ -346,6 +370,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             return await _context.Auctions
                 .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
                 .Include(x => x.Item)
+                .AsNoTracking()
                 .OrderByDescending(x => x.SoldAmount)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
@@ -357,6 +382,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Where(x => !x.IsDeleted && x.Item != null && x.Item.CategoryId.HasValue)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Category)
+                .AsNoTracking()
                 .GroupBy(x => new { x.Item!.CategoryId, CategoryName = x.Item.Category!.Name })
                 .Select(g => new CategoryStatDto(
                     g.Key.CategoryId!.Value,
@@ -376,6 +402,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
@@ -388,54 +415,83 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Category)
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<SellerStatsDto> GetSellerStatsAsync(
-            string username, 
-            DateTimeOffset periodStart, 
-            DateTimeOffset? previousPeriodStart = null, 
+            string username,
+            DateTimeOffset periodStart,
+            DateTimeOffset? previousPeriodStart = null,
             CancellationToken cancellationToken = default)
         {
-            var userAuctions = await _context.Auctions
-                .Where(x => !x.IsDeleted && x.SellerUsername == username)
-                .Include(x => x.Item)
-                .AsNoTracking()
+
+            var baseQuery = _context.Auctions
+                .Where(x => !x.IsDeleted && x.SellerUsername == username);
+
+            var currentPeriodSales = await baseQuery
+                .Where(a => a.Status == Status.Finished &&
+                           a.SoldAmount.HasValue &&
+                           a.UpdatedAt >= periodStart)
+                .Select(a => new SaleProjection
+                {
+                    Id = a.Id,
+                    SoldAmount = a.SoldAmount,
+                    UpdatedAt = a.UpdatedAt,
+                    WinnerUsername = a.WinnerUsername,
+                    ItemTitle = a.Item != null ? a.Item.Title : "Unknown"
+                })
                 .ToListAsync(cancellationToken);
 
-            var currentPeriodSales = userAuctions
-                .Where(a => a.Status == Status.Finished && 
-                           a.SoldAmount.HasValue && 
-                           a.UpdatedAt >= periodStart)
-                .ToList();
+            decimal previousPeriodRevenue = 0;
+            int previousPeriodItemsSold = 0;
 
-            var previousPeriodSales = previousPeriodStart.HasValue
-                ? userAuctions
-                    .Where(a => a.Status == Status.Finished && 
-                               a.SoldAmount.HasValue && 
+            if (previousPeriodStart.HasValue)
+            {
+                    var previousPeriodStats = await baseQuery
+                    .Where(a => a.Status == Status.Finished &&
+                               a.SoldAmount.HasValue &&
                                a.UpdatedAt >= previousPeriodStart.Value &&
                                a.UpdatedAt < periodStart)
-                    .ToList()
-                : new List<Auction>();
+                    .GroupBy(a => 1)
+                    .Select(g => new { Revenue = g.Sum(a => a.SoldAmount ?? 0), Count = g.Count() })
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (previousPeriodStats != null)
+                {
+                    previousPeriodRevenue = previousPeriodStats.Revenue;
+                    previousPeriodItemsSold = previousPeriodStats.Count;
+                }
+            }
+
+            var statusCounts = await baseQuery
+                .GroupBy(a => a.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync(cancellationToken);
+
+            var activeListings = statusCounts.FirstOrDefault(s => s.Status == Status.Live)?.Count ?? 0;
+            var pendingAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Scheduled)?.Count ?? 0;
+            var draftAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Draft)?.Count ?? 0;
+            var totalListings = statusCounts.Sum(s => s.Count);
 
             return new SellerStatsDto
             {
                 TotalRevenue = currentPeriodSales.Sum(a => a.SoldAmount ?? 0),
-                PreviousPeriodRevenue = previousPeriodSales.Sum(a => a.SoldAmount ?? 0),
+                PreviousPeriodRevenue = previousPeriodRevenue,
                 ItemsSold = currentPeriodSales.Count,
-                PreviousPeriodItemsSold = previousPeriodSales.Count,
-                ActiveListings = userAuctions.Count(a => a.Status == Status.Live),
-                TotalListings = userAuctions.Count,
-                PendingAuctions = userAuctions.Count(a => a.Status == Status.Scheduled),
-                DraftAuctions = userAuctions.Count(a => a.Status == Status.Draft),
+                PreviousPeriodItemsSold = previousPeriodItemsSold,
+                ActiveListings = activeListings,
+                TotalListings = totalListings,
+                PendingAuctions = pendingAuctions,
+                DraftAuctions = draftAuctions,
                 RecentSales = currentPeriodSales
                     .OrderByDescending(a => a.UpdatedAt)
                     .Take(10)
                     .Select(a => new AuctionSummaryDto
                     {
                         Id = a.Id,
-                        Title = a.Item?.Title ?? "Unknown",
+                        Title = a.ItemTitle,
                         SoldAmount = a.SoldAmount,
                         SoldAt = a.UpdatedAt,
                         BuyerUsername = a.WinnerUsername
@@ -444,11 +500,20 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             };
         }
 
+        private sealed class SaleProjection
+        {
+            public Guid Id { get; set; }
+            public decimal? SoldAmount { get; set; }
+            public DateTimeOffset? UpdatedAt { get; set; }
+            public string? WinnerUsername { get; set; }
+            public string ItemTitle { get; set; } = "Unknown";
+        }
+
         public async Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
         {
             return await _context.Auctions
-                .Where(x => !x.IsDeleted && 
-                           x.SellerId == sellerId && 
+                .Where(x => !x.IsDeleted &&
+                           x.SellerId == sellerId &&
                            (x.Status == Status.Live || x.Status == Status.Scheduled))
                 .Include(x => x.Item)
                 .ToListAsync(cancellationToken);
@@ -470,6 +535,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Include(x => x.Item)
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bookmarks
+                .Where(b => b.Username == username && !b.IsDeleted)
+                .CountAsync(cancellationToken);
         }
     }
 }

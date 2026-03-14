@@ -1,6 +1,11 @@
 using System.Globalization;
+using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Middleware;
+using BuildingBlocks.Web.Observability;
 using Identity.Api.Data;
-using Identity.Api.Extensions;
+using Identity.Api.Resources;
+using Identity.Api.Extensions.DependencyInjection;
+using Identity.Api.Grpc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -22,7 +27,18 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
+
+        builder.Services.ValidateStandardConfiguration(
+            builder.Configuration,
+            "IdentityService",
+            requiresDatabase: true,
+            requiresRedis: true,
+            requiresRabbitMQ: true,
+            requiresIdentity: false);
+
         builder.Services.AddControllers();
+        builder.Services.AddGrpc();
+        builder.Services.AddGrpcReflection();
 
         builder.Services
             .AddIdentityInfrastructure(builder.Configuration)
@@ -31,7 +47,18 @@ internal static class HostingExtensions
             .AddIdentityRateLimiting()
             .AddMessaging(builder.Configuration)
             .AddBackgroundJobs(builder.Configuration)
-            .AddIdentityAuthentication(builder.Configuration, builder.Environment);
+            .AddIdentityAuthentication(builder.Configuration, builder.Environment)
+            .AddCommonUtilities()
+            .AddAppLocalization<IdentityResources>()
+            .AddAuditServices(builder.Configuration, "identity-service");
+
+        builder.Services.AddObservability(builder.Configuration);
+
+        builder.Services.AddCustomHealthChecks(
+            redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+            rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+            databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+            serviceName: "IdentityService");
 
         return builder.Build();
     }
@@ -44,12 +71,10 @@ internal static class HostingExtensions
             db.Database.Migrate();
         }
 
+        app.UseCorrelationId();
         app.UseSerilogRequestLogging();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
+        app.UseAppExceptionHandling();
+        app.UseApiSecurityHeaders();
 
         var allowedOrigins = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"];
@@ -66,6 +91,14 @@ internal static class HostingExtensions
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapGrpcService<UserStatsGrpcService>();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapGrpcReflectionService();
+        }
+
+        app.MapCustomHealthChecks();
 
         return app;
     }

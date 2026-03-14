@@ -1,28 +1,26 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.DTOs.Audit;
+using Auctions.Application.Errors;
 using AutoMapper;
+using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.ActivateAuction;
+namespace Auctions.Application.Features.Auctions.ActivateAuction;
 
 public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionCommand, AuctionDto>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<ActivateAuctionCommandHandler> _logger;
+    private readonly ILogger<ActivateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
     public ActivateAuctionCommandHandler(
-        IAuctionRepository repository,
+        IAuctionWriteRepository repository,
         IMapper mapper,
-        IAppLogger<ActivateAuctionCommandHandler> logger,
+        ILogger<ActivateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
@@ -39,53 +37,55 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
     {
         _logger.LogInformation("Activating auction {AuctionId}", request.AuctionId);
 
-        try
+        var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
+        
+        if (auction == null)
         {
-            var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
+        }
 
-            if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
+        if (auction.SellerId != request.UserId)
+        {
+            _logger.LogWarning("User {UserId} attempted to activate auction {AuctionId} owned by {OwnerId}", 
+                request.UserId, request.AuctionId, auction.SellerId);
+            return Result.Failure<AuctionDto>(Error.Create("Auction.Forbidden", "You are not authorized to activate this auction"));
+        }
+
+        if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
+        {
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
+        }
+
+        if (auction.AuctionEnd <= _dateTime.UtcNow)
+        {
+            return Result.Failure<AuctionDto>(Error.Create("Auction.EndDatePassed", 
+                "Cannot activate auction. The auction end date has already passed."));
+        }
+
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
+        var previousStatus = auction.Status;
+        auction.ChangeStatus(Status.Live);
+
+        await _repository.UpdateAsync(auction, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object>
             {
-                var error = Error.Create("Auction.InvalidStatus", 
-                    $"Cannot activate auction with status {auction.Status}. Only Inactive or Scheduled auctions can be activated.");
-                return Result.Failure<AuctionDto>(error);
-            }
+                ["Action"] = "Activated",
+                ["PreviousStatus"] = previousStatus.ToString()
+            },
+            cancellationToken);
 
-            if (auction.AuctionEnd <= _dateTime.UtcNow)
-            {
-                var error = Error.Create("Auction.EndDatePassed", 
-                    "Cannot activate auction. The auction end date has already passed.");
-                return Result.Failure<AuctionDto>(error);
-            }
+        _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
+            request.AuctionId, previousStatus);
 
-            var previousStatus = auction.Status;
-            auction.ChangeStatus(Status.Live);
-
-            await _repository.UpdateAsync(auction, cancellationToken);
-
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                auction,
-                AuditAction.Updated,
-                cancellationToken: cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
-                request.AuctionId, previousStatus);
-
-            return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
-        }
-        catch (KeyNotFoundException)
-        {
-            var error = Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found");
-            return Result.Failure<AuctionDto>(error);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to activate auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            var error = Error.Create("Auction.ActivationFailed", ex.Message);
-            return Result.Failure<AuctionDto>(error);
-        }
+        return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
     }
 }
 

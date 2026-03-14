@@ -8,7 +8,6 @@ using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using IdentityUserHelper = Identity.Api.Helpers.UserHelper;
 
 namespace Identity.Api.Controllers;
 
@@ -30,7 +29,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [HasPermission(Permissions.Users.View)]
+    [Authorize]
     [ProducesResponseType(typeof(PaginatedResult<AdminUserDto>), StatusCodes.Status200OK)]
     public async Task<IResult> GetUsers([FromQuery] GetUsersQuery query, CancellationToken cancellationToken = default)
     {
@@ -39,7 +38,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [HasPermission(Permissions.Users.View)]
+    [Authorize]
     [ProducesResponseType(typeof(AdminUserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetUser(string id, CancellationToken cancellationToken = default)
@@ -55,11 +54,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetSellerStatus(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _userService.GetSellerStatusAsync(userId, cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -72,11 +67,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> ApplyForSeller([FromBody] BecomeSellerRequest request, CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         var result = await _userService.ApplyForSellerAsync(userId, request.AcceptTerms, cancellationToken);
 
         if (!result.IsSuccess)
@@ -90,7 +81,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/suspend")]
-    [HasPermission(Permissions.Users.Ban)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> SuspendUser(string id, [FromBody] SuspendUserRequest request, CancellationToken cancellationToken = default)
@@ -102,7 +93,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/unsuspend")]
-    [HasPermission(Permissions.Users.Ban)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> UnsuspendUser(string id, CancellationToken cancellationToken = default)
@@ -114,7 +105,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/activate")]
-    [HasPermission(Permissions.Users.Ban)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> ActivateUser(string id, CancellationToken cancellationToken = default)
@@ -126,7 +117,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/deactivate")]
-    [HasPermission(Permissions.Users.Ban)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> DeactivateUser(string id, CancellationToken cancellationToken = default)
@@ -138,7 +129,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id}/roles")]
-    [HasPermission(Permissions.Users.ManageRoles)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> UpdateUserRoles(string id, [FromBody] UpdateUserRolesRequest request, CancellationToken cancellationToken = default)
@@ -150,7 +141,7 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [HasPermission(Permissions.Users.Delete)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> DeleteUser(string id, CancellationToken cancellationToken = default)
@@ -162,7 +153,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("stats")]
-    [HasPermission(Permissions.Users.View)]
+    [Authorize]
     [ProducesResponseType(typeof(AdminStatsResponse), StatusCodes.Status200OK)]
     public async Task<IResult> GetStats(CancellationToken cancellationToken = default)
     {
@@ -171,7 +162,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}/2fa/status")]
-    [HasPermission(Permissions.Users.View)]
+    [Authorize]
     [ProducesResponseType(typeof(TwoFactorStatusResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetUser2FAStatus(string id, CancellationToken cancellationToken = default)
@@ -183,7 +174,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/2fa/reset")]
-    [HasPermission(Permissions.Users.ManageSettings)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> Reset2FA(string id, CancellationToken cancellationToken = default)
@@ -195,7 +186,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id}/2fa/disable")]
-    [HasPermission(Permissions.Users.ManageSettings)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AuctionService.Contracts</RootNamespace>
+    <AssemblyName>AuctionService.Contracts</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.Abstractions" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Contracts\Common.Contracts\Common.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- GrpcServices="Both" generates AuctionGrpcBase (for Auction.Api server) and
+         AuctionGrpcClient (for Bidding.Infrastructure client) in a single assembly.
+         Downstream projects reference this package — no proto re-compilation needed. -->
+    <Protobuf Include="Grpc\auctions.proto" GrpcServices="Both" />
+    <Protobuf Include="Grpc\auction_validation.proto" GrpcServices="None" />
+    <Protobuf Include="Grpc\auction_stats.proto" GrpcServices="None" />
+    <Protobuf Include="Grpc\user_analytics.proto" GrpcServices="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Events\IVersionedEvent.cs" />
+  </ItemGroup>
+
+</Project>

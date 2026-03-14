@@ -1,10 +1,11 @@
 #nullable enable
-using Auctions.Application.Commands.CreateBrand;
-using Auctions.Application.Commands.DeleteBrand;
-using Auctions.Application.Commands.UpdateBrand;
+using Auctions.Api.Extensions;
+using Auctions.Application.Features.Brands.CreateBrand;
+using Auctions.Application.Features.Brands.DeleteBrand;
+using Auctions.Application.Features.Brands.UpdateBrand;
+using Auctions.Application.Features.Brands.GetBrandById;
+using Auctions.Application.Features.Brands.GetBrands;
 using Auctions.Application.DTOs;
-using Auctions.Application.Queries.GetBrandById;
-using Auctions.Application.Queries.GetBrands;
 using BuildingBlocks.Web.Authorization;
 using Carter;
 using MediatR;
@@ -52,18 +53,16 @@ public class BrandEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetBrands(
-        bool activeOnly,
-        bool featuredOnly,
-        int? count,
-        IMediator mediator,
-        CancellationToken ct)
+        bool activeOnly = true,
+        bool featuredOnly = false,
+        int? count = null,
+        IMediator mediator = null!,
+        CancellationToken ct = default)
     {
         var query = new GetBrandsQuery(activeOnly, featuredOnly, count);
         var result = await mediator.Send(query, ct);
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetBrandById(
@@ -74,14 +73,7 @@ public class BrandEndpoints : ICarterModule
         var query = new GetBrandByIdQuery(id);
         var result = await mediator.Send(query, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Brand.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateBrand(
@@ -98,9 +90,8 @@ public class BrandEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.CreatedAtRoute("GetBrandById", new { id = result.Value!.Id }, result.Value)
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(brand => 
+            Results.CreatedAtRoute("GetBrandById", new { id = brand.Id }, brand));
     }
 
     private static async Task<IResult> UpdateBrand(
@@ -120,14 +111,7 @@ public class BrandEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Brand.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> DeleteBrand(
@@ -138,14 +122,7 @@ public class BrandEndpoints : ICarterModule
         var command = new DeleteBrandCommand(id);
         var result = await mediator.Send(command, ct);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error?.Code == "Brand.NotFound"
-                ? Results.NotFound(ProblemDetailsHelper.FromError(result.Error))
-                : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return Results.NoContent();
+        return result.ToNoContentResult();
     }
 }
 

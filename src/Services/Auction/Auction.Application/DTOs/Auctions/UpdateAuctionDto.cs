@@ -14,6 +14,20 @@ namespace Auctions.Application.DTOs
         public int? YearManufactured { get; set; }
 
         public Dictionary<string, string>? Attributes { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? ReservePrice { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? BuyNowPrice { get; set; }
+
+        public Guid? CategoryId { get; set; }
+
+        public Guid? BrandId { get; set; }
+
+        public bool? IsFeatured { get; set; }
+
+        public DateTimeOffset? AuctionEnd { get; set; }
     }
 }
 

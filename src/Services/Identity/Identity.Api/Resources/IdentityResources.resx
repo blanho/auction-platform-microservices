@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="User.NotFound" xml:space="preserve"><value>User not found.</value></data>
+  <data name="User.AlreadyExists" xml:space="preserve"><value>A user with this email already exists.</value></data>
+  <data name="User.InvalidCredentials" xml:space="preserve"><value>Invalid email or password.</value></data>
+  <data name="User.AccountLocked" xml:space="preserve"><value>Your account has been locked. Please contact support.</value></data>
+  <data name="User.EmailNotConfirmed" xml:space="preserve"><value>Please confirm your email address before logging in.</value></data>
+  <data name="User.PasswordResetSent" xml:space="preserve"><value>Password reset instructions have been sent to your email.</value></data>
+  <data name="User.PasswordChanged" xml:space="preserve"><value>Your password has been changed successfully.</value></data>
+  <data name="User.ProfileUpdated" xml:space="preserve"><value>Your profile has been updated successfully.</value></data>
+  <data name="User.UpdateFailed" xml:space="preserve"><value>Failed to update user.</value></data>
+  <data name="User.DeleteFailed" xml:space="preserve"><value>Failed to delete user.</value></data>
+  <data name="User.SuspendFailed" xml:space="preserve"><value>Failed to suspend user.</value></data>
+  <data name="User.UnsuspendFailed" xml:space="preserve"><value>Failed to unsuspend user.</value></data>
+  <data name="User.ActivateFailed" xml:space="preserve"><value>Failed to activate user.</value></data>
+  <data name="User.DeactivateFailed" xml:space="preserve"><value>Failed to deactivate user.</value></data>
+  <data name="User.RoleUpdateFailed" xml:space="preserve"><value>Failed to update user roles.</value></data>
+  <data name="User.CannotDeleteSelf" xml:space="preserve"><value>Cannot delete your own account.</value></data>
+  <data name="User.AlreadySeller" xml:space="preserve"><value>You are already a seller.</value></data>
+  <data name="User.AdminHasSellerPrivileges" xml:space="preserve"><value>Admin accounts have seller privileges by default.</value></data>
+  <data name="User.SellerUpgradeFailed" xml:space="preserve"><value>Failed to upgrade to seller.</value></data>
+  <data name="User.InvalidToken" xml:space="preserve"><value>User ID not found in token.</value></data>
+  <data name="Auth.UsernameExists" xml:space="preserve"><value>Username already exists.</value></data>
+  <data name="Auth.EmailExists" xml:space="preserve"><value>Email already registered.</value></data>
+  <data name="Auth.InvalidCredentials" xml:space="preserve"><value>Invalid username or password.</value></data>
+  <data name="Auth.InvalidPassword" xml:space="preserve"><value>Invalid password.</value></data>
+  <data name="Auth.AccountLocked" xml:space="preserve"><value>Account is locked. Please try again later.</value></data>
+  <data name="Auth.AccountLockedOut" xml:space="preserve"><value>Account locked out. Please try again later.</value></data>
+  <data name="Auth.AccountSuspended" xml:space="preserve"><value>Account has been suspended.</value></data>
+  <data name="Auth.AccountInactive" xml:space="preserve"><value>Account is not active.</value></data>
+  <data name="Auth.EmailNotConfirmed" xml:space="preserve"><value>Email not confirmed. Please check your inbox.</value></data>
+  <data name="Auth.EmailAlreadyConfirmed" xml:space="preserve"><value>Email is already confirmed.</value></data>
+  <data name="Auth.InvalidConfirmationLink" xml:space="preserve"><value>Invalid confirmation link.</value></data>
+  <data name="Auth.ConfirmationFailed" xml:space="preserve"><value>Email confirmation failed. The link may have expired.</value></data>
+  <data name="Auth.InvalidResetRequest" xml:space="preserve"><value>Invalid reset request.</value></data>
+  <data name="Auth.ResetFailed" xml:space="preserve"><value>Password reset failed. The link may have expired.</value></data>
+  <data name="Auth.RegistrationFailed" xml:space="preserve"><value>Registration failed.</value></data>
+  <data name="Auth.InvalidRefreshToken" xml:space="preserve"><value>Invalid or expired refresh token.</value></data>
+  <data name="Auth.SecurityTermination" xml:space="preserve"><value>Session terminated due to security concerns.</value></data>
+  <data name="Auth.SendEmailFailed" xml:space="preserve"><value>Failed to send email. Please try again later.</value></data>
+  <data name="Auth.InvalidAuthCode" xml:space="preserve"><value>Invalid or expired authorization code.</value></data>
+  <data name="Auth.AuthCodeExchangeFailed" xml:space="preserve"><value>Failed to exchange authorization code.</value></data>
+  <data name="TwoFactor.NotEnabled" xml:space="preserve"><value>Two-factor authentication is not enabled.</value></data>
+  <data name="TwoFactor.AlreadyEnabled" xml:space="preserve"><value>Two-factor authentication is already enabled.</value></data>
+  <data name="TwoFactor.InvalidCode" xml:space="preserve"><value>Invalid verification code.</value></data>
+  <data name="TwoFactor.InvalidRecoveryCode" xml:space="preserve"><value>Invalid recovery code.</value></data>
+  <data name="TwoFactor.InvalidPassword" xml:space="preserve"><value>Invalid password.</value></data>
+  <data name="TwoFactor.DisableFailed" xml:space="preserve"><value>Failed to disable two-factor authentication.</value></data>
+  <data name="TwoFactor.SetupFailed" xml:space="preserve"><value>Failed to setup two-factor authentication.</value></data>
+  <data name="TwoFactor.AccountLocked" xml:space="preserve"><value>Account is locked due to too many failed attempts.</value></data>
+  <data name="Profile.UpdateFailed" xml:space="preserve"><value>Failed to update profile.</value></data>
+  <data name="Profile.AvatarUploadFailed" xml:space="preserve"><value>Failed to upload avatar.</value></data>
+  <data name="Profile.PasswordChangeFailed" xml:space="preserve"><value>Failed to change password.</value></data>
+  <data name="Profile.InvalidCurrentPassword" xml:space="preserve"><value>Current password is incorrect.</value></data>
+  <data name="External.ProviderError" xml:space="preserve"><value>Error from external provider.</value></data>
+  <data name="External.EmailNotProvided" xml:space="preserve"><value>Email not provided by external provider.</value></data>
+  <data name="External.LinkFailed" xml:space="preserve"><value>Failed to link external account.</value></data>
+  <data name="External.UnlinkFailed" xml:space="preserve"><value>Failed to unlink external account.</value></data>
+  <data name="External.CannotUnlinkLastLogin" xml:space="preserve"><value>Cannot unlink the only login method.</value></data>
+  <data name="External.ProcessFailed" xml:space="preserve"><value>Failed to process external login.</value></data>
+</root>

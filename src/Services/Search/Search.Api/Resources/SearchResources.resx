@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Search.Failed" xml:space="preserve"><value>Search failed: {0}</value></data>
+  <data name="Search.InvalidQuery" xml:space="preserve"><value>Invalid search query.</value></data>
+  <data name="Search.IndexNotReady" xml:space="preserve"><value>Search index is not ready.</value></data>
+  <data name="Auction.IndexFailed" xml:space="preserve"><value>Failed to index auction {0}.</value></data>
+  <data name="Auction.RemoveFailed" xml:space="preserve"><value>Failed to remove auction {0} from index.</value></data>
+  <data name="Index.CreateFailed" xml:space="preserve"><value>Failed to create index: {0}</value></data>
+  <data name="Index.RebuildFailed" xml:space="preserve"><value>Failed to rebuild index: {0}</value></data>
+  <data name="Index.HealthCheckFailed" xml:space="preserve"><value>Index health check failed: {0}</value></data>
+  <data name="Index.NotFound" xml:space="preserve"><value>Index '{0}' not found.</value></data>
+  <data name="Suggestion.Failed" xml:space="preserve"><value>Failed to get suggestions: {0}</value></data>
+  <data name="IndexError.IndexingFailed" xml:space="preserve"><value>Failed to index auction {0}: {1}</value></data>
+  <data name="IndexError.DocumentNotFound" xml:space="preserve"><value>Auction document {0} not found in index.</value></data>
+  <data name="IndexError.UpdateFailed" xml:space="preserve"><value>Failed to update auction {0}: {1}</value></data>
+  <data name="IndexError.DeleteFailed" xml:space="preserve"><value>Failed to delete auction {0}: {1}</value></data>
+  <data name="IndexError.BulkIndexFailed" xml:space="preserve"><value>Bulk index failed for {0} documents: {1}</value></data>
+  <data name="IndexError.ConnectionFailed" xml:space="preserve"><value>Failed to connect to search engine: {0}</value></data>
+  <data name="IndexError.IndexCreationFailed" xml:space="preserve"><value>Failed to create index {0}: {1}</value></data>
+</root>

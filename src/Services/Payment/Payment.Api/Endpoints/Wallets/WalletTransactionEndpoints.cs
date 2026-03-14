@@ -1,13 +1,14 @@
 using Carter;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Payment.Application.DTOs;
-using Payment.Application.Features.Wallets.Queries.GetTransactionById;
-using Payment.Application.Features.Wallets.Queries.GetWalletTransactions;
+using Payment.Application.Features.Wallets.GetTransactionById;
+using Payment.Application.Features.Wallets.GetWalletTransactions;
 
 namespace Payment.Api.Endpoints.Wallets;
 
@@ -28,7 +29,7 @@ public class WalletTransactionEndpoints : ICarterModule
             .WithSummary("Get a specific transaction by ID");
     }
 
-    private static async Task<Results<Ok<IEnumerable<WalletTransactionDto>>, BadRequest<ProblemDetails>>> GetTransactions(
+    private static async Task<IResult> GetTransactions(
         string username,
         int page,
         int pageSize,
@@ -46,29 +47,23 @@ public class WalletTransactionEndpoints : ICarterModule
             PageSize = effectivePageSize
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        return result.ToApiResult(paginatedResult =>
+        {
+            httpContext.Response.Headers.Append("X-Total-Count", paginatedResult.TotalCount.ToString());
+            httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
+            httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
 
-        httpContext.Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-        httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
-        httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
-
-        return TypedResults.Ok(result.Value.Transactions);
+            return Results.Ok(paginatedResult.Items);
+        });
     }
 
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound, BadRequest<ProblemDetails>>> GetTransaction(
+    private static async Task<IResult> GetTransaction(
         Guid id,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new GetTransactionByIdQuery { TransactionId = id }, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 }

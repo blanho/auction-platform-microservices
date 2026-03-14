@@ -1,58 +1,52 @@
-using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
+using BuildingBlocks.Web.Middleware;
+using BuildingBlocks.Web.Observability;
 using Carter;
-using Search.Api.Extensions;
+using Search.Api.Extensions.DependencyInjection;
+using Search.Api.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.ValidateStandardConfiguration(
+    builder.Configuration,
+    "SearchService",
+    requiresDatabase: false,
+    requiresRedis: true,
+    requiresRabbitMQ: true,
+    requiresIdentity: false);
 
-builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
-
+builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCarter();
-
 builder.Services.AddSearchServices(builder.Configuration);
-
 builder.Services.AddSearchMessaging(builder.Configuration);
-
-builder.Services.AddAuthentication();
+builder.Services.AddCommonUtilities();
+builder.Services.AddAppLocalization<SearchResources>();
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddAuthorization();
-
-builder.Services.AddHealthChecks();
-
+builder.Services.AddCustomHealthChecks(
+    redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
+    elasticsearchUri: builder.Configuration["Elasticsearch:Uri"],
+    serviceName: "SearchService");
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "Search Service API",
-        Version = "v1",
-        Description = "Auction Platform Search Service - Elasticsearch-backed search for auctions"
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1");
-    });
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1"));
 }
 
-app.UseExceptionHandler();
+app.UseCorrelationId();
+app.UseRequestTracing();
+app.UseAppExceptionHandling();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseAccessAuthorization();
-
-app.MapHealthChecks("/health");
-
+app.MapCustomHealthChecks();
 app.MapCarter();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.BuyNow;
+namespace Auctions.Application.Features.Auctions.BuyNow;
 
 public record BuyNowCommand(
     Guid AuctionId,

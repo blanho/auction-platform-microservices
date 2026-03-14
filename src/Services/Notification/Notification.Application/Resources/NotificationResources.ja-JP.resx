@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Notification.NotFound" xml:space="preserve"><value>通知が見つかりません。</value></data>
+  <data name="Notification.Unauthorized" xml:space="preserve"><value>この通知にアクセスする権限がありません。</value></data>
+  <data name="Notification.SendFailed" xml:space="preserve"><value>通知の送信に失敗しました: {0}</value></data>
+  <data name="Notification.MarkReadFailed" xml:space="preserve"><value>通知の既読処理に失敗しました: {0}</value></data>
+  <data name="Notification.JoinForbidden" xml:space="preserve"><value>他のユーザーの通知グループに参加することはできません。</value></data>
+  <data name="Notification.LeaveForbidden" xml:space="preserve"><value>他のユーザーの通知グループから退出することはできません。</value></data>
+  <data name="Template.NotFound" xml:space="preserve"><value>通知テンプレートが見つかりません。</value></data>
+  <data name="Template.KeyExists" xml:space="preserve"><value>キー '{0}' のテンプレートはすでに存在します。</value></data>
+  <data name="Template.CreateFailed" xml:space="preserve"><value>テンプレートの作成に失敗しました: {0}</value></data>
+  <data name="Template.UpdateFailed" xml:space="preserve"><value>テンプレートの更新に失敗しました: {0}</value></data>
+  <data name="Template.DeleteFailed" xml:space="preserve"><value>テンプレートの削除に失敗しました: {0}</value></data>
+  <data name="Preference.NotFound" xml:space="preserve"><value>通知設定が見つかりません。</value></data>
+  <data name="Preference.UpdateFailed" xml:space="preserve"><value>設定の更新に失敗しました: {0}</value></data>
+  <data name="Email.SendFailed" xml:space="preserve"><value>メールの送信に失敗しました: {0}</value></data>
+  <data name="Email.InvalidRecipient" xml:space="preserve"><value>無効なメール受信者です。</value></data>
+</root>

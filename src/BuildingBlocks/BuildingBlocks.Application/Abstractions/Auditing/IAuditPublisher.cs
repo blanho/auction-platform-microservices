@@ -24,6 +24,10 @@ public interface IAuditPublisher
         AuditAction action,
         Dictionary<string, object>? metadata = null,
         CancellationToken cancellationToken = default) where T : class;
+
+    Task PublishEntriesAsync(
+        IEnumerable<AuditEntry> entries,
+        CancellationToken cancellationToken = default);
 }
 
 public interface IAuditContext
@@ -33,3 +37,4 @@ public interface IAuditContext
     string? CorrelationId { get; }
     string? IpAddress { get; }
 }
+

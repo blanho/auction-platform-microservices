@@ -1,0 +1,23 @@
+{
+  "jobs": {
+    "title": "Background Jobs",
+    "subtitle": "Monitor and manage background processing tasks",
+    "refresh": "Refresh",
+    "processing": "Processing",
+    "queued": "Queued",
+    "completed": "Completed",
+    "errors": "Errors",
+    "total": "Total",
+    "noJobs": "No jobs found",
+    "noJobsHint": "Background jobs will appear here when processing tasks are created",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "viewDetails": "View Details",
+    "backToJobs": "Back to Jobs",
+    "details": "Details",
+    "progress": "Progress",
+    "items": "Items",
+    "duration": "Duration",
+    "noItems": "No items found"
+  }
+}

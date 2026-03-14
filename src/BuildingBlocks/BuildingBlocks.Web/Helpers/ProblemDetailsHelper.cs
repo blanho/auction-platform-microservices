@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Localization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,18 @@ public static class ProblemDetailsHelper
 
     public static ProblemDetails FromError(Error error, string? errorTypeBaseUrl = null)
     {
+        return FromError(error, localizer: null, errorTypeBaseUrl);
+    }
+
+    public static ProblemDetails FromError(Error error, ILocalizationService? localizer, string? errorTypeBaseUrl = null)
+    {
         var baseUrl = errorTypeBaseUrl ?? DefaultErrorTypeBaseUrl;
+        var detail = ResolveLocalizedMessage(error, localizer);
+
         var problemDetails = new ProblemDetails
         {
             Title = error.Code,
-            Detail = error.Message,
+            Detail = detail,
             Status = GetStatusCode(error),
             Type = $"{baseUrl}/{error.Code.ToLowerInvariant().Replace('.', '-')}"
         };
@@ -25,6 +33,23 @@ public static class ProblemDetailsHelper
         }
 
         return problemDetails;
+    }
+
+    private static string ResolveLocalizedMessage(Error error, ILocalizationService? localizer)
+    {
+        if (localizer == null)
+            return error.Message;
+
+        if (error is LocalizableError localizableError && localizableError.Parameters.Length > 0)
+        {
+            var template = localizer.GetLocalizedString(error.Code);
+            return template.ResourceNotFound
+                ? error.Message
+                : string.Format(template.Value, localizableError.Parameters);
+        }
+
+        var localized = localizer.GetLocalizedString(error.Code);
+        return localized.ResourceNotFound ? error.Message : localized.Value;
     }
 
     public static ProblemDetails Create(

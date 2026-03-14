@@ -1,9 +1,15 @@
+using Bidding.Application.DTOs;
 using Bidding.Application.Features.AutoBids.CancelAutoBid;
 using Bidding.Application.Features.AutoBids.CreateAutoBid;
 using Bidding.Application.Features.AutoBids.GetAutoBid;
+using Bidding.Application.Features.AutoBids.GetAutoBidForAuction;
 using Bidding.Application.Features.AutoBids.GetMyAutoBids;
+using Bidding.Application.Features.AutoBids.ToggleAutoBid;
 using Bidding.Application.Features.AutoBids.UpdateAutoBid;
+using Bidding.Domain.Constants;
+using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using Carter;
 using MediatR;
@@ -31,16 +37,29 @@ public class AutoBidEndpoints : ICarterModule
             .Produces<AutoBidDetailDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/auction/{auctionId:guid}", GetAutoBidForAuction)
+            .WithName("GetAutoBidForAuction")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
+            .Produces<AutoBidDetailDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent);
+
         group.MapGet("/my", GetMyAutoBids)
             .WithName("GetMyAutoBids")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.View))
-            .Produces<MyAutoBidsResult>(StatusCodes.Status200OK);
+            .Produces<PaginatedResult<MyAutoBidDto>>(StatusCodes.Status200OK);
 
         group.MapPut("/{autoBidId:guid}", UpdateAutoBid)
             .WithName("UpdateAutoBid")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.Place))
             .Produces<UpdateAutoBidResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/{autoBidId:guid}/toggle", ToggleAutoBid)
+            .WithName("ToggleAutoBid")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.Place))
+            .Produces<ToggleAutoBidResult>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/{autoBidId:guid}/cancel", CancelAutoBid)
             .WithName("CancelAutoBid")
@@ -50,7 +69,7 @@ public class AutoBidEndpoints : ICarterModule
     }
 
     private static async Task<IResult> CreateAutoBid(
-        CreateAutoBidRequest request,
+        CreateAutoBidDto request,
         HttpContext context,
         IMediator mediator,
         CancellationToken ct)
@@ -67,9 +86,8 @@ public class AutoBidEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.IsSuccess
-            ? Results.Created($"/api/v1/autobids/{result.Value.AutoBidId}", result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        return result.ToApiResult(value =>
+            Results.Created($"/api/v1/autobids/{value.AutoBidId}", value));
     }
 
     private static async Task<IResult> GetAutoBid(
@@ -79,48 +97,48 @@ public class AutoBidEndpoints : ICarterModule
     {
         var query = new GetAutoBidQuery(autoBidId);
         var result = await mediator.Send(query, ct);
+        return result.ToOkResult();
+    }
 
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.NotFound();
+    private static async Task<IResult> GetAutoBidForAuction(
+        Guid auctionId,
+        HttpContext context,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(context.User);
+        var query = new GetAutoBidForAuctionQuery(auctionId, userId);
+        var result = await mediator.Send(query, ct);
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> GetMyAutoBids(
         HttpContext context,
         IMediator mediator,
         [FromQuery] bool? activeOnly,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int page = BidDefaults.DefaultPage,
+        [FromQuery] int pageSize = BidDefaults.DefaultPageSize,
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        var query = new GetMyAutoBidsQuery(userId, activeOnly, page, pageSize);
+        page = page < 1 ? BidDefaults.DefaultPage : page;
+        pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
+        var query = new GetMyAutoBidsQuery(userId, IsActive: activeOnly, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
-
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> UpdateAutoBid(
         Guid autoBidId,
-        UpdateAutoBidRequest request,
+        UpdateAutoBidDto request,
         HttpContext context,
         IMediator mediator,
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-
-        var command = new UpdateAutoBidCommand(
-            autoBidId,
-            userId,
-            request.MaxAmount);
-
+        var command = new UpdateAutoBidCommand(autoBidId, userId, request.MaxAmount);
         var result = await mediator.Send(command, ct);
-
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        return result.ToOkResult();
     }
 
     private static async Task<IResult> CancelAutoBid(
@@ -132,22 +150,19 @@ public class AutoBidEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(context.User);
         var command = new CancelAutoBidCommand(autoBidId, userId);
         var result = await mediator.Send(command, ct);
-
-        return result.IsSuccess
-            ? Results.Ok(result.Value)
-            : Results.BadRequest(new { error = result.Error.Message });
+        return result.ToOkResult();
     }
-}
 
-public record CreateAutoBidRequest
-{
-    public Guid AuctionId { get; init; }
-    public decimal MaxAmount { get; init; }
-    public decimal? BidIncrement { get; init; }
-}
-
-public record UpdateAutoBidRequest
-{
-    public decimal MaxAmount { get; init; }
-    public decimal? BidIncrement { get; init; }
+    private static async Task<IResult> ToggleAutoBid(
+        Guid autoBidId,
+        [FromBody] ToggleAutoBidDto request,
+        HttpContext context,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(context.User);
+        var command = new ToggleAutoBidCommand(autoBidId, userId, request.Activate);
+        var result = await mediator.Send(command, ct);
+        return result.ToOkResult();
+    }
 }

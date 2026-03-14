@@ -25,11 +25,11 @@ public class AuctionDeletedConsumer : IConsumer<AuctionDeletedEvent>
 
         _logger.LogInformation("Processing AuctionDeletedEvent for auction {AuctionId}", message.Id);
 
-        var success = await _indexService.DeleteAsync(message.Id, context.CancellationToken);
+        var result = await _indexService.DeleteAsync(message.Id, context.CancellationToken);
 
-        if (!success)
+        if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to delete auction {AuctionId} - document may not exist", message.Id);
+            _logger.LogWarning("Failed to delete auction {AuctionId}: {Error}", message.Id, result.Error);
         }
         else
         {

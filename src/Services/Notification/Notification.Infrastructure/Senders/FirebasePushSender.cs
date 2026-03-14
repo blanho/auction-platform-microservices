@@ -1,7 +1,9 @@
 using FirebaseAdmin.Messaging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Infrastructure.Configuration;
 
 namespace Notification.Infrastructure.Senders;
 
@@ -113,11 +115,6 @@ public class FirebasePushSender : IPushSender
                 ex.MessagingErrorCode,
                 userId);
 
-            var isPermanent = ex.MessagingErrorCode is
-                MessagingErrorCode.InvalidArgument or
-                MessagingErrorCode.Unregistered or
-                MessagingErrorCode.SenderIdMismatch;
-
             return new PushSendResult(false, Error: $"{ex.MessagingErrorCode}: {ex.Message}");
         }
         catch (Exception ex)
@@ -171,7 +168,7 @@ public class FirebasePushSender : IPushSender
                     {
                         _logger.LogWarning(
                             "Device token unregistered, should be removed: {Token}",
-                            MaskToken(tokens[i]));
+                            SecurityHelper.MaskToken(tokens[i]));
                     }
                 }
             }
@@ -189,28 +186,4 @@ public class FirebasePushSender : IPushSender
             return new PushSendResult(false, Error: ex.Message);
         }
     }
-
-    private static string MaskToken(string token)
-    {
-        if (string.IsNullOrEmpty(token) || token.Length < 10)
-            return "***";
-        return token[..5] + "..." + token[^5..];
-    }
-}
-
-public class FirebaseOptions
-{
-    public const string SectionName = "Firebase";
-
-    public string ServiceAccountPath { get; set; } = string.Empty;
-
-    public string? ServiceAccountJson { get; set; }
-
-    public string ProjectId { get; set; } = string.Empty;
-
-    public string DefaultAndroidChannel { get; set; } = "default_channel";
-
-    public string? WebPushIcon { get; set; }
-
-    public int TimeToLiveHours { get; set; } = 24;
 }

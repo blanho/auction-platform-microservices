@@ -11,6 +11,9 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Version)
+            .IsRowVersion();
+
         builder.Property(x => x.ReservePrice)
             .IsRequired()
             .HasPrecision(18, 2);
@@ -69,6 +72,7 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
         builder.HasIndex(x => x.SellerId);
         builder.HasIndex(x => x.SellerUsername);
         builder.HasIndex(x => x.WinnerId);
+        builder.HasIndex(x => x.WinnerUsername);
         builder.HasIndex(x => x.IsFeatured);
         builder.HasIndex(x => new { x.Status, x.AuctionEnd });
         builder.HasIndex(x => new { x.Status, x.IsFeatured });

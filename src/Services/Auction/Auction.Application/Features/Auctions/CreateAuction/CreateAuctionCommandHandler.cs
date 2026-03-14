@@ -1,46 +1,40 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.DTOs.Audit;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Auctions.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.CreateAuction;
+namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand, AuctionDto>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<CreateAuctionCommandHandler> _logger;
+    private readonly ILogger<CreateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
-    private readonly IFileConfirmationService _fileConfirmationService;
     private readonly ISanitizationService _sanitizationService;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateAuctionCommandHandler(
-        IAuctionRepository repository,
+        IAuctionWriteRepository repository,
         IMapper mapper,
-        IAppLogger<CreateAuctionCommandHandler> logger,
+        ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
-        IFileConfirmationService fileConfirmationService,
-        ISanitizationService sanitizationService)
+        ISanitizationService sanitizationService,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
-        _fileConfirmationService = fileConfirmationService;
         _sanitizationService = sanitizationService;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<AuctionDto>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
@@ -48,35 +42,16 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.SellerUsername, _dateTime.UtcNow);
 
         var auction = CreateAuctionEntity(request);
-        
-        auction.RaiseCreatedEvent();
 
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
-        if (request.Files != null && request.Files.Count > 0)
-        {
-            var fileIds = request.Files.Select(f => f.FileId).ToList();
-            
-            _logger.LogInformation("Confirming {FileCount} files for auction {AuctionId}", 
-                fileIds.Count, createdAuction.Id);
-
-            await _fileConfirmationService.ConfirmFilesAsync(
-                fileIds, 
-                "Auction", 
-                createdAuction.Id.ToString(), 
-                cancellationToken);
-
-            _logger.LogInformation("Confirmed {FileCount} files for auction {AuctionId}", 
-                fileIds.Count, createdAuction.Id);
-        }
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditPublisher.PublishAsync(
             createdAuction.Id,
-            createdAuction,
+            AuctionAuditData.FromAuction(createdAuction),
             AuditAction.Created,
             cancellationToken: cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.SellerUsername);
 
@@ -86,38 +61,41 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
 
     private Auction CreateAuctionEntity(CreateAuctionCommand request)
     {
-        var item = new Item
-        {
-            Title = _sanitizationService.SanitizeText(request.Title),
-            Description = _sanitizationService.SanitizeHtml(request.Description),
-            Condition = request.Condition,
-            YearManufactured = request.YearManufactured,
-            Attributes = request.Attributes ?? new Dictionary<string, string>(),
-            CategoryId = request.CategoryId,
-            Files = new List<ItemFileInfo>()
-        };
+        var item = Item.Create(
+            title: _sanitizationService.SanitizeText(request.Title),
+            description: _sanitizationService.SanitizeHtml(request.Description),
+            condition: request.Condition,
+            yearManufactured: request.YearManufactured,
+            categoryId: request.CategoryId,
+            brandId: request.BrandId);
 
-        var auction = Auction.Create(
-            sellerId: request.SellerId,
-            sellerUsername: request.SellerUsername,
-            item: item,
-            reservePrice: request.ReservePrice,
-            auctionEnd: request.AuctionEnd,
-            currency: request.Currency,
-            buyNowPrice: request.BuyNowPrice,
-            isFeatured: request.IsFeatured);
+        if (request.Attributes != null)
+        {
+            foreach (var attr in request.Attributes)
+            {
+                item.SetAttribute(attr.Key, attr.Value);
+            }
+        }
+
+        var auction = Auction.Create(new CreateAuctionParams(
+            SellerId: request.SellerId,
+            SellerUsername: request.SellerUsername,
+            Item: item,
+            ReservePrice: request.ReservePrice,
+            AuctionEnd: request.AuctionEnd,
+            Currency: request.Currency,
+            BuyNowPrice: request.BuyNowPrice,
+            IsFeatured: request.IsFeatured));
 
         if (request.Files != null && request.Files.Count > 0)
         {
             foreach (var file in request.Files)
             {
-                auction.Item.Files.Add(new ItemFileInfo
-                {
-                    FileId = file.FileId,
-                    FileType = file.FileType,
-                    DisplayOrder = file.DisplayOrder,
-                    IsPrimary = file.IsPrimary
-                });
+                auction.Item.AddFile(MediaFile.Create(
+                    file.FileId,
+                    file.FileType,
+                    file.DisplayOrder,
+                    file.IsPrimary));
             }
         }
 

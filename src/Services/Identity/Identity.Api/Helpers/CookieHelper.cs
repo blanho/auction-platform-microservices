@@ -2,6 +2,9 @@ namespace Identity.Api.Helpers;
 
 public static class CookieHelper
 {
+    private const string RefreshTokenCookieName = "refreshToken";
+    private const string CsrfTokenCookieName = "XSRF-TOKEN";
+
     public static void SetRefreshTokenCookie(
         HttpResponse response,
         string refreshToken,
@@ -15,10 +18,28 @@ public static class CookieHelper
             Secure = isProduction,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(expirationDays),
-            Path = path
+            Path = path,
+            IsEssential = true
         };
 
-        response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+        response.Cookies.Append(RefreshTokenCookieName, refreshToken, cookieOptions);
+    }
+
+    public static void SetCsrfTokenCookie(
+        HttpResponse response,
+        string csrfToken,
+        bool isProduction)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
+            Path = "/",
+            IsEssential = true
+        };
+
+        response.Cookies.Append(CsrfTokenCookieName, csrfToken, cookieOptions);
     }
 
     public static void ClearRefreshTokenCookie(
@@ -32,14 +53,35 @@ public static class CookieHelper
             Secure = isProduction,
             SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(-1),
-            Path = path
+            Path = path,
+            IsEssential = true
         };
 
-        response.Cookies.Append("refreshToken", string.Empty, cookieOptions);
+        response.Cookies.Append(RefreshTokenCookieName, string.Empty, cookieOptions);
+    }
+
+    public static void ClearCsrfTokenCookie(HttpResponse response, bool isProduction)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.Strict : SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1),
+            Path = "/",
+            IsEssential = true
+        };
+
+        response.Cookies.Append(CsrfTokenCookieName, string.Empty, cookieOptions);
     }
 
     public static string? GetRefreshTokenFromCookie(HttpRequest request)
     {
-        return request.Cookies["refreshToken"];
+        return request.Cookies[RefreshTokenCookieName];
+    }
+
+    public static string? GetCsrfTokenFromHeader(HttpRequest request)
+    {
+        return request.Headers["X-XSRF-TOKEN"].FirstOrDefault();
     }
 }

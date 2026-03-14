@@ -1,61 +1,50 @@
 using Auctions.Application.DTOs;
-using AutoMapper;
+using Auctions.Application.Services;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
-namespace Auctions.Application.Queries.GetAuctions;
+using Microsoft.Extensions.Logging;
+
+namespace Auctions.Application.Features.Auctions.GetAuctions;
 
 public class GetAuctionsQueryHandler : IQueryHandler<GetAuctionsQuery, PaginatedResult<AuctionDto>>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IMapper _mapper;
-    private readonly IAppLogger<GetAuctionsQueryHandler> _logger;
+    private readonly IPaginatedAuctionQueryService _queryService;
+    private readonly ILogger<GetAuctionsQueryHandler> _logger;
 
     public GetAuctionsQueryHandler(
-        IAuctionRepository repository,
-        IMapper mapper,
-        IAppLogger<GetAuctionsQueryHandler> logger)
+        IPaginatedAuctionQueryService queryService,
+        ILogger<GetAuctionsQueryHandler> logger)
     {
-        _repository = repository;
-        _mapper = mapper;
+        _queryService = queryService;
         _logger = logger;
     }
 
     public async Task<Result<PaginatedResult<AuctionDto>>> Handle(GetAuctionsQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching auctions with filters - Status: {Status}, Seller: {Seller}, Page: {Page}",
-            request.Status ?? "All", request.Seller ?? "All", request.PageNumber);
+        _logger.LogDebug("Fetching auctions with filters - Status: {Status}, Page: {Page}, PageSize: {PageSize}",
+            request.Status ?? "All", request.Page, request.PageSize);
 
-        try
+        var queryParams = new AuctionFilterDto
         {
-            var (items, totalCount) = await _repository.GetPagedAsync(
-                status: request.Status,
-                seller: request.Seller,
-                winner: request.Winner,
-                searchTerm: request.SearchTerm,
-                category: request.Category,
-                isFeatured: request.IsFeatured,
-                orderBy: request.OrderBy,
-                descending: request.Descending,
-                pageNumber: request.PageNumber,
-                pageSize: request.PageSize,
-                cancellationToken: cancellationToken);
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.OrderBy,
+            SortDescending = request.Descending,
+            Filter = new AuctionFilter
+            {
+                Status = request.Status,
+                Seller = request.Seller,
+                Winner = request.Winner,
+                SearchTerm = request.SearchTerm,
+                Category = request.Category,
+                IsFeatured = request.IsFeatured
+            }
+        };
 
-            var dtos = _mapper.Map<List<AuctionDto>>(items);
+        var paginatedResult = await _queryService.GetPagedAuctionsAsync(queryParams, cancellationToken);
 
-            var result = new PaginatedResult<AuctionDto>(dtos, totalCount, request.PageNumber, request.PageSize);
+        _logger.LogDebug("Retrieved {Count} auctions out of {Total}", paginatedResult.Items.Count, paginatedResult.TotalCount);
 
-            _logger.LogInformation("Retrieved {Count} auctions out of {Total}", dtos.Count, totalCount);
-
-            return Result.Success(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to fetch auctions: {Error}", ex.Message);
-            return Result.Failure<PaginatedResult<AuctionDto>>(Error.Create("Auction.FetchFailed", $"Failed to fetch auctions: {ex.Message}"));
-        }
+        return Result.Success(paginatedResult);
     }
 }
 

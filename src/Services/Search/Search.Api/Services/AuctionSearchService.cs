@@ -1,8 +1,10 @@
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using Microsoft.Extensions.Options;
 using Search.Api.Configuration;
+using Search.Api.Constants;
 using Search.Api.Documents;
 using Search.Api.Interfaces;
 using Search.Api.Models;
@@ -43,16 +45,21 @@ public class AuctionSearchService : IAuctionSearchService
                     .PreTags(new[] { "<em>" })
                     .PostTags(new[] { "</em>" })
                     .Fields(f => f
-                        .Add("title", hf => { })
-                        .Add("description", hf => { })))
+                        .Add(ElasticsearchFields.Title, hf => { })
+                        .Add(ElasticsearchFields.Description, hf => { })))
                 .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
                 .TrackTotalHits(new TrackHits(true))
                 .Aggregations(agg => agg
-                    .Add("categories", a => a.Terms(t => t.Field("categoryName").Size(50)))
-                    .Add("brands", a => a.Terms(t => t.Field("brandName").Size(50)))
-                    .Add("conditions", a => a.Terms(t => t.Field("condition").Size(10)))
-                    .Add("statuses", a => a.Terms(t => t.Field("status").Size(10)))
-                    .Add("price_stats", a => a.Stats(s => s.Field("currentPrice")))),
+                    .Add(AggregationNames.Categories, a => a
+                        .Terms(t => t.Field(ElasticsearchFields.CategoryName).Size(SearchDefaults.MaxCategoryAggregations)))
+                    .Add(AggregationNames.Brands, a => a
+                        .Terms(t => t.Field(ElasticsearchFields.BrandName).Size(SearchDefaults.MaxBrandAggregations)))
+                    .Add(AggregationNames.Conditions, a => a
+                        .Terms(t => t.Field(ElasticsearchFields.Condition).Size(SearchDefaults.MaxConditionAggregations)))
+                    .Add(AggregationNames.Statuses, a => a
+                        .Terms(t => t.Field(ElasticsearchFields.Status).Size(SearchDefaults.MaxStatusAggregations)))
+                    .Add(AggregationNames.PriceStats, a => a
+                        .Stats(s => s.Field(ElasticsearchFields.CurrentPrice)))),
             ct);
 
             if (!response.IsValidResponse)
@@ -61,10 +68,7 @@ public class AuctionSearchService : IAuctionSearchService
                 return AuctionSearchResponse.Empty(request.Page, pageSize);
             }
 
-            var results = response.Documents
-                .Zip(response.Hits, (doc, hit) => MapToResult(doc, hit))
-                .ToList();
-
+            var results = response.Documents.ToResultList(response.Hits);
             var totalHits = response.Total;
 
             return new AuctionSearchResponse
@@ -74,7 +78,7 @@ public class AuctionSearchService : IAuctionSearchService
                 Page = request.Page,
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling((double)totalHits / pageSize),
-                Facets = MapFacets(response.Aggregations),
+                Facets = response.Aggregations.ToFacets(),
                 Took = response.Took
             };
         }
@@ -102,7 +106,7 @@ public class AuctionSearchService : IAuctionSearchService
                 return null;
             }
 
-            return MapToResult(response.Source, null);
+            return response.Source.ToResult();
         }
         catch (Exception ex)
         {
@@ -113,9 +117,12 @@ public class AuctionSearchService : IAuctionSearchService
 
     public async Task<IReadOnlyList<AutocompleteSuggestion>> AutocompleteAsync(
         string prefix,
-        int maxSuggestions = 10,
+        int maxSuggestions = SearchDefaults.DefaultAutocompleteLimit,
         CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(prefix) || prefix.Length < SearchDefaults.MinAutocompleteLength)
+            return Array.Empty<AutocompleteSuggestion>();
+
         var indexName = IndexManagementService.GetIndexName();
 
         try
@@ -125,100 +132,45 @@ public class AuctionSearchService : IAuctionSearchService
                 .Size(maxSuggestions)
                 .Source(new SourceConfig(new SourceFilter
                 {
-                    Includes = new[] { "id", "title", "categoryName", "thumbnailUrl" }
+                    Includes = new[] 
+                    { 
+                        ElasticsearchFields.Id, 
+                        ElasticsearchFields.Title, 
+                        ElasticsearchFields.CategoryName, 
+                        ElasticsearchFields.ThumbnailUrl 
+                    }
                 }))
                 .Query(q => q.Match(m => m
-                    .Field("title.autocomplete")
+                    .Field(ElasticsearchFields.TitleAutocomplete)
                     .Query(prefix))),
             ct);
 
             if (!response.IsValidResponse)
-            {
                 return Array.Empty<AutocompleteSuggestion>();
-            }
 
-            return response.Documents.Select(d => new AutocompleteSuggestion
-            {
-                Id = d.Id,
-                Title = d.Title,
-                Category = d.CategoryName,
-                ThumbnailUrl = d.ThumbnailUrl
-            }).ToList();
+            return MapToAutocompleteSuggestions(response.Documents);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Autocomplete error");
+            _logger.LogError(ex, "Autocomplete error for prefix: {Prefix}", prefix);
             return Array.Empty<AutocompleteSuggestion>();
         }
     }
 
+    private static List<AutocompleteSuggestion> MapToAutocompleteSuggestions(
+        IEnumerable<AuctionDocument> documents) =>
+        documents.Select(d => new AutocompleteSuggestion
+        {
+            Id = d.Id,
+            Title = d.Title,
+            Category = d.CategoryName,
+            ThumbnailUrl = d.ThumbnailUrl
+        }).ToList();
+
     private static Query BuildQuery(AuctionSearchRequest request)
     {
-        var mustQueries = new List<Query>();
-        var filterQueries = new List<Query>();
-
-        if (!string.IsNullOrWhiteSpace(request.Query))
-        {
-            mustQueries.Add(Query.MultiMatch(new MultiMatchQuery
-            {
-                Query = request.Query,
-                Fields = new[] { "title^3", "description", "categoryName^2", "brandName^2", "tags" },
-                Type = TextQueryType.BestFields,
-                Fuzziness = new Fuzziness("AUTO")
-            }));
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Category))
-        {
-            filterQueries.Add(Query.Term(new TermQuery("categoryName")
-            {
-                Value = request.Category
-            }));
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Brand))
-        {
-            filterQueries.Add(Query.Term(new TermQuery("brandName")
-            {
-                Value = request.Brand
-            }));
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Status))
-        {
-            filterQueries.Add(Query.Term(new TermQuery("status")
-            {
-                Value = request.Status
-            }));
-        }
-
-        if (request.MinPrice.HasValue || request.MaxPrice.HasValue)
-        {
-            var rangeQuery = new NumberRangeQuery("currentPrice");
-            if (request.MinPrice.HasValue)
-                rangeQuery.Gte = (double)request.MinPrice.Value;
-            if (request.MaxPrice.HasValue)
-                rangeQuery.Lte = (double)request.MaxPrice.Value;
-            filterQueries.Add(Query.Range(rangeQuery));
-        }
-
-        if (request.EndingBefore.HasValue || request.EndingAfter.HasValue)
-        {
-            var rangeQuery = new DateRangeQuery("endTime");
-            if (request.EndingAfter.HasValue)
-                rangeQuery.Gte = request.EndingAfter.Value.ToString("o");
-            if (request.EndingBefore.HasValue)
-                rangeQuery.Lte = request.EndingBefore.Value.ToString("o");
-            filterQueries.Add(Query.Range(rangeQuery));
-        }
-
-        if (request.FeaturedOnly)
-        {
-            filterQueries.Add(Query.Term(new TermQuery("isFeatured")
-            {
-                Value = true
-            }));
-        }
+        var mustQueries = BuildMustQueries(request);
+        var filterQueries = BuildFilterQueries(request);
 
         return Query.Bool(new BoolQuery
         {
@@ -227,122 +179,164 @@ public class AuctionSearchService : IAuctionSearchService
         });
     }
 
+    private static List<Query> BuildMustQueries(AuctionSearchRequest request)
+    {
+        var queries = new List<Query>();
+
+        if (HasSearchQuery(request))
+        {
+            queries.Add(BuildMultiMatchQuery(request.Query!));
+        }
+
+        return queries;
+    }
+
+    private static List<Query> BuildFilterQueries(AuctionSearchRequest request)
+    {
+        var filters = new List<Query>();
+
+        AddCategoryFilter(filters, request.Category);
+        AddBrandFilter(filters, request.Brand);
+        AddStatusFilter(filters, request.Status);
+        AddPriceRangeFilter(filters, request.MinPrice, request.MaxPrice);
+        AddEndTimeFilter(filters, request.EndingAfter, request.EndingBefore);
+        AddFeaturedFilter(filters, request.FeaturedOnly);
+
+        return filters;
+    }
+
+    private static bool HasSearchQuery(AuctionSearchRequest request) =>
+        !string.IsNullOrWhiteSpace(request.Query);
+
+    private static Query BuildMultiMatchQuery(string searchQuery) =>
+        Query.MultiMatch(new MultiMatchQuery
+        {
+            Query = searchQuery,
+            Fields = new[] { "title^3", "description", "categoryName^2", "brandName^2", "tags" },
+            Type = TextQueryType.BestFields,
+            Fuzziness = new Fuzziness("AUTO")
+        });
+
+    private static void AddCategoryFilter(List<Query> filters, string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return;
+
+        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.CategoryName)
+        {
+            Value = category
+        }));
+    }
+
+    private static void AddBrandFilter(List<Query> filters, string? brand)
+    {
+        if (string.IsNullOrWhiteSpace(brand))
+            return;
+
+        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.BrandName)
+        {
+            Value = brand
+        }));
+    }
+
+    private static void AddStatusFilter(List<Query> filters, string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return;
+
+        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.Status)
+        {
+            Value = status
+        }));
+    }
+
+    private static void AddPriceRangeFilter(List<Query> filters, decimal? minPrice, decimal? maxPrice)
+    {
+        if (!minPrice.HasValue && !maxPrice.HasValue)
+            return;
+
+        var rangeQuery = new NumberRangeQuery(ElasticsearchFields.CurrentPrice);
+
+        if (minPrice.HasValue)
+            rangeQuery.Gte = (double)minPrice.Value;
+
+        if (maxPrice.HasValue)
+            rangeQuery.Lte = (double)maxPrice.Value;
+
+        filters.Add(Query.Range(rangeQuery));
+    }
+
+    private static void AddEndTimeFilter(
+        List<Query> filters, 
+        DateTimeOffset? endingAfter, 
+        DateTimeOffset? endingBefore)
+    {
+        if (!endingAfter.HasValue && !endingBefore.HasValue)
+            return;
+
+        var rangeQuery = new DateRangeQuery(ElasticsearchFields.EndTime);
+
+        if (endingAfter.HasValue)
+            rangeQuery.Gte = endingAfter.Value.ToString("o");
+
+        if (endingBefore.HasValue)
+            rangeQuery.Lte = endingBefore.Value.ToString("o");
+
+        filters.Add(Query.Range(rangeQuery));
+    }
+
+    private static void AddFeaturedFilter(List<Query> filters, bool featuredOnly)
+    {
+        if (!featuredOnly)
+            return;
+
+        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.IsFeatured)
+        {
+            Value = true
+        }));
+    }
+
     private static ICollection<SortOptions> BuildSortOptions(string? sortBy, string? sortDirection)
     {
-        var direction = sortDirection?.ToLowerInvariant() == "asc"
-            ? SortOrder.Asc
+        var direction = ParseSortDirection(sortDirection);
+        var sortField = MapSortFieldName(sortBy);
+
+        return IsRelevanceSort(sortField)
+            ? BuildRelevanceSortOptions()
+            : BuildFieldSortOptions(sortField, direction);
+    }
+
+    private static SortOrder ParseSortDirection(string? sortDirection) =>
+        sortDirection?.ToLowerInvariant() == "asc" 
+            ? SortOrder.Asc 
             : SortOrder.Desc;
 
-        var sortField = sortBy?.ToLowerInvariant() switch
+    private static string MapSortFieldName(string? sortBy) =>
+        sortBy?.ToLowerInvariant() switch
         {
-            "price" => "currentPrice",
-            "endtime" => "endTime",
-            "bids" => "bidCount",
-            "created" => "createdAt",
-            _ => "_score"
+            SortFields.Price => ElasticsearchFields.CurrentPrice,
+            SortFields.EndTime => ElasticsearchFields.EndTime,
+            SortFields.Bids => ElasticsearchFields.BidCount,
+            SortFields.Created => ElasticsearchFields.CreatedAt,
+            _ => ElasticsearchFields.ScoreField
         };
 
-        if (sortField == "_score")
-        {
-            return new List<SortOptions>
-            {
-                SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
-                SortOptions.Field("createdAt", new FieldSort { Order = SortOrder.Desc }),
-                SortOptions.Field("id", new FieldSort { Order = SortOrder.Asc })
-            };
-        }
+    private static bool IsRelevanceSort(string sortField) =>
+        sortField == ElasticsearchFields.ScoreField;
 
-        return new List<SortOptions>
+    private static List<SortOptions> BuildRelevanceSortOptions() =>
+        new()
+        {
+            SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
+            SortOptions.Field(ElasticsearchFields.CreatedAt, new FieldSort { Order = SortOrder.Desc }),
+            SortOptions.Field(ElasticsearchFields.Id, new FieldSort { Order = SortOrder.Asc })
+        };
+
+    private static List<SortOptions> BuildFieldSortOptions(string sortField, SortOrder direction) =>
+        new()
         {
             SortOptions.Field(sortField, new FieldSort { Order = direction }),
-            SortOptions.Field("id", new FieldSort { Order = SortOrder.Asc })
+            SortOptions.Field(ElasticsearchFields.Id, new FieldSort { Order = SortOrder.Asc })
         };
-    }
 
-    private static AuctionSearchResult MapToResult(AuctionDocument doc, Hit<AuctionDocument>? hit)
-    {
-        return new AuctionSearchResult
-        {
-            Id = doc.Id,
-            Title = doc.Title,
-            Description = doc.Description?.Length > 200 ? doc.Description[..200] + "..." : doc.Description,
-            ThumbnailUrl = doc.ThumbnailUrl,
-            CurrentPrice = doc.CurrentPrice,
-            BuyNowPrice = doc.BuyNowPrice,
-            Currency = doc.Currency,
-            Status = doc.Status,
-            Condition = doc.Condition,
-            EndTime = doc.EndTime,
-            BidCount = doc.BidCount,
-            CategoryName = doc.CategoryName,
-            BrandName = doc.BrandName,
-            SellerId = doc.SellerId,
-            SellerUsername = doc.SellerUsername,
-            Score = hit?.Score,
-            Highlights = hit?.Highlight?.ToDictionary(
-                h => h.Key,
-                h => h.Value.ToList())
-        };
-    }
-
-    private static SearchFacets? MapFacets(Elastic.Clients.Elasticsearch.Aggregations.AggregateDictionary? aggregations)
-    {
-        if (aggregations == null)
-            return null;
-
-        var facets = new SearchFacets();
-
-        if (aggregations.TryGetValue("categories", out var catAgg) &&
-            catAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate catTerms)
-        {
-            facets.Categories = catTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("brands", out var brandAgg) &&
-            brandAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate brandTerms)
-        {
-            facets.Brands = brandTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("conditions", out var condAgg) &&
-            condAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate condTerms)
-        {
-            facets.Conditions = condTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("statuses", out var statusAgg) &&
-            statusAgg is Elastic.Clients.Elasticsearch.Aggregations.StringTermsAggregate statusTerms)
-        {
-            facets.Statuses = statusTerms.Buckets.Select(b => new FacetBucket
-            {
-                Key = b.Key.ToString() ?? "",
-                Count = b.DocCount
-            }).ToList();
-        }
-
-        if (aggregations.TryGetValue("price_stats", out var priceAgg) &&
-            priceAgg is Elastic.Clients.Elasticsearch.Aggregations.StatsAggregate priceStats)
-        {
-            facets.PriceRange = new PriceRangeFacet
-            {
-                Min = (decimal)(priceStats.Min ?? 0),
-                Max = (decimal)(priceStats.Max ?? 0),
-                Avg = (decimal)(priceStats.Avg ?? 0)
-            };
-        }
-
-        return facets;
-    }
 }

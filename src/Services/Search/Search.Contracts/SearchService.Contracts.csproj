@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SearchService.Contracts</RootNamespace>
+    <AssemblyName>SearchService.Contracts</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+
+  <!-- 
+    SearchService.Contracts contains:
+    - Search service integration events
+    - Shared DTOs for search results consumed by other services
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Contracts\Common.Contracts\Common.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,48 @@
+{
+  "title": "入札",
+  "myBids": "入札履歴",
+  "winningBids": "落札",
+  "outbid": "入札負け",
+  "activeBids": "参加中の入札",
+  "bidHistory": "入札履歴",
+
+  "placeBid": {
+    "title": "入札する",
+    "currentBid": "現在の入札額",
+    "yourBid": "あなたの入札額",
+    "minimumBid": "最低入札額",
+    "maximumBid": "最高入札額",
+    "autoBid": "自動入札",
+    "autoBidDescription": "上限まで自動で入札します",
+    "submit": "入札する",
+    "confirm": "入札を確認"
+  },
+
+  "status": {
+    "winning": "最高入札者",
+    "outbid": "入札負け",
+    "won": "落札",
+    "lost": "落札失敗",
+    "pending": "保留中"
+  },
+
+  "messages": {
+    "bidPlaced": "入札しました",
+    "bidFailed": "入札に失敗しました",
+    "outbidAlert": "入札負けしました！",
+    "wonAuction": "おめでとうございます！落札しました！",
+    "minimumNotMet": "入札額は{{amount}}以上である必要があります"
+  },
+
+  "filter": {
+    "all": "すべての入札",
+    "active": "参加中",
+    "won": "落札",
+    "lost": "落札失敗"
+  },
+
+  "empty": {
+    "title": "入札履歴がありません",
+    "description": "気になるオークションに入札してみましょう"
+  }
+}

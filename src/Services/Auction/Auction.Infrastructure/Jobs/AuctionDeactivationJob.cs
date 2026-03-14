@@ -1,14 +1,17 @@
-using BuildingBlocks.Application.Abstractions.Logging;
+using Auctions.Infrastructure.Persistence;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+[DisallowConcurrentExecution]
 public class AuctionDeactivationJob : BaseJob
 {
+    private const int SaveBatchSize = 100;
+
     public const string JobId = "auction-deactivation";
     public const string Description = "Auto-deactivates expired auctions";
 
@@ -23,10 +26,12 @@ public class AuctionDeactivationJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
+        var schedulerRepository = scopedProvider.GetRequiredService<IAuctionSchedulerRepository>();
+        var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
+        var dbContext = scopedProvider.GetRequiredService<AuctionDbContext>();
 
-        var expiredAuctions = await repository.GetAuctionsToAutoDeactivateAsync(cancellationToken);
+        var expiredAuctions = await schedulerRepository.GetAuctionsToAutoDeactivateAsync(cancellationToken);
 
         if (expiredAuctions.Count == 0)
         {
@@ -35,6 +40,9 @@ public class AuctionDeactivationJob : BaseJob
 
         Logger.LogInformation("Found {Count} auctions to auto-deactivate", expiredAuctions.Count);
         var processedCount = 0;
+        var failedCount = 0;
+        var pendingChanges = 0;
+        var failedAuctionIds = new List<Guid>();
 
         foreach (var auction in expiredAuctions)
         {
@@ -43,22 +51,39 @@ public class AuctionDeactivationJob : BaseJob
                 var itemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice;
                 auction.Finish(auction.WinnerId, auction.WinnerUsername, auction.CurrentHighBid, itemSold);
 
-                await repository.UpdateAsync(auction, cancellationToken);
+                await writeRepository.UpdateAsync(auction, cancellationToken);
 
                 processedCount++;
-                Logger.LogDebug(
-                    "Deactivated auction {AuctionId} to {FinalStatus}",
-                    auction.Id, auction.Status);
+                pendingChanges++;
+
+                if (pendingChanges >= SaveBatchSize)
+                {
+                    await unitOfWork.SaveChangesAsync(cancellationToken);
+                    dbContext.ChangeTracker.Clear();
+                    pendingChanges = 0;
+                }
             }
             catch (Exception ex)
             {
+                failedCount++;
+                failedAuctionIds.Add(auction.Id);
                 Logger.LogError(ex, "Failed to deactivate auction {AuctionId}", auction.Id);
             }
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        Logger.LogInformation("Completed deactivation of {ProcessedCount}/{TotalCount} auctions",
-            processedCount, expiredAuctions.Count);
+        if (pendingChanges > 0)
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+        }
+
+        Logger.LogInformation("Completed deactivation: {ProcessedCount} succeeded, {FailedCount} failed out of {TotalCount}",
+            processedCount, failedCount, expiredAuctions.Count);
+
+        if (failedAuctionIds.Count > 0)
+        {
+            Logger.LogWarning("Failed auction IDs: {FailedIds}", string.Join(", ", failedAuctionIds));
+        }
     }
 }
 

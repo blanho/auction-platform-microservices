@@ -1,20 +1,21 @@
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Constants;
+
 namespace Bidding.Application.Features.AutoBids.GetMyAutoBids;
 
 public record GetMyAutoBidsQuery(
     Guid UserId,
-    bool? ActiveOnly = null,
-    int Page = 1,
-    int PageSize = 20) : IQuery<MyAutoBidsResult>;
-
-public record MyAutoBidsResult
-{
-    public List<MyAutoBidDto> Items { get; init; } = new();
-    public int TotalCount { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-    public int ActiveCount { get; init; }
-    public decimal TotalCommitted { get; init; }
-}
+    Guid? AuctionId = null,
+    bool? IsActive = null,
+    decimal? MinMaxAmount = null,
+    decimal? MaxMaxAmount = null,
+    DateTimeOffset? FromDate = null,
+    DateTimeOffset? ToDate = null,
+    int Page = PaginationDefaults.DefaultPage,
+    int PageSize = PaginationDefaults.DefaultPageSize,
+    string? SortBy = null,
+    bool SortDescending = true
+) : IQuery<PaginatedResult<MyAutoBidDto>>;
 
 public record MyAutoBidDto
 {

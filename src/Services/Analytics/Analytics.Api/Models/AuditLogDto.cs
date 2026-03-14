@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Paging;
 using Common.Contracts.Events;
 
 namespace Analytics.Api.Models;
@@ -20,7 +21,7 @@ public record AuditLogDto
     public DateTimeOffset Timestamp { get; init; }
 }
 
-public record AuditLogQueryParams
+public class AuditLogFilter
 {
     public Guid? EntityId { get; init; }
     public string? EntityType { get; init; }
@@ -29,6 +30,6 @@ public record AuditLogQueryParams
     public AuditAction? Action { get; init; }
     public DateTimeOffset? FromDate { get; init; }
     public DateTimeOffset? ToDate { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 20;
 }
+
+public class AuditLogQueryParams : QueryParameters<AuditLogFilter> { }

@@ -1,12 +1,24 @@
 #nullable enable
 using Auctions.Domain.Events;
 using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Enums;
+using BuildingBlocks.Domain.Exceptions;
+using Auctions.Domain.Enums;
 
 namespace Auctions.Domain.Entities;
 
-public class Auction : BaseEntity
+public class Auction : AggregateRoot
 {
+    private static readonly Dictionary<Status, HashSet<Status>> AllowedTransitions = new()
+    {
+        [Status.Draft] = [Status.Scheduled, Status.Live, Status.Cancelled],
+        [Status.Scheduled] = [Status.Live, Status.Cancelled],
+        [Status.Live] = [Status.Finished, Status.ReservedNotMet, Status.Cancelled, Status.ReservedForBuyNow],
+        [Status.ReservedForBuyNow] = [Status.Finished, Status.Live, Status.Cancelled],
+        [Status.Finished] = [],
+        [Status.ReservedNotMet] = [],
+        [Status.Inactive] = [Status.Live, Status.Cancelled],
+        [Status.Cancelled] = [],
+    };
 
     private Auction() { }
     public decimal ReservePrice { get; private set; }
@@ -28,44 +40,38 @@ public class Auction : BaseEntity
     public Item Item { get; private set; } = null!;
 
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
-    public ICollection<UserAuctionBookmark> Bookmarks { get; private set; } = new List<UserAuctionBookmark>();
+    public ICollection<Bookmark> Bookmarks { get; private set; } = new List<Bookmark>();
 
-    public static Auction Create(
-        Guid sellerId,
-        string sellerUsername,
-        Item item,
-        decimal reservePrice,
-        DateTimeOffset auctionEnd,
-        string currency = "USD",
-        decimal? buyNowPrice = null,
-        bool isFeatured = false)
+    public static Auction Create(CreateAuctionParams createParams)
     {
-        if (string.IsNullOrWhiteSpace(sellerUsername))
-            throw new ArgumentException("Seller username is required", nameof(sellerUsername));
+        if (createParams.BuyNowPrice.HasValue && createParams.BuyNowPrice.Value <= createParams.ReservePrice)
+            throw new DomainInvariantException("Buy now price must be greater than reserve price");
 
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
-
-        if (reservePrice < 0)
-            throw new ArgumentException("Reserve price cannot be negative", nameof(reservePrice));
-
-        if (buyNowPrice.HasValue && buyNowPrice.Value <= reservePrice)
-            throw new ArgumentException("Buy now price must be greater than reserve price", nameof(buyNowPrice));
-
-        return new Auction
+        var auction = new Auction
         {
             Id = Guid.NewGuid(),
-            SellerId = sellerId,
-            SellerUsername = sellerUsername,
-            Item = item,
-            ReservePrice = reservePrice,
-            AuctionEnd = auctionEnd,
-            Currency = currency,
-            BuyNowPrice = buyNowPrice,
-            IsFeatured = isFeatured,
-            Status = Status.Live,
-            CreatedAt = DateTimeOffset.UtcNow
+            SellerId = createParams.SellerId,
+            SellerUsername = createParams.SellerUsername,
+            Item = createParams.Item,
+            ReservePrice = createParams.ReservePrice,
+            AuctionEnd = createParams.AuctionEnd,
+            Currency = createParams.Currency,
+            BuyNowPrice = createParams.BuyNowPrice,
+            IsFeatured = createParams.IsFeatured,
+            Status = Status.Live
         };
+
+        auction.AddDomainEvent(new AuctionCreatedDomainEvent
+        {
+            AuctionId = auction.Id,
+            SellerId = auction.SellerId,
+            SellerUsername = auction.SellerUsername,
+            Title = auction.Item.Title,
+            ReservePrice = auction.ReservePrice,
+            AuctionEnd = auction.AuctionEnd
+        });
+
+        return auction;
     }
 
     public static Auction CreateScheduled(
@@ -76,11 +82,6 @@ public class Auction : BaseEntity
         DateTimeOffset auctionEnd,
         string currency = "USD")
     {
-        if (string.IsNullOrWhiteSpace(sellerUsername))
-            throw new ArgumentException("Seller username is required", nameof(sellerUsername));
-
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
 
         return new Auction
         {
@@ -91,34 +92,7 @@ public class Auction : BaseEntity
             ReservePrice = reservePrice,
             AuctionEnd = auctionEnd,
             Currency = currency,
-            Status = Status.Scheduled,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-    }
-
-    public static Auction CreateForSeeding(
-        Guid id,
-        string sellerUsername,
-        Item item,
-        decimal reservePrice,
-        DateTimeOffset auctionEnd,
-        Status status,
-        string currency = "USD",
-        bool isFeatured = false,
-        DateTimeOffset? createdAt = null)
-    {
-        return new Auction
-        {
-            Id = id,
-            SellerId = Guid.Empty,
-            SellerUsername = sellerUsername,
-            Item = item,
-            ReservePrice = reservePrice,
-            AuctionEnd = auctionEnd,
-            Currency = currency,
-            Status = status,
-            IsFeatured = isFeatured,
-            CreatedAt = createdAt ?? DateTimeOffset.UtcNow
+            Status = Status.Scheduled
         };
     }
 
@@ -142,10 +116,7 @@ public class Auction : BaseEntity
     public void UpdateReservePrice(decimal newPrice)
     {
         if (Status != Status.Live || CurrentHighBid.HasValue)
-            throw new InvalidOperationException("Cannot change reserve price after bids have been placed");
-
-        if (newPrice < 0)
-            throw new ArgumentException("Reserve price cannot be negative", nameof(newPrice));
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change reserve price after bids have been placed");
 
         ReservePrice = newPrice;
     }
@@ -153,37 +124,40 @@ public class Auction : BaseEntity
     public void UpdateBuyNowPrice(decimal? newPrice)
     {
         if (Status == Status.Finished)
-            throw new InvalidOperationException("Cannot change buy now price on finished auction");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change buy now price on finished auction");
 
         if (newPrice.HasValue && newPrice.Value <= ReservePrice)
-            throw new ArgumentException("Buy now price must be greater than reserve price", nameof(newPrice));
+            throw new DomainInvariantException("Buy now price must be greater than reserve price");
 
         BuyNowPrice = newPrice;
     }
 
-    public void ExtendAuctionEnd(TimeSpan extension, string reason)
+    public void SetFeatured(bool isFeatured)
+    {
+        IsFeatured = isFeatured;
+    }
+
+    public void ExtendAuctionEnd(TimeSpan extension)
     {
         if (Status != Status.Live)
-            throw new InvalidOperationException("Can only extend live auctions");
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Can only extend live auctions");
 
         AuctionEnd = AuctionEnd.Add(extension);
     }
 
-    public void RaiseCreatedEvent()
+    public void Delete()
     {
-        AddDomainEvent(new AuctionCreatedDomainEvent
+        AddDomainEvent(new AuctionDeletedDomainEvent
         {
             AuctionId = Id,
-            SellerId = SellerId,
-            SellerUsername = SellerUsername,
-            Title = Item.Title,
-            ReservePrice = ReservePrice,
-            AuctionEnd = AuctionEnd
+            SellerId = SellerId
         });
     }
 
     public void ChangeStatus(Status newStatus)
     {
+        GuardValidTransition(newStatus);
+
         var oldStatus = Status;
         Status = newStatus;
         AddDomainEvent(new AuctionStatusChangedDomainEvent
@@ -201,10 +175,13 @@ public class Auction : BaseEntity
 
     public void Finish(Guid? winnerId, string? winnerUsername, decimal? soldAmount, bool itemSold)
     {
+        var targetStatus = itemSold ? Status.Finished : Status.ReservedNotMet;
+        GuardValidTransition(targetStatus);
+
         WinnerId = winnerId;
         WinnerUsername = winnerUsername;
         SoldAmount = soldAmount;
-        Status = itemSold ? Status.Finished : Status.ReservedNotMet;
+        Status = targetStatus;
 
         AddDomainEvent(new AuctionFinishedDomainEvent
         {
@@ -214,12 +191,21 @@ public class Auction : BaseEntity
             WinnerId = winnerId,
             WinnerUsername = winnerUsername,
             SoldAmount = soldAmount,
-            ItemSold = itemSold
+            ItemSold = itemSold,
+            ItemTitle = Item?.Title ?? string.Empty
         });
     }
 
     public void ExecuteBuyNow(Guid buyerId, string buyerUsername)
     {
+        if (!IsBuyNowAvailable)
+            throw new DomainInvariantException("Buy now is not available for this auction");
+
+        if (buyerId == SellerId)
+            throw new DomainInvariantException("Seller cannot buy their own auction");
+
+        GuardValidTransition(Status.Finished);
+
         WinnerId = buyerId;
         WinnerUsername = buyerUsername;
         SoldAmount = BuyNowPrice;
@@ -244,7 +230,8 @@ public class Auction : BaseEntity
             WinnerId = buyerId,
             WinnerUsername = buyerUsername,
             SoldAmount = BuyNowPrice,
-            ItemSold = true
+            ItemSold = true,
+            ItemTitle = Item?.Title ?? string.Empty
         });
     }
 
@@ -263,15 +250,6 @@ public class Auction : BaseEntity
         });
     }
 
-    public void RaiseDeletedEvent()
-    {
-        AddDomainEvent(new AuctionDeletedDomainEvent
-        {
-            AuctionId = Id,
-            SellerId = SellerId
-        });
-    }
-
     public void UpdateHighBid(decimal bidAmount, Guid? bidderId = null, string? bidderUsername = null)
     {
         CurrentHighBid = bidAmount;
@@ -280,20 +258,27 @@ public class Auction : BaseEntity
             WinnerId = bidderId;
             WinnerUsername = bidderUsername;
         }
+
+        AddDomainEvent(new AuctionHighBidUpdatedDomainEvent
+        {
+            AuctionId = Id,
+            BidAmount = bidAmount,
+            BidderId = bidderId,
+            BidderUsername = bidderUsername
+        });
     }
 
     public void Cancel(string reason)
     {
-        if (Status == Status.Finished)
-            throw new InvalidOperationException("Cannot cancel finished auction");
+        GuardValidTransition(Status.Cancelled);
 
+        var oldStatus = Status;
         Status = Status.Cancelled;
-        UpdatedAt = DateTimeOffset.UtcNow;
         
         AddDomainEvent(new AuctionStatusChangedDomainEvent
         {
             AuctionId = Id,
-            OldStatus = Status,
+            OldStatus = oldStatus,
             NewStatus = Status.Cancelled,
             SellerId = SellerId,
             SellerUsername = SellerUsername,
@@ -303,27 +288,45 @@ public class Auction : BaseEntity
         });
     }
 
+    public bool CanTransitionTo(Status newStatus)
+    {
+        return AllowedTransitions.TryGetValue(Status, out var allowed) && allowed.Contains(newStatus);
+    }
+
+    private void GuardValidTransition(Status newStatus)
+    {
+        if (!CanTransitionTo(newStatus))
+            throw new InvalidEntityStateException(
+                nameof(Auction),
+                Status.ToString(),
+                $"Cannot transition from {Status} to {newStatus}");
+    }
+
     public void UpdateSellerUsername(string newUsername)
     {
-        if (string.IsNullOrWhiteSpace(newUsername))
-            throw new ArgumentException("Username cannot be empty", nameof(newUsername));
 
         if (SellerUsername != newUsername)
         {
             SellerUsername = newUsername;
-            UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 
     public void UpdateWinnerUsername(string newUsername)
     {
-        if (string.IsNullOrWhiteSpace(newUsername))
-            throw new ArgumentException("Username cannot be empty", nameof(newUsername));
 
         if (WinnerUsername != newUsername)
         {
             WinnerUsername = newUsername;
-            UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 }
+
+public record CreateAuctionParams(
+    Guid SellerId,
+    string SellerUsername,
+    Item Item,
+    decimal ReservePrice,
+    DateTimeOffset AuctionEnd,
+    string Currency = "USD",
+    decimal? BuyNowPrice = null,
+    bool IsFeatured = false);

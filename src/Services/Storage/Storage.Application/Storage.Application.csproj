@@ -5,21 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Storage.Application</RootNamespace>
-    <AssemblyName>Storage.Application</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Storage.Domain\Storage.Domain.csproj" />
-    <ProjectReference Include="..\Storage.Contracts\Storage.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="MassTransit" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <PackageReference Include="MassTransit.Abstractions" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" />
+    <ProjectReference Include="..\Storage.Domain\Storage.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\Storage.Contracts\StorageService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

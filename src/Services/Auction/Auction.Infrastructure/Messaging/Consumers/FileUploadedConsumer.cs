@@ -7,16 +7,16 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class FileUploadedConsumer : IConsumer<FileUploadedEvent>
 {
-    private readonly IAuctionRepository _auctionRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<FileUploadedConsumer> _logger;
 
     public FileUploadedConsumer(
-        IAuctionRepository auctionRepository,
+        IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<FileUploadedConsumer> logger)
     {
-        _auctionRepository = auctionRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -24,69 +24,57 @@ public class FileUploadedConsumer : IConsumer<FileUploadedEvent>
     public async Task Consume(ConsumeContext<FileUploadedEvent> context)
     {
         var message = context.Message;
+        _logger.LogInformation(
+            "Consuming FileUploadedEvent for file {FileId}, owner {OwnerId}",
+            message.FileId, message.OwnerId);
 
-        if (message.OwnerService != "AuctionService")
+        if (!message.OwnerId.HasValue)
         {
+            _logger.LogDebug("FileUploadedEvent has no OwnerId, skipping");
             return;
         }
 
-        if (string.IsNullOrEmpty(message.OwnerId))
+        var auction = await _writeRepository.GetByIdForUpdateAsync(message.OwnerId.Value, context.CancellationToken);
+        if (auction is null)
         {
-            _logger.LogWarning("FileUploadedEvent received without OwnerId for file {FileId}", message.FileId);
-            return;
-        }
-
-        if (!Guid.TryParse(message.OwnerId, out var auctionId))
-        {
-            _logger.LogWarning("Invalid OwnerId format: {OwnerId}", message.OwnerId);
-            return;
-        }
-
-        _logger.LogInformation("Processing FileUploadedEvent for auction {AuctionId}, file {FileId}", 
-            auctionId, message.FileId);
-
-        var auction = await _auctionRepository.GetByIdAsync(auctionId);
-        if (auction == null)
-        {
-            _logger.LogWarning("Auction {AuctionId} not found for file {FileId}", auctionId, message.FileId);
+            _logger.LogDebug(
+                "Auction {AuctionId} not found for file {FileId}, may belong to another service",
+                message.OwnerId.Value, message.FileId);
             return;
         }
 
         var existingFile = auction.Item.Files.FirstOrDefault(f => f.FileId == message.FileId);
-        if (existingFile != null)
+        if (existingFile is not null)
         {
-            _logger.LogInformation("File {FileId} already linked to auction {AuctionId}", message.FileId, auctionId);
+            _logger.LogDebug(
+                "File {FileId} already exists on auction {AuctionId}, skipping (idempotent)",
+                message.FileId, auction.Id);
             return;
         }
 
-        var fileType = GetFileType(message.ContentType);
-        var isPrimary = !auction.Item.Files.Any(f => f.IsPrimary && f.FileType == fileType);
-        var displayOrder = auction.Item.Files.Count(f => f.FileType == fileType);
+        var fileType = InferFileType(message.ContentType);
+        var displayOrder = auction.Item.Files.Count + 1;
+        var isPrimary = auction.Item.Files.Count == 0;
 
-        auction.Item.Files.Add(new ItemFileInfo
-        {
-            FileId = message.FileId,
-            FileType = fileType,
-            DisplayOrder = displayOrder,
-            IsPrimary = isPrimary
-        });
+        var mediaFile = MediaFile.Create(message.FileId, fileType, displayOrder, isPrimary);
+        auction.Item.AddFile(mediaFile);
 
-        await _auctionRepository.UpdateAsync(auction, context.CancellationToken);
+        await _writeRepository.UpdateAsync(auction, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
-        _logger.LogInformation("Linked file {FileId} to auction {AuctionId} as {FileType} (primary: {IsPrimary})", 
-            message.FileId, auctionId, fileType, isPrimary);
+        _logger.LogInformation(
+            "Added file {FileId} to auction {AuctionId} (type: {FileType}, order: {Order}, primary: {Primary})",
+            message.FileId, auction.Id, fileType, displayOrder, isPrimary);
     }
 
-    private static string GetFileType(string contentType)
+    private static string InferFileType(string contentType)
     {
-        if (contentType.StartsWith("image/"))
+        if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             return "image";
-        if (contentType.StartsWith("video/"))
+
+        if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
             return "video";
-        if (contentType.StartsWith("application/pdf") || contentType.Contains("document"))
-            return "document";
-        return "other";
+
+        return "document";
     }
 }
-

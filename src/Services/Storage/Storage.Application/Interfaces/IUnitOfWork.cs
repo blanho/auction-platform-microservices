@@ -1,6 +1,6 @@
 namespace Storage.Application.Interfaces;
 
-public interface IUnitOfWork : BuildingBlocks.Infrastructure.Repository.IUnitOfWork
+public interface IUnitOfWork
 {
-    IStoredFileRepository StoredFiles { get; }
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

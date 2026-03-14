@@ -5,6 +5,7 @@ namespace: auction-platform
 
 resources:
   - ../../base
+  - external-secrets.yaml
 
 commonLabels:
   environment: production
@@ -53,36 +54,45 @@ patches:
     target:
       kind: StatefulSet
       name: postgres
-
-configMapGenerator:
-  - name: auction-platform-config
-    behavior: merge
-    literals:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - LOG_LEVEL=Warning
+  - patch: |-
+      - op: replace
+        path: /data/ASPNETCORE_ENVIRONMENT
+        value: Production
+      - op: replace
+        path: /data/Logging__MinimumLevel
+        value: Warning
+    target:
+      kind: ConfigMap
+      name: auction-platform-config
 
 images:
   - name: auction-platform/auction-api
-    newName: ghcr.io/your-org/auction-api
+    newName: ghcr.io/blanho/auction-platform/auction-api
     newTag: v1.0.0
   - name: auction-platform/bidding-api
-    newName: ghcr.io/your-org/bidding-api
+    newName: ghcr.io/blanho/auction-platform/bidding-api
     newTag: v1.0.0
   - name: auction-platform/payment-api
-    newName: ghcr.io/your-org/payment-api
+    newName: ghcr.io/blanho/auction-platform/payment-api
     newTag: v1.0.0
   - name: auction-platform/notification-api
-    newName: ghcr.io/your-org/notification-api
-    newTag: v1.0.0
-  - name: auction-platform/storage-api
-    newName: ghcr.io/your-org/storage-api
+    newName: ghcr.io/blanho/auction-platform/notification-api
     newTag: v1.0.0
   - name: auction-platform/identity-api
-    newName: ghcr.io/your-org/identity-api
+    newName: ghcr.io/blanho/auction-platform/identity-api
     newTag: v1.0.0
   - name: auction-platform/analytics-api
-    newName: ghcr.io/your-org/analytics-api
+    newName: ghcr.io/blanho/auction-platform/analytics-api
+    newTag: v1.0.0
+  - name: auction-platform/search-api
+    newName: ghcr.io/blanho/auction-platform/search-api
+    newTag: v1.0.0
+  - name: auction-platform/storage-api
+    newName: ghcr.io/blanho/auction-platform/storage-api
+    newTag: v1.0.0
+  - name: auction-platform/job-api
+    newName: ghcr.io/blanho/auction-platform/job-api
     newTag: v1.0.0
   - name: auction-platform/gateway-api
-    newName: ghcr.io/your-org/gateway-api
+    newName: ghcr.io/blanho/auction-platform/gateway-api
     newTag: v1.0.0

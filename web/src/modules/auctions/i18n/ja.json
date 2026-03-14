@@ -1,0 +1,233 @@
+{
+  "title": "オークション",
+  "browse": "オークションを探す",
+  "featured": "注目のオークション",
+  "trending": "人気急上昇",
+  "endingSoon": "まもなく終了",
+  "newArrivals": "新着",
+  "myAuctions": "マイオークション",
+  "createAuction": "オークション作成",
+  "editAuction": "オークション編集",
+  "viewDetails": "詳細を見る",
+
+  "search": {
+    "placeholder": "オークションを検索...",
+    "noResults": "オークションが見つかりませんでした",
+    "resultsCount": "{{count}}件のオークション",
+    "resultsCount_other": "{{count}}件のオークション"
+  },
+
+  "filter": {
+    "title": "フィルター",
+    "category": "カテゴリー",
+    "priceRange": "価格帯",
+    "condition": "状態",
+    "status": "ステータス",
+    "sortBy": "並べ替え",
+    "minPrice": "最低価格",
+    "maxPrice": "最高価格",
+    "clearAll": "フィルターをクリア",
+    "verifiedSellersOnly": "認証済み出品者のみ",
+    "verifiedOnly": "認証済みのみ",
+    "allCategories": "すべてのカテゴリー",
+    "apply": "フィルターを適用"
+  },
+
+  "sort": {
+    "newest": "新着順",
+    "endingSoon": "終了間近",
+    "priceLowToHigh": "価格: 安い順",
+    "priceHighToLow": "価格: 高い順",
+    "mostBids": "入札数順"
+  },
+
+  "status": {
+    "live": "開催中",
+    "scheduled": "予定",
+    "ended": "終了",
+    "sold": "落札済み",
+    "unsold": "未落札",
+    "cancelled": "キャンセル"
+  },
+
+  "condition": {
+    "new": "新品",
+    "likeNew": "新品同様",
+    "excellent": "非常に良い",
+    "good": "良い",
+    "fair": "可"
+  },
+
+  "detail": {
+    "currentBid": "現在の入札額",
+    "startingPrice": "開始価格",
+    "buyNowPrice": "即決価格",
+    "reservePrice": "最低落札価格",
+    "reserveMet": "最低落札価格達成",
+    "reserveNotMet": "最低落札価格未達成",
+    "timeRemaining": "残り時間",
+    "auctionEnds": "終了日時",
+    "totalBids": "入札数",
+    "bidHistory": "入札履歴",
+    "seller": "出品者",
+    "category": "カテゴリー",
+    "brand": "ブランド",
+    "yearManufactured": "製造年",
+    "description": "商品説明",
+    "reviews": "レビュー",
+    "watching": "人がウォッチ中",
+    "bidCount": "{{count}}件の入札",
+    "bidCount_one": "{{count}}件の入札"
+  },
+
+  "form": {
+    "title": "タイトル",
+    "titlePlaceholder": "オークションのタイトルを入力してください",
+    "titleHelper": "10文字以上、200文字以内",
+    "description": "説明",
+    "descriptionPlaceholder": "商品の詳細を説明してください - 状態、履歴、仕様など...",
+    "descriptionHelper": "50文字以上、4000文字以内",
+    "category": "カテゴリー",
+    "selectCategory": "カテゴリーを選択",
+    "brand": "ブランド",
+    "brandOptional": "ブランド（任意）",
+    "selectBrand": "ブランドを選択または検索",
+    "condition": "状態",
+    "selectCondition": "状態を選択",
+    "yearManufactured": "製造年",
+    "yearManufacturedOptional": "製造年（任意）",
+    "selectYear": "年を選択",
+    "startingPrice": "開始価格",
+    "startingPriceHelper": "最低入札額",
+    "buyNowPrice": "即決価格",
+    "buyNowPriceHelper": "即時購入価格（開始価格より高い必要があります）",
+    "enableBuyNow": "即決価格を有効にする",
+    "currency": "通貨",
+    "auctionDuration": "オークション期間",
+    "auctionEnd": "終了日時",
+    "auctionEndHelper": "オークションの終了日時",
+    "images": "画像",
+    "uploadImages": "画像をアップロード",
+    "dragDropImages": "ここに画像をドラッグ＆ドロップ",
+    "itemDetails": "商品詳細",
+    "itemDetailsHelper": "正確な状態と製造年を提供することで、購入者が適切な判断を下せるようになり、出品の信頼性が向上します。",
+    "photosFiles": "写真・ファイル",
+    "photosFilesHelper": "商品の写真を追加してください。最初の画像がカバー写真として使用されます。",
+    "filesAttached": "添付ファイル",
+    "pricingNotModifiable": "価格と期間はオークション作成後に変更できません。",
+    "updating": "更新中...",
+    "updateAuction": "オークションを更新",
+    "creating": "作成中...",
+    "editDescription": "以下のオークション詳細を更新してください",
+    "createDescription": "以下の詳細を入力して商品を出品してください",
+    "reviewUpdateDescription": "更新する前にすべての詳細を確認してください。",
+    "reviewCreateDescription": "作成する前にすべての詳細を確認してください。"
+  },
+
+  "formSteps": {
+    "basicInfo": "基本情報",
+    "itemDetails": "商品詳細",
+    "pricingDuration": "価格・期間",
+    "review": "確認"
+  },
+
+  "duration": {
+    "1day": "1日",
+    "3days": "3日",
+    "5days": "5日",
+    "7days": "7日",
+    "10days": "10日",
+    "14days": "14日"
+  },
+
+  "actions": {
+    "placeBid": "入札する",
+    "buyNow": "今すぐ購入",
+    "addToWatchlist": "ウォッチリストに追加",
+    "removeFromWatchlist": "ウォッチリストから削除",
+    "share": "共有",
+    "report": "報告",
+    "shareOnFacebook": "Facebookで共有",
+    "shareOnTwitter": "Twitterで共有",
+    "pinOnPinterest": "Pinterestにピン",
+    "copyLink": "リンクをコピー"
+  },
+
+  "messages": {
+    "createSuccess": "オークションを作成しました",
+    "updateSuccess": "オークションを更新しました",
+    "deleteSuccess": "オークションを削除しました",
+    "addedToWatchlist": "ウォッチリストに追加しました",
+    "removedFromWatchlist": "ウォッチリストから削除しました",
+    "linkCopied": "リンクをクリップボードにコピーしました",
+    "bidPlaced": "入札が成功しました！",
+    "bidFailed": "入札に失敗しました",
+    "purchaseSuccess": "購入が完了しました！注文ページにリダイレクトしています...",
+    "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
+    "openingChat": "出品者とのチャットを開いています..."
+  },
+
+  "watchlist": {
+    "title": "マイウォッチリスト",
+    "empty": "ウォッチリストは空です",
+    "emptyDescription": "気になるオークションを追加して追跡しましょう",
+    "description": "気になるオークションを追跡しましょう",
+    "updateFailed": "ウォッチリストの更新に失敗しました",
+    "disableAlerts": "アラートを無効にする",
+    "enableAlerts": "アラートを有効にする",
+    "recentlyAdded": "最近追加",
+    "itemCount": "{{count}}件",
+    "itemCount_one": "{{count}}件"
+  },
+
+  "reviews": {
+    "title": "出品者レビュー",
+    "writeReview": "レビューを書く",
+    "rating": "評価",
+    "comment": "コメント",
+    "submitReview": "レビューを投稿",
+    "noReviews": "まだレビューはありません"
+  },
+
+  "dialog": {
+    "confirmPurchase": "購入の確認",
+    "buyNowDescription": "即決価格でこの商品を購入しようとしています。",
+    "confirmPurchaseButton": "購入を確定"
+  },
+
+  "errors": {
+    "failedToLoadAuction": "オークションの読み込みに失敗しました",
+    "unableToLoadAuction": "オークションデータを読み込めませんでした。もう一度お試しください。",
+    "failedToLoadAuctions": "オークションの読み込みに失敗しました",
+    "couldntLoadAuctions": "オークションを読み込めませんでした。もう一度お試しください。",
+    "failedToLoadWatchlist": "ウォッチリストの読み込みに失敗しました。もう一度お試しください。"
+  },
+
+  "explore": "探す",
+  "findUniqueItems": "ユニークな商品を見つけて入札しましょう",
+  "itemsAvailable": "{{count}}件の商品",
+
+  "brands": {
+    "title": "ブランド",
+    "addBrand": "ブランドを追加",
+    "editBrand": "ブランドを編集",
+    "deleteBrand": "ブランドを削除",
+    "brandName": "ブランド名",
+    "slug": "スラッグ",
+    "slugHelper": "URL用の識別子",
+    "websiteUrl": "ウェブサイトURL",
+    "searchPlaceholder": "ブランドを検索...",
+    "noBrands": "ブランドが見つかりません",
+    "deleteConfirmation": "\"{{name}}\"を削除してもよろしいですか？この操作は取り消せません。"
+  },
+
+  "categories": {
+    "title": "カテゴリー",
+    "category": "カテゴリー",
+    "addCategory": "カテゴリーを追加",
+    "editCategory": "カテゴリーを編集",
+    "categoryName": "カテゴリー名",
+    "slug": "スラッグ",
+    "slugHelper": "URL用の識別子"
+  }
+}

@@ -50,7 +50,7 @@ public class OrderDeliveredAnalyticsConsumer : IConsumer<OrderDeliveredEvent>
             IsRefunded = false,
 
             EventType = "OrderDelivered",
-            EventVersion = (short)@event.Version
+            EventVersion = 1
         };
 
         _context.FactPayments.Add(fact);

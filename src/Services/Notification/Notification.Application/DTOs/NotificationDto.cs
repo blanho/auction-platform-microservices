@@ -11,7 +11,7 @@ public class NotificationDto
     public string Message { get; set; } = string.Empty;
     public string Data { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public DateTime? ReadAt { get; set; }
+    public DateTimeOffset? ReadAt { get; set; }
     public Guid? AuctionId { get; set; }
     public Guid? BidId { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
@@ -54,4 +54,26 @@ public class NotificationStatsDto
     public int UnreadNotifications { get; set; }
     public int TodayCount { get; set; }
     public Dictionary<string, int> ByType { get; set; } = new();
+}
+
+public class NotificationPreferenceDto
+{
+    public Guid Id { get; set; }
+    public string UserId { get; set; } = string.Empty;
+    public bool EmailEnabled { get; set; }
+    public bool PushEnabled { get; set; }
+    public bool BidUpdates { get; set; }
+    public bool AuctionUpdates { get; set; }
+    public bool PromotionalEmails { get; set; }
+    public bool SystemAlerts { get; set; }
+}
+
+public class UpdateNotificationPreferenceDto
+{
+    public bool? EmailEnabled { get; set; }
+    public bool? PushEnabled { get; set; }
+    public bool? BidUpdates { get; set; }
+    public bool? AuctionUpdates { get; set; }
+    public bool? PromotionalEmails { get; set; }
+    public bool? SystemAlerts { get; set; }
 }

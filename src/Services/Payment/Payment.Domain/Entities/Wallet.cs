@@ -1,176 +1,167 @@
-using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
 
 namespace Payment.Domain.Entities;
 
-public class Wallet : BaseEntity
+public class Wallet : AggregateRoot
 {
-    private decimal _balance;
-    private decimal _heldAmount;
-    private string _currency = "USD";
-    private bool _isActive = true;
-
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
 
-    [Timestamp]
-    public uint RowVersion { get; private set; }
-
-    public decimal Balance
-    {
-        get => _balance;
-        private set
-        {
-            if (value < 0)
-                throw new DomainInvariantException($"Wallet.Balance cannot be negative. Attempted: {value}");
-            _balance = value;
-        }
-    }
-
-    public decimal HeldAmount
-    {
-        get => _heldAmount;
-        private set
-        {
-            if (value < 0)
-                throw new DomainInvariantException($"Wallet.HeldAmount cannot be negative. Attempted: {value}");
-            _heldAmount = value;
-        }
-    }
+    public decimal Balance { get; private set; }
+    public decimal HeldAmount { get; private set; }
+    public decimal AvailableBalance => Balance - HeldAmount;
+    public string Currency { get; private set; } = "USD";
+    public bool IsActive { get; private set; } = true;
 
     public static Wallet Create(Guid userId, string username, string currency = "USD")
     {
-        if (userId == Guid.Empty)
-            throw new ArgumentException("UserId cannot be empty", nameof(userId));
-        if (string.IsNullOrWhiteSpace(username))
-            throw new ArgumentException("Username cannot be empty", nameof(username));
-        ValidateCurrency(currency);
-
-        return new Wallet
+        var wallet = new Wallet
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Username = username,
-            _currency = currency,
-            _balance = 0,
-            _heldAmount = 0,
-            _isActive = true,
+            Currency = currency,
+            Balance = 0,
+            HeldAmount = 0,
+            IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
         };
-    }
 
-    public decimal AvailableBalance
-    {
-        get
+        wallet.AddDomainEvent(new WalletCreatedDomainEvent
         {
-            var available = Balance - HeldAmount;
-            if (available < 0)
-            {
-                throw new DomainInvariantException(
-                    $"Wallet.AvailableBalance is negative (Balance: {Balance}, HeldAmount: {HeldAmount}). Data integrity issue.");
-            }
-            return available;
-        }
-    }
-    public string Currency
-    {
-        get => _currency;
-        private set
-        {
-            ValidateCurrency(value);
-            _currency = value;
-        }
-    }
+            WalletId = wallet.Id,
+            UserId = userId,
+            Username = username,
+            Currency = currency
+        });
 
-    public bool IsActive
-    {
-        get => _isActive;
-        private set => _isActive = value;
+        return wallet;
     }
 
     public void Deposit(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), "Deposit amount must be positive");
+        GuardActive();
+        GuardPositiveAmount(amount);
+        Balance += amount;
 
-        EnsureActive();
-        _balance += amount;
+        AddDomainEvent(new FundsDepositedDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance
+        });
     }
 
     public void Withdraw(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), "Withdrawal amount must be positive");
+        GuardActive();
+        GuardPositiveAmount(amount);
 
-        EnsureActive();
+        if (AvailableBalance < amount)
+        {
+            throw new DomainInvariantException(
+                $"Insufficient available balance. Available: {AvailableBalance}, Requested: {amount}");
+        }
 
-        if (amount > AvailableBalance)
-            throw new InvalidEntityStateException(nameof(Wallet), "Active", "Insufficient available balance for withdrawal");
+        Balance -= amount;
 
-        _balance -= amount;
+        AddDomainEvent(new FundsWithdrawnDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance
+        });
     }
 
     public void HoldFunds(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), "Hold amount must be positive");
+        GuardActive();
+        GuardPositiveAmount(amount);
 
-        EnsureActive();
+        if (AvailableBalance < amount)
+        {
+            throw new DomainInvariantException(
+                $"Insufficient available balance to hold. Available: {AvailableBalance}, Requested: {amount}");
+        }
 
-        if (amount > AvailableBalance)
-            throw new InvalidEntityStateException(nameof(Wallet), "Active", "Insufficient available balance to hold funds");
+        HeldAmount += amount;
 
-        _heldAmount += amount;
+        AddDomainEvent(new FundsHeldDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void ReleaseFunds(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), "Release amount must be positive");
+        GuardActive();
+        GuardPositiveAmount(amount);
 
-        if (amount > HeldAmount)
-            throw new InvalidEntityStateException(nameof(Wallet), HeldAmount.ToString(), "Cannot release more than held amount");
+        if (HeldAmount < amount)
+        {
+            throw new DomainInvariantException(
+                $"Cannot release more than held amount. Held: {HeldAmount}, Requested: {amount}");
+        }
 
-        _heldAmount -= amount;
+        HeldAmount -= amount;
+
+        AddDomainEvent(new FundsReleasedDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void DeductFromHeld(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), "Deduction amount must be positive");
+        GuardActive();
+        GuardPositiveAmount(amount);
 
-        EnsureActive();
+        if (HeldAmount < amount)
+        {
+            throw new DomainInvariantException(
+                $"Cannot deduct more than held amount. Held: {HeldAmount}, Requested: {amount}");
+        }
 
-        if (amount > HeldAmount)
-            throw new InvalidEntityStateException(nameof(Wallet), HeldAmount.ToString(), "Cannot deduct more than held amount");
+        HeldAmount -= amount;
+        Balance -= amount;
 
-        _heldAmount -= amount;
-        _balance -= amount;
+        AddDomainEvent(new FundsDeductedFromHeldDomainEvent
+        {
+            WalletId = Id,
+            UserId = UserId,
+            Amount = amount,
+            NewBalance = Balance,
+            NewHeldAmount = HeldAmount
+        });
     }
 
     public void Activate() => IsActive = true;
 
-    public void Deactivate()
-    {
-        if (Balance > 0 || HeldAmount > 0)
-            throw new InvalidEntityStateException(nameof(Wallet), "Active", "Cannot deactivate wallet with balance or held funds");
+    public void Deactivate() => IsActive = false;
 
-        IsActive = false;
-    }
-
-    private void EnsureActive()
+    private void GuardActive()
     {
         if (!IsActive)
-            throw new InvalidEntityStateException(nameof(Wallet), "Inactive", "Wallet must be active for this operation");
+        {
+            throw new InvalidEntityStateException(
+                nameof(Wallet), nameof(IsActive), "Wallet is deactivated");
+        }
     }
 
-    private static void ValidateCurrency(string currency)
+    private static void GuardPositiveAmount(decimal amount)
     {
-        if (string.IsNullOrWhiteSpace(currency))
-            throw new ArgumentException("Currency cannot be empty", nameof(currency));
-
-        if (currency.Length != 3)
-            throw new ArgumentException("Currency must be a 3-letter ISO code", nameof(currency));
+        if (amount <= 0)
+        {
+            throw new DomainInvariantException($"Amount must be positive. Received: {amount}");
+        }
     }
 }

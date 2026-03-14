@@ -1,15 +1,17 @@
 #nullable enable
-using Auctions.Api.Extensions;
-using Auctions.Application.Commands.ActivateAuction;
-using Auctions.Application.Commands.CreateAuction;
-using Auctions.Application.Commands.DeactivateAuction;
-using Auctions.Application.Commands.DeleteAuction;
-using Auctions.Application.Commands.UpdateAuction;
+using Auctions.Application.Features.Auctions.ActivateAuction;
+using Auctions.Application.Features.Auctions.BuyNow;
+using Auctions.Application.Features.Auctions.CancelAuction;
+using Auctions.Application.Features.Auctions.CreateAuction;
+using Auctions.Application.Features.Auctions.DeactivateAuction;
+using Auctions.Application.Features.Auctions.DeleteAuction;
+using Auctions.Application.Features.Auctions.ExtendAuction;
+using Auctions.Application.Features.Auctions.UpdateAuction;
 using Auctions.Application.DTOs;
 using Auctions.Application.DTOs.Auctions;
-using Auctions.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Helpers;
 using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +56,27 @@ public class AuctionCrudEndpoints : ICarterModule
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Auctions.Edit))
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{id:guid}/buy-now", BuyNow)
+            .WithName("BuyNow")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Auctions.View))
+            .Produces<BuyNowResultDto>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ProblemDetails>(StatusCodes.Status409Conflict);
+
+        group.MapPost("/{id:guid}/cancel", CancelAuction)
+            .WithName("CancelAuction")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Auctions.Edit))
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/{id:guid}/extend", ExtendAuction)
+            .WithName("ExtendAuction")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Auctions.Edit))
+            .Produces<ExtendAuctionResponseDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> CreateAuction(
@@ -86,6 +109,7 @@ public class AuctionCrudEndpoints : ICarterModule
             dto.Currency,
             commandFiles,
             dto.CategoryId,
+            dto.BrandId,
             dto.IsFeatured);
 
         var result = await mediator.Send(command, ct);
@@ -100,13 +124,9 @@ public class AuctionCrudEndpoints : ICarterModule
         UpdateAuctionDto dto,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
-        
-        if (error != null) return error;
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
         var command = new UpdateAuctionCommand(
             id,
@@ -114,7 +134,14 @@ public class AuctionCrudEndpoints : ICarterModule
             dto.Description,
             dto.Condition,
             dto.YearManufactured,
-            dto.Attributes);
+            dto.Attributes,
+            dto.ReservePrice,
+            dto.BuyNowPrice,
+            dto.CategoryId,
+            dto.BrandId,
+            dto.IsFeatured,
+            dto.AuctionEnd,
+            userId);
 
         var result = await mediator.Send(command, ct);
 
@@ -127,15 +154,11 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Delete, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-        
-        var command = new DeleteAuctionCommand(id);
+        var command = new DeleteAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
@@ -147,15 +170,11 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-
-        var command = new ActivateAuctionCommand(id);
+        var command = new ActivateAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
@@ -167,20 +186,78 @@ public class AuctionCrudEndpoints : ICarterModule
         Guid id,
         HttpContext httpContext,
         IMediator mediator,
-        IAuctionRepository auctionRepository,
         CancellationToken ct)
     {
-        var (auction, error) = await auctionRepository.GetAuthorizedAuctionAsync(
-            httpContext, id, Permissions.Auctions.Edit, ct);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
         
-        if (error != null) return error;
-
-        var command = new DeactivateAuctionCommand(id);
+        var command = new DeactivateAuctionCommand(id, userId, null);
         var result = await mediator.Send(command, ct);
 
         return result.IsSuccess
             ? Results.NoContent()
             : Results.NotFound(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    private static async Task<IResult> BuyNow(
+        Guid id,
+        HttpContext httpContext,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var buyerId = UserHelper.GetRequiredUserId(httpContext.User);
+        var buyerUsername = UserHelper.GetUsername(httpContext.User);
+
+        var command = new BuyNowCommand(id, buyerId, buyerUsername);
+        var result = await mediator.Send(command, ct);
+
+        if (result.IsSuccess)
+            return Results.Ok(result.Value);
+
+        var isConflict = result.Error!.Code.StartsWith("BuyNow.Conflict");
+        return isConflict
+            ? Results.Conflict(ProblemDetailsHelper.FromError(result.Error))
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    private static async Task<IResult> CancelAuction(
+        Guid id,
+        CancelAuctionDto dto,
+        HttpContext httpContext,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+
+        var command = new CancelAuctionCommand(id, userId, dto.Reason);
+        var result = await mediator.Send(command, ct);
+
+        return result.IsSuccess
+            ? Results.NoContent()
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+    }
+
+    private static async Task<IResult> ExtendAuction(
+        Guid id,
+        ExtendAuctionDto dto,
+        HttpContext httpContext,
+        IMediator mediator,
+        CancellationToken ct)
+    {
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+
+        var command = new ExtendAuctionCommand(id, userId, dto.ExtensionMinutes);
+        var result = await mediator.Send(command, ct);
+
+        if (result.IsSuccess)
+        {
+            return Results.Ok(new ExtendAuctionResponseDto
+            {
+                AuctionId = id,
+                NewAuctionEnd = result.Value
+            });
+        }
+
+        return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
     }
 }
 

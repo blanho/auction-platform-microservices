@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace BuildingBlocks.Infrastructure.Caching;
 
 public static class CacheKeys
@@ -10,8 +13,12 @@ public static class CacheKeys
 
     public static string AuctionList(string filter = "all") => $"{AuctionPrefix}list:{filter}";
 
-    public static string AuctionsByIds(IEnumerable<Guid> ids) =>
-        $"{AuctionPrefix}batch:{string.Join(",", ids.OrderBy(x => x).Take(10))}";
+    public static string AuctionsByIds(IEnumerable<Guid> ids)
+    {
+        var normalized = string.Join(",", ids.OrderBy(x => x));
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant();
+        return $"{AuctionPrefix}batch:{hash}";
+    }
 
     public static string LiveAuctionCount() => $"{StatsPrefix}live-count";
     public static string EndingSoonCount() => $"{StatsPrefix}ending-soon-count";

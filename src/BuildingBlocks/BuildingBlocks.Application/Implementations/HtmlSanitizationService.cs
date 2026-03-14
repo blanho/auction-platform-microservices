@@ -4,34 +4,43 @@ using Ganss.Xss;
 
 namespace BuildingBlocks.Application.Implementations;
 
-public class HtmlSanitizationService : ISanitizationService
+public class HtmlSanitizationService : ISanitizationService, IDisposable
 {
-    private readonly HtmlSanitizer _sanitizer;
+
+    private readonly ThreadLocal<HtmlSanitizer> _sanitizer;
+    private bool _disposed;
 
     public HtmlSanitizationService()
     {
-        _sanitizer = new HtmlSanitizer();
+        _sanitizer = new ThreadLocal<HtmlSanitizer>(() => CreateConfiguredSanitizer());
+    }
 
-        _sanitizer.AllowedTags.Clear();
-        _sanitizer.AllowedTags.Add("p");
-        _sanitizer.AllowedTags.Add("br");
-        _sanitizer.AllowedTags.Add("strong");
-        _sanitizer.AllowedTags.Add("em");
-        _sanitizer.AllowedTags.Add("u");
-        _sanitizer.AllowedTags.Add("ul");
-        _sanitizer.AllowedTags.Add("ol");
-        _sanitizer.AllowedTags.Add("li");
-        _sanitizer.AllowedTags.Add("h1");
-        _sanitizer.AllowedTags.Add("h2");
-        _sanitizer.AllowedTags.Add("h3");
+    private static HtmlSanitizer CreateConfiguredSanitizer()
+    {
+        var sanitizer = new HtmlSanitizer();
 
-        _sanitizer.AllowedAttributes.Clear();
-        _sanitizer.AllowedAttributes.Add("class");
-        _sanitizer.AllowedAttributes.Add("id");
+        sanitizer.AllowedTags.Clear();
+        sanitizer.AllowedTags.Add("p");
+        sanitizer.AllowedTags.Add("br");
+        sanitizer.AllowedTags.Add("strong");
+        sanitizer.AllowedTags.Add("em");
+        sanitizer.AllowedTags.Add("u");
+        sanitizer.AllowedTags.Add("ul");
+        sanitizer.AllowedTags.Add("ol");
+        sanitizer.AllowedTags.Add("li");
+        sanitizer.AllowedTags.Add("h1");
+        sanitizer.AllowedTags.Add("h2");
+        sanitizer.AllowedTags.Add("h3");
 
-        _sanitizer.AllowedSchemes.Clear();
+        sanitizer.AllowedAttributes.Clear();
+        sanitizer.AllowedAttributes.Add("class");
+        sanitizer.AllowedAttributes.Add("id");
 
-        _sanitizer.AllowedCssProperties.Clear();
+        sanitizer.AllowedSchemes.Clear();
+
+        sanitizer.AllowedCssProperties.Clear();
+
+        return sanitizer;
     }
 
     public string SanitizeHtml(string? html)
@@ -39,7 +48,7 @@ public class HtmlSanitizationService : ISanitizationService
         if (string.IsNullOrWhiteSpace(html))
             return string.Empty;
 
-        return _sanitizer.Sanitize(html);
+        return _sanitizer.Value!.Sanitize(html);
     }
 
     public string SanitizeText(string? text)
@@ -48,5 +57,15 @@ public class HtmlSanitizationService : ISanitizationService
             return string.Empty;
 
         return WebUtility.HtmlEncode(text);
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _sanitizer.Dispose();
+            _disposed = true;
+        }
+        GC.SuppressFinalize(this);
     }
 }

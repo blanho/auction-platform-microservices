@@ -8,39 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Carter" Version="8.2.1" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.70.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.70.0">
+    <PackageReference Include="Carter" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Protos\auction_stats.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\auction_analytics.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\bid_stats.proto" GrpcServices="Client" />
-    <Protobuf Include="Protos\payment_analytics.proto" GrpcServices="Client" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Quartz.Extensions.Hosting" />
+    <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Contracts\Common.Contracts\Common.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Payment\Payment.Contracts\PaymentService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

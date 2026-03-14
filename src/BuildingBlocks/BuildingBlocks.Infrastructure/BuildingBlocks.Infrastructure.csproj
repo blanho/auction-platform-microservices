@@ -7,66 +7,45 @@
     <RootNamespace>BuildingBlocks.Infrastructure</RootNamespace>
     <AssemblyName>BuildingBlocks.Infrastructure</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
-  <!-- 
-    BuildingBlocks.Infrastructure contains:
-    - Data: Repository base classes, EF Core extensions, Unit of Work
-    - Caching: Redis abstractions and implementations
-    - Locking: Distributed locking (RedLock)
-    - Messaging: MassTransit configuration, consumers base
-    - Logging: Serilog configuration
-    - Observability: OpenTelemetry setup
-    - Scheduling: Quartz.NET configuration
-    - Storage: Blob storage abstractions
-    - Audit: Audit logging
-    - Localization: Resource management
-    
-    This is the largest BuildingBlock - all infrastructure concerns consolidated
-  -->
-
   <ItemGroup>
-    <!-- Entity Framework -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     
-    <!-- Messaging -->
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
     
-    <!-- Caching -->
-    <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
+    <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     
-    <!-- Locking -->
-    <PackageReference Include="RedLock.net" Version="2.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     
-    <!-- Logging & Observability -->
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     
-    <!-- gRPC -->
-    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.70.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" />
     
-    <!-- Scheduling -->
-    <PackageReference Include="Quartz" Version="3.14.0" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
+    <PackageReference Include="Quartz" />
+    <PackageReference Include="Quartz.Extensions.Hosting" />
     
-    <!-- Storage -->
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageReference Include="Azure.Storage.Blobs" />
     
-    <!-- Excel -->
-    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    
+    <PackageReference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
     <ProjectReference Include="..\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\Contracts\Common.Contracts\Common.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

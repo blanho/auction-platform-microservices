@@ -9,6 +9,8 @@ public interface IAuditLogRepository
 {
     Task<AuditLog?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+    
     Task<IEnumerable<AuditLog>> GetByEntityAsync(
         string entityType,
         Guid entityId,

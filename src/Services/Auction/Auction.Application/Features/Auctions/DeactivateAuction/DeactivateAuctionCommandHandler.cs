@@ -1,84 +1,82 @@
+using Auctions.Application.DTOs.Audit;
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
+using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.DeactivateAuction;
+namespace Auctions.Application.Features.Auctions.DeactivateAuction;
 
 public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuctionCommand, AuctionDto>
 {
-    private readonly IAuctionRepository _repository;
+    private readonly IAuctionWriteRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<DeactivateAuctionCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
+    private readonly ILogger<DeactivateAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditPublisher _auditPublisher;
 
     public DeactivateAuctionCommandHandler(
-        IAuctionRepository repository,
+        IAuctionWriteRepository repository,
         IMapper mapper,
-        IAppLogger<DeactivateAuctionCommandHandler> logger,
-        IDateTimeProvider dateTime,
+        ILogger<DeactivateAuctionCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
         _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<AuctionDto>> Handle(DeactivateAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deactivating auction {AuctionId}, Reason: {Reason}", 
-            request.AuctionId, request.Reason ?? "Not specified");
+        _logger.LogInformation("Deactivating auction {AuctionId}", request.AuctionId);
 
-        try
+        var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
+        
+        if (auction == null)
         {
-            var auction = await _repository.GetByIdAsync(request.AuctionId, cancellationToken);
-            if (auction.Status != Status.Live && auction.Status != Status.Scheduled)
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
+        }
+
+        if (auction.SellerId != request.UserId)
+        {
+            _logger.LogWarning("User {UserId} attempted to deactivate auction {AuctionId} owned by {OwnerId}", 
+                request.UserId, request.AuctionId, auction.SellerId);
+            return Result.Failure<AuctionDto>(Error.Create("Auction.Forbidden", "You are not authorized to deactivate this auction"));
+        }
+        
+        if (auction.Status != Status.Live && auction.Status != Status.Scheduled)
+        {
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
+        }
+
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
+        var previousStatus = auction.Status;
+        auction.ChangeStatus(Status.Inactive);
+
+        await _repository.UpdateAsync(auction, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object>
             {
-                var error = Error.Create("Auction.InvalidStatus", 
-                    $"Cannot deactivate auction with status {auction.Status}. Only Live or Scheduled auctions can be deactivated.");
-                return Result.Failure<AuctionDto>(error);
-            }
+                ["Action"] = "Deactivated",
+                ["PreviousStatus"] = previousStatus.ToString()
+            },
+            cancellationToken);
 
-            var previousStatus = auction.Status;
-            auction.ChangeStatus(Status.Inactive);
+        _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive", 
+            request.AuctionId, previousStatus);
 
-            await _repository.UpdateAsync(auction, cancellationToken);
-            
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                auction,
-                AuditAction.Updated,
-                cancellationToken: cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive. Reason: {Reason}", 
-                request.AuctionId, previousStatus, request.Reason ?? "Not specified");
-
-            return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
-        }
-        catch (KeyNotFoundException)
-        {
-            var error = Error.Create("Auction.NotFound", $"Auction with ID {request.AuctionId} not found");
-            return Result.Failure<AuctionDto>(error);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to deactivate auction {AuctionId}: {Error}", request.AuctionId, ex.Message);
-            var error = Error.Create("Auction.DeactivationFailed", ex.Message);
-            return Result.Failure<AuctionDto>(error);
-        }
+        return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
     }
 }
 

@@ -1,52 +1,84 @@
 #nullable enable
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Domain.Entities;
 
-public class Review : BaseEntity
+public class Review : AggregateRoot
 {
-    private int _rating;
+    private const int MinRating = 1;
+    private const int MaxRating = 5;
 
-    public Guid AuctionId { get; set; }
-    public Auction? Auction { get; set; }
-    public Guid? OrderId { get; set; }
+    public Guid AuctionId { get; private set; }
+    public Auction? Auction { get; private set; }
+    public Guid? OrderId { get; private set; }
 
-    public Guid ReviewerId { get; set; }
-    public string ReviewerUsername { get; set; } = string.Empty;
+    public Guid ReviewerId { get; private set; }
+    public string ReviewerUsername { get; private set; } = string.Empty;
 
-    public Guid ReviewedUserId { get; set; }
-    public string ReviewedUsername { get; set; } = string.Empty;
+    public Guid ReviewedUserId { get; private set; }
+    public string ReviewedUsername { get; private set; } = string.Empty;
 
-    public int Rating
+    public int Rating { get; private set; }
+
+    public string? Title { get; private set; }
+    public string? Comment { get; private set; }
+    public string? SellerResponse { get; private set; }
+    public DateTimeOffset? SellerResponseAt { get; private set; }
+
+    private Review() { }
+
+    public static Review Create(
+        Guid auctionId,
+        Auction? auction,
+        Guid? orderId,
+        Guid reviewerId,
+        string reviewerUsername,
+        Guid reviewedUserId,
+        string reviewedUsername,
+        int rating,
+        string? title,
+        string? comment)
     {
-        get => _rating;
-        set
+        if (rating is < MinRating or > MaxRating)
+            throw new DomainInvariantException($"Rating must be between {MinRating} and {MaxRating}");
+
+        return new Review
         {
-            if (value < 1 || value > 5)
-                throw new ArgumentOutOfRangeException(nameof(value), "Rating must be between 1 and 5");
-            _rating = value;
-        }
+            Id = Guid.NewGuid(),
+            AuctionId = auctionId,
+            Auction = auction,
+            OrderId = orderId,
+            ReviewerId = reviewerId,
+            ReviewerUsername = reviewerUsername,
+            ReviewedUserId = reviewedUserId,
+            ReviewedUsername = reviewedUsername,
+            Rating = rating,
+            Title = title,
+            Comment = comment
+        };
     }
 
-    public string? Title { get; set; }
-    public string? Comment { get; set; }
-    public string? SellerResponse { get; set; }
-    public DateTimeOffset? SellerResponseAt { get; set; }
-    public void AddSellerResponse(string response)
+    public void AddSellerResponse(string response, DateTimeOffset? respondedAt = null)
     {
         if (string.IsNullOrWhiteSpace(response))
-            throw new ArgumentException("Seller response cannot be empty", nameof(response));
-
-        if (response.Length > 1000)
-            throw new ArgumentException("Seller response cannot exceed 1000 characters", nameof(response));
+            throw new DomainInvariantException("Seller response cannot be empty");
 
         SellerResponse = response;
-        SellerResponseAt = DateTimeOffset.UtcNow;
+        SellerResponseAt = respondedAt ?? DateTimeOffset.UtcNow;
     }
 
     public void RemoveSellerResponse()
     {
         SellerResponse = null;
         SellerResponseAt = null;
+    }
+
+    public void UpdateRating(int rating)
+    {
+        if (rating is < MinRating or > MaxRating)
+            throw new DomainInvariantException($"Rating must be between {MinRating} and {MaxRating}");
+
+        Rating = rating;
     }
 }

@@ -3,46 +3,69 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Auctions.Domain.Entities;
 
-public class Brand : BaseEntity
+public class Brand : AggregateRoot
 {
-    private string _name = string.Empty;
-    private string _slug = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
 
-    public string Name
+    public List<MediaFile> Files { get; private set; } = new();
+
+    public string? Description { get; private set; }
+    public int DisplayOrder { get; private set; }
+    public bool IsActive { get; private set; } = true;
+    public bool IsFeatured { get; private set; }
+
+    private readonly List<Item> _items = new();
+    public IReadOnlyCollection<Item> Items => _items.AsReadOnly();
+
+    private Brand() { }
+
+    public static Brand Create(
+        string name,
+        string slug,
+        string? description = null,
+        int displayOrder = 0,
+        bool isFeatured = false)
     {
-        get => _name;
-        set
+        return new Brand
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Brand name cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Brand name cannot exceed 100 characters", nameof(value));
-            _name = value;
-        }
+            Id = Guid.NewGuid(),
+            Name = name,
+            Slug = slug,
+            Description = description,
+            DisplayOrder = displayOrder,
+            IsFeatured = isFeatured,
+            IsActive = true
+        };
     }
 
-    public string Slug
+    public void Update(
+        string? name = null,
+        string? slug = null,
+        string? description = null,
+        int? displayOrder = null,
+        bool? isActive = null,
+        bool? isFeatured = null)
     {
-        get => _slug;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Brand slug cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Brand slug cannot exceed 100 characters", nameof(value));
-            _slug = value.ToLowerInvariant();
-        }
+        if (name is not null) Name = name;
+        if (slug is not null) Slug = slug;
+        if (description is not null) Description = description;
+        if (displayOrder.HasValue) DisplayOrder = displayOrder.Value;
+        if (isActive.HasValue) IsActive = isActive.Value;
+        if (isFeatured.HasValue) IsFeatured = isFeatured.Value;
     }
 
-    public string? LogoUrl { get; set; }
-    public string? Description { get; set; }
-    public int DisplayOrder { get; set; }
-    public bool IsActive { get; set; } = true;
-    public bool IsFeatured { get; set; }
-
-    public ICollection<Item> Items { get; set; } = new List<Item>();
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
     public void SetFeatured(bool featured) => IsFeatured = featured;
+
+    public void AddFile(MediaFile file) => Files.Add(file);
+
+    public void RemoveFile(Guid fileId)
+    {
+        var file = Files.FirstOrDefault(f => f.FileId == fileId);
+        if (file != null)
+            Files.Remove(file);
+    }
 }
 

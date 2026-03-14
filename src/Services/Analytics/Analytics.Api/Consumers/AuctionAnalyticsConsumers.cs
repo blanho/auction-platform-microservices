@@ -2,7 +2,7 @@ using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using AuctionService.Contracts.Events;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Consumers;
 
@@ -22,6 +22,18 @@ public class AuctionCreatedAnalyticsConsumer : IConsumer<AuctionCreatedEvent>
     public async Task Consume(ConsumeContext<AuctionCreatedEvent> context)
     {
         var @event = context.Message;
+
+        var exists = await _context.FactAuctions
+            .AnyAsync(f => f.AuctionId == @event.Id && f.EventType == "Created",
+                context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate AuctionCreated event skipped for Auction {AuctionId}",
+                @event.Id);
+            return;
+        }
 
         var fact = new FactAuction
         {
@@ -73,6 +85,18 @@ public class AuctionFinishedAnalyticsConsumer : IConsumer<AuctionFinishedEvent>
     public async Task Consume(ConsumeContext<AuctionFinishedEvent> context)
     {
         var @event = context.Message;
+
+        var exists = await _context.FactAuctions
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "Finished",
+                context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate AuctionFinished event skipped for Auction {AuctionId}",
+                @event.AuctionId);
+            return;
+        }
 
         var now = DateTimeOffset.UtcNow;
 

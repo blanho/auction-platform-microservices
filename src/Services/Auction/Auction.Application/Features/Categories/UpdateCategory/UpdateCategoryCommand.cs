@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.UpdateCategory;
+namespace Auctions.Application.Features.Categories.UpdateCategory;
 
 public record UpdateCategoryCommand(
     Guid Id,

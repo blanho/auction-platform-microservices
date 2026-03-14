@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Entities;
 using BuildingBlocks.Infrastructure.Repository.Converters;
@@ -18,6 +19,10 @@ public class AnalyticsDbContext : DbContext
     public DbSet<FactAuction> FactAuctions { get; set; }
     public DbSet<FactPayment> FactPayments { get; set; }
 
+    public DbSet<DailyAuctionStats> DailyAuctionStats { get; set; }
+    public DbSet<DailyBidStats> DailyBidStats { get; set; }
+    public DbSet<DailyRevenueStats> DailyRevenueStats { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -25,6 +30,10 @@ public class AnalyticsDbContext : DbContext
         modelBuilder.HasDefaultSchema("public");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnalyticsDbContext).Assembly);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

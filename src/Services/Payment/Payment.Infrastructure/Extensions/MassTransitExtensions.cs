@@ -1,7 +1,7 @@
 using Payment.Infrastructure.Persistence;
-using Payment.Infrastructure.Messaging;
 using Payment.Infrastructure.Messaging.Consumers;
-
+using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +19,7 @@ public static class MassTransitExtensions
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
             x.AddConsumer<CreateBuyNowOrderConsumer>();
+            x.AddConsumer<GenerateOrderReportConsumer>();
 
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
             {
@@ -29,11 +30,15 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RabbitMQ:Host"] ?? "localhost";
-                var username = configuration["RabbitMQ:Username"] ?? "guest";
-                var password = configuration["RabbitMQ:Password"] ?? "guest";
+                var host = configuration["RabbitMQ:Host"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Host configuration is required");
+                var username = configuration["RabbitMQ:Username"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Username configuration is required");
+                var password = configuration["RabbitMQ:Password"]
+                    ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
+                var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, "/", h =>
+                cfg.Host(host, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);
@@ -44,27 +49,60 @@ public static class MassTransitExtensions
                 cfg.ReceiveEndpoint("payment-auction-finished", e =>
                 {
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
 
                 cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
                 {
                     e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
                 });
                 
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
-                    e.UseMessageRetry(r => r.Intervals(100, 500, 1000, 5000));
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(5)));
+                });
+                
+                cfg.ReceiveEndpoint("payment-generate-order-report", e =>
+                {
+                    e.ConfigureConsumer<GenerateOrderReportConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: 3,
+                        minInterval: TimeSpan.FromSeconds(1),
+                        maxInterval: TimeSpan.FromSeconds(30),
+                        intervalDelta: TimeSpan.FromSeconds(2)));
+                    e.PrefetchCount = 4;
                 });
 
-                cfg.UseMessageRetry(r => r.Immediate(5));
+                cfg.UseDelayedRedelivery(r => r.Intervals(
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(30),
+                    TimeSpan.FromMinutes(2)));
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    retryLimit: 5,
+                    minInterval: TimeSpan.FromMilliseconds(200),
+                    maxInterval: TimeSpan.FromSeconds(30),
+                    intervalDelta: TimeSpan.FromSeconds(5)));
+
                 cfg.ConfigureEndpoints(context);
             });
         });
 
-        services.AddScoped<IEventPublisher, OutboxEventPublisher>();
+        services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
         return services;
     }
 }

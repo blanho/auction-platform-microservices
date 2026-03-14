@@ -1,0 +1,61 @@
+{
+  "title": "お支払い",
+  "paymentMethods": "支払い方法",
+  "addPaymentMethod": "支払い方法を追加",
+  "billingHistory": "請求履歴",
+  "pendingPayments": "保留中の支払い",
+
+  "method": {
+    "creditCard": "クレジットカード",
+    "debitCard": "デビットカード",
+    "bankTransfer": "銀行振込",
+    "paypal": "PayPal",
+    "crypto": "暗号通貨"
+  },
+
+  "card": {
+    "number": "カード番号",
+    "expiry": "有効期限",
+    "cvv": "CVV",
+    "name": "カード名義",
+    "default": "デフォルト",
+    "setDefault": "デフォルトに設定",
+    "remove": "カードを削除"
+  },
+
+  "checkout": {
+    "title": "決済",
+    "orderSummary": "注文概要",
+    "subtotal": "小計",
+    "shipping": "送料",
+    "tax": "税金",
+    "total": "合計",
+    "payNow": "今すぐ支払う",
+    "processing": "処理中..."
+  },
+
+  "status": {
+    "pending": "保留中",
+    "completed": "完了",
+    "failed": "失敗",
+    "refunded": "返金済み",
+    "cancelled": "キャンセル"
+  },
+
+  "messages": {
+    "paymentSuccess": "支払いが完了しました",
+    "paymentFailed": "支払いに失敗しました。もう一度お試しください。",
+    "cardAdded": "カードを追加しました",
+    "cardRemoved": "カードを削除しました",
+    "refundInitiated": "返金を開始しました"
+  },
+
+  "invoice": {
+    "title": "請求書",
+    "invoiceNumber": "請求書番号 #{{number}}",
+    "date": "日付",
+    "dueDate": "支払期限",
+    "download": "請求書をダウンロード",
+    "print": "印刷"
+  }
+}

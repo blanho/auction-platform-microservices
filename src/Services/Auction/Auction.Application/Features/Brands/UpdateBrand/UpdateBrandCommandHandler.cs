@@ -1,22 +1,21 @@
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
-namespace Auctions.Application.Commands.UpdateBrand;
+using BuildingBlocks.Application.Helpers;
+using Microsoft.Extensions.Logging;
+namespace Auctions.Application.Features.Brands.UpdateBrand;
 
 public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, BrandDto>
 {
     private readonly IBrandRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IAppLogger<UpdateBrandCommandHandler> _logger;
+    private readonly ILogger<UpdateBrandCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateBrandCommandHandler(
         IBrandRepository repository,
         IMapper mapper,
-        IAppLogger<UpdateBrandCommandHandler> logger,
+        ILogger<UpdateBrandCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -34,7 +33,7 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
             var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (brand == null)
             {
-                return Result.Failure<BrandDto>(Error.Create("Brand.NotFound", $"Brand with ID '{request.Id}' was not found"));
+                return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
             }
 
             if (!string.IsNullOrWhiteSpace(request.Name) && request.Name != brand.Name)
@@ -43,26 +42,25 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
                 var existingBrand = await _repository.GetBySlugAsync(newSlug, cancellationToken);
                 if (existingBrand != null && existingBrand.Id != request.Id)
                 {
-                    return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{newSlug}' already exists"));
+                    return Result.Failure<BrandDto>(AuctionErrors.Brand.SlugExists(newSlug));
                 }
-                brand.Name = request.Name;
-                brand.Slug = newSlug;
+
+                brand.Update(
+                    name: request.Name,
+                    slug: newSlug,
+                    description: request.Description,
+                    displayOrder: request.DisplayOrder,
+                    isActive: request.IsActive,
+                    isFeatured: request.IsFeatured);
             }
-
-            if (request.LogoUrl != null)
-                brand.LogoUrl = request.LogoUrl;
-
-            if (request.Description != null)
-                brand.Description = request.Description;
-
-            if (request.DisplayOrder.HasValue)
-                brand.DisplayOrder = request.DisplayOrder.Value;
-
-            if (request.IsActive.HasValue)
-                brand.IsActive = request.IsActive.Value;
-
-            if (request.IsFeatured.HasValue)
-                brand.IsFeatured = request.IsFeatured.Value;
+            else
+            {
+                brand.Update(
+                    description: request.Description,
+                    displayOrder: request.DisplayOrder,
+                    isActive: request.IsActive,
+                    isFeatured: request.IsFeatured);
+            }
 
             await _repository.UpdateAsync(brand, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -75,7 +73,7 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
         catch (Exception ex)
         {
             _logger.LogError("Failed to update brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<BrandDto>(Error.Create("Brand.UpdateFailed", $"Failed to update brand: {ex.Message}"));
+            return Result.Failure<BrandDto>(AuctionErrors.Brand.UpdateFailed(ex.Message));
         }
     }
 }

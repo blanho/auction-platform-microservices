@@ -3,13 +3,13 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notification.Infrastructure.Configuration;
 using Notification.Application.Interfaces;
 using Notification.Application.Services;
 using Notification.Infrastructure.Messaging;
 using Notification.Infrastructure.Persistence;
-using Notification.Infrastructure.Repositories;
+using Notification.Infrastructure.Persistence.Repositories;
 using Notification.Infrastructure.Senders;
-using Notification.Infrastructure.Services;
 using SendGrid;
 using StackExchange.Redis;
 using NotificationUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
@@ -25,6 +25,7 @@ public static class NotificationServiceExtensions
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<INotificationRecordRepository, NotificationRecordRepository>();
         services.AddScoped<ITemplateRepository, TemplateRepository>();
+        services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
 
         services.AddScoped<NotificationUnitOfWork, UnitOfWork>();
 
@@ -35,6 +36,8 @@ public static class NotificationServiceExtensions
     {
         services.AddScoped<INotificationService, NotificationServiceImpl>();
         services.AddScoped<INotificationSender, NotificationSender>();
+        services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<INotificationRecordService, NotificationRecordService>();
 
         return services;
     }
@@ -53,7 +56,10 @@ public static class NotificationServiceExtensions
         IConfiguration configuration)
     {
 
-        services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.SectionName));
+        services.AddOptions<SendGridOptions>()
+            .BindConfiguration(SendGridOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton<ISendGridClient>(sp =>
         {
             var options = configuration.GetSection(SendGridOptions.SectionName).Get<SendGridOptions>();
@@ -61,7 +67,10 @@ public static class NotificationServiceExtensions
         });
         services.AddScoped<IEmailSender, SendGridEmailSender>();
 
-        services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
+        services.AddOptions<FirebaseOptions>()
+            .BindConfiguration(FirebaseOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton(sp =>
         {
             var options = configuration.GetSection(FirebaseOptions.SectionName).Get<FirebaseOptions>();
@@ -91,7 +100,10 @@ public static class NotificationServiceExtensions
         });
         services.AddScoped<IPushSender, FirebasePushSender>();
 
-        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
+        services.AddOptions<TwilioOptions>()
+            .BindConfiguration(TwilioOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddScoped<ISmsSender, TwilioSmsSender>();
 
         return services;

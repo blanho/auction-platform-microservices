@@ -1,15 +1,18 @@
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Auctions.Domain.Enums;
+using Auctions.Infrastructure.Persistence;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;
 
+[DisallowConcurrentExecution]
 public class AuctionActivationJob : BaseJob
 {
+    private const int SaveBatchSize = 100;
+
     public const string JobId = "auction-activation";
     public const string Description = "Activates scheduled auctions at their start time";
 
@@ -18,16 +21,19 @@ public class AuctionActivationJob : BaseJob
         IServiceProvider serviceProvider)
         : base(logger, serviceProvider)
     {
+        
     }
 
     protected override async Task ExecuteJobAsync(
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionRepository>();
+        var schedulerRepository = scopedProvider.GetRequiredService<IAuctionSchedulerRepository>();
+        var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
+        var dbContext = scopedProvider.GetRequiredService<AuctionDbContext>();
 
-        var scheduledAuctions = await repository.GetScheduledAuctionsToActivateAsync(cancellationToken);
+        var scheduledAuctions = await schedulerRepository.GetScheduledAuctionsToActivateAsync(cancellationToken);
 
         if (scheduledAuctions.Count == 0)
         {
@@ -36,28 +42,41 @@ public class AuctionActivationJob : BaseJob
 
         Logger.LogInformation("Found {Count} scheduled auctions to activate", scheduledAuctions.Count);
         var activatedCount = 0;
+        var failedCount = 0;
+        var pendingChanges = 0;
 
         foreach (var auction in scheduledAuctions)
         {
             try
             {
                 auction.ChangeStatus(Status.Live);
-                await repository.UpdateAsync(auction, cancellationToken);
+                await writeRepository.UpdateAsync(auction, cancellationToken);
 
                 activatedCount++;
-                Logger.LogInformation(
-                    "Activated scheduled auction {AuctionId}: {Title}",
-                    auction.Id, auction.Item?.Title ?? "Unknown");
+                pendingChanges++;
+
+                if (pendingChanges >= SaveBatchSize)
+                {
+                    await unitOfWork.SaveChangesAsync(cancellationToken);
+                    dbContext.ChangeTracker.Clear();
+                    pendingChanges = 0;
+                }
             }
             catch (Exception ex)
             {
+                failedCount++;
                 Logger.LogError(ex, "Failed to activate auction {AuctionId}", auction.Id);
             }
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        Logger.LogInformation("Activated {ActivatedCount}/{TotalCount} scheduled auctions",
-            activatedCount, scheduledAuctions.Count);
+        if (pendingChanges > 0)
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+        }
+
+        Logger.LogInformation("Activated {ActivatedCount} scheduled auctions, {FailedCount} failed out of {TotalCount}",
+            activatedCount, failedCount, scheduledAuctions.Count);
     }
 }
 

@@ -9,19 +9,19 @@ public class UserNotification : BaseEntity
 
     public string Message { get; private set; } = string.Empty;
 
-    public string? Link { get; set; }
+    public string? Link { get; private set; }
 
     public bool IsRead { get; private set; }
 
     public DateTimeOffset? ReadAt { get; private set; }
 
-    public Guid? AuctionId { get; set; }
+    public Guid? AuctionId { get; private set; }
 
-    public Guid? BidId { get; set; }
+    public Guid? BidId { get; private set; }
 
-    public Guid? OrderId { get; set; }
+    public Guid? OrderId { get; private set; }
 
-    public string? Type { get; set; }
+    public string? Type { get; private set; }
 
     private UserNotification() { }
 
@@ -35,15 +35,6 @@ public class UserNotification : BaseEntity
         Guid? orderId = null,
         string? type = null)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            throw new ArgumentException("User ID is required", nameof(userId));
-
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title is required", nameof(title));
-
-        if (string.IsNullOrWhiteSpace(message))
-            throw new ArgumentException("Message is required", nameof(message));
-
         return new UserNotification
         {
             Id = Guid.NewGuid(),

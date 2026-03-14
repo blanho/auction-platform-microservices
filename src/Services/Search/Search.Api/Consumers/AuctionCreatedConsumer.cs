@@ -1,6 +1,5 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Infrastructure.Messaging;
 using BuildingBlocks.Web.Exceptions;
 using MassTransit;
 using Microsoft.Extensions.Caching.Distributed;
@@ -37,9 +36,25 @@ public class AuctionCreatedConsumer : IConsumer<AuctionCreatedEvent>
 
         _logger.LogInformation("Processing AuctionCreatedEvent for auction {AuctionId}", message.Id);
 
-        await _indexManagement.EnsureIndexExistsAsync(context.CancellationToken);
+        var ensureResult = await _indexManagement.EnsureIndexExistsAsync(context.CancellationToken);
+        if (ensureResult.IsFailure)
+        {
+            throw new ConflictException($"Failed to ensure index exists: {ensureResult.Error}");
+        }
 
-        var document = new AuctionDocument
+        var document = CreateAuctionDocument(message);
+
+        var indexResult = await _indexService.IndexAsync(document, context.CancellationToken);
+        if (indexResult.IsFailure)
+        {
+            throw new ConflictException($"Failed to index auction {message.Id}: {indexResult.Error}");
+        }
+
+        _logger.LogInformation("Successfully indexed auction {AuctionId}", message.Id);
+    }
+
+    private AuctionDocument CreateAuctionDocument(AuctionCreatedEvent message) =>
+        new()
         {
             Id = message.Id,
             Title = message.Title,
@@ -61,14 +76,4 @@ public class AuctionCreatedConsumer : IConsumer<AuctionCreatedEvent>
             FinalPrice = message.SoldAmount,
             LastSyncedAt = _dateTime.UtcNowOffset
         };
-
-        var success = await _indexService.IndexAsync(document, context.CancellationToken);
-
-        if (!success)
-        {
-            throw new ConflictException($"Failed to index auction {message.Id}");
-        }
-
-        _logger.LogInformation("Successfully indexed auction {AuctionId}", message.Id);
-    }
 }

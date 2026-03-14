@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Report.NotFound" xml:space="preserve"><value>レポートが見つかりません。</value></data>
+  <data name="Report.AlreadyResolved" xml:space="preserve"><value>レポートはすでに解決済みです。</value></data>
+  <data name="Report.CannotDeleteResolved" xml:space="preserve"><value>解決済みのレポートは削除できません。</value></data>
+  <data name="Report.InvalidStatus" xml:space="preserve"><value>無効なレポートステータス遷移です。</value></data>
+  <data name="Report.CreateFailed" xml:space="preserve"><value>レポートの作成に失敗しました。</value></data>
+  <data name="Report.UpdateFailed" xml:space="preserve"><value>レポートの更新に失敗しました。</value></data>
+  <data name="Report.DeleteFailed" xml:space="preserve"><value>レポートの削除に失敗しました。</value></data>
+  <data name="Setting.NotFound" xml:space="preserve"><value>設定が見つかりません。</value></data>
+  <data name="Setting.KeyExists" xml:space="preserve"><value>このキーの設定はすでに存在します。</value></data>
+  <data name="Setting.SystemSettingReadOnly" xml:space="preserve"><value>システム設定は変更できません。</value></data>
+  <data name="Setting.InvalidValue" xml:space="preserve"><value>無効な設定値です。</value></data>
+  <data name="Setting.CreateFailed" xml:space="preserve"><value>設定の作成に失敗しました。</value></data>
+  <data name="Setting.UpdateFailed" xml:space="preserve"><value>設定の更新に失敗しました。</value></data>
+  <data name="Setting.DeleteFailed" xml:space="preserve"><value>設定の削除に失敗しました。</value></data>
+  <data name="AuditLog.NotFound" xml:space="preserve"><value>監査ログが見つかりません。</value></data>
+  <data name="AuditLog.QueryFailed" xml:space="preserve"><value>監査ログのクエリに失敗しました。</value></data>
+  <data name="Analytics.QueryFailed" xml:space="preserve"><value>分析データの取得に失敗しました。</value></data>
+  <data name="Analytics.InvalidDateRange" xml:space="preserve"><value>無効な日付範囲が指定されました。</value></data>
+  <data name="Analytics.InvalidPeriod" xml:space="preserve"><value>無効な期間が指定されました。</value></data>
+</root>

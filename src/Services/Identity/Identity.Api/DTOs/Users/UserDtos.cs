@@ -2,6 +2,16 @@ using BuildingBlocks.Application.Paging;
 
 namespace Identity.Api.DTOs.Users;
 
+public class UserFilter
+{
+    public string? Search { get; init; }
+    public string? Role { get; init; }
+    public bool? IsActive { get; init; }
+    public bool? IsSuspended { get; init; }
+}
+
+public class GetUsersQuery : QueryParameters<UserFilter> { }
+
 public class UserDto
 {
     public string Id { get; set; } = string.Empty;
@@ -39,10 +49,3 @@ public class UpdateUserRolesRequest
     public required List<string> Roles { get; set; }
 }
 
-public class GetUsersQuery : PageRequest
-{
-    public string? Search { get; init; }
-    public string? Role { get; init; }
-    public bool? IsActive { get; init; }
-    public bool? IsSuspended { get; init; }
-}

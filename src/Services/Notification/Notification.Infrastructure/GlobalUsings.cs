@@ -1,4 +1,4 @@
-global using BuildingBlocks.Infrastructure.Repository;
+global using BuildingBlocks.Application.Abstractions;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Logging;
 global using Notification.Domain.Enums;

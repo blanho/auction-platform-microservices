@@ -4,47 +4,72 @@ using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Domain.Entities;
 
-public class Category : BaseEntity
+public class Category : AggregateRoot
 {
-    private string _name = string.Empty;
-    private string _slug = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public string Slug { get; private set; } = string.Empty;
+    public string Icon { get; private set; } = "fa-box";
+    public string? Description { get; private set; }
 
-    public string Name
+    public List<MediaFile> Files { get; private set; } = new();
+
+    public int DisplayOrder { get; private set; }
+    public bool IsActive { get; private set; } = true;
+
+    public Guid? ParentCategoryId { get; private set; }
+    public Category? ParentCategory { get; private set; }
+
+    private readonly List<Category> _subCategories = new();
+    public IReadOnlyCollection<Category> SubCategories => _subCategories.AsReadOnly();
+
+    private readonly List<Item> _items = new();
+    public IReadOnlyCollection<Item> Items => _items.AsReadOnly();
+
+    private Category() { }
+
+    public static Category Create(
+        string name,
+        string slug,
+        string icon = "fa-box",
+        string? description = null,
+        int displayOrder = 0,
+        bool isActive = true,
+        Guid? parentCategoryId = null)
     {
-        get => _name;
-        set
+        return new Category
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Category name cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Category name cannot exceed 100 characters", nameof(value));
-            _name = value;
-        }
+            Id = Guid.NewGuid(),
+            Name = name,
+            Slug = slug,
+            Icon = icon,
+            Description = description,
+            DisplayOrder = displayOrder,
+            IsActive = isActive,
+            ParentCategoryId = parentCategoryId
+        };
     }
 
-    public string Slug
+    public void Update(
+        string name,
+        string slug,
+        string icon,
+        string? description,
+        int displayOrder,
+        bool isActive,
+        Guid? parentCategoryId)
     {
-        get => _slug;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Category slug cannot be empty", nameof(value));
-            if (value.Length > 100)
-                throw new ArgumentException("Category slug cannot exceed 100 characters", nameof(value));
-            _slug = value.ToLowerInvariant();
-        }
+        if (parentCategoryId == Id)
+            throw new DomainInvariantException("Category cannot be its own parent");
+
+        Name = name;
+        Slug = slug;
+        Icon = icon;
+        Description = description;
+        DisplayOrder = displayOrder;
+        IsActive = isActive;
+        ParentCategoryId = parentCategoryId;
     }
 
-    public string Icon { get; set; } = "fa-box";
-    public string? Description { get; set; }
-    public string? ImageUrl { get; set; }
-    public int DisplayOrder { get; set; }
-    public bool IsActive { get; set; } = true;
-
-    public Guid? ParentCategoryId { get; set; }
-    public Category? ParentCategory { get; set; }
-    public ICollection<Category> SubCategories { get; set; } = new List<Category>();
-    public ICollection<Item> Items { get; set; } = new List<Item>();
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 
@@ -55,6 +80,15 @@ public class Category : BaseEntity
 
         ParentCategoryId = parent?.Id;
         ParentCategory = parent;
+    }
+
+    public void AddFile(MediaFile file) => Files.Add(file);
+
+    public void RemoveFile(Guid fileId)
+    {
+        var file = Files.FirstOrDefault(f => f.FileId == fileId);
+        if (file != null)
+            Files.Remove(file);
     }
 }
 

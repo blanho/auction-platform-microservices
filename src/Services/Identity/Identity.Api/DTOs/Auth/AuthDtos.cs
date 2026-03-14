@@ -19,7 +19,9 @@ public class ResetPasswordRequest
     public string Token { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(100, MinimumLength = 6)]
+    [StringLength(100, MinimumLength = 12)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
     public string NewPassword { get; set; } = string.Empty;
 
     [Required]
@@ -49,7 +51,9 @@ public class ChangePasswordRequest
     public string CurrentPassword { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(100, MinimumLength = 6)]
+    [StringLength(100, MinimumLength = 12)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
     public string NewPassword { get; set; } = string.Empty;
 
     [Required]
@@ -79,7 +83,9 @@ public class RegisterRequest
     public string Email { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(100, MinimumLength = 6)]
+    [StringLength(100, MinimumLength = 12)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
     public string Password { get; set; } = string.Empty;
 }
 
@@ -101,3 +107,37 @@ public record TokenResponse(
     string? RefreshToken,
     int ExpiresIn
 );
+
+public enum RefreshTokenFailureReason
+{
+    None = 0,
+    TokenNotFound = 1,
+    TokenExpired = 2,
+    SecurityTermination = 3
+}
+
+public record RefreshTokenResult
+{
+    public bool IsSuccess { get; init; }
+    public RefreshTokenFailureReason FailureReason { get; init; }
+    public string? AccessToken { get; init; }
+    public string? RefreshToken { get; init; }
+    public int ExpiresIn { get; init; }
+
+    public static RefreshTokenResult Success(string accessToken, string refreshToken, int expiresIn) =>
+        new()
+        {
+            IsSuccess = true,
+            FailureReason = RefreshTokenFailureReason.None,
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = expiresIn
+        };
+
+    public static RefreshTokenResult Failure(RefreshTokenFailureReason reason) =>
+        new()
+        {
+            IsSuccess = false,
+            FailureReason = reason
+        };
+}

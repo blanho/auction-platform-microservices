@@ -1,19 +1,17 @@
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Auctions.Application.Errors;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.DeleteBrand;
+namespace Auctions.Application.Features.Brands.DeleteBrand;
 
 public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
 {
     private readonly IBrandRepository _repository;
-    private readonly IAppLogger<DeleteBrandCommandHandler> _logger;
+    private readonly ILogger<DeleteBrandCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteBrandCommandHandler(
         IBrandRepository repository,
-        IAppLogger<DeleteBrandCommandHandler> logger,
+        ILogger<DeleteBrandCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -30,7 +28,7 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
             var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
             if (brand == null)
             {
-                return Result.Failure(Error.Create("Brand.NotFound", $"Brand with ID '{request.Id}' was not found"));
+                return Result.Failure(AuctionErrors.Brand.NotFoundById(request.Id));
             }
 
             await _repository.DeleteAsync(request.Id, cancellationToken);
@@ -43,7 +41,7 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
         catch (Exception ex)
         {
             _logger.LogError("Failed to delete brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure(Error.Create("Brand.DeleteFailed", $"Failed to delete brand: {ex.Message}"));
+            return Result.Failure(AuctionErrors.Brand.DeleteFailed(ex.Message));
         }
     }
 }

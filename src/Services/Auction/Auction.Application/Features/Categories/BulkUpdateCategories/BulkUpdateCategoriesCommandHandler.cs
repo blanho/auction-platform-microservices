@@ -1,19 +1,16 @@
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.BulkUpdateCategories;
+namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
 public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCategoriesCommand, int>
 {
     private readonly ICategoryRepository _repository;
-    private readonly IAppLogger<BulkUpdateCategoriesCommandHandler> _logger;
+    private readonly ILogger<BulkUpdateCategoriesCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public BulkUpdateCategoriesCommandHandler(
         ICategoryRepository repository,
-        IAppLogger<BulkUpdateCategoriesCommandHandler> logger,
+        ILogger<BulkUpdateCategoriesCommandHandler> logger,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
@@ -29,20 +26,23 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
         try
         {
             var updatedCount = 0;
+            var categories = await _repository.GetByIdsForUpdateAsync(request.CategoryIds, cancellationToken);
+            var categoriesById = categories.ToDictionary(x => x.Id, x => x);
 
-            foreach (var categoryId in request.CategoryIds)
+            foreach (var categoryId in request.CategoryIds.Distinct())
             {
-                try
-                {
-                    var category = await _repository.GetByIdAsync(categoryId, cancellationToken);
-                    category.IsActive = request.IsActive;
-                    await _repository.UpdateAsync(category, cancellationToken);
-                    updatedCount++;
-                }
-                catch (KeyNotFoundException)
+                if (!categoriesById.TryGetValue(categoryId, out var category))
                 {
                     _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
+                    continue;
                 }
+
+                if (request.IsActive)
+                    category.Activate();
+                else
+                    category.Deactivate();
+                await _repository.UpdateAsync(category, cancellationToken);
+                updatedCount++;
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -53,7 +53,7 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to bulk update categories: {Error}", ex.Message);
+            _logger.LogError(ex, "Failed to bulk update categories: {Error}", ex.Message);
             return Result.Failure<int>(Error.Create("Category.BulkUpdateFailed", $"Failed to bulk update categories: {ex.Message}"));
         }
     }

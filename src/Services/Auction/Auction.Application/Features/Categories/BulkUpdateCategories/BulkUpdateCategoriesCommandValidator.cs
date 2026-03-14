@@ -1,6 +1,7 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.BulkUpdateCategories;
+namespace Auctions.Application.Features.Categories.BulkUpdateCategories;
 
 public class BulkUpdateCategoriesCommandValidator : AbstractValidator<BulkUpdateCategoriesCommand>
 {
@@ -8,15 +9,15 @@ public class BulkUpdateCategoriesCommandValidator : AbstractValidator<BulkUpdate
     {
         RuleFor(x => x.CategoryIds)
             .NotEmpty()
-            .WithMessage("At least one category ID is required");
+            .WithMessage(ValidationConstants.Messages.MustContainAtLeastOne("Category ID"));
 
         RuleFor(x => x.CategoryIds)
-            .Must(ids => ids.Count <= 100)
-            .WithMessage("Cannot update more than 100 categories at once");
+            .Must(ids => ids.Count <= ValidationConstants.CollectionSize.MaxBulkOperationSize)
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Categories", ValidationConstants.CollectionSize.MaxBulkOperationSize));
 
         RuleForEach(x => x.CategoryIds)
             .NotEmpty()
-            .WithMessage("Category ID cannot be empty");
+            .WithMessage(ValidationConstants.Messages.Required("Category ID"));
     }
 }
 

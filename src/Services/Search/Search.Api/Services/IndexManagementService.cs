@@ -1,11 +1,14 @@
 using BuildingBlocks.Web.Exceptions;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.Analysis;
 using Elastic.Clients.Elasticsearch.IndexManagement;
 using Elastic.Clients.Elasticsearch.Mapping;
 using Microsoft.Extensions.Options;
 using Search.Api.Configuration;
 using Search.Api.Documents;
+using Search.Api.Errors;
 using Search.Api.Interfaces;
+using Result = BuildingBlocks.Application.Abstractions.Result;
 
 namespace Search.Api.Services;
 
@@ -34,7 +37,7 @@ public class IndexManagementService : IIndexManagementService
         _logger = logger;
     }
 
-    public async Task<bool> EnsureIndexExistsAsync(CancellationToken ct = default)
+    public async Task<Result> EnsureIndexExistsAsync(CancellationToken ct = default)
     {
         var indexName = GetIndexName();
 
@@ -45,91 +48,100 @@ public class IndexManagementService : IIndexManagementService
             if (existsResponse.Exists)
             {
                 _logger.LogDebug("Index {IndexName} already exists", indexName);
-                return true;
+                return Result.Success();
             }
 
-            var createResponse = await _client.Indices.CreateAsync(indexName, c => c
-                .Settings(s => s
-                    .NumberOfShards(_options.NumberOfShards)
-                    .NumberOfReplicas(_options.NumberOfReplicas)
-                    .RefreshInterval(new Duration("1s"))
-                    .Analysis(a => a
-                        .Analyzers(an => an
-                            .Custom("auction_analyzer", ca => ca
-                                .Tokenizer("standard")
-                                .Filter(new[] { "lowercase", "asciifolding" }))
-                            .Custom("autocomplete_analyzer", ca => ca
-                                .Tokenizer("autocomplete_tokenizer")
-                                .Filter(new[] { "lowercase", "asciifolding" }))
-                            .Custom("autocomplete_search_analyzer", ca => ca
-                                .Tokenizer("standard")
-                                .Filter(new[] { "lowercase", "asciifolding" })))
-                        .Tokenizers(t => t
-                            .EdgeNGram("autocomplete_tokenizer", e => e
-                                .MinGram(2)
-                                .MaxGram(20)
-                                .TokenChars(new[] { Elastic.Clients.Elasticsearch.Analysis.TokenChar.Letter, Elastic.Clients.Elasticsearch.Analysis.TokenChar.Digit })))))
-                .Mappings(m => m
-                    .Dynamic(DynamicMapping.Strict)
-                    .Properties<AuctionDocument>(p => p
-                        .Keyword(k => k.Id)
-                        .Text(k => k.Title, t => t
-                            .Analyzer("auction_analyzer")
-                            .Fields(f => f
-                                .Keyword("keyword")
-                                .Text("autocomplete", ac => ac
-                                    .Analyzer("autocomplete_analyzer")
-                                    .SearchAnalyzer("autocomplete_search_analyzer"))))
-                        .Text(k => k.Description, t => t.Analyzer("auction_analyzer"))
-                        .Keyword(k => k.CategoryId)
-                        .Keyword(k => k.CategoryName)
-                        .Keyword(k => k.CategoryPath)
-                        .Keyword(k => k.BrandId)
-                        .Keyword(k => k.BrandName)
-                        .Keyword(k => k.SellerId)
-                        .Keyword(k => k.SellerUsername)
-                        .DoubleNumber(k => k.StartPrice)
-                        .DoubleNumber(k => k.CurrentPrice)
-                        .DoubleNumber(k => k.ReservePrice)
-                        .DoubleNumber(k => k.BuyNowPrice)
-                        .Keyword(k => k.Currency)
-                        .Keyword(k => k.Status)
-                        .Keyword(k => k.Condition)
-                        .Date(k => k.StartTime)
-                        .Date(k => k.EndTime)
-                        .Date(k => k.CreatedAt)
-                        .Date(k => k.UpdatedAt)
-                        .IntegerNumber(k => k.BidCount)
-                        .Keyword(k => k.WinnerId)
-                        .Keyword(k => k.WinnerUsername)
-                        .DoubleNumber(k => k.FinalPrice)
-                        .Keyword(k => k.ImageUrls)
-                        .Keyword(k => k.ThumbnailUrl)
-                        .Object(k => k.Attributes, o => o.Enabled(false))
-                        .Keyword(k => k.Tags)
-                        .Boolean(k => k.IsFeatured)
-                        .GeoPoint(k => k.Location)
-                        .Date(k => k.LastSyncedAt))),
-            ct);
-
-            if (!createResponse.IsValidResponse)
-            {
-                _logger.LogError("Failed to create index {IndexName}: {Error}",
-                    indexName, createResponse.DebugInformation);
-                return false;
-            }
-
-            _logger.LogInformation("Created index {IndexName}", indexName);
-            return true;
+            return await CreateIndexAsync(indexName, ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error ensuring index {IndexName} exists", indexName);
-            throw;
+            return Result.Failure(IndexErrors.IndexCreationFailed(indexName, ex.Message));
         }
     }
 
-    public async Task RecreateIndexAsync(CancellationToken ct = default)
+    private async Task<Result> CreateIndexAsync(string indexName, CancellationToken ct)
+    {
+        var createResponse = await _client.Indices.CreateAsync(indexName, c => c
+            .Settings(s => s
+                .NumberOfShards(_options.NumberOfShards)
+                .NumberOfReplicas(_options.NumberOfReplicas)
+                .RefreshInterval(new Duration("1s"))
+                .Analysis(a => a
+                    .Analyzers(an => an
+                        .Custom("auction_analyzer", ca => ca
+                            .Tokenizer("standard")
+                            .Filter(new[] { "lowercase", "asciifolding" }))
+                        .Custom("autocomplete_analyzer", ca => ca
+                            .Tokenizer("autocomplete_tokenizer")
+                            .Filter(new[] { "lowercase", "asciifolding" }))
+                        .Custom("autocomplete_search_analyzer", ca => ca
+                            .Tokenizer("standard")
+                            .Filter(new[] { "lowercase", "asciifolding" })))
+                    .Tokenizers(t => t
+                        .EdgeNGram("autocomplete_tokenizer", e => e
+                            .MinGram(2)
+                            .MaxGram(20)
+                            .TokenChars(new[] 
+                            { 
+                                TokenChar.Letter, 
+                                TokenChar.Digit 
+                            })))))
+            .Mappings(m => m
+                .Dynamic(DynamicMapping.Strict)
+                .Properties<AuctionDocument>(p => p
+                    .Keyword(k => k.Id)
+                    .Text(k => k.Title, t => t
+                        .Analyzer("auction_analyzer")
+                        .Fields(f => f
+                            .Keyword("keyword")
+                            .Text("autocomplete", ac => ac
+                                .Analyzer("autocomplete_analyzer")
+                                .SearchAnalyzer("autocomplete_search_analyzer"))))
+                    .Text(k => k.Description, t => t.Analyzer("auction_analyzer"))
+                    .Keyword(k => k.CategoryId)
+                    .Keyword(k => k.CategoryName)
+                    .Keyword(k => k.CategoryPath)
+                    .Keyword(k => k.BrandId)
+                    .Keyword(k => k.BrandName)
+                    .Keyword(k => k.SellerId)
+                    .Keyword(k => k.SellerUsername)
+                    .DoubleNumber(k => k.StartPrice)
+                    .DoubleNumber(k => k.CurrentPrice)
+                    .DoubleNumber(k => k.ReservePrice)
+                    .DoubleNumber(k => k.BuyNowPrice)
+                    .Keyword(k => k.Currency)
+                    .Keyword(k => k.Status)
+                    .Keyword(k => k.Condition)
+                    .Date(k => k.StartTime)
+                    .Date(k => k.EndTime)
+                    .Date(k => k.CreatedAt)
+                    .Date(k => k.UpdatedAt)
+                    .IntegerNumber(k => k.BidCount)
+                    .Keyword(k => k.WinnerId)
+                    .Keyword(k => k.WinnerUsername)
+                    .DoubleNumber(k => k.FinalPrice)
+                    .Keyword(k => k.ImageUrls)
+                    .Keyword(k => k.ThumbnailUrl)
+                    .Object(k => k.Attributes, o => o.Enabled(false))
+                    .Keyword(k => k.Tags)
+                    .Boolean(k => k.IsFeatured)
+                    .GeoPoint(k => k.Location)
+                    .Date(k => k.LastSyncedAt))),
+        ct);
+
+        if (!createResponse.IsValidResponse)
+        {
+            _logger.LogError("Failed to create index {IndexName}: {Error}",
+                indexName, createResponse.DebugInformation);
+            return Result.Failure(IndexErrors.IndexCreationFailed(indexName, createResponse.DebugInformation));
+        }
+
+        _logger.LogInformation("Created index {IndexName}", indexName);
+        return Result.Success();
+    }
+
+    public async Task<Result> RecreateIndexAsync(CancellationToken ct = default)
     {
         var indexName = GetIndexName();
 
@@ -141,31 +153,46 @@ public class IndexManagementService : IIndexManagementService
             var deleteResponse = await _client.Indices.DeleteAsync(indexName, ct);
             if (!deleteResponse.IsValidResponse)
             {
-                throw new ConflictException($"Failed to delete index: {deleteResponse.DebugInformation}");
+                return Result.Failure(IndexErrors.DeleteFailed(Guid.Empty, deleteResponse.DebugInformation));
             }
         }
 
-        await EnsureIndexExistsAsync(ct);
+        return await EnsureIndexExistsAsync(ct);
     }
 
-    public async Task<IndexStats> GetIndexStatsAsync(CancellationToken ct = default)
+    public async Task<Result<IndexStats>> GetIndexStatsAsync(CancellationToken ct = default)
     {
         var indexName = GetIndexName();
 
-        var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
-        if (!existsResponse.Exists)
+        try
         {
-            return new IndexStats(indexName, false, 0, "none", 0);
+            var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
+            if (!existsResponse.Exists)
+            {
+                return Result.Success(new IndexStats(indexName, false, 0, "none", 0));
+            }
+
+            var statsResponse = await _client.Indices.StatsAsync(
+                new IndicesStatsRequest(Elastic.Clients.Elasticsearch.Indices.Parse(indexName)), ct);
+
+            if (!statsResponse.IsValidResponse || statsResponse.Indices == null)
+            {
+                return Result.Success(new IndexStats(indexName, true, 0, "unknown", 0));
+            }
+
+            var stats = BuildIndexStats(indexName, statsResponse);
+            return Result.Success(stats);
         }
-
-        var statsResponse = await _client.Indices.StatsAsync(new IndicesStatsRequest(Elastic.Clients.Elasticsearch.Indices.Parse(indexName)), ct);
-
-        if (!statsResponse.IsValidResponse || statsResponse.Indices == null)
+        catch (Exception ex)
         {
-            return new IndexStats(indexName, true, 0, "unknown", 0);
+            _logger.LogError(ex, "Error getting stats for index {IndexName}", indexName);
+            return Result.Failure<IndexStats>(IndexErrors.ConnectionFailed(ex.Message));
         }
+    }
 
-        if (statsResponse.Indices.TryGetValue(indexName, out var indexStats))
+    private static IndexStats BuildIndexStats(string indexName, IndicesStatsResponse response)
+    {
+        if (response.Indices?.TryGetValue(indexName, out var indexStats) == true)
         {
             return new IndexStats(
                 indexName,
@@ -178,16 +205,18 @@ public class IndexManagementService : IIndexManagementService
         return new IndexStats(indexName, true, 0, "unknown", 0);
     }
 
-    public async Task<bool> IsHealthyAsync(CancellationToken ct = default)
+    public async Task<Result> IsHealthyAsync(CancellationToken ct = default)
     {
         try
         {
             var response = await _client.PingAsync(ct);
-            return response.IsValidResponse;
+            return response.IsValidResponse 
+                ? Result.Success() 
+                : Result.Failure(IndexErrors.ConnectionFailed("Elasticsearch ping failed"));
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            return Result.Failure(IndexErrors.ConnectionFailed(ex.Message));
         }
     }
 

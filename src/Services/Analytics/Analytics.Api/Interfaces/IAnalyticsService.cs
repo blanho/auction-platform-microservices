@@ -44,4 +44,9 @@ public interface IAnalyticsService
     Task<RevenueMetrics> GetRevenueMetricsAsync(
         AnalyticsQueryParams query,
         CancellationToken cancellationToken = default);
+
+    Task<AggregatedDailyStatsDto> GetAggregatedDailyStatsAsync(
+        DateOnly? startDate,
+        DateOnly? endDate,
+        CancellationToken cancellationToken = default);
 }

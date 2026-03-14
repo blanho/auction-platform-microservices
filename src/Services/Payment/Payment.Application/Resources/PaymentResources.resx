@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Payment.Failed" xml:space="preserve"><value>Payment processing failed. Please try again.</value></data>
+  <data name="Payment.Succeeded" xml:space="preserve"><value>Payment processed successfully.</value></data>
+  <data name="Payment.Pending" xml:space="preserve"><value>Payment is being processed.</value></data>
+  <data name="Payment.Refunded" xml:space="preserve"><value>Payment has been refunded.</value></data>
+  <data name="Payment.InsufficientFunds" xml:space="preserve"><value>Insufficient funds to complete this transaction.</value></data>
+  <data name="Payment.ProcessingFailed" xml:space="preserve"><value>Failed to process payment: {0}</value></data>
+  <data name="Payment.RefundFailed" xml:space="preserve"><value>Failed to refund payment: {0}</value></data>
+  <data name="Payment.InvalidAmount" xml:space="preserve"><value>Invalid payment amount.</value></data>
+  <data name="Order.NotFound" xml:space="preserve"><value>Order not found.</value></data>
+  <data name="Order.AlreadyExists" xml:space="preserve"><value>Order already exists.</value></data>
+  <data name="Order.AlreadyPaid" xml:space="preserve"><value>Order is already paid.</value></data>
+  <data name="Order.Cancelled" xml:space="preserve"><value>Order has been cancelled.</value></data>
+  <data name="Order.InvalidStatus" xml:space="preserve"><value>Order is in an invalid status for this operation.</value></data>
+  <data name="Order.InvalidData" xml:space="preserve"><value>Required order data is missing.</value></data>
+  <data name="Order.NotPaid" xml:space="preserve"><value>Order is not paid yet.</value></data>
+  <data name="Order.AlreadyShipped" xml:space="preserve"><value>Order is already shipped.</value></data>
+  <data name="Order.AlreadyDelivered" xml:space="preserve"><value>Order has already been delivered.</value></data>
+  <data name="Order.NotShipped" xml:space="preserve"><value>Order has not been shipped yet.</value></data>
+  <data name="Order.CreateFailed" xml:space="preserve"><value>Failed to create order: {0}</value></data>
+  <data name="Order.UpdateFailed" xml:space="preserve"><value>Failed to update order: {0}</value></data>
+  <data name="Wallet.NotFound" xml:space="preserve"><value>Wallet not found.</value></data>
+  <data name="Wallet.AlreadyExists" xml:space="preserve"><value>Wallet already exists for this user.</value></data>
+  <data name="Wallet.Busy" xml:space="preserve"><value>Wallet is currently busy. Please try again.</value></data>
+  <data name="Wallet.InsufficientBalance" xml:space="preserve"><value>Insufficient wallet balance.</value></data>
+  <data name="Wallet.InsufficientHeldAmount" xml:space="preserve"><value>Insufficient held amount to release.</value></data>
+  <data name="Wallet.ConcurrencyConflict" xml:space="preserve"><value>Wallet was modified by another operation. Please try again.</value></data>
+  <data name="Wallet.CreateFailed" xml:space="preserve"><value>Failed to create wallet: {0}</value></data>
+  <data name="Stripe.SessionCreationFailed" xml:space="preserve"><value>Failed to create payment session: {0}</value></data>
+  <data name="Stripe.WebhookProcessingFailed" xml:space="preserve"><value>Failed to process payment webhook: {0}</value></data>
+  <data name="Stripe.InvalidWebhookSignature" xml:space="preserve"><value>Invalid webhook signature.</value></data>
+  <data name="Transaction.NotFound" xml:space="preserve"><value>Transaction not found.</value></data>
+  <data name="Transaction.Failed" xml:space="preserve"><value>Transaction failed: {0}</value></data>
+</root>

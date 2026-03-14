@@ -1,5 +1,5 @@
 using Auctions.Application.DTOs;
-namespace Auctions.Application.Commands.CreateAuction;
+namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public record CreateAuctionCommand(
     string Title,
@@ -15,6 +15,7 @@ public record CreateAuctionCommand(
     string Currency = "USD",
     List<CreateAuctionFileDto>? Files = null,
     Guid? CategoryId = null,
+    Guid? BrandId = null,
     bool IsFeatured = false
 ) : ICommand<AuctionDto>;
 

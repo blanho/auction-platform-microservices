@@ -8,12 +8,12 @@ public class GetMyAuctionsRequest
 
     public string? SearchTerm { get; set; }
 
-    public int PageNumber { get; set; } = PaginationDefaults.DefaultPage;
+    public int? Page { get; set; }
 
-    public int PageSize { get; set; } = PaginationDefaults.DefaultPageSize;
+    public int? PageSize { get; set; }
 
     public string? OrderBy { get; set; }
 
-    public bool Descending { get; set; } = false;
+    public bool? Descending { get; set; }
 }
 

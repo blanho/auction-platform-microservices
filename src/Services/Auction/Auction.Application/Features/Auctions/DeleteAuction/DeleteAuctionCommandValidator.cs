@@ -1,13 +1,14 @@
+using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.DeleteAuction;
+namespace Auctions.Application.Features.Auctions.DeleteAuction;
 
 public class DeleteAuctionCommandValidator : AbstractValidator<DeleteAuctionCommand>
 {
     public DeleteAuctionCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Auction ID is required");
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Auction ID"));
     }
 }
 

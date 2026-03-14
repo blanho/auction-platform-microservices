@@ -1,7 +1,8 @@
+using BuildingBlocks.Application.Localization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Notification.Api.Constants;
-using System.Security.Claims;
+using BuildingBlocks.Web.Authorization;
 
 namespace Notification.Api.Hubs;
 
@@ -9,17 +10,17 @@ namespace Notification.Api.Hubs;
 public class NotificationHub : Hub
 {
     private readonly ILogger<NotificationHub> _logger;
+    private readonly ILocalizationService _localizer;
 
-    public NotificationHub(ILogger<NotificationHub> logger)
+    public NotificationHub(ILogger<NotificationHub> logger, ILocalizationService localizer)
     {
         _logger = logger;
+        _localizer = localizer;
     }
 
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? Context.User?.FindFirst("sub")?.Value
-                    ?? Context.User?.FindFirst("username")?.Value;
+        var userId = Context.User?.GetUserId();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -33,9 +34,7 @@ public class NotificationHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                    ?? Context.User?.FindFirst("sub")?.Value
-                    ?? Context.User?.FindFirst("username")?.Value;
+        var userId = Context.User?.GetUserId();
 
         if (!string.IsNullOrEmpty(userId))
         {
@@ -48,12 +47,22 @@ public class NotificationHub : Hub
 
     public async Task JoinUserGroup(string userId)
     {
+        var authenticatedUserId = Context.User?.GetUserId();
+
+        if (authenticatedUserId != userId)
+            throw new HubException(_localizer.GetString(LocalizationKeys.Notification.JoinForbidden));
+
         await Groups.AddToGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} joined user group {UserId}", Context.ConnectionId, userId);
     }
 
     public async Task LeaveUserGroup(string userId)
     {
+        var authenticatedUserId = Context.User?.GetUserId();
+
+        if (authenticatedUserId != userId)
+            throw new HubException(_localizer.GetString(LocalizationKeys.Notification.LeaveForbidden));
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
         _logger.LogInformation("Connection {ConnectionId} left user group {UserId}", Context.ConnectionId, userId);
     }

@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.CreateCategory;
+namespace Auctions.Application.Features.Categories.CreateCategory;
 
 public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
 {
@@ -16,7 +16,7 @@ public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCo
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Slug"))
             .MaximumLength(ValidationConstants.StringLength.Standard)
             .WithMessage(ValidationConstants.Messages.MaxLength("Slug", ValidationConstants.StringLength.Standard))
-            .Matches("^[a-z0-9]+(?:-[a-z0-9]+)*$").WithMessage("Slug must be lowercase with hyphens only");
+            .Matches("^[a-z0-9]+(?:-[a-z0-9]+)*$").WithMessage(ValidationConstants.Messages.InvalidFormat("Slug"));
 
         RuleFor(x => x.Icon)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Icon"))
@@ -32,7 +32,7 @@ public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCo
             .WithMessage(ValidationConstants.Messages.MaxLength("Image URL", ValidationConstants.StringLength.Long));
 
         RuleFor(x => x.DisplayOrder)
-            .GreaterThanOrEqualTo(0).WithMessage("Display order must be non-negative");
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationConstants.Messages.MustBeNonNegative("Display order"));
     }
 }
 

@@ -4,12 +4,12 @@ using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.External;
 using Identity.Api.DTOs.TwoFactor;
 using Identity.Api.DTOs.Users;
+using Identity.Api.Errors;
 using Identity.Api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Web;
-using IdentityUserHelper = Identity.Api.Helpers.UserHelper;
 using EnvironmentHelper = Identity.Api.Helpers.EnvironmentHelper;
 using CookieHelper = Identity.Api.Helpers.CookieHelper;
 using HttpContextHelper = Identity.Api.Helpers.HttpContextHelper;
@@ -133,6 +133,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IResult> RefreshToken(CancellationToken cancellationToken)
     {
         var refreshToken = CookieHelper.GetRefreshTokenFromCookie(Request);
@@ -145,6 +146,12 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
         {
             CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
+            
+            if (result.Error == IdentityErrors.Auth.SecurityTermination)
+                return Results.Json(
+                    new { code = "security_termination", message = "Session terminated due to suspicious activity" },
+                    statusCode: StatusCodes.Status403Forbidden);
+            
             return Results.Unauthorized();
         }
 
@@ -159,7 +166,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IResult> Logout(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserIdString() ?? string.Empty;
+        var userId = User.GetRequiredUserIdString();
         var refreshToken = CookieHelper.GetRefreshTokenFromCookie(Request) ?? string.Empty;
 
         await _authService.LogoutAsync(userId, refreshToken);
@@ -173,11 +180,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> LogoutAll(CancellationToken cancellationToken)
     {
-        var validationResult = IdentityUserHelper.ValidateUserId(User);
-        if (validationResult != null)
-            return validationResult;
-
-        var userId = IdentityUserHelper.GetUserId(User);
+        var userId = User.GetRequiredUserIdString();
         await _authService.LogoutAllAsync(userId);
         CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
         return Results.Ok();
@@ -189,14 +192,38 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IResult> GetCurrentUser(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserIdString();
-        if (string.IsNullOrEmpty(userId))
-            return Results.Unauthorized();
-
+        var userId = User.GetRequiredUserIdString();
         var result = await _authService.GetCurrentUserAsync(userId);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Unauthorized();
+    }
+
+    [HttpGet("external-login/{provider}")]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public IActionResult ExternalLogin(string provider, [FromQuery] string? returnUrl = null)
+    {
+        var allowedProviders = new[] { "Google", "Facebook" };
+        if (!allowedProviders.Contains(provider, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(ProblemDetailsHelper.ValidationError("provider", $"Provider '{provider}' is not supported"));
+        }
+
+        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
+        var callbackUrl = Url.Action(
+            nameof(ExternalLoginCallback),
+            "Auth",
+            new { returnUrl = returnUrl ?? frontendUrl },
+            Request.Scheme);
+
+        var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+        {
+            RedirectUri = callbackUrl,
+            Items = { { "LoginProvider", provider } }
+        };
+
+        return Challenge(properties, provider);
     }
 
     [HttpGet("external-login-callback")]

@@ -1,13 +1,24 @@
 using Carter;
-using Microsoft.AspNetCore.Http.HttpResults;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Application.Abstractions;
 using Notification.Application.DTOs;
-using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Web.Extensions;
 using System.Security.Claims;
+using Notification.Application.Features.Notifications.GetUserNotifications;
+using Notification.Application.Features.Notifications.GetNotificationSummary;
+using Notification.Application.Features.Notifications.MarkAsRead;
+using Notification.Application.Features.Notifications.MarkAllAsRead;
+using Notification.Application.Features.Notifications.DeleteNotification;
+using Notification.Application.Features.Notifications.ArchiveNotification;
+using Notification.Application.Features.Notifications.CreateNotification;
+using Notification.Application.Features.Notifications.BroadcastNotification;
+using Notification.Application.Features.Notifications.GetNotificationStats;
+using Notification.Application.Features.Preferences.GetPreferences;
+using Notification.Application.Features.Preferences.UpdatePreferences;
 
 namespace Notification.Api.Endpoints;
 
@@ -46,6 +57,19 @@ public class NotificationEndpoints : ICarterModule
             .WithSummary("Delete a notification")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Notifications.View));
 
+        group.MapPost("/{id:guid}/archive", Archive)
+            .WithName("ArchiveNotification")
+            .WithSummary("Archive a notification")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Notifications.View));
+
+        group.MapGet("/preferences", GetPreferences)
+            .WithName("GetNotificationPreferences")
+            .WithSummary("Get notification preferences for the current user");
+
+        group.MapPut("/preferences", UpdatePreferences)
+            .WithName("UpdateNotificationPreferences")
+            .WithSummary("Update notification preferences for the current user");
+
         group.MapPost("/", Create)
             .WithName("CreateNotification")
             .WithSummary("Create a notification")
@@ -68,138 +92,197 @@ public class NotificationEndpoints : ICarterModule
             .WithSummary("Get notification statistics");
     }
 
-    private static string GetUserId(ClaimsPrincipal user)
-    {
-        return user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? user.FindFirst("sub")?.Value
-            ?? user.FindFirst("username")?.Value
-            ?? throw new UnauthorizedAccessException("User ID not found in token");
-    }
-
-    private static async Task<Ok<List<NotificationDto>>> GetMyNotifications(
+    private static async Task<IResult> GetMyNotifications(
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
+        [AsParameters] PaginationRequest pagination,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        var notifications = await notificationService.GetUserNotificationsAsync(userId, cancellationToken);
-        return TypedResults.Ok(notifications);
+        var userId = user.GetRequiredUserIdString();
+        var query = new GetUserNotificationsQuery(
+            userId,
+            pagination.Page ?? PaginationDefaults.DefaultPage,
+            pagination.PageSize ?? PaginationDefaults.DefaultPageSize);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<NotificationSummaryDto>> GetSummary(
+    private static async Task<IResult> GetSummary(
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        var summary = await notificationService.GetNotificationSummaryAsync(userId, cancellationToken);
-        return TypedResults.Ok(summary);
+        var userId = user.GetRequiredUserIdString();
+        var query = new GetNotificationSummaryQuery(userId);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<List<NotificationDto>>> GetUnreadNotifications(
+    private static async Task<IResult> GetUnreadNotifications(
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
+        [AsParameters] PaginationRequest pagination,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        var notifications = await notificationService.GetUserNotificationsAsync(userId, cancellationToken);
-        var unread = notifications.Where(n => n.Status == nameof(NotificationStatus.Unread)).ToList();
-        return TypedResults.Ok(unread);
+        var userId = user.GetRequiredUserIdString();
+        var query = new GetUserNotificationsQuery(
+            userId,
+            pagination.Page ?? PaginationDefaults.DefaultPage,
+            pagination.PageSize ?? PaginationDefaults.DefaultPageSize);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToApiResult(paginatedResult =>
+        {
+            var unreadOnly = new PaginatedResult<NotificationDto>(
+                paginatedResult.Items.Where(n => n.Status == nameof(NotificationStatus.Unread)).ToList(),
+                paginatedResult.TotalCount,
+                paginatedResult.Page,
+                paginatedResult.PageSize);
+
+            return Results.Ok(unreadOnly);
+        });
     }
 
-    private static async Task<Results<NoContent, NotFound>> MarkAsRead(
+    private static async Task<IResult> MarkAsRead(
         Guid id,
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        var notifications = await notificationService.GetUserNotificationsAsync(userId, cancellationToken);
-        var notification = notifications.FirstOrDefault(n => n.Id == id);
+        var userId = user.GetRequiredUserIdString();
+        var command = new MarkAsReadCommand(id, userId);
+        var result = await sender.Send(command, cancellationToken);
 
-        if (notification == null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        await notificationService.MarkAsReadAsync(id, cancellationToken);
-        return TypedResults.NoContent();
+        return result.ToNoContentResult();
     }
 
-    private static async Task<NoContent> MarkAllAsRead(
+    private static async Task<IResult> MarkAllAsRead(
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        await notificationService.MarkAllAsReadAsync(userId, cancellationToken);
-        return TypedResults.NoContent();
+        var userId = user.GetRequiredUserIdString();
+        var command = new MarkAllAsReadCommand(userId);
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.ToNoContentResult();
     }
 
-    private static async Task<Results<NoContent, NotFound>> Delete(
+    private static async Task<IResult> Delete(
         Guid id,
         ClaimsPrincipal user,
-        INotificationService notificationService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId(user);
-        var notifications = await notificationService.GetUserNotificationsAsync(userId, cancellationToken);
-        var notification = notifications.FirstOrDefault(n => n.Id == id);
+        var userId = user.GetRequiredUserIdString();
+        var command = new DeleteNotificationCommand(id, userId);
+        var result = await sender.Send(command, cancellationToken);
 
-        if (notification == null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        await notificationService.DeleteNotificationAsync(id, cancellationToken);
-        return TypedResults.NoContent();
+        return result.ToNoContentResult();
     }
 
-    private static async Task<Created<NotificationDto>> Create(
-        CreateNotificationDto dto,
-        INotificationService notificationService,
+    private static async Task<IResult> Archive(
+        Guid id,
+        ClaimsPrincipal user,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var notification = await notificationService.CreateNotificationAsync(dto, cancellationToken);
-        return TypedResults.Created($"/api/v1/notifications/{notification.Id}", notification);
+        var userId = user.GetRequiredUserIdString();
+        var command = new ArchiveNotificationCommand(id, userId);
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.ToNoContentResult();
     }
 
-    private static async Task<Ok<PaginatedResult<NotificationDto>>> GetAllNotifications(
-        [AsParameters] GetAllNotificationsRequest request,
-        INotificationService notificationService,
+    private static async Task<IResult> GetPreferences(
+        ClaimsPrincipal user,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var notifications = await notificationService.GetAllNotificationsAsync(
-            request.Page ?? PaginationDefaults.DefaultPage,
-            request.PageSize ?? PaginationDefaults.LargePageSize,
+        var userId = user.GetRequiredUserIdString();
+        var query = new GetPreferencesQuery(userId);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> UpdatePreferences(
+        [FromBody] UpdatePreferencesRequest request,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.GetRequiredUserIdString();
+        var command = new UpdatePreferencesCommand(
+            userId,
+            request.EmailEnabled,
+            request.PushEnabled,
+            request.BidUpdates,
+            request.AuctionUpdates,
+            request.PromotionalEmails,
+            request.SystemAlerts);
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> Create(
+        [FromBody] CreateNotificationRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new CreateNotificationCommand(
             request.UserId,
-            request.Type,
-            request.Status,
-            cancellationToken);
-        return TypedResults.Ok(notifications);
+            request.Type.ToString(),
+            request.Title,
+            request.Message,
+            request.Data,
+            request.AuctionId,
+            request.BidId);
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.ToApiResult(value =>
+            Results.Created($"/api/v1/notifications/{value.Id}", value));
     }
 
-    private static async Task<Ok<object>> BroadcastNotification(
-        BroadcastNotificationDto dto,
-        INotificationService notificationService,
+    private static async Task<IResult> GetAllNotifications(
+        [AsParameters] GetAllNotificationsRequest request,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        await notificationService.BroadcastNotificationAsync(dto, cancellationToken);
-        return TypedResults.Ok(new { message = "Notification broadcast successfully" } as object);
+        var query = new GetUserNotificationsQuery(
+            request.UserId ?? string.Empty,
+            request.Page ?? PaginationDefaults.DefaultPage,
+            request.PageSize ?? PaginationDefaults.LargePageSize);
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToOkResult();
     }
 
-    private static async Task<Ok<NotificationStatsDto>> GetNotificationStats(
-        INotificationService notificationService,
+    private static async Task<IResult> BroadcastNotification(
+        [FromBody] BroadcastNotificationRequest request,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var stats = await notificationService.GetNotificationStatsAsync(cancellationToken);
-        return TypedResults.Ok(stats);
+        var command = new BroadcastNotificationCommand(
+            request.Type.ToString(),
+            request.Title,
+            request.Message,
+            request.TargetRole);
+        var result = await sender.Send(command, cancellationToken);
+
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> GetNotificationStats(
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetNotificationStatsQuery();
+        var result = await sender.Send(query, cancellationToken);
+
+        return result.ToOkResult();
     }
 }
-
-public record GetAllNotificationsRequest(
-    int? Page,
-    int? PageSize,
-    string? UserId,
-    string? Type,
-    string? Status);

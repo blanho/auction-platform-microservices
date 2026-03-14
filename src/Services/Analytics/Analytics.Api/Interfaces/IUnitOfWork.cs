@@ -1,8 +1,8 @@
-using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Application.Abstractions;
 
 namespace Analytics.Api.Interfaces;
 
-public interface IUnitOfWork : BuildingBlocks.Infrastructure.Repository.IUnitOfWork
+public interface IUnitOfWork : BuildingBlocks.Application.Abstractions.IUnitOfWork
 {
     IAuditLogRepository AuditLogs { get; }
 }

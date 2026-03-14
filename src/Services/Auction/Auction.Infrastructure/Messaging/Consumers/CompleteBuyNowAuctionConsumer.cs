@@ -1,27 +1,28 @@
-using BuildingBlocks.Domain.Enums;
-using BuildingBlocks.Application.Abstractions.Logging;
+using Auctions.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuctionQueryRepository _readRepository;
+    private readonly IAuctionWriteRepository _writeRepository;
+    private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<CompleteBuyNowAuctionConsumer> _logger;
 
     public CompleteBuyNowAuctionConsumer(
-        IAuctionRepository repository,
-        IUnitOfWork unitOfWork,
+        IAuctionQueryRepository readRepository,
+        IAuctionWriteRepository writeRepository,
+        BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<CompleteBuyNowAuctionConsumer> logger)
     {
-        _repository = repository;
+        _readRepository = readRepository;
+        _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
         _logger = logger;
@@ -36,7 +37,7 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
 
         try
         {
-            var auction = await _repository.GetByIdAsync(message.AuctionId, context.CancellationToken);
+            var auction = await _readRepository.GetByIdAsync(message.AuctionId, context.CancellationToken);
 
             if (auction == null)
             {
@@ -47,7 +48,7 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
             }
 
             auction.ExecuteBuyNow(message.BuyerId, message.BuyerUsername);
-            await _repository.UpdateAsync(auction, context.CancellationToken);
+            await _writeRepository.UpdateAsync(auction, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
             _logger.LogInformation(

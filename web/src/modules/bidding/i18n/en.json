@@ -1,0 +1,48 @@
+{
+  "title": "Bidding",
+  "myBids": "My Bids",
+  "winningBids": "Winning Bids",
+  "outbid": "Outbid",
+  "activeBids": "Active Bids",
+  "bidHistory": "Bid History",
+
+  "placeBid": {
+    "title": "Place Your Bid",
+    "currentBid": "Current Bid",
+    "yourBid": "Your Bid",
+    "minimumBid": "Minimum Bid",
+    "maximumBid": "Maximum Bid",
+    "autoBid": "Auto Bid",
+    "autoBidDescription": "Automatically bid up to your maximum",
+    "submit": "Place Bid",
+    "confirm": "Confirm Bid"
+  },
+
+  "status": {
+    "winning": "Winning",
+    "outbid": "Outbid",
+    "won": "Won",
+    "lost": "Lost",
+    "pending": "Pending"
+  },
+
+  "messages": {
+    "bidPlaced": "Bid placed successfully",
+    "bidFailed": "Failed to place bid",
+    "outbidAlert": "You've been outbid!",
+    "wonAuction": "Congratulations! You won the auction!",
+    "minimumNotMet": "Bid must be at least {{amount}}"
+  },
+
+  "filter": {
+    "all": "All Bids",
+    "active": "Active",
+    "won": "Won",
+    "lost": "Lost"
+  },
+
+  "empty": {
+    "title": "No Bids Yet",
+    "description": "Start bidding on auctions you're interested in"
+  }
+}

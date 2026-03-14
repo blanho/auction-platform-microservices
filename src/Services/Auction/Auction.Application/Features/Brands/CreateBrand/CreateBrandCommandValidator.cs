@@ -1,7 +1,7 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
-namespace Auctions.Application.Commands.CreateBrand;
+namespace Auctions.Application.Features.Brands.CreateBrand;
 
 public class CreateBrandCommandValidator : AbstractValidator<CreateBrandCommand>
 {
@@ -21,7 +21,7 @@ public class CreateBrandCommandValidator : AbstractValidator<CreateBrandCommand>
             .WithMessage(ValidationConstants.Messages.MaxLength("Description", ValidationConstants.StringLength.Extended));
 
         RuleFor(x => x.DisplayOrder)
-            .GreaterThanOrEqualTo(0).WithMessage("Display order must be non-negative");
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationConstants.Messages.MustBeNonNegative("Display order"));
     }
 }
 

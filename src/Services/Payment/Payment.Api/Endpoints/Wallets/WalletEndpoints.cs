@@ -2,15 +2,16 @@ using System.Security.Claims;
 using Carter;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Constants;
+using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Payment.Application.Features.Wallets.Commands.CreateWallet;
-using Payment.Application.Features.Wallets.Commands.Deposit;
-using Payment.Application.Features.Wallets.Commands.Withdraw;
+using Payment.Application.Features.Wallets.CreateWallet;
+using Payment.Application.Features.Wallets.Deposit;
+using Payment.Application.Features.Wallets.Withdraw;
 using Payment.Application.DTOs;
-using Payment.Application.Features.Wallets.Queries.GetWallet;
+using Payment.Application.Features.Wallets.GetWallet;
 
 namespace Payment.Api.Endpoints.Wallets;
 
@@ -43,47 +44,49 @@ public class WalletEndpoints : ICarterModule
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Wallets.Withdraw));
     }
 
-    private static async Task<Results<Ok<WalletDto>, NotFound, BadRequest<ProblemDetails>>> GetWallet(
-        string username,
-        IMediator mediator,
-        CancellationToken cancellationToken)
-    {
-        var result = await mediator.Send(new GetWalletQuery { Username = username }, cancellationToken);
-
-        if (!result.IsSuccess)
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-
-        if (result.Value == null)
-            return TypedResults.NotFound();
-
-        return TypedResults.Ok(result.Value);
-    }
-
-    private static async Task<Results<Created<WalletDto>, Conflict<ProblemDetails>>> CreateWallet(
+    private static async Task<IResult> GetWallet(
         string username,
         ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserIdFromClaims(user);
+        var authenticatedUsername = UserHelper.GetUsername(user);
+        if (!string.Equals(authenticatedUsername, username, StringComparison.OrdinalIgnoreCase))
+            return Results.Forbid();
+
+        var result = await mediator.Send(new GetWalletQuery { Username = username }, cancellationToken);
+
+        return result.ToOkResult();
+    }
+
+    private static async Task<IResult> CreateWallet(
+        string username,
+        ClaimsPrincipal user,
+        IMediator mediator,
+        CancellationToken cancellationToken)
+    {
+        var userId = UserHelper.GetUserId(user) ?? Guid.Empty;
         var result = await mediator.Send(new CreateWalletCommand
         {
             UserId = userId,
             Username = username
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-            return TypedResults.Conflict(ProblemDetailsHelper.FromError(result.Error!));
-
-        return TypedResults.Created($"/api/v1/wallets/{username}", result.Value);
+        return result.ToApiResult(wallet =>
+            Results.Created($"/api/v1/wallets/{username}", wallet));
     }
 
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound<ProblemDetails>, BadRequest<ProblemDetails>>> Deposit(
+    private static async Task<IResult> Deposit(
         string username,
         DepositDto dto,
+        ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
+        var authenticatedUsername = UserHelper.GetUsername(user);
+        if (!string.Equals(authenticatedUsername, username, StringComparison.OrdinalIgnoreCase))
+            return Results.Forbid();
+
         var result = await mediator.Send(new DepositCommand
         {
             Username = username,
@@ -92,22 +95,20 @@ public class WalletEndpoints : ICarterModule
             Description = dto.Description
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            if (result.Error?.Code == "Wallet.NotFound")
-                return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error));
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return TypedResults.Ok(result.Value);
+        return result.ToOkResult();
     }
 
-    private static async Task<Results<Ok<WalletTransactionDto>, NotFound<ProblemDetails>, BadRequest<ProblemDetails>>> Withdraw(
+    private static async Task<IResult> Withdraw(
         string username,
         WithdrawDto dto,
+        ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
+        var authenticatedUsername = UserHelper.GetUsername(user);
+        if (!string.Equals(authenticatedUsername, username, StringComparison.OrdinalIgnoreCase))
+            return Results.Forbid();
+
         var result = await mediator.Send(new WithdrawCommand
         {
             Username = username,
@@ -116,19 +117,6 @@ public class WalletEndpoints : ICarterModule
             Description = dto.Description
         }, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            if (result.Error?.Code == "Wallet.NotFound")
-                return TypedResults.NotFound(ProblemDetailsHelper.FromError(result.Error));
-            return TypedResults.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-        }
-
-        return TypedResults.Ok(result.Value);
-    }
-
-    private static Guid GetUserIdFromClaims(ClaimsPrincipal user)
-    {
-        var userIdClaim = user.FindFirst("sub")?.Value ?? user.FindFirst("id")?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        return result.ToOkResult();
     }
 }

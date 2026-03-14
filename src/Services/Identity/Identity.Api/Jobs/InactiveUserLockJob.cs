@@ -5,9 +5,11 @@ using IdentityService.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace Identity.Api.Jobs;
 
+[DisallowConcurrentExecution]
 public class InactiveUserLockJob : BaseJob
 {
     public const string JobId = "inactive-user-lock";

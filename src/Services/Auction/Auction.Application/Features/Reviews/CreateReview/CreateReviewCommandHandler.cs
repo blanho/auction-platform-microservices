@@ -1,21 +1,24 @@
+using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
+using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.CQRS;
 
-namespace Auctions.Application.Commands.CreateReview;
+namespace Auctions.Application.Features.Reviews.CreateReview;
 
 public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, ReviewDto>
 {
     private readonly IReviewRepository _reviewRepository;
-    private readonly IAuctionRepository _auctionRepository;
+    private readonly IAuctionQueryRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ISanitizationService _sanitizationService;
 
     public CreateReviewCommandHandler(
         IReviewRepository reviewRepository,
-        IAuctionRepository auctionRepository,
+        IAuctionQueryRepository auctionRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ISanitizationService sanitizationService)
@@ -33,35 +36,28 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
             request.AuctionId, request.ReviewerUsername, cancellationToken);
         
         if (existingReview != null)
-            return Result.Failure<ReviewDto>(Error.Create("Review.AlreadyExists", "Review already exists for this auction"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.AlreadyExists);
 
-        Auction auction;
-        try
+        var auction = await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
+        if (auction == null)
         {
-            auction = await _auctionRepository.GetByIdAsync(request.AuctionId, cancellationToken);
-        }
-        catch (KeyNotFoundException)
-        {
-            return Result.Failure<ReviewDto>(Error.Create("Auction.NotFound", "Auction not found"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
         }
 
         if (request.Rating < 1 || request.Rating > 5)
-            return Result.Failure<ReviewDto>(Error.Create("Review.InvalidRating", "Rating must be between 1 and 5"));
+            return Result.Failure<ReviewDto>(AuctionErrors.Review.InvalidRating);
 
-        var review = new Review
-        {
-            Id = Guid.NewGuid(),
-            AuctionId = request.AuctionId,
-            Auction = auction,
-            OrderId = request.OrderId,
-            ReviewerId = request.ReviewerId,
-            ReviewerUsername = request.ReviewerUsername,
-            ReviewedUserId = request.ReviewedUserId,
-            ReviewedUsername = request.ReviewedUsername,
-            Rating = request.Rating,
-            Title = _sanitizationService.SanitizeText(request.Title),
-            Comment = _sanitizationService.SanitizeHtml(request.Comment)
-        };
+        var review = Review.Create(
+            request.AuctionId,
+            auction,
+            request.OrderId,
+            request.ReviewerId,
+            request.ReviewerUsername,
+            request.ReviewedUserId,
+            request.ReviewedUsername,
+            request.Rating,
+            _sanitizationService.SanitizeText(request.Title),
+            _sanitizationService.SanitizeHtml(request.Comment));
 
         await _reviewRepository.CreateAsync(review, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

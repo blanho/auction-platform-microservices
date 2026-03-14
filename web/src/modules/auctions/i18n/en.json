@@ -1,0 +1,233 @@
+{
+  "title": "Auctions",
+  "browse": "Browse Auctions",
+  "featured": "Featured Auctions",
+  "trending": "Trending Now",
+  "endingSoon": "Ending Soon",
+  "newArrivals": "New Arrivals",
+  "myAuctions": "My Auctions",
+  "createAuction": "Create Auction",
+  "editAuction": "Edit Auction",
+  "viewDetails": "View Details",
+
+  "search": {
+    "placeholder": "Search auctions...",
+    "noResults": "No auctions found",
+    "resultsCount": "{{count}} auction found",
+    "resultsCount_other": "{{count}} auctions found"
+  },
+
+  "filter": {
+    "title": "Filters",
+    "category": "Category",
+    "priceRange": "Price Range",
+    "condition": "Condition",
+    "status": "Status",
+    "sortBy": "Sort By",
+    "minPrice": "Min Price",
+    "maxPrice": "Max Price",
+    "clearAll": "Clear All Filters",
+    "verifiedSellersOnly": "Verified Sellers Only",
+    "verifiedOnly": "Verified Only",
+    "allCategories": "All Categories",
+    "apply": "Apply Filters"
+  },
+
+  "sort": {
+    "newest": "Newest First",
+    "endingSoon": "Ending Soon",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "mostBids": "Most Bids"
+  },
+
+  "status": {
+    "live": "Live",
+    "scheduled": "Scheduled",
+    "ended": "Ended",
+    "sold": "Sold",
+    "unsold": "Unsold",
+    "cancelled": "Cancelled"
+  },
+
+  "condition": {
+    "new": "Brand New",
+    "likeNew": "Like New",
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair"
+  },
+
+  "detail": {
+    "currentBid": "Current Bid",
+    "startingPrice": "Starting Price",
+    "buyNowPrice": "Buy Now Price",
+    "reservePrice": "Reserve Price",
+    "reserveMet": "Reserve Met",
+    "reserveNotMet": "Reserve Not Met",
+    "timeRemaining": "Time Remaining",
+    "auctionEnds": "Auction Ends",
+    "totalBids": "Total Bids",
+    "bidHistory": "Bid History",
+    "seller": "Seller",
+    "category": "Category",
+    "brand": "Brand",
+    "yearManufactured": "Year Manufactured",
+    "description": "Description",
+    "reviews": "Reviews",
+    "watching": "watching",
+    "bidCount": "{{count}} bids",
+    "bidCount_one": "{{count}} bid"
+  },
+
+  "form": {
+    "title": "Title",
+    "titlePlaceholder": "Enter a descriptive title for your auction",
+    "titleHelper": "Min 10 characters, max 200",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your item in detail - condition, history, specifications...",
+    "descriptionHelper": "Min 50 characters, max 4000",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "brand": "Brand",
+    "brandOptional": "Brand (Optional)",
+    "selectBrand": "Select or search brand",
+    "condition": "Condition",
+    "selectCondition": "Select condition",
+    "yearManufactured": "Year Manufactured",
+    "yearManufacturedOptional": "Year Manufactured (Optional)",
+    "selectYear": "Select year",
+    "startingPrice": "Starting Price",
+    "startingPriceHelper": "Minimum bid amount",
+    "buyNowPrice": "Buy Now Price",
+    "buyNowPriceHelper": "Price for immediate purchase (must be higher than starting price)",
+    "enableBuyNow": "Enable Buy Now Price",
+    "currency": "Currency",
+    "auctionDuration": "Auction Duration",
+    "auctionEnd": "Auction End Time",
+    "auctionEndHelper": "When the auction will end",
+    "images": "Images",
+    "uploadImages": "Upload Images",
+    "dragDropImages": "Drag and drop images here",
+    "itemDetails": "Item Details",
+    "itemDetailsHelper": "Providing accurate condition and year helps buyers make informed decisions and can increase trust in your listing.",
+    "photosFiles": "Photos & Files",
+    "photosFilesHelper": "Add photos of your item. The first image will be used as the cover photo.",
+    "filesAttached": "Files Attached",
+    "pricingNotModifiable": "Pricing and duration cannot be modified after auction creation.",
+    "updating": "Updating...",
+    "updateAuction": "Update Auction",
+    "creating": "Creating...",
+    "editDescription": "Update your auction details below",
+    "createDescription": "Fill in the details below to list your item for auction",
+    "reviewUpdateDescription": "Please review all the details before updating your auction.",
+    "reviewCreateDescription": "Please review all the details before creating your auction."
+  },
+
+  "formSteps": {
+    "basicInfo": "Basic Info",
+    "itemDetails": "Item Details",
+    "pricingDuration": "Pricing & Duration",
+    "review": "Review"
+  },
+
+  "duration": {
+    "1day": "1 Day",
+    "3days": "3 Days",
+    "5days": "5 Days",
+    "7days": "7 Days",
+    "10days": "10 Days",
+    "14days": "14 Days"
+  },
+
+  "actions": {
+    "placeBid": "Place Bid",
+    "buyNow": "Buy Now",
+    "addToWatchlist": "Add to Watchlist",
+    "removeFromWatchlist": "Remove from Watchlist",
+    "share": "Share",
+    "report": "Report",
+    "shareOnFacebook": "Share on Facebook",
+    "shareOnTwitter": "Share on Twitter",
+    "pinOnPinterest": "Pin on Pinterest",
+    "copyLink": "Copy Link"
+  },
+
+  "messages": {
+    "createSuccess": "Auction created successfully",
+    "updateSuccess": "Auction updated successfully",
+    "deleteSuccess": "Auction deleted successfully",
+    "addedToWatchlist": "Added to watchlist",
+    "removedFromWatchlist": "Removed from watchlist",
+    "linkCopied": "Link copied to clipboard",
+    "bidPlaced": "Bid placed successfully!",
+    "bidFailed": "Failed to place bid",
+    "purchaseSuccess": "Purchase successful! Redirecting to order...",
+    "purchaseFailed": "Purchase failed. Please try again.",
+    "openingChat": "Opening chat with seller..."
+  },
+
+  "watchlist": {
+    "title": "My Watchlist",
+    "empty": "Your watchlist is empty",
+    "emptyDescription": "Start adding auctions you're interested in to keep track of them",
+    "description": "Keep track of auctions you're interested in",
+    "updateFailed": "Failed to update watchlist",
+    "disableAlerts": "Disable Alerts",
+    "enableAlerts": "Enable Alerts",
+    "recentlyAdded": "Recently Added",
+    "itemCount": "{{count}} items",
+    "itemCount_one": "{{count}} item"
+  },
+
+  "reviews": {
+    "title": "Seller Reviews",
+    "writeReview": "Write a Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submitReview": "Submit Review",
+    "noReviews": "No reviews yet"
+  },
+
+  "dialog": {
+    "confirmPurchase": "Confirm Purchase",
+    "buyNowDescription": "You are about to purchase this item at the Buy Now price.",
+    "confirmPurchaseButton": "Confirm Purchase"
+  },
+
+  "errors": {
+    "failedToLoadAuction": "Failed to Load Auction",
+    "unableToLoadAuction": "Unable to load auction data. Please try again.",
+    "failedToLoadAuctions": "Failed to load auctions",
+    "couldntLoadAuctions": "We couldn't load the auctions. Please try again.",
+    "failedToLoadWatchlist": "Failed to load watchlist. Please try again."
+  },
+
+  "explore": "Explore",
+  "findUniqueItems": "Find unique items and place your bids",
+  "itemsAvailable": "{{count}} items available",
+
+  "brands": {
+    "title": "Brands",
+    "addBrand": "Add Brand",
+    "editBrand": "Edit Brand",
+    "deleteBrand": "Delete Brand",
+    "brandName": "Brand Name",
+    "slug": "Slug",
+    "slugHelper": "URL-friendly identifier",
+    "websiteUrl": "Website URL",
+    "searchPlaceholder": "Search brands...",
+    "noBrands": "No brands found",
+    "deleteConfirmation": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+  },
+
+  "categories": {
+    "title": "Categories",
+    "category": "Category",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "categoryName": "Category Name",
+    "slug": "Slug",
+    "slugHelper": "URL-friendly identifier"
+  }
+}

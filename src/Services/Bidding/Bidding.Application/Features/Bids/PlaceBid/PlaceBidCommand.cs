@@ -1,7 +1,7 @@
 using Bidding.Application.DTOs;
 using BuildingBlocks.Application.CQRS;
 
-namespace Bidding.Application.Features.Bids.Commands.PlaceBid;
+namespace Bidding.Application.Features.Bids.PlaceBid;
 
 public record PlaceBidCommand(
     Guid AuctionId,

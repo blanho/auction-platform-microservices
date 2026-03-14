@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option csharp_namespace = "IdentityService.Contracts.Grpc";
+
+package userstats;
+
+service UserStatsGrpc {
+  rpc GetUserStats (GetUserStatsRequest) returns (UserStatsResponse);
+  rpc GetPlatformUserStats (GetPlatformUserStatsRequest) returns (PlatformUserStatsResponse);
+}
+
+message GetUserStatsRequest {
+  string username = 1;
+}
+
+message UserStatsResponse {
+  string user_id = 1;
+  string username = 2;
+  double seller_rating = 3;
+  int32 review_count = 4;
+  string member_since = 5;
+  int32 total_transactions = 6;
+}
+
+message GetPlatformUserStatsRequest {
+}
+
+message PlatformUserStatsResponse {
+  int32 total_users = 1;
+  int32 active_users = 2;
+  int32 new_users_today = 3;
+  int32 new_users_this_week = 4;
+  int32 new_users_this_month = 5;
+  int32 verified_users = 6;
+}

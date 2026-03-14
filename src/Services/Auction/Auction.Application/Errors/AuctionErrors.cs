@@ -1,0 +1,77 @@
+using BuildingBlocks.Application.Abstractions;
+
+namespace Auctions.Application.Errors;
+
+public static class AuctionErrors
+{
+    public static class Auction
+    {
+        public static Error NotFound => Error.Create("Auction.NotFound", "Auction not found");
+        public static Error NotFoundById(Guid id) => Error.Create("Auction.NotFound", $"Auction with ID {id} was not found");
+        public static Error FetchFailed(string reason) => LocalizableError.Localizable("Auction.FetchFailed", $"Failed to fetch auction: {reason}", reason);
+        public static Error InvalidStatus(string currentStatus) => Error.Create("Auction.InvalidStatus", $"Cannot perform this action on auction with status {currentStatus}.");
+        public static Error DeactivationFailed(string reason) => LocalizableError.Localizable("Auction.DeactivationFailed", $"Failed to deactivate auction: {reason}", reason);
+        public static Error ActivationFailed(string reason) => LocalizableError.Localizable("Auction.ActivationFailed", $"Failed to activate auction: {reason}", reason);
+        public static Error EndDatePassed => Error.Create("Auction.EndDatePassed", "Cannot activate auction. The auction end date has already passed.");
+        public static Error BulkUpdateFailed(string reason) => LocalizableError.Localizable("Auction.BulkUpdateFailed", $"Failed to bulk update auctions: {reason}", reason);
+    }
+
+    public static class BuyNow
+    {
+        public static Error Conflict => Error.Create("BuyNow.Conflict", "Another buyer is currently processing this purchase. Please try again.");
+        public static Error ConflictPurchased => Error.Create("BuyNow.Conflict", "This item was just purchased by someone else. Please try another auction.");
+        public static Error NotAvailable => Error.Create("BuyNow.NotAvailable", "Buy Now is not available for this auction");
+        public static Error OwnAuction => Error.Create("BuyNow.OwnAuction", "You cannot buy your own auction");
+        public static Error AuctionNotLive => Error.Create("BuyNow.AuctionNotLive", "This auction is no longer active");
+        public static Error Failed(string reason) => LocalizableError.Localizable("BuyNow.Failed", $"Failed to process Buy Now: {reason}", reason);
+    }
+
+    public static class Bookmark
+    {
+        public static Error NotFound => Error.Create("Bookmark.NotFound", "Item not found in watchlist");
+        public static Error AlreadyExists => Error.Create("Bookmark.AlreadyExists", "Auction is already in your watchlist");
+    }
+
+    public static class Brand
+    {
+        public static Error NotFound => Error.Create("Brand.NotFound", "Brand not found");
+        public static Error NotFoundById(Guid id) => Error.Create("Brand.NotFound", $"Brand with ID '{id}' was not found");
+        public static Error SlugExists(string slug) => LocalizableError.Localizable("Brand.SlugExists", $"A brand with slug '{slug}' already exists", slug);
+        public static Error DeleteFailed(string reason) => LocalizableError.Localizable("Brand.DeleteFailed", $"Failed to delete brand: {reason}", reason);
+        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("Brand.UpdateFailed", $"Failed to update brand: {reason}", reason);
+        public static Error FetchError(string reason) => LocalizableError.Localizable("Brand.FetchError", $"Error fetching brand: {reason}", reason);
+    }
+
+    public static class Category
+    {
+        public static Error NotFound => Error.Create("Category.NotFound", "Category not found");
+        public static Error NotFoundById(Guid id) => Error.Create("Category.NotFound", $"Category with ID {id} not found");
+        public static Error SlugExists(string slug) => LocalizableError.Localizable("Category.SlugExists", $"A category with slug '{slug}' already exists", slug);
+        public static Error SelfParent => Error.Create("Category.SelfParent", "A category cannot be its own parent");
+        public static Error HasItems => Error.Create("Category.HasItems", "Cannot delete category that has associated items. Please reassign or delete the items first.");
+        public static Error CreateFailed(string reason) => LocalizableError.Localizable("Category.CreateFailed", $"Failed to create category: {reason}", reason);
+        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("Category.UpdateFailed", $"Failed to update category: {reason}", reason);
+        public static Error DeleteFailed(string reason) => LocalizableError.Localizable("Category.DeleteFailed", $"Failed to delete category: {reason}", reason);
+        public static Error FetchError(string reason) => LocalizableError.Localizable("Categories.FetchError", $"Error fetching categories: {reason}", reason);
+    }
+
+    public static class Review
+    {
+        public static Error NotFound => Error.Create("Review.NotFound", "Review not found");
+        public static Error NotFoundById(Guid id) => Error.Create("Review.NotFound", $"Review with ID {id} not found");
+        public static Error AlreadyExists => Error.Create("Review.AlreadyExists", "Review already exists for this auction");
+        public static Error InvalidRating => Error.Create("Review.InvalidRating", "Rating must be between 1 and 5");
+        public static Error Forbidden => Error.Create("Review.Forbidden", "Only the reviewed seller can respond to this review");
+        public static Error AlreadyResponded => Error.Create("Review.AlreadyResponded", "Seller has already responded to this review");
+    }
+
+    public static class Analytics
+    {
+        public static Error Error => Error.Create("Analytics.Error", "Failed to retrieve seller analytics");
+    }
+
+    public static class Dashboard
+    {
+        public static Error Error => Error.Create("Dashboard.Error", "Failed to retrieve dashboard statistics");
+    }
+}

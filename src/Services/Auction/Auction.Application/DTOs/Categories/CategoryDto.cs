@@ -44,24 +44,6 @@ namespace Auctions.Application.DTOs.Categories
         public bool IsActive { get; set; }
     }
 
-    public class ImportCategoriesDto
-    {
-        public List<CreateCategoryDto> Categories { get; set; } = new();
-    }
-
-    public class ImportCategoriesResultDto
-    {
-        public int SuccessCount { get; set; }
-        public int FailureCount { get; set; }
-        public List<string> Errors { get; set; } = new();
-    }
-
-    public class ExportCategoriesRequestDto
-    {
-        public string Format { get; set; } = "json";
-        public bool? ActiveOnly { get; set; }
-    }
-
     public record CategoryStatDto(Guid CategoryId, string CategoryName, int AuctionCount, decimal Revenue);
 }
 

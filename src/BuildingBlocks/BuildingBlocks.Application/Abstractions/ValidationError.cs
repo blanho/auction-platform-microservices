@@ -10,9 +10,9 @@ public sealed record ValidationError : Error
         Errors = errors;
     }
 
-    public static ValidationError Create(string code, string message, IDictionary<string, string[]> errors) 
+    public static ValidationError Create(string code, string message, IDictionary<string, string[]> errors)
         => new(code, message, new Dictionary<string, string[]>(errors));
-    
+
     public static ValidationError WithErrors(IDictionary<string, string[]> errors)
         => new("Validation.Failed", "One or more validation errors occurred.", new Dictionary<string, string[]>(errors));
 }

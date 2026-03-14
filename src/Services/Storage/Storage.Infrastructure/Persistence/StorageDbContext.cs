@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Storage.Domain.Entities;
-using BuildingBlocks.Infrastructure.Repository.Converters;
 using MassTransit;
+using BuildingBlocks.Infrastructure.Repository.Converters;
+using Storage.Domain.Entities;
 
 namespace Storage.Infrastructure.Persistence;
 
@@ -11,7 +11,7 @@ public class StorageDbContext : DbContext
     {
     }
 
-    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+    public DbSet<StoredFile> StoredFiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,7 +20,6 @@ public class StorageDbContext : DbContext
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
-
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StorageDbContext).Assembly);
     }
 

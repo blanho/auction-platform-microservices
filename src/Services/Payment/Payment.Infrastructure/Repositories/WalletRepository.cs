@@ -16,7 +16,9 @@ public class WalletRepository : IWalletRepository
 
     public async Task<Wallet> GetByUsernameAsync(string username)
     {
-        return await _context.Wallets.FirstOrDefaultAsync(w => w.Username == username);
+        return await _context.Wallets
+            .AsNoTracking()
+            .FirstOrDefaultAsync(w => w.Username == username);
     }
 
     public async Task<Wallet> AddAsync(Wallet wallet)
@@ -27,13 +29,15 @@ public class WalletRepository : IWalletRepository
 
     public async Task<Wallet> UpdateAsync(Wallet wallet)
     {
-        wallet.UpdatedAt = DateTimeOffset.UtcNow;
+        wallet.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Wallets.Update(wallet);
         return wallet;
     }
 
     public async Task<bool> ExistsAsync(string username)
     {
-        return await _context.Wallets.AnyAsync(w => w.Username == username);
+        return await _context.Wallets
+            .AsNoTracking()
+            .AnyAsync(w => w.Username == username);
     }
 }

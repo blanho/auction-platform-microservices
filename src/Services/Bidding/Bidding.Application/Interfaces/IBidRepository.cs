@@ -1,5 +1,8 @@
+using Bidding.Application.Filtering;
 using Bidding.Domain.Entities;
 using Bidding.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Paging;
 using BuildingBlocks.Domain.Entities;
 
 namespace Bidding.Application.Interfaces
@@ -9,24 +12,34 @@ namespace Bidding.Application.Interfaces
         Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default);
         Task<List<Bid>> GetBidsByBidderUsernameAsync(string bidderUsername, CancellationToken cancellationToken = default);
         Task<Bid?> GetHighestBidForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default);
+        Task<Dictionary<Guid, Bid>> GetHighestBidsForAuctionsAsync(IEnumerable<Guid> auctionIds, CancellationToken cancellationToken = default);
+        Task<int> GetBidCountForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default);
+        Task<int> GetBidPositionAsync(Guid auctionId, decimal amount, DateTimeOffset bidTime, CancellationToken cancellationToken = default);
+        Task<Bid?> GetSecondHighestBidForAuctionAsync(Guid auctionId, Guid excludeBidId, CancellationToken cancellationToken = default);
         Task<BidStatsDto> GetBidStatsAsync(CancellationToken cancellationToken = default);
+        Task<UserBidStatsDto> GetUserBidStatsAsync(string username, CancellationToken cancellationToken = default);
         Task<List<DailyBidStatDto>> GetDailyBidStatsAsync(int days, CancellationToken cancellationToken = default);
         Task<List<TopBidderDto>> GetTopBiddersAsync(int limit, CancellationToken cancellationToken = default);
+        Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default);
 
-        Task<List<Bid>> GetWinningBidsForUserAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidsForAuctionPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidsForBidderPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, WinningBidQueryParams queryParams, CancellationToken cancellationToken = default);
         Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
-        Task<(List<Bid> Bids, int TotalCount)> GetBidHistoryAsync(BidHistoryFilter filter, CancellationToken cancellationToken = default);
+        Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryQueryParams queryParams, CancellationToken cancellationToken = default);
     }
 
     public class BidHistoryFilter
     {
-        public Guid? AuctionId { get; set; }
-        public Guid? UserId { get; set; }
-        public BidStatus? Status { get; set; }
-        public DateTimeOffset? FromDate { get; set; }
-        public DateTimeOffset? ToDate { get; set; }
-        public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 20;
+        public Guid? AuctionId { get; init; }
+        public Guid? UserId { get; init; }
+        public BidStatus? Status { get; init; }
+        public DateTimeOffset? FromDate { get; init; }
+        public DateTimeOffset? ToDate { get; init; }
+        public decimal? MinAmount { get; init; }
+        public decimal? MaxAmount { get; init; }
     }
+
+    public class BidHistoryQueryParams : QueryParameters<BidHistoryFilter> { }
 }

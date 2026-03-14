@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Auction.NotFound" xml:space="preserve"><value>Auction not found.</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>This auction has already ended.</value></data>
+  <data name="Auction.NotStarted" xml:space="preserve"><value>This auction has not started yet.</value></data>
+  <data name="Auction.BidTooLow" xml:space="preserve"><value>Your bid must be higher than the current bid of {0}.</value></data>
+  <data name="Auction.CannotBidOwnAuction" xml:space="preserve"><value>You cannot bid on your own auction.</value></data>
+  <data name="Auction.InvalidStatus" xml:space="preserve"><value>The auction status does not allow this operation.</value></data>
+  <data name="Auction.Created" xml:space="preserve"><value>Auction created successfully.</value></data>
+  <data name="Auction.Updated" xml:space="preserve"><value>Auction updated successfully.</value></data>
+  <data name="Auction.Deleted" xml:space="preserve"><value>Auction deleted successfully.</value></data>
+  <data name="Auction.FetchFailed" xml:space="preserve"><value>Failed to fetch auction: {0}</value></data>
+  <data name="Auction.EndDatePassed" xml:space="preserve"><value>Cannot activate auction. The auction end date has already passed.</value></data>
+  <data name="Auction.BulkUpdateFailed" xml:space="preserve"><value>Failed to bulk update auctions: {0}</value></data>
+  <data name="Auction.DeactivationFailed" xml:space="preserve"><value>Auction deactivation failed: {0}</value></data>
+  <data name="Auction.ActivationFailed" xml:space="preserve"><value>Auction activation failed: {0}</value></data>
+  <data name="Auction.NotActive" xml:space="preserve"><value>Auction is not active.</value></data>
+  <data name="BuyNow.Conflict" xml:space="preserve"><value>Another buyer is currently processing this purchase. Please try again.</value></data>
+  <data name="BuyNow.ConflictPurchased" xml:space="preserve"><value>This item was just purchased by someone else. Please try another auction.</value></data>
+  <data name="BuyNow.NotAvailable" xml:space="preserve"><value>Buy Now is not available for this auction.</value></data>
+  <data name="BuyNow.OwnAuction" xml:space="preserve"><value>You cannot buy your own auction.</value></data>
+  <data name="BuyNow.AuctionNotLive" xml:space="preserve"><value>This auction is no longer active.</value></data>
+  <data name="BuyNow.Failed" xml:space="preserve"><value>Failed to process Buy Now: {0}</value></data>
+  <data name="Bookmark.NotFound" xml:space="preserve"><value>Item not found in watchlist.</value></data>
+  <data name="Bookmark.AlreadyExists" xml:space="preserve"><value>Auction is already in your watchlist.</value></data>
+  <data name="Brand.NotFound" xml:space="preserve"><value>Brand not found.</value></data>
+  <data name="Brand.SlugExists" xml:space="preserve"><value>A brand with slug '{0}' already exists.</value></data>
+  <data name="Brand.DeleteFailed" xml:space="preserve"><value>Failed to delete brand: {0}</value></data>
+  <data name="Brand.UpdateFailed" xml:space="preserve"><value>Failed to update brand: {0}</value></data>
+  <data name="Brand.FetchError" xml:space="preserve"><value>Error fetching brand: {0}</value></data>
+  <data name="Category.NotFound" xml:space="preserve"><value>Category not found.</value></data>
+  <data name="Category.SlugExists" xml:space="preserve"><value>A category with slug '{0}' already exists.</value></data>
+  <data name="Category.SelfParent" xml:space="preserve"><value>A category cannot be its own parent.</value></data>
+  <data name="Category.HasItems" xml:space="preserve"><value>Cannot delete category that has associated items. Please reassign or delete the items first.</value></data>
+  <data name="Category.CreateFailed" xml:space="preserve"><value>Failed to create category: {0}</value></data>
+  <data name="Category.UpdateFailed" xml:space="preserve"><value>Failed to update category: {0}</value></data>
+  <data name="Category.DeleteFailed" xml:space="preserve"><value>Failed to delete category: {0}</value></data>
+  <data name="Categories.FetchError" xml:space="preserve"><value>Error fetching categories: {0}</value></data>
+  <data name="Review.NotFound" xml:space="preserve"><value>Review not found.</value></data>
+  <data name="Review.AlreadyExists" xml:space="preserve"><value>Review already exists for this auction.</value></data>
+  <data name="Review.InvalidRating" xml:space="preserve"><value>Rating must be between 1 and 5.</value></data>
+  <data name="Review.Forbidden" xml:space="preserve"><value>Only the reviewed seller can respond to this review.</value></data>
+  <data name="Review.AlreadyResponded" xml:space="preserve"><value>Seller has already responded to this review.</value></data>
+  <data name="Analytics.Error" xml:space="preserve"><value>Failed to retrieve seller analytics.</value></data>
+  <data name="Dashboard.Error" xml:space="preserve"><value>Failed to retrieve dashboard statistics.</value></data>
+</root>

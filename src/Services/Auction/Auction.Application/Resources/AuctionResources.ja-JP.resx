@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Auction.NotFound" xml:space="preserve"><value>オークションが見つかりません。</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>このオークションはすでに終了しています。</value></data>
+  <data name="Auction.NotStarted" xml:space="preserve"><value>このオークションはまだ開始されていません。</value></data>
+  <data name="Auction.BidTooLow" xml:space="preserve"><value>入札額は現在の入札額{0}より高くなければなりません。</value></data>
+  <data name="Auction.CannotBidOwnAuction" xml:space="preserve"><value>自分のオークションに入札することはできません。</value></data>
+  <data name="Auction.InvalidStatus" xml:space="preserve"><value>オークションの状態がこの操作を許可していません。</value></data>
+  <data name="Auction.Created" xml:space="preserve"><value>オークションが正常に作成されました。</value></data>
+  <data name="Auction.Updated" xml:space="preserve"><value>オークションが正常に更新されました。</value></data>
+  <data name="Auction.Deleted" xml:space="preserve"><value>オークションが正常に削除されました。</value></data>
+  <data name="Auction.FetchFailed" xml:space="preserve"><value>オークションの取得に失敗しました: {0}</value></data>
+  <data name="Auction.EndDatePassed" xml:space="preserve"><value>オークションを有効化できません。終了日がすでに過ぎています。</value></data>
+  <data name="Auction.BulkUpdateFailed" xml:space="preserve"><value>オークションの一括更新に失敗しました: {0}</value></data>
+  <data name="Auction.DeactivationFailed" xml:space="preserve"><value>オークションの無効化に失敗しました: {0}</value></data>
+  <data name="Auction.ActivationFailed" xml:space="preserve"><value>オークションの有効化に失敗しました: {0}</value></data>
+  <data name="Auction.NotActive" xml:space="preserve"><value>オークションはアクティブではありません。</value></data>
+  <data name="BuyNow.Conflict" xml:space="preserve"><value>別の購入者がこの商品を処理中です。もう一度お試しください。</value></data>
+  <data name="BuyNow.ConflictPurchased" xml:space="preserve"><value>この商品は他の方が購入しました。別のオークションをお試しください。</value></data>
+  <data name="BuyNow.NotAvailable" xml:space="preserve"><value>このオークションでは即購入は利用できません。</value></data>
+  <data name="BuyNow.OwnAuction" xml:space="preserve"><value>自分のオークションを購入することはできません。</value></data>
+  <data name="BuyNow.AuctionNotLive" xml:space="preserve"><value>このオークションはすでに終了しています。</value></data>
+  <data name="BuyNow.Failed" xml:space="preserve"><value>即購入の処理に失敗しました: {0}</value></data>
+  <data name="Bookmark.NotFound" xml:space="preserve"><value>ウォッチリストにアイテムが見つかりません。</value></data>
+  <data name="Bookmark.AlreadyExists" xml:space="preserve"><value>このオークションはすでにウォッチリストに追加されています。</value></data>
+  <data name="Brand.NotFound" xml:space="preserve"><value>ブランドが見つかりません。</value></data>
+  <data name="Brand.SlugExists" xml:space="preserve"><value>スラッグ '{0}' のブランドはすでに存在します。</value></data>
+  <data name="Brand.DeleteFailed" xml:space="preserve"><value>ブランドの削除に失敗しました: {0}</value></data>
+  <data name="Brand.UpdateFailed" xml:space="preserve"><value>ブランドの更新に失敗しました: {0}</value></data>
+  <data name="Brand.FetchError" xml:space="preserve"><value>ブランドの取得中にエラーが発生しました: {0}</value></data>
+  <data name="Category.NotFound" xml:space="preserve"><value>カテゴリが見つかりません。</value></data>
+  <data name="Category.SlugExists" xml:space="preserve"><value>スラッグ '{0}' のカテゴリはすでに存在します。</value></data>
+  <data name="Category.SelfParent" xml:space="preserve"><value>カテゴリを自身の親に設定することはできません。</value></data>
+  <data name="Category.HasItems" xml:space="preserve"><value>関連するアイテムがあるカテゴリは削除できません。先にアイテムを再割り当てまたは削除してください。</value></data>
+  <data name="Category.CreateFailed" xml:space="preserve"><value>カテゴリの作成に失敗しました: {0}</value></data>
+  <data name="Category.UpdateFailed" xml:space="preserve"><value>カテゴリの更新に失敗しました: {0}</value></data>
+  <data name="Category.DeleteFailed" xml:space="preserve"><value>カテゴリの削除に失敗しました: {0}</value></data>
+  <data name="Categories.FetchError" xml:space="preserve"><value>カテゴリの取得中にエラーが発生しました: {0}</value></data>
+  <data name="Review.NotFound" xml:space="preserve"><value>レビューが見つかりません。</value></data>
+  <data name="Review.AlreadyExists" xml:space="preserve"><value>このオークションのレビューはすでに存在します。</value></data>
+  <data name="Review.InvalidRating" xml:space="preserve"><value>評価は1から5の間でなければなりません。</value></data>
+  <data name="Review.Forbidden" xml:space="preserve"><value>レビューに返信できるのは対象の出品者のみです。</value></data>
+  <data name="Review.AlreadyResponded" xml:space="preserve"><value>出品者はすでにこのレビューに返信済みです。</value></data>
+  <data name="Analytics.Error" xml:space="preserve"><value>出品者分析の取得に失敗しました。</value></data>
+  <data name="Dashboard.Error" xml:space="preserve"><value>ダッシュボード統計の取得に失敗しました。</value></data>
+</root>

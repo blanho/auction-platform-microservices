@@ -1,4 +1,5 @@
 using Identity.Api.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<AppRole> AppRoles { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<RolePermissionString> RolePermissionStrings { get; set; }
     public DbSet<AppUserRole> AppUserRoles { get; set; }
     public DbSet<ResourceAcl> ResourceAcls { get; set; }
 
@@ -29,5 +31,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsRequired();
 
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        builder.AddInboxStateEntity();
+        builder.AddOutboxMessageEntity();
+        builder.AddOutboxStateEntity();
     }
 }

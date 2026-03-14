@@ -1,107 +1,142 @@
+using Auctions.Application.DTOs.Audit;
+using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Abstractions.Logging;
-using BuildingBlocks.Infrastructure.Caching;
-using BuildingBlocks.Infrastructure.Repository;
-using BuildingBlocks.Infrastructure.Repository.Specifications;
+using Microsoft.Extensions.Logging;
 
-namespace Auctions.Application.Commands.UpdateAuction;
+namespace Auctions.Application.Features.Auctions.UpdateAuction;
 
 public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand, bool>
 {
-    private readonly IAuctionRepository _repository;
-    private readonly IAppLogger<UpdateAuctionCommandHandler> _logger;
-    private readonly IDateTimeProvider _dateTime;
+    private readonly IAuctionWriteRepository _repository;
+    private readonly ILogger<UpdateAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuditPublisher _auditPublisher;
-    private readonly ICacheService _cache;
     private readonly ISanitizationService _sanitizationService;
-    
-    private const string CacheKeyPrefix = "auction:";
+    private readonly IAuditPublisher _auditPublisher;
 
     public UpdateAuctionCommandHandler(
-        IAuctionRepository repository,
-        IAppLogger<UpdateAuctionCommandHandler> logger,
-        IDateTimeProvider dateTime,
+        IAuctionWriteRepository repository,
+        ILogger<UpdateAuctionCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        IAuditPublisher auditPublisher,
-        ICacheService cache,
-        ISanitizationService sanitizationService)
+        ISanitizationService sanitizationService,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
-        _dateTime = dateTime;
         _unitOfWork = unitOfWork;
-        _auditPublisher = auditPublisher;
-        _cache = cache;
         _sanitizationService = sanitizationService;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(UpdateAuctionCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating auction {AuctionId} at {Timestamp}", 
-            request.Id, _dateTime.UtcNow);
+        _logger.LogInformation("Updating auction {AuctionId}", request.Id);
 
-        var auction = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var auction = await _repository.GetByIdForUpdateAsync(request.Id, cancellationToken);
 
         if (auction == null)
         {
             _logger.LogWarning("Auction {AuctionId} not found for update", request.Id);
-            return Result.Failure<bool>(Error.Create("Auction.NotFound", $"Auction with ID {request.Id} was not found"));
+            return Result.Failure<bool>(AuctionErrors.Auction.NotFoundById(request.Id));
         }
 
-        var oldAuction = Auction.CreateSnapshot(auction);
+        if (auction.SellerId != request.UserId)
+        {
+            _logger.LogWarning("User {UserId} attempted to update auction {AuctionId} owned by {OwnerId}", 
+                request.UserId, request.Id, auction.SellerId);
+            return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to update this auction"));
+        }
+
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
+
         var modifiedFields = new List<string>();
-        
+
         if (request.Title != null && request.Title != auction.Item.Title)
         {
-            auction.Item.Title = _sanitizationService.SanitizeText(request.Title);
+            auction.Item.UpdateTitle(_sanitizationService.SanitizeText(request.Title));
             modifiedFields.Add(nameof(auction.Item.Title));
         }
-        
+
         if (request.Description != null && request.Description != auction.Item.Description)
         {
-            auction.Item.Description = _sanitizationService.SanitizeHtml(request.Description);
+            auction.Item.UpdateDescription(_sanitizationService.SanitizeHtml(request.Description));
             modifiedFields.Add(nameof(auction.Item.Description));
         }
-        
+
         if (request.Condition != null && request.Condition != auction.Item.Condition)
         {
-            auction.Item.Condition = request.Condition;
+            auction.Item.UpdateCondition(request.Condition);
             modifiedFields.Add(nameof(auction.Item.Condition));
         }
-        
+
         if (request.YearManufactured != null && request.YearManufactured != auction.Item.YearManufactured)
         {
-            auction.Item.YearManufactured = request.YearManufactured;
+            auction.Item.UpdateYearManufactured(request.YearManufactured);
             modifiedFields.Add(nameof(auction.Item.YearManufactured));
         }
-        
+
         if (request.Attributes != null)
         {
             foreach (var attr in request.Attributes)
             {
-                auction.Item.Attributes[attr.Key] = attr.Value;
+                auction.Item.SetAttribute(attr.Key, attr.Value);
             }
             modifiedFields.Add(nameof(auction.Item.Attributes));
         }
 
+        if (request.ReservePrice.HasValue && request.ReservePrice.Value != auction.ReservePrice)
+        {
+            auction.UpdateReservePrice(request.ReservePrice.Value);
+            modifiedFields.Add(nameof(auction.ReservePrice));
+        }
+
+        if (request.BuyNowPrice != null && request.BuyNowPrice != auction.BuyNowPrice)
+        {
+            auction.UpdateBuyNowPrice(request.BuyNowPrice);
+            modifiedFields.Add(nameof(auction.BuyNowPrice));
+        }
+
+        if (request.CategoryId.HasValue && request.CategoryId != auction.Item.CategoryId)
+        {
+            auction.Item.UpdateCategory(request.CategoryId);
+            modifiedFields.Add("CategoryId");
+        }
+
+        if (request.BrandId.HasValue && request.BrandId != auction.Item.BrandId)
+        {
+            auction.Item.UpdateBrand(request.BrandId);
+            modifiedFields.Add("BrandId");
+        }
+
+        if (request.IsFeatured.HasValue && request.IsFeatured.Value != auction.IsFeatured)
+        {
+            auction.SetFeatured(request.IsFeatured.Value);
+            modifiedFields.Add(nameof(auction.IsFeatured));
+        }
+
+        if (request.AuctionEnd.HasValue && request.AuctionEnd.Value != auction.AuctionEnd)
+        {
+            var extension = request.AuctionEnd.Value - auction.AuctionEnd;
+            auction.ExtendAuctionEnd(extension);
+            modifiedFields.Add(nameof(auction.AuctionEnd));
+        }
+
         auction.RaiseUpdatedEvent(modifiedFields);
-        
+
         await _repository.UpdateAsync(auction, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditPublisher.PublishAsync(
             auction.Id,
-            auction,
+            AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
-            oldAuction,
-            cancellationToken: cancellationToken);
+            oldAuctionData,
+            new Dictionary<string, object> { ["ModifiedFields"] = modifiedFields },
+            cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _cache.RemoveAsync($"{CacheKeyPrefix}{request.Id}", cancellationToken);
-
-        _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}", 
+        _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));
         return Result.Success(true);
     }
