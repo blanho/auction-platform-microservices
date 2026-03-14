@@ -10,32 +10,32 @@
   <ItemGroup>
     <ProjectReference Include="..\Auction.Domain\Auction.Domain.csproj" />
     <ProjectReference Include="..\Auction.Application\Auction.Application.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
+    <ProjectReference Include="..\Auction.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\OrchestrationService.Contracts\OrchestrationService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\IdentityService.Contracts\IdentityService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\NotificationService.Contracts\NotificationService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\JobService.Contracts\JobService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\StorageService.Contracts\StorageService.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Orchestration\Orchestration.Contracts\OrchestrationService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Identity.Contracts\IdentityService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Notification\Notification.Contracts\NotificationService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Job\Job.Contracts\JobService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Storage\Storage.Contracts\StorageService.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="8.4.0" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.13" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13">
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="Quartz" Version="3.14.0" />
-    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.14.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.70.0">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Quartz" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

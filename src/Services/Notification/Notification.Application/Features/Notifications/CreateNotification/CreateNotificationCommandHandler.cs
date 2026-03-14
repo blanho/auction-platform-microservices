@@ -1,5 +1,7 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Notification.Application.DTOs;
+using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 using NotificationEntity = Notification.Domain.Entities.Notification;
@@ -14,19 +16,22 @@ public class CreateNotificationCommandHandler : ICommandHandler<CreateNotificati
     private readonly IMapper _mapper;
     private readonly INotificationHubService _hubService;
     private readonly ILogger<CreateNotificationCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateNotificationCommandHandler(
         INotificationRepository repository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         INotificationHubService hubService,
-        ILogger<CreateNotificationCommandHandler> logger)
+        ILogger<CreateNotificationCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _hubService = hubService;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<NotificationDto>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
@@ -56,6 +61,12 @@ public class CreateNotificationCommandHandler : ICommandHandler<CreateNotificati
 
         await _repository.CreateAsync(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            notification.Id,
+            NotificationAuditData.FromNotification(notification),
+            AuditAction.Created,
+            cancellationToken: cancellationToken);
 
         var dto = notification.ToDto(_mapper);
 

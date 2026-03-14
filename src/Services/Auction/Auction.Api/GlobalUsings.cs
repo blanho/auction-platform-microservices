@@ -19,3 +19,4 @@ global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Interfaces;
 
 global using AuctionStatus = Auctions.Domain.Enums.Status;
+global using AuctionService.Contracts.Grpc;

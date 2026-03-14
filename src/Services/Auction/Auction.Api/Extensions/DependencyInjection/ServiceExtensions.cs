@@ -62,13 +62,12 @@ namespace Auctions.Api.Extensions.DependencyInjection
                 var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
                 return new CachedAuctionRepository(inner, cache, logger);
             });
-            services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
-            services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionQueryRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionSchedulerRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
-            services.AddScoped<IAuctionAnalyticsRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionUserRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionExportRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionAnalyticsRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
 
             services.AddScoped<IAuctionViewRepository, AuctionViewRepository>();
 

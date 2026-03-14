@@ -46,6 +46,8 @@ builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
 builder.Services.AddGrpcClients(builder.Configuration, builder.Environment);
+builder.Services.AddGrpc();
+builder.Services.AddGrpcReflection();
 builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
@@ -80,9 +82,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapCarter();
+app.MapGrpcService<Bidding.Api.Grpc.BidGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {
+    app.MapGrpcReflectionService();
     app.UseCommonOpenApi();
     app.UseCommonSwaggerUI("Bidding Service");
 }

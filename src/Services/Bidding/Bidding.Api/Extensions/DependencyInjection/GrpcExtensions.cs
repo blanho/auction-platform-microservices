@@ -1,6 +1,8 @@
-using Auctions.Api.Grpc;
+using AuctionService.Contracts.Grpc;
 using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Grpc;
+using GrpcCore = global::Grpc.Core;
+using GrpcConfig = global::Grpc.Net.Client.Configuration;
 
 namespace Bidding.Api.Extensions.DependencyInjection;
 
@@ -36,18 +38,18 @@ public static class GrpcExtensions
         .ConfigureChannel(options =>
         {
             options.MaxRetryAttempts = 3;
-            options.ServiceConfig = new Grpc.Net.Client.Configuration.ServiceConfig
+            options.ServiceConfig = new GrpcConfig.ServiceConfig
             {
-                MethodConfigs = { new Grpc.Net.Client.Configuration.MethodConfig
+                MethodConfigs = { new GrpcConfig.MethodConfig
                 {
-                    Names = { Grpc.Net.Client.Configuration.MethodName.Default },
-                    RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
+                    Names = { GrpcConfig.MethodName.Default },
+                    RetryPolicy = new GrpcConfig.RetryPolicy
                     {
                         MaxAttempts = 3,
                         InitialBackoff = TimeSpan.FromMilliseconds(500),
                         MaxBackoff = TimeSpan.FromSeconds(5),
                         BackoffMultiplier = 2,
-                        RetryableStatusCodes = { Grpc.Core.StatusCode.Unavailable, Grpc.Core.StatusCode.DeadlineExceeded }
+                        RetryableStatusCodes = { GrpcCore.StatusCode.Unavailable, GrpcCore.StatusCode.DeadlineExceeded }
                     }
                 }}
             };

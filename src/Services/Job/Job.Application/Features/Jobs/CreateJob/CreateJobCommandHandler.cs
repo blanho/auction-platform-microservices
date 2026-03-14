@@ -1,4 +1,6 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
 using Jobs.Domain.Entities;
 using Job = Jobs.Domain.Entities.Job;
@@ -12,19 +14,22 @@ public class CreateJobCommandHandler : ICommandHandler<CreateJobCommand, JobDto>
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateJobCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateJobCommandHandler(
         IJobRepository jobRepository,
         IJobItemRepository jobItemRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        ILogger<CreateJobCommandHandler> logger)
+        ILogger<CreateJobCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _jobRepository = jobRepository;
         _jobItemRepository = jobItemRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<JobDto>> Handle(CreateJobCommand request, CancellationToken cancellationToken)
@@ -56,6 +61,18 @@ public class CreateJobCommandHandler : ICommandHandler<CreateJobCommand, JobDto>
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            job.Id,
+            JobAuditData.FromJob(job),
+            AuditAction.Created,
+            metadata: new Dictionary<string, object>
+            {
+                ["Type"] = job.Type.ToString(),
+                ["CorrelationId"] = job.CorrelationId,
+                ["TotalItems"] = job.TotalItems
+            },
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("Created job {JobId} of type {JobType} with {TotalItems} items",
             job.Id, job.Type, job.TotalItems);

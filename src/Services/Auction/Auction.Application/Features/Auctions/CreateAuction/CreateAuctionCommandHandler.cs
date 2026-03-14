@@ -1,7 +1,9 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.DTOs.Audit;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +17,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISanitizationService _sanitizationService;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateAuctionCommandHandler(
         IAuctionWriteRepository repository,
@@ -22,7 +25,8 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         ILogger<CreateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
-        ISanitizationService sanitizationService)
+        ISanitizationService sanitizationService,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
@@ -30,6 +34,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
         _sanitizationService = sanitizationService;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<AuctionDto>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
@@ -41,6 +46,12 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            createdAuction.Id,
+            AuctionAuditData.FromAuction(createdAuction),
+            AuditAction.Created,
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("Created auction {AuctionId} for seller {Seller}", createdAuction.Id, request.SellerUsername);
 

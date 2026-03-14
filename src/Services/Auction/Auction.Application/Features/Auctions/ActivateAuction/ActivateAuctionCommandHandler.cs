@@ -1,7 +1,9 @@
 using Auctions.Application.DTOs;
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using AutoMapper;
 using Auctions.Domain.Enums;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Features.Auctions.ActivateAuction;
@@ -13,19 +15,22 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
     private readonly ILogger<ActivateAuctionCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public ActivateAuctionCommandHandler(
         IAuctionWriteRepository repository,
         IMapper mapper,
         ILogger<ActivateAuctionCommandHandler> logger,
         IDateTimeProvider dateTime,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _dateTime = dateTime;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<AuctionDto>> Handle(ActivateAuctionCommand request, CancellationToken cancellationToken)
@@ -57,12 +62,25 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
                 "Cannot activate auction. The auction end date has already passed."));
         }
 
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
         var previousStatus = auction.Status;
         auction.ChangeStatus(Status.Live);
 
         await _repository.UpdateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "Activated",
+                ["PreviousStatus"] = previousStatus.ToString()
+            },
+            cancellationToken);
 
         _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
             request.AuctionId, previousStatus);

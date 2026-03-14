@@ -11,4 +11,5 @@ public interface IAuctionQueryRepository
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<PaginatedResult<Auction>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     Task<PaginatedResult<Auction>> GetPagedAsync(AuctionFilterDto filter, CancellationToken cancellationToken = default);
+    Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default);
 }

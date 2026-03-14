@@ -1,5 +1,7 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
@@ -12,17 +14,20 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
     private readonly IMapper _mapper;
     private readonly ILogger<UpdateOrderStatusCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public UpdateOrderStatusCommandHandler(
         IOrderRepository repository,
         IMapper mapper,
         ILogger<UpdateOrderStatusCommandHandler> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<OrderDto>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -32,6 +37,8 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
         {
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
+
+        var oldOrderData = OrderAuditData.FromOrder(order);
 
         if (request.PaymentStatus == PaymentStatus.Completed && order.PaymentStatus != PaymentStatus.Completed)
         {
@@ -62,6 +69,14 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
 
         var updated = await _repository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            updated.Id,
+            OrderAuditData.FromOrder(updated),
+            AuditAction.Updated,
+            oldOrderData,
+            new Dictionary<string, object> { ["Action"] = "StatusUpdated" },
+            cancellationToken);
 
         _logger.LogInformation("Updated order {OrderId}", updated.Id);
 

@@ -1,4 +1,6 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
+using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
 using JobStatus = Jobs.Domain.Enums.JobStatus;
 
@@ -9,7 +11,8 @@ public class RetryJobCommandHandler(
     IJobItemRepository jobItemRepository,
     IUnitOfWork unitOfWork,
     IMapper mapper,
-    ILogger<RetryJobCommandHandler> logger)
+    ILogger<RetryJobCommandHandler> logger,
+    IAuditPublisher auditPublisher)
     : ICommandHandler<RetryJobCommand, JobDto>
 {
     public async Task<Result<JobDto>> Handle(
@@ -23,6 +26,8 @@ public class RetryJobCommandHandler(
         if (job.Status is not (JobStatus.Failed or JobStatus.CompletedWithErrors))
             return Result.Failure<JobDto>(JobErrors.Job.CannotRetry(job.Status.ToString()));
 
+        var oldJobData = JobAuditData.FromJob(job);
+
         logger.LogInformation("Retrying job {JobId} with status {Status}", job.Id, job.Status);
 
         await jobItemRepository.ResetFailedItemsAsync(job.Id, cancellationToken);
@@ -30,6 +35,18 @@ public class RetryJobCommandHandler(
 
         await jobRepository.UpdateAsync(job, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await auditPublisher.PublishAsync(
+            job.Id,
+            JobAuditData.FromJob(job),
+            AuditAction.Updated,
+            oldJobData,
+            metadata: new Dictionary<string, object>
+            {
+                ["Action"] = "Retry",
+                ["PreviousStatus"] = oldJobData.Status
+            },
+            cancellationToken: cancellationToken);
 
         logger.LogInformation("Job {JobId} reset for retry successfully", job.Id);
 

@@ -1,6 +1,8 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
@@ -13,17 +15,20 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateWalletCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CreateWalletCommandHandler(
         IWalletRepository walletRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        ILogger<CreateWalletCommandHandler> logger)
+        ILogger<CreateWalletCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _walletRepository = walletRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<WalletDto>> Handle(CreateWalletCommand request, CancellationToken cancellationToken)
@@ -36,6 +41,12 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
 
         var created = await _walletRepository.AddAsync(wallet);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            created.Id,
+            WalletAuditData.FromWallet(created),
+            AuditAction.Created,
+            cancellationToken: cancellationToken);
 
         _logger.LogDebug("Wallet created for user");
 

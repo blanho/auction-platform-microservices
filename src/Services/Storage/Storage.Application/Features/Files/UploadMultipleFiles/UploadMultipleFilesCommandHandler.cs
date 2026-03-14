@@ -1,7 +1,9 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using MassTransit;
 using Microsoft.Extensions.Options;
+using Storage.Application.DTOs.Audit;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
@@ -15,7 +17,8 @@ public class UploadMultipleFilesCommandHandler(
     IUnitOfWork unitOfWork,
     IPublishEndpoint publishEndpoint,
     IOptions<FileStorageSettings> storageSettings,
-    ILogger<UploadMultipleFilesCommandHandler> logger)
+    ILogger<UploadMultipleFilesCommandHandler> logger,
+    IAuditPublisher auditPublisher)
     : ICommandHandler<UploadMultipleFilesCommand, BatchUploadResultDto>
 {
     private const int MaxConcurrentUploads = 5;
@@ -53,6 +56,21 @@ public class UploadMultipleFilesCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        foreach (var storedFile in storedFiles)
+        {
+            await auditPublisher.PublishAsync(
+                storedFile.Id,
+                StoredFileAuditData.FromStoredFile(storedFile),
+                AuditAction.Created,
+                metadata: new Dictionary<string, object>
+                {
+                    ["FileName"] = storedFile.FileName,
+                    ["FileSize"] = storedFile.FileSize,
+                    ["BatchUpload"] = true
+                },
+                cancellationToken: cancellationToken);
+        }
 
         logger.LogInformation("Uploaded {Count} files", storedFiles.Length);
 

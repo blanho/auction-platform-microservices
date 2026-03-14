@@ -1,6 +1,8 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using MassTransit;
+using Storage.Application.DTOs.Audit;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
@@ -13,7 +15,8 @@ public class DeleteFileCommandHandler(
     IFileStorageService fileStorageService,
     IUnitOfWork unitOfWork,
     IPublishEndpoint publishEndpoint,
-    ILogger<DeleteFileCommandHandler> logger)
+    ILogger<DeleteFileCommandHandler> logger,
+    IAuditPublisher auditPublisher)
     : ICommandHandler<DeleteFileCommand>
 {
     public async Task<Result> Handle(DeleteFileCommand request, CancellationToken cancellationToken)
@@ -27,6 +30,8 @@ public class DeleteFileCommandHandler(
             return Result.Failure(StorageErrors.FileNotFound(request.FileId));
         }
 
+        var oldFileData = StoredFileAuditData.FromStoredFile(file);
+
         var deleted = await fileStorageService.DeleteAsync(file.StoredFileName, cancellationToken);
 
         if (!deleted)
@@ -38,6 +43,13 @@ public class DeleteFileCommandHandler(
         file.MarkAsDeleted(null);
         repository.Update(file);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await auditPublisher.PublishAsync(
+            file.Id,
+            StoredFileAuditData.FromStoredFile(file),
+            AuditAction.Deleted,
+            oldFileData,
+            cancellationToken: cancellationToken);
 
         await publishEndpoint.Publish(new FileDeletedEvent
         {

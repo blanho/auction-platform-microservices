@@ -7,27 +7,37 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /src
 
+# Copy centralized build files
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
+
 # Copy project files for restore (enables better layer caching)
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
-COPY ["src/Services/Auction/Auction.Domain/Auctions.Domain.csproj", "src/Services/Auction/Auction.Domain/"]
-COPY ["src/Services/Auction/Auction.Application/Auctions.Application.csproj", "src/Services/Auction/Auction.Application/"]
-COPY ["src/Services/Auction/Auction.Infrastructure/Auctions.Infrastructure.csproj", "src/Services/Auction/Auction.Infrastructure/"]
-COPY ["src/Services/Auction/Auction.Api/Auctions.Api.csproj", "src/Services/Auction/Auction.Api/"]
-COPY ["src/Services/Auction/Auction.Contracts/Auctions.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
-COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
+COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
+COPY ["src/Services/Auction/Auction.Domain/Auction.Domain.csproj", "src/Services/Auction/Auction.Domain/"]
+COPY ["src/Services/Auction/Auction.Application/Auction.Application.csproj", "src/Services/Auction/Auction.Application/"]
+COPY ["src/Services/Auction/Auction.Infrastructure/Auction.Infrastructure.csproj", "src/Services/Auction/Auction.Infrastructure/"]
+COPY ["src/Services/Auction/Auction.Api/Auction.Api.csproj", "src/Services/Auction/Auction.Api/"]
+COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
+COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
+COPY ["src/Services/Identity/Identity.Contracts/IdentityService.Contracts.csproj", "src/Services/Identity/Identity.Contracts/"]
+COPY ["src/Services/Notification/Notification.Contracts/NotificationService.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
+COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
+COPY ["src/Services/Storage/Storage.Contracts/StorageService.Contracts.csproj", "src/Services/Storage/Storage.Contracts/"]
+COPY ["src/Orchestration/Orchestration.Contracts/OrchestrationService.Contracts.csproj", "src/Orchestration/Orchestration.Contracts/"]
 
 # Restore dependencies
-RUN dotnet restore "src/Services/Auction/Auction.Api/Auctions.Api.csproj" --runtime linux-musl-x64
+RUN dotnet restore "src/Services/Auction/Auction.Api/Auction.Api.csproj" --runtime linux-musl-x64
 
 # Copy source code
 COPY ["src/", "src/"]
 
 # Build and publish
 WORKDIR "/src/src/Services/Auction/Auction.Api"
-RUN dotnet publish "Auctions.Api.csproj" \
+RUN dotnet publish "Auction.Api.csproj" \
     -c Release \
     -o /app/publish \
     --no-restore \
@@ -60,5 +70,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 USER appuser
 
-ENTRYPOINT ["dotnet", "Auctions.Api.dll"]
-
+ENTRYPOINT ["dotnet", "Auction.Api.dll"]

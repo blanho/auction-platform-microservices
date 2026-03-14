@@ -9,14 +9,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bidding.Domain\Bidding.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
+    <ProjectReference Include="..\Bidding.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <PackageReference Include="MassTransit" Version="8.4.0" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="MassTransit" />
   </ItemGroup>
 
 </Project>

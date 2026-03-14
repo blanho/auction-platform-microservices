@@ -8,14 +8,14 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReservation>
 {
-    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionQueryRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<ReleaseAuctionReservationConsumer> _logger;
 
     public ReleaseAuctionReservationConsumer(
-        IAuctionReadRepository readRepository,
+        IAuctionQueryRepository readRepository,
         IAuctionWriteRepository writeRepository,
         BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,

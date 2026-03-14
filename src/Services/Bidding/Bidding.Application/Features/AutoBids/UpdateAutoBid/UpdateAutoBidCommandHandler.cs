@@ -1,4 +1,6 @@
+using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Bidding.Application.Features.AutoBids.UpdateAutoBid;
 
@@ -7,15 +9,18 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
     private readonly IAutoBidRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateAutoBidCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public UpdateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IUnitOfWork unitOfWork,
-        ILogger<UpdateAutoBidCommandHandler> logger)
+        ILogger<UpdateAutoBidCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<UpdateAutoBidResult>> Handle(UpdateAutoBidCommand request, CancellationToken cancellationToken)
@@ -44,9 +49,24 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
             return Result.Failure<UpdateAutoBidResult>(BiddingErrors.AutoBid.MaxAmountTooLow(autoBid.CurrentBidAmount));
         }
 
+        var oldAutoBidData = AutoBidAuditData.FromAutoBid(autoBid);
+
         autoBid.UpdateMaxAmount(request.NewMaxAmount);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            autoBid.Id,
+            AutoBidAuditData.FromAutoBid(autoBid),
+            AuditAction.Updated,
+            oldAutoBidData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "MaxAmountUpdated",
+                ["PreviousMaxAmount"] = oldAutoBidData.MaxAmount,
+                ["NewMaxAmount"] = request.NewMaxAmount
+            },
+            cancellationToken);
 
         _logger.LogDebug("Auto-bid {AutoBidId} updated successfully", request.AutoBidId);
 

@@ -1,8 +1,5 @@
-using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Events;
-using BuildingBlocks.Infrastructure.Auditing;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,15 +10,11 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
 {
     protected readonly TContext Context;
     private readonly IMediator _mediator;
-    private readonly IAuditPublisher? _auditPublisher;
-    private readonly ChangeTrackerAuditCollector _auditCollector;
 
-    protected BaseUnitOfWork(TContext context, IMediator mediator, IAuditPublisher? auditPublisher = null)
+    protected BaseUnitOfWork(TContext context, IMediator mediator)
     {
         Context = context;
         _mediator = mediator;
-        _auditPublisher = auditPublisher;
-        _auditCollector = new ChangeTrackerAuditCollector();
     }
 
     public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -41,24 +34,12 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
             entity.ClearDomainEvents();
         }
 
-        _auditCollector.CollectAudits(Context);
-
         var result = await Context.SaveChangesAsync(cancellationToken);
 
         foreach (var domainEvent in domainEvents)
         {
             await _mediator.Publish(domainEvent, cancellationToken);
         }
-
-        if (_auditPublisher != null)
-        {
-            var pendingAudits = _auditCollector.GetPendingAudits();
-            if (pendingAudits.Count > 0)
-            {
-                await _auditPublisher.PublishEntriesAsync(pendingAudits, cancellationToken);
-            }
-        }
-        _auditCollector.Clear();
 
         return result;
     }

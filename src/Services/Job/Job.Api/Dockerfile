@@ -14,7 +14,7 @@ COPY ["src/Services/Job/Job.Domain/Job.Domain.csproj", "src/Services/Job/Job.Dom
 COPY ["src/Services/Job/Job.Application/Job.Application.csproj", "src/Services/Job/Job.Application/"]
 COPY ["src/Services/Job/Job.Infrastructure/Job.Infrastructure.csproj", "src/Services/Job/Job.Infrastructure/"]
 COPY ["src/Services/Job/Job.Api/Job.Api.csproj", "src/Services/Job/Job.Api/"]
-COPY ["src/Contracts/JobService.Contracts/JobService.Contracts.csproj", "src/Contracts/JobService.Contracts/"]
+COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
 COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
 
 RUN dotnet restore "src/Services/Job/Job.Api/Job.Api.csproj" --runtime linux-musl-x64

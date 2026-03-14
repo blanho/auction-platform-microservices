@@ -1,7 +1,9 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Constants;
@@ -17,6 +19,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
     private readonly IMapper _mapper;
     private readonly ILogger<ProcessWalletPaymentCommandHandler> _logger;
     private readonly IDistributedLock _distributedLock;
+    private readonly IAuditPublisher _auditPublisher;
 
     private static readonly TimeSpan LockExpiry = WalletDefaults.Lock.StandardExpiry;
 
@@ -26,7 +29,8 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<ProcessWalletPaymentCommandHandler> logger,
-        IDistributedLock distributedLock)
+        IDistributedLock distributedLock,
+        IAuditPublisher auditPublisher)
     {
         _walletRepository = walletRepository;
         _transactionRepository = transactionRepository;
@@ -34,6 +38,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         _mapper = mapper;
         _logger = logger;
         _distributedLock = distributedLock;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<WalletTransactionDto>> Handle(ProcessWalletPaymentCommand request, CancellationToken cancellationToken)
@@ -103,6 +108,19 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
                 request.Username, request.ReferenceId);
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
+
+        await _auditPublisher.PublishAsync(
+            transaction.Id,
+            WalletTransactionAuditData.FromTransaction(transaction),
+            AuditAction.Created,
+            metadata: new Dictionary<string, object>
+            {
+                ["Action"] = "ProcessWalletPayment",
+                ["Amount"] = request.Amount,
+                ["ReferenceId"] = request.ReferenceId,
+                ["NewBalance"] = wallet.Balance
+            },
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("Payment of {Amount} processed for order {ReferenceId} for user: {Username}",
             request.Amount, request.ReferenceId, request.Username);

@@ -1,4 +1,4 @@
-using Auctions.Api.Grpc;
+using AuctionService.Contracts.Grpc;
 using Bidding.Application.Interfaces;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;

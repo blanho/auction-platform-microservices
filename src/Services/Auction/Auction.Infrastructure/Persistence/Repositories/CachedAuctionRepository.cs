@@ -12,13 +12,12 @@ using BuildingBlocks.Infrastructure.Repository;
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
 public class CachedAuctionRepository : 
-    IAuctionReadRepository, 
+    IAuctionQueryRepository, 
     IAuctionWriteRepository,
-    IAuctionQueryRepository,
     IAuctionSchedulerRepository,
-    IAuctionAnalyticsRepository,
     IAuctionUserRepository,
-    IAuctionExportRepository
+    IAuctionExportRepository,
+    IAuctionAnalyticsRepository
 {
     private readonly AuctionRepository _inner;
     private readonly ICacheService _cache;

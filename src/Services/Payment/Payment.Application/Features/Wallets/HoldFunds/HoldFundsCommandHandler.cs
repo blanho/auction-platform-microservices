@@ -1,7 +1,9 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Constants;
@@ -17,6 +19,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
     private readonly IMapper _mapper;
     private readonly ILogger<HoldFundsCommandHandler> _logger;
     private readonly IDistributedLock _distributedLock;
+    private readonly IAuditPublisher _auditPublisher;
 
     private static readonly TimeSpan LockExpiry = WalletDefaults.Lock.ExtendedExpiry;
 
@@ -26,7 +29,8 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<HoldFundsCommandHandler> logger,
-        IDistributedLock distributedLock)
+        IDistributedLock distributedLock,
+        IAuditPublisher auditPublisher)
     {
         _walletRepository = walletRepository;
         _transactionRepository = transactionRepository;
@@ -34,6 +38,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
         _mapper = mapper;
         _logger = logger;
         _distributedLock = distributedLock;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<WalletTransactionDto>> Handle(HoldFundsCommand request, CancellationToken cancellationToken)
@@ -84,6 +89,20 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
                 request.ReferenceId);
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
+
+        await _auditPublisher.PublishAsync(
+            transaction.Id,
+            WalletTransactionAuditData.FromTransaction(transaction),
+            AuditAction.Created,
+            metadata: new Dictionary<string, object>
+            {
+                ["Action"] = "HoldFunds",
+                ["Amount"] = request.Amount,
+                ["ReferenceId"] = request.ReferenceId,
+                ["ReferenceType"] = request.ReferenceType,
+                ["NewHeldAmount"] = wallet.HeldAmount
+            },
+            cancellationToken: cancellationToken);
 
         _logger.LogDebug("Held {Amount} for {ReferenceType} {ReferenceId}",
             request.Amount, request.ReferenceType, request.ReferenceId);

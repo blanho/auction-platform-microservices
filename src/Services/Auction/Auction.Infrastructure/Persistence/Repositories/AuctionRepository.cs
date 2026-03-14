@@ -12,13 +12,12 @@ using Auctions.Domain.Enums;
 namespace Auctions.Infrastructure.Persistence.Repositories
 {
     public class AuctionRepository : 
-        IAuctionReadRepository,
-        IAuctionWriteRepository,
         IAuctionQueryRepository,
+        IAuctionWriteRepository,
         IAuctionSchedulerRepository,
-        IAuctionAnalyticsRepository,
         IAuctionUserRepository,
-        IAuctionExportRepository
+        IAuctionExportRepository,
+        IAuctionAnalyticsRepository
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;

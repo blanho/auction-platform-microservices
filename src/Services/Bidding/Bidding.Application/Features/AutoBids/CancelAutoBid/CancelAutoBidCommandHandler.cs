@@ -1,4 +1,6 @@
+using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Bidding.Application.Features.AutoBids.CancelAutoBid;
 
@@ -7,15 +9,18 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
     private readonly IAutoBidRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CancelAutoBidCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CancelAutoBidCommandHandler(
         IAutoBidRepository repository,
         IUnitOfWork unitOfWork,
-        ILogger<CancelAutoBidCommandHandler> logger)
+        ILogger<CancelAutoBidCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<CancelAutoBidResult>> Handle(CancelAutoBidCommand request, CancellationToken cancellationToken)
@@ -41,8 +46,18 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
             return Result.Failure<CancelAutoBidResult>(BiddingErrors.AutoBid.AlreadyCancelled);
         }
 
+        var oldAutoBidData = AutoBidAuditData.FromAutoBid(autoBid);
+
         autoBid.Deactivate();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            autoBid.Id,
+            AutoBidAuditData.FromAutoBid(autoBid),
+            AuditAction.Updated,
+            oldAutoBidData,
+            new Dictionary<string, object> { ["Action"] = "Cancelled" },
+            cancellationToken);
 
         _logger.LogInformation("Auto-bid {AutoBidId} cancelled successfully", request.AutoBidId);
 

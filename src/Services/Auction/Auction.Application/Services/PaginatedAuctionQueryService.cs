@@ -13,11 +13,11 @@ public interface IPaginatedAuctionQueryService
 
 public class PaginatedAuctionQueryService : IPaginatedAuctionQueryService
 {
-    private readonly IAuctionReadRepository _repository;
+    private readonly IAuctionQueryRepository _repository;
     private readonly IMapper _mapper;
 
     public PaginatedAuctionQueryService(
-        IAuctionReadRepository repository,
+        IAuctionQueryRepository repository,
         IMapper mapper)
     {
         _repository = repository;

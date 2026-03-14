@@ -32,13 +32,13 @@
   -->
 
   <ItemGroup>
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Contracts\OrchestrationService.Contracts\OrchestrationService.Contracts.csproj" />
+    <ProjectReference Include="..\Orchestration.Contracts\OrchestrationService.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

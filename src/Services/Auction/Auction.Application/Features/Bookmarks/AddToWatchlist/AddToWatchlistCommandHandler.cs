@@ -8,13 +8,13 @@ namespace Auctions.Application.Features.Bookmarks.AddToWatchlist;
 public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistCommand, BookmarkItemDto>
 {
     private readonly IBookmarkRepository _bookmarkRepository;
-    private readonly IAuctionReadRepository _auctionRepository;
+    private readonly IAuctionQueryRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AddToWatchlistCommandHandler> _logger;
 
     public AddToWatchlistCommandHandler(
         IBookmarkRepository bookmarkRepository,
-        IAuctionReadRepository auctionRepository,
+        IAuctionQueryRepository auctionRepository,
         IUnitOfWork unitOfWork,
         ILogger<AddToWatchlistCommandHandler> logger)
     {

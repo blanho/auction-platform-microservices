@@ -1,7 +1,9 @@
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using MassTransit;
 using Microsoft.Extensions.Options;
+using Storage.Application.DTOs.Audit;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
@@ -15,7 +17,8 @@ public class UploadFileCommandHandler(
     IUnitOfWork unitOfWork,
     IPublishEndpoint publishEndpoint,
     IOptions<FileStorageSettings> storageSettings,
-    ILogger<UploadFileCommandHandler> logger)
+    ILogger<UploadFileCommandHandler> logger,
+    IAuditPublisher auditPublisher)
     : ICommandHandler<UploadFileCommand, StoredFileDto>
 {
     public async Task<Result<StoredFileDto>> Handle(UploadFileCommand request, CancellationToken cancellationToken)
@@ -60,6 +63,18 @@ public class UploadFileCommandHandler(
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await auditPublisher.PublishAsync(
+            storedFile.Id,
+            StoredFileAuditData.FromStoredFile(storedFile),
+            AuditAction.Created,
+            metadata: new Dictionary<string, object>
+            {
+                ["FileName"] = storedFile.FileName,
+                ["FileSize"] = storedFile.FileSize,
+                ["Provider"] = provider.ToString()
+            },
+            cancellationToken: cancellationToken);
 
         logger.LogInformation("File uploaded: {FileId} ({FileName})", storedFile.Id, storedFile.FileName);
 

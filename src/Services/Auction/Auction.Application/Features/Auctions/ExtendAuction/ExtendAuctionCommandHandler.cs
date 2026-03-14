@@ -1,5 +1,7 @@
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Application.Features.Auctions.ExtendAuction;
@@ -9,15 +11,18 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
     private readonly IAuctionWriteRepository _repository;
     private readonly ILogger<ExtendAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public ExtendAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<ExtendAuctionCommandHandler> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<DateTimeOffset>> Handle(ExtendAuctionCommand request, CancellationToken cancellationToken)
@@ -45,6 +50,9 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
             return Result.Failure<DateTimeOffset>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
         }
 
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
+        var previousEnd = auction.AuctionEnd;
+
         try
         {
             var extension = TimeSpan.FromMinutes(request.ExtensionMinutes);
@@ -52,6 +60,20 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
 
             await _repository.UpdateAsync(auction, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                AuctionAuditData.FromAuction(auction),
+                AuditAction.Updated,
+                oldAuctionData,
+                new Dictionary<string, object>
+                {
+                    ["Action"] = "Extended",
+                    ["ExtensionMinutes"] = request.ExtensionMinutes,
+                    ["PreviousEnd"] = previousEnd,
+                    ["NewEnd"] = auction.AuctionEnd
+                },
+                cancellationToken);
 
             _logger.LogInformation("Auction {AuctionId} extended to {NewEnd}",
                 request.AuctionId, auction.AuctionEnd);

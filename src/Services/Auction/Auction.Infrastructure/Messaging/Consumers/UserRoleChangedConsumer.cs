@@ -10,14 +10,14 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
 {
-    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionUserRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<UserRoleChangedConsumer> _logger;
 
     public UserRoleChangedConsumer(
-        IAuctionReadRepository readRepository,
+        IAuctionUserRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,

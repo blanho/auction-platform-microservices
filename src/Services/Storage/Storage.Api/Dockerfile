@@ -14,7 +14,7 @@ COPY ["src/Services/Storage/Storage.Api/Storage.Api.csproj", "src/Services/Stora
 COPY ["src/Services/Storage/Storage.Application/Storage.Application.csproj", "src/Services/Storage/Storage.Application/"]
 COPY ["src/Services/Storage/Storage.Domain/Storage.Domain.csproj", "src/Services/Storage/Storage.Domain/"]
 COPY ["src/Services/Storage/Storage.Infrastructure/Storage.Infrastructure.csproj", "src/Services/Storage/Storage.Infrastructure/"]
-COPY ["src/Contracts/StorageService.Contracts/StorageService.Contracts.csproj", "src/Contracts/StorageService.Contracts/"]
+COPY ["src/Services/Storage/Storage.Contracts/StorageService.Contracts.csproj", "src/Services/Storage/Storage.Contracts/"]
 COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
 
 RUN dotnet restore "src/Services/Storage/Storage.Api/Storage.Api.csproj" --runtime linux-musl-x64

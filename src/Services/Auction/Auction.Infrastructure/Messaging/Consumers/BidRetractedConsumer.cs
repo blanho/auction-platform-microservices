@@ -6,13 +6,13 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
 {
-    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionQueryRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BidRetractedConsumer> _logger;
 
     public BidRetractedConsumer(
-        IAuctionReadRepository readRepository,
+        IAuctionQueryRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<BidRetractedConsumer> logger)

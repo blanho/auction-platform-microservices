@@ -1,5 +1,7 @@
 using AutoMapper;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Payment.Application.DTOs;
+using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
@@ -12,17 +14,20 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
     private readonly IMapper _mapper;
     private readonly ILogger<ShipOrderCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public ShipOrderCommandHandler(
         IOrderRepository repository,
         IMapper mapper,
         ILogger<ShipOrderCommandHandler> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _mapper = mapper;
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<OrderDto>> Handle(ShipOrderCommand request, CancellationToken cancellationToken)
@@ -51,6 +56,8 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
         _logger.LogInformation("Shipping order {OrderId} via {Carrier} with tracking {TrackingNumber}", 
             request.OrderId, request.ShippingCarrier, request.TrackingNumber);
 
+        var oldOrderData = OrderAuditData.FromOrder(order);
+
         order.MarkAsShipped(request.TrackingNumber, request.ShippingCarrier);
 
         if (!string.IsNullOrEmpty(request.SellerNotes))
@@ -60,6 +67,19 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
 
         var updated = await _repository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            updated.Id,
+            OrderAuditData.FromOrder(updated),
+            AuditAction.Updated,
+            oldOrderData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "Shipped",
+                ["TrackingNumber"] = request.TrackingNumber ?? string.Empty,
+                ["ShippingCarrier"] = request.ShippingCarrier ?? string.Empty
+            },
+            cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as shipped", updated.Id);
 

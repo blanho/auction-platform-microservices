@@ -6,12 +6,12 @@ namespace Auctions.Application.Features.Auctions.GetAuctionsByIds;
 
 public class GetAuctionsByIdsQueryHandler : IQueryHandler<GetAuctionsByIdsQuery, IEnumerable<AuctionDto>>
 {
-    private readonly IAuctionReadRepository _repository;
+    private readonly IAuctionQueryRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetAuctionsByIdsQueryHandler> _logger;
 
     public GetAuctionsByIdsQueryHandler(
-        IAuctionReadRepository repository,
+        IAuctionQueryRepository repository,
         IMapper mapper,
         ILogger<GetAuctionsByIdsQueryHandler> logger)
     {

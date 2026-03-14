@@ -9,13 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Job.Domain\Job.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\JobService.Contracts\JobService.Contracts.csproj" />
+    <ProjectReference Include="..\Job.Contracts\JobService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="MassTransit" Version="8.4.0" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="MassTransit" />
   </ItemGroup>
 
 </Project>

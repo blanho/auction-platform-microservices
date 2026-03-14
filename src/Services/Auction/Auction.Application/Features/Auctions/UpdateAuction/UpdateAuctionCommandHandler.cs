@@ -1,6 +1,8 @@
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Features.Auctions.UpdateAuction;
@@ -11,17 +13,20 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly ILogger<UpdateAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISanitizationService _sanitizationService;
+    private readonly IAuditPublisher _auditPublisher;
 
     public UpdateAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<UpdateAuctionCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        ISanitizationService sanitizationService)
+        ISanitizationService sanitizationService,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
         _sanitizationService = sanitizationService;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(UpdateAuctionCommand request, CancellationToken cancellationToken)
@@ -42,6 +47,8 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
                 request.UserId, request.Id, auction.SellerId);
             return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to update this auction"));
         }
+
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
 
         var modifiedFields = new List<string>();
 
@@ -120,6 +127,14 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         await _repository.UpdateAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object> { ["ModifiedFields"] = modifiedFields },
+            cancellationToken);
 
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
             request.Id, string.Join(", ", modifiedFields));

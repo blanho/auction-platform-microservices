@@ -1,6 +1,8 @@
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Auctions.Domain.Enums;
 using Auctions.Domain.Constants;
 using Microsoft.Extensions.Logging;
@@ -13,17 +15,20 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     private readonly ILogger<BuyNowCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDistributedLock _distributedLock;
+    private readonly IAuditPublisher _auditPublisher;
 
     public BuyNowCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<BuyNowCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        IDistributedLock distributedLock)
+        IDistributedLock distributedLock,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
         _distributedLock = distributedLock;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<BuyNowResultDto>> Handle(BuyNowCommand request, CancellationToken cancellationToken)
@@ -68,11 +73,27 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.AuctionNotLive);
             }
 
+            var oldAuctionData = AuctionAuditData.FromAuction(auction);
+
             auction.ExecuteBuyNow(request.BuyerId, request.BuyerUsername);
 
             await _repository.UpdateAsync(auction, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                AuctionAuditData.FromAuction(auction),
+                AuditAction.Updated,
+                oldAuctionData,
+                new Dictionary<string, object>
+                {
+                    ["Action"] = "BuyNow",
+                    ["BuyerId"] = request.BuyerId,
+                    ["BuyerUsername"] = request.BuyerUsername,
+                    ["Price"] = auction.BuyNowPrice!.Value
+                },
+                cancellationToken);
 
             _logger.LogInformation("Buy Now completed for auction {AuctionId}. Price: {Price}",
                 auction.Id, auction.BuyNowPrice);

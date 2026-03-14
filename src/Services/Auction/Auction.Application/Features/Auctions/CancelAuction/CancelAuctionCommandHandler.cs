@@ -1,5 +1,7 @@
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Application.Features.Auctions.CancelAuction;
@@ -9,15 +11,18 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
     private readonly IAuctionWriteRepository _repository;
     private readonly ILogger<CancelAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public CancelAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<CancelAuctionCommandHandler> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(CancelAuctionCommand request, CancellationToken cancellationToken)
@@ -44,11 +49,25 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
             return Result.Failure<bool>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
         }
 
+        var oldAuctionData = AuctionAuditData.FromAuction(auction);
+
         try
         {
             auction.Cancel(request.Reason);
             await _repository.UpdateAsync(auction, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _auditPublisher.PublishAsync(
+                auction.Id,
+                AuctionAuditData.FromAuction(auction),
+                AuditAction.Updated,
+                oldAuctionData,
+                new Dictionary<string, object>
+                {
+                    ["Action"] = "Cancelled",
+                    ["Reason"] = request.Reason ?? string.Empty
+                },
+                cancellationToken);
 
             _logger.LogInformation("Auction {AuctionId} cancelled successfully. Reason: {Reason}",
                 request.AuctionId, request.Reason);

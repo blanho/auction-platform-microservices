@@ -336,6 +336,11 @@ sequenceDiagram
 
 ```
 auction-platform-microservices/
+├── Directory.Build.props             # Shared build properties (TFM, Nullable, etc.)
+├── Directory.Packages.props          # Centralized NuGet package versions
+├── global.json                       # Pin .NET SDK version
+├── auction.sln
+│
 ├── src/
 │   ├── BuildingBlocks/               # Shared cross-cutting libraries
 │   │   ├── BuildingBlocks.Domain/    # Base entities, domain events, value objects
@@ -343,19 +348,20 @@ auction-platform-microservices/
 │   │   ├── BuildingBlocks.Infrastructure/  # EF, Redis, MassTransit, Audit, Resilience
 │   │   └── BuildingBlocks.Web/       # Auth, rate limiting, middleware, health checks
 │   │
-│   ├── Contracts/                    # Shared message contracts (per service)
-│   │   ├── AuctionService.Contracts/
-│   │   ├── BidService.Contracts/
-│   │   ├── PaymentService.Contracts/
-│   │   └── ...
+│   ├── Contracts/                    # Cross-cutting shared contracts only
+│   │   └── Common.Contracts/         # Shared event base types, common enums
 │   │
 │   ├── Services/
 │   │   ├── Auction/
+│   │   │   ├── Auction.Contracts/    # Message contracts (co-located with service)
 │   │   │   ├── Auction.Domain/       # Entities, Enums, Domain Events
 │   │   │   ├── Auction.Application/  # Commands, Queries, DTOs, Event Handlers
 │   │   │   ├── Auction.Infrastructure/ # EF DbContext, Repositories, MassTransit
-│   │   │   └── Auction.Api/          # Minimal API Endpoints, gRPC, Carter Modules
-│   │   ├── Bidding/    (same layering)
+│   │   │   ├── Auction.Api/          # Minimal API Endpoints, gRPC, Carter Modules
+│   │   │   └── tests/                # Co-located tests
+│   │   │       ├── Auction.Domain.Tests/
+│   │   │       └── Auction.Application.Tests/
+│   │   ├── Bidding/    (same layering + co-located contracts & tests)
 │   │   ├── Payment/    (same layering)
 │   │   ├── Notification/ (same layering)
 │   │   ├── Identity/
@@ -368,6 +374,7 @@ auction-platform-microservices/
 │   │   └── Gateway.Api/              # YARP config, JWT middleware, rate limits
 │   │
 │   └── Orchestration/
+│       ├── Orchestration.Contracts/  # Saga event contracts
 │       └── Orchestration.Sagas/      # MassTransit saga state machines
 │
 ├── web/                              # React 19 SPA
@@ -379,11 +386,7 @@ auction-platform-microservices/
 │   │   └── i18n/                     # Translations
 │   └── vite.config.ts
 │
-├── tests/
-│   ├── Auction.Domain.Tests/
-│   ├── Auction.Application.Tests/
-│   ├── Bidding.Domain.Tests/
-│   └── Bidding.Application.Tests/
+├── docs/                             # Architecture docs, ADRs
 │
 └── deploy/
     ├── docker/

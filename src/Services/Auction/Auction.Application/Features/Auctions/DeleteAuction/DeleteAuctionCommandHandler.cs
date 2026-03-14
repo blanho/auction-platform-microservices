@@ -1,5 +1,7 @@
+using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
+using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Features.Auctions.DeleteAuction;
@@ -9,15 +11,18 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
     private readonly IAuctionWriteRepository _repository;
     private readonly ILogger<DeleteAuctionCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditPublisher _auditPublisher;
 
     public DeleteAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<DeleteAuctionCommandHandler> logger,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<bool>> Handle(DeleteAuctionCommand request, CancellationToken cancellationToken)
@@ -39,11 +44,19 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
             return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to delete this auction"));
         }
 
+        var auctionAuditData = AuctionAuditData.FromAuction(auction);
+
         auction.Delete();
 
         await _repository.DeleteAsync(auction, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            auctionAuditData,
+            AuditAction.SoftDeleted,
+            cancellationToken: cancellationToken);
 
         _logger.LogInformation("Deleted auction {AuctionId}", request.Id);
         return Result.Success(true);

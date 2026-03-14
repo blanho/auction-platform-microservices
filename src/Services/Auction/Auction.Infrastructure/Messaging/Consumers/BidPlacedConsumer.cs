@@ -5,13 +5,13 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
 {
-    private readonly IAuctionReadRepository _readRepository;
+    private readonly IAuctionQueryRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BidPlacedConsumer> _logger;
 
     public BidPlacedConsumer(
-        IAuctionReadRepository readRepository,
+        IAuctionQueryRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<BidPlacedConsumer> logger)

@@ -3,9 +3,9 @@ namespace Auctions.Application.Features.Auctions.GetTrendingSearches;
 
 public class GetTrendingSearchesQueryHandler : IQueryHandler<GetTrendingSearchesQuery, List<TrendingSearchDto>>
 {
-    private readonly IAuctionReadRepository _auctionRepository;
+    private readonly IAuctionQueryRepository _auctionRepository;
 
-    public GetTrendingSearchesQueryHandler(IAuctionReadRepository auctionRepository)
+    public GetTrendingSearchesQueryHandler(IAuctionQueryRepository auctionRepository)
     {
         _auctionRepository = auctionRepository;
     }

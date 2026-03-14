@@ -31,7 +31,7 @@ public class AuctionEndingSoonNotificationJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var repository = scopedProvider.GetRequiredService<IAuctionReadRepository>();
+        var repository = scopedProvider.GetRequiredService<IAuctionSchedulerRepository>();
         var bookmarkRepository = scopedProvider.GetRequiredService<IBookmarkRepository>();
         var eventPublisher = scopedProvider.GetRequiredService<IEventPublisher>();
 

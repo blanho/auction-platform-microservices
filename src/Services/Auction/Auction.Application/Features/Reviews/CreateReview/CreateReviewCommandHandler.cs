@@ -11,14 +11,14 @@ namespace Auctions.Application.Features.Reviews.CreateReview;
 public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, ReviewDto>
 {
     private readonly IReviewRepository _reviewRepository;
-    private readonly IAuctionReadRepository _auctionRepository;
+    private readonly IAuctionQueryRepository _auctionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ISanitizationService _sanitizationService;
 
     public CreateReviewCommandHandler(
         IReviewRepository reviewRepository,
-        IAuctionReadRepository auctionRepository,
+        IAuctionQueryRepository auctionRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ISanitizationService sanitizationService)

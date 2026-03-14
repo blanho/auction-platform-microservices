@@ -12,9 +12,9 @@ COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
 COPY ["src/Services/Search/Search.Api/Search.Api.csproj", "src/Services/Search/Search.Api/"]
-COPY ["src/Contracts/AuctionService.Contracts/AuctionService.Contracts.csproj", "src/Contracts/AuctionService.Contracts/"]
-COPY ["src/Contracts/BidService.Contracts/BidService.Contracts.csproj", "src/Contracts/BidService.Contracts/"]
-COPY ["src/Contracts/SearchService.Contracts/SearchService.Contracts.csproj", "src/Contracts/SearchService.Contracts/"]
+COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
+COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
+COPY ["src/Services/Search/Search.Contracts/SearchService.Contracts.csproj", "src/Services/Search/Search.Contracts/"]
 
 # Restore dependencies
 RUN dotnet restore "src/Services/Search/Search.Api/Search.Api.csproj" --runtime linux-musl-x64

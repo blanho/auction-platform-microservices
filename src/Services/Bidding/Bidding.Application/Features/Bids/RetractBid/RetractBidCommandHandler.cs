@@ -1,5 +1,7 @@
+using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
 using Bidding.Domain.Constants;
+using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Bidding.Application.Features.Bids.RetractBid;
 
@@ -9,17 +11,20 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<RetractBidCommandHandler> _logger;
+    private readonly IAuditPublisher _auditPublisher;
 
     public RetractBidCommandHandler(
         IBidRepository repository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
-        ILogger<RetractBidCommandHandler> logger)
+        ILogger<RetractBidCommandHandler> logger,
+        IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
         _logger = logger;
+        _auditPublisher = auditPublisher;
     }
 
     public async Task<Result<RetractBidResult>> Handle(RetractBidCommand request, CancellationToken cancellationToken)
@@ -54,6 +59,8 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
         var wasHighestBid = highestBid?.Id == bid.Id;
 
+        var oldBidData = BidAuditData.FromBid(bid);
+
         Bid? newHighestBid = null;
         if (wasHighestBid)
         {
@@ -69,6 +76,19 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             newHighestBid?.BidderUsername);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _auditPublisher.PublishAsync(
+            bid.Id,
+            BidAuditData.FromBid(bid),
+            AuditAction.Updated,
+            oldBidData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "Retracted",
+                ["Reason"] = request.Reason ?? string.Empty,
+                ["WasHighestBid"] = wasHighestBid
+            },
+            cancellationToken);
 
         _logger.LogInformation("Bid {BidId} successfully retracted. Was highest: {WasHighest}",
             request.BidId, wasHighestBid);

@@ -8,20 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-    <PackageReference Include="MassTransit" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.13" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Notification.Domain\Notification.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\NotificationService.Contracts\NotificationService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\AuctionService.Contracts\AuctionService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\BidService.Contracts\BidService.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\PaymentService.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\Notification.Contracts\NotificationService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Payment\Payment.Contracts\PaymentService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
