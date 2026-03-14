@@ -25,7 +25,7 @@ RUN dotnet publish "Identity.Api.csproj" \
     --runtime linux-musl-x64 \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
 RUN addgroup -g 1000 appgroup && \
