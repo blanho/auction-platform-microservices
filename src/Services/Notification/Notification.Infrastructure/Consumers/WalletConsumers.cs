@@ -179,3 +179,178 @@ public class FundsWithdrawnConsumer : IConsumer<FundsWithdrawnEvent>
         await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
     }
 }
+
+public class FundsHeldConsumer : IConsumer<FundsHeldEvent>
+{
+    private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
+    private readonly ILogger<FundsHeldConsumer> _logger;
+
+    public FundsHeldConsumer(
+        INotificationService notificationService,
+        IIdempotencyService idempotency,
+        ILogger<FundsHeldConsumer> logger)
+    {
+        _notificationService = notificationService;
+        _idempotency = idempotency;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<FundsHeldEvent> context)
+    {
+        var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"funds-held-{@event.WalletId}-{@event.HeldAt.Ticks}";
+
+        _logger.LogInformation(
+            "Processing FundsHeld for Wallet {WalletId}, Amount {Amount}",
+            @event.WalletId, @event.Amount);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("FundsHeld already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
+
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
+            {
+                UserId = @event.UserId.ToString(),
+                Type = NotificationType.FundsHeld,
+                Title = "Funds Reserved",
+                Message = $"{NotificationFormattingHelper.FormatCurrency(@event.Amount)} has been reserved in your wallet to cover a bid. Total held: {NotificationFormattingHelper.FormatCurrency(@event.NewHeldAmount)}.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["WalletId"] = @event.WalletId.ToString(),
+                    ["Amount"] = @event.Amount.ToString("F2"),
+                    ["NewHeldAmount"] = @event.NewHeldAmount.ToString("F2")
+                })
+            },
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+    }
+}
+
+public class FundsReleasedConsumer : IConsumer<FundsReleasedEvent>
+{
+    private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
+    private readonly ILogger<FundsReleasedConsumer> _logger;
+
+    public FundsReleasedConsumer(
+        INotificationService notificationService,
+        IIdempotencyService idempotency,
+        ILogger<FundsReleasedConsumer> logger)
+    {
+        _notificationService = notificationService;
+        _idempotency = idempotency;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<FundsReleasedEvent> context)
+    {
+        var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"funds-released-{@event.WalletId}-{@event.ReleasedAt.Ticks}";
+
+        _logger.LogInformation(
+            "Processing FundsReleased for Wallet {WalletId}, Amount {Amount}",
+            @event.WalletId, @event.Amount);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("FundsReleased already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
+
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
+            {
+                UserId = @event.UserId.ToString(),
+                Type = NotificationType.FundsReleased,
+                Title = "Funds Released",
+                Message = $"{NotificationFormattingHelper.FormatCurrency(@event.Amount)} has been released back to your available balance. Total still held: {NotificationFormattingHelper.FormatCurrency(@event.NewHeldAmount)}.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["WalletId"] = @event.WalletId.ToString(),
+                    ["Amount"] = @event.Amount.ToString("F2"),
+                    ["NewHeldAmount"] = @event.NewHeldAmount.ToString("F2")
+                })
+            },
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+    }
+}
+
+public class FundsDeductedFromHeldConsumer : IConsumer<FundsDeductedFromHeldEvent>
+{
+    private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
+    private readonly ILogger<FundsDeductedFromHeldConsumer> _logger;
+
+    public FundsDeductedFromHeldConsumer(
+        INotificationService notificationService,
+        IIdempotencyService idempotency,
+        ILogger<FundsDeductedFromHeldConsumer> logger)
+    {
+        _notificationService = notificationService;
+        _idempotency = idempotency;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<FundsDeductedFromHeldEvent> context)
+    {
+        var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"funds-deducted-{@event.WalletId}-{@event.DeductedAt.Ticks}";
+
+        _logger.LogInformation(
+            "Processing FundsDeductedFromHeld for Wallet {WalletId}, Amount {Amount}",
+            @event.WalletId, @event.Amount);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("FundsDeductedFromHeld already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
+
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
+            {
+                UserId = @event.UserId.ToString(),
+                Type = NotificationType.FundsDeducted,
+                Title = "Payment Processed",
+                Message = $"{NotificationFormattingHelper.FormatCurrency(@event.Amount)} has been deducted from your reserved funds. New balance: {NotificationFormattingHelper.FormatCurrency(@event.NewBalance)}.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["WalletId"] = @event.WalletId.ToString(),
+                    ["Amount"] = @event.Amount.ToString("F2"),
+                    ["NewBalance"] = @event.NewBalance.ToString("F2"),
+                    ["NewHeldAmount"] = @event.NewHeldAmount.ToString("F2")
+                })
+            },
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+    }
+}

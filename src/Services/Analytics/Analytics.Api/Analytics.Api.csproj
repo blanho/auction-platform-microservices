@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Contracts\Common.Contracts\Common.Contracts.csproj" />
     <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Identity.Contracts\IdentityService.Contracts.csproj" />
     <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Payment.Contracts\PaymentService.Contracts.csproj" />
   </ItemGroup>

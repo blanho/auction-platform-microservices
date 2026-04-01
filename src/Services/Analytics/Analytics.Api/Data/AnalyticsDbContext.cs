@@ -18,6 +18,7 @@ public class AnalyticsDbContext : DbContext
     public DbSet<FactBid> FactBids { get; set; }
     public DbSet<FactAuction> FactAuctions { get; set; }
     public DbSet<FactPayment> FactPayments { get; set; }
+    public DbSet<FactUser> FactUsers { get; set; }
 
     public DbSet<DailyAuctionStats> DailyAuctionStats { get; set; }
     public DbSet<DailyBidStats> DailyBidStats { get; set; }

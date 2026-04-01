@@ -228,6 +228,126 @@ public static class MassTransitConfiguration
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
 
+            x.AddConsumer<AutoBidUpdatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<FundsHeldConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<FundsReleasedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<FundsDeductedFromHeldConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AuctionCancelledNotificationConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AuctionEndingSoonConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(1);
+            });
+
+            x.AddConsumer<AuctionExtendedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<UserReactivatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<UserEmailConfirmedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<OrderShippedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<OrderDeliveredConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<OrderReportGeneratedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AuctionImportCompletedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AuctionExportCompletedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<BulkAuctionUpdateCompletedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
             x.AddEntityFrameworkOutbox<NotificationDbContext>(o =>
             {
                 o.UsePostgres();
@@ -416,6 +536,63 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<JobCompletedConsumer>(context);
                     e.ConfigureConsumer<JobFailedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-autobid-updated", e =>
+                {
+                    e.ConfigureConsumer<AutoBidUpdatedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-funds-lifecycle", e =>
+                {
+                    e.ConfigureConsumer<FundsHeldConsumer>(context);
+                    e.ConfigureConsumer<FundsReleasedConsumer>(context);
+                    e.ConfigureConsumer<FundsDeductedFromHeldConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-auction-events", e =>
+                {
+                    e.ConfigureConsumer<AuctionCancelledNotificationConsumer>(context);
+                    e.ConfigureConsumer<AuctionEndingSoonConsumer>(context);
+                    e.ConfigureConsumer<AuctionExtendedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-identity-events", e =>
+                {
+                    e.ConfigureConsumer<UserReactivatedConsumer>(context);
+                    e.ConfigureConsumer<UserEmailConfirmedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-order-lifecycle", e =>
+                {
+                    e.ConfigureConsumer<OrderShippedConsumer>(context);
+                    e.ConfigureConsumer<OrderDeliveredConsumer>(context);
+                    e.ConfigureConsumer<OrderReportGeneratedConsumer>(context);
+                    e.PrefetchCount = rabbitMqSettings.PrefetchCount;
+                    e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
+                    e.UseInMemoryOutbox(context);
+                });
+
+                cfg.ReceiveEndpoint("notification-auction-ops", e =>
+                {
+                    e.ConfigureConsumer<AuctionImportCompletedConsumer>(context);
+                    e.ConfigureConsumer<AuctionExportCompletedConsumer>(context);
+                    e.ConfigureConsumer<BulkAuctionUpdateCompletedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);

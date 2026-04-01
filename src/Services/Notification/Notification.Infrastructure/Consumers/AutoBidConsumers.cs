@@ -181,3 +181,62 @@ public class AutoBidDeactivatedConsumer : IConsumer<AutoBidDeactivatedEvent>
         await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
     }
 }
+
+public class AutoBidUpdatedConsumer : IConsumer<AutoBidUpdatedEvent>
+{
+    private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
+    private readonly ILogger<AutoBidUpdatedConsumer> _logger;
+
+    public AutoBidUpdatedConsumer(
+        INotificationService notificationService,
+        IIdempotencyService idempotency,
+        ILogger<AutoBidUpdatedConsumer> logger)
+    {
+        _notificationService = notificationService;
+        _idempotency = idempotency;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<AutoBidUpdatedEvent> context)
+    {
+        var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"autobid-updated-{@event.AutoBidId}-{@event.UpdatedAt.Ticks}";
+
+        _logger.LogInformation(
+            "Processing AutoBidUpdated for AutoBid {AutoBidId}, User {UserId}",
+            @event.AutoBidId, @event.UserId);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("AutoBidUpdated already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
+
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
+            {
+                UserId = @event.UserId.ToString(),
+                Type = NotificationType.AutoBidUpdated,
+                Title = "Auto-Bid Updated",
+                Message = $"Your auto-bid maximum has been updated to {NotificationFormattingHelper.FormatCurrency(@event.NewMaxAmount)}.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["AutoBidId"] = @event.AutoBidId.ToString(),
+                    ["AuctionId"] = @event.AuctionId.ToString(),
+                    ["NewMaxAmount"] = @event.NewMaxAmount.ToString("F2")
+                }),
+                AuctionId = @event.AuctionId
+            },
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+    }
+}

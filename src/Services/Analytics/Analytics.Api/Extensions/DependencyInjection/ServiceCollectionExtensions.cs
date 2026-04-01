@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
             x.AddConsumer<OrderCreatedAnalyticsConsumer>();
             x.AddConsumer<OrderShippedAnalyticsConsumer>();
             x.AddConsumer<OrderDeliveredAnalyticsConsumer>();
+            x.AddConsumer<UserCreatedAnalyticsConsumer>();
 
             x.AddEntityFrameworkOutbox<AnalyticsDbContext>(o =>
             {
@@ -111,6 +112,7 @@ public static class ServiceCollectionExtensions
                 cfg.ConfigureAuctionEventsEndpoint(context);
                 cfg.ConfigureBidEventsEndpoint(context);
                 cfg.ConfigurePaymentEventsEndpoint(context);
+                cfg.ConfigureIdentityEventsEndpoint(context);
 
                 cfg.ConfigureEndpoints(context);
             });
@@ -169,6 +171,15 @@ public static class ServiceCollectionExtensions
             e.ConfigureConsumer<OrderCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderShippedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderDeliveredAnalyticsConsumer>(context);
+            e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
+        });
+    }
+
+    private static void ConfigureIdentityEventsEndpoint(this IRabbitMqBusFactoryConfigurator cfg, IBusRegistrationContext context)
+    {
+        cfg.ReceiveEndpoint("analytics-identity-events", e =>
+        {
+            e.ConfigureConsumer<UserCreatedAnalyticsConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
         });
     }

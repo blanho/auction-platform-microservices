@@ -1,41 +1,40 @@
-using BidService.Contracts.Events;
+using IdentityService.Contracts.Events;
 using MassTransit;
 using Notification.Application.DTOs;
-using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 
 namespace Notification.Infrastructure.Consumers;
 
-public class BidBelowReserveConsumer : IConsumer<BidAcceptedBelowReserveEvent>
+public class UserReactivatedConsumer : IConsumer<UserReactivatedEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<BidBelowReserveConsumer> _logger;
+    private readonly ILogger<UserReactivatedConsumer> _logger;
 
-    public BidBelowReserveConsumer(
+    public UserReactivatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
-        ILogger<BidBelowReserveConsumer> logger)
+        ILogger<UserReactivatedConsumer> logger)
     {
         _notificationService = notificationService;
         _idempotency = idempotency;
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<BidAcceptedBelowReserveEvent> context)
+    public async Task Consume(ConsumeContext<UserReactivatedEvent> context)
     {
         var @event = context.Message;
         var ct = context.CancellationToken;
-        var eventId = $"bid-below-reserve-{@event.BidId}";
+        var eventId = $"user-reactivated-{@event.UserId}";
 
         _logger.LogInformation(
-            "Processing BidAcceptedBelowReserve for Bid {BidId}, Bidder {Bidder}",
-            @event.BidId, @event.BidderUsername);
+            "Processing UserReactivated for User {UserId}, Username {Username}",
+            @event.UserId, @event.Username);
 
         if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
         {
-            _logger.LogDebug("BidBelowReserve already processed for EventId={EventId}", eventId);
+            _logger.LogDebug("UserReactivated already processed for EventId={EventId}", eventId);
             return;
         }
 
@@ -48,18 +47,15 @@ public class BidBelowReserveConsumer : IConsumer<BidAcceptedBelowReserveEvent>
         await _notificationService.CreateNotificationAsync(
             new CreateNotificationDto
             {
-                UserId = @event.BidderId.ToString(),
-                Type = NotificationType.BidBelowReserve,
-                Title = "Bid Below Reserve Price",
-                Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(@event.Amount)} was accepted but is below the reserve price. The item may not sell unless the reserve is met.",
+                UserId = @event.UserId,
+                Type = NotificationType.UserReactivated,
+                Title = "Account Reactivated",
+                Message = $"Welcome back, {@event.Username}! Your account has been reactivated. You can now access all platform features.",
                 Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
                 {
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["BidId"] = @event.BidId.ToString(),
-                    ["Amount"] = @event.Amount.ToString("F2")
-                }),
-                AuctionId = @event.AuctionId,
-                BidId = @event.BidId
+                    ["Username"] = @event.Username,
+                    ["ReactivatedAt"] = @event.ReactivatedAt.ToString("O")
+                })
             },
             ct);
 
@@ -67,35 +63,35 @@ public class BidBelowReserveConsumer : IConsumer<BidAcceptedBelowReserveEvent>
     }
 }
 
-public class BidTooLowConsumer : IConsumer<BidMarkedTooLowEvent>
+public class UserEmailConfirmedConsumer : IConsumer<UserEmailConfirmedEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<BidTooLowConsumer> _logger;
+    private readonly ILogger<UserEmailConfirmedConsumer> _logger;
 
-    public BidTooLowConsumer(
+    public UserEmailConfirmedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
-        ILogger<BidTooLowConsumer> logger)
+        ILogger<UserEmailConfirmedConsumer> logger)
     {
         _notificationService = notificationService;
         _idempotency = idempotency;
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<BidMarkedTooLowEvent> context)
+    public async Task Consume(ConsumeContext<UserEmailConfirmedEvent> context)
     {
         var @event = context.Message;
         var ct = context.CancellationToken;
-        var eventId = $"bid-too-low-{@event.BidId}";
+        var eventId = $"user-email-confirmed-{@event.UserId}";
 
         _logger.LogInformation(
-            "Processing BidMarkedTooLow for Bid {BidId}",
-            @event.BidId);
+            "Processing UserEmailConfirmed for User {UserId}, Email {Email}",
+            @event.UserId, @event.Email);
 
         if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
         {
-            _logger.LogDebug("BidTooLow already processed for EventId={EventId}", eventId);
+            _logger.LogDebug("UserEmailConfirmed already processed for EventId={EventId}", eventId);
             return;
         }
 
@@ -108,18 +104,16 @@ public class BidTooLowConsumer : IConsumer<BidMarkedTooLowEvent>
         await _notificationService.CreateNotificationAsync(
             new CreateNotificationDto
             {
-                UserId = @event.BidderId.ToString(),
-                Type = NotificationType.BidTooLow,
-                Title = "Bid Too Low",
-                Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(@event.Amount)} did not meet the minimum bid requirement.",
+                UserId = @event.UserId,
+                Type = NotificationType.UserEmailConfirmed,
+                Title = "Email Address Confirmed",
+                Message = $"Your email address {@event.Email} has been successfully confirmed. Your account is now fully active.",
                 Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
                 {
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["BidId"] = @event.BidId.ToString(),
-                    ["Amount"] = @event.Amount.ToString("F2")
-                }),
-                AuctionId = @event.AuctionId,
-                BidId = @event.BidId
+                    ["Username"] = @event.Username,
+                    ["Email"] = @event.Email,
+                    ["ConfirmedAt"] = @event.ConfirmedAt.ToString("O")
+                })
             },
             ct);
 
