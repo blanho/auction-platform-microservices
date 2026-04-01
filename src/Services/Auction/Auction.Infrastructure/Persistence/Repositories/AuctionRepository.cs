@@ -282,6 +282,21 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return await _context.Auctions
+                .Where(x => !x.IsDeleted && x.Status == Status.Live)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand)
+                .AsNoTracking()
+                .OrderByDescending(x => x.CurrentHighBid ?? 0)
+                .ThenByDescending(x => x.IsFeatured)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         {
             var idList = ids.ToList();
@@ -296,121 +311,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                     .ThenInclude(i => i!.Brand)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetBySellerUsernameAsync(string username, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.SellerUsername == username)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .AsNoTracking()
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetWonByUsernameAsync(string username, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.WinnerUsername == username)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .AsNoTracking()
-                .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<SellerStatsDto> GetSellerStatsAsync(
-            string username,
-            DateTimeOffset periodStart,
-            DateTimeOffset? previousPeriodStart = null,
-            CancellationToken cancellationToken = default)
-        {
-
-            var baseQuery = _context.Auctions
-                .Where(x => !x.IsDeleted && x.SellerUsername == username);
-
-            var currentPeriodSales = await baseQuery
-                .Where(a => a.Status == Status.Finished &&
-                           a.SoldAmount.HasValue &&
-                           a.UpdatedAt >= periodStart)
-                .Select(a => new SaleProjection
-                {
-                    Id = a.Id,
-                    SoldAmount = a.SoldAmount,
-                    UpdatedAt = a.UpdatedAt,
-                    WinnerUsername = a.WinnerUsername,
-                    ItemTitle = a.Item != null ? a.Item.Title : "Unknown"
-                })
-                .ToListAsync(cancellationToken);
-
-            decimal previousPeriodRevenue = 0;
-            int previousPeriodItemsSold = 0;
-
-            if (previousPeriodStart.HasValue)
-            {
-                    var previousPeriodStats = await baseQuery
-                    .Where(a => a.Status == Status.Finished &&
-                               a.SoldAmount.HasValue &&
-                               a.UpdatedAt >= previousPeriodStart.Value &&
-                               a.UpdatedAt < periodStart)
-                    .GroupBy(a => 1)
-                    .Select(g => new { Revenue = g.Sum(a => a.SoldAmount ?? 0), Count = g.Count() })
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (previousPeriodStats != null)
-                {
-                    previousPeriodRevenue = previousPeriodStats.Revenue;
-                    previousPeriodItemsSold = previousPeriodStats.Count;
-                }
-            }
-
-            var statusCounts = await baseQuery
-                .GroupBy(a => a.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToListAsync(cancellationToken);
-
-            var activeListings = statusCounts.FirstOrDefault(s => s.Status == Status.Live)?.Count ?? 0;
-            var pendingAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Scheduled)?.Count ?? 0;
-            var draftAuctions = statusCounts.FirstOrDefault(s => s.Status == Status.Draft)?.Count ?? 0;
-            var totalListings = statusCounts.Sum(s => s.Count);
-
-            return new SellerStatsDto
-            {
-                TotalRevenue = currentPeriodSales.Sum(a => a.SoldAmount ?? 0),
-                PreviousPeriodRevenue = previousPeriodRevenue,
-                ItemsSold = currentPeriodSales.Count,
-                PreviousPeriodItemsSold = previousPeriodItemsSold,
-                ActiveListings = activeListings,
-                TotalListings = totalListings,
-                PendingAuctions = pendingAuctions,
-                DraftAuctions = draftAuctions,
-                RecentSales = currentPeriodSales
-                    .OrderByDescending(a => a.UpdatedAt)
-                    .Take(10)
-                    .Select(a => new AuctionSummaryDto
-                    {
-                        Id = a.Id,
-                        Title = a.ItemTitle,
-                        SoldAmount = a.SoldAmount,
-                        SoldAt = a.UpdatedAt,
-                        BuyerUsername = a.WinnerUsername
-                    })
-                    .ToList()
-            };
-        }
-
-        private sealed class SaleProjection
-        {
-            public Guid Id { get; set; }
-            public decimal? SoldAmount { get; set; }
-            public DateTimeOffset? UpdatedAt { get; set; }
-            public string? WinnerUsername { get; set; }
-            public string ItemTitle { get; set; } = "Unknown";
         }
 
         public async Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
@@ -441,12 +341,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default)
-        {
-            return await _context.Bookmarks
-                .Where(b => b.Username == username && !b.IsDeleted)
-                .CountAsync(cancellationToken);
-        }
     }
 }
 

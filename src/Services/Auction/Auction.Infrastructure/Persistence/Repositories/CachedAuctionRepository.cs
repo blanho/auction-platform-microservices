@@ -146,21 +146,11 @@ public class CachedAuctionRepository :
         CancellationToken cancellationToken = default)
         => _inner.GetAuctionsForExportAsync(status, seller, startDate, endDate, cancellationToken);
 
+    public Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
+        => _inner.GetTrendingItemsAsync(limit, cancellationToken);
+
     public Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         => _inner.GetByIdsAsync(ids, cancellationToken);
-
-    public Task<List<Auction>> GetBySellerUsernameAsync(string username, CancellationToken cancellationToken = default)
-        => _inner.GetBySellerUsernameAsync(username, cancellationToken);
-
-    public Task<List<Auction>> GetWonByUsernameAsync(string username, CancellationToken cancellationToken = default)
-        => _inner.GetWonByUsernameAsync(username, cancellationToken);
-
-    public Task<SellerStatsDto> GetSellerStatsAsync(
-        string username,
-        DateTimeOffset periodStart,
-        DateTimeOffset? previousPeriodStart = null,
-        CancellationToken cancellationToken = default)
-        => _inner.GetSellerStatsAsync(username, periodStart, previousPeriodStart, cancellationToken);
 
     public Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
         => _inner.GetActiveAuctionsBySellerIdAsync(sellerId, cancellationToken);
@@ -170,9 +160,6 @@ public class CachedAuctionRepository :
 
     public Task<List<Auction>> GetAuctionsWithWinnerIdAsync(Guid winnerId, CancellationToken cancellationToken = default)
         => _inner.GetAuctionsWithWinnerIdAsync(winnerId, cancellationToken);
-
-    public Task<int> GetWatchlistCountByUsernameAsync(string username, CancellationToken cancellationToken = default)
-        => _inner.GetWatchlistCountByUsernameAsync(username, cancellationToken);
 
     private async Task InvalidateAfterWrite(Guid id, CancellationToken cancellationToken)
     {

@@ -25,13 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- GrpcServices="Both" generates AuctionGrpcBase (for Auction.Api server) and
-         AuctionGrpcClient (for Bidding.Infrastructure client) in a single assembly.
-         Downstream projects reference this package — no proto re-compilation needed. -->
     <Protobuf Include="Grpc\auctions.proto" GrpcServices="Both" />
     <Protobuf Include="Grpc\auction_validation.proto" GrpcServices="None" />
-    <Protobuf Include="Grpc\auction_stats.proto" GrpcServices="None" />
-    <Protobuf Include="Grpc\user_analytics.proto" GrpcServices="None" />
   </ItemGroup>
 
   <ItemGroup>
