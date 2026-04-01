@@ -5,7 +5,6 @@ using BuildingBlocks.Web.Observability;
 using Identity.Api.Data;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
-using Identity.Api.Grpc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -37,8 +36,6 @@ internal static class HostingExtensions
             requiresIdentity: false);
 
         builder.Services.AddControllers();
-        builder.Services.AddGrpc();
-        builder.Services.AddGrpcReflection();
 
         builder.Services
             .AddIdentityInfrastructure(builder.Configuration)
@@ -91,12 +88,6 @@ internal static class HostingExtensions
         app.UseAuthorization();
 
         app.MapControllers();
-        app.MapGrpcService<UserStatsGrpcService>();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapGrpcReflectionService();
-        }
 
         app.MapCustomHealthChecks();
 

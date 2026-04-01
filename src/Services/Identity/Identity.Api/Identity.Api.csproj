@@ -7,13 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
-    <PackageReference Include="Google.Protobuf" />
-    <PackageReference Include="Grpc.AspNetCore" />
-    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
-    <PackageReference Include="Grpc.Tools">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MassTransit.EntityFrameworkCore" />
     <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
@@ -29,9 +22,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\Identity.Contracts\Grpc\user_stats.proto" GrpcServices="Server" ProtoRoot="..\Identity.Contracts" />
-  </ItemGroup>
-  <ItemGroup>
+
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Identity.Contracts\IdentityService.Contracts.csproj" />

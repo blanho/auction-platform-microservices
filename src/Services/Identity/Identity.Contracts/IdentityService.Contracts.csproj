@@ -11,12 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" />
-    <PackageReference Include="Grpc.Net.Client" />
-    <PackageReference Include="Grpc.Tools">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MassTransit.Abstractions" />
   </ItemGroup>
 
@@ -26,12 +20,6 @@
 
   <ItemGroup>
     <Compile Remove="Events\IVersionedEvent.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- GrpcServices="Both" generates UserStatsGrpcBase (for Identity.Api) and
-         UserStatsGrpcClient (for consumers) — no re-compilation in downstream projects. -->
-    <Protobuf Include="Grpc\user_stats.proto" GrpcServices="Both" />
   </ItemGroup>
 
 </Project>
