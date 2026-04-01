@@ -67,7 +67,6 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddScoped<IAuctionSchedulerRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionUserRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionExportRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
-            services.AddScoped<IAuctionAnalyticsRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
 
             services.AddScoped<IAuctionViewRepository, AuctionViewRepository>();
 

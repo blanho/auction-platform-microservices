@@ -16,8 +16,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         IAuctionWriteRepository,
         IAuctionSchedulerRepository,
         IAuctionUserRepository,
-        IAuctionExportRepository,
-        IAuctionAnalyticsRepository
+        IAuctionExportRepository
     {
         private readonly AuctionDbContext _context;
         private readonly IDateTimeProvider _dateTime;
@@ -283,62 +282,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<int> CountLiveAuctionsAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == Status.Live)
-                .CountAsync(cancellationToken);
-        }
-
-        public async Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default)
-        {
-            var now = _dateTime.UtcNow;
-            var endingSoonThreshold = now.AddHours(24);
-
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted
-                    && x.Status == Status.Live
-                    && x.AuctionEnd >= now
-                    && x.AuctionEnd <= endingSoonThreshold)
-                .CountAsync(cancellationToken);
-        }
-
-        public async Task<int> GetCountByStatusAsync(Status status, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == status)
-                .CountAsync(cancellationToken);
-        }
-
-        public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .CountAsync(cancellationToken);
-        }
-
-        public async Task<decimal> GetTotalRevenueAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
-                .SumAsync(x => x.SoldAmount ?? 0, cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == Status.Live)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
-                .AsNoTracking()
-                .OrderByDescending(x => x.CurrentHighBid ?? 0)
-                .ThenByDescending(x => x.IsFeatured)
-                .Take(limit)
-                .ToListAsync(cancellationToken);
-        }
-
         public async Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         {
             var idList = ids.ToList();
@@ -352,45 +295,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .Include(x => x.Item)
                     .ThenInclude(i => i!.Brand)
                 .AsNoTracking()
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted
-                    && x.Status == Status.Live
-                    && x.AuctionEnd >= start
-                    && x.AuctionEnd < end)
-                .CountAsync(cancellationToken);
-        }
-
-        public async Task<List<Auction>> GetTopByRevenueAsync(int limit, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == Status.Finished && x.SoldAmount.HasValue)
-                .Include(x => x.Item)
-                .AsNoTracking()
-                .OrderByDescending(x => x.SoldAmount)
-                .Take(limit)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<List<CategoryStatDto>> GetCategoryStatsAsync(CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Item != null && x.Item.CategoryId.HasValue)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .AsNoTracking()
-                .GroupBy(x => new { x.Item!.CategoryId, CategoryName = x.Item.Category!.Name })
-                .Select(g => new CategoryStatDto(
-                    g.Key.CategoryId!.Value,
-                    g.Key.CategoryName,
-                    g.Count(),
-                    g.Sum(x => x.SoldAmount ?? 0)
-                ))
-                .OrderByDescending(c => c.Revenue)
                 .ToListAsync(cancellationToken);
         }
 

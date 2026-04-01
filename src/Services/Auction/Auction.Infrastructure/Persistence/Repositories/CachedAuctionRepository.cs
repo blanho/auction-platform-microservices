@@ -16,8 +16,7 @@ public class CachedAuctionRepository :
     IAuctionWriteRepository,
     IAuctionSchedulerRepository,
     IAuctionUserRepository,
-    IAuctionExportRepository,
-    IAuctionAnalyticsRepository
+    IAuctionExportRepository
 {
     private readonly AuctionRepository _inner;
     private readonly ICacheService _cache;
@@ -147,35 +146,8 @@ public class CachedAuctionRepository :
         CancellationToken cancellationToken = default)
         => _inner.GetAuctionsForExportAsync(status, seller, startDate, endDate, cancellationToken);
 
-    public Task<int> CountLiveAuctionsAsync(CancellationToken cancellationToken = default)
-        => _inner.CountLiveAuctionsAsync(cancellationToken);
-
-    public Task<int> CountEndingSoonAsync(CancellationToken cancellationToken = default)
-        => _inner.CountEndingSoonAsync(cancellationToken);
-
-    public Task<int> GetCountByStatusAsync(Status status, CancellationToken cancellationToken = default)
-        => _inner.GetCountByStatusAsync(status, cancellationToken);
-
-    public Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
-        => _inner.GetTotalCountAsync(cancellationToken);
-
-    public Task<decimal> GetTotalRevenueAsync(CancellationToken cancellationToken = default)
-        => _inner.GetTotalRevenueAsync(cancellationToken);
-
-    public Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
-        => _inner.GetTrendingItemsAsync(limit, cancellationToken);
-
     public Task<List<Auction>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         => _inner.GetByIdsAsync(ids, cancellationToken);
-
-    public Task<int> GetCountEndingBetweenAsync(DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken = default)
-        => _inner.GetCountEndingBetweenAsync(start, end, cancellationToken);
-
-    public Task<List<Auction>> GetTopByRevenueAsync(int limit, CancellationToken cancellationToken = default)
-        => _inner.GetTopByRevenueAsync(limit, cancellationToken);
-
-    public Task<List<CategoryStatDto>> GetCategoryStatsAsync(CancellationToken cancellationToken = default)
-        => _inner.GetCategoryStatsAsync(cancellationToken);
 
     public Task<List<Auction>> GetBySellerUsernameAsync(string username, CancellationToken cancellationToken = default)
         => _inner.GetBySellerUsernameAsync(username, cancellationToken);
