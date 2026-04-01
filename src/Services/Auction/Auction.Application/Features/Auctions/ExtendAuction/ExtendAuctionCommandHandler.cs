@@ -42,7 +42,7 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
             _logger.LogWarning("User {UserId} attempted to extend auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.AuctionId, auction.SellerId);
             return Result.Failure<DateTimeOffset>(
-                Error.Create("Auction.Forbidden", "You are not authorized to extend this auction"));
+                AuctionErrors.Auction.Forbidden);
         }
 
         if (auction.Status != Status.Live)

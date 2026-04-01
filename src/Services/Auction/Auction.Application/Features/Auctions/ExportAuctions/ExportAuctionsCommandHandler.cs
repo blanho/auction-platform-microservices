@@ -1,3 +1,4 @@
+using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 
@@ -34,8 +35,7 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
         if (exporter is null)
         {
             return Result.Failure<ExportAuctionsResult>(
-                Error.Create("Export.UnsupportedFormat",
-                    $"Export format '{request.Format}' is not supported."));
+                AuctionErrors.Export.UnsupportedFormat(request.Format.ToString()));
         }
 
         var auctions = await _exportRepository.GetAuctionsForExportAsync(

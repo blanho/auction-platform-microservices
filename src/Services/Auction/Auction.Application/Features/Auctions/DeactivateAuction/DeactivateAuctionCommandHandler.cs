@@ -45,7 +45,7 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
         {
             _logger.LogWarning("User {UserId} attempted to deactivate auction {AuctionId} owned by {OwnerId}", 
                 request.UserId, request.AuctionId, auction.SellerId);
-            return Result.Failure<AuctionDto>(Error.Create("Auction.Forbidden", "You are not authorized to deactivate this auction"));
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.Forbidden);
         }
         
         if (auction.Status != Status.Live && auction.Status != Status.Scheduled)

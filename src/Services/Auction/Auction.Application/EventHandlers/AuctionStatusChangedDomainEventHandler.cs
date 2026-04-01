@@ -1,6 +1,7 @@
 using Auctions.Domain.Events;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Abstractions.Providers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -9,13 +10,16 @@ namespace Auctions.Application.EventHandlers;
 public class AuctionStatusChangedDomainEventHandler : INotificationHandler<AuctionStatusChangedDomainEvent>
 {
     private readonly IEventPublisher _eventPublisher;
+    private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<AuctionStatusChangedDomainEventHandler> _logger;
 
     public AuctionStatusChangedDomainEventHandler(
         IEventPublisher eventPublisher,
+        IDateTimeProvider dateTime,
         ILogger<AuctionStatusChangedDomainEventHandler> logger)
     {
         _eventPublisher = eventPublisher;
+        _dateTime = dateTime;
         _logger = logger;
     }
 
@@ -34,8 +38,8 @@ public class AuctionStatusChangedDomainEventHandler : INotificationHandler<Aucti
                 AuctionId = notification.AuctionId,
                 Seller = notification.SellerUsername,
                 Title = notification.Title,
-                StartTime = DateTime.UtcNow,
-                EndTime = notification.AuctionEnd.DateTime,
+                StartTime = _dateTime.UtcNowOffset,
+                EndTime = notification.AuctionEnd,
                 ReservePrice = notification.ReservePrice
             }, cancellationToken);
 

@@ -67,7 +67,12 @@ public class Auction : AggregateRoot
             SellerId = auction.SellerId,
             SellerUsername = auction.SellerUsername,
             Title = auction.Item.Title,
+            Description = auction.Item.Description,
+            Condition = auction.Item.Condition,
+            YearManufactured = auction.Item.YearManufactured,
             ReservePrice = auction.ReservePrice,
+            Currency = auction.Currency,
+            Status = auction.Status.ToString(),
             AuctionEnd = auction.AuctionEnd
         });
 

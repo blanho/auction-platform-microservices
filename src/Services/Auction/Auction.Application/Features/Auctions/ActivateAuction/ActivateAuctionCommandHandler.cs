@@ -48,7 +48,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
         {
             _logger.LogWarning("User {UserId} attempted to activate auction {AuctionId} owned by {OwnerId}", 
                 request.UserId, request.AuctionId, auction.SellerId);
-            return Result.Failure<AuctionDto>(Error.Create("Auction.Forbidden", "You are not authorized to activate this auction"));
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.Forbidden);
         }
 
         if (auction.Status != Status.Inactive && auction.Status != Status.Scheduled)
@@ -58,8 +58,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
 
         if (auction.AuctionEnd <= _dateTime.UtcNow)
         {
-            return Result.Failure<AuctionDto>(Error.Create("Auction.EndDatePassed", 
-                "Cannot activate auction. The auction end date has already passed."));
+            return Result.Failure<AuctionDto>(AuctionErrors.Auction.EndDatePassed);
         }
 
         var oldAuctionData = AuctionAuditData.FromAuction(auction);

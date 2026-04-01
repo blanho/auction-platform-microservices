@@ -45,7 +45,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
         {
             _logger.LogWarning("User {UserId} attempted to update auction {AuctionId} owned by {OwnerId}", 
                 request.UserId, request.Id, auction.SellerId);
-            return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to update this auction"));
+            return Result.Failure<bool>(AuctionErrors.Auction.Forbidden);
         }
 
         var oldAuctionData = AuctionAuditData.FromAuction(auction);

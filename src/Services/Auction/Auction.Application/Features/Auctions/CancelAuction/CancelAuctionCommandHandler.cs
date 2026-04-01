@@ -40,7 +40,7 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
         {
             _logger.LogWarning("User {UserId} attempted to cancel auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.AuctionId, auction.SellerId);
-            return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to cancel this auction"));
+            return Result.Failure<bool>(AuctionErrors.Auction.Forbidden);
         }
 
         if (!auction.CanTransitionTo(Status.Cancelled))

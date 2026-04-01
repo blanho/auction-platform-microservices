@@ -41,7 +41,7 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
         {
             _logger.LogWarning("User {UserId} attempted to delete auction {AuctionId} owned by {OwnerId}", 
                 request.UserId, request.Id, auction.SellerId);
-            return Result.Failure<bool>(Error.Create("Auction.Forbidden", "You are not authorized to delete this auction"));
+            return Result.Failure<bool>(AuctionErrors.Auction.Forbidden);
         }
 
         var auctionAuditData = AuctionAuditData.FromAuction(auction);

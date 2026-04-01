@@ -8,6 +8,7 @@ public static class AuctionErrors
     {
         public static Error NotFound => Error.Create("Auction.NotFound", "Auction not found");
         public static Error NotFoundById(Guid id) => Error.Create("Auction.NotFound", $"Auction with ID {id} was not found");
+        public static Error Forbidden => Error.Create("Auction.Forbidden", "You are not authorized to perform this action on the auction");
         public static Error FetchFailed(string reason) => LocalizableError.Localizable("Auction.FetchFailed", $"Failed to fetch auction: {reason}", reason);
         public static Error InvalidStatus(string currentStatus) => Error.Create("Auction.InvalidStatus", $"Cannot perform this action on auction with status {currentStatus}.");
         public static Error DeactivationFailed(string reason) => LocalizableError.Localizable("Auction.DeactivationFailed", $"Failed to deactivate auction: {reason}", reason);
@@ -65,13 +66,18 @@ public static class AuctionErrors
         public static Error AlreadyResponded => Error.Create("Review.AlreadyResponded", "Seller has already responded to this review");
     }
 
+    public static class Export
+    {
+        public static Error UnsupportedFormat(string format) => Error.Create("Export.UnsupportedFormat", $"Unsupported export format: {format}");
+    }
+
     public static class Analytics
     {
-        public static Error Error => Error.Create("Analytics.Error", "Failed to retrieve seller analytics");
+        public static Error FetchFailed => Error.Create("Analytics.FetchFailed", "Failed to retrieve seller analytics");
     }
 
     public static class Dashboard
     {
-        public static Error Error => Error.Create("Dashboard.Error", "Failed to retrieve dashboard statistics");
+        public static Error FetchFailed => Error.Create("Dashboard.FetchFailed", "Failed to retrieve dashboard statistics");
     }
 }

@@ -30,7 +30,13 @@ public class AuctionCreatedDomainEventHandler : INotificationHandler<AuctionCrea
             Id = notification.AuctionId,
             SellerId = notification.SellerId,
             SellerUsername = notification.SellerUsername,
+            Title = notification.Title,
+            Description = notification.Description,
+            Condition = notification.Condition,
+            YearManufactured = notification.YearManufactured,
             ReservePrice = notification.ReservePrice,
+            Currency = notification.Currency,
+            Status = notification.Status,
             AuctionEnd = notification.AuctionEnd,
             CreatedAt = notification.OccurredAt
         }, cancellationToken);
