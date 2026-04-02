@@ -70,7 +70,8 @@ public static class ServiceCollectionExtensions
             x.AddConsumer<AuditEventConsumer>();
             x.AddConsumer<AuctionCreatedAnalyticsConsumer>();
             x.AddConsumer<AuctionFinishedAnalyticsConsumer>();
-            x.AddConsumer<BidPlacedAnalyticsConsumer>();
+            x.AddConsumer<AuctionStartedAnalyticsConsumer>();
+            x.AddConsumer<BuyNowExecutedAnalyticsConsumer>();
             x.AddConsumer<BidPlacedBatchConsumer>();
             x.AddConsumer<HighestBidUpdatedAnalyticsConsumer>();
             x.AddConsumer<BidAcceptedAnalyticsConsumer>();
@@ -138,6 +139,8 @@ public static class ServiceCollectionExtensions
         {
             e.ConfigureConsumer<AuctionCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<AuctionFinishedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<AuctionStartedAnalyticsConsumer>(context);
+            e.ConfigureConsumer<BuyNowExecutedAnalyticsConsumer>(context);
             e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
         });
     }

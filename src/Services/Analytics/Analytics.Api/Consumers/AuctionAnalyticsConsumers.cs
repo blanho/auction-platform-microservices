@@ -132,3 +132,127 @@ public class AuctionFinishedAnalyticsConsumer : IConsumer<AuctionFinishedEvent>
             @event.AuctionId, @event.ItemSold, @event.SoldAmount);
     }
 }
+
+public class AuctionStartedAnalyticsConsumer : IConsumer<AuctionStartedEvent>
+{
+    private readonly AnalyticsDbContext _context;
+    private readonly ILogger<AuctionStartedAnalyticsConsumer> _logger;
+
+    public AuctionStartedAnalyticsConsumer(
+        AnalyticsDbContext context,
+        ILogger<AuctionStartedAnalyticsConsumer> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<AuctionStartedEvent> context)
+    {
+        var @event = context.Message;
+
+        var exists = await _context.FactAuctions
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "Started",
+                context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate AuctionStarted event skipped for Auction {AuctionId}", @event.AuctionId);
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        var fact = new FactAuction
+        {
+            EventId = Guid.NewGuid(),
+            AuctionId = @event.AuctionId,
+            EventTime = @event.StartTime,
+            IngestedAt = now,
+            DateKey = DateOnly.FromDateTime(@event.StartTime.UtcDateTime),
+
+            Title = @event.Title,
+            SellerUsername = @event.Seller,
+
+            ReservePrice = @event.ReservePrice,
+            StartedAt = @event.StartTime,
+
+            Status = "Live",
+            HadReserve = @event.ReservePrice > 0,
+
+            EventType = "Started",
+            EventVersion = (short)@event.Version
+        };
+
+        _context.FactAuctions.Add(fact);
+        await _context.SaveChangesAsync(context.CancellationToken);
+
+        _logger.LogInformation(
+            "Recorded AuctionStarted fact for {AuctionId}, Seller: {Seller}",
+            @event.AuctionId, @event.Seller);
+    }
+}
+
+public class BuyNowExecutedAnalyticsConsumer : IConsumer<BuyNowExecutedEvent>
+{
+    private readonly AnalyticsDbContext _context;
+    private readonly ILogger<BuyNowExecutedAnalyticsConsumer> _logger;
+
+    public BuyNowExecutedAnalyticsConsumer(
+        AnalyticsDbContext context,
+        ILogger<BuyNowExecutedAnalyticsConsumer> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<BuyNowExecutedEvent> context)
+    {
+        var @event = context.Message;
+
+        var exists = await _context.FactAuctions
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "BuyNowExecuted",
+                context.CancellationToken);
+
+        if (exists)
+        {
+            _logger.LogWarning(
+                "Duplicate BuyNowExecuted event skipped for Auction {AuctionId}", @event.AuctionId);
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        var fact = new FactAuction
+        {
+            EventId = Guid.NewGuid(),
+            AuctionId = @event.AuctionId,
+            EventTime = @event.ExecutedAt,
+            IngestedAt = now,
+            WinnerId = @event.BuyerId,
+            DateKey = DateOnly.FromDateTime(@event.ExecutedAt.UtcDateTime),
+
+            Title = @event.ItemTitle,
+            SellerUsername = @event.Seller,
+            WinnerUsername = @event.Buyer,
+
+            FinalPrice = @event.BuyNowPrice,
+            BuyNowPrice = @event.BuyNowPrice,
+
+            Status = "Sold",
+            Sold = true,
+            UsedBuyNow = true,
+            EndedAt = @event.ExecutedAt,
+
+            EventType = "BuyNowExecuted",
+            EventVersion = (short)@event.Version
+        };
+
+        _context.FactAuctions.Add(fact);
+        await _context.SaveChangesAsync(context.CancellationToken);
+
+        _logger.LogInformation(
+            "Recorded BuyNowExecuted fact for {AuctionId}, Buyer: {Buyer}, Price: {Price}",
+            @event.AuctionId, @event.Buyer, @event.BuyNowPrice);
+    }
+}

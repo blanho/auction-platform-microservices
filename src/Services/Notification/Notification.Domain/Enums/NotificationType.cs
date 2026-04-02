@@ -51,5 +51,7 @@ public enum NotificationType
     Maintenance = 71,
 
     JobCompleted = 80,
-    JobFailed = 81
+    JobFailed = 81,
+    JobCreated = 82,
+    JobProgressUpdated = 83
 }

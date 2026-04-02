@@ -228,6 +228,30 @@ public static class MassTransitConfiguration
                 cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
             });
 
+            x.AddConsumer<JobCreatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<JobProgressUpdatedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
+            x.AddConsumer<AuctionStartedConsumer>(cfg =>
+            {
+                cfg.UseMessageRetry(r => r
+                    .Exponential(retryLimit: NotificationDefaults.Messaging.RetryLimit, minInterval: TimeSpan.FromSeconds(NotificationDefaults.Messaging.MinIntervalSeconds), maxInterval: TimeSpan.FromMinutes(NotificationDefaults.Messaging.MaxIntervalMinutes), intervalDelta: TimeSpan.FromSeconds(NotificationDefaults.Messaging.IntervalDeltaSeconds))
+                    .Handle<Exception>(ex => !IsPermanentError(ex)));
+                cfg.UseConcurrencyLimit(rabbitMqSettings.ConcurrencyLimit);
+            });
+
             x.AddConsumer<AutoBidUpdatedConsumer>(cfg =>
             {
                 cfg.UseMessageRetry(r => r
@@ -536,6 +560,8 @@ public static class MassTransitConfiguration
                 {
                     e.ConfigureConsumer<JobCompletedConsumer>(context);
                     e.ConfigureConsumer<JobFailedConsumer>(context);
+                    e.ConfigureConsumer<JobCreatedConsumer>(context);
+                    e.ConfigureConsumer<JobProgressUpdatedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);
@@ -564,6 +590,7 @@ public static class MassTransitConfiguration
                     e.ConfigureConsumer<AuctionCancelledNotificationConsumer>(context);
                     e.ConfigureConsumer<AuctionEndingSoonConsumer>(context);
                     e.ConfigureConsumer<AuctionExtendedConsumer>(context);
+                    e.ConfigureConsumer<AuctionStartedConsumer>(context);
                     e.PrefetchCount = rabbitMqSettings.PrefetchCount;
                     e.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(5)));
                     e.UseInMemoryOutbox(context);

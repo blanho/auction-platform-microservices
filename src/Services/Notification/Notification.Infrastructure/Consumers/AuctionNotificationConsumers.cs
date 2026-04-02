@@ -5,7 +5,6 @@ using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 using NotificationService.Contracts.Events;
-
 namespace Notification.Infrastructure.Consumers;
 
 public class AuctionCancelledNotificationConsumer : IConsumer<AuctionCancelledNotificationEvent>
@@ -185,6 +184,66 @@ public class AuctionExtendedConsumer : IConsumer<AuctionExtendedEvent>
                     ["TimesExtended"] = @event.TimesExtended.ToString(),
                     ["MaxExtensions"] = @event.MaxExtensions.ToString(),
                     ["Reason"] = @event.Reason
+                }),
+                AuctionId = @event.AuctionId
+            },
+            ct);
+
+        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+    }
+}
+
+public class AuctionStartedConsumer : IConsumer<AuctionStartedEvent>
+{
+    private readonly INotificationService _notificationService;
+    private readonly IIdempotencyService _idempotency;
+    private readonly ILogger<AuctionStartedConsumer> _logger;
+
+    public AuctionStartedConsumer(
+        INotificationService notificationService,
+        IIdempotencyService idempotency,
+        ILogger<AuctionStartedConsumer> logger)
+    {
+        _notificationService = notificationService;
+        _idempotency = idempotency;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<AuctionStartedEvent> context)
+    {
+        var @event = context.Message;
+        var ct = context.CancellationToken;
+        var eventId = $"auction-started-{@event.AuctionId}";
+
+        _logger.LogInformation(
+            "Processing AuctionStarted for Auction {AuctionId}, Seller {Seller}",
+            @event.AuctionId, @event.Seller);
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        {
+            _logger.LogDebug("AuctionStarted already processed for EventId={EventId}", eventId);
+            return;
+        }
+
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        if (lockHandle == null) return;
+
+        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+            return;
+
+        await _notificationService.CreateNotificationAsync(
+            new CreateNotificationDto
+            {
+                UserId = @event.Seller,
+                Type = NotificationType.AuctionStarted,
+                Title = "Your Auction Is Now Live",
+                Message = $"Your auction '{@event.Title}' is now live and accepting bids. It closes at {NotificationFormattingHelper.FormatDateTime(@event.EndTime.UtcDateTime)}.",
+                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                {
+                    ["AuctionId"] = @event.AuctionId.ToString(),
+                    ["Title"] = @event.Title,
+                    ["EndTime"] = @event.EndTime.ToString("O"),
+                    ["ReservePrice"] = @event.ReservePrice.ToString("F2")
                 }),
                 AuctionId = @event.AuctionId
             },
