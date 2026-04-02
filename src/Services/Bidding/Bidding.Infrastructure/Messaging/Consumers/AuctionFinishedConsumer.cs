@@ -81,9 +81,9 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
         catch (Exception ex)
         {
             _logger.LogWarning(
-                "Error deactivating auto-bids for finished auction {AuctionId}",
+                ex,
+                "Error deactivating auto-bids for finished auction {AuctionId}; auto-bids may remain active",
                 auctionId);
-            throw;
         }
     }
 }

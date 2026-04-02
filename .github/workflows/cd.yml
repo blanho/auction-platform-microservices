@@ -239,20 +239,20 @@ jobs:
           for service in "${SERVICES[@]}"; do
             READY=$(kubectl get deploy "${service}" -n auction-platform -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
             if [[ "$READY" -lt 1 ]]; then
-              echo "❌ ${service} has no ready replicas"
+              echo "${service} has no ready replicas"
               exit 1
             fi
-            echo "✅ ${service} is ready (${READY} replicas)"
+            echo "${service} is ready (${READY} replicas)"
           done
 
       - name: Notify on success
         if: success()
-        run: echo "✅ Production deployment successful!"
+        run: echo "Production deployment successful!"
 
       - name: Rollback on failure
         if: failure()
         run: |
-          echo "❌ Deployment failed, initiating rollback..."
+          echo "Deployment failed, initiating rollback..."
           SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
           for deployment in "${SERVICES[@]}"; do
             kubectl rollout undo deployment/$deployment -n auction-platform || true

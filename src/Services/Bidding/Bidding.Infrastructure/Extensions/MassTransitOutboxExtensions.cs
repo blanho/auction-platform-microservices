@@ -24,6 +24,7 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<AuctionStartedSnapshotConsumer>();
             x.AddConsumer<AuctionHighBidSnapshotConsumer>();
             x.AddConsumer<AuctionDeletedSnapshotConsumer>();
+            x.AddConsumer<AuctionFinishedSnapshotConsumer>();
 
             x.AddEntityFrameworkOutbox<BidDbContext>(o =>
             {

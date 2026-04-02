@@ -9,6 +9,7 @@ public static class BiddingErrors
         public static Error NotFound => Error.Create("Bid.NotFound", "Bid not found");
         public static Error Unauthorized => Error.Create("Bid.Unauthorized", "You can only manage your own bids");
         public static Error AlreadyRejected => Error.Create("Bid.AlreadyRejected", "Cannot retract a rejected bid");
+        public static Error AlreadyRetracted => Error.Create("Bid.AlreadyRetracted", "This bid has already been retracted");
         public static Error RetractWindowExpired(int minutes) => LocalizableError.Localizable("Bid.RetractWindowExpired", $"Bids can only be retracted within {minutes} minutes of placement", minutes);
         public static Error PlaceFailed(string reason) => LocalizableError.Localizable("Bid.PlaceFailed", $"Bid placement failed: {reason}", reason);
         public static Error TooLow(decimal minimum) => LocalizableError.Localizable("Bid.TooLow", $"Bid must be at least {minimum:C}", minimum);
@@ -34,5 +35,6 @@ public static class BiddingErrors
         public static Error NotFound => Error.Create("Auction.NotFound", "Auction not found");
         public static Error NotActive => Error.Create("Auction.NotActive", "Auction is not active");
         public static Error AlreadyEnded => Error.Create("Auction.AlreadyEnded", "Auction has already ended");
+        public static Error CannotBidOnOwnAuction => Error.Create("Auction.SelfBid", "You cannot place auto-bids on your own auction");
     }
 }

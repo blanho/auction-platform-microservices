@@ -12,6 +12,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
     private readonly IMapper _mapper;
     private readonly ILogger<CreateAutoBidCommandHandler> _logger;
     private readonly IAuditPublisher _auditPublisher;
+    private readonly IAuctionSnapshotRepository _snapshotRepository;
 
     public CreateAutoBidCommandHandler(
         IAutoBidRepository repository,
@@ -19,7 +20,8 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<CreateAutoBidCommandHandler> logger,
-        IAuditPublisher auditPublisher)
+        IAuditPublisher auditPublisher,
+        IAuctionSnapshotRepository snapshotRepository)
     {
         _repository = repository;
         _bidRepository = bidRepository;
@@ -27,6 +29,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         _mapper = mapper;
         _logger = logger;
         _auditPublisher = auditPublisher;
+        _snapshotRepository = snapshotRepository;
     }
 
     public async Task<Result<CreateAutoBidResult>> Handle(CreateAutoBidCommand request, CancellationToken cancellationToken)
@@ -39,6 +42,16 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         {
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.AutoBid.AlreadyExists);
         }
+
+        var snapshot = await _snapshotRepository.GetAsync(request.AuctionId, cancellationToken);
+        if (snapshot == null)
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotFound);
+        if (snapshot.Status != "Live")
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotActive);
+        if (snapshot.EndTime <= DateTimeOffset.UtcNow)
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.AlreadyEnded);
+        if (snapshot.SellerUsername == request.Username)
+            return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.CannotBidOnOwnAuction);
 
         var currentHighBid = await _bidRepository.GetHighestBidForAuctionAsync(request.AuctionId, cancellationToken);
         var currentHighAmount = currentHighBid?.Amount ?? 0;

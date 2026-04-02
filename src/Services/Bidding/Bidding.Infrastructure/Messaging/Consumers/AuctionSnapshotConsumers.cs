@@ -59,15 +59,17 @@ public class AuctionStartedSnapshotConsumer : IConsumer<AuctionStartedEvent>
             "Consuming AuctionStartedEvent for {AuctionId}, updating local snapshot",
             message.AuctionId);
 
+        var existing = await _snapshotRepository.GetAsync(message.AuctionId, context.CancellationToken);
+
         var snapshot = new AuctionSnapshot(
             AuctionId: message.AuctionId,
             Title: message.Title,
             SellerUsername: message.Seller,
-            SellerId: Guid.Empty,
+            SellerId: existing?.SellerId ?? Guid.Empty,
             EndTime: message.EndTime,
             Status: "Live",
             ReservePrice: message.ReservePrice,
-            CurrentHighBid: null);
+            CurrentHighBid: existing?.CurrentHighBid);
 
         await _snapshotRepository.UpsertAsync(snapshot, context.CancellationToken);
     }
@@ -126,5 +128,39 @@ public class AuctionDeletedSnapshotConsumer : IConsumer<AuctionDeletedEvent>
             message.Id);
 
         await _snapshotRepository.DeleteAsync(message.Id, context.CancellationToken);
+    }
+}
+
+public class AuctionFinishedSnapshotConsumer : IConsumer<AuctionFinishedEvent>
+{
+    private readonly IAuctionSnapshotRepository _snapshotRepository;
+    private readonly ILogger<AuctionFinishedSnapshotConsumer> _logger;
+
+    public AuctionFinishedSnapshotConsumer(
+        IAuctionSnapshotRepository snapshotRepository,
+        ILogger<AuctionFinishedSnapshotConsumer> logger)
+    {
+        _snapshotRepository = snapshotRepository;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<AuctionFinishedEvent> context)
+    {
+        var message = context.Message;
+        _logger.LogInformation(
+            "Consuming AuctionFinishedEvent for {AuctionId}, marking snapshot as Finished",
+            message.AuctionId);
+
+        var existing = await _snapshotRepository.GetAsync(message.AuctionId, context.CancellationToken);
+        if (existing == null)
+        {
+            _logger.LogWarning(
+                "Snapshot not found for finished auction {AuctionId}, skipping update",
+                message.AuctionId);
+            return;
+        }
+
+        var updated = existing with { Status = "Finished" };
+        await _snapshotRepository.UpsertAsync(updated, context.CancellationToken);
     }
 }

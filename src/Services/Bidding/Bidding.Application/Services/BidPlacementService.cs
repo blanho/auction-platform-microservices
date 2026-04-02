@@ -74,9 +74,9 @@ namespace Bidding.Application.Services
             bool isAutoBid,
             CancellationToken ct)
         {
-            var auctionValidation = await ValidateAuctionForBid(dto, bidderUsername, bidderId, ct);
-            if (auctionValidation != null)
-                return auctionValidation;
+            var (auctionError, reservePrice) = await ValidateAuctionForBid(dto, bidderUsername, bidderId, ct);
+            if (auctionError != null)
+                return auctionError;
 
             var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
             var currentHighBid = highestBid?.Amount ?? 0;
@@ -84,7 +84,7 @@ namespace Bidding.Application.Services
             if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
                 return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
 
-            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, ct);
+            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, reservePrice, ct);
             if (bid.Status == BidStatus.Rejected.ToString())
                 return bid;
 
@@ -158,7 +158,7 @@ namespace Bidding.Application.Services
             }
         }
 
-        private Bid CreateBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, Bid? highestBid, bool isAutoBid)
+        private Bid CreateBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, Bid? highestBid, bool isAutoBid, decimal reservePrice)
         {
             var bid = Bid.Create(
                 dto.AuctionId,
@@ -169,11 +169,18 @@ namespace Bidding.Application.Services
 
             if (highestBid == null || dto.Amount > highestBid.Amount)
             {
-                bid.Accept(
-                    highestBid?.Amount,
-                    highestBid?.BidderId,
-                    highestBid?.BidderUsername,
-                    isAutoBid);
+                if (reservePrice > 0 && dto.Amount < reservePrice)
+                    bid.AcceptBelowReserve(
+                        highestBid?.Amount,
+                        highestBid?.BidderId,
+                        highestBid?.BidderUsername,
+                        isAutoBid);
+                else
+                    bid.Accept(
+                        highestBid?.Amount,
+                        highestBid?.BidderId,
+                        highestBid?.BidderUsername,
+                        isAutoBid);
             }
             else
             {
@@ -194,10 +201,7 @@ namespace Bidding.Application.Services
                 await _unitOfWork.SaveChangesAsync(ct);
                 return null;
             }
-            catch (Exception ex)
-                when (ex.GetType().Name == "DbUpdateException" &&
-                      (ex.InnerException?.Message.Contains("duplicate") == true ||
-                       ex.InnerException?.Message.Contains("unique") == true))
+            catch (Exception ex) when (IsUniqueConstraintViolation(ex))
             {
                 _logger.LogWarning(
                     ex,
@@ -207,6 +211,16 @@ namespace Bidding.Application.Services
                 return CreateRejectedBid(dto, bidderId, bidderUsername,
                     "This bid amount was just placed by another bidder. Please try a higher amount.");
             }
+        }
+
+        private static bool IsUniqueConstraintViolation(Exception ex)
+        {
+            var inner = ex.InnerException;
+            if (inner == null) return false;
+            var message = inner.Message;
+            return message.Contains("23505", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("unique constraint", StringComparison.OrdinalIgnoreCase);
         }
 
         private BidDto CreateRejectedBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, string errorMessage)
@@ -237,7 +251,7 @@ namespace Bidding.Application.Services
             };
         }
 
-        private async Task<BidDto?> ValidateAuctionForBid(PlaceBidDto dto, string bidderUsername, Guid bidderId, CancellationToken ct)
+        private async Task<(BidDto? Error, decimal ReservePrice)> ValidateAuctionForBid(PlaceBidDto dto, string bidderUsername, Guid bidderId, CancellationToken ct)
         {
             var validationResult = await _auctionGrpcClient.ValidateAuctionForBidAsync(
                 dto.AuctionId,
@@ -253,16 +267,16 @@ namespace Bidding.Application.Services
                     validationResult.ErrorCode,
                     validationResult.ErrorMessage);
 
-                return CreateRejectedBid(dto, bidderId, bidderUsername, validationResult.ErrorMessage);
+                return (CreateRejectedBid(dto, bidderId, bidderUsername, validationResult.ErrorMessage), 0m);
             }
 
-            return null;
+            return (null, validationResult.ReservePrice);
         }
 
-        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, CancellationToken ct)
+        private async Task<BidDto> CreateAndSaveBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, bool isAutoBid, Bid? highestBid, decimal reservePrice, CancellationToken ct)
         {
-            var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid);
-            
+            var bid = CreateBid(dto, bidderId, bidderUsername, highestBid, isAutoBid, reservePrice);
+
             var createdBid = await _repository.CreateAsync(bid, ct);
 
             var raceConditionResult = await SaveBidWithRaceConditionHandling(dto, bidderId, bidderUsername, ct);

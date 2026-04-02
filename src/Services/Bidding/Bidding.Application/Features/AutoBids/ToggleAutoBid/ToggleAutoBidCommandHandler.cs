@@ -10,17 +10,20 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ToggleAutoBidCommandHandler> _logger;
     private readonly IAuditPublisher _auditPublisher;
+    private readonly IAuctionSnapshotRepository _snapshotRepository;
 
     public ToggleAutoBidCommandHandler(
         IAutoBidRepository repository,
         IUnitOfWork unitOfWork,
         ILogger<ToggleAutoBidCommandHandler> logger,
-        IAuditPublisher auditPublisher)
+        IAuditPublisher auditPublisher,
+        IAuctionSnapshotRepository snapshotRepository)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _logger = logger;
         _auditPublisher = auditPublisher;
+        _snapshotRepository = snapshotRepository;
     }
 
     public async Task<Result<ToggleAutoBidResult>> Handle(ToggleAutoBidCommand request, CancellationToken cancellationToken)
@@ -45,6 +48,9 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
 
         if (request.Activate)
         {
+            var snapshot = await _snapshotRepository.GetAsync(autoBid.AuctionId, cancellationToken);
+            if (snapshot == null || snapshot.Status != "Live" || snapshot.EndTime <= DateTimeOffset.UtcNow)
+                return Result.Failure<ToggleAutoBidResult>(BiddingErrors.Auction.AlreadyEnded);
             autoBid.Activate();
         }
         else

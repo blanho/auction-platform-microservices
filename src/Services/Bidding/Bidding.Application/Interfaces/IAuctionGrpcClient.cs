@@ -3,14 +3,16 @@ namespace Bidding.Application.Interfaces;
 public record AuctionValidationResult(
     bool IsValid,
     string ErrorMessage = "",
-    string ErrorCode = "");
+    string ErrorCode = "",
+    decimal ReservePrice = 0);
 
 public record AuctionDetails(
     string Title,
     string SellerUsername,
     DateTime EndTime,
     string Status,
-    bool IsReserved);
+    bool IsReserved,
+    decimal ReservePrice = 0);
 
 public record ExtendAuctionResult(
     bool Success,

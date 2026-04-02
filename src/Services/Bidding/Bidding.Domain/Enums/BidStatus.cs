@@ -6,5 +6,6 @@ public enum BidStatus
     Accepted,
     AcceptedBelowReserve,
     TooLow,
-    Rejected
+    Rejected,
+    Retracted
 }

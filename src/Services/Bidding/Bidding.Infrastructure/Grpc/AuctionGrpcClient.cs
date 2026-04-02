@@ -43,7 +43,8 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             return new AuctionValidationResult(
                 response.IsValid,
                 response.ErrorMessage,
-                response.ErrorCode);
+                response.ErrorCode,
+                response.ReservePriceCents / 100m);
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
         {
@@ -79,7 +80,8 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 response.Seller,
                 DateTime.Parse(response.AuctionEnd, System.Globalization.CultureInfo.InvariantCulture),
                 response.Status,
-                response.IsBuyNowAvailable);
+                response.ReservePriceCents > 0,
+                response.ReservePriceCents / 100m);
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.DeadlineExceeded)
         {

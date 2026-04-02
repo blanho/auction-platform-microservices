@@ -70,9 +70,26 @@ public class Bid : AggregateRoot
         });
     }
 
-    public void AcceptBelowReserve()
+    public void AcceptBelowReserve(
+        decimal? previousHighestAmount = null,
+        Guid? previousBidderId = null,
+        string? previousBidderUsername = null,
+        bool isAutoBid = false)
     {
         Status = BidStatus.AcceptedBelowReserve;
+
+        AddDomainEvent(new HighestBidUpdatedDomainEvent
+        {
+            AuctionId = AuctionId,
+            BidId = Id,
+            BidderId = BidderId,
+            BidderUsername = BidderUsername,
+            NewHighestAmount = Amount,
+            PreviousHighestAmount = previousHighestAmount,
+            PreviousBidderId = previousBidderId,
+            PreviousBidderUsername = previousBidderUsername,
+            IsAutoBid = isAutoBid
+        });
 
         AddDomainEvent(new BidAcceptedBelowReserveDomainEvent
         {
@@ -106,7 +123,7 @@ public class Bid : AggregateRoot
         Guid? newHighestBidderId = null,
         string? newHighestBidderUsername = null)
     {
-        Status = BidStatus.Rejected;
+        Status = BidStatus.Retracted;
         AddDomainEvent(new BidRetractedDomainEvent
         {
             BidId = Id,

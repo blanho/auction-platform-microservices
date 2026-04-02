@@ -60,7 +60,11 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
             return Result.Failure<BidDto>(BidErrors.LockAcquisitionFailed);
         }
 
-        var auctionValidation = await ValidateAuction(request, cancellationToken);
+        var snapshot = await _auctionSnapshot.GetAsync(request.AuctionId, cancellationToken);
+        if (snapshot == null)
+            return Result.Failure<BidDto>(BidErrors.AuctionNotFound(request.AuctionId));
+
+        var auctionValidation = ValidateAuction(snapshot, request);
         if (auctionValidation.IsFailure)
             return Result.Failure<BidDto>(auctionValidation.Error!);
 
@@ -71,7 +75,7 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
         if (incrementValidation.IsFailure)
             return Result.Failure<BidDto>(incrementValidation.Error!);
 
-        var bid = CreateAndAcceptBid(request, highestBid);
+        var bid = CreateAndAcceptBid(request, highestBid, snapshot.ReservePrice);
 
         await _repository.CreateAsync(bid, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -89,13 +93,8 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
         return Result.Success(bid.ToDto());
     }
 
-    private async Task<Result> ValidateAuction(PlaceBidCommand request, CancellationToken ct)
+    private Result ValidateAuction(AuctionSnapshot snapshot, PlaceBidCommand request)
     {
-        var snapshot = await _auctionSnapshot.GetAsync(request.AuctionId, ct);
-
-        if (snapshot == null)
-            return Result.Failure(BidErrors.AuctionNotFound(request.AuctionId));
-
         if (snapshot.Status != "Live")
             return Result.Failure(BidErrors.AuctionNotLive);
 
@@ -121,7 +120,7 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
         return Result.Failure(BidErrors.BidTooLow(minimumNextBid, increment));
     }
 
-    private Bid CreateAndAcceptBid(PlaceBidCommand request, Bid? highestBid)
+    private Bid CreateAndAcceptBid(PlaceBidCommand request, Bid? highestBid, decimal reservePrice)
     {
         var bid = Bid.Create(
             request.AuctionId,
@@ -132,11 +131,18 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 
         if (highestBid == null || request.Amount > highestBid.Amount)
         {
-            bid.Accept(
-                highestBid?.Amount,
-                highestBid?.BidderId,
-                highestBid?.BidderUsername,
-                isAutoBid: false);
+            if (reservePrice > 0 && request.Amount < reservePrice)
+                bid.AcceptBelowReserve(
+                    highestBid?.Amount,
+                    highestBid?.BidderId,
+                    highestBid?.BidderUsername,
+                    isAutoBid: false);
+            else
+                bid.Accept(
+                    highestBid?.Amount,
+                    highestBid?.BidderId,
+                    highestBid?.BidderUsername,
+                    isAutoBid: false);
         }
         else
         {

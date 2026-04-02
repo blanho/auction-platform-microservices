@@ -171,7 +171,8 @@ namespace Bidding.Infrastructure.Repositories
         {
             return await _context.Bids
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.AuctionId == auctionId && x.Status == BidStatus.Accepted)
+                .Where(x => !x.IsDeleted && x.AuctionId == auctionId &&
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .OrderByDescending(x => x.Amount)
                 .ThenByDescending(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -187,7 +188,8 @@ namespace Bidding.Infrastructure.Repositories
 
             var highestBids = await _context.Bids
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && auctionIdList.Contains(x.AuctionId) && x.Status == BidStatus.Accepted)
+                .Where(x => !x.IsDeleted && auctionIdList.Contains(x.AuctionId) &&
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .GroupBy(x => x.AuctionId)
                 .Select(g => g
                     .OrderByDescending(b => b.Amount)
@@ -221,7 +223,9 @@ namespace Bidding.Infrastructure.Repositories
         {
             return await _context.Bids
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.AuctionId == auctionId && x.Status == BidStatus.Accepted && x.Id != excludeBidId)
+                .Where(x => !x.IsDeleted && x.AuctionId == auctionId &&
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve) &&
+                    x.Id != excludeBidId)
                 .OrderByDescending(x => x.Amount)
                 .ThenByDescending(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -298,13 +302,14 @@ namespace Bidding.Infrastructure.Repositories
         {
             var count = await _context.Bids
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.BidderId == userId && x.Status == BidStatus.Accepted)
+                .Where(x => !x.IsDeleted && x.BidderId == userId &&
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .GroupBy(x => x.AuctionId)
                 .Select(g => g.OrderByDescending(b => b.Amount).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
-                    ob.Status == BidStatus.Accepted &&
+                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
                     ob.Amount > b.Amount))
                 .CountAsync(cancellationToken);
 
@@ -316,17 +321,17 @@ namespace Bidding.Infrastructure.Repositories
             var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted && x.BidderUsername == username);
 
             var totalBids = await query.CountAsync(cancellationToken);
-            var activeBids = await query.CountAsync(b => b.Status == BidStatus.Accepted, cancellationToken);
+            var activeBids = await query.CountAsync(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve, cancellationToken);
             var totalAmountBid = await query.SumAsync(b => b.Amount, cancellationToken);
 
             var winningBidsQuery = query
-                .Where(b => b.Status == BidStatus.Accepted)
+                .Where(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve)
                 .GroupBy(b => b.AuctionId)
                 .Select(g => g.OrderByDescending(b => b.Amount).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
-                    ob.Status == BidStatus.Accepted &&
+                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
                     ob.Amount > b.Amount));
 
             var auctionsWon = await winningBidsQuery.CountAsync(cancellationToken);
@@ -419,13 +424,14 @@ namespace Bidding.Infrastructure.Repositories
             
             var baseQuery = _context.Bids
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.BidderId == userId && x.Status == BidStatus.Accepted)
+                .Where(x => !x.IsDeleted && x.BidderId == userId &&
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .GroupBy(x => x.AuctionId)
                 .Select(g => g.OrderByDescending(b => b.Amount).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
-                    ob.Status == BidStatus.Accepted &&
+                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
                     ob.Amount > b.Amount));
 
             if (filter.AuctionId.HasValue)

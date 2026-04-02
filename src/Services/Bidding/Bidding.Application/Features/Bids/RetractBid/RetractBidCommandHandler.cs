@@ -2,6 +2,7 @@ using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
 using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Abstractions.Locking;
 
 namespace Bidding.Application.Features.Bids.RetractBid;
 
@@ -10,6 +11,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
     private readonly IBidRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
+    private readonly IDistributedLock _distributedLock;
     private readonly ILogger<RetractBidCommandHandler> _logger;
     private readonly IAuditPublisher _auditPublisher;
 
@@ -17,12 +19,14 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         IBidRepository repository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
+        IDistributedLock distributedLock,
         ILogger<RetractBidCommandHandler> logger,
         IAuditPublisher auditPublisher)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
+        _distributedLock = distributedLock;
         _logger = logger;
         _auditPublisher = auditPublisher;
     }
@@ -50,10 +54,27 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRejected);
         }
 
+        if (bid.Status == BidStatus.Retracted)
+        {
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRetracted);
+        }
+
         var timeSinceBid = _dateTime.UtcNowOffset - bid.BidTime;
         if (timeSinceBid.TotalMinutes > BidDefaults.RetractWindowMinutes)
         {
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.RetractWindowExpired(BidDefaults.RetractWindowMinutes));
+        }
+
+        var lockKey = $"auction-bid:{bid.AuctionId}";
+        await using var lockHandle = await _distributedLock.TryAcquireAsync(
+            lockKey,
+            TimeSpan.FromSeconds(BidDefaults.BidLockTimeoutSeconds),
+            cancellationToken);
+
+        if (lockHandle == null)
+        {
+            _logger.LogWarning("Failed to acquire lock for auction {AuctionId} during retraction", bid.AuctionId);
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.PlaceFailed("Another bid is being processed. Please try again."));
         }
 
         var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
