@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui'
 import { getAdminUserDisplayName } from '../../utils'
 import type { AdminUser } from '../../types'
@@ -17,15 +18,16 @@ export function DeleteUserDialog({
   onClose,
   onConfirm,
 }: DeleteUserDialogProps) {
+  const { t } = useTranslation('common')
   return (
     <ConfirmDialog
       open={open}
       onClose={onClose}
       onConfirm={onConfirm}
-      title="Delete User"
-      message={`Are you sure you want to delete ${getAdminUserDisplayName(user)}? This action is permanent and cannot be undone. All user data, auctions, bids, and transaction history will be deleted.`}
-      confirmLabel="Delete User"
-      cancelLabel="Cancel"
+      title={t('userManagement.deleteTitle')}
+      message={t('userManagement.deleteMessage', { name: getAdminUserDisplayName(user) })}
+      confirmLabel={t('userManagement.deleteButton')}
+      cancelLabel={t('cancel')}
       variant="danger"
       loading={loading}
     />

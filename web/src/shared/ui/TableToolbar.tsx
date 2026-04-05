@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   TextField,
@@ -60,6 +61,7 @@ export function TableToolbar({
   sx,
   children,
 }: TableToolbarProps) {
+  const { t } = useTranslation('common')
   const [localSearch, setLocalSearch] = useState(searchValue)
 
   const handleSearchChange = useCallback(
@@ -114,7 +116,7 @@ export function TableToolbar({
             onChange={handleFilterChange(filter.key)}
             label={filter.label}
           >
-            <MenuItem value="">All</MenuItem>
+            <MenuItem value="">{t('table.all')}</MenuItem>
             {filter.options.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
@@ -135,11 +137,11 @@ export function TableToolbar({
               startIcon={<Close />}
               onClick={onClearFilters}
             >
-              Clear
+              {t('table.clear')}
             </Button>
           )}
           {showRefreshButton && onRefresh && (
-            <Tooltip title="Refresh">
+            <Tooltip title={t('table.refresh')}>
               <IconButton onClick={onRefresh} color="primary" size="small">
                 <Refresh />
               </IconButton>

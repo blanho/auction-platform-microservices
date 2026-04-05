@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import debounce from 'lodash/debounce'
+import { debounce } from 'lodash-es'
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import {

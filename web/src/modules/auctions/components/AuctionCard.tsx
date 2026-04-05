@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Timer, Gavel } from '@mui/icons-material'
@@ -12,6 +13,8 @@ interface AuctionCardProps {
 }
 
 export const AuctionCard = memo(({ auction }: AuctionCardProps) => {
+  const { t } = useTranslation('common')
+
   return (
     <Card
       sx={{
@@ -95,7 +98,7 @@ export const AuctionCard = memo(({ auction }: AuctionCardProps) => {
             {formatCurrency(auction.currentBid)}
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: '#A8A29E' }}>
-            {auction.bidCount} bids
+            {t('auctionCard.bid_other', { count: auction.bidCount })}
           </Typography>
         </Box>
       </CardContent>
@@ -121,7 +124,7 @@ export const AuctionCard = memo(({ auction }: AuctionCardProps) => {
             },
           }}
         >
-          View Details
+          {t('auctionCard.viewDetails')}
         </Button>
       </Box>
     </Card>

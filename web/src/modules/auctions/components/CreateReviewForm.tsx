@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -23,13 +24,16 @@ interface CreateReviewFormProps {
   onCancel?: () => void
 }
 
-const ratingLabels: Record<number, string> = {
-  1: 'Poor',
-  2: 'Fair',
-  3: 'Good',
-  4: 'Very Good',
-  5: 'Excellent',
-}
+  const getRatingLabel = (value: number) => {
+    const labels: Record<number, string> = {
+      1: t('review.ratingPoor'),
+      2: t('review.ratingFair'),
+      3: t('review.ratingGood'),
+      4: t('review.ratingVeryGood'),
+      5: t('review.ratingExcellent'),
+    }
+    return labels[value] ?? ''
+  }
 
 export function CreateReviewForm({
   auctionId,
@@ -39,6 +43,7 @@ export function CreateReviewForm({
   onSuccess,
   onCancel,
 }: Readonly<CreateReviewFormProps>) {
+  const { t } = useTranslation('common')
   const [rating, setRating] = useState<number | null>(null)
   const [hover, setHover] = useState(-1)
   const [title, setTitle] = useState('')
@@ -49,11 +54,11 @@ export function CreateReviewForm({
 
   const handleSubmit = async () => {
     if (!rating) {
-      setError('Please select a rating')
+      setError(t('review.selectRatingError'))
       return
     }
     if (!comment.trim()) {
-      setError('Please write a review')
+      setError(t('review.writeReviewError'))
       return
     }
 
@@ -73,7 +78,7 @@ export function CreateReviewForm({
       await createReview.mutateAsync(reviewData)
       onSuccess?.()
     } catch {
-      setError('Failed to submit review. Please try again.')
+      setError(t('review.submitFailed'))
     }
   }
 
@@ -94,7 +99,7 @@ export function CreateReviewForm({
           fontSize: '1.125rem',
         }}
       >
-        Write a Review
+        {t('review.writeReview')}
       </Typography>
 
       {error && (
@@ -105,7 +110,7 @@ export function CreateReviewForm({
 
       <Box sx={{ mb: 3 }}>
         <Typography sx={{ color: palette.neutral[500], mb: 1, fontSize: '0.875rem' }}>
-          How would you rate your experience?
+          {t('review.ratingQuestion')}
         </Typography>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Rating
@@ -121,7 +126,7 @@ export function CreateReviewForm({
           />
           {(rating !== null || hover >= 0) && (
             <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
-              {ratingLabels[hover >= 0 ? hover : rating ?? 0]}
+              {getRatingLabel(hover >= 0 ? hover : rating ?? 0)}
             </Typography>
           )}
         </Stack>
@@ -129,8 +134,8 @@ export function CreateReviewForm({
 
       <TextField
         fullWidth
-        label="Review Title (Optional)"
-        placeholder="Summarize your experience"
+        label={t('review.reviewTitle')}
+        placeholder={t('review.reviewTitlePlaceholder')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         sx={{ mb: 2 }}
@@ -139,15 +144,15 @@ export function CreateReviewForm({
 
       <TextField
         fullWidth
-        label="Your Review"
-        placeholder="Share details of your experience with this seller"
+        label={t('review.yourReview')}
+        placeholder={t('review.yourReviewPlaceholder')}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         multiline
         rows={4}
         sx={{ mb: 3 }}
         slotProps={{ htmlInput: { maxLength: 1000 } }}
-        helperText={`${comment.length}/1000 characters`}
+        helperText={t('review.characters', { count: comment.length, max: 1000 })}
       />
 
       <Stack direction="row" spacing={2} justifyContent="flex-end">
@@ -177,7 +182,7 @@ export function CreateReviewForm({
           {createReview.isPending ? (
             <CircularProgress size={20} sx={{ color: 'white' }} />
           ) : (
-            'Submit Review'
+            t('review.submitReview')
           )}
         </Button>
       </Stack>

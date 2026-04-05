@@ -62,13 +62,15 @@ builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddDbContext<NotificationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-            npgsqlOptions.CommandTimeout(30);
-        }));
+    options
+        .UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
+                npgsqlOptions.CommandTimeout(30);
+            })
+        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddNotificationInfrastructure();
 builder.Services.AddNotificationServices();
 builder.Services.AddNotificationRedis(builder.Configuration);
@@ -79,6 +81,7 @@ else
     builder.Services.AddNotificationSendersProduction(builder.Configuration);
 
 builder.Services.AddNotificationMessaging(builder.Configuration);
+builder.Services.AddAuditServices(builder.Configuration, "notification-service");
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   List,
@@ -24,12 +25,15 @@ interface NotificationListProps {
 export function NotificationList({
   notifications,
   isLoading,
-  emptyMessage = 'No notifications yet',
-  emptyDescription = "You'll see notifications about your bids and auctions here",
+  emptyMessage,
+  emptyDescription,
   onMarkAsRead,
   onDelete,
   onArchive,
 }: NotificationListProps) {
+  const { t } = useTranslation('common')
+  const resolvedEmptyMessage = emptyMessage ?? t('notification.emptyTitle')
+  const resolvedEmptyDescription = emptyDescription ?? t('notification.emptyDesc')
   if (isLoading) {
     return (
       <List disablePadding>
@@ -49,10 +53,10 @@ export function NotificationList({
     return (
       <Box sx={{ py: 8, textAlign: 'center' }}>
         <NotificationsOff sx={{ fontSize: 48, color: '#D4D4D4', mb: 2 }} />
-        <Typography sx={{ color: '#78716C', mb: 1 }}>{emptyMessage}</Typography>
-        {emptyDescription && (
+        <Typography sx={{ color: '#78716C', mb: 1 }}>{resolvedEmptyMessage}</Typography>
+        {resolvedEmptyDescription && (
           <Typography sx={{ fontSize: '0.875rem', color: '#A1A1AA' }}>
-            {emptyDescription}
+            {resolvedEmptyDescription}
           </Typography>
         )}
       </Box>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Stack, Skeleton, useTheme, alpha } from '@mui/material'
 import { People, Gavel, TrendingUp, AttachMoney } from '@mui/icons-material'
 import { motion } from 'framer-motion'
@@ -81,6 +82,7 @@ function StatItem({ icon, label, value, color, pulse }: StatItemProps) {
 }
 
 export function RealTimeStatsCard() {
+  const { t } = useTranslation('common')
   const { data: stats, isLoading } = useRealTimeStats()
 
   if (isLoading) {
@@ -141,7 +143,7 @@ export function RealTimeStatsCard() {
           }}
         />
         <Typography variant="h6" fontWeight={600} sx={{ fontFamily: '"Fira Sans", sans-serif' }}>
-          Real-Time Stats
+          {t('analytics.realTimeStats')}
         </Typography>
       </Stack>
 
@@ -149,7 +151,7 @@ export function RealTimeStatsCard() {
         <Box sx={{ flex: '1 1 200px' }}>
           <StatItem
             icon={<People />}
-            label="Online Users"
+            label={t('analytics.onlineUsers')}
             value={formatNumber(stats?.onlineUsers ?? 0)}
             color={palette.semantic.info}
             pulse
@@ -158,7 +160,7 @@ export function RealTimeStatsCard() {
         <Box sx={{ flex: '1 1 200px' }}>
           <StatItem
             icon={<Gavel />}
-            label="Active Auctions"
+            label={t('analytics.activeAuctions')}
             value={formatNumber(stats?.activeAuctions ?? 0)}
             color={palette.brand.primary}
           />
@@ -166,7 +168,7 @@ export function RealTimeStatsCard() {
         <Box sx={{ flex: '1 1 200px' }}>
           <StatItem
             icon={<TrendingUp />}
-            label="Bids Last Hour"
+            label={t('analytics.bidsLastHour')}
             value={formatNumber(stats?.bidsLastHour ?? 0)}
             color={palette.semantic.success}
           />
@@ -174,7 +176,7 @@ export function RealTimeStatsCard() {
         <Box sx={{ flex: '1 1 200px' }}>
           <StatItem
             icon={<AttachMoney />}
-            label="Revenue Last Hour"
+            label={t('analytics.revenueLastHour')}
             value={formatCurrency(stats?.revenueLastHour ?? 0)}
             color={palette.purple.primary}
           />

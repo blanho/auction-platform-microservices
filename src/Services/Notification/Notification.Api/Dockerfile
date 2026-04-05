@@ -13,11 +13,10 @@ COPY ["src/Services/Notification/Notification.Domain/Notification.Domain.csproj"
 COPY ["src/Services/Notification/Notification.Application/Notification.Application.csproj", "src/Services/Notification/Notification.Application/"]
 COPY ["src/Services/Notification/Notification.Infrastructure/Notification.Infrastructure.csproj", "src/Services/Notification/Notification.Infrastructure/"]
 COPY ["src/Services/Notification/Notification.Api/Notification.Api.csproj", "src/Services/Notification/Notification.Api/"]
-COPY ["src/Services/Notification/Notification.Contracts/Notification.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
+COPY ["src/Services/Notification/Notification.Contracts/NotificationService.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
 COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
 COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
 COPY ["src/Services/Payment/Payment.Contracts/PaymentService.Contracts.csproj", "src/Services/Payment/Payment.Contracts/"]
-COPY ["src/Services/Notification/Notification.Contracts/NotificationService.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
 
 RUN dotnet restore "src/Services/Notification/Notification.Api/Notification.Api.csproj" --runtime linux-musl-x64
 

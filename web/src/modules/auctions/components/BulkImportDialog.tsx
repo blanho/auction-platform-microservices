@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -15,17 +16,19 @@ interface BulkImportDialogProps {
 }
 
 export function BulkImportDialog({ open, onClose, onComplete: _onComplete }: BulkImportDialogProps) {
+  const { t } = useTranslation('common')
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Bulk Import Auctions</DialogTitle>
+      <DialogTitle>{t('import.bulkTitle')}</DialogTitle>
       <DialogContent sx={{ textAlign: 'center', py: 4 }}>
         <Construction sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
         <Typography variant="body1" color="text.secondary">
-          Bulk import functionality is coming soon.
+          {t('import.bulkComingSoon')}
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t('close')}</Button>
       </DialogActions>
     </Dialog>
   )

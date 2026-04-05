@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Stack, Skeleton, useTheme, alpha, Divider } from '@mui/material'
 import { People, Gavel, AttachMoney, BarChart, TrendingUp, TrendingDown } from '@mui/icons-material'
 import { useBidMetrics } from '../hooks/useAnalytics'
@@ -105,6 +106,7 @@ function MetricItem({ icon, label, value, subValue, trend, color }: MetricItemPr
 }
 
 export function BidMetricsCard() {
+  const { t } = useTranslation('common')
   const { data: metrics, isLoading } = useBidMetrics()
 
   if (isLoading) {
@@ -147,7 +149,7 @@ export function BidMetricsCard() {
         fontWeight={600}
         sx={{ mb: 3, fontFamily: '"Fira Sans", sans-serif' }}
       >
-        Bidding Analytics
+        {t('analytics.biddingAnalytics')}
       </Typography>
 
       <Stack
@@ -160,30 +162,30 @@ export function BidMetricsCard() {
       >
         <MetricItem
           icon={<Gavel />}
-          label="Total Bids"
+          label={t('analytics.totalBids')}
           value={formatNumber(metrics?.totalBids ?? 0)}
-          subValue="All time"
+          subValue={t('analytics.allTime')}
           color={palette.semantic.info}
         />
         <MetricItem
           icon={<People />}
-          label="Unique Bidders"
+          label={t('analytics.uniqueBidders')}
           value={formatNumber(metrics?.uniqueBidders ?? 0)}
-          subValue="Active participants"
+          subValue={t('analytics.activeParticipants')}
           color={palette.purple.primary}
         />
         <MetricItem
           icon={<AttachMoney />}
-          label="Avg Bid Amount"
+          label={t('analytics.avgBidAmount')}
           value={formatCurrency(metrics?.averageBidAmount ?? 0)}
-          subValue="Per bid"
+          subValue={t('analytics.perBid')}
           color={palette.semantic.success}
         />
         <MetricItem
           icon={<BarChart />}
-          label="Avg Bids/Auction"
+          label={t('analytics.avgBidsPerAuction')}
           value={formatNumber(metrics?.averageBidsPerAuction ?? 0)}
-          subValue="Engagement metric"
+          subValue={t('analytics.engagementMetric')}
           color={palette.semantic.warning}
         />
       </Stack>
@@ -199,7 +201,7 @@ export function BidMetricsCard() {
       >
         <Box>
           <Typography variant="caption" color="text.secondary">
-            Bids Today
+            {t('analytics.bidsToday')}
           </Typography>
           <Typography variant="h6" fontWeight={600} color="success.main">
             {formatNumber(metrics?.bidsToday ?? 0)}
@@ -207,7 +209,7 @@ export function BidMetricsCard() {
         </Box>
         <Box>
           <Typography variant="caption" color="text.secondary">
-            This Week
+            {t('analytics.thisWeek')}
           </Typography>
           <Typography variant="h6" fontWeight={600} color="info.main">
             {formatNumber(metrics?.bidsThisWeek ?? 0)}
@@ -215,7 +217,7 @@ export function BidMetricsCard() {
         </Box>
         <Box>
           <Typography variant="caption" color="text.secondary">
-            This Month
+            {t('analytics.thisMonth')}
           </Typography>
           <Typography variant="h6" fontWeight={600} color="warning.main">
             {formatNumber(metrics?.bidsThisMonth ?? 0)}

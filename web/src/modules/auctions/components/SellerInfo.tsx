@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Avatar, Stack, Button, Rating, Skeleton } from '@mui/material'
 import { Verified, Storefront, Chat } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
@@ -10,6 +11,7 @@ interface SellerInfoProps {
 }
 
 export function SellerInfo({ seller, onContact }: SellerInfoProps) {
+  const { t } = useTranslation('common')
   const isVerified = seller.totalSales >= 10
 
   return (
@@ -30,7 +32,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
           fontSize: '0.6875rem',
         }}
       >
-        Seller Information
+        {t('seller.information')}
       </Typography>
 
       <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
@@ -90,7 +92,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             />
             <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
               ({seller.rating.toFixed(1)}
-              {seller.reviewCount !== undefined && ` • ${seller.reviewCount} reviews`})
+              {seller.reviewCount !== undefined && ` • ${t('seller.review_other', { count: seller.reviewCount })}`})
             </Typography>
           </Stack>
         </Box>
@@ -117,7 +119,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             {seller.totalSales.toLocaleString()}
           </Typography>
           <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
-            Total Sales
+            {t('seller.totalSales')}
           </Typography>
         </Box>
         <Box>
@@ -132,7 +134,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             {Math.round(seller.rating * 20)}%
           </Typography>
           <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
-            Positive Feedback
+            {t('seller.positiveFeedback')}
           </Typography>
         </Box>
       </Stack>
@@ -155,7 +157,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             },
           }}
         >
-          View Shop
+          {t('seller.viewShop')}
         </Button>
         {onContact && (
           <Button
@@ -174,7 +176,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
               },
             }}
           >
-            Contact
+            {t('seller.contact')}
           </Button>
         )}
       </Stack>

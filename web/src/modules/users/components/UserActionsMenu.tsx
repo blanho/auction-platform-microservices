@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Menu, MenuItem, Divider } from '@mui/material'
 import {
   AdminPanelSettings,
@@ -41,52 +42,53 @@ export function UserActionsMenu({
   onDeactivate,
   onDelete,
 }: UserActionsMenuProps) {
+  const { t } = useTranslation('common')
   return (
     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose}>
       <MenuItem onClick={onManageRoles}>
         <AdminPanelSettings sx={{ mr: 1, fontSize: 18 }} />
-        Manage Roles
+        {t('userManagement.manageRolesTitle')}
       </MenuItem>
       <MenuItem onClick={onManage2FA}>
         <Security sx={{ mr: 1, fontSize: 18 }} />
-        2FA Settings
+        {t('twoFactor.title')}
       </MenuItem>
       <Divider />
       <MenuItem onClick={onEdit}>
         <Edit sx={{ mr: 1, fontSize: 18 }} />
-        Edit User
+        {t('userManagement.editUser')}
       </MenuItem>
       <MenuItem onClick={onSendEmail}>
         <Email sx={{ mr: 1, fontSize: 18 }} />
-        Send Email
+        {t('userManagement.sendEmail')}
       </MenuItem>
       <Divider />
       {user?.isSuspended ? (
         <MenuItem onClick={onUnsuspend}>
           <CheckCircle sx={{ mr: 1, fontSize: 18, color: 'success.main' }} />
-          Remove Suspension
+          {t('userManagement.removeSuspension')}
         </MenuItem>
       ) : (
         <MenuItem onClick={onSuspend}>
           <Block sx={{ mr: 1, fontSize: 18, color: 'warning.main' }} />
-          Suspend User
+          {t('userManagement.suspendUser')}
         </MenuItem>
       )}
       {user?.isActive ? (
         <MenuItem onClick={onDeactivate}>
           <PersonOff sx={{ mr: 1, fontSize: 18, color: 'warning.main' }} />
-          Deactivate User
+          {t('userManagement.deactivateUser')}
         </MenuItem>
       ) : (
         <MenuItem onClick={onActivate}>
           <Person sx={{ mr: 1, fontSize: 18, color: 'success.main' }} />
-          Activate User
+          {t('userManagement.activateUser')}
         </MenuItem>
       )}
       <Divider />
       <MenuItem onClick={onDelete} sx={{ color: 'error.main' }}>
         <Delete sx={{ mr: 1, fontSize: 18 }} />
-        Delete User
+        {t('userManagement.deleteUser')}
       </MenuItem>
     </Menu>
   )

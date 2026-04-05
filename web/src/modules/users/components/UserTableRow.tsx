@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   TableRow,
   TableCell,
@@ -21,6 +22,7 @@ interface UserTableRowProps {
 }
 
 export function UserTableRow({ user, onMenuOpen }: UserTableRowProps) {
+  const { t } = useTranslation('common')
   const status = getUserStatus(user)
 
   return (
@@ -56,11 +58,11 @@ export function UserTableRow({ user, onMenuOpen }: UserTableRowProps) {
       </TableCell>
       <TableCell>
         {user.twoFactorEnabled ? (
-          <Tooltip title="2FA Enabled">
+          <Tooltip title={t('userManagement.twoFaEnabled')}>
             <Security sx={{ color: 'success.main', fontSize: 20 }} />
           </Tooltip>
         ) : (
-          <Tooltip title="2FA Disabled">
+          <Tooltip title={t('userManagement.twoFaDisabled')}>
             <Security sx={{ color: 'text.disabled', fontSize: 20 }} />
           </Tooltip>
         )}

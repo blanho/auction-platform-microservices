@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Grid, Skeleton, Box } from '@mui/material'
 import { AuctionCard } from './AuctionCard'
 import type { AuctionListItem } from '../types'
@@ -13,8 +14,10 @@ const SKELETON_ITEMS = Array.from({ length: 8 }, (_, index) => index)
 export const AuctionGrid = ({
   auctions,
   isLoading,
-  emptyMessage = 'No auctions found',
+  emptyMessage,
 }: AuctionGridProps) => {
+  const { t } = useTranslation('common')
+  const resolvedEmptyMessage = emptyMessage ?? t('auctionCard.noAuctionsFound')
   if (isLoading) {
     return (
       <Grid container spacing={3}>
@@ -28,7 +31,7 @@ export const AuctionGrid = ({
   }
 
   if (auctions.length === 0) {
-    return <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>{emptyMessage}</Box>
+    return <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>{resolvedEmptyMessage}</Box>
   }
 
   return (

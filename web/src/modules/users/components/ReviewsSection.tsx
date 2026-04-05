@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -30,6 +31,7 @@ interface ReviewsSectionProps {
 }
 
 export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
+  const { t } = useTranslation('common')
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
@@ -68,10 +70,10 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
   })
 
   const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'highest', label: 'Highest Rating' },
-    { value: 'lowest', label: 'Lowest Rating' },
-    { value: 'helpful', label: 'Most Helpful' },
+    { value: 'newest', label: t('review.newestFirst') },
+    { value: 'highest', label: t('review.highestRating') },
+    { value: 'lowest', label: t('review.lowestRating') },
+    { value: 'helpful', label: t('review.mostHelpful') },
   ]
 
   const totalPages = reviewsQuery.data ? Math.ceil(reviewsQuery.data.totalCount / pageSize) : 0
@@ -87,7 +89,7 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}
           >
             <Typography variant="h6" fontWeight={600}>
-              Reviews & Ratings
+              {t('review.title')}
             </Typography>
             <Button
               startIcon={<Sort />}
@@ -136,7 +138,7 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
                   sx={{ color: '#CA8A04' }}
                 />
                 <Typography variant="body2" color="text.secondary">
-                  {totalReviews} reviews
+                  {t('review.total_other', { count: totalReviews })}
                 </Typography>
               </Box>
 
@@ -180,12 +182,12 @@ export function ReviewsSection({ sellerId, auctionId }: ReviewsSectionProps) {
 
         {reviewsQuery.isLoading && (
           <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography color="text.secondary">Loading reviews...</Typography>
+            <Typography color="text.secondary">{t('review.loading')}</Typography>
           </Box>
         )}
         {!reviewsQuery.isLoading && (reviewsQuery.data?.data?.length ?? 0) === 0 && (
           <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography color="text.secondary">No reviews yet</Typography>
+            <Typography color="text.secondary">{t('review.noReviewsYet')}</Typography>
           </Box>
         )}
         {!reviewsQuery.isLoading && (reviewsQuery.data?.data?.length ?? 0) > 0 && (
@@ -227,6 +229,7 @@ interface ReviewCardProps {
 }
 
 function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps) {
+  const { t } = useTranslation('common')
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
 
   return (
@@ -248,7 +251,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
               {review.reviewer.isVerifiedBuyer && (
                 <Chip
                   icon={<VerifiedUser sx={{ fontSize: 14 }} />}
-                  label="Verified Buyer"
+                  label={t('review.verifiedBuyer')}
                   size="small"
                   color="success"
                   sx={{ height: 22 }}
@@ -265,7 +268,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
               >
                 <MenuItem onClick={() => setMenuAnchor(null)}>
                   <Flag sx={{ mr: 1, fontSize: 18 }} />
-                  Report Review
+                  {t('review.reportReview')}
                 </MenuItem>
               </Menu>
             </Box>
@@ -300,7 +303,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
                 }}
               >
                 <Typography variant="caption" color="primary" fontWeight={600}>
-                  Seller Response
+                    {t('review.sellerResponse')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {review.sellerResponse.content}
@@ -313,7 +316,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
 
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography variant="caption" color="text.secondary">
-                Was this helpful?
+                {t('review.wasThisHelpful')}
               </Typography>
               <Button
                 size="small"

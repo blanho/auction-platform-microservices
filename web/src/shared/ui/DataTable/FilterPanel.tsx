@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Paper,
@@ -46,6 +47,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
   showRefreshButton = true,
   sx,
 }: Readonly<FilterPanelProps<TFilter>>) {
+  const { t } = useTranslation('common')
   const [isExpanded, setIsExpanded] = useState(config.defaultExpanded ?? true)
 
   const activeFilterCount = useMemo(() => {
@@ -130,7 +132,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                 >
                   {field.clearable !== false && (
                     <MenuItem value="">
-                      <em>All</em>
+                      <em>{t('table.all')}</em>
                     </MenuItem>
                   )}
                   {field.options.map((option) => (
@@ -180,7 +182,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                   }}
                 />
                 <Typography variant="body2" color="text.secondary">
-                  to
+                  {t('table.to')}
                 </Typography>
                 <TextField
                   fullWidth
@@ -205,7 +207,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                   fullWidth
                   size="small"
                   type="number"
-                  label={`Min ${field.label}`}
+                  label={t('table.minValue', { label: field.label })}
                   value={((value as Record<string, unknown>)[field.minKey] as number) ?? ''}
                   onChange={(e) =>
                     handleFieldChange(
@@ -222,7 +224,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                   fullWidth
                   size="small"
                   type="number"
-                  label={`Max ${field.label}`}
+                  label={t('table.maxValue', { label: field.label })}
                   value={((value as Record<string, unknown>)[field.maxKey] as number) ?? ''}
                   onChange={(e) =>
                     handleFieldChange(
@@ -262,7 +264,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                   }}
                 >
                   <MenuItem value="">
-                    <em>All</em>
+                    <em>{t('table.all')}</em>
                   </MenuItem>
                   <MenuItem value="true">{field.trueLabel ?? 'Yes'}</MenuItem>
                   <MenuItem value="false">{field.falseLabel ?? 'No'}</MenuItem>
@@ -292,7 +294,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
               startIcon={<Close />}
               onClick={handleClearAll}
             >
-              Clear ({activeFilterCount})
+              {t('table.clearWithCount', { count: activeFilterCount })}
             </Button>
           )}
           {showRefreshButton && onRefresh && (
@@ -351,7 +353,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <FilterList color="action" />
-          <Typography variant="subtitle2">Filters</Typography>
+          <Typography variant="subtitle2">{t('table.filters')}</Typography>
           {activeFilterCount > 0 && (
             <Chip
               size="small"

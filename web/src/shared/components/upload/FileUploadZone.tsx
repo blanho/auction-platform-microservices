@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Stack } from '@mui/material'
 import { AnimatePresence } from 'framer-motion'
 import { palette } from '@/shared/theme/tokens'
@@ -26,6 +27,7 @@ export function FileUploadZone({
   acceptedTypes = ALL_ACCEPTED_TYPES,
   compact = false,
 }: Readonly<FileUploadZoneProps>) {
+  const { t } = useTranslation('common')
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -135,7 +137,7 @@ export function FileUploadZone({
             variant="subtitle2"
             sx={{ color: palette.neutral[500], fontWeight: 600 }}
           >
-            {`Uploaded files (${attachments.length})`}
+            {t('upload.uploadedFiles_other', { count: attachments.length })}
           </Typography>
           <AnimatePresence mode="popLayout">
             {attachments.map((attachment) => (

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Alert,
   Box,
@@ -36,9 +37,9 @@ interface SetupResponse {
   recoveryCodes: string[]
 }
 
-const steps = ['Generate Secret', 'Scan QR Code', 'Verify Code']
-
 export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
+  const { t } = useTranslation('common')
+  const steps = [t('twoFactor.stepInstallApp'), t('twoFactor.stepScanQr'), t('twoFactor.stepVerify')]
   const queryClient = useQueryClient()
   const [activeStep, setActiveStep] = useState(0)
   const [verificationCode, setVerificationCode] = useState('')
@@ -126,7 +127,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
           </Box>
 
           <Typography variant="h5" fontWeight={600} gutterBottom>
-            Two-Factor Authentication Enabled
+            {t('twoFactor.title')} {t('twoFactor.enabled')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Save these recovery codes in a secure place. You can use them to access your account if
@@ -158,7 +159,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               onClick={handleCopyRecoveryCodes}
               variant="outlined"
             >
-              {copied ? 'Copied!' : 'Copy Codes'}
+              {copied ? t('twoFactor.copied') : t('twoFactor.copy')}
             </Button>
             <Button
               variant="contained"
@@ -196,22 +197,21 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             </Box>
             <Box>
               <Typography variant="h6" fontWeight={600}>
-                Two-Factor Authentication
+                {t('twoFactor.title')}
               </Typography>
               <Typography variant="body2" color="success.main">
-                Enabled
+                {t('twoFactor.enabled')}
               </Typography>
             </Box>
           </Box>
 
           <InlineAlert severity="warning" sx={{ mb: 3 }}>
-            Disabling 2FA will make your account less secure. Make sure you have other security
-            measures in place.
+            {t('twoFactor.disableWarning')}
           </InlineAlert>
 
           <Stack spacing={2}>
             <TextField
-              label="Enter code from authenticator app"
+              label={t('twoFactor.enterCode')}
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               slotProps={{
@@ -227,7 +227,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             />
 
             {disableMutation.error && (
-              <InlineAlert severity="error">Invalid verification code. Please try again.</InlineAlert>
+              <InlineAlert severity="error">{t('twoFactor.invalidCode')}</InlineAlert>
             )}
 
             <Button
@@ -236,7 +236,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               onClick={handleDisable}
               disabled={verificationCode.length !== 6 || disableMutation.isPending}
             >
-              {disableMutation.isPending ? <CircularProgress size={24} /> : 'Disable 2FA'}
+              {disableMutation.isPending ? <CircularProgress size={24} /> : t('twoFactor.disable')}
             </Button>
           </Stack>
         </Paper>
@@ -248,10 +248,10 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
     <motion.div variants={fadeInUp} initial="initial" animate="animate">
       <Paper sx={{ p: 4 }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Set Up Two-Factor Authentication
+          {t('twoFactor.setupTitle')}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Add an extra layer of security to your account
+          {t('twoFactor.setupSubtitle')}
         </Typography>
 
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -276,8 +276,8 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     <CheckCircle color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="Download an authenticator app"
-                    secondary="Google Authenticator, Authy, or Microsoft Authenticator"
+                    primary={t('twoFactor.downloadApp')}
+                    secondary={t('twoFactor.downloadAppDesc')}
                   />
                 </ListItem>
                 <ListItem>
@@ -285,8 +285,8 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     <CheckCircle color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="Scan the QR code or enter the key manually"
-                    secondary="This links your account to your authenticator"
+                    primary={t('twoFactor.scanQrOrKey')}
+                    secondary={t('twoFactor.scanQrOrKeyDesc')}
                   />
                 </ListItem>
                 <ListItem>
@@ -294,8 +294,8 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     <CheckCircle color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary="Enter the verification code"
-                    secondary="Confirm setup with a code from your app"
+                    primary={t('twoFactor.enterVerificationCode')}
+                    secondary={t('twoFactor.enterVerificationCodeDesc')}
                   />
                 </ListItem>
               </List>
@@ -310,7 +310,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   '&:hover': { bgcolor: '#A16207' },
                 }}
               >
-                {setupQuery.isLoading ? <CircularProgress size={24} /> : 'Continue'}
+                {setupQuery.isLoading ? <CircularProgress size={24} /> : t('twoFactor.continue')}
               </Button>
             </motion.div>
           )}
@@ -341,7 +341,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               </Box>
 
               <Typography variant="body2" color="text.secondary" textAlign="center" gutterBottom>
-                Can't scan? Enter this key manually:
+                {t('twoFactor.cantScan')}
               </Typography>
 
               <Paper
@@ -359,13 +359,13 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   {setupQuery.data.manualEntryKey}
                 </Typography>
                 <Button size="small" startIcon={<ContentCopy />} onClick={handleCopyKey}>
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? t('twoFactor.copied') : t('twoFactor.copy')}
                 </Button>
               </Paper>
 
               <Stack direction="row" spacing={2} justifyContent="center">
                 <Button variant="outlined" onClick={() => setActiveStep(0)}>
-                  Back
+                  {t('back')}
                 </Button>
                 <Button
                   variant="contained"
@@ -375,7 +375,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >
-                  I've Scanned the Code
+                  {t('twoFactor.scannedCode')}
                 </Button>
               </Stack>
             </motion.div>
@@ -391,7 +391,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
               <Box sx={{ textAlign: 'center', mb: 3 }}>
                 <QrCode2 sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
                 <Typography variant="body1" gutterBottom>
-                  Enter the 6-digit code from your authenticator app
+                  {t('twoFactor.enterSixDigitCode')}
                 </Typography>
               </Box>
 
@@ -415,13 +415,13 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
 
               {verifyMutation.error && (
                 <InlineAlert severity="error" sx={{ mb: 3 }}>
-                  Invalid verification code. Please try again.
+                  {t('twoFactor.invalidCode')}
                 </InlineAlert>
               )}
 
               <Stack direction="row" spacing={2} justifyContent="center">
                 <Button variant="outlined" onClick={() => setActiveStep(1)}>
-                  Back
+                  {t('back')}
                 </Button>
                 <Button
                   variant="contained"
@@ -432,7 +432,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >
-                  {verifyMutation.isPending ? <CircularProgress size={24} /> : 'Verify & Enable'}
+                  {verifyMutation.isPending ? <CircularProgress size={24} /> : t('twoFactor.verifyEnable')}
                 </Button>
               </Stack>
             </motion.div>
@@ -454,7 +454,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             }
             sx={{ mt: 3 }}
           >
-            Failed to generate 2FA setup. Please try again.
+            {t('twoFactor.setupFailed')}
           </Alert>
         )}
       </Paper>

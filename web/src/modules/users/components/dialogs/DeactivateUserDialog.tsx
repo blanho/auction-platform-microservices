@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui'
 import { getAdminUserDisplayName } from '../../utils'
 import type { AdminUser } from '../../types'
@@ -17,15 +18,16 @@ export function DeactivateUserDialog({
   onClose,
   onConfirm,
 }: DeactivateUserDialogProps) {
+  const { t } = useTranslation('common')
   return (
     <ConfirmDialog
       open={open}
       onClose={onClose}
       onConfirm={onConfirm}
-      title="Deactivate User"
-      message={`Are you sure you want to deactivate ${getAdminUserDisplayName(user)}? This will disable the user's account and they will not be able to log in.`}
-      confirmLabel="Deactivate User"
-      cancelLabel="Cancel"
+      title={t('userManagement.deactivateTitle')}
+      message={t('userManagement.deactivateMessage', { name: getAdminUserDisplayName(user) })}
+      confirmLabel={t('userManagement.deactivateButton')}
+      cancelLabel={t('cancel')}
       variant="warning"
       loading={loading}
     />

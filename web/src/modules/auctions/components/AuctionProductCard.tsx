@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Box, Typography, IconButton, Chip, Skeleton } from '@mui/material'
 import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
@@ -42,6 +43,7 @@ export const AuctionProductCard = ({
   const [isHovered, setIsHovered] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [isEndingSoon, setIsEndingSoon] = useState(false)
+  const { t } = useTranslation('common')
   const currentImage = images[currentImageIndex]
   const currentPrice = currentBid > 0 ? currentBid : startingPrice ?? 0
   const isImageLoaded = useMemo(() => !currentImage || imageLoadedForUrl === currentImage, [currentImage, imageLoadedForUrl])
@@ -191,7 +193,7 @@ export const AuctionProductCard = ({
           >
             {isNew && (
               <Chip
-                label="NEW"
+                label={t('auctionCard.new')}
                 size="small"
                 sx={{
                   bgcolor: palette.neutral[900],
@@ -205,7 +207,7 @@ export const AuctionProductCard = ({
             )}
             {isFeatured && (
               <Chip
-                label="FEATURED"
+                label={t('auctionCard.featured')}
                 size="small"
                 sx={{
                   bgcolor: palette.brand.primary,
@@ -292,7 +294,7 @@ export const AuctionProductCard = ({
                   mb: 0.25,
                 }}
               >
-                Current Bid
+                {t('auctionCard.currentBid')}
               </Typography>
               <Typography
                 variant="h6"
@@ -313,7 +315,7 @@ export const AuctionProductCard = ({
                 fontSize: '0.75rem',
               }}
             >
-              {bidCount} {bidCount === 1 ? 'bid' : 'bids'}
+              {t('auctionCard.bid_other', { count: bidCount })}
             </Typography>
           </Box>
         </Box>

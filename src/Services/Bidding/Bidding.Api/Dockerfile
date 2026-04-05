@@ -14,7 +14,7 @@ COPY ["src/Services/Bidding/Bidding.Domain/Bidding.Domain.csproj", "src/Services
 COPY ["src/Services/Bidding/Bidding.Application/Bidding.Application.csproj", "src/Services/Bidding/Bidding.Application/"]
 COPY ["src/Services/Bidding/Bidding.Infrastructure/Bidding.Infrastructure.csproj", "src/Services/Bidding/Bidding.Infrastructure/"]
 COPY ["src/Services/Bidding/Bidding.Api/Bidding.Api.csproj", "src/Services/Bidding/Bidding.Api/"]
-COPY ["src/Services/Bidding/Bidding.Contracts/Bidding.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
+COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
 COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
 
 RUN dotnet restore "src/Services/Bidding/Bidding.Api/Bidding.Api.csproj" --runtime linux-musl-x64

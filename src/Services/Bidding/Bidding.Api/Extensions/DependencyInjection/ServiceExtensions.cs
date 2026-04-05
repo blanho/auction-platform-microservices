@@ -30,16 +30,18 @@ namespace Bidding.Api.Extensions.DependencyInjection
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<BidDbContext>(options =>
-                options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    npgsqlOptions =>
-                    {
-                        npgsqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 3,
-                            maxRetryDelay: TimeSpan.FromSeconds(30),
-                            errorCodesToAdd: null);
-                        npgsqlOptions.CommandTimeout(30);
-                    }));
+                options
+                    .UseNpgsql(
+                        configuration.GetConnectionString("DefaultConnection"),
+                        npgsqlOptions =>
+                        {
+                            npgsqlOptions.EnableRetryOnFailure(
+                                maxRetryCount: 3,
+                                maxRetryDelay: TimeSpan.FromSeconds(30),
+                                errorCodesToAdd: null);
+                            npgsqlOptions.CommandTimeout(30);
+                        })
+                    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IBidRepository, BidRepository>();
@@ -48,6 +50,7 @@ namespace Bidding.Api.Extensions.DependencyInjection
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
             services.AddScoped<IBidService, BidPlacementService>();
             services.AddScoped<IAutoBidService, AutoBidService>();
+            services.AddScoped<IAuctionSnapshotRepository, CachedAuctionSnapshotRepository>();
 
             return services;
         }

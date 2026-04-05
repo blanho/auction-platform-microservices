@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -14,17 +15,19 @@ interface ExportAuctionsDialogProps {
 }
 
 export function ExportAuctionsDialog({ open, onClose }: ExportAuctionsDialogProps) {
+  const { t } = useTranslation('common')
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Export Auctions</DialogTitle>
+      <DialogTitle>{t('import.exportTitle')}</DialogTitle>
       <DialogContent sx={{ textAlign: 'center', py: 4 }}>
         <Construction sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
         <Typography variant="body1" color="text.secondary">
-          Export functionality is coming soon.
+          {t('import.exportComingSoon')}
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t('close')}</Button>
       </DialogActions>
     </Dialog>
   )

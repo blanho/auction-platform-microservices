@@ -1,4 +1,5 @@
 import { useState, useRef, type DragEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -31,6 +32,7 @@ interface ImportAuctionsDialogProps {
 }
 
 export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<ImportAuctionsDialogProps>) {
+  const { t } = useTranslation('common')
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [result, setResult] = useState<ImportAuctionsResult | null>(null)
@@ -115,13 +117,13 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
         >
           <FileUpload />
         </Box>
-        Import Auctions
+        {t('import.title')}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
           {importMutation.isError && (
             <Alert severity="error">
-              Import failed. Please check your file format and try again.
+              {t('import.importFailed')}
             </Alert>
           )}
 
@@ -161,10 +163,10 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                 />
                 <FileUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                 <Typography variant="body1" gutterBottom>
-                  Drag and drop your file here, or click to browse
+                  {t('import.dragDropHere')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Supported formats: Excel (.xlsx, .xls), CSV (.csv)
+                  {t('import.supportedFormats')}
                 </Typography>
               </Box>
 
@@ -189,20 +191,20 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                     </Typography>
                   </Box>
                   <Button size="small" color="error" onClick={handleReset}>
-                    Remove
+                    {t('actions.remove')}
                   </Button>
                 </Box>
               )}
 
               <Alert severity="info">
                 <Typography variant="body2" fontWeight={500} gutterBottom>
-                  Required columns:
+                  {t('import.requiredColumns')}
                 </Typography>
                 <Typography variant="caption" component="div">
                   Title, Description, ReservePrice, AuctionEnd
                 </Typography>
                 <Typography variant="body2" fontWeight={500} sx={{ mt: 1 }} gutterBottom>
-                  Optional columns:
+                  {t('import.optionalColumns')}
                 </Typography>
                 <Typography variant="caption" component="div">
                   Condition, YearManufactured, Currency
@@ -217,14 +219,14 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                 <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                   <Chip
                     icon={<CheckCircle />}
-                    label={`${result.successCount} Successful`}
+                    label={t('import.successful_other', { count: result.successCount })}
                     color="success"
                     variant="outlined"
                   />
                   {result.failureCount > 0 && (
                     <Chip
                       icon={<ErrorIcon />}
-                      label={`${result.failureCount} Failed`}
+                      label={t('import.failed_other', { count: result.failureCount })}
                       color="error"
                       variant="outlined"
                     />
@@ -244,7 +246,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                   }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {result.successCount} of {result.totalRows} auctions imported successfully
+                  {t('import.importedSuccessfully', { success: result.successCount, total: result.totalRows })}
                 </Typography>
               </Box>
 
@@ -253,9 +255,9 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Row</TableCell>
-                        <TableCell>Field</TableCell>
-                        <TableCell>Details</TableCell>
+                        <TableCell>{t('import.row')}</TableCell>
+                        <TableCell>{t('import.field')}</TableCell>
+                        <TableCell>{t('import.details')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -281,7 +283,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
             <Box sx={{ textAlign: 'center', py: 2 }}>
               <CircularProgress size={32} />
               <Typography variant="body2" sx={{ mt: 1 }}>
-                Importing auctions...
+                {t('import.importing')}
               </Typography>
             </Box>
           )}
@@ -289,7 +291,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose} disabled={importMutation.isPending}>
-          {result ? 'Close' : 'Cancel'}
+          {result ? t('close') : t('cancel')}
         </Button>
         {!result && (
           <Button
@@ -302,7 +304,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
               '&:hover': { bgcolor: palette.brand.secondary },
             }}
           >
-            {importMutation.isPending ? 'Importing...' : 'Import'}
+            {importMutation.isPending ? t('loading') : t('import.importButton')}
           </Button>
         )}
         {result && (
@@ -311,7 +313,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
             onClick={handleReset}
             sx={{ borderColor: palette.brand.primary, color: palette.brand.primary }}
           >
-            Import Another File
+            {t('import.importAnother')}
           </Button>
         )}
       </DialogActions>

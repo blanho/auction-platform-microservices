@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Autocomplete,
   TextField,
@@ -54,12 +55,14 @@ export function SearchAutocomplete({
   onSearch,
   defaultValue = '',
 }: SearchAutocompleteProps) {
+  const { t } = useTranslation('common')
   const theme = useTheme()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const [inputValue, setInputValue] = useState(defaultValue)
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
+  const resolvedPlaceholder = placeholder ?? t('searchBar.placeholder')
 
   const debouncedSetQuery = useMemo(
     () => debounce((value: string) => setDebouncedQuery(value), DEBOUNCE_DELAY),
@@ -175,8 +178,8 @@ export function SearchAutocomplete({
   }
 
   const groupBy = (option: GroupedOption) => {
-    if (option.type === 'recent') {return 'Recent Searches'}
-    if (option.type === 'trending') {return 'Trending'}
+    if (option.type === 'recent') {return t('searchBar.recentSearches')}
+    if (option.type === 'trending') {return t('searchBar.trending')}
     return 'Suggestions'
   }
 
@@ -263,7 +266,7 @@ export function SearchAutocomplete({
       renderInput={(params) => (
         <TextField
           {...params}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           size={size}
           variant={variant}
           onKeyDown={handleKeyDown}

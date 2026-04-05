@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Chip,
   Dialog,
@@ -39,12 +40,13 @@ export function TwoFactorDialog({
   onReset,
   onDisable,
 }: TwoFactorDialogProps) {
+  const { t } = useTranslation('common')
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Security />
-          Two-Factor Authentication
+          {t('twoFactor.title')}
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -70,7 +72,7 @@ export function TwoFactorDialog({
                   <PhonelinkLock
                     sx={{ color: status?.twoFactorEnabled ? 'success.main' : 'text.disabled' }}
                   />
-                  <Typography>2FA Status</Typography>
+                  <Typography>{t('twoFactor.status')}</Typography>
                 </Box>
                 <StatusBadge
                   status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
@@ -88,10 +90,10 @@ export function TwoFactorDialog({
                           color: status?.hasRecoveryCodes ? 'success.main' : 'warning.main',
                         }}
                       />
-                      <Typography>Recovery Codes</Typography>
+                      <Typography>{t('twoFactor.recoveryCodes')}</Typography>
                     </Box>
                     <Chip
-                      label={status?.hasRecoveryCodes ? 'Available' : 'Not Set'}
+                      label={status?.hasRecoveryCodes ? t('twoFactor.available') : t('twoFactor.notSet')}
                       color={getRecoveryCodesColor(status?.hasRecoveryCodes || false)}
                       size="small"
                     />
@@ -100,7 +102,7 @@ export function TwoFactorDialog({
                   <Divider />
 
                   <InlineAlert severity="warning">
-                    These actions will affect the user&apos;s account security. Use with caution.
+                    {t('twoFactor.securityWarning')}
                   </InlineAlert>
 
                   <Box sx={{ display: 'flex', gap: 2 }}>
@@ -112,7 +114,7 @@ export function TwoFactorDialog({
                       disabled={resetLoading}
                       fullWidth
                     >
-                      {resetLoading ? 'Resetting...' : 'Reset 2FA'}
+                      {resetLoading ? t('twoFactor.resetting') : t('twoFactor.reset')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -122,21 +124,21 @@ export function TwoFactorDialog({
                       disabled={disableLoading}
                       fullWidth
                     >
-                      {disableLoading ? 'Disabling...' : 'Disable 2FA'}
+                      {disableLoading ? t('twoFactor.disabling') : t('twoFactor.disable')}
                     </Button>
                   </Box>
                 </>
               )}
 
               {!status?.twoFactorEnabled && (
-                <InlineAlert severity="info">This user has not enabled two-factor authentication.</InlineAlert>
+                <InlineAlert severity="info">{t('twoFactor.notEnabled')}</InlineAlert>
               )}
             </>
           )}
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t('close')}</Button>
       </DialogActions>
     </Dialog>
   )

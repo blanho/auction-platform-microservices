@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Card, CardContent, Typography, Chip, Stack, Skeleton } from '@mui/material'
 import { Shield, Person, Store, Settings } from '@mui/icons-material'
 import type { RoleDto } from '../../types'
@@ -21,6 +22,7 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export function RoleCard({ role, selected, onClick }: RoleCardProps) {
+  const { t } = useTranslation('common')
   const roleColor = ROLE_COLORS[role.name.toLowerCase()] || '#6B7280'
   const roleIcon = ROLE_ICONS[role.name.toLowerCase()] || <Settings />
 
@@ -61,11 +63,11 @@ export function RoleCard({ role, selected, onClick }: RoleCardProps) {
               {role.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {role.description || 'No description'}
+              {role.description || t('rolePermissions.noDescription')}
             </Typography>
           </Box>
           <Chip
-            label={`${role.permissions.length} permissions`}
+            label={t('rolePermissions.permission_other', { count: role.permissions.length })}
             size="small"
             sx={{
               bgcolor: `${roleColor}15`,
@@ -76,7 +78,7 @@ export function RoleCard({ role, selected, onClick }: RoleCardProps) {
         </Stack>
         {role.isSystemRole && (
           <Chip
-            label="System Role"
+            label={t('rolePermissions.systemRole')}
             size="small"
             variant="outlined"
             sx={{ mt: 1.5 }}

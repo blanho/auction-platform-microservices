@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Tabs,
@@ -71,6 +72,7 @@ export function ProductTabs({
   shippingInfo,
   returnPolicy,
 }: ProductTabsProps) {
+  const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState(0)
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -281,7 +283,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  Shipping Method
+                  {t('shipping.method')}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.method}
@@ -292,11 +294,11 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  Shipping Cost
+                  {t('shipping.cost')}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.cost === 'free' ? (
-                    <Chip label="Free Shipping" size="small" color="success" />
+                    <Chip label={t('shipping.free')} size="small" color="success" />
                   ) : (
                     `$${shippingInfo.cost.toFixed(2)}`
                   )}
@@ -307,7 +309,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  Estimated Delivery
+                  {t('shipping.estimatedDelivery')}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.estimatedDays}
@@ -318,7 +320,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  Ships To
+                  {t('shipping.shipsTo')}
                 </Typography>
                 <Stack direction="row" flexWrap="wrap" gap={0.5}>
                   {shippingInfo.locations.map((location) => (
@@ -335,7 +337,7 @@ export function ProductTabs({
             </Stack>
           ) : (
             <Typography sx={{ color: palette.neutral[500] }}>
-              Shipping information not available. Please contact the seller for details.
+              {t('shipping.notAvailable')}
             </Typography>
           )}
         </TabPanel>
@@ -348,10 +350,10 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  Returns Accepted
+                  {t('shipping.returnsAccepted')}
                 </Typography>
                 <Chip
-                  label={returnPolicy.accepted ? 'Yes' : 'No Returns'}
+                  label={returnPolicy.accepted ? t('yes') : t('shipping.noReturns')}
                   size="small"
                   color={returnPolicy.accepted ? 'success' : 'error'}
                 />
@@ -363,10 +365,10 @@ export function ProductTabs({
                       variant="subtitle2"
                       sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
-                      Return Period
+                      {t('shipping.returnPeriod')}
                     </Typography>
                     <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
-                      {returnPolicy.period} days from delivery
+                      {t('shipping.returnDaysFromDelivery', { days: returnPolicy.period })}
                     </Typography>
                   </Box>
                   <Box>
@@ -374,7 +376,7 @@ export function ProductTabs({
                       variant="subtitle2"
                       sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
-                      Conditions
+                      {t('shipping.returnConditions')}
                     </Typography>
                     <Typography sx={{ color: palette.neutral[700], lineHeight: 1.6 }}>
                       {returnPolicy.conditions}
@@ -385,7 +387,7 @@ export function ProductTabs({
             </Stack>
           ) : (
             <Typography sx={{ color: palette.neutral[500] }}>
-              Return policy not specified. Please contact the seller for details.
+              {t('shipping.returnPolicyNotSpecified')}
             </Typography>
           )}
         </TabPanel>

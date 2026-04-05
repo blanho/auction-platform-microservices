@@ -10,7 +10,7 @@ COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
 COPY ["src/Services/Identity/Identity.Api/Identity.Api.csproj", "src/Services/Identity/Identity.Api/"]
-COPY ["src/Services/Identity/Identity.Contracts/Identity.Contracts.csproj", "src/Services/Identity/Identity.Contracts/"]
+COPY ["src/Services/Identity/Identity.Contracts/IdentityService.Contracts.csproj", "src/Services/Identity/Identity.Contracts/"]
 COPY ["src/Services/Notification/Notification.Contracts/NotificationService.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
 
 RUN dotnet restore "src/Services/Identity/Identity.Api/Identity.Api.csproj" --runtime linux-musl-x64

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -60,6 +61,7 @@ export function BidSection({
   const [timeLeft, setTimeLeft] = useState('')
   const [isUrgent, setIsUrgent] = useState(false)
   const [autoBidDialogOpen, setAutoBidDialogOpen] = useState(false)
+  const { t } = useTranslation('common')
 
   const minimumBid = useMemo(() => {
     const base = currentBid > 0 ? currentBid : startingPrice
@@ -95,7 +97,7 @@ export function BidSection({
       const diff = end - now
 
       if (diff <= 0) {
-        setTimeLeft('Auction ended')
+      setTimeLeft(t('auctionCard.auctionEnded'))
         setIsUrgent(false)
         return
       }
@@ -126,7 +128,7 @@ export function BidSection({
   const handleSubmitBid = async () => {
     const amount = Number.parseFloat(bidAmount)
     if (Number.isNaN(amount) || amount < minimumBid) {
-      setError(`Minimum bid is $${minimumBid.toLocaleString()}`)
+      setError(t('auctionCard.minimumBidError', { amount: minimumBid.toLocaleString() }))
       return
     }
 
@@ -138,7 +140,7 @@ export function BidSection({
       setSuccess(`Bid of $${amount.toLocaleString()} placed successfully!`)
       setBidAmount('')
     } catch {
-      setError('Failed to place bid. Please try again.')
+      setError(t('errors.defaultMessage'))
     } finally {
       setIsSubmitting(false)
     }
@@ -180,7 +182,7 @@ export function BidSection({
             },
           }}
         >
-          {isAuctionActive ? `Ends in ${timeLeft}` : timeLeft}
+          {isAuctionActive ? t('auctionCard.endsIn', { time: timeLeft }) : timeLeft}
         </Typography>
       </Box>
 
@@ -241,10 +243,10 @@ export function BidSection({
           <TextField
             fullWidth
             type="number"
-            label="Your Bid"
+            label={t('auctionCard.yourBid')}
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
-            placeholder={`$${minimumBid.toLocaleString()} or more`}
+            placeholder={t('auctionCard.orMore', { amount: minimumBid.toLocaleString() })}
             slotProps={{
               input: {
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
@@ -313,7 +315,7 @@ export function BidSection({
               },
             }}
           >
-            {isSubmitting ? 'Placing Bid...' : 'Place Bid'}
+            {isSubmitting ? t('auctionCard.placingBid') : t('auctionCard.placeBid')}
           </Button>
 
           {buyNowPrice && onBuyNow && (
@@ -338,7 +340,7 @@ export function BidSection({
                 },
               }}
             >
-              Buy Now — ${buyNowPrice.toLocaleString()}
+              {t('auctionCard.buyNow', { amount: buyNowPrice.toLocaleString() })}
             </Button>
           )}
 
@@ -367,8 +369,8 @@ export function BidSection({
             }}
           >
             {existingAutoBid?.isActive
-              ? `Auto-Bid Active (Max: $${existingAutoBid.maxAmount.toLocaleString()})`
-              : 'Set Up Auto-Bid'}
+              ? t('auctionCard.autoBidActive', { amount: existingAutoBid.maxAmount.toLocaleString() })
+              : t('auctionCard.setUpAutoBid')}
           </Button>
 
           <AutoBidDialog
@@ -383,7 +385,7 @@ export function BidSection({
         </>
       )}
 
-      {!isAuctionActive && <InlineAlert severity="info">This auction has ended.</InlineAlert>}
+      {!isAuctionActive && <InlineAlert severity="info">{t('auctionCard.auctionEndedInfo')}</InlineAlert>}
 
       <Box
         sx={{
@@ -393,7 +395,7 @@ export function BidSection({
         }}
       >
         <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
-          By placing a bid, you agree to our terms of service. All bids are binding.
+          {t('auctionCard.biddingTerms')}
         </Typography>
       </Box>
     </Box>

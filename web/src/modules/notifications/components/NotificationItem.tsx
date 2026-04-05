@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { MoreVert, Delete, Archive, Circle } from '@mui/icons-material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Notification } from '../types'
 import { formatTimeAgo, getNotificationLink } from '../utils'
 import { NotificationIcon } from './NotificationIcon'
@@ -29,6 +30,7 @@ export function NotificationItem({
   onDelete,
   onArchive,
 }: NotificationItemProps) {
+  const { t } = useTranslation('common')
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const link = getNotificationLink(notification)
   const isUnread = notification.status === 'unread'
@@ -139,11 +141,11 @@ export function NotificationItem({
       >
         <MenuItem onClick={handleArchive}>
           <Archive sx={{ mr: 1, fontSize: 20 }} />
-          Archive
+          {t('notification.archive')}
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: palette.semantic.error }}>
           <Delete sx={{ mr: 1, fontSize: 20 }} />
-          Delete
+          {t('notification.delete')}
         </MenuItem>
       </Menu>
     </>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui'
 import { getAdminUserDisplayName } from '../../utils'
 import type { AdminUser } from '../../types'
@@ -17,15 +18,16 @@ export function ActivateUserDialog({
   onClose,
   onConfirm,
 }: ActivateUserDialogProps) {
+  const { t } = useTranslation('common')
   return (
     <ConfirmDialog
       open={open}
       onClose={onClose}
       onConfirm={onConfirm}
-      title="Activate User"
-      message={`Are you sure you want to activate ${getAdminUserDisplayName(user)}? This will allow the user to access the platform again.`}
-      confirmLabel="Activate User"
-      cancelLabel="Cancel"
+      title={t('userManagement.activateTitle')}
+      message={t('userManagement.activateMessage', { name: getAdminUserDisplayName(user) })}
+      confirmLabel={t('userManagement.activateButton')}
+      cancelLabel={t('cancel')}
       variant="info"
       loading={loading}
     />

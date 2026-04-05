@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -31,32 +32,33 @@ export function SuspendUserDialog({
   onReasonChange,
   onConfirm,
 }: Readonly<SuspendUserDialogProps>) {
+  const { t } = useTranslation('common')
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Suspend User</DialogTitle>
+      <DialogTitle>{t('userManagement.suspendTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <InlineAlert severity="warning">
-            This will prevent the user from logging in and participating in auctions.
+            {t('userManagement.suspendWarning')}
           </InlineAlert>
           <Typography>
-            Are you sure you want to suspend <strong>{getAdminUserDisplayName(user)}</strong>?
+            {t('userManagement.suspendQuestion')} <strong>{getAdminUserDisplayName(user)}</strong>?
           </Typography>
           <TextField
-            label="Reason for suspension"
+            label={t('userManagement.suspendReason')}
             fullWidth
             multiline
             rows={3}
             value={reason}
             onChange={(e) => onReasonChange(e.target.value)}
-            placeholder="Enter the reason for suspending this user..."
+            placeholder={t('userManagement.suspendReasonPlaceholder')}
           />
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{t('cancel')}</Button>
         <Button variant="contained" color="error" onClick={onConfirm} disabled={loading}>
-          {loading ? 'Suspending...' : 'Suspend User'}
+          {loading ? t('userManagement.suspending') : t('userManagement.suspendButton')}
         </Button>
       </DialogActions>
     </Dialog>

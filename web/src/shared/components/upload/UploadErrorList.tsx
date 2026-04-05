@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, alpha } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { palette } from '@/shared/theme/tokens'
@@ -10,6 +11,7 @@ interface UploadErrorListProps {
 }
 
 export function UploadErrorList({ errors }: Readonly<UploadErrorListProps>) {
+  const { t } = useTranslation('common')
   if (errors.length === 0) {
     return null
   }
@@ -49,7 +51,7 @@ export function UploadErrorList({ errors }: Readonly<UploadErrorListProps>) {
                   variant="caption"
                   sx={{ color: palette.semantic.error }}
                 >
-                  {upload.error ?? 'Upload failed'}
+                  {upload.error ?? t('upload.uploadFailed')}
                 </Typography>
               </Box>
             </Box>

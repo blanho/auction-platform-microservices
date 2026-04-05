@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -23,6 +24,7 @@ interface ReviewsListProps {
 }
 
 function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
+  const { t } = useTranslation('common')
   const distribution = summary.ratingDistribution || {}
   const maxCount = Math.max(...Object.values(distribution), 1)
 
@@ -56,7 +58,7 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
             sx={{ color: palette.brand.primary, mt: 1 }}
           />
           <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem', mt: 0.5 }}>
-            {summary.totalReviews} reviews
+            {t('review.total_other', { count: summary.totalReviews })}
           </Typography>
         </Box>
 
@@ -100,6 +102,7 @@ function RatingSummaryCard({ summary }: { summary: UserRatingSummary }) {
 }
 
 function ReviewItem({ review }: { review: Review }) {
+  const { t } = useTranslation('common')
   const [expanded, setExpanded] = useState(false)
 
   const isLongComment = review.comment.length > 300
@@ -177,7 +180,7 @@ function ReviewItem({ review }: { review: Review }) {
                 '&:hover': { bgcolor: 'transparent' },
               }}
             >
-              {expanded ? 'Show less' : 'Read more'}
+              {expanded ? t('review.showLess') : t('review.readMore')}
             </Button>
           )}
 
@@ -198,7 +201,7 @@ function ReviewItem({ review }: { review: Review }) {
                 <Typography
                   sx={{ fontWeight: 600, color: palette.neutral[900], fontSize: '0.875rem' }}
                 >
-                  Seller Response
+                  {t('review.sellerResponse')}
                 </Typography>
               </Stack>
               <Typography
@@ -220,6 +223,8 @@ export function ReviewsList({
   isLoading,
   showSummary = true,
 }: ReviewsListProps) {
+  const { t } = useTranslation('common')
+
   if (isLoading) {
     return (
       <Box>
@@ -263,9 +268,9 @@ export function ReviewsList({
     return (
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Star sx={{ fontSize: 48, color: palette.neutral[300], mb: 2 }} />
-        <Typography sx={{ color: palette.neutral[500], mb: 1 }}>No reviews yet</Typography>
+        <Typography sx={{ color: palette.neutral[500], mb: 1 }}>{t('review.noReviewsYet')}</Typography>
         <Typography sx={{ color: palette.neutral[400], fontSize: '0.875rem' }}>
-          Be the first to leave a review after your purchase
+          {t('review.beFirstToReview')}
         </Typography>
       </Box>
     )

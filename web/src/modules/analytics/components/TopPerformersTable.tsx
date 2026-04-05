@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Typography,
@@ -144,6 +145,7 @@ function PerformerRow({
 }
 
 export function TopPerformersTable() {
+  const { t } = useTranslation('common')
   const [tabValue, setTabValue] = useState(0)
   const { data: performers, isLoading } = useTopPerformers()
 
@@ -190,7 +192,7 @@ export function TopPerformersTable() {
         fontWeight={600}
         sx={{ mb: 2, fontFamily: '"Fira Sans", sans-serif' }}
       >
-        Top Performers
+        {t('analytics.topPerformers')}
       </Typography>
 
       <Tabs
@@ -205,20 +207,20 @@ export function TopPerformersTable() {
           },
         }}
       >
-        <Tab icon={<TrendingUp sx={{ fontSize: 18 }} />} iconPosition="start" label="Top Sellers" />
+        <Tab icon={<TrendingUp sx={{ fontSize: 18 }} />} iconPosition="start" label={t('analytics.topSellers')} />
         <Tab
           icon={<ShoppingCart sx={{ fontSize: 18 }} />}
           iconPosition="start"
-          label="Top Buyers"
+          label={t('analytics.topBuyers')}
         />
-        <Tab icon={<Gavel sx={{ fontSize: 18 }} />} iconPosition="start" label="Hot Auctions" />
+        <Tab icon={<Gavel sx={{ fontSize: 18 }} />} iconPosition="start" label={t('analytics.hotAuctions')} />
       </Tabs>
 
       <TabPanel value={tabValue} index={0}>
         <Stack spacing={0.5}>
           {topSellers.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
-              No seller data available
+              {t('analytics.noSellerData')}
             </Typography>
           ) : (
             topSellers.map((seller, index) => (
@@ -227,8 +229,8 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={seller.username ?? `Seller ${index + 1}`}
                 primaryValue={formatCurrency(seller.totalSales ?? 0)}
-                secondaryValue={`${formatNumber(seller.orderCount ?? 0)} orders`}
-                badge={index === 0 ? 'Top Seller' : undefined}
+                secondaryValue={t('analytics.order_other', { count: formatNumber(seller.orderCount ?? 0) })}
+                badge={index === 0 ? t('analytics.topSeller') : undefined}
               />
             ))
           )}
@@ -239,7 +241,7 @@ export function TopPerformersTable() {
         <Stack spacing={0.5}>
           {topBuyers.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
-              No buyer data available
+              {t('analytics.noBuyerData')}
             </Typography>
           ) : (
             topBuyers.map((buyer, index) => (
@@ -248,8 +250,8 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={buyer.username ?? `Buyer ${index + 1}`}
                 primaryValue={formatCurrency(buyer.totalSpent ?? 0)}
-                secondaryValue={`${formatNumber(buyer.auctionsWon ?? 0)} auctions won`}
-                badge={index === 0 ? 'Top Buyer' : undefined}
+                secondaryValue={t('analytics.auctionWon_other', { count: formatNumber(buyer.auctionsWon ?? 0) })}
+                badge={index === 0 ? t('analytics.topBuyer') : undefined}
               />
             ))
           )}
@@ -260,7 +262,7 @@ export function TopPerformersTable() {
         <Stack spacing={0.5}>
           {topAuctions.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
-              No auction data available
+              {t('analytics.noAuctionData')}
             </Typography>
           ) : (
             topAuctions.map((auction, index) => (
@@ -269,8 +271,8 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={auction.title ?? `Auction ${index + 1}`}
                 primaryValue={formatCurrency(auction.finalPrice ?? 0)}
-                secondaryValue={`${formatNumber(auction.bidCount ?? 0)} bids`}
-                badge={index === 0 ? 'Most Popular' : undefined}
+                secondaryValue={t('analytics.bidCount_other', { count: formatNumber(auction.bidCount ?? 0) })}
+                badge={index === 0 ? t('analytics.mostPopular') : undefined}
               />
             ))
           )}

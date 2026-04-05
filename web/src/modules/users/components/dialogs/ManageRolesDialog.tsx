@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogTitle,
@@ -35,13 +36,14 @@ export function ManageRolesDialog({
   onRoleToggle,
   onConfirm,
 }: ManageRolesDialogProps) {
+  const { t } = useTranslation('common')
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Manage User Roles</DialogTitle>
+      <DialogTitle>{t('userManagement.manageRolesTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <InlineAlert severity="info">
-            Select the roles for <strong>{getAdminUserDisplayName(user)}</strong>
+            {t('userManagement.manageRolesInfo')} <strong>{getAdminUserDisplayName(user)}</strong>
           </InlineAlert>
           <Box>
             {AVAILABLE_ROLES.map((role) => (
@@ -73,13 +75,13 @@ export function ManageRolesDialog({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{t('cancel')}</Button>
         <Button
           variant="contained"
           onClick={onConfirm}
           disabled={loading || selectedRoles.length === 0}
         >
-          {loading ? 'Saving...' : 'Save Roles'}
+          {loading ? t('userManagement.saving') : t('userManagement.saveRoles')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -27,6 +27,7 @@ builder.Services.AddCommonUtilities();
 builder.Services.AddAppLocalization<JobResources>();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
+builder.Services.AddAuditServices(builder.Configuration, "job-service");
 builder.Services.AddCQRS(typeof(Jobs.Application.Features.Jobs.CreateJob.CreateJobCommand).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();

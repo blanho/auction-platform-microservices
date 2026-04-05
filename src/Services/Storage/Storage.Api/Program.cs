@@ -34,15 +34,18 @@ builder.Services.AddCQRS(typeof(Storage.Application.Features.Files.UploadFile.Up
 builder.Services.AddCarter();
 builder.Services.AddFileStorage(builder.Configuration);
 builder.Services.AddDbContext<StorageDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions =>
-        {
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-            npgsqlOptions.CommandTimeout(30);
-        }));
+    options
+        .UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
+                npgsqlOptions.CommandTimeout(30);
+            })
+        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddStorageInfrastructure();
 builder.Services.AddStorageMessaging(builder.Configuration);
+builder.Services.AddAuditServices(builder.Configuration, "storage-service");
 builder.Services.AddStorageJobs(builder.Configuration);
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddRbacAuthorization();

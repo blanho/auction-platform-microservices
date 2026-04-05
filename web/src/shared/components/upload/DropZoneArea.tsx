@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Chip, Stack, alpha } from '@mui/material'
 import { palette } from '@/shared/theme/tokens'
 import type { DropZoneAreaProps } from './FileUploadZone.types'
@@ -16,6 +17,7 @@ export function DropZoneArea({
   onClick,
   compact = false,
 }: Readonly<DropZoneAreaProps>) {
+  const { t } = useTranslation('common')
   const isDisabled = remainingSlots <= 0
 
   return (
@@ -78,19 +80,19 @@ export function DropZoneArea({
         variant={compact ? 'subtitle1' : 'h6'}
         sx={{ fontWeight: 600, color: palette.neutral[700] }}
       >
-        {isDragOver ? 'Drop files here' : 'Drag & drop files here'}
+        {isDragOver ? t('upload.dropHere') : t('upload.dragAndDrop')}
       </Typography>
 
       <Typography variant="body2" sx={{ color: palette.neutral[500], mt: 0.5 }}>
-        or click to browse
+        {t('upload.clickToBrowse')}
       </Typography>
 
       <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1.5 }}>
         {hasImages && (
-          <Chip label="Images" size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+          <Chip label={t('upload.images')} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
         )}
         {hasDocuments && (
-          <Chip label="PDF / CSV / Excel" size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+          <Chip label={t('upload.documents')} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
         )}
       </Stack>
 
@@ -98,7 +100,7 @@ export function DropZoneArea({
         variant="caption"
         sx={{ color: palette.neutral[400], mt: 1, display: 'block' }}
       >
-        {`Max ${maxSizeMb}MB per file · ${remainingSlots} of ${maxFiles} slots remaining`}
+        {t('upload.maxSize', { size: maxSizeMb, remaining: remainingSlots, total: maxFiles })}
       </Typography>
     </Box>
   )

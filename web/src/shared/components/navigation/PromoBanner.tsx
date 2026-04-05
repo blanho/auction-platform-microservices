@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, IconButton, Container } from '@mui/material'
 import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
@@ -25,18 +26,19 @@ export const PromoBanner = ({
   rotateInterval = 5000,
 }: PromoBannerProps) => {
   const { data: featuredData } = useFeaturedAuctions(3)
+  const { t } = useTranslation('common')
 
   const apiPromotions = useMemo(() => {
     const items = featuredData?.items ?? []
     const colors = [palette.neutral[900], palette.brand.primary, palette.neutral[800]]
     return items.map((auction, index) => ({
       id: auction.id,
-      text: `Live Now: ${auction.title}`,
+      text: t('promo.liveNow', { title: auction.title }),
       link: `/auctions/${auction.id}`,
-      linkText: 'View Auction',
+      linkText: t('promo.viewAuction'),
       bgColor: colors[index % colors.length],
     }))
-  }, [featuredData?.items])
+  }, [featuredData?.items, t])
 
   const resolvedPromotions = promotions ?? apiPromotions
 

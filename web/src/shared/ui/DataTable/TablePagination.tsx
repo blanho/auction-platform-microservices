@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Pagination as MuiPagination,
   Select,
@@ -39,6 +40,7 @@ export function TablePagination({
   position = 'space-between',
   sx,
 }: Readonly<TablePaginationProps>) {
+  const { t } = useTranslation('common')
   const handlePageChange = useCallback(
     (_event: React.ChangeEvent<unknown>, newPage: number) => {
       onPageChange(newPage)
@@ -95,11 +97,11 @@ export function TablePagination({
       <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
         {showPageSizeSelector && onPageSizeChange && (
           <FormControl size="small" sx={{ minWidth: 80 }}>
-            <InputLabel id="page-size-label">Rows</InputLabel>
+            <InputLabel id="page-size-label">{t('table.rows')}</InputLabel>
             <Select
               labelId="page-size-label"
               value={pageSize}
-              label="Rows"
+              label={t('table.rows')}
               onChange={handlePageSizeChange}
             >
               {pageSizeOptions.map((option) => (
@@ -113,7 +115,7 @@ export function TablePagination({
 
         {showItemCount && (
           <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-            {startItem}-{endItem} of {totalCount.toLocaleString()}
+            {t('table.itemRange', { start: startItem, end: endItem, total: totalCount.toLocaleString() })}
           </Typography>
         )}
       </Stack>
@@ -121,7 +123,7 @@ export function TablePagination({
       <Stack direction="row" spacing={2} alignItems="center">
         {showPageInfo && totalPages > 1 && (
           <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-            Page {page} of {totalPages}
+            {t('table.pageOf', { page, total: totalPages })}
           </Typography>
         )}
 

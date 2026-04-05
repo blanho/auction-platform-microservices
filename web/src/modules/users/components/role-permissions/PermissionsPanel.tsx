@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Card,
@@ -86,6 +87,7 @@ export function PermissionsPanel({
   onTogglePermission,
   onSelectAllCategory,
 }: PermissionsPanelProps) {
+  const { t } = useTranslation('common')
   const categories = useMemo(() => groupByCategory(definitions), [definitions])
   const enabledPermissions = useMemo(() => new Set(role?.permissions || []), [role?.permissions])
 
@@ -100,7 +102,7 @@ export function PermissionsPanel({
             height: 400,
           }}
         >
-          <Typography color="text.secondary">Select a role to manage permissions</Typography>
+          <Typography color="text.secondary">{t('rolePermissions.selectRole')}</Typography>
         </CardContent>
       </Card>
     )
@@ -112,10 +114,10 @@ export function PermissionsPanel({
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
           <Box>
             <Typography variant="h6" fontWeight={600}>
-              Permissions for {role.name}
+              {t('rolePermissions.permissionsFor', { role: role.name })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {enabledPermissions.size} of {definitions.length} permissions enabled
+              {t('rolePermissions.permissionsEnabled', { enabled: enabledPermissions.size, total: definitions.length })}
             </Typography>
           </Box>
           <Chip
@@ -160,7 +162,7 @@ export function PermissionsPanel({
                         color={allEnabled ? 'success' : 'default'}
                         variant={allEnabled ? 'filled' : 'outlined'}
                       />
-                      <Tooltip title={allEnabled ? 'Revoke all' : 'Grant all'}>
+                      <Tooltip title={allEnabled ? t('rolePermissions.revokeAll') : t('rolePermissions.grantAll')}>
                         <IconButton
                           size="small"
                           onClick={(e) => {

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Typography, Stack, Skeleton, Card, CardContent } from '@mui/material'
 import { TrendingUp, TrendingDown } from '@mui/icons-material'
 
@@ -22,10 +23,12 @@ export function StatCard({
   iconBg,
   iconColor,
   change,
-  changeLabel = 'vs last period',
+  changeLabel,
   loading = false,
   variant = 'default',
 }: StatCardProps) {
+  const { t } = useTranslation('common')
+  const resolvedChangeLabel = changeLabel ?? t('statCard.vsLastPeriod')
   const effectiveIconBg = iconBg || (color ? `${color}15` : undefined)
   const effectiveIconColor = iconColor || color
 
@@ -135,7 +138,7 @@ export function StatCard({
               {change}%
             </Typography>
             <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
-              {changeLabel}
+              {resolvedChangeLabel}
             </Typography>
           </Stack>
         )}

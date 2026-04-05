@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next'
 import { Box } from '@mui/material'
 import {
   HeroSection,
@@ -14,8 +13,6 @@ import {
 } from '../components'
 
 export const LandingPage = () => {
-
-  const { t: _t } = useTranslation('home')
   return (
     <Box sx={{ bgcolor: '#FFFFFF', minHeight: '100vh', overflow: 'hidden' }}>
       <HeroSection />
