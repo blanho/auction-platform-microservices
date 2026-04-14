@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using MassTransit;
@@ -24,7 +25,7 @@ public class PaymentCompletedAnalyticsConsumer : IConsumer<PaymentCompletedEvent
         var @event = context.Message;
 
         var exists = await _context.FactPayments
-            .AnyAsync(f => f.OrderId == @event.OrderId && f.EventType == "PaymentCompleted",
+            .AnyAsync(f => f.OrderId == @event.OrderId && f.EventType == AnalyticsEventTypes.PaymentCompleted,
                 context.CancellationToken);
 
         if (exists)
@@ -54,14 +55,14 @@ public class PaymentCompletedAnalyticsConsumer : IConsumer<PaymentCompletedEvent
             BuyerUsername = @event.BuyerUsername,
             SellerUsername = @event.SellerUsername,
 
-            Status = "Paid",
+            Status = AnalyticsAuctionStatuses.Paid,
             PaidAt = @event.PaidAt,
             TransactionId = @event.TransactionId,
 
             IsPaid = true,
             IsRefunded = false,
 
-            EventType = "PaymentCompleted",
+            EventType = AnalyticsEventTypes.PaymentCompleted,
             EventVersion = 1
         };
 

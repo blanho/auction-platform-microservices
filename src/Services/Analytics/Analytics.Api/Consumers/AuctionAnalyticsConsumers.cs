@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using AuctionService.Contracts.Events;
@@ -24,7 +25,7 @@ public class AuctionCreatedAnalyticsConsumer : IConsumer<AuctionCreatedEvent>
         var @event = context.Message;
 
         var exists = await _context.FactAuctions
-            .AnyAsync(f => f.AuctionId == @event.Id && f.EventType == "Created",
+            .AnyAsync(f => f.AuctionId == @event.Id && f.EventType == AnalyticsEventTypes.Created,
                 context.CancellationToken);
 
         if (exists)
@@ -56,7 +57,7 @@ public class AuctionCreatedAnalyticsConsumer : IConsumer<AuctionCreatedEvent>
             Condition = @event.Condition,
             HadReserve = @event.ReservePrice > 0,
 
-            EventType = "Created",
+            EventType = AnalyticsEventTypes.Created,
             EventVersion = (short)@event.Version
         };
 
@@ -87,7 +88,7 @@ public class AuctionFinishedAnalyticsConsumer : IConsumer<AuctionFinishedEvent>
         var @event = context.Message;
 
         var exists = await _context.FactAuctions
-            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "Finished",
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == AnalyticsEventTypes.Finished,
                 context.CancellationToken);
 
         if (exists)
@@ -116,11 +117,11 @@ public class AuctionFinishedAnalyticsConsumer : IConsumer<AuctionFinishedEvent>
 
             FinalPrice = @event.SoldAmount,
 
-            Status = @event.ItemSold ? "Sold" : "Ended",
+            Status = @event.ItemSold ? AnalyticsAuctionStatuses.Sold : AnalyticsAuctionStatuses.Ended,
             Sold = @event.ItemSold,
             EndedAt = now,
 
-            EventType = "Finished",
+            EventType = AnalyticsEventTypes.Finished,
             EventVersion = (short)@event.Version
         };
 
@@ -151,7 +152,7 @@ public class AuctionStartedAnalyticsConsumer : IConsumer<AuctionStartedEvent>
         var @event = context.Message;
 
         var exists = await _context.FactAuctions
-            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "Started",
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == AnalyticsEventTypes.Started,
                 context.CancellationToken);
 
         if (exists)
@@ -177,10 +178,10 @@ public class AuctionStartedAnalyticsConsumer : IConsumer<AuctionStartedEvent>
             ReservePrice = @event.ReservePrice,
             StartedAt = @event.StartTime,
 
-            Status = "Live",
+            Status = AnalyticsAuctionStatuses.Live,
             HadReserve = @event.ReservePrice > 0,
 
-            EventType = "Started",
+            EventType = AnalyticsEventTypes.Started,
             EventVersion = (short)@event.Version
         };
 
@@ -211,7 +212,7 @@ public class BuyNowExecutedAnalyticsConsumer : IConsumer<BuyNowExecutedEvent>
         var @event = context.Message;
 
         var exists = await _context.FactAuctions
-            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == "BuyNowExecuted",
+            .AnyAsync(f => f.AuctionId == @event.AuctionId && f.EventType == AnalyticsEventTypes.BuyNowExecuted,
                 context.CancellationToken);
 
         if (exists)
@@ -239,12 +240,12 @@ public class BuyNowExecutedAnalyticsConsumer : IConsumer<BuyNowExecutedEvent>
             FinalPrice = @event.BuyNowPrice,
             BuyNowPrice = @event.BuyNowPrice,
 
-            Status = "Sold",
+            Status = AnalyticsAuctionStatuses.Sold,
             Sold = true,
             UsedBuyNow = true,
             EndedAt = @event.ExecutedAt,
 
-            EventType = "BuyNowExecuted",
+            EventType = AnalyticsEventTypes.BuyNowExecuted,
             EventVersion = (short)@event.Version
         };
 

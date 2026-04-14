@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
@@ -32,7 +33,7 @@ public class BidAcceptedAnalyticsConsumer : IConsumer<BidAcceptedEvent>
             DateKey = DateOnly.FromDateTime(@event.AcceptedAt.UtcDateTime),
             BidAmount = @event.Amount,
             BidderUsername = @event.BidderUsername,
-            BidStatus = "Accepted",
+            BidStatus = AnalyticsBidStatuses.Accepted,
             EventVersion = (short)@event.Version
         };
 

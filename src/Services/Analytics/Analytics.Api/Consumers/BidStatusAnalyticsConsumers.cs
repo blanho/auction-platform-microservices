@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
@@ -32,7 +33,7 @@ public class BidBelowReserveAnalyticsConsumer : IConsumer<BidAcceptedBelowReserv
             DateKey = DateOnly.FromDateTime(@event.AcceptedAt.UtcDateTime),
             BidAmount = @event.Amount,
             BidderUsername = @event.BidderUsername,
-            BidStatus = "AcceptedBelowReserve",
+            BidStatus = AnalyticsBidStatuses.AcceptedBelowReserve,
             EventVersion = (short)@event.Version
         };
 
@@ -71,7 +72,7 @@ public class BidTooLowAnalyticsConsumer : IConsumer<BidMarkedTooLowEvent>
             BidderId = @event.BidderId,
             DateKey = DateOnly.FromDateTime(@event.MarkedAt.UtcDateTime),
             BidAmount = @event.Amount,
-            BidStatus = "TooLow",
+            BidStatus = AnalyticsBidStatuses.TooLow,
             EventVersion = (short)@event.Version
         };
 

@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using IdentityService.Contracts.Events;
@@ -24,7 +25,7 @@ public class UserCreatedAnalyticsConsumer : IConsumer<UserCreatedEvent>
         var @event = context.Message;
 
         var exists = await _context.FactUsers
-            .AnyAsync(f => f.UserId == Guid.Parse(@event.UserId) && f.EventType == "Registered",
+            .AnyAsync(f => f.UserId == Guid.Parse(@event.UserId) && f.EventType == AnalyticsEventTypes.Registered,
                 context.CancellationToken);
 
         if (exists)
@@ -49,7 +50,7 @@ public class UserCreatedAnalyticsConsumer : IConsumer<UserCreatedEvent>
             Role = @event.Role,
             FullName = @event.FullName,
 
-            EventType = "Registered",
+            EventType = AnalyticsEventTypes.Registered,
             EventVersion = (short)@event.Version
         };
 

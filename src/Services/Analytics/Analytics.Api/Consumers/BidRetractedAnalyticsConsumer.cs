@@ -1,3 +1,4 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
@@ -32,7 +33,7 @@ public class BidRetractedAnalyticsConsumer : IConsumer<BidRetractedEvent>
             DateKey = DateOnly.FromDateTime(@event.RetractedAt.UtcDateTime),
             BidAmount = @event.BidAmount,
             BidderUsername = @event.Bidder,
-            BidStatus = "Retracted",
+            BidStatus = AnalyticsBidStatuses.Retracted,
             EventVersion = (short)@event.Version
         };
 
