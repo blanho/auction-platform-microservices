@@ -1,6 +1,7 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
 using MassTransit;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
@@ -31,9 +32,9 @@ public class AuctionHighBidUpdatedConsumer : IConsumer<AuctionHighBidUpdatedEven
 
         var partialDocument = new Dictionary<string, object?>
         {
-            ["currentPrice"] = message.BidAmount,
-            ["highBidder"] = message.BidderUsername,
-            ["lastSyncedAt"] = _dateTime.UtcNowOffset.ToString("o")
+            [ElasticsearchFields.CurrentPrice] = message.BidAmount,
+            [ElasticsearchFields.HighBidder] = message.BidderUsername,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
         };
 
         var result = await _indexService.PartialUpdateAsync(

@@ -1,6 +1,7 @@
 using BidService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
 using MassTransit;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
@@ -31,8 +32,8 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
 
         var partialDocument = new Dictionary<string, object?>
         {
-            ["currentPrice"] = message.NewHighestAmount ?? 0m,
-            ["lastSyncedAt"] = _dateTime.UtcNowOffset.ToString("o")
+            [ElasticsearchFields.CurrentPrice] = message.NewHighestAmount ?? 0m,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
         };
 
         var result = await _indexService.PartialUpdateAsync(

@@ -57,20 +57,16 @@ public class InMemoryRecentSearchService : IRecentSearchService
         _recentSearches.AddOrUpdate(
             userId,
             _ => new List<string> { normalizedQuery },
-            (_, existingSearches) => UpdateSearchList(existingSearches, normalizedQuery));
-    }
-
-    private static List<string> UpdateSearchList(List<string> searches, string query)
-    {
-        searches.Remove(query);
-        searches.Insert(0, query);
-
-        if (searches.Count > SearchDefaults.MaxRecentSearchesPerUser)
-        {
-            searches.RemoveAt(searches.Count - 1);
-        }
-
-        return searches;
+            (_, existingSearches) =>
+            {
+                var updated = existingSearches.Where(s => s != normalizedQuery).ToList();
+                updated.Insert(0, normalizedQuery);
+                if (updated.Count > SearchDefaults.MaxRecentSearchesPerUser)
+                {
+                    updated.RemoveAt(updated.Count - 1);
+                }
+                return updated;
+            });
     }
 
     private void IncrementSearchCount(string normalizedQuery)

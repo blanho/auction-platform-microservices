@@ -45,6 +45,11 @@ public static class ElasticsearchFields
     public const string ThumbnailUrl = "thumbnailUrl";
     public const string ImageUrls = "imageUrls";
     
+    public const string HighBidder = "highBidder";
+    public const string WinningBidderId = "winningBidderId";
+    public const string WinningBidderUsername = "winningBidderUsername";
+    public const string WinningBidAmount = "winningBidAmount";
+    
     public const string ScoreField = "_score";
 }
 

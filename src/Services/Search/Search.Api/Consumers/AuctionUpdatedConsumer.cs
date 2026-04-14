@@ -1,7 +1,7 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
@@ -9,18 +9,15 @@ namespace Search.Api.Consumers;
 public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
 {
     private readonly IAuctionIndexService _indexService;
-    private readonly IDistributedCache _cache;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<AuctionUpdatedConsumer> _logger;
 
     public AuctionUpdatedConsumer(
         IAuctionIndexService indexService,
-        IDistributedCache cache,
         IDateTimeProvider dateTime,
         ILogger<AuctionUpdatedConsumer> logger)
     {
         _indexService = indexService;
-        _cache = cache;
         _dateTime = dateTime;
         _logger = logger;
     }
@@ -33,18 +30,18 @@ public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
 
         var partialDocument = new Dictionary<string, object?>
         {
-            ["updatedAt"] = _dateTime.UtcNowOffset,
-            ["lastSyncedAt"] = _dateTime.UtcNowOffset
+            [ElasticsearchFields.UpdatedAt] = _dateTime.UtcNowOffset,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset
         };
 
         if (message.Title != null)
-            partialDocument["title"] = message.Title;
+            partialDocument[ElasticsearchFields.Title] = message.Title;
 
         if (message.Description != null)
-            partialDocument["description"] = message.Description;
+            partialDocument[ElasticsearchFields.Description] = message.Description;
 
         if (message.Condition != null)
-            partialDocument["condition"] = message.Condition;
+            partialDocument[ElasticsearchFields.Condition] = message.Condition;
 
         var result = await _indexService.PartialUpdateAsync(
             message.Id,

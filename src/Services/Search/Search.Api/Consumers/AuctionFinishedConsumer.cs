@@ -1,8 +1,7 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
@@ -31,16 +30,16 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 
         var partialDocument = new Dictionary<string, object?>
         {
-            ["status"] = message.ItemSold ? "Sold" : "Finished",
-            ["lastSyncedAt"] = _dateTime.UtcNowOffset.ToString("o")
+            [ElasticsearchFields.Status] = message.ItemSold ? AuctionStatuses.Sold : AuctionStatuses.Finished,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
         };
 
         if (message.ItemSold)
         {
-            partialDocument["winningBidderId"] = message.WinnerId?.ToString();
-            partialDocument["winningBidderUsername"] = message.WinnerUsername;
-            partialDocument["winningBidAmount"] = message.SoldAmount;
-            partialDocument["currentPrice"] = message.SoldAmount;
+            partialDocument[ElasticsearchFields.WinningBidderId] = message.WinnerId?.ToString();
+            partialDocument[ElasticsearchFields.WinningBidderUsername] = message.WinnerUsername;
+            partialDocument[ElasticsearchFields.WinningBidAmount] = message.SoldAmount;
+            partialDocument[ElasticsearchFields.CurrentPrice] = message.SoldAmount;
         }
 
         var result = await _indexService.PartialUpdateAsync(

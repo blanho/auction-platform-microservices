@@ -2,6 +2,7 @@ using BidService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
 using MassTransit;
+using Search.Api.Constants;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
@@ -26,7 +27,7 @@ public class HighestBidUpdatedConsumer : IConsumer<HighestBidUpdatedEvent>
     {
         var message = context.Message;
 
-        if (message.BidStatus != "Accepted")
+        if (message.BidStatus != BidStatuses.Accepted)
         {
             _logger.LogDebug("Skipping non-accepted highest bid update {BidId} with status {Status}",
                 message.Id, message.BidStatus);
@@ -38,8 +39,8 @@ public class HighestBidUpdatedConsumer : IConsumer<HighestBidUpdatedEvent>
 
         var partialDocument = new Dictionary<string, object?>
         {
-            ["currentPrice"] = message.NewHighestAmount,
-            ["lastSyncedAt"] = _dateTime.UtcNowOffset.ToString("o")
+            [ElasticsearchFields.CurrentPrice] = message.NewHighestAmount,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
         };
 
         var result = await _indexService.PartialUpdateAsync(
