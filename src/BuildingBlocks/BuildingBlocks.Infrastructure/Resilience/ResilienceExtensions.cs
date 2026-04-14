@@ -99,4 +99,34 @@ public static class ResilienceExtensions
 
         return builder;
     }
+
+    public static IHttpClientBuilder AddGrpcResilience(this IHttpClientBuilder builder)
+    {
+        builder.AddResilienceHandler("grpc", pipeline =>
+        {
+            pipeline.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = 2,
+                Delay = TimeSpan.FromMilliseconds(100),
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                ShouldHandle = static args => ValueTask.FromResult(
+                    args.Outcome.Exception is HttpRequestException)
+            });
+
+            pipeline.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+            {
+                SamplingDuration = TimeSpan.FromSeconds(15),
+                FailureRatio = 0.5,
+                MinimumThroughput = 10,
+                BreakDuration = TimeSpan.FromSeconds(10),
+                ShouldHandle = static args => ValueTask.FromResult(
+                    args.Outcome.Exception != null)
+            });
+
+            pipeline.AddTimeout(TimeSpan.FromSeconds(5));
+        });
+
+        return builder;
+    }
 }
