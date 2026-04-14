@@ -75,10 +75,22 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 deadline: DateTime.UtcNow.Add(DefaultDeadline),
                 cancellationToken: cancellationToken);
 
+            if (!DateTimeOffset.TryParse(
+                    response.AuctionEnd,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal,
+                    out var auctionEnd))
+            {
+                _logger.LogError(
+                    "Failed to parse AuctionEnd '{AuctionEnd}' for auction {AuctionId}",
+                    response.AuctionEnd, auctionId);
+                return null;
+            }
+
             return new AuctionDetails(
                 response.Title,
                 response.Seller,
-                DateTime.Parse(response.AuctionEnd, System.Globalization.CultureInfo.InvariantCulture),
+                auctionEnd.DateTime,
                 response.Status,
                 response.ReservePriceCents > 0,
                 response.ReservePriceCents / 100m);
@@ -90,7 +102,7 @@ public class AuctionGrpcClient : IAuctionGrpcClient
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
         {
-            _logger.LogWarning("Auction {AuctionId} not found", auctionId);
+            _logger.LogWarning(ex, "Auction {AuctionId} not found", auctionId);
             return null;
         }
         catch (RpcException ex)
@@ -121,7 +133,12 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 cancellationToken: cancellationToken);
 
             DateTime? parsedEndTime = null;
-            if (!string.IsNullOrEmpty(response.NewEndTime) && DateTime.TryParse(response.NewEndTime, out var dt))
+            if (!string.IsNullOrEmpty(response.NewEndTime) &&
+                DateTime.TryParse(
+                    response.NewEndTime,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal,
+                    out var dt))
             {
                 parsedEndTime = dt;
             }

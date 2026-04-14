@@ -140,7 +140,7 @@ namespace Bidding.Application.Services
 
         #region Private Helper Methods
 
-        private const string AuctionStatusActive = "Active";
+        private const string AuctionStatusActive = "Live";
 
         private bool IsAuctionEligibleForAutoBid(AuctionDetails? auctionDetails, string username, Guid auctionId)
         {

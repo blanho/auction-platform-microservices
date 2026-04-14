@@ -59,6 +59,7 @@ public class Bid : AggregateRoot
             BidId = Id,
             AuctionId = AuctionId,
             BidderId = BidderId,
+            BidderUsername = BidderUsername,
             Amount = Amount
         });
 

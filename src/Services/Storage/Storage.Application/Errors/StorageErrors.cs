@@ -36,4 +36,10 @@ public static class StorageErrors
 
     public static readonly Error FileNotFoundInStorage =
         Error.Create("Storage.FileNotFoundInStorage", "File was not found in the storage backend. Ensure the file was uploaded before confirming.");
+
+    public static Error UrlGenerationFailed(Guid fileId) =>
+        LocalizableError.Localizable("Storage.UrlGenerationFailed", $"Failed to generate a URL for file '{fileId}'", fileId);
+
+    public static readonly Error BatchUploadFailed =
+        Error.Create("Storage.BatchUploadFailed", "All file uploads failed");
 }

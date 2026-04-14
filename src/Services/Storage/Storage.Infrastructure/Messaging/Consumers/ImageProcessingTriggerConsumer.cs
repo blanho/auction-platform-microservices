@@ -16,6 +16,9 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
         "image/webp"
     };
 
+    private const int ImageProcessingJobPriority = 1;
+    private const int ImageProcessingMaxRetryCount = 3;
+
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<ImageProcessingTriggerConsumer> _logger;
 
@@ -61,8 +64,8 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
             CorrelationId = correlationId,
             RequestedBy = message.OwnerId ?? Guid.Empty,
             PayloadJson = payload,
-            Priority = 1,
-            MaxRetryCount = 3,
+            Priority = ImageProcessingJobPriority,
+            MaxRetryCount = ImageProcessingMaxRetryCount,
             TotalItems = 0,
             Items =
             [

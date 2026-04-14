@@ -26,7 +26,7 @@ public class GetFileUrlQueryHandler(
 
         if (url is null)
         {
-            return Result.Failure<FileUrlDto>(StorageErrors.FileNotFound(request.FileId));
+            return Result.Failure<FileUrlDto>(StorageErrors.UrlGenerationFailed(request.FileId));
         }
 
         return Result.Success(new FileUrlDto(file.Id, url));

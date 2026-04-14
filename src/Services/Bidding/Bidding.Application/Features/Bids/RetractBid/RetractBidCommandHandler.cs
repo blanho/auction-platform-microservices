@@ -38,31 +38,13 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
 
         var bid = await _repository.GetByIdForUpdateAsync(request.BidId, cancellationToken);
         if (bid == null)
-        {
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.NotFound);
-        }
 
         if (bid.BidderId != request.UserId)
         {
             _logger.LogWarning("User {UserId} attempted to retract bid {BidId} owned by {OwnerId}",
                 request.UserId, request.BidId, bid.BidderId);
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.Unauthorized);
-        }
-
-        if (bid.Status == BidStatus.Rejected)
-        {
-            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRejected);
-        }
-
-        if (bid.Status == BidStatus.Retracted)
-        {
-            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRetracted);
-        }
-
-        var timeSinceBid = _dateTime.UtcNowOffset - bid.BidTime;
-        if (timeSinceBid.TotalMinutes > BidDefaults.RetractWindowMinutes)
-        {
-            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.RetractWindowExpired(BidDefaults.RetractWindowMinutes));
         }
 
         var lockKey = $"auction-bid:{bid.AuctionId}";
@@ -77,18 +59,32 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.PlaceFailed("Another bid is being processed. Please try again."));
         }
 
-        var highestBid = await _repository.GetHighestBidForAuctionAsync(bid.AuctionId, cancellationToken);
-        var wasHighestBid = highestBid?.Id == bid.Id;
+        var freshBid = await _repository.GetByIdForUpdateAsync(request.BidId, cancellationToken);
+        if (freshBid == null)
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.NotFound);
 
-        var oldBidData = BidAuditData.FromBid(bid);
+        if (freshBid.Status == BidStatus.Rejected)
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRejected);
+
+        if (freshBid.Status == BidStatus.Retracted)
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.AlreadyRetracted);
+
+        var timeSinceBid = _dateTime.UtcNowOffset - freshBid.BidTime;
+        if (timeSinceBid.TotalMinutes > BidDefaults.RetractWindowMinutes)
+            return Result.Failure<RetractBidResult>(BiddingErrors.Bid.RetractWindowExpired(BidDefaults.RetractWindowMinutes));
+
+        var highestBid = await _repository.GetHighestBidForAuctionAsync(freshBid.AuctionId, cancellationToken);
+        var wasHighestBid = highestBid?.Id == freshBid.Id;
+
+        var oldBidData = BidAuditData.FromBid(freshBid);
 
         Bid? newHighestBid = null;
         if (wasHighestBid)
         {
-            newHighestBid = await _repository.GetSecondHighestBidForAuctionAsync(bid.AuctionId, bid.Id, cancellationToken);
+            newHighestBid = await _repository.GetSecondHighestBidForAuctionAsync(freshBid.AuctionId, freshBid.Id, cancellationToken);
         }
 
-        bid.Retract(
+        freshBid.Retract(
             $"Retracted by bidder: {request.Reason}",
             wasHighestBid,
             newHighestBid?.Id,
@@ -99,8 +95,8 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditPublisher.PublishAsync(
-            bid.Id,
-            BidAuditData.FromBid(bid),
+            freshBid.Id,
+            BidAuditData.FromBid(freshBid),
             AuditAction.Updated,
             oldBidData,
             new Dictionary<string, object>
@@ -114,6 +110,6 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         _logger.LogInformation("Bid {BidId} successfully retracted. Was highest: {WasHighest}",
             request.BidId, wasHighestBid);
 
-        return Result<RetractBidResult>.Success(RetractBidResult.Succeeded(bid.Id, bid.Amount));
+        return Result<RetractBidResult>.Success(RetractBidResult.Succeeded(freshBid.Id, freshBid.Amount));
     }
 }

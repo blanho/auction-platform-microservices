@@ -1,3 +1,4 @@
+using Bidding.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -35,7 +36,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
 
         builder.HasIndex(e => new { e.AuctionId, e.Amount })
             .IsUnique()
-            .HasFilter("\"IsDeleted\" = false AND \"Status\" = 1");
+            .HasFilter($"\"IsDeleted\" = false AND \"Status\" = {(int)BidStatus.Accepted}");
 
         builder.HasQueryFilter(e => !e.IsDeleted);
     }

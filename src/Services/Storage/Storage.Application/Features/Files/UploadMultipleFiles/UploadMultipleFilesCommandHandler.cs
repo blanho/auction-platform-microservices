@@ -3,6 +3,7 @@ using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using Microsoft.Extensions.Options;
 using Storage.Application.DTOs.Audit;
+using Storage.Application.Errors;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
@@ -41,12 +42,25 @@ public class UploadMultipleFilesCommandHandler(
 
         if (successfulFiles.Count == 0)
         {
-            return Result.Failure<BatchUploadResultDto>(
-                Error.Create("Storage.BatchUploadFailed", "All file uploads failed"));
+            return Result.Failure<BatchUploadResultDto>(StorageErrors.BatchUploadFailed);
         }
 
         await repository.AddRangeAsync(successfulFiles, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Failed to persist {Count} uploaded file records to database. Rolling back blob storage.",
+                successfulFiles.Count);
+
+            await RollbackUploadedBlobsAsync(successfulFiles, cancellationToken);
+
+            throw;
+        }
 
         foreach (var storedFile in successfulFiles)
         {
@@ -128,6 +142,22 @@ public class UploadMultipleFilesCommandHandler(
         string.Equals(providerName, "AzureBlob", StringComparison.OrdinalIgnoreCase)
             ? StorageProvider.AzureBlob
             : StorageProvider.Local;
+
+    private async Task RollbackUploadedBlobsAsync(
+        IEnumerable<StoredFile> uploadedFiles,
+        CancellationToken cancellationToken)
+    {
+        foreach (var file in uploadedFiles)
+        {
+            var deleted = await fileStorageService.DeleteAsync(file.StoredFileName, cancellationToken);
+            if (!deleted)
+            {
+                logger.LogWarning(
+                    "Failed to roll back blob '{StoredFileName}' after DB commit failure. Manual cleanup required.",
+                    file.StoredFileName);
+            }
+        }
+    }
 
     private static StoredFileDto MapToDto(StoredFile file) =>
         new(file.Id, file.FileName, file.ContentType, file.FileSize,

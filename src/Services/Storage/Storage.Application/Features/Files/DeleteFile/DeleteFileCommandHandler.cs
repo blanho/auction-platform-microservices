@@ -30,17 +30,17 @@ public class DeleteFileCommandHandler(
         var oldFileData = StoredFileAuditData.FromStoredFile(file);
         var storedFileName = file.StoredFileName;
 
-        file.MarkAsDeleted(null);
-        repository.Update(file);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-
         var deleted = await fileStorageService.DeleteAsync(storedFileName, cancellationToken);
-
         if (!deleted)
         {
             logger.LogWarning("Failed to delete physical file {StoredFileName} for FileId {FileId}",
                 storedFileName, file.Id);
+            return Result.Failure(StorageErrors.DeleteFailed);
         }
+
+        file.MarkAsDeleted(request.RequestedById);
+        repository.Update(file);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await auditPublisher.PublishAsync(
             file.Id,

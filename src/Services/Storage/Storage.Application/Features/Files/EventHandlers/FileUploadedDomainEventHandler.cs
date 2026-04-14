@@ -1,6 +1,6 @@
 using MassTransit;
 using MediatR;
-using Storage.Domain.Entities;
+using Storage.Domain.Events;
 using StorageService.Contracts.Events;
 
 namespace Storage.Application.Features.Files.EventHandlers;

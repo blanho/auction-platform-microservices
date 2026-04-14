@@ -1,9 +1,12 @@
+using BuildingBlocks.Domain.Guards;
 using Storage.Domain.Enums;
+using Storage.Domain.Events;
 
 namespace Storage.Domain.Entities;
 
 public class StoredFile : AggregateRoot
 {
+    private StoredFile() { }
     public string FileName { get; private set; } = string.Empty;
     public string StoredFileName { get; private set; } = string.Empty;
     public string ContentType { get; private set; } = string.Empty;
@@ -26,6 +29,12 @@ public class StoredFile : AggregateRoot
         Guid? ownerId,
         StorageProvider provider)
     {
+        Guard.AgainstNullOrEmpty(fileName, nameof(fileName));
+        Guard.AgainstNullOrEmpty(storedFileName, nameof(storedFileName));
+        Guard.AgainstNullOrEmpty(contentType, nameof(contentType));
+        Guard.AgainstNonPositive(fileSize, nameof(fileSize));
+        Guard.AgainstNullOrEmpty(url, nameof(url));
+
         var file = new StoredFile
         {
             Id = Guid.NewGuid(),
@@ -62,16 +71,3 @@ public class StoredFile : AggregateRoot
         AddDomainEvent(new FileDeletedDomainEvent(Id, FileName, OwnerId));
     }
 }
-
-public record FileUploadedDomainEvent(
-    Guid FileId,
-    string FileName,
-    string ContentType,
-    long FileSize,
-    string Url,
-    Guid? OwnerId) : DomainEvent;
-
-public record FileDeletedDomainEvent(
-    Guid FileId,
-    string FileName,
-    Guid? OwnerId) : DomainEvent;

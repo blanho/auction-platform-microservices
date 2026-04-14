@@ -9,27 +9,27 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
     private readonly IAutoBidRepository _repository;
     private readonly IBidRepository _bidRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly ILogger<CreateAutoBidCommandHandler> _logger;
     private readonly IAuditPublisher _auditPublisher;
     private readonly IAuctionSnapshotRepository _snapshotRepository;
+    private readonly IDateTimeProvider _dateTime;
 
     public CreateAutoBidCommandHandler(
         IAutoBidRepository repository,
         IBidRepository bidRepository,
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         ILogger<CreateAutoBidCommandHandler> logger,
         IAuditPublisher auditPublisher,
-        IAuctionSnapshotRepository snapshotRepository)
+        IAuctionSnapshotRepository snapshotRepository,
+        IDateTimeProvider dateTime)
     {
         _repository = repository;
         _bidRepository = bidRepository;
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _logger = logger;
         _auditPublisher = auditPublisher;
         _snapshotRepository = snapshotRepository;
+        _dateTime = dateTime;
     }
 
     public async Task<Result<CreateAutoBidResult>> Handle(CreateAutoBidCommand request, CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotFound);
         if (snapshot.Status != "Live")
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotActive);
-        if (snapshot.EndTime <= DateTimeOffset.UtcNow)
+        if (snapshot.EndTime <= _dateTime.UtcNow)
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.AlreadyEnded);
         if (snapshot.SellerUsername == request.Username)
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.CannotBidOnOwnAuction);

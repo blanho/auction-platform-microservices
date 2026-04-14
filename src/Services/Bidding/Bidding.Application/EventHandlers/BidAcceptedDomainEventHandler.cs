@@ -32,7 +32,7 @@ public class BidAcceptedDomainEventHandler : INotificationHandler<BidAcceptedDom
             BidId = notification.BidId,
             AuctionId = notification.AuctionId,
             BidderId = notification.BidderId,
-            BidderUsername = string.Empty,
+            BidderUsername = notification.BidderUsername,
             Amount = notification.Amount,
             AcceptedAt = DateTimeOffset.UtcNow
         }, cancellationToken);

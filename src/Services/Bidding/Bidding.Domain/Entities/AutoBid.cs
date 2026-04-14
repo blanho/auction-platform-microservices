@@ -5,6 +5,8 @@ namespace Bidding.Domain.Entities;
 
 public class AutoBid : AggregateRoot
 {
+    private AutoBid() { }
+
     public Guid AuctionId { get; private set; }
     public Guid UserId { get; private set; }
     public string Username { get; private set; } = string.Empty;
