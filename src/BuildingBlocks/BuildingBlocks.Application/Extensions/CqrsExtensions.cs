@@ -17,6 +17,7 @@ public static class CqrsExtensions
             cfg.RegisterServicesFromAssemblies(assemblies);
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
         });
 
         services.AddValidatorsFromAssemblies(assemblies);
