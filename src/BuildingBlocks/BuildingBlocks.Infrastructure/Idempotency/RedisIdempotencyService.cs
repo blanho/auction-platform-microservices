@@ -4,16 +4,16 @@ using StackExchange.Redis;
 
 namespace BuildingBlocks.Infrastructure.Idempotency;
 
-public sealed class RedisIdempotencyService : IIdempotencyService
+public sealed class RedisMessageDeduplicationService : IMessageDeduplicationService
 {
     private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<RedisIdempotencyService> _logger;
+    private readonly ILogger<RedisMessageDeduplicationService> _logger;
     private static readonly TimeSpan DefaultExpiry = TimeSpan.FromHours(24);
     private const string KeyPrefix = "idempotency:";
 
-    public RedisIdempotencyService(
+    public RedisMessageDeduplicationService(
         IConnectionMultiplexer redis,
-        ILogger<RedisIdempotencyService> logger)
+        ILogger<RedisMessageDeduplicationService> logger)
     {
         _redis = redis;
         _logger = logger;
