@@ -6,4 +6,7 @@ public abstract class AggregateRoot : BaseEntity
 {
     [Timestamp]
     public uint Version { get; protected set; }
+
+    protected void RaiseDomainEvent(Events.IDomainEvent domainEvent) =>
+        AddDomainEvent(domainEvent);
 }
