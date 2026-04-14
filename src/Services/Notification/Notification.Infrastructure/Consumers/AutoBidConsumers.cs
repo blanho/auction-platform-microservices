@@ -1,242 +1,124 @@
 using BidService.Contracts.Events;
-using MassTransit;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
+using Notification.Infrastructure.Consumers.Base;
 
 namespace Notification.Infrastructure.Consumers;
 
-public class AutoBidCreatedConsumer : IConsumer<AutoBidCreatedEvent>
+public class AutoBidCreatedConsumer : IdempotentNotificationConsumer<AutoBidCreatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AutoBidCreatedConsumer> _logger;
-
     public AutoBidCreatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AutoBidCreatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AutoBidCreatedEvent e) =>
+        $"autobid-created-{e.AutoBidId}";
+
+    protected override void LogProcessing(AutoBidCreatedEvent e) =>
+        Logger.LogInformation("Processing AutoBidCreated for AutoBid {AutoBidId}, User {Username}",
+            e.AutoBidId, e.Username);
+
+    protected override CreateNotificationDto BuildNotification(AutoBidCreatedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AutoBidCreatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"autobid-created-{@event.AutoBidId}";
-
-        _logger.LogInformation(
-            "Processing AutoBidCreated for AutoBid {AutoBidId}, User {Username}",
-            @event.AutoBidId, @event.Username);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("AutoBidCreated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.UserId.ToString(),
-                Type = NotificationType.AutoBidCreated,
-                Title = "Auto-Bid Created",
-                Message = $"Your auto-bid has been set up with a maximum of {NotificationFormattingHelper.FormatCurrency(@event.MaxAmount)}.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["AutoBidId"] = @event.AutoBidId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["MaxAmount"] = @event.MaxAmount.ToString("F2")
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.UserId.ToString(),
+        Type = NotificationType.AutoBidCreated,
+        Title = "Auto-Bid Created",
+        Message = $"Your auto-bid has been set up with a maximum of {NotificationFormattingHelper.FormatCurrency(e.MaxAmount)}.",
+        Data = NotificationDataBuilder.Create()
+            .Add("AutoBidId", e.AutoBidId)
+            .Add("AuctionId", e.AuctionId)
+            .Add("MaxAmount", e.MaxAmount)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }
 
-public class AutoBidActivatedConsumer : IConsumer<AutoBidActivatedEvent>
+public class AutoBidActivatedConsumer : IdempotentNotificationConsumer<AutoBidActivatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AutoBidActivatedConsumer> _logger;
-
     public AutoBidActivatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AutoBidActivatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AutoBidActivatedEvent e) =>
+        $"autobid-activated-{e.AutoBidId}";
+
+    protected override void LogProcessing(AutoBidActivatedEvent e) =>
+        Logger.LogInformation("Processing AutoBidActivated for AutoBid {AutoBidId}", e.AutoBidId);
+
+    protected override CreateNotificationDto BuildNotification(AutoBidActivatedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AutoBidActivatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"autobid-activated-{@event.AutoBidId}";
-
-        _logger.LogInformation(
-            "Processing AutoBidActivated for AutoBid {AutoBidId}",
-            @event.AutoBidId);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("AutoBidActivated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.UserId.ToString(),
-                Type = NotificationType.AutoBidActivated,
-                Title = "Auto-Bid Activated",
-                Message = "Your auto-bid has been activated and will automatically place bids on your behalf.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["AutoBidId"] = @event.AutoBidId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString()
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.UserId.ToString(),
+        Type = NotificationType.AutoBidActivated,
+        Title = "Auto-Bid Activated",
+        Message = "Your auto-bid has been activated and will automatically place bids on your behalf.",
+        Data = NotificationDataBuilder.Create()
+            .Add("AutoBidId", e.AutoBidId)
+            .Add("AuctionId", e.AuctionId)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }
 
-public class AutoBidDeactivatedConsumer : IConsumer<AutoBidDeactivatedEvent>
+public class AutoBidDeactivatedConsumer : IdempotentNotificationConsumer<AutoBidDeactivatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AutoBidDeactivatedConsumer> _logger;
-
     public AutoBidDeactivatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AutoBidDeactivatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AutoBidDeactivatedEvent e) =>
+        $"autobid-deactivated-{e.AutoBidId}";
+
+    protected override void LogProcessing(AutoBidDeactivatedEvent e) =>
+        Logger.LogInformation("Processing AutoBidDeactivated for AutoBid {AutoBidId}", e.AutoBidId);
+
+    protected override CreateNotificationDto BuildNotification(AutoBidDeactivatedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AutoBidDeactivatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"autobid-deactivated-{@event.AutoBidId}";
-
-        _logger.LogInformation(
-            "Processing AutoBidDeactivated for AutoBid {AutoBidId}",
-            @event.AutoBidId);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("AutoBidDeactivated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.UserId.ToString(),
-                Type = NotificationType.AutoBidDeactivated,
-                Title = "Auto-Bid Deactivated",
-                Message = "Your auto-bid has been deactivated. You will no longer place automatic bids on this auction.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["AutoBidId"] = @event.AutoBidId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString()
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.UserId.ToString(),
+        Type = NotificationType.AutoBidDeactivated,
+        Title = "Auto-Bid Deactivated",
+        Message = "Your auto-bid has been deactivated. You will no longer place automatic bids on this auction.",
+        Data = NotificationDataBuilder.Create()
+            .Add("AutoBidId", e.AutoBidId)
+            .Add("AuctionId", e.AuctionId)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }
 
-public class AutoBidUpdatedConsumer : IConsumer<AutoBidUpdatedEvent>
+public class AutoBidUpdatedConsumer : IdempotentNotificationConsumer<AutoBidUpdatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AutoBidUpdatedConsumer> _logger;
-
     public AutoBidUpdatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AutoBidUpdatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AutoBidUpdatedEvent e) =>
+        $"autobid-updated-{e.AutoBidId}-{e.UpdatedAt.Ticks}";
+
+    protected override void LogProcessing(AutoBidUpdatedEvent e) =>
+        Logger.LogInformation("Processing AutoBidUpdated for AutoBid {AutoBidId}, User {UserId}",
+            e.AutoBidId, e.UserId);
+
+    protected override CreateNotificationDto BuildNotification(AutoBidUpdatedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AutoBidUpdatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"autobid-updated-{@event.AutoBidId}-{@event.UpdatedAt.Ticks}";
-
-        _logger.LogInformation(
-            "Processing AutoBidUpdated for AutoBid {AutoBidId}, User {UserId}",
-            @event.AutoBidId, @event.UserId);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("AutoBidUpdated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.UserId.ToString(),
-                Type = NotificationType.AutoBidUpdated,
-                Title = "Auto-Bid Updated",
-                Message = $"Your auto-bid maximum has been updated to {NotificationFormattingHelper.FormatCurrency(@event.NewMaxAmount)}.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["AutoBidId"] = @event.AutoBidId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["NewMaxAmount"] = @event.NewMaxAmount.ToString("F2")
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.UserId.ToString(),
+        Type = NotificationType.AutoBidUpdated,
+        Title = "Auto-Bid Updated",
+        Message = $"Your auto-bid maximum has been updated to {NotificationFormattingHelper.FormatCurrency(e.NewMaxAmount)}.",
+        Data = NotificationDataBuilder.Create()
+            .Add("AutoBidId", e.AutoBidId)
+            .Add("AuctionId", e.AuctionId)
+            .Add("NewMaxAmount", e.NewMaxAmount)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }

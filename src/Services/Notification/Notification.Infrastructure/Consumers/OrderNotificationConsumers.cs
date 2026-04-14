@@ -1,189 +1,102 @@
-using MassTransit;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
+using Notification.Infrastructure.Consumers.Base;
 using PaymentService.Contracts.Events;
 
 namespace Notification.Infrastructure.Consumers;
 
-public class OrderShippedConsumer : IConsumer<OrderShippedEvent>
+public class OrderShippedConsumer : IdempotentNotificationConsumer<OrderShippedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<OrderShippedConsumer> _logger;
-
     public OrderShippedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<OrderShippedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(OrderShippedEvent e) =>
+        $"order-shipped-{e.OrderId}";
+
+    protected override void LogProcessing(OrderShippedEvent e) =>
+        Logger.LogInformation("Processing OrderShipped for Order {OrderId}, Buyer {Username}",
+            e.OrderId, e.BuyerUsername);
+
+    protected override CreateNotificationDto BuildNotification(OrderShippedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<OrderShippedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"order-shipped-{@event.OrderId}";
-
-        _logger.LogInformation(
-            "Processing OrderShipped for Order {OrderId}, Buyer {Username}",
-            @event.OrderId, @event.BuyerUsername);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("OrderShipped already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.BuyerId.ToString(),
-                Type = NotificationType.OrderShipped,
-                Title = "Order Shipped",
-                Message = $"Your order has been shipped via {@event.ShippingCarrier}. Tracking number: {@event.TrackingNumber}.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["OrderId"] = @event.OrderId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["TrackingNumber"] = @event.TrackingNumber,
-                    ["ShippingCarrier"] = @event.ShippingCarrier,
-                    ["ShippedAt"] = @event.ShippedAt.ToString("O")
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.BuyerId.ToString(),
+        Type = NotificationType.OrderShipped,
+        Title = "Order Shipped",
+        Message = $"Your order has been shipped via {e.ShippingCarrier}. Tracking number: {e.TrackingNumber}.",
+        Data = NotificationDataBuilder.Create()
+            .Add("OrderId", e.OrderId)
+            .Add("AuctionId", e.AuctionId)
+            .Add("TrackingNumber", e.TrackingNumber)
+            .Add("ShippingCarrier", e.ShippingCarrier)
+            .Add("ShippedAt", e.ShippedAt)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }
 
-public class OrderDeliveredConsumer : IConsumer<OrderDeliveredEvent>
+public class OrderDeliveredConsumer : IdempotentNotificationConsumer<OrderDeliveredEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<OrderDeliveredConsumer> _logger;
-
     public OrderDeliveredConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<OrderDeliveredConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(OrderDeliveredEvent e) =>
+        $"order-delivered-{e.OrderId}";
+
+    protected override void LogProcessing(OrderDeliveredEvent e) =>
+        Logger.LogInformation("Processing OrderDelivered for Order {OrderId}, Buyer {BuyerUsername}",
+            e.OrderId, e.BuyerUsername);
+
+    protected override CreateNotificationDto BuildNotification(OrderDeliveredEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<OrderDeliveredEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"order-delivered-{@event.OrderId}";
-
-        _logger.LogInformation(
-            "Processing OrderDelivered for Order {OrderId}, Buyer {BuyerUsername}",
-            @event.OrderId, @event.BuyerUsername);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("OrderDelivered already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.BuyerId.ToString(),
-                Type = NotificationType.OrderDelivered,
-                Title = "Order Delivered",
-                Message = "Your order has been delivered. We hope you enjoy your purchase!",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["OrderId"] = @event.OrderId.ToString(),
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["DeliveredAt"] = @event.DeliveredAt.ToString("O")
-                }),
-                AuctionId = @event.AuctionId
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.BuyerId.ToString(),
+        Type = NotificationType.OrderDelivered,
+        Title = "Order Delivered",
+        Message = "Your order has been delivered. We hope you enjoy your purchase!",
+        Data = NotificationDataBuilder.Create()
+            .Add("OrderId", e.OrderId)
+            .Add("AuctionId", e.AuctionId)
+            .Add("DeliveredAt", e.DeliveredAt)
+            .Build(),
+        AuctionId = e.AuctionId
+    };
 }
 
-public class OrderReportGeneratedConsumer : IConsumer<OrderReportGeneratedEvent>
+public class OrderReportGeneratedConsumer : IdempotentNotificationConsumer<OrderReportGeneratedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<OrderReportGeneratedConsumer> _logger;
-
     public OrderReportGeneratedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<OrderReportGeneratedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(OrderReportGeneratedEvent e) =>
+        $"order-report-{e.CorrelationId}";
+
+    protected override void LogProcessing(OrderReportGeneratedEvent e) =>
+        Logger.LogInformation("Processing OrderReportGenerated for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
+            e.CorrelationId, e.RequestedBy);
+
+    protected override CreateNotificationDto BuildNotification(OrderReportGeneratedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<OrderReportGeneratedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"order-report-{@event.CorrelationId}";
-
-        _logger.LogInformation(
-            "Processing OrderReportGenerated for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
-            @event.CorrelationId, @event.RequestedBy);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("OrderReportGenerated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.RequestedBy.ToString(),
-                Type = NotificationType.OrderReportReady,
-                Title = "Order Report Ready",
-                Message = $"Your {@event.ReportType} report ({@event.TotalRecords} records) is ready for download. File: {@event.FileName} ({NotificationFormattingHelper.FormatCurrency(@event.FileSizeBytes / 1024m)} KB).",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["CorrelationId"] = @event.CorrelationId.ToString(),
-                    ["ReportType"] = @event.ReportType,
-                    ["Format"] = @event.Format,
-                    ["FileName"] = @event.FileName,
-                    ["DownloadUrl"] = @event.DownloadUrl,
-                    ["TotalRecords"] = @event.TotalRecords.ToString()
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.RequestedBy.ToString(),
+        Type = NotificationType.OrderReportReady,
+        Title = "Order Report Ready",
+        Message = $"Your {e.ReportType} report ({e.TotalRecords} records) is ready for download. File: {e.FileName} ({NotificationFormattingHelper.FormatCurrency(e.FileSizeBytes / 1024m)} KB).",
+        Data = NotificationDataBuilder.Create()
+            .Add("CorrelationId", e.CorrelationId.ToString())
+            .Add("ReportType", e.ReportType)
+            .Add("Format", e.Format)
+            .Add("FileName", e.FileName)
+            .Add("DownloadUrl", e.DownloadUrl)
+            .Add("TotalRecords", e.TotalRecords)
+            .Build()
+    };
 }

@@ -1,200 +1,118 @@
 using AuctionService.Contracts.Events;
-using MassTransit;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
+using Notification.Infrastructure.Consumers.Base;
 
 namespace Notification.Infrastructure.Consumers;
 
-public class AuctionImportCompletedConsumer : IConsumer<AuctionImportCompletedEvent>
+public class AuctionImportCompletedConsumer : IdempotentNotificationConsumer<AuctionImportCompletedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AuctionImportCompletedConsumer> _logger;
-
     public AuctionImportCompletedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AuctionImportCompletedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AuctionImportCompletedEvent e) =>
+        $"auction-import-completed-{e.CorrelationId}";
+
+    protected override void LogProcessing(AuctionImportCompletedEvent e) =>
+        Logger.LogInformation("Processing AuctionImportCompleted for CorrelationId {CorrelationId}, Seller {SellerId}",
+            e.CorrelationId, e.SellerId);
+
+    protected override CreateNotificationDto BuildNotification(AuctionImportCompletedEvent e)
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AuctionImportCompletedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"auction-import-completed-{@event.CorrelationId}";
-
-        _logger.LogInformation(
-            "Processing AuctionImportCompleted for CorrelationId {CorrelationId}, Seller {SellerId}",
-            @event.CorrelationId, @event.SellerId);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        var hasFailures = e.FailedCount > 0;
+        return new CreateNotificationDto
         {
-            _logger.LogDebug("AuctionImportCompleted already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        var hasFailures = @event.FailedCount > 0;
-        var title = hasFailures ? "Auction Import Completed with Errors" : "Auction Import Completed";
-        var message = hasFailures
-            ? $"Import finished: {@event.SucceededCount} succeeded, {@event.FailedCount} failed, {@event.SkippedDuplicateCount} duplicates skipped out of {@event.TotalRows} total rows."
-            : $"Import finished successfully: {@event.SucceededCount} auctions imported from {@event.TotalRows} rows.";
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.SellerId.ToString(),
-                Type = NotificationType.AuctionImportCompleted,
-                Title = title,
-                Message = message,
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["CorrelationId"] = @event.CorrelationId.ToString(),
-                    ["TotalRows"] = @event.TotalRows.ToString(),
-                    ["SucceededCount"] = @event.SucceededCount.ToString(),
-                    ["FailedCount"] = @event.FailedCount.ToString(),
-                    ["SkippedDuplicateCount"] = @event.SkippedDuplicateCount.ToString()
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+            UserId = e.SellerId.ToString(),
+            Type = NotificationType.AuctionImportCompleted,
+            Title = hasFailures ? "Auction Import Completed with Errors" : "Auction Import Completed",
+            Message = hasFailures
+                ? $"Import finished: {e.SucceededCount} succeeded, {e.FailedCount} failed, {e.SkippedDuplicateCount} duplicates skipped out of {e.TotalRows} total rows."
+                : $"Import finished successfully: {e.SucceededCount} auctions imported from {e.TotalRows} rows.",
+            Data = NotificationDataBuilder.Create()
+                .Add("CorrelationId", e.CorrelationId.ToString())
+                .Add("TotalRows", e.TotalRows)
+                .Add("SucceededCount", e.SucceededCount)
+                .Add("FailedCount", e.FailedCount)
+                .Add("SkippedDuplicateCount", e.SkippedDuplicateCount)
+                .Build()
+        };
     }
 }
 
-public class AuctionExportCompletedConsumer : IConsumer<AuctionExportCompletedEvent>
+public class AuctionExportCompletedConsumer : IdempotentNotificationConsumer<AuctionExportCompletedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<AuctionExportCompletedConsumer> _logger;
-
     public AuctionExportCompletedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<AuctionExportCompletedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(AuctionExportCompletedEvent e) =>
+        $"auction-export-completed-{e.CorrelationId}";
+
+    protected override void LogProcessing(AuctionExportCompletedEvent e) =>
+        Logger.LogInformation("Processing AuctionExportCompleted for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
+            e.CorrelationId, e.RequestedBy);
+
+    protected override CreateNotificationDto BuildNotification(AuctionExportCompletedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<AuctionExportCompletedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"auction-export-completed-{@event.CorrelationId}";
-
-        _logger.LogInformation(
-            "Processing AuctionExportCompleted for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
-            @event.CorrelationId, @event.RequestedBy);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("AuctionExportCompleted already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.RequestedBy.ToString(),
-                Type = NotificationType.AuctionExportCompleted,
-                Title = "Auction Export Ready",
-                Message = $"Your {@event.Format} export of {@event.TotalRecords} auctions is ready. File: {@event.FileName}.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>
-                {
-                    ["CorrelationId"] = @event.CorrelationId.ToString(),
-                    ["Format"] = @event.Format,
-                    ["TotalRecords"] = @event.TotalRecords,
-                    ["FileName"] = @event.FileName,
-                    ["DownloadUrl"] = @event.DownloadUrl ?? string.Empty
-                }.ToDictionary(kv => kv.Key, kv => kv.Value.ToString() ?? string.Empty))
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = e.RequestedBy.ToString(),
+        Type = NotificationType.AuctionExportCompleted,
+        Title = "Auction Export Ready",
+        Message = $"Your {e.Format} export of {e.TotalRecords} auctions is ready. File: {e.FileName}.",
+        Data = NotificationDataBuilder.Create()
+            .Add("CorrelationId", e.CorrelationId.ToString())
+            .Add("Format", e.Format)
+            .Add("TotalRecords", e.TotalRecords)
+            .Add("FileName", e.FileName)
+            .Add("DownloadUrl", e.DownloadUrl ?? string.Empty)
+            .Build()
+    };
 }
 
-public class BulkAuctionUpdateCompletedConsumer : IConsumer<BulkAuctionUpdateCompletedEvent>
+public class BulkAuctionUpdateCompletedConsumer : IdempotentNotificationConsumer<BulkAuctionUpdateCompletedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<BulkAuctionUpdateCompletedConsumer> _logger;
-
     public BulkAuctionUpdateCompletedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<BulkAuctionUpdateCompletedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(BulkAuctionUpdateCompletedEvent e) =>
+        $"bulk-auction-update-completed-{e.CorrelationId}";
+
+    protected override void LogProcessing(BulkAuctionUpdateCompletedEvent e) =>
+        Logger.LogInformation("Processing BulkAuctionUpdateCompleted for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
+            e.CorrelationId, e.RequestedBy);
+
+    protected override CreateNotificationDto BuildNotification(BulkAuctionUpdateCompletedEvent e)
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
+        var action = e.Activated ? "activated" : "updated";
+        var hasFailures = e.FailedCount > 0;
+        var capitalizedAction = $"{char.ToUpper(action[0])}{action[1..]}";
 
-    public async Task Consume(ConsumeContext<BulkAuctionUpdateCompletedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"bulk-auction-update-completed-{@event.CorrelationId}";
-
-        _logger.LogInformation(
-            "Processing BulkAuctionUpdateCompleted for CorrelationId {CorrelationId}, RequestedBy {RequestedBy}",
-            @event.CorrelationId, @event.RequestedBy);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        return new CreateNotificationDto
         {
-            _logger.LogDebug("BulkAuctionUpdateCompleted already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        var action = @event.Activated ? "activated" : "updated";
-        var hasFailures = @event.FailedCount > 0;
-        var title = hasFailures ? $"Bulk Auction {char.ToUpper(action[0])}{action[1..]} Completed with Errors" : $"Bulk Auction {char.ToUpper(action[0])}{action[1..]} Completed";
-        var message = hasFailures
-            ? $"Bulk {action} finished: {@event.SucceededCount} succeeded, {@event.FailedCount} failed out of {@event.TotalRequested} total."
-            : $"Bulk {action} completed successfully: all {@event.SucceededCount} auctions processed.";
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.RequestedBy.ToString(),
-                Type = NotificationType.BulkAuctionUpdateCompleted,
-                Title = title,
-                Message = message,
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["CorrelationId"] = @event.CorrelationId.ToString(),
-                    ["TotalRequested"] = @event.TotalRequested.ToString(),
-                    ["SucceededCount"] = @event.SucceededCount.ToString(),
-                    ["FailedCount"] = @event.FailedCount.ToString(),
-                    ["Activated"] = @event.Activated.ToString()
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+            UserId = e.RequestedBy.ToString(),
+            Type = NotificationType.BulkAuctionUpdateCompleted,
+            Title = hasFailures
+                ? $"Bulk Auction {capitalizedAction} Completed with Errors"
+                : $"Bulk Auction {capitalizedAction} Completed",
+            Message = hasFailures
+                ? $"Bulk {action} finished: {e.SucceededCount} succeeded, {e.FailedCount} failed out of {e.TotalRequested} total."
+                : $"Bulk {action} completed successfully: all {e.SucceededCount} auctions processed.",
+            Data = NotificationDataBuilder.Create()
+                .Add("CorrelationId", e.CorrelationId.ToString())
+                .Add("TotalRequested", e.TotalRequested)
+                .Add("SucceededCount", e.SucceededCount)
+                .Add("FailedCount", e.FailedCount)
+                .Add("Activated", e.Activated)
+                .Build()
+        };
     }
 }

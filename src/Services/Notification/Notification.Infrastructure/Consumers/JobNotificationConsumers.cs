@@ -1,262 +1,151 @@
 using JobService.Contracts.Events;
-using MassTransit;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
-using Microsoft.Extensions.Logging;
+using Notification.Infrastructure.Consumers.Base;
 
 namespace Notification.Infrastructure.Consumers;
 
-public class JobCompletedConsumer : IConsumer<JobCompletedEvent>
+public class JobCompletedConsumer : IdempotentNotificationConsumer<JobCompletedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<JobCompletedConsumer> _logger;
-
     public JobCompletedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<JobCompletedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(JobCompletedEvent e) =>
+        $"job-completed-{e.JobId}";
+
+    protected override void LogProcessing(JobCompletedEvent e) =>
+        Logger.LogInformation("Processing JobCompleted for Job {JobId}, Type {JobType}",
+            e.JobId, e.Type);
+
+    protected override CreateNotificationDto BuildNotification(JobCompletedEvent e)
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<JobCompletedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"job-completed-{@event.JobId}";
-
-        _logger.LogInformation(
-            "Processing JobCompleted for Job {JobId}, Type {JobType}",
-            @event.JobId, @event.Type);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        var hasFailures = e.FailedItems > 0;
+        return new CreateNotificationDto
         {
-            _logger.LogDebug("JobCompleted already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        var hasFailures = @event.FailedItems > 0;
-        var title = hasFailures ? "Job Completed with Errors" : "Job Completed";
-        var message = hasFailures
-            ? $"Job '{@event.Type}' completed: {@event.CompletedItems} succeeded, {@event.FailedItems} failed out of {@event.TotalItems} total items."
-            : $"Job '{@event.Type}' completed successfully. All {@event.TotalItems} items processed.";
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = Guid.Empty.ToString(),
-                Type = NotificationType.JobCompleted,
-                Title = title,
-                Message = message,
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["JobId"] = @event.JobId.ToString(),
-                    ["JobType"] = @event.Type.ToString(),
-                    ["CorrelationId"] = @event.CorrelationId,
-                    ["CompletedItems"] = @event.CompletedItems.ToString(),
-                    ["FailedItems"] = @event.FailedItems.ToString(),
-                    ["TotalItems"] = @event.TotalItems.ToString()
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+            UserId = Guid.Empty.ToString(),
+            Type = NotificationType.JobCompleted,
+            Title = hasFailures ? "Job Completed with Errors" : "Job Completed",
+            Message = hasFailures
+                ? $"Job '{e.Type}' completed: {e.CompletedItems} succeeded, {e.FailedItems} failed out of {e.TotalItems} total items."
+                : $"Job '{e.Type}' completed successfully. All {e.TotalItems} items processed.",
+            Data = NotificationDataBuilder.Create()
+                .Add("JobId", e.JobId)
+                .Add("JobType", e.Type.ToString())
+                .Add("CorrelationId", e.CorrelationId)
+                .Add("CompletedItems", e.CompletedItems)
+                .Add("FailedItems", e.FailedItems)
+                .Add("TotalItems", e.TotalItems)
+                .Build()
+        };
     }
 }
 
-public class JobFailedConsumer : IConsumer<JobFailedEvent>
+public class JobFailedConsumer : IdempotentNotificationConsumer<JobFailedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<JobFailedConsumer> _logger;
-
     public JobFailedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<JobFailedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(JobFailedEvent e) =>
+        $"job-failed-{e.JobId}";
+
+    protected override void LogProcessing(JobFailedEvent e) =>
+        Logger.LogInformation("Processing JobFailed for Job {JobId}, Type {JobType}",
+            e.JobId, e.Type);
+
+    protected override CreateNotificationDto BuildNotification(JobFailedEvent e) => new()
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<JobFailedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"job-failed-{@event.JobId}";
-
-        _logger.LogInformation(
-            "Processing JobFailed for Job {JobId}, Type {JobType}",
-            @event.JobId, @event.Type);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-        {
-            _logger.LogDebug("JobFailed already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = Guid.Empty.ToString(),
-                Type = NotificationType.JobFailed,
-                Title = "Job Failed",
-                Message = $"Job '{@event.Type}' has failed: {@event.ErrorMessage}",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["JobId"] = @event.JobId.ToString(),
-                    ["JobType"] = @event.Type.ToString(),
-                    ["CorrelationId"] = @event.CorrelationId,
-                    ["ErrorMessage"] = @event.ErrorMessage
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
-    }
+        UserId = Guid.Empty.ToString(),
+        Type = NotificationType.JobFailed,
+        Title = "Job Failed",
+        Message = $"Job '{e.Type}' has failed: {e.ErrorMessage}",
+        Data = NotificationDataBuilder.Create()
+            .Add("JobId", e.JobId)
+            .Add("JobType", e.Type.ToString())
+            .Add("CorrelationId", e.CorrelationId)
+            .Add("ErrorMessage", e.ErrorMessage)
+            .Build()
+    };
 }
 
-public class JobCreatedConsumer : IConsumer<JobCreatedEvent>
+public class JobCreatedConsumer : IdempotentNotificationConsumer<JobCreatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<JobCreatedConsumer> _logger;
-
     public JobCreatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<JobCreatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(JobCreatedEvent e) =>
+        $"job-created-{e.JobId}";
+
+    protected override void LogProcessing(JobCreatedEvent e) =>
+        Logger.LogInformation("Processing JobCreated for Job {JobId}, Type {JobType}, TotalItems {TotalItems}",
+            e.JobId, e.Type, e.TotalItems);
+
+    protected override CreateNotificationDto BuildNotification(JobCreatedEvent e)
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<JobCreatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"job-created-{@event.JobId}";
-
-        _logger.LogInformation(
-            "Processing JobCreated for Job {JobId}, Type {JobType}, TotalItems {TotalItems}",
-            @event.JobId, @event.Type, @event.TotalItems);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        var totalItemsText = e.TotalItems > 0 ? $"{e.TotalItems} items" : "1 item";
+        return new CreateNotificationDto
         {
-            _logger.LogDebug("JobCreated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        var totalItemsText = @event.TotalItems > 0 ? $"{@event.TotalItems} items" : "1 item";
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = @event.RequestedBy.ToString(),
-                Type = NotificationType.JobCreated,
-                Title = "Job Queued",
-                Message = $"Job '{@event.Type}' has been queued with {totalItemsText} to process.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["JobId"] = @event.JobId.ToString(),
-                    ["JobType"] = @event.Type.ToString(),
-                    ["CorrelationId"] = @event.CorrelationId,
-                    ["TotalItems"] = @event.TotalItems.ToString()
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+            UserId = e.RequestedBy.ToString(),
+            Type = NotificationType.JobCreated,
+            Title = "Job Queued",
+            Message = $"Job '{e.Type}' has been queued with {totalItemsText} to process.",
+            Data = NotificationDataBuilder.Create()
+                .Add("JobId", e.JobId)
+                .Add("JobType", e.Type.ToString())
+                .Add("CorrelationId", e.CorrelationId)
+                .Add("TotalItems", e.TotalItems)
+                .Build()
+        };
     }
 }
 
-public class JobProgressUpdatedConsumer : IConsumer<JobProgressUpdatedEvent>
+public class JobProgressUpdatedConsumer : IdempotentNotificationConsumer<JobProgressUpdatedEvent>
 {
-    private readonly INotificationService _notificationService;
-    private readonly IIdempotencyService _idempotency;
-    private readonly ILogger<JobProgressUpdatedConsumer> _logger;
-
     public JobProgressUpdatedConsumer(
         INotificationService notificationService,
         IIdempotencyService idempotency,
         ILogger<JobProgressUpdatedConsumer> logger)
+        : base(notificationService, idempotency, logger) { }
+
+    protected override string BuildEventId(JobProgressUpdatedEvent e) =>
+        $"job-progress-{e.JobId}-{e.CompletedItems}-{e.FailedItems}";
+
+    protected override void LogProcessing(JobProgressUpdatedEvent e) =>
+        Logger.LogDebug("Processing JobProgressUpdated for Job {JobId}: {CompletedItems}/{TotalItems}",
+            e.JobId, e.CompletedItems, e.TotalItems);
+
+    protected override CreateNotificationDto BuildNotification(JobProgressUpdatedEvent e)
     {
-        _notificationService = notificationService;
-        _idempotency = idempotency;
-        _logger = logger;
-    }
+        var failureNote = e.FailedItems > 0 ? $", {e.FailedItems} failed" : string.Empty;
+        var progressMessage = e.TotalItems > 0
+            ? $"Job '{e.Type}' progress: {Math.Round(e.ProgressPercentage)}% complete ({e.CompletedItems}/{e.TotalItems} items{failureNote})."
+            : $"Job '{e.Type}' progress update: {Math.Round(e.ProgressPercentage)}% complete.";
 
-    public async Task Consume(ConsumeContext<JobProgressUpdatedEvent> context)
-    {
-        var @event = context.Message;
-        var ct = context.CancellationToken;
-        var eventId = $"job-progress-{@event.JobId}-{@event.CompletedItems}-{@event.FailedItems}";
-
-        _logger.LogDebug(
-            "Processing JobProgressUpdated for Job {JobId}: {CompletedItems}/{TotalItems}",
-            @event.JobId, @event.CompletedItems, @event.TotalItems);
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        return new CreateNotificationDto
         {
-            _logger.LogDebug("JobProgressUpdated already processed for EventId={EventId}", eventId);
-            return;
-        }
-
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
-        if (lockHandle == null) return;
-
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
-            return;
-
-        var failureNote = @event.FailedItems > 0 ? $", {@event.FailedItems} failed" : string.Empty;
-        var progressMessage = @event.TotalItems > 0
-            ? $"Job '{@event.Type}' progress: {Math.Round(@event.ProgressPercentage)}% complete ({@event.CompletedItems}/{@event.TotalItems} items{failureNote})."
-            : $"Job '{@event.Type}' progress update: {Math.Round(@event.ProgressPercentage)}% complete.";
-
-        await _notificationService.CreateNotificationAsync(
-            new CreateNotificationDto
-            {
-                UserId = Guid.Empty.ToString(),
-                Type = NotificationType.JobProgressUpdated,
-                Title = "Job Progress Update",
-                Message = progressMessage,
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
-                {
-                    ["JobId"] = @event.JobId.ToString(),
-                    ["JobType"] = @event.Type.ToString(),
-                    ["CorrelationId"] = @event.CorrelationId,
-                    ["CompletedItems"] = @event.CompletedItems.ToString(),
-                    ["FailedItems"] = @event.FailedItems.ToString(),
-                    ["TotalItems"] = @event.TotalItems.ToString(),
-                    ["ProgressPercentage"] = @event.ProgressPercentage.ToString("F1")
-                })
-            },
-            ct);
-
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+            UserId = Guid.Empty.ToString(),
+            Type = NotificationType.JobProgressUpdated,
+            Title = "Job Progress Update",
+            Message = progressMessage,
+            Data = NotificationDataBuilder.Create()
+                .Add("JobId", e.JobId)
+                .Add("JobType", e.Type.ToString())
+                .Add("CorrelationId", e.CorrelationId)
+                .Add("CompletedItems", e.CompletedItems)
+                .Add("FailedItems", e.FailedItems)
+                .Add("TotalItems", e.TotalItems)
+                .Add("ProgressPercentage", e.ProgressPercentage, "F1")
+                .Build()
+        };
     }
 }
