@@ -84,14 +84,28 @@ public class RedisCacheService : ICacheService
             return;
         }
 
+        var db = _redis.GetDatabase();
         var endpoints = _redis.GetEndPoints();
+        var keysToDelete = new List<RedisKey>();
+
         foreach (var endpoint in endpoints)
         {
             var server = _redis.GetServer(endpoint);
-            await foreach (var key in server.KeysAsync(pattern: $"{prefix}*"))
+            await foreach (var key in server.KeysAsync(pattern: $"{prefix}*", pageSize: 250))
             {
-                await _redis.GetDatabase().KeyDeleteAsync(key);
+                keysToDelete.Add(key);
+
+                if (keysToDelete.Count >= 1000)
+                {
+                    await db.KeyDeleteAsync(keysToDelete.ToArray());
+                    keysToDelete.Clear();
+                }
             }
+        }
+
+        if (keysToDelete.Count > 0)
+        {
+            await db.KeyDeleteAsync(keysToDelete.ToArray());
         }
     }
 }
