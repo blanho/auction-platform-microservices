@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using Payment.Infrastructure.Constants;
 using Stripe;
 using Stripe.Checkout;
 using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
@@ -68,7 +69,7 @@ public class StripePaymentService : IStripePaymentService
         Dictionary<string, string> metadata = null,
         CancellationToken cancellationToken = default)
     {
-        var idempotencyKey = metadata?.GetValueOrDefault("orderId") ?? Guid.NewGuid().ToString();
+        var idempotencyKey = metadata?.GetValueOrDefault(StripeMetadataKeys.OrderId) ?? Guid.NewGuid().ToString();
 
         var options = new PaymentIntentCreateOptions
         {
@@ -149,9 +150,9 @@ public class StripePaymentService : IStripePaymentService
         {
             Customer = string.IsNullOrEmpty(request.CustomerId) ? null : request.CustomerId,
             CustomerEmail = string.IsNullOrEmpty(request.CustomerId) ? request.CustomerEmail : null,
-            PaymentMethodTypes = new List<string> { "card" },
+            PaymentMethodTypes = new List<string> { StripePaymentMethodTypes.Card },
             LineItems = lineItems,
-            Mode = "payment",
+            Mode = StripePaymentModes.Payment,
             SuccessUrl = request.SuccessUrl,
             CancelUrl = request.CancelUrl,
             Metadata = request.Metadata,
@@ -162,7 +163,7 @@ public class StripePaymentService : IStripePaymentService
         };
 
         var service = new SessionService();
-        var idempotencyKey = request.Metadata?.GetValueOrDefault("orderId") ?? Guid.NewGuid().ToString();
+        var idempotencyKey = request.Metadata?.GetValueOrDefault(StripeMetadataKeys.OrderId) ?? Guid.NewGuid().ToString();
         var requestOptions = new RequestOptions
         {
             IdempotencyKey = $"cs-{idempotencyKey}"
@@ -247,13 +248,13 @@ public class StripePaymentService : IStripePaymentService
 
             switch (stripeEvent.Type)
             {
-                case "payment_intent.succeeded":
+                case StripeEventTypes.PaymentIntentSucceeded:
                     await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
                     break;
-                case "payment_intent.payment_failed":
+                case StripeEventTypes.PaymentIntentPaymentFailed:
                     await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
                     break;
-                case "checkout.session.completed":
+                case StripeEventTypes.CheckoutSessionCompleted:
                     await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
                     break;
                 default:
@@ -274,7 +275,7 @@ public class StripePaymentService : IStripePaymentService
 
         _logger.LogInformation("PaymentIntent succeeded: {PaymentIntentId}", paymentIntent.Id);
 
-        if (paymentIntent.Metadata.TryGetValue("orderId", out var orderIdStr) &&
+        if (paymentIntent.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
             Guid.TryParse(orderIdStr, out var orderId))
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
@@ -295,7 +296,7 @@ public class StripePaymentService : IStripePaymentService
 
         _logger.LogWarning("PaymentIntent failed: {PaymentIntentId}", paymentIntent.Id);
 
-        if (paymentIntent.Metadata.TryGetValue("orderId", out var orderIdStr) &&
+        if (paymentIntent.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
             Guid.TryParse(orderIdStr, out var orderId))
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
@@ -316,7 +317,7 @@ public class StripePaymentService : IStripePaymentService
 
         _logger.LogInformation("Checkout session completed: {SessionId}", session.Id);
 
-        if (session.Metadata.TryGetValue("orderId", out var orderIdStr) &&
+        if (session.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
             Guid.TryParse(orderIdStr, out var orderId))
         {
             var order = await _orderRepository.GetByIdAsync(orderId);

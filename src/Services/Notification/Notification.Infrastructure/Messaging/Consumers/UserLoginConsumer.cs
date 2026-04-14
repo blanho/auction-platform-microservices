@@ -88,7 +88,7 @@ public class UserLoginConsumer : IConsumer<UserLoginEvent>
             else
             {
                 record.MarkAsFailed(result.Error ?? "Unknown error");
-                throw new Exception($"Email delivery failed: {result.Error}");
+                throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }
         finally

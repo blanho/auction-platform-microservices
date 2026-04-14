@@ -82,7 +82,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.Contains("DbUpdate"))
+        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict during withdrawal. Lock may have been released prematurely.");

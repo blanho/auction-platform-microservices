@@ -134,7 +134,7 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
                     "Email failed for UserCreatedEvent: UserId={UserId}, Error={Error}",
                     message.UserId,
                     result.Error);
-                throw new Exception($"Email delivery failed: {result.Error}");
+                throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }
         finally

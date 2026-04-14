@@ -66,12 +66,12 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
         var transaction = WalletTransaction.Create(
             userId: wallet.UserId,
             username: request.Username,
-            type: TransactionType.Hold,
+            type: TransactionType.Release,
             amount: -request.Amount,
             balanceAfter: wallet.Balance,
-            description: "Funds released",
+            description: WalletTransactionDescriptions.FundsReleased,
             referenceId: request.ReferenceId,
-            referenceType: "Release");
+            referenceType: WalletReferenceTypes.Release);
 
         transaction.Complete();
         wallet.ReleaseFunds(request.Amount);
@@ -82,7 +82,7 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.Contains("DbUpdate"))
+        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict releasing funds for reference {ReferenceId}. Lock may have been released prematurely.",

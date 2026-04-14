@@ -82,7 +82,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.Contains("DbUpdate"))
+        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict holding funds for reference {ReferenceId}. Lock may have been released prematurely.",

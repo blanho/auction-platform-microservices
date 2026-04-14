@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
+using BuildingBlocks.Domain.Guards;
 
 namespace Payment.Domain.Entities;
 
@@ -16,6 +17,10 @@ public class Wallet : AggregateRoot
 
     public static Wallet Create(Guid userId, string username, string currency = "USD")
     {
+        Guard.AgainstEmpty(userId, nameof(userId));
+        Guard.AgainstNullOrEmpty(username, nameof(username));
+        Guard.AgainstNullOrEmpty(currency, nameof(currency));
+
         var wallet = new Wallet
         {
             Id = Guid.NewGuid(),

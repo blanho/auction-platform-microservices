@@ -90,7 +90,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             balanceAfter: balanceAfter,
             description: request.Description,
             referenceId: request.ReferenceId,
-            referenceType: "Order");
+            referenceType: WalletReferenceTypes.Order);
 
         transaction.Complete();
         wallet.Withdraw(request.Amount);
@@ -101,7 +101,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.Contains("DbUpdate"))
+        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict processing payment for user {Username}, order {ReferenceId}. Lock may have been released prematurely.",

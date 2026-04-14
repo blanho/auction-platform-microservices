@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Guards;
 using Payment.Domain.Enums;
 
 namespace Payment.Domain.Entities;
@@ -30,6 +31,9 @@ public class WalletTransaction : BaseEntity
         string? referenceType = null,
         string? paymentMethod = null)
     {
+        Guard.AgainstEmpty(userId, nameof(userId));
+        Guard.AgainstNullOrEmpty(username, nameof(username));
+
         var transaction = new WalletTransaction
         {
             UserId = userId,

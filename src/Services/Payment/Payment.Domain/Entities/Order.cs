@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
+using BuildingBlocks.Domain.Guards;
 using Payment.Domain.Enums;
 using Payment.Domain.Events;
 
@@ -61,6 +62,14 @@ public class Order : AggregateRoot
         string? shippingAddress = null,
         string? buyerNotes = null)
     {
+        Guard.AgainstEmpty(auctionId, nameof(auctionId));
+        Guard.AgainstEmpty(buyerId, nameof(buyerId));
+        Guard.AgainstNullOrEmpty(buyerUsername, nameof(buyerUsername));
+        Guard.AgainstEmpty(sellerId, nameof(sellerId));
+        Guard.AgainstNullOrEmpty(sellerUsername, nameof(sellerUsername));
+        Guard.AgainstNullOrEmpty(itemTitle, nameof(itemTitle));
+        Guard.AgainstNegative(winningBid, nameof(winningBid));
+
         decimal? platformFee = platformFeePercent.HasValue
             ? winningBid * platformFeePercent.Value / 100
             : null;

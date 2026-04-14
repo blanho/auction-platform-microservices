@@ -4,6 +4,7 @@ using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Infrastructure.Configuration;
+using Payment.Infrastructure.Constants;
 using Stripe;
 using Stripe.Checkout;
 using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
@@ -116,9 +117,9 @@ public class StripePaymentGateway : IPaymentGateway
         {
             Customer = string.IsNullOrEmpty(request.CustomerId) ? null : request.CustomerId,
             CustomerEmail = string.IsNullOrEmpty(request.CustomerId) ? request.CustomerEmail : null,
-            PaymentMethodTypes = new List<string> { "card" },
+            PaymentMethodTypes = new List<string> { StripePaymentMethodTypes.Card },
             LineItems = lineItems,
-            Mode = "payment",
+            Mode = StripePaymentModes.Payment,
             SuccessUrl = request.SuccessUrl,
             CancelUrl = request.CancelUrl,
             Metadata = request.Metadata,
@@ -204,13 +205,13 @@ public class StripePaymentGateway : IPaymentGateway
 
             switch (stripeEvent.Type)
             {
-                case "payment_intent.succeeded":
+                case StripeEventTypes.PaymentIntentSucceeded:
                     await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
                     break;
-                case "payment_intent.payment_failed":
+                case StripeEventTypes.PaymentIntentPaymentFailed:
                     await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
                     break;
-                case "checkout.session.completed":
+                case StripeEventTypes.CheckoutSessionCompleted:
                     await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
                     break;
                 default:
@@ -277,7 +278,7 @@ public class StripePaymentGateway : IPaymentGateway
         Dictionary<string, string> metadata,
         CancellationToken cancellationToken)
     {
-        if (!metadata.TryGetValue("orderId", out var orderIdStr) ||
+        if (!metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) ||
             !Guid.TryParse(orderIdStr, out var orderId))
             return null;
 
