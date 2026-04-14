@@ -28,31 +28,40 @@ public class OrderCommandEndpoints : ICarterModule
         group.MapPost("/", Create)
             .WithName("CreateOrder")
             .WithSummary("Create a new order")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Create));
 
         group.MapPut("/{id:guid}", Update)
             .WithName("UpdateOrder")
             .WithSummary("Update an order")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
 
         group.MapPost("/{id:guid}/payment", ProcessPayment)
             .WithName("ProcessOrderPayment")
             .WithSummary("Process payment for an order")
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Process));
 
         group.MapPost("/{id:guid}/ship", ShipOrder)
             .WithName("ShipOrder")
             .WithSummary("Mark order as shipped")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
 
         group.MapPost("/{id:guid}/cancel", CancelOrder)
             .WithName("CancelOrder")
             .WithSummary("Cancel an order")
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
 
         group.MapPost("/{id:guid}/deliver", MarkDelivered)
             .WithName("MarkOrderDelivered")
             .WithSummary("Mark order as delivered")
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
     }
 
