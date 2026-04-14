@@ -87,7 +87,9 @@ class HttpService {
 
         if (isRetryableError(error) && shouldRetry(originalRequest)) {
           originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
-          const backoffDelay = RETRY_DELAY_MS * Math.pow(2, originalRequest._retryCount - 1)
+          const baseDelay = RETRY_DELAY_MS * Math.pow(2, originalRequest._retryCount - 1)
+          const jitter = baseDelay * 0.2 * Math.random()
+          const backoffDelay = baseDelay + jitter
           await delay(backoffDelay)
           return this.client(originalRequest)
         }
