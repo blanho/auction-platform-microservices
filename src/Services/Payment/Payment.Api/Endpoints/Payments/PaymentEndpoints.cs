@@ -3,6 +3,7 @@ using BuildingBlocks.Web.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
+using Stripe;
 
 namespace Payment.Api.Endpoints.Payments;
 
@@ -45,105 +46,140 @@ public class PaymentEndpoints : ICarterModule
         IStripePaymentService stripePaymentService,
         CancellationToken cancellationToken)
     {
-        var paymentIntent = await stripePaymentService.CreatePaymentIntentAsync(
-            request.AmountInCents, request.Currency, request.CustomerId, request.Metadata, cancellationToken);
-
-        var response = new CreatePaymentIntentResponseDto
+        try
         {
-            PaymentIntentId = paymentIntent.Id,
-            ClientSecret = paymentIntent.ClientSecret,
-            Status = paymentIntent.Status,
-        };
+            var paymentIntent = await stripePaymentService.CreatePaymentIntentAsync(
+                request.AmountInCents, request.Currency, request.CustomerId, request.Metadata, cancellationToken);
 
-        return TypedResults.Ok(response);
+            var response = new CreatePaymentIntentResponseDto
+            {
+                PaymentIntentId = paymentIntent.Id,
+                ClientSecret = paymentIntent.ClientSecret,
+                Status = paymentIntent.Status,
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (StripeException ex)
+        {
+            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+        }
     }
 
-    private static async Task<Ok<PaymentIntentResponseDto>> GetPaymentIntent(
+    private static async Task<Results<Ok<PaymentIntentResponseDto>, BadRequest<object>>> GetPaymentIntent(
         string paymentIntentId,
         IStripePaymentService stripePaymentService,
         CancellationToken cancellationToken)
     {
-        var paymentIntent = await stripePaymentService.GetPaymentIntentAsync(paymentIntentId, cancellationToken);
-
-        return TypedResults.Ok(new PaymentIntentResponseDto
+        try
         {
-            PaymentIntentId = paymentIntent.Id,
-            Status = paymentIntent.Status,
-            Amount = paymentIntent.Amount,
-            Currency = paymentIntent.Currency,
-        });
+            var paymentIntent = await stripePaymentService.GetPaymentIntentAsync(paymentIntentId, cancellationToken);
+
+            return TypedResults.Ok(new PaymentIntentResponseDto
+            {
+                PaymentIntentId = paymentIntent.Id,
+                Status = paymentIntent.Status,
+                Amount = paymentIntent.Amount,
+                Currency = paymentIntent.Currency,
+            });
+        }
+        catch (StripeException ex)
+        {
+            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+        }
     }
 
-    private static async Task<Ok<CheckoutSessionResponseDto>> CreateCheckoutSession(
+    private static async Task<Results<Ok<CheckoutSessionResponseDto>, BadRequest<object>>> CreateCheckoutSession(
         CheckoutSessionRequestDto request,
         IStripePaymentService stripePaymentService,
         CancellationToken cancellationToken)
     {
-        var session = await stripePaymentService.CreateCheckoutSessionAsync(
-            new CreateCheckoutSessionRequest
-            {
-                CustomerId = request.CustomerId,
-                CustomerEmail = request.CustomerEmail,
-                AmountInCents = request.AmountInCents,
-                Currency = request.Currency,
-                ProductName = request.ProductName,
-                ProductDescription = request.ProductDescription,
-                ProductImageUrl = request.ProductImageUrl,
-                SuccessUrl = request.SuccessUrl,
-                CancelUrl = request.CancelUrl,
-                Metadata = request.Metadata,
-            },
-            cancellationToken);
-
-        return TypedResults.Ok(new CheckoutSessionResponseDto
+        try
         {
-            SessionId = session.Id,
-            Url = session.Url,
-        });
+            var session = await stripePaymentService.CreateCheckoutSessionAsync(
+                new CreateCheckoutSessionRequest
+                {
+                    CustomerId = request.CustomerId,
+                    CustomerEmail = request.CustomerEmail,
+                    AmountInCents = request.AmountInCents,
+                    Currency = request.Currency,
+                    ProductName = request.ProductName,
+                    ProductDescription = request.ProductDescription,
+                    ProductImageUrl = request.ProductImageUrl,
+                    SuccessUrl = request.SuccessUrl,
+                    CancelUrl = request.CancelUrl,
+                    Metadata = request.Metadata,
+                },
+                cancellationToken);
+
+            return TypedResults.Ok(new CheckoutSessionResponseDto
+            {
+                SessionId = session.Id,
+                Url = session.Url,
+            });
+        }
+        catch (StripeException ex)
+        {
+            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+        }
     }
 
-    private static async Task<Ok<CustomerResponseDto>> CreateCustomer(
+    private static async Task<Results<Ok<CustomerResponseDto>, BadRequest<object>>> CreateCustomer(
         CreateCustomerRequestDto request,
         IStripePaymentService stripePaymentService,
         CancellationToken cancellationToken)
     {
-        var existingCustomer = await stripePaymentService.GetCustomerByEmailAsync(request.Email, cancellationToken);
-
-        if (existingCustomer != null)
+        try
         {
+            var existingCustomer = await stripePaymentService.GetCustomerByEmailAsync(request.Email, cancellationToken);
+
+            if (existingCustomer != null)
+            {
+                return TypedResults.Ok(new CustomerResponseDto
+                {
+                    CustomerId = existingCustomer.Id,
+                    Email = existingCustomer.Email,
+                    Name = existingCustomer.Name,
+                });
+            }
+
+            var customer = await stripePaymentService.CreateCustomerAsync(request.Email, request.Name, cancellationToken);
+
             return TypedResults.Ok(new CustomerResponseDto
             {
-                CustomerId = existingCustomer.Id,
-                Email = existingCustomer.Email,
-                Name = existingCustomer.Name,
+                CustomerId = customer.Id,
+                Email = customer.Email,
+                Name = customer.Name,
             });
         }
-
-        var customer = await stripePaymentService.CreateCustomerAsync(request.Email, request.Name, cancellationToken);
-
-        return TypedResults.Ok(new CustomerResponseDto
+        catch (StripeException ex)
         {
-            CustomerId = customer.Id,
-            Email = customer.Email,
-            Name = customer.Name,
-        });
+            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+        }
     }
 
-    private static async Task<Ok<RefundResponseDto>> CreateRefund(
+    private static async Task<Results<Ok<RefundResponseDto>, BadRequest<object>>> CreateRefund(
         CreateRefundRequestDto request,
         IStripePaymentService stripePaymentService,
         CancellationToken cancellationToken)
     {
-        var refund = await stripePaymentService.CreateRefundAsync(
-            request.PaymentIntentId,
-            request.AmountInCents,
-            cancellationToken);
-
-        return TypedResults.Ok(new RefundResponseDto
+        try
         {
-            RefundId = refund.Id,
-            Status = refund.Status,
-            Amount = refund.Amount,
-        });
+            var refund = await stripePaymentService.CreateRefundAsync(
+                request.PaymentIntentId,
+                request.AmountInCents,
+                cancellationToken);
+
+            return TypedResults.Ok(new RefundResponseDto
+            {
+                RefundId = refund.Id,
+                Status = refund.Status,
+                Amount = refund.Amount,
+            });
+        }
+        catch (StripeException ex)
+        {
+            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+        }
     }
 }

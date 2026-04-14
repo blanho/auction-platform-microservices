@@ -172,7 +172,7 @@ public class OrderReportGenerator : IOrderReportGenerator
             EscapeCsv(order.BuyerUsername),
             order.TotalAmount.ToString(CultureInfo.InvariantCulture),
             order.PaymentStatus,
-            order.PaymentTransactionId ?? string.Empty,
+            EscapeCsv(order.PaymentTransactionId ?? string.Empty),
             order.PaidAt?.ToString("o") ?? string.Empty);
     }
 
