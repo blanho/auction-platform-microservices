@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Domain.Constants;
 using NotificationService.Contracts.Events;
 using IUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
 
@@ -9,7 +10,7 @@ namespace Notification.Infrastructure.Consumers;
 
 public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationRequestedEvent>
 {
-    private const string EmailChannelType = "Email";
+    private static string EmailChannelType => NotificationChannelNames.Email;
     
     private readonly IIdempotencyService _idempotency;
     private readonly ITemplateRepository _templateRepo;

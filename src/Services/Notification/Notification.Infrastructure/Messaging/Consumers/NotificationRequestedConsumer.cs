@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 using NotificationService.Contracts.Events;
 using NotificationService.Contracts.Enums;
@@ -93,7 +94,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         NotificationTemplate template,
         CancellationToken ct)
     {
-        const string channel = "Email";
+        var channel = NotificationChannelNames.Email;
 
         if (await _idempotency.IsProcessedAsync(message.EventId, channel, ct))
         {
@@ -146,7 +147,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
                     "Email failed: EventId={EventId}, Error={Error}",
                     message.EventId,
                     result.Error);
-                throw new Exception($"Email delivery failed: {result.Error}");
+                throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }
         finally
@@ -161,7 +162,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         NotificationTemplate template,
         CancellationToken ct)
     {
-        const string channel = "Sms";
+        var channel = NotificationChannelNames.Sms;
 
         if (string.IsNullOrEmpty(template.SmsBody))
         {
@@ -199,7 +200,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
             else
             {
                 record.MarkAsFailed(result.Error ?? "Unknown error");
-                throw new Exception($"SMS delivery failed: {result.Error}");
+                throw new InvalidOperationException($"SMS delivery failed: {result.Error}");
             }
         }
         finally
@@ -214,7 +215,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         NotificationTemplate template,
         CancellationToken ct)
     {
-        const string channel = "Push";
+        var channel = NotificationChannelNames.Push;
 
         if (string.IsNullOrEmpty(template.PushBody))
         {
@@ -252,7 +253,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
             else
             {
                 record.MarkAsFailed(result.Error ?? "Unknown error");
-                throw new Exception($"Push delivery failed: {result.Error}");
+                throw new InvalidOperationException($"Push delivery failed: {result.Error}");
             }
         }
         finally
@@ -267,7 +268,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         NotificationTemplate template,
         CancellationToken ct)
     {
-        const string channel = "InApp";
+        var channel = NotificationChannelNames.InApp;
 
         if (await _idempotency.IsProcessedAsync(message.EventId, channel, ct))
             return;
