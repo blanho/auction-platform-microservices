@@ -6,6 +6,7 @@ public record AuctionEndingSoonEvent : IVersionedEvent
 {
     public int Version => 1;
     public Guid AuctionId { get; init; }
+    public Guid SellerId { get; init; }
     public string Title { get; init; } = string.Empty;
     public decimal CurrentHighBid { get; init; }
     public DateTimeOffset EndTime { get; init; }
