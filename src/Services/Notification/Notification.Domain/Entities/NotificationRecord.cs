@@ -56,10 +56,3 @@ public class NotificationRecord : BaseEntity
         ErrorMessage = errorMessage;
     }
 }
-
-public enum NotificationRecordStatus
-{
-    Pending = 0,
-    Sent = 1,
-    Failed = 2
-}
