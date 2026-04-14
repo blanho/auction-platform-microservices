@@ -231,19 +231,14 @@ public class StripePaymentGateway : IPaymentGateway
 
         _logger.LogInformation("PaymentIntent succeeded: {PaymentIntentId}", paymentIntent.Id);
 
-        if (paymentIntent.Metadata.TryGetValue("orderId", out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.CompletePayment(paymentIntent.Id);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
+        if (order == null) return;
 
-                _logger.LogInformation("Order {OrderId} marked as paid", orderId);
-            }
-        }
+        order.CompletePayment(paymentIntent.Id);
+        await _orderRepository.UpdateAsync(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Order {OrderId} marked as paid", order.Id);
     }
 
     private async Task HandlePaymentIntentFailed(Event stripeEvent, CancellationToken cancellationToken)
@@ -252,19 +247,14 @@ public class StripePaymentGateway : IPaymentGateway
 
         _logger.LogWarning("PaymentIntent failed: {PaymentIntentId}", paymentIntent.Id);
 
-        if (paymentIntent.Metadata.TryGetValue("orderId", out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.ChangeStatus(OrderStatus.Cancelled);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
+        if (order == null) return;
 
-                _logger.LogInformation("Order {OrderId} marked as payment failed", orderId);
-            }
-        }
+        order.ChangeStatus(OrderStatus.Cancelled);
+        await _orderRepository.UpdateAsync(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Order {OrderId} marked as payment failed", order.Id);
     }
 
     private async Task HandleCheckoutSessionCompleted(Event stripeEvent, CancellationToken cancellationToken)
@@ -273,19 +263,25 @@ public class StripePaymentGateway : IPaymentGateway
 
         _logger.LogInformation("Checkout session completed: {SessionId}", session.Id);
 
-        if (session.Metadata.TryGetValue("orderId", out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.CompletePayment(session.PaymentIntentId);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var order = await ResolveOrderFromMetadata(session.Metadata, cancellationToken);
+        if (order == null) return;
 
-                _logger.LogInformation("Order {OrderId} marked as paid via checkout session", orderId);
-            }
-        }
+        order.CompletePayment(session.PaymentIntentId);
+        await _orderRepository.UpdateAsync(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Order {OrderId} marked as paid via checkout session", order.Id);
+    }
+
+    private async Task<Order?> ResolveOrderFromMetadata(
+        Dictionary<string, string> metadata,
+        CancellationToken cancellationToken)
+    {
+        if (!metadata.TryGetValue("orderId", out var orderIdStr) ||
+            !Guid.TryParse(orderIdStr, out var orderId))
+            return null;
+
+        return await _orderRepository.GetByIdAsync(orderId);
     }
 
     private static PaymentIntentResult MapToPaymentIntentResult(PaymentIntent pi) => new()
