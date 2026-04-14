@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Guards;
 
 namespace Bidding.Domain.Entities;
 
@@ -20,6 +21,11 @@ public class Bid : AggregateRoot
         decimal amount,
         DateTimeOffset bidTime)
     {
+        Guard.AgainstEmpty(auctionId, nameof(auctionId));
+        Guard.AgainstEmpty(bidderId, nameof(bidderId));
+        Guard.AgainstNullOrEmpty(bidderUsername, nameof(bidderUsername));
+        Guard.AgainstNonPositive(amount, nameof(amount));
+
         var bid = new Bid
         {
             Id = Guid.NewGuid(),

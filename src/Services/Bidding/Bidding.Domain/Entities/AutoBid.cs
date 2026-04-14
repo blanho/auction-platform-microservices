@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Guards;
 
 namespace Bidding.Domain.Entities;
 
@@ -14,6 +15,11 @@ public class AutoBid : AggregateRoot
 
     public static AutoBid Create(Guid auctionId, Guid userId, string username, decimal maxAmount)
     {
+        Guard.AgainstEmpty(auctionId, nameof(auctionId));
+        Guard.AgainstEmpty(userId, nameof(userId));
+        Guard.AgainstNullOrEmpty(username, nameof(username));
+        Guard.AgainstNonPositive(maxAmount, nameof(maxAmount));
+
         var autoBid = new AutoBid
         {
             Id = Guid.NewGuid(),
@@ -40,6 +46,8 @@ public class AutoBid : AggregateRoot
 
     public void UpdateMaxAmount(decimal newMaxAmount)
     {
+        Guard.AgainstNonPositive(newMaxAmount, nameof(newMaxAmount));
+
         MaxAmount = newMaxAmount;
 
         AddDomainEvent(new AutoBidMaxAmountUpdatedDomainEvent
