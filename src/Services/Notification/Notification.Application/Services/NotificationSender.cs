@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
+using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 using IUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
 
@@ -53,8 +54,8 @@ public class NotificationSender : INotificationSender
             return;
         }
 
-        var subject = RenderTemplate(template.Subject, request.Data);
-        var body = RenderTemplate(template.Body, request.Data);
+        var subject = TemplateHelper.RenderTemplate(template.Subject, request.Data);
+        var body = TemplateHelper.RenderTemplate(template.Body, request.Data);
 
         if (request.SendEmail && !string.IsNullOrEmpty(request.RecipientEmail))
         {
@@ -63,14 +64,14 @@ public class NotificationSender : INotificationSender
 
         if (request.SendSms && !string.IsNullOrEmpty(request.RecipientPhone) && !string.IsNullOrEmpty(template.SmsBody))
         {
-            var smsBody = RenderTemplate(template.SmsBody, request.Data);
+            var smsBody = TemplateHelper.RenderTemplate(template.SmsBody, request.Data);
             await SendSmsInternalAsync(request.UserId, request.TemplateKey, request.RecipientPhone, smsBody, ct);
         }
 
         if (request.SendPush && !string.IsNullOrEmpty(template.PushBody))
         {
-            var pushTitle = RenderTemplate(template.PushTitle ?? subject, request.Data);
-            var pushBody = RenderTemplate(template.PushBody, request.Data);
+            var pushTitle = TemplateHelper.RenderTemplate(template.PushTitle ?? subject, request.Data);
+            var pushBody = TemplateHelper.RenderTemplate(template.PushBody, request.Data);
             await SendPushInternalAsync(request.UserId, request.TemplateKey, pushTitle, pushBody, request.Data, ct);
         }
 
@@ -79,7 +80,7 @@ public class NotificationSender : INotificationSender
             await SendInAppAsync(
                 request.UserId,
                 subject,
-                StripHtml(body),
+                TemplateHelper.StripHtml(body),
                 request.InAppLink,
                 ct);
         }
@@ -94,8 +95,8 @@ public class NotificationSender : INotificationSender
             return;
         }
 
-        var subject = RenderTemplate(template.Subject, data);
-        var body = RenderTemplate(template.Body, data);
+        var subject = TemplateHelper.RenderTemplate(template.Subject, data);
+        var body = TemplateHelper.RenderTemplate(template.Body, data);
         await SendEmailInternalAsync(userId, templateKey, recipientEmail, subject, body, ct);
     }
 
@@ -108,7 +109,7 @@ public class NotificationSender : INotificationSender
             return;
         }
 
-        var smsBody = RenderTemplate(template.SmsBody, data);
+        var smsBody = TemplateHelper.RenderTemplate(template.SmsBody, data);
         await SendSmsInternalAsync(userId, templateKey, phoneNumber, smsBody, ct);
     }
 
@@ -121,8 +122,8 @@ public class NotificationSender : INotificationSender
             return;
         }
 
-        var pushTitle = RenderTemplate(template.PushTitle ?? template.Subject, data);
-        var pushBody = RenderTemplate(template.PushBody, data);
+        var pushTitle = TemplateHelper.RenderTemplate(template.PushTitle ?? template.Subject, data);
+        var pushBody = TemplateHelper.RenderTemplate(template.PushBody, data);
         await SendPushInternalAsync(userId, templateKey, pushTitle, pushBody, data, ct);
     }
 
@@ -173,8 +174,6 @@ public class NotificationSender : INotificationSender
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
-    #region Private Methods
-
     private async Task SendEmailInternalAsync(string userId, string templateKey, string recipientEmail, string subject, string body, CancellationToken ct)
     {
         var record = NotificationRecord.Create(
@@ -186,7 +185,7 @@ public class NotificationSender : INotificationSender
 
         try
         {
-            var result = await _emailSender.SendAsync(recipientEmail, subject, body, StripHtml(body), ct);
+            var result = await _emailSender.SendAsync(recipientEmail, subject, body, TemplateHelper.StripHtml(body), ct);
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
@@ -274,11 +273,4 @@ public class NotificationSender : INotificationSender
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
-    private static string RenderTemplate(string template, Dictionary<string, string> data)
-        => TemplateHelper.RenderTemplate(template, data);
-
-    private static string StripHtml(string html)
-        => TemplateHelper.StripHtml(html);
-
-    #endregion
 }
