@@ -1,7 +1,7 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
 using PaymentService.Contracts.Events;
 
 namespace Analytics.Api.Consumers;
@@ -9,16 +9,13 @@ namespace Analytics.Api.Consumers;
 public class OrderCreatedAnalyticsConsumer : IConsumer<OrderCreatedEvent>
 {
     private readonly AnalyticsDbContext _context;
-    private readonly IDistributedCache _cache;
     private readonly ILogger<OrderCreatedAnalyticsConsumer> _logger;
 
     public OrderCreatedAnalyticsConsumer(
         AnalyticsDbContext context,
-        IDistributedCache cache,
         ILogger<OrderCreatedAnalyticsConsumer> logger)
     {
         _context = context;
-        _cache = cache;
         _logger = logger;
     }
 
@@ -46,13 +43,13 @@ public class OrderCreatedAnalyticsConsumer : IConsumer<OrderCreatedEvent>
             BuyerUsername = @event.BuyerUsername,
             SellerUsername = @event.SellerUsername,
 
-            Status = "Created",
+            Status = AnalyticsAuctionStatuses.Created,
             CreatedAt = @event.CreatedAt,
 
             IsPaid = false,
             IsRefunded = false,
 
-            EventType = "OrderCreated",
+            EventType = AnalyticsEventTypes.OrderCreated,
             EventVersion = 1
         };
 

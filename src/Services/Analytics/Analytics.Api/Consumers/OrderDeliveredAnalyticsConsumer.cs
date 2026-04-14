@@ -1,7 +1,7 @@
+using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
 using PaymentService.Contracts.Events;
 
 namespace Analytics.Api.Consumers;
@@ -9,16 +9,13 @@ namespace Analytics.Api.Consumers;
 public class OrderDeliveredAnalyticsConsumer : IConsumer<OrderDeliveredEvent>
 {
     private readonly AnalyticsDbContext _context;
-    private readonly IDistributedCache _cache;
     private readonly ILogger<OrderDeliveredAnalyticsConsumer> _logger;
 
     public OrderDeliveredAnalyticsConsumer(
         AnalyticsDbContext context,
-        IDistributedCache cache,
         ILogger<OrderDeliveredAnalyticsConsumer> logger)
     {
         _context = context;
-        _cache = cache;
         _logger = logger;
     }
 
@@ -43,13 +40,13 @@ public class OrderDeliveredAnalyticsConsumer : IConsumer<OrderDeliveredEvent>
             BuyerUsername = @event.BuyerUsername,
             SellerUsername = @event.SellerUsername,
 
-            Status = "Delivered",
+            Status = AnalyticsAuctionStatuses.Delivered,
             DeliveredAt = @event.DeliveredAt,
 
             IsPaid = true,
             IsRefunded = false,
 
-            EventType = "OrderDelivered",
+            EventType = AnalyticsEventTypes.OrderDelivered,
             EventVersion = 1
         };
 
