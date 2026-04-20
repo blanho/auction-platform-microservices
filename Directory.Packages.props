@@ -127,7 +127,7 @@
   <ItemGroup>
     <PackageVersion Include="StackExchange.Redis" Version="2.8.41" />
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.17.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageVersion Include="Stripe.net" Version="48.0.0" />
     <PackageVersion Include="SendGrid" Version="9.29.3" />
     <PackageVersion Include="Twilio" Version="7.8.0" />
