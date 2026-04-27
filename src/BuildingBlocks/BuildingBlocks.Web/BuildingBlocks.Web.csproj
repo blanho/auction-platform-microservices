@@ -45,6 +45,7 @@
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Elasticsearch" />
     <PackageReference Include="Serilog.Sinks.Seq" />
+  <PackageReference Include="System.IdentityModel.Tokens.Jwt" VersionOverride="8.17.0" />
     
   </ItemGroup>
 
