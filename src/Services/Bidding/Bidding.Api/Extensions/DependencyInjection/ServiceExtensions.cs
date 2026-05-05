@@ -36,10 +36,10 @@ namespace Bidding.Api.Extensions.DependencyInjection
                         npgsqlOptions =>
                         {
                             npgsqlOptions.EnableRetryOnFailure(
-                                maxRetryCount: 3,
-                                maxRetryDelay: TimeSpan.FromSeconds(30),
+                                maxRetryCount: BidDefaults.Database.RetryCount,
+                                maxRetryDelay: TimeSpan.FromSeconds(BidDefaults.Database.MaxRetryDelaySeconds),
                                 errorCodesToAdd: null);
-                            npgsqlOptions.CommandTimeout(30);
+                            npgsqlOptions.CommandTimeout(BidDefaults.Database.CommandTimeoutSeconds);
                         })
                     .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

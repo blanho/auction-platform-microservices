@@ -6,6 +6,85 @@ public static class AnalyticsDefaults
     public const int DefaultLimit = 10;
     public const string DefaultPeriod = "month";
     public const string DefaultGranularity = "day";
+
+    public static class Database
+    {
+        public const int RetryCount = 3;
+
+        public const int MaxRetryDelaySeconds = 30;
+
+        public const int CommandTimeoutSeconds = 60;
+    }
+
+    public static class Messaging
+    {
+        public const int OutboxQueryDelaySeconds = 10;
+
+        public const int StandardPrefetch = 16;
+
+        public const int StandardConcurrency = 8;
+
+        public const int BidPrefetch = 128;
+
+        public const int BidConcurrency = 32;
+
+        public const int BidBatchMessageLimit = 100;
+
+        public const int BidBatchTimeLimitSeconds = 1;
+
+        public const int RetryLimit = 5;
+
+        public const int MinIntervalMs = 100;
+
+        public const int MaxIntervalSeconds = 30;
+
+        public const int IntervalDeltaMs = 200;
+
+        public const int RedeliveryFastSeconds = 5;
+
+        public const int RedeliverySlowSeconds = 30;
+
+        public const int RedeliveryMaxMinutes = 2;
+    }
+
+    public static class Persistence
+    {
+        public const int MoneyPrecision = 18;
+
+        public const int MoneyScale = 2;
+
+        public const int DurationPrecision = 10;
+
+        public const int DurationScale = 2;
+
+        public const int TitleMaxLength = 500;
+
+        public const int UsernameMaxLength = 100;
+
+        public const int EmailMaxLength = 256;
+
+        public const int EntityTypeMaxLength = 256;
+
+        public const int CorrelationIdMaxLength = 128;
+
+        public const int IpAddressMaxLength = 64;
+
+        public const int CategoryNameMaxLength = 200;
+
+        public const int StatusMaxLength = 30;
+
+        public const int ConditionMaxLength = 50;
+
+        public const int CurrencyMaxLength = 3;
+
+        public const int ReasonMaxLength = 500;
+
+        public const int LongTextMaxLength = 2000;
+
+        public const int ValueMaxLength = 4000;
+
+        public const int DescriptionMaxLength = 1000;
+    }
 }
 
 public class PlatformAnalyticsDto

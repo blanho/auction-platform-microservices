@@ -24,7 +24,7 @@ public static class MassTransitExtensions
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
             {
                 o.UsePostgres();
-                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.QueryDelay = TimeSpan.FromSeconds(WalletDefaults.Messaging.OutboxQueryDelaySeconds);
                 o.UseBusOutbox();
             });
 
@@ -42,61 +42,61 @@ public static class MassTransitExtensions
                 {
                     h.Username(username);
                     h.Password(password);
-                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(30));
-                    h.ContinuationTimeout(TimeSpan.FromSeconds(20));
+                    h.RequestedConnectionTimeout(TimeSpan.FromSeconds(WalletDefaults.Messaging.ConnectionTimeoutSeconds));
+                    h.ContinuationTimeout(TimeSpan.FromSeconds(WalletDefaults.Messaging.ContinuationTimeoutSeconds));
                 });
 
                 cfg.ReceiveEndpoint("payment-auction-finished", e =>
                 {
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("payment-buy-now-executed", e =>
                 {
                     e.ConfigureConsumer<BuyNowExecutedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
                 });
                 
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
                 });
                 
                 cfg.ReceiveEndpoint("payment-generate-order-report", e =>
                 {
                     e.ConfigureConsumer<GenerateOrderReportConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(2)));
-                    e.PrefetchCount = 4;
+                        retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.ReportIntervalDeltaSeconds)));
+                    e.PrefetchCount = WalletDefaults.Messaging.PrefetchCountReports;
                 });
 
                 cfg.UseDelayedRedelivery(r => r.Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(2)));
+                    TimeSpan.FromSeconds(WalletDefaults.Messaging.RedeliveryFastSeconds),
+                    TimeSpan.FromSeconds(WalletDefaults.Messaging.RedeliverySlowSeconds),
+                    TimeSpan.FromMinutes(WalletDefaults.Messaging.RedeliveryMaxMinutes)));
 
                 cfg.UseMessageRetry(r => r.Exponential(
-                    retryLimit: 5,
-                    minInterval: TimeSpan.FromMilliseconds(200),
-                    maxInterval: TimeSpan.FromSeconds(30),
-                    intervalDelta: TimeSpan.FromSeconds(5)));
+                    retryLimit: WalletDefaults.Messaging.HighThroughputRetryLimit,
+                    minInterval: TimeSpan.FromMilliseconds(WalletDefaults.Messaging.HighThroughputMinIntervalMs),
+                    maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
+                    intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
 
                 cfg.ConfigureEndpoints(context);
             });

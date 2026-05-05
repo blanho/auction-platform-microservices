@@ -11,7 +11,7 @@ public class UploadFileCommandValidator : AbstractValidator<UploadFileCommand>
 
         RuleFor(x => x.FileName)
             .NotEmpty()
-            .MaximumLength(255);
+            .MaximumLength(StorageDefaults.Validation.FileNameMaxLength);
 
         RuleFor(x => x.ContentType)
             .NotEmpty();

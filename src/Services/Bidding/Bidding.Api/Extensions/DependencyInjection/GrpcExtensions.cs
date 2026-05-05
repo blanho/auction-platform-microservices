@@ -23,11 +23,11 @@ public static class GrpcExtensions
         {
             var handler = new SocketsHttpHandler
             {
-                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
-                KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-                KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(BidDefaults.Grpc.PooledConnectionIdleTimeoutMinutes),
+                KeepAlivePingDelay = TimeSpan.FromSeconds(BidDefaults.Grpc.KeepAlivePingDelaySeconds),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(BidDefaults.Grpc.KeepAlivePingTimeoutSeconds),
                 EnableMultipleHttp2Connections = true,
-                ConnectTimeout = TimeSpan.FromSeconds(5)
+                ConnectTimeout = TimeSpan.FromSeconds(BidDefaults.Grpc.ConnectTimeoutSeconds)
             };
             if (environment.IsDevelopment())
             {
@@ -37,7 +37,7 @@ public static class GrpcExtensions
         })
         .ConfigureChannel(options =>
         {
-            options.MaxRetryAttempts = 3;
+            options.MaxRetryAttempts = BidDefaults.Grpc.MaxRetryAttempts;
             options.ServiceConfig = new GrpcConfig.ServiceConfig
             {
                 MethodConfigs = { new GrpcConfig.MethodConfig
@@ -45,10 +45,10 @@ public static class GrpcExtensions
                     Names = { GrpcConfig.MethodName.Default },
                     RetryPolicy = new GrpcConfig.RetryPolicy
                     {
-                        MaxAttempts = 3,
-                        InitialBackoff = TimeSpan.FromMilliseconds(500),
-                        MaxBackoff = TimeSpan.FromSeconds(5),
-                        BackoffMultiplier = 2,
+                        MaxAttempts = BidDefaults.Grpc.MaxRetryAttempts,
+                        InitialBackoff = TimeSpan.FromMilliseconds(BidDefaults.Grpc.InitialBackoffMs),
+                        MaxBackoff = TimeSpan.FromSeconds(BidDefaults.Grpc.MaxBackoffSeconds),
+                        BackoffMultiplier = BidDefaults.Grpc.BackoffMultiplier,
                         RetryableStatusCodes = { GrpcCore.StatusCode.Unavailable, GrpcCore.StatusCode.DeadlineExceeded }
                     }
                 }}

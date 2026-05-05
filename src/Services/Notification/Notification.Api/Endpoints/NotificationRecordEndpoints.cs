@@ -51,7 +51,7 @@ public class NotificationRecordEndpoints : ICarterModule
             request.FromDate,
             request.ToDate,
             request.Page ?? 1,
-            request.PageSize ?? 20);
+            request.PageSize ?? NotificationDefaults.Pagination.DefaultPageSize);
 
         var result = await sender.Send(query, ct);
         return result.ToOkResult();

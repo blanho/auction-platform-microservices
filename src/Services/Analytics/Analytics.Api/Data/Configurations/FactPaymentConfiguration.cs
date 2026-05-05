@@ -19,16 +19,16 @@ public class FactPaymentConfiguration : IEntityTypeConfiguration<FactPayment>
         builder.Property(e => e.BuyerId).IsRequired();
         builder.Property(e => e.DateKey).IsRequired();
 
-        builder.Property(e => e.BuyerUsername).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.SellerUsername).HasMaxLength(100);
-        builder.Property(e => e.AuctionTitle).HasMaxLength(500);
-        builder.Property(e => e.Status).HasMaxLength(30).IsRequired();
-        builder.Property(e => e.TransactionId).HasMaxLength(100);
-        builder.Property(e => e.TrackingNumber).HasMaxLength(100);
-        builder.Property(e => e.ShippingCarrier).HasMaxLength(100);
-        builder.Property(e => e.EventType).HasMaxLength(30).IsRequired();
+        builder.Property(e => e.BuyerUsername).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength).IsRequired();
+        builder.Property(e => e.SellerUsername).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength);
+        builder.Property(e => e.AuctionTitle).HasMaxLength(AnalyticsDefaults.Persistence.TitleMaxLength);
+        builder.Property(e => e.Status).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
+        builder.Property(e => e.TransactionId).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength);
+        builder.Property(e => e.TrackingNumber).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength);
+        builder.Property(e => e.ShippingCarrier).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength);
+        builder.Property(e => e.EventType).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
 
-        builder.Property(e => e.TotalAmount).HasPrecision(18, 2);
+        builder.Property(e => e.TotalAmount).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
 
         builder.HasIndex(e => e.EventTime)
             .HasDatabaseName("ix_fact_payments_time");

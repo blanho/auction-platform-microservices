@@ -13,25 +13,25 @@ public static class SchedulingExtensions
         services.AddScheduling(configuration, q =>
         {
             q.AddIntervalJob<CheckAuctionFinishedJob>(
-                interval: TimeSpan.FromSeconds(5),
+                interval: TimeSpan.FromSeconds(AuctionDefaults.Scheduling.CheckFinishedIntervalSeconds),
                 jobId: CheckAuctionFinishedJob.JobId,
                 description: CheckAuctionFinishedJob.Description,
                 runOnStartup: true);
 
             q.AddIntervalJob<AuctionDeactivationJob>(
-                interval: TimeSpan.FromMinutes(1),
+                interval: TimeSpan.FromMinutes(AuctionDefaults.Scheduling.DeactivationIntervalMinutes),
                 jobId: AuctionDeactivationJob.JobId,
                 description: AuctionDeactivationJob.Description,
                 runOnStartup: false);
 
             q.AddIntervalJob<AuctionActivationJob>(
-                interval: TimeSpan.FromSeconds(30),
+                interval: TimeSpan.FromSeconds(AuctionDefaults.Scheduling.ActivationIntervalSeconds),
                 jobId: AuctionActivationJob.JobId,
                 description: AuctionActivationJob.Description,
                 runOnStartup: true);
 
             q.AddIntervalJob<AuctionEndingSoonNotificationJob>(
-                interval: TimeSpan.FromMinutes(1),
+                interval: TimeSpan.FromMinutes(AuctionDefaults.Scheduling.EndingSoonNotificationIntervalMinutes),
                 jobId: AuctionEndingSoonNotificationJob.JobId,
                 description: AuctionEndingSoonNotificationJob.Description,
                 runOnStartup: false);

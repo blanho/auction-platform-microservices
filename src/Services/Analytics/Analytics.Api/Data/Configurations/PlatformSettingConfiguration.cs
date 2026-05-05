@@ -12,23 +12,23 @@ public class PlatformSettingConfiguration : IEntityTypeConfiguration<PlatformSet
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.Key)
-            .HasMaxLength(256)
+            .HasMaxLength(AnalyticsDefaults.Persistence.EntityTypeMaxLength)
             .IsRequired();
 
         builder.Property(e => e.Value)
-            .HasMaxLength(4000);
+            .HasMaxLength(AnalyticsDefaults.Persistence.ValueMaxLength);
 
         builder.Property(e => e.Description)
-            .HasMaxLength(1000);
+            .HasMaxLength(AnalyticsDefaults.Persistence.DescriptionMaxLength);
 
         builder.Property(e => e.DataType)
-            .HasMaxLength(50);
+            .HasMaxLength(AnalyticsDefaults.Persistence.ConditionMaxLength);
 
         builder.Property(e => e.ValidationRules)
-            .HasMaxLength(500);
+            .HasMaxLength(AnalyticsDefaults.Persistence.ReasonMaxLength);
 
         builder.Property(e => e.LastModifiedBy)
-            .HasMaxLength(256);
+            .HasMaxLength(AnalyticsDefaults.Persistence.EntityTypeMaxLength);
 
         builder.HasIndex(e => e.Key).IsUnique();
         builder.HasIndex(e => e.Category);

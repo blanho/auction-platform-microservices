@@ -67,8 +67,8 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
             builder.Configuration.GetConnectionString("DefaultConnection"),
             npgsqlOptions =>
             {
-                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-                npgsqlOptions.CommandTimeout(30);
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: NotificationDefaults.Database.RetryCount, maxRetryDelay: TimeSpan.FromSeconds(NotificationDefaults.Database.MaxRetryDelaySeconds), errorCodesToAdd: null);
+                npgsqlOptions.CommandTimeout(NotificationDefaults.Database.CommandTimeoutSeconds);
             })
         .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddNotificationInfrastructure();

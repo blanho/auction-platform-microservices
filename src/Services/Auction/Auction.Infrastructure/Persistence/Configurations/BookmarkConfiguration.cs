@@ -16,7 +16,7 @@ public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>
 
         builder.Property(x => x.Username)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(AuctionDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.AuctionId)
             .IsRequired();

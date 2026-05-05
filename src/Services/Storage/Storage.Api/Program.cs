@@ -39,8 +39,8 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
             builder.Configuration.GetConnectionString("DefaultConnection"),
             npgsqlOptions =>
             {
-                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-                npgsqlOptions.CommandTimeout(30);
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: StorageDefaults.Database.RetryCount, maxRetryDelay: TimeSpan.FromSeconds(StorageDefaults.Database.MaxRetryDelaySeconds), errorCodesToAdd: null);
+                npgsqlOptions.CommandTimeout(StorageDefaults.Database.CommandTimeoutSeconds);
             })
         .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddStorageInfrastructure();

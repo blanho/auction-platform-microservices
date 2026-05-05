@@ -13,14 +13,14 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
 
         builder.Property(x => x.Name)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(AuctionDefaults.Persistence.BrandNameMaxLength);
 
         builder.Property(x => x.Slug)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(AuctionDefaults.Persistence.BrandSlugMaxLength);
 
         builder.Property(x => x.Description)
-            .HasMaxLength(1000);
+            .HasMaxLength(AuctionDefaults.Persistence.BrandDescriptionMaxLength);
 
         builder.Property(x => x.DisplayOrder)
             .IsRequired()

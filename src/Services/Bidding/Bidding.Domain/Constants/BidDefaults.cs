@@ -27,4 +27,54 @@ public static class BidDefaults
     public const int DefaultPage = 1;
     public const int DefaultPageSize = 20;
     public const int MaxPageSize = 100;
+
+    public const decimal MaxBidAmount = 10_000_000;
+
+    public const int MaxDaysForStats = 365;
+    public const int MaxTopBiddersLimit = 100;
+
+    public static class Database
+    {
+        public const int RetryCount = 3;
+
+        public const int MaxRetryDelaySeconds = 30;
+
+        public const int CommandTimeoutSeconds = 30;
+    }
+
+    public static class Grpc
+    {
+        public const int PooledConnectionIdleTimeoutMinutes = 5;
+
+        public const int KeepAlivePingDelaySeconds = 60;
+
+        public const int KeepAlivePingTimeoutSeconds = 30;
+
+        public const int ConnectTimeoutSeconds = 5;
+
+        public const int MaxRetryAttempts = 3;
+
+        public const int InitialBackoffMs = 500;
+
+        public const int MaxBackoffSeconds = 5;
+
+        public const double BackoffMultiplier = 2.0;
+    }
+
+    public static class RateLimit
+    {
+        public const int BiddingPermitLimit = 10;
+
+        public const int BiddingWindowSeconds = 10;
+
+        public const int BiddingSegmentsPerWindow = 2;
+
+        public const int GlobalPermitLimit = 100;
+
+        public const int GlobalWindowMinutes = 1;
+
+        public const int GlobalSegmentsPerWindow = 4;
+
+        public const int DefaultRetryAfterSeconds = 10;
+    }
 }

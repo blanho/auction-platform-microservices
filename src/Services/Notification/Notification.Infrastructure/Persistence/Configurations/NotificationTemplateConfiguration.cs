@@ -12,31 +12,31 @@ public class NotificationTemplateConfiguration : IEntityTypeConfiguration<Notifi
 
         builder.Property(x => x.Key)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(NotificationDefaults.Template.KeyMaxLength);
 
         builder.Property(x => x.Name)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(NotificationDefaults.Template.NameMaxLength);
 
         builder.Property(x => x.Description)
-            .HasMaxLength(1000);
+            .HasMaxLength(NotificationDefaults.Template.DescriptionMaxLength);
 
         builder.Property(x => x.Subject)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasMaxLength(NotificationDefaults.Template.SubjectMaxLength);
 
         builder.Property(x => x.Body)
             .IsRequired()
-            .HasMaxLength(10000);
+            .HasMaxLength(NotificationDefaults.Template.BodyMaxLength);
 
         builder.Property(x => x.SmsBody)
-            .HasMaxLength(160);
+            .HasMaxLength(NotificationDefaults.Template.SmsBodyMaxLength);
 
         builder.Property(x => x.PushTitle)
-            .HasMaxLength(100);
+            .HasMaxLength(NotificationDefaults.Template.PushTitleMaxLength);
 
         builder.Property(x => x.PushBody)
-            .HasMaxLength(500);
+            .HasMaxLength(NotificationDefaults.Template.PushBodyMaxLength);
 
         builder.Property(x => x.IsActive)
             .IsRequired()

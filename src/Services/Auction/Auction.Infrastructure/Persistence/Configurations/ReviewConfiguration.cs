@@ -19,26 +19,26 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 
         builder.Property(r => r.ReviewerUsername)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(AuctionDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(r => r.ReviewedUserId)
             .IsRequired();
 
         builder.Property(r => r.ReviewedUsername)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(AuctionDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(r => r.Rating)
             .IsRequired();
 
         builder.Property(r => r.Title)
-            .HasMaxLength(200);
+            .HasMaxLength(AuctionDefaults.Persistence.ReviewTitleMaxLength);
 
         builder.Property(r => r.Comment)
-            .HasMaxLength(2000);
+            .HasMaxLength(AuctionDefaults.Persistence.ReviewCommentMaxLength);
 
         builder.Property(r => r.SellerResponse)
-            .HasMaxLength(1000);
+            .HasMaxLength(AuctionDefaults.Persistence.ReviewSellerResponseMaxLength);
 
         builder.Property(r => r.CreatedAt)
             .IsRequired();

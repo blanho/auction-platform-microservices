@@ -24,8 +24,8 @@ public static class MassTransitConfiguration
             {
                 o.UsePostgres();
                 o.UseBusOutbox();
-                o.QueryDelay = TimeSpan.FromSeconds(1);
-                o.QueryTimeout = TimeSpan.FromSeconds(30);
+                o.QueryDelay = TimeSpan.FromSeconds(StorageDefaults.Messaging.OutboxQueryDelaySeconds);
+                o.QueryTimeout = TimeSpan.FromSeconds(StorageDefaults.Messaging.OutboxQueryTimeoutSeconds);
             });
 
             x.UsingRabbitMq((context, cfg) =>
@@ -34,29 +34,29 @@ public static class MassTransitConfiguration
                 {
                     h.Username(rabbitMqSettings.Username);
                     h.Password(rabbitMqSettings.Password);
-                    h.Heartbeat(TimeSpan.FromSeconds(30));
+                    h.Heartbeat(TimeSpan.FromSeconds(StorageDefaults.Messaging.HeartbeatSeconds));
                 });
 
                 cfg.ReceiveEndpoint("storage-image-processing", e =>
                 {
                     e.ConfigureConsumer<ImageProcessingTriggerConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: StorageDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(StorageDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(StorageDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(StorageDefaults.Messaging.IntervalDeltaSeconds)));
                 });
 
                 cfg.UseDelayedRedelivery(r => r.Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(2)));
+                    TimeSpan.FromSeconds(StorageDefaults.Messaging.RedeliveryFastSeconds),
+                    TimeSpan.FromSeconds(StorageDefaults.Messaging.RedeliverySlowSeconds),
+                    TimeSpan.FromMinutes(StorageDefaults.Messaging.RedeliveryMaxMinutes)));
 
                 cfg.UseMessageRetry(r => r.Exponential(
-                    retryLimit: 5,
-                    minInterval: TimeSpan.FromMilliseconds(200),
-                    maxInterval: TimeSpan.FromSeconds(30),
-                    intervalDelta: TimeSpan.FromSeconds(5)));
+                    retryLimit: StorageDefaults.Messaging.HighThroughputRetryLimit,
+                    minInterval: TimeSpan.FromMilliseconds(StorageDefaults.Messaging.HighThroughputMinIntervalMs),
+                    maxInterval: TimeSpan.FromSeconds(StorageDefaults.Messaging.MaxIntervalSeconds),
+                    intervalDelta: TimeSpan.FromSeconds(StorageDefaults.Messaging.IntervalDeltaSeconds)));
 
                 cfg.UseDelayedMessageScheduler();
                 cfg.ConfigureEndpoints(context);

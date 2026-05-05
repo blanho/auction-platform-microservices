@@ -21,8 +21,8 @@ public class CreateAutoBidCommandValidator : AbstractValidator<CreateAutoBidComm
         RuleFor(x => x.MaxAmount)
             .GreaterThan(0)
             .WithMessage(ValidationConstants.Messages.MustBePositive("Max amount"))
-            .LessThanOrEqualTo(10_000_000)
-            .WithMessage(ValidationConstants.Messages.MustNotExceed("Max amount", 10_000_000));
+            .LessThanOrEqualTo(BidDefaults.MaxBidAmount)
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Max amount", (int)BidDefaults.MaxBidAmount));
 
         RuleFor(x => x.IncrementAmount)
             .GreaterThan(0)

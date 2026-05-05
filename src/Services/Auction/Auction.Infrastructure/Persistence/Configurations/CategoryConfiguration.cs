@@ -13,19 +13,19 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(x => x.Name)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(AuctionDefaults.Persistence.CategoryNameMaxLength);
 
         builder.Property(x => x.Slug)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(AuctionDefaults.Persistence.CategorySlugMaxLength);
 
         builder.Property(x => x.Icon)
             .IsRequired()
-            .HasMaxLength(50)
+            .HasMaxLength(AuctionDefaults.Persistence.CategoryIconMaxLength)
             .HasDefaultValue("fa-box");
 
         builder.Property(x => x.Description)
-            .HasMaxLength(500);
+            .HasMaxLength(AuctionDefaults.Persistence.CategoryDescriptionMaxLength);
 
         builder.Property(x => x.DisplayOrder)
             .IsRequired()

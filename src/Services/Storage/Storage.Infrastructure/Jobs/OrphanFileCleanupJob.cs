@@ -14,9 +14,8 @@ public class OrphanFileCleanupJob : BaseJob
     public const string JobId = "orphan-file-cleanup";
     public const string Description = "Purges soft-deleted file records and cleans up unassociated files";
 
-    private const int BatchSize = 100;
-    private static readonly TimeSpan SoftDeleteRetention = TimeSpan.FromDays(30);
-    private static readonly TimeSpan UnassociatedFileThreshold = TimeSpan.FromHours(24);
+    private static readonly TimeSpan SoftDeleteRetention = TimeSpan.FromDays(StorageDefaults.Cleanup.SoftDeleteRetentionDays);
+    private static readonly TimeSpan UnassociatedFileThreshold = TimeSpan.FromHours(StorageDefaults.Cleanup.UnassociatedFileThresholdHours);
 
     public OrphanFileCleanupJob(
         ILogger<OrphanFileCleanupJob> logger,
@@ -49,7 +48,7 @@ public class OrphanFileCleanupJob : BaseJob
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var batch = await repository.GetSoftDeletedOlderThanAsync(threshold, BatchSize, cancellationToken);
+            var batch = await repository.GetSoftDeletedOlderThanAsync(threshold, StorageDefaults.Cleanup.BatchSize, cancellationToken);
 
             if (batch.Count == 0)
             {
@@ -85,7 +84,7 @@ public class OrphanFileCleanupJob : BaseJob
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var batch = await repository.GetUnassociatedOlderThanAsync(threshold, BatchSize, cancellationToken);
+            var batch = await repository.GetUnassociatedOlderThanAsync(threshold, StorageDefaults.Cleanup.BatchSize, cancellationToken);
 
             if (batch.Count == 0)
             {

@@ -12,25 +12,25 @@ public class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.ReporterUsername)
-            .HasMaxLength(256)
+            .HasMaxLength(AnalyticsDefaults.Persistence.EntityTypeMaxLength)
             .IsRequired();
 
         builder.Property(e => e.ReportedUsername)
-            .HasMaxLength(256)
+            .HasMaxLength(AnalyticsDefaults.Persistence.EntityTypeMaxLength)
             .IsRequired();
 
         builder.Property(e => e.Reason)
-            .HasMaxLength(500)
+            .HasMaxLength(AnalyticsDefaults.Persistence.ReasonMaxLength)
             .IsRequired();
 
         builder.Property(e => e.Description)
-            .HasMaxLength(2000);
+            .HasMaxLength(AnalyticsDefaults.Persistence.LongTextMaxLength);
 
         builder.Property(e => e.Resolution)
-            .HasMaxLength(2000);
+            .HasMaxLength(AnalyticsDefaults.Persistence.LongTextMaxLength);
 
         builder.Property(e => e.ResolvedBy)
-            .HasMaxLength(256);
+            .HasMaxLength(AnalyticsDefaults.Persistence.EntityTypeMaxLength);
 
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.Type);

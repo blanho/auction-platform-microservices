@@ -16,20 +16,20 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
 
         builder.Property(x => x.ReservePrice)
             .IsRequired()
-            .HasPrecision(18, 2);
+            .HasPrecision(AuctionDefaults.Persistence.MoneyPrecision, AuctionDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.BuyNowPrice)
-            .HasPrecision(18, 2);
+            .HasPrecision(AuctionDefaults.Persistence.MoneyPrecision, AuctionDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.SoldAmount)
-            .HasPrecision(18, 2);
+            .HasPrecision(AuctionDefaults.Persistence.MoneyPrecision, AuctionDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.CurrentHighBid)
-            .HasPrecision(18, 2);
+            .HasPrecision(AuctionDefaults.Persistence.MoneyPrecision, AuctionDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.Currency)
             .IsRequired()
-            .HasMaxLength(3)
+            .HasMaxLength(AuctionDefaults.Persistence.CurrencyCodeMaxLength)
             .HasDefaultValue("USD");
 
         builder.Property(x => x.SellerId)
@@ -37,12 +37,12 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
 
         builder.Property(x => x.SellerUsername)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(AuctionDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.WinnerId);
 
         builder.Property(x => x.WinnerUsername)
-            .HasMaxLength(256);
+            .HasMaxLength(AuctionDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.AuctionEnd)
             .IsRequired();

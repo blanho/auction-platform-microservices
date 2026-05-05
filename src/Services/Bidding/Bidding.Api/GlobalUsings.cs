@@ -2,6 +2,8 @@
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Authorization;
 
+global using Bidding.Domain.Constants;
+
 global using BuildingBlocks.Web.Extensions;
 global using BuildingBlocks.Web.Middleware;
 global using BuildingBlocks.Application.Abstractions;

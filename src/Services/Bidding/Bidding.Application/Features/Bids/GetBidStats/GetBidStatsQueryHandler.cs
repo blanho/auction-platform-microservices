@@ -25,11 +25,11 @@ public class GetBidStatsQueryHandler : IQueryHandler<GetBidStatsQuery, BidStatsR
 
         var days = request.DaysForDailyStats < 1
             ? BidDefaults.DefaultDaysForStats
-            : Math.Min(request.DaysForDailyStats, 365);
+            : Math.Min(request.DaysForDailyStats, BidDefaults.MaxDaysForStats);
 
         var topLimit = request.TopBiddersLimit < 1
             ? BidDefaults.DefaultTopBiddersLimit
-            : Math.Min(request.TopBiddersLimit, 100);
+            : Math.Min(request.TopBiddersLimit, BidDefaults.MaxTopBiddersLimit);
 
         var overallStats = await _repository.GetBidStatsAsync(cancellationToken);
         var dailyStats = await _repository.GetDailyBidStatsAsync(days, cancellationToken);

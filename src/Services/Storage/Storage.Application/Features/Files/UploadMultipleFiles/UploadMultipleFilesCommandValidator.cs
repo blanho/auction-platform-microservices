@@ -16,7 +16,7 @@ public class UploadMultipleFilesCommandValidator : AbstractValidator<UploadMulti
 
         RuleForEach(x => x.Files).ChildRules(file =>
         {
-            file.RuleFor(f => f.FileName).NotEmpty().MaximumLength(255);
+            file.RuleFor(f => f.FileName).NotEmpty().MaximumLength(StorageDefaults.Validation.FileNameMaxLength);
             file.RuleFor(f => f.ContentType).NotEmpty();
             file.RuleFor(f => f.FileSize)
                 .GreaterThan(0)

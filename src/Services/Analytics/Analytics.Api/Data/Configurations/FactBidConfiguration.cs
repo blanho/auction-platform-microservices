@@ -18,10 +18,10 @@ public class FactBidConfiguration : IEntityTypeConfiguration<FactBid>
         builder.Property(e => e.BidderId).IsRequired();
         builder.Property(e => e.DateKey).IsRequired();
 
-        builder.Property(e => e.BidderUsername).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.BidStatus).HasMaxLength(30).IsRequired();
+        builder.Property(e => e.BidderUsername).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength).IsRequired();
+        builder.Property(e => e.BidStatus).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
 
-        builder.Property(e => e.BidAmount).HasPrecision(18, 2);
+        builder.Property(e => e.BidAmount).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
 
         builder.HasIndex(e => e.EventTime)
             .HasDatabaseName("ix_fact_bids_time");

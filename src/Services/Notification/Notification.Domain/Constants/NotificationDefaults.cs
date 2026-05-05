@@ -42,5 +42,40 @@ public static class NotificationDefaults
         public const int MinBatchSize = 10;
 
         public const int MaxBatchSize = 500;
+
+        public const int DefaultBatchSize = 100;
+    }
+
+    public static class Database
+    {
+        public const int RetryCount = 3;
+
+        public const int MaxRetryDelaySeconds = 30;
+
+        public const int CommandTimeoutSeconds = 30;
+    }
+
+    public static class Pagination
+    {
+        public const int DefaultPageSize = 20;
+    }
+
+    public static class Template
+    {
+        public const int KeyMaxLength = 100;
+
+        public const int NameMaxLength = 200;
+
+        public const int SubjectMaxLength = 500;
+
+        public const int BodyMaxLength = 10000;
+
+        public const int DescriptionMaxLength = 1000;
+
+        public const int SmsBodyMaxLength = 160;
+
+        public const int PushTitleMaxLength = 100;
+
+        public const int PushBodyMaxLength = 500;
     }
 }

@@ -12,13 +12,13 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
 
         builder.Property(x => x.Username)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(WalletDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.Amount)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.Balance)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.Type)
             .IsRequired()
@@ -29,16 +29,16 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
             .HasConversion<int>();
 
         builder.Property(x => x.Description)
-            .HasMaxLength(500);
+            .HasMaxLength(WalletDefaults.Persistence.DescriptionMaxLength);
 
         builder.Property(x => x.ReferenceType)
-            .HasMaxLength(100);
+            .HasMaxLength(WalletDefaults.Persistence.ReferenceTypeMaxLength);
 
         builder.Property(x => x.PaymentMethod)
-            .HasMaxLength(100);
+            .HasMaxLength(WalletDefaults.Persistence.PaymentMethodMaxLength);
 
         builder.Property(x => x.ExternalTransactionId)
-            .HasMaxLength(200);
+            .HasMaxLength(WalletDefaults.Persistence.ExternalTransactionIdMaxLength);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();

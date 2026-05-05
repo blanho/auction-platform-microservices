@@ -13,25 +13,25 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
 
         builder.Property(x => x.FileName)
             .IsRequired()
-            .HasMaxLength(255);
+            .HasMaxLength(StorageDefaults.Persistence.FileNameMaxLength);
 
         builder.Property(x => x.StoredFileName)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasMaxLength(StorageDefaults.Persistence.StoredFileNameMaxLength);
 
         builder.Property(x => x.ContentType)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(StorageDefaults.Persistence.ContentTypeMaxLength);
 
         builder.Property(x => x.FileSize)
             .IsRequired();
 
         builder.Property(x => x.Url)
             .IsRequired()
-            .HasMaxLength(2048);
+            .HasMaxLength(StorageDefaults.Persistence.UrlMaxLength);
 
         builder.Property(x => x.SubFolder)
-            .HasMaxLength(255);
+            .HasMaxLength(StorageDefaults.Persistence.SubFolderMaxLength);
 
         builder.Property(x => x.OwnerId);
 
@@ -46,7 +46,7 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
             .HasDefaultValue(StorageProvider.Local);
 
         builder.Property(x => x.Checksum)
-            .HasMaxLength(128);
+            .HasMaxLength(StorageDefaults.Persistence.ChecksumMaxLength);
 
         builder.Property(x => x.Metadata)
             .HasColumnType("jsonb");

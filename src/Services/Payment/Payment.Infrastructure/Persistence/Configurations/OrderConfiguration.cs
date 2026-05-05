@@ -12,45 +12,45 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(x => x.BuyerUsername)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(WalletDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.SellerUsername)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(WalletDefaults.Persistence.UsernameMaxLength);
 
         builder.Property(x => x.ItemTitle)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasMaxLength(WalletDefaults.Persistence.ItemTitleMaxLength);
 
         builder.Property(x => x.WinningBid)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.TotalAmount)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.ShippingCost)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.PlatformFee)
-            .HasPrecision(18, 2);
+            .HasPrecision(WalletDefaults.Persistence.MoneyPrecision, WalletDefaults.Persistence.MoneyScale);
 
         builder.Property(x => x.PaymentTransactionId)
-            .HasMaxLength(200);
+            .HasMaxLength(WalletDefaults.Persistence.TransactionIdMaxLength);
 
         builder.Property(x => x.ShippingAddress)
-            .HasMaxLength(1000);
+            .HasMaxLength(WalletDefaults.Persistence.AddressMaxLength);
 
         builder.Property(x => x.TrackingNumber)
-            .HasMaxLength(100);
+            .HasMaxLength(WalletDefaults.Persistence.TrackingNumberMaxLength);
 
         builder.Property(x => x.ShippingCarrier)
-            .HasMaxLength(100);
+            .HasMaxLength(WalletDefaults.Persistence.CarrierMaxLength);
 
         builder.Property(x => x.BuyerNotes)
-            .HasMaxLength(1000);
+            .HasMaxLength(WalletDefaults.Persistence.NotesMaxLength);
 
         builder.Property(x => x.SellerNotes)
-            .HasMaxLength(1000);
+            .HasMaxLength(WalletDefaults.Persistence.NotesMaxLength);
 
         builder.Property(x => x.Status)
             .IsRequired()

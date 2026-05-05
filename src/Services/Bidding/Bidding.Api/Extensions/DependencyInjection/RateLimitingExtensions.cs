@@ -14,9 +14,9 @@ internal static class RateLimitingExtensions
 
             options.AddSlidingWindowLimiter("bidding", opt =>
             {
-                opt.PermitLimit = 10;
-                opt.Window = TimeSpan.FromSeconds(10);
-                opt.SegmentsPerWindow = 2;
+                opt.PermitLimit = BidDefaults.RateLimit.BiddingPermitLimit;
+                opt.Window = TimeSpan.FromSeconds(BidDefaults.RateLimit.BiddingWindowSeconds);
+                opt.SegmentsPerWindow = BidDefaults.RateLimit.BiddingSegmentsPerWindow;
                 opt.QueueLimit = 0;
             });
 
@@ -27,7 +27,7 @@ internal static class RateLimitingExtensions
 
                 var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry)
                     ? (int)retry.TotalSeconds
-                    : 10;
+                    : BidDefaults.RateLimit.DefaultRetryAfterSeconds;
 
                 context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
 
@@ -55,9 +55,9 @@ internal static class RateLimitingExtensions
                     userId,
                     _ => new SlidingWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,
-                        Window = TimeSpan.FromMinutes(1),
-                        SegmentsPerWindow = 4,
+                        PermitLimit = BidDefaults.RateLimit.GlobalPermitLimit,
+                        Window = TimeSpan.FromMinutes(BidDefaults.RateLimit.GlobalWindowMinutes),
+                        SegmentsPerWindow = BidDefaults.RateLimit.GlobalSegmentsPerWindow,
                         QueueLimit = 0
                     });
             });

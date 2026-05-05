@@ -25,10 +25,10 @@ public static class ServiceCollectionExtensions
                     npgsqlOptions =>
                     {
                         npgsqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 3,
-                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            maxRetryCount: AnalyticsDefaults.Database.RetryCount,
+                            maxRetryDelay: TimeSpan.FromSeconds(AnalyticsDefaults.Database.MaxRetryDelaySeconds),
                             errorCodesToAdd: null);
-                        npgsqlOptions.CommandTimeout(60);
+                        npgsqlOptions.CommandTimeout(AnalyticsDefaults.Database.CommandTimeoutSeconds);
                     })
                 .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
@@ -91,7 +91,7 @@ public static class ServiceCollectionExtensions
             x.AddEntityFrameworkOutbox<AnalyticsDbContext>(o =>
             {
                 o.UsePostgres();
-                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.QueryDelay = TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.OutboxQueryDelaySeconds);
                 o.UseBusOutbox();
             });
 
@@ -131,7 +131,7 @@ public static class ServiceCollectionExtensions
         cfg.ReceiveEndpoint("audit-event-queue", e =>
         {
             e.ConfigureConsumer<AuditEventConsumer>(context);
-            e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
+            e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
     }
 
@@ -143,7 +143,7 @@ public static class ServiceCollectionExtensions
             e.ConfigureConsumer<AuctionFinishedAnalyticsConsumer>(context);
             e.ConfigureConsumer<AuctionStartedAnalyticsConsumer>(context);
             e.ConfigureConsumer<BuyNowExecutedAnalyticsConsumer>(context);
-            e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
+            e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
     }
 
@@ -154,8 +154,8 @@ public static class ServiceCollectionExtensions
             e.ConfigureConsumer<BidPlacedBatchConsumer>(context, c =>
             {
                 c.Options<BatchOptions>(o => o
-                    .SetMessageLimit(100)
-                    .SetTimeLimit(TimeSpan.FromSeconds(1)));
+                    .SetMessageLimit(AnalyticsDefaults.Messaging.BidBatchMessageLimit)
+                    .SetTimeLimit(TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.BidBatchTimeLimitSeconds)));
             });
             e.ConfigureConsumer<HighestBidUpdatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<BidAcceptedAnalyticsConsumer>(context);
@@ -164,7 +164,7 @@ public static class ServiceCollectionExtensions
             e.ConfigureConsumer<OutbidAnalyticsConsumer>(context);
             e.ConfigureConsumer<BidBelowReserveAnalyticsConsumer>(context);
             e.ConfigureConsumer<BidTooLowAnalyticsConsumer>(context);
-            e.ConfigureRetryAndConcurrency(prefetchCount: 128, concurrentLimit: 32);
+            e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.BidPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.BidConcurrency);
         });
     }
 
@@ -176,7 +176,7 @@ public static class ServiceCollectionExtensions
             e.ConfigureConsumer<OrderCreatedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderShippedAnalyticsConsumer>(context);
             e.ConfigureConsumer<OrderDeliveredAnalyticsConsumer>(context);
-            e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
+            e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
     }
 
@@ -185,22 +185,22 @@ public static class ServiceCollectionExtensions
         cfg.ReceiveEndpoint("analytics-identity-events", e =>
         {
             e.ConfigureConsumer<UserCreatedAnalyticsConsumer>(context);
-            e.ConfigureRetryAndConcurrency(prefetchCount: 16, concurrentLimit: 8);
+            e.ConfigureRetryAndConcurrency(prefetchCount: AnalyticsDefaults.Messaging.StandardPrefetch, concurrentLimit: AnalyticsDefaults.Messaging.StandardConcurrency);
         });
     }
 
     private static void ConfigureRetryAndConcurrency(this IRabbitMqReceiveEndpointConfigurator e, int prefetchCount, int concurrentLimit)
     {
         e.UseDelayedRedelivery(r => r.Intervals(
-            TimeSpan.FromSeconds(5),
-            TimeSpan.FromSeconds(30),
-            TimeSpan.FromMinutes(2)));
+            TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.RedeliveryFastSeconds),
+            TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.RedeliverySlowSeconds),
+            TimeSpan.FromMinutes(AnalyticsDefaults.Messaging.RedeliveryMaxMinutes)));
 
         e.UseMessageRetry(r => r.Exponential(
-            retryLimit: 5,
-            minInterval: TimeSpan.FromMilliseconds(100),
-            maxInterval: TimeSpan.FromSeconds(30),
-            intervalDelta: TimeSpan.FromMilliseconds(200)));
+            retryLimit: AnalyticsDefaults.Messaging.RetryLimit,
+            minInterval: TimeSpan.FromMilliseconds(AnalyticsDefaults.Messaging.MinIntervalMs),
+            maxInterval: TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.MaxIntervalSeconds),
+            intervalDelta: TimeSpan.FromMilliseconds(AnalyticsDefaults.Messaging.IntervalDeltaMs)));
 
         e.PrefetchCount = prefetchCount;
         e.ConcurrentMessageLimit = concurrentLimit;

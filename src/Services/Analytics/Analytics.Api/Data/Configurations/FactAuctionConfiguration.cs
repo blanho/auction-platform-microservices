@@ -18,20 +18,20 @@ public class FactAuctionConfiguration : IEntityTypeConfiguration<FactAuction>
         builder.Property(e => e.SellerId).IsRequired();
         builder.Property(e => e.DateKey).IsRequired();
 
-        builder.Property(e => e.Title).HasMaxLength(500).IsRequired();
-        builder.Property(e => e.SellerUsername).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.WinnerUsername).HasMaxLength(100);
-        builder.Property(e => e.CategoryName).HasMaxLength(200);
-        builder.Property(e => e.Status).HasMaxLength(30).IsRequired();
-        builder.Property(e => e.Condition).HasMaxLength(50);
-        builder.Property(e => e.Currency).HasMaxLength(3);
-        builder.Property(e => e.EventType).HasMaxLength(30).IsRequired();
+        builder.Property(e => e.Title).HasMaxLength(AnalyticsDefaults.Persistence.TitleMaxLength).IsRequired();
+        builder.Property(e => e.SellerUsername).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength).IsRequired();
+        builder.Property(e => e.WinnerUsername).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength);
+        builder.Property(e => e.CategoryName).HasMaxLength(AnalyticsDefaults.Persistence.CategoryNameMaxLength);
+        builder.Property(e => e.Status).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
+        builder.Property(e => e.Condition).HasMaxLength(AnalyticsDefaults.Persistence.ConditionMaxLength);
+        builder.Property(e => e.Currency).HasMaxLength(AnalyticsDefaults.Persistence.CurrencyMaxLength);
+        builder.Property(e => e.EventType).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
 
-        builder.Property(e => e.StartingPrice).HasPrecision(18, 2);
-        builder.Property(e => e.ReservePrice).HasPrecision(18, 2);
-        builder.Property(e => e.FinalPrice).HasPrecision(18, 2);
-        builder.Property(e => e.BuyNowPrice).HasPrecision(18, 2);
-        builder.Property(e => e.DurationHours).HasPrecision(10, 2);
+        builder.Property(e => e.StartingPrice).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
+        builder.Property(e => e.ReservePrice).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
+        builder.Property(e => e.FinalPrice).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
+        builder.Property(e => e.BuyNowPrice).HasPrecision(AnalyticsDefaults.Persistence.MoneyPrecision, AnalyticsDefaults.Persistence.MoneyScale);
+        builder.Property(e => e.DurationHours).HasPrecision(AnalyticsDefaults.Persistence.DurationPrecision, AnalyticsDefaults.Persistence.DurationScale);
 
         builder.HasIndex(e => e.EventTime)
             .HasDatabaseName("ix_fact_auctions_time");

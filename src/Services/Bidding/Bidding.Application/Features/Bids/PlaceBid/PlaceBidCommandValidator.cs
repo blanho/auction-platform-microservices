@@ -23,8 +23,8 @@ public class PlaceBidCommandValidator : AbstractValidator<PlaceBidCommand>
         RuleFor(x => x.Amount)
             .GreaterThan(0)
             .WithMessage(ValidationConstants.Messages.MustBePositive("Bid amount"))
-            .LessThanOrEqualTo(10_000_000)
-            .WithMessage(ValidationConstants.Messages.OutOfRange("Bid amount", 0, 10_000_000));
+            .LessThanOrEqualTo(BidDefaults.MaxBidAmount)
+            .WithMessage(ValidationConstants.Messages.OutOfRange("Bid amount", 0, BidDefaults.MaxBidAmount));
 
         RuleFor(x => x.IdempotencyKey)
             .NotEmpty()

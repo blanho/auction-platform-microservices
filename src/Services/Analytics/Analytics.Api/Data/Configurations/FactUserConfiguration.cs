@@ -17,11 +17,11 @@ public class FactUserConfiguration : IEntityTypeConfiguration<FactUser>
         builder.Property(e => e.IngestedAt).IsRequired();
         builder.Property(e => e.DateKey).IsRequired();
 
-        builder.Property(e => e.Username).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.Email).HasMaxLength(256).IsRequired();
-        builder.Property(e => e.Role).HasMaxLength(50).IsRequired();
-        builder.Property(e => e.FullName).HasMaxLength(200);
-        builder.Property(e => e.EventType).HasMaxLength(30).IsRequired();
+        builder.Property(e => e.Username).HasMaxLength(AnalyticsDefaults.Persistence.UsernameMaxLength).IsRequired();
+        builder.Property(e => e.Email).HasMaxLength(AnalyticsDefaults.Persistence.EmailMaxLength).IsRequired();
+        builder.Property(e => e.Role).HasMaxLength(AnalyticsDefaults.Persistence.ConditionMaxLength).IsRequired();
+        builder.Property(e => e.FullName).HasMaxLength(AnalyticsDefaults.Persistence.CategoryNameMaxLength);
+        builder.Property(e => e.EventType).HasMaxLength(AnalyticsDefaults.Persistence.StatusMaxLength).IsRequired();
 
         builder.HasIndex(e => e.UserId);
         builder.HasIndex(e => e.DateKey);

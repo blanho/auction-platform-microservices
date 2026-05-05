@@ -3,6 +3,7 @@ global using BuildingBlocks.Application.Abstractions.Messaging;
 global using BuildingBlocks.Application.Constants;
 global using BuildingBlocks.Infrastructure.Caching;
 global using Payment.Application.Interfaces;
+global using Payment.Domain.Constants;
 global using Payment.Domain.Entities;
 global using Payment.Domain.Enums;
 global using Microsoft.Extensions.Logging;

@@ -13,13 +13,13 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
 
         builder.Property(x => x.Title)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(AuctionDefaults.Persistence.ItemTitleMaxLength);
 
         builder.Property(x => x.Description)
-            .HasMaxLength(4000);
+            .HasMaxLength(AuctionDefaults.Persistence.ItemDescriptionMaxLength);
 
         builder.Property(x => x.Condition)
-            .HasMaxLength(50);
+            .HasMaxLength(AuctionDefaults.Persistence.ItemConditionMaxLength);
 
         builder.Property(x => x.YearManufactured);
 
