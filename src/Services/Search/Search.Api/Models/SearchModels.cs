@@ -1,3 +1,5 @@
+using Search.Api.Constants;
+
 namespace Search.Api.Models;
 
 public class AuctionSearchRequest
@@ -26,8 +28,8 @@ public class AuctionSearchRequest
 
     public bool FeaturedOnly { get; set; }
 
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    public int Page { get; set; } = SearchDefaults.DefaultPage;
+    public int PageSize { get; set; } = SearchDefaults.DefaultPageSize;
 
     public bool IncludeFacets { get; set; }
 }

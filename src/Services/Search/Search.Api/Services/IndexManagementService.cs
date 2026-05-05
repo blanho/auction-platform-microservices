@@ -78,8 +78,8 @@ public class IndexManagementService : IIndexManagementService
                             .Filter(new[] { "lowercase", "asciifolding" })))
                     .Tokenizers(t => t
                         .EdgeNGram("autocomplete_tokenizer", e => e
-                            .MinGram(2)
-                            .MaxGram(20)
+                            .MinGram(SearchDefaults.NgramMinLength)
+                            .MaxGram(SearchDefaults.NgramMaxLength)
                             .TokenChars(new[] 
                             { 
                                 TokenChar.Letter, 
@@ -167,7 +167,7 @@ public class IndexManagementService : IIndexManagementService
             var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
             if (!existsResponse.Exists)
             {
-                return Result.Success(new IndexStats(indexName, false, 0, "none", 0));
+                return Result.Success(new IndexStats(indexName, false, SearchDefaults.ZeroDocCount, SearchDefaults.IndexHealthNone, SearchDefaults.ZeroSizeBytes));
             }
 
             var statsResponse = await _client.Indices.StatsAsync(
@@ -175,7 +175,7 @@ public class IndexManagementService : IIndexManagementService
 
             if (!statsResponse.IsValidResponse || statsResponse.Indices == null)
             {
-                return Result.Success(new IndexStats(indexName, true, 0, "unknown", 0));
+                return Result.Success(new IndexStats(indexName, true, SearchDefaults.ZeroDocCount, SearchDefaults.IndexHealthUnknown, SearchDefaults.ZeroSizeBytes));
             }
 
             var stats = BuildIndexStats(indexName, statsResponse);
@@ -195,12 +195,12 @@ public class IndexManagementService : IIndexManagementService
             return new IndexStats(
                 indexName,
                 true,
-                indexStats.Primaries?.Docs?.Count ?? 0,
-                "green",
-                indexStats.Primaries?.Store?.SizeInBytes ?? 0);
+                indexStats.Primaries?.Docs?.Count ?? SearchDefaults.ZeroDocCount,
+                SearchDefaults.IndexHealthGreen,
+                indexStats.Primaries?.Store?.SizeInBytes ?? SearchDefaults.ZeroSizeBytes);
         }
 
-        return new IndexStats(indexName, true, 0, "unknown", 0);
+        return new IndexStats(indexName, true, SearchDefaults.ZeroDocCount, SearchDefaults.IndexHealthUnknown, SearchDefaults.ZeroSizeBytes);
     }
 
     public async Task<Result> IsHealthyAsync(CancellationToken ct = default)

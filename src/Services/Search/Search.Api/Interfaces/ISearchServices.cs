@@ -1,3 +1,4 @@
+using Search.Api.Constants;
 using Search.Api.Models;
 
 namespace Search.Api.Interfaces;
@@ -14,6 +15,6 @@ public interface IAuctionSearchService
 
     Task<IReadOnlyList<AutocompleteSuggestion>> AutocompleteAsync(
         string prefix,
-        int maxSuggestions = 10,
+        int maxSuggestions = SearchDefaults.DefaultAutocompleteLimit,
         CancellationToken ct = default);
 }

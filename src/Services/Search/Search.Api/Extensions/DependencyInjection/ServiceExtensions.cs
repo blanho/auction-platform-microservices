@@ -97,81 +97,81 @@ public static class ServiceExtensions
                 });
 
                 cfg.UseMessageRetry(r => r.Exponential(
-                    retryLimit: 5,
-                    minInterval: TimeSpan.FromMilliseconds(200),
-                    maxInterval: TimeSpan.FromSeconds(30),
-                    intervalDelta: TimeSpan.FromSeconds(5)));
+                    retryLimit: MessagingDefaults.GlobalRetryLimit,
+                    minInterval: TimeSpan.FromMilliseconds(MessagingDefaults.RetryMinIntervalMs),
+                    maxInterval: TimeSpan.FromSeconds(MessagingDefaults.RetryMaxIntervalSeconds),
+                    intervalDelta: TimeSpan.FromSeconds(MessagingDefaults.RetryIntervalDeltaSeconds)));
 
                 cfg.ReceiveEndpoint("search-auction-created", e =>
                 {
                     e.ConfigureConsumer<AuctionCreatedConsumer>(context);
-                    e.PrefetchCount = 16;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountLow;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30),
-                        TimeSpan.FromMinutes(2)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds),
+                        TimeSpan.FromMinutes(MessagingDefaults.RedeliveryMaxMinutes)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-updated", e =>
                 {
                     e.ConfigureConsumer<AuctionUpdatedConsumer>(context);
-                    e.PrefetchCount = 32;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountMedium;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30),
-                        TimeSpan.FromMinutes(2)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds),
+                        TimeSpan.FromMinutes(MessagingDefaults.RedeliveryMaxMinutes)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-deleted", e =>
                 {
                     e.ConfigureConsumer<AuctionDeletedConsumer>(context);
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-finished", e =>
                 {
                     e.ConfigureConsumer<AuctionFinishedConsumer>(context);
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("search-bid-placed", e =>
                 {
                     e.ConfigureConsumer<BidPlacedConsumer>(context);
-                    e.PrefetchCount = 64;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("search-bid-updated", e =>
                 {
                     e.ConfigureConsumer<HighestBidUpdatedConsumer>(context);
-                    e.PrefetchCount = 64;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("search-bid-retracted", e =>
                 {
                     e.ConfigureConsumer<BidRetractedConsumer>(context);
-                    e.PrefetchCount = 32;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountMedium;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("search-auction-high-bid", e =>
                 {
                     e.ConfigureConsumer<AuctionHighBidUpdatedConsumer>(context);
-                    e.PrefetchCount = 64;
+                    e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
                     e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(30)));
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
+                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
                 cfg.ConfigureEndpoints(context);

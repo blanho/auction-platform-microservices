@@ -121,7 +121,7 @@ public class AuctionIndexService : IAuctionIndexService
                 u => u
                     .Doc(partialDocument)
                     .DocAsUpsert(false)
-                    .RetryOnConflict(3),
+                    .RetryOnConflict(IndexingDefaults.PartialUpdateRetryOnConflict),
                 ct);
 
             if (!response.IsValidResponse)
@@ -185,8 +185,8 @@ public class AuctionIndexService : IAuctionIndexService
                         .Params(p => p
                             .Add("price", currentPrice)
                             .Add("count", bidCount)
-                            .Add("syncedAt", DateTimeOffset.UtcNow.ToString("o"))))
-                    .RetryOnConflict(5),
+                            .Add("syncedAt", DateTimeOffset.UtcNow.ToString(DateTimeFormats.Iso8601))))
+                    .RetryOnConflict(IndexingDefaults.BidUpdateRetryOnConflict),
                 ct);
 
             if (!response.IsValidResponse)

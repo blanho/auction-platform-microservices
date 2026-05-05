@@ -60,6 +60,7 @@ public static class AggregationNames
 public static class SearchDefaults
 {
     public const int MaxDescriptionPreviewLength = 200;
+    public const int DefaultPage = 1;
     public const int DefaultPageSize = 20;
     public const int MaxCategoryAggregations = 50;
     public const int MaxBrandAggregations = 50;
@@ -69,6 +70,23 @@ public static class SearchDefaults
     public const int DefaultAutocompleteLimit = 10;
     public const int MaxRecentSearchesPerUser = 10;
     public const int MaxPopularSearches = 10;
+
+    public const int TitleBoost = 3;
+    public const int CategoryBoost = 2;
+    public const int BrandBoost = 2;
+
+    public const string HighlightPreTag = "<em>";
+    public const string HighlightPostTag = "</em>";
+
+    public const int NgramMinLength = 2;
+    public const int NgramMaxLength = 20;
+
+    public const string IndexHealthNone = "none";
+    public const string IndexHealthUnknown = "unknown";
+    public const string IndexHealthGreen = "green";
+
+    public const long ZeroDocCount = 0;
+    public const long ZeroSizeBytes = 0;
 }
 
 public static class SortFields

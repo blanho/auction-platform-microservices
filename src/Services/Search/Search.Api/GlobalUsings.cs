@@ -1,3 +1,4 @@
+global using Search.Api.Constants;
 global using Search.Api.Documents;
 global using Search.Api.Interfaces;
 global using Search.Api.Services;

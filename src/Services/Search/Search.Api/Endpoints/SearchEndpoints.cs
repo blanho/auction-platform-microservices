@@ -77,10 +77,10 @@ public class SearchEndpoints : ICarterModule
     private static async Task<IResult> Autocomplete(
         [FromServices] IAuctionSearchService searchService,
         [FromQuery] string q,
-        [FromQuery] int limit = 10,
+        [FromQuery] int limit = SearchDefaults.DefaultAutocompleteLimit,
         CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        if (string.IsNullOrWhiteSpace(q) || q.Length < SearchDefaults.MinAutocompleteLength)
         {
             return Results.Ok(new List<string>());
         }

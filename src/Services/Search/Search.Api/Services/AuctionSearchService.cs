@@ -15,10 +15,10 @@ public class AuctionSearchService : IAuctionSearchService
 {
     private static readonly string[] MultiMatchFields =
     [
-        $"{ElasticsearchFields.Title}^3",
+        $"{ElasticsearchFields.Title}^{SearchDefaults.TitleBoost}",
         ElasticsearchFields.Description,
-        $"{ElasticsearchFields.CategoryName}^2",
-        $"{ElasticsearchFields.BrandName}^2",
+        $"{ElasticsearchFields.CategoryName}^{SearchDefaults.CategoryBoost}",
+        $"{ElasticsearchFields.BrandName}^{SearchDefaults.BrandBoost}",
         ElasticsearchFields.Tags
     ];
 
@@ -53,8 +53,8 @@ public class AuctionSearchService : IAuctionSearchService
                 .Size(pageSize)
                 .Query(q => BuildQuery(request))
                 .Highlight(h => h
-                    .PreTags(new[] { "<em>" })
-                    .PostTags(new[] { "</em>" })
+                    .PreTags(new[] { SearchDefaults.HighlightPreTag })
+                    .PostTags(new[] { SearchDefaults.HighlightPostTag })
                     .Fields(f => f
                         .Add(ElasticsearchFields.Title, hf => { })
                         .Add(ElasticsearchFields.Description, hf => { })))
