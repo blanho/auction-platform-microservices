@@ -15,6 +15,7 @@ namespace Bidding.Application.Services
         private readonly IDateTimeProvider _dateTime;
         private readonly ILogger<AutoBidService> _logger;
         private readonly IAuctionGrpcClient _auctionGrpcClient;
+        private const string AuctionStatusActive = "Live";
 
         public AutoBidService(
             IAutoBidRepository autoBidRepository,
@@ -137,10 +138,6 @@ namespace Bidding.Application.Services
                 autoBid.LastBidAt
             );
         }
-
-        #region Private Helper Methods
-
-        private const string AuctionStatusActive = "Live";
 
         private bool IsAuctionEligibleForAutoBid(AuctionDetails? auctionDetails, string username, Guid auctionId)
         {
@@ -292,12 +289,5 @@ namespace Bidding.Application.Services
             _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
                 auctionId, autoBid.Username, amount);
         }
-
-        #endregion
-    }
-
-    public static class AutoBidLockKeys
-    {
-        public static string ForAuction(Guid auctionId) => $"autobid:auction:{auctionId}";
     }
 }

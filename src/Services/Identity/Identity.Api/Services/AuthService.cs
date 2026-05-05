@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using Identity.Api.Constants;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
@@ -28,8 +29,9 @@ public class AuthService(
     IAuditPublisher auditPublisher,
     IMapper mapper) : IAuthService
 {
-    private const string ClientId = "nextApp";
-    private const string UsernameKey = "username";
+    private string RequiredFrontendUrl =>
+        configuration["FrontendUrl"]
+            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
 
     public async Task<Result<UserDto>> RegisterAsync(RegisterRequest request)
     {
@@ -65,9 +67,7 @@ public class AuthService(
         }
 
         var confirmationToken = await userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = configuration["FrontendUrl"]
-            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
-        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, confirmationToken);
+        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(RequiredFrontendUrl, user.Id, confirmationToken);
 
         await mediator.Publish(new UserCreatedDomainEvent
         {
@@ -114,7 +114,7 @@ public class AuthService(
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
         {
-            [UsernameKey] = user.UserName!
+            [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!
         });
 
         await mediator.Publish(new UserEmailConfirmedDomainEvent
@@ -138,13 +138,11 @@ public class AuthService(
             return Result.Failure(IdentityErrors.Auth.EmailAlreadyConfirmed);
 
         var token = await userService.GenerateEmailConfirmationTokenAsync(user);
-        var frontendUrl = configuration["FrontendUrl"]
-            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
-        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(frontendUrl, user.Id, token);
+        var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(RequiredFrontendUrl, user.Id, token);
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>
         {
-            [UsernameKey] = user.UserName!,
+            [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!,
             ["confirmationLink"] = confirmationLink
         });
 
@@ -164,13 +162,11 @@ public class AuthService(
         }
 
         var token = await userService.GeneratePasswordResetTokenAsync(user);
-        var frontendUrl = configuration["FrontendUrl"]
-            ?? throw new InvalidOperationException("FrontendUrl configuration is required");
-        var resetLink = EmailLinkHelper.GeneratePasswordResetLink(frontendUrl, user.Email!, token);
+        var resetLink = EmailLinkHelper.GeneratePasswordResetLink(RequiredFrontendUrl, user.Email!, token);
 
         await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "password-reset", "Reset Your Password", new Dictionary<string, string>
         {
-            [UsernameKey] = user.UserName!,
+            [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!,
             ["resetLink"] = resetLink
         });
 
@@ -281,7 +277,7 @@ public class AuthService(
 
     public async Task<Result<TokenResponse>> RefreshTokenAsync(string refreshToken, string ipAddress)
     {
-        var result = await tokenService.RefreshTokenAsync(refreshToken, ClientId, ipAddress);
+        var result = await tokenService.RefreshTokenAsync(refreshToken, IdentityDefaults.OAuth.DefaultClientId, ipAddress);
 
         if (!result.IsSuccess)
         {
@@ -398,7 +394,7 @@ public class AuthService(
 
             await PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "welcome", "Welcome to Auction Platform", new Dictionary<string, string>
             {
-                [UsernameKey] = user.UserName!
+                [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!
             });
         }
         else if (user.IsSuspended)
@@ -480,7 +476,7 @@ public class AuthService(
 
     private async Task<Result<LoginResponse>> GenerateLoginResponseAsync(ApplicationUser user, string ipAddress)
     {
-        var tokens = await tokenService.GenerateTokenPairAsync(user.Id, ClientId, ipAddress);
+        var tokens = await tokenService.GenerateTokenPairAsync(user.Id, IdentityDefaults.OAuth.DefaultClientId, ipAddress);
         if (tokens == null)
         {
             logger.LogError("Failed to generate tokens for user {Username}", user.UserName);

@@ -207,17 +207,8 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             StripHtml(body),
             cancellationToken);
 
-        if (result.Success)
-        {
-            record.MarkAsSent(result.MessageId);
-        }
-        else
-        {
-            record.MarkAsFailed(result.Error ?? "Unknown error");
-        }
-
-        await _recordRepo.AddRecordAsync(record, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        ApplySendResult(record, result.Success, result.MessageId, result.Error);
+        await PersistNotificationRecordAsync(record, cancellationToken);
     }
 
     private async Task SendSmsAsync(
@@ -241,17 +232,8 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             body,
             cancellationToken);
 
-        if (result.Success)
-        {
-            record.MarkAsSent(result.MessageId);
-        }
-        else
-        {
-            record.MarkAsFailed(result.Error ?? "Unknown error");
-        }
-
-        await _recordRepo.AddRecordAsync(record, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        ApplySendResult(record, result.Success, result.MessageId, result.Error);
+        await PersistNotificationRecordAsync(record, cancellationToken);
     }
 
     private async Task SendPushAsync(
@@ -278,17 +260,8 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             null,
             cancellationToken);
 
-        if (result.Success)
-        {
-            record.MarkAsSent(result.MessageId);
-        }
-        else
-        {
-            record.MarkAsFailed(result.Error ?? "Unknown error");
-        }
-
-        await _recordRepo.AddRecordAsync(record, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        ApplySendResult(record, result.Success, result.MessageId, result.Error);
+        await PersistNotificationRecordAsync(record, cancellationToken);
     }
 
     private async Task SendInAppAsync(
@@ -331,8 +304,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             record.MarkAsFailed(ex.Message);
         }
 
-        await _recordRepo.AddRecordAsync(record, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await PersistNotificationRecordAsync(record, cancellationToken);
     }
 
     private async Task PublishJobStarted(
@@ -355,6 +327,20 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             TotalItems = message.Recipients.Count,
             MaxRetryCount = 0
         });
+    }
+
+    private static void ApplySendResult(NotificationRecord record, bool success, string? messageId, string? error)
+    {
+        if (success)
+            record.MarkAsSent(messageId);
+        else
+            record.MarkAsFailed(error ?? "Unknown error");
+    }
+
+    private async Task PersistNotificationRecordAsync(NotificationRecord record, CancellationToken cancellationToken)
+    {
+        await _recordRepo.AddRecordAsync(record, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private static string RenderTemplate(string? template, Dictionary<string, string> parameters)

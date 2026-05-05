@@ -43,8 +43,6 @@ namespace Bidding.Application.Services
             return await ProcessBidWithLock(dto, bidderId, bidderUsername, isAutoBid, cancellationToken);
         }
 
-        #region Private Helper Methods
-
         private async Task<BidDto> ProcessBidWithLock(
             PlaceBidDto dto,
             Guid bidderId,
@@ -100,32 +98,22 @@ namespace Bidding.Application.Services
         {
             if (currentHighBid == 0)
             {
-                if (amount > 0)
-                {
-                    errorMessage = string.Empty;
-                    return true;
-                }
-            }
-            else
-            {
-                var increment = BidIncrementHelper.GetIncrement(currentHighBid);
-                var minimumNextBid = BidIncrementHelper.GetMinimumNextBid(currentHighBid);
-                
-                if (amount >= minimumNextBid)
-                {
-                    errorMessage = string.Empty;
-                    return true;
-                }
-                
-                _logger.LogWarning(
-                    "Bid amount {Amount} does not meet minimum increment. Current high: {CurrentHigh}, Minimum next: {MinimumNext}",
-                    amount, currentHighBid, minimumNextBid);
-                
-                errorMessage = $"Bid must be at least ${minimumNextBid:N2}. Minimum increment is ${increment:N2} for bids at this level.";
-                return false;
+                errorMessage = amount > 0 ? string.Empty : "Bid amount must be greater than zero.";
+                return amount > 0;
             }
 
-            errorMessage = "Bid amount must be greater than zero.";
+            var minimumNextBid = BidIncrementHelper.GetMinimumNextBid(currentHighBid);
+            if (amount >= minimumNextBid)
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+
+            var increment = BidIncrementHelper.GetIncrement(currentHighBid);
+            _logger.LogWarning(
+                "Bid amount {Amount} does not meet minimum increment. Current high: {CurrentHigh}, Minimum next: {MinimumNext}",
+                amount, currentHighBid, minimumNextBid);
+            errorMessage = $"Bid must be at least ${minimumNextBid:N2}. Minimum increment is ${increment:N2} for bids at this level.";
             return false;
         }
 
@@ -286,15 +274,13 @@ namespace Bidding.Application.Services
             return createdBid.ToDto();
         }
 
-        #endregion
-
         public async Task<PaginatedResult<BidDto>> GetBidsForAuctionAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Getting bids for auction {AuctionId}, Page: {Page}", 
+            _logger.LogInformation("Getting bids for auction {AuctionId}, Page: {Page}",
                 queryParams.Filter.AuctionId, queryParams.Page);
-            
+
             var result = await _repository.GetBidsForAuctionPagedAsync(queryParams, cancellationToken);
-            
+
             return new PaginatedResult<BidDto>(
                 result.Items.ToDtoList(),
                 result.TotalCount,
@@ -304,21 +290,16 @@ namespace Bidding.Application.Services
 
         public async Task<PaginatedResult<BidDto>> GetBidsForBidderAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Getting bids for bidder {Bidder}, Page: {Page}", 
+            _logger.LogInformation("Getting bids for bidder {Bidder}, Page: {Page}",
                 queryParams.Filter.BidderUsername, queryParams.Page);
-            
+
             var result = await _repository.GetBidsForBidderPagedAsync(queryParams, cancellationToken);
-            
+
             return new PaginatedResult<BidDto>(
                 result.Items.ToDtoList(),
                 result.TotalCount,
                 result.Page,
                 result.PageSize);
         }
-    }
-
-    public static class BidLockKeys
-    {
-        public static string ForAuction(Guid auctionId) => $"auction-bid:{auctionId}";
     }
 }

@@ -309,7 +309,6 @@ public class Auction : AggregateRoot
 
     public void UpdateSellerUsername(string newUsername)
     {
-
         if (SellerUsername != newUsername)
         {
             SellerUsername = newUsername;
@@ -318,7 +317,6 @@ public class Auction : AggregateRoot
 
     public void UpdateWinnerUsername(string newUsername)
     {
-
         if (WinnerUsername != newUsername)
         {
             WinnerUsername = newUsername;

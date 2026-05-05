@@ -203,124 +203,89 @@ public class UserService : IUserService
         string reason,
         CancellationToken cancellationToken = default)
     {
-        var (user, roles) = await GetByIdWithRolesAsync(userId, cancellationToken);
-        if (user == null)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
-
-        var oldUserData = UserAuditData.FromUser(user, roles);
-
-        user.IsSuspended = true;
-        user.SuspensionReason = reason;
-        user.SuspendedAt = DateTimeOffset.UtcNow;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.SuspendFailed);
-
-        await _mediator.Publish(new UserSuspendedDomainEvent
-        {
-            UserId = user.Id,
-            Username = user.UserName!,
-            Reason = reason
-        }, cancellationToken);
-
-        await _auditPublisher.PublishAsync(
-            Guid.Parse(user.Id),
-            UserAuditData.FromUser(user, roles),
-            AuditAction.Updated,
-            oldUserData,
+        var result = await ApplyUserStatusChangeAsync(
+            userId,
+            user => { user.IsSuspended = true; user.SuspensionReason = reason; user.SuspendedAt = DateTimeOffset.UtcNow; },
+            IdentityErrors.User.SuspendFailed,
+            (user, _) => new UserSuspendedDomainEvent { UserId = user.Id, Username = user.UserName!, Reason = reason },
             new Dictionary<string, object> { ["action"] = "suspend", ["reason"] = reason },
             cancellationToken);
 
-        _logger.LogWarning("User {UserId} suspended for reason: {Reason}", userId, reason);
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = roles.ToList();
-        return Result.Success(dto);
+        if (result.IsSuccess)
+            _logger.LogWarning("User {UserId} suspended for reason: {Reason}", userId, reason);
+
+        return result;
     }
 
     public async Task<Result<AdminUserDto>> UnsuspendUserAsync(
         string userId,
         CancellationToken cancellationToken = default)
     {
-        var (user, roles) = await GetByIdWithRolesAsync(userId, cancellationToken);
-        if (user == null)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
-
-        var oldUserData = UserAuditData.FromUser(user, roles);
-
-        user.IsSuspended = false;
-        user.SuspensionReason = null;
-        user.SuspendedAt = null;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.UnsuspendFailed);
-
-        await _mediator.Publish(new UserReactivatedDomainEvent
-        {
-            UserId = user.Id,
-            Username = user.UserName!
-        }, cancellationToken);
-
-        await _auditPublisher.PublishAsync(
-            Guid.Parse(user.Id),
-            UserAuditData.FromUser(user, roles),
-            AuditAction.Updated,
-            oldUserData,
+        var result = await ApplyUserStatusChangeAsync(
+            userId,
+            user => { user.IsSuspended = false; user.SuspensionReason = null; user.SuspendedAt = null; },
+            IdentityErrors.User.UnsuspendFailed,
+            (user, _) => new UserReactivatedDomainEvent { UserId = user.Id, Username = user.UserName! },
             new Dictionary<string, object> { ["action"] = "unsuspend" },
             cancellationToken);
 
-        _logger.LogInformation("User {UserId} unsuspended", userId);
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = roles.ToList();
-        return Result.Success(dto);
+        if (result.IsSuccess)
+            _logger.LogInformation("User {UserId} unsuspended", userId);
+
+        return result;
     }
 
     public async Task<Result<AdminUserDto>> ActivateUserAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var (user, roles) = await GetByIdWithRolesAsync(userId, cancellationToken);
-        if (user == null)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
-
-        var oldUserData = UserAuditData.FromUser(user, roles);
-        user.IsActive = true;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.ActivateFailed);
-
-        await _auditPublisher.PublishAsync(
-            Guid.Parse(user.Id),
-            UserAuditData.FromUser(user, roles),
-            AuditAction.Updated,
-            oldUserData,
+        return await ApplyUserStatusChangeAsync(
+            userId,
+            user => user.IsActive = true,
+            IdentityErrors.User.ActivateFailed,
+            (_, _) => null,
             new Dictionary<string, object> { ["action"] = "activate" },
             cancellationToken);
-
-        var dto = _mapper.Map<AdminUserDto>(user);
-        dto.Roles = roles.ToList();
-        return Result.Success(dto);
     }
 
     public async Task<Result<AdminUserDto>> DeactivateUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        return await ApplyUserStatusChangeAsync(
+            userId,
+            user => user.IsActive = false,
+            IdentityErrors.User.DeactivateFailed,
+            (_, _) => null,
+            new Dictionary<string, object> { ["action"] = "deactivate" },
+            cancellationToken);
+    }
+
+    private async Task<Result<AdminUserDto>> ApplyUserStatusChangeAsync(
+        string userId,
+        Action<ApplicationUser> applyChange,
+        Error updateFailedError,
+        Func<ApplicationUser, IList<string>, INotification?> createDomainEvent,
+        Dictionary<string, object> auditMetadata,
+        CancellationToken cancellationToken)
     {
         var (user, roles) = await GetByIdWithRolesAsync(userId, cancellationToken);
         if (user == null)
             return Result.Failure<AdminUserDto>(IdentityErrors.User.NotFound);
 
-        var oldUserData = UserAuditData.FromUser(user, roles);
-        user.IsActive = false;
+        var previousState = UserAuditData.FromUser(user, roles);
+        applyChange(user);
 
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return Result.Failure<AdminUserDto>(IdentityErrors.User.DeactivateFailed);
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return Result.Failure<AdminUserDto>(updateFailedError);
+
+        var domainEvent = createDomainEvent(user, roles);
+        if (domainEvent != null)
+            await _mediator.Publish(domainEvent, cancellationToken);
 
         await _auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
             UserAuditData.FromUser(user, roles),
             AuditAction.Updated,
-            oldUserData,
-            new Dictionary<string, object> { ["action"] = "deactivate" },
+            previousState,
+            auditMetadata,
             cancellationToken);
 
         var dto = _mapper.Map<AdminUserDto>(user);

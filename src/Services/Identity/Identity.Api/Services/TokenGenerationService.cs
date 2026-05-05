@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BuildingBlocks.Web.Exceptions;
+using Identity.Api.Constants;
 using Identity.Api.Data;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Auth;
@@ -24,10 +25,6 @@ public class TokenGenerationService : ITokenGenerationService
     private readonly IConfiguration _configuration;
     private readonly IMediator _mediator;
     private readonly IRolePermissionService _rolePermissionService;
-
-    private const int AccessTokenExpirationMinutes = 15;
-    private const int RefreshTokenExpirationDays = 7;
-    private const int RefreshTokenAbsoluteExpirationDays = 30;
 
     public TokenGenerationService(
         UserManager<ApplicationUser> userManager,
@@ -57,11 +54,10 @@ public class TokenGenerationService : ITokenGenerationService
             }
 
             var accessToken = await GenerateAccessTokenAsync(user);
-            var expiresIn = AccessTokenExpirationMinutes * 60;
 
             _logger.LogInformation("Generated access token for user {Username}", user.UserName);
 
-            return new TokenResponse(accessToken, null, expiresIn);
+            return new TokenResponse(accessToken, null, IdentityDefaults.Token.AccessTokenExpirationSeconds);
         }
         catch (Exception ex)
         {
@@ -87,11 +83,10 @@ public class TokenGenerationService : ITokenGenerationService
             var jwtId = Guid.NewGuid().ToString();
             var accessToken = await GenerateAccessTokenAsync(user, jwtId);
             var refreshToken = await CreateRefreshTokenAsync(userId, jwtId, ipAddress);
-            var expiresIn = AccessTokenExpirationMinutes * 60;
 
             _logger.LogInformation("Generated token pair for user {Username}", user.UserName);
 
-            return (accessToken, refreshToken, expiresIn);
+            return (accessToken, refreshToken, IdentityDefaults.Token.AccessTokenExpirationSeconds);
         }
         catch (Exception ex)
         {
@@ -298,7 +293,7 @@ public class TokenGenerationService : ITokenGenerationService
             audience: "auctionApp",
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes),
+            expires: DateTime.UtcNow.AddMinutes(IdentityDefaults.Token.AccessTokenExpirationMinutes),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -316,8 +311,8 @@ public class TokenGenerationService : ITokenGenerationService
             Token = hashedToken,
             JwtId = jwtId,
             CreatedAt = DateTimeOffset.UtcNow,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(RefreshTokenExpirationDays),
-            AbsoluteExpiration = DateTimeOffset.UtcNow.AddDays(RefreshTokenAbsoluteExpirationDays),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(IdentityDefaults.Token.RefreshTokenExpirationDays),
+            AbsoluteExpiration = DateTimeOffset.UtcNow.AddDays(IdentityDefaults.Token.RefreshTokenAbsoluteExpirationDays),
             CreatedByIp = ipAddress,
             UserAgent = userAgent
         };
