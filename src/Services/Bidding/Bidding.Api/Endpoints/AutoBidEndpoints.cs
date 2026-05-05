@@ -115,15 +115,13 @@ public class AutoBidEndpoints : ICarterModule
     private static async Task<IResult> GetMyAutoBids(
         HttpContext context,
         IMediator mediator,
-        [FromQuery] bool? activeOnly,
-        [FromQuery] int page = BidDefaults.DefaultPage,
-        [FromQuery] int pageSize = BidDefaults.DefaultPageSize,
+        [AsParameters] AutoBidsFilterRequest filter,
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        page = page < 1 ? BidDefaults.DefaultPage : page;
-        pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
-        var query = new GetMyAutoBidsQuery(userId, IsActive: activeOnly, Page: page, PageSize: pageSize);
+        var page = filter.Page < 1 ? BidDefaults.DefaultPage : filter.Page;
+        var pageSize = filter.PageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(filter.PageSize, BidDefaults.MaxPageSize);
+        var query = new GetMyAutoBidsQuery(userId, IsActive: filter.ActiveOnly, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }

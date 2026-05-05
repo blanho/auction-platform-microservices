@@ -74,3 +74,17 @@ public record JobFilterDto
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
 }
+
+public record JobItemsFilterDto
+{
+    public string? Status { get; init; }
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 50;
+}
+
+public record JobHistoryFilterDto
+{
+    public string? LogLevel { get; init; }
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 50;
+}

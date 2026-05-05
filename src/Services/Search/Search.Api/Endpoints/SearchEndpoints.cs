@@ -64,48 +64,15 @@ public class SearchEndpoints : ICarterModule
 
     private static async Task<IResult> SearchAuctions(
         [FromServices] IAuctionSearchService searchService,
-        [FromQuery] string? query = null,
-        [FromQuery] Guid? categoryId = null,
-        [FromQuery] Guid? brandId = null,
-        [FromQuery] Guid? sellerId = null,
-        [FromQuery] string? status = null,
-        [FromQuery] string? condition = null,
-        [FromQuery] decimal? minPrice = null,
-        [FromQuery] decimal? maxPrice = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] bool includeFacets = false,
-        CancellationToken ct = default)
-    {
-        var request = new AuctionSearchRequest
-        {
-            Query = query,
-            CategoryId = categoryId,
-            BrandId = brandId,
-            SellerId = sellerId,
-            Status = status,
-            Condition = condition,
-            MinPrice = minPrice,
-            MaxPrice = maxPrice,
-            SortBy = sortBy,
-            Page = page,
-            PageSize = pageSize,
-            IncludeFacets = includeFacets
-        };
-
-        var response = await searchService.SearchAsync(request, ct);
-        return Results.Ok(response);
-    }
+        [AsParameters] AuctionSearchRequest request,
+        CancellationToken ct = default) =>
+        Results.Ok(await searchService.SearchAsync(request, ct));
 
     private static async Task<IResult> SearchAuctionsAdvanced(
         [FromServices] IAuctionSearchService searchService,
         [FromBody] AuctionSearchRequest request,
-        CancellationToken ct = default)
-    {
-        var response = await searchService.SearchAsync(request, ct);
-        return Results.Ok(response);
-    }
+        CancellationToken ct = default) =>
+        Results.Ok(await searchService.SearchAsync(request, ct));
 
     private static async Task<IResult> Autocomplete(
         [FromServices] IAuctionSearchService searchService,

@@ -104,22 +104,18 @@ public class JobEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetJobs(
-        [FromQuery] string? type,
-        [FromQuery] string? status,
-        [FromQuery] Guid? requestedBy,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        [AsParameters] JobsQueryServices services = default!)
+        [AsParameters] JobFilterDto filter,
+        [AsParameters] JobsQueryServices services)
     {
         JobType? jobType = null;
-        if (!string.IsNullOrEmpty(type) && Enum.TryParse<JobType>(type, true, out var parsedType))
+        if (!string.IsNullOrEmpty(filter.Type) && Enum.TryParse<JobType>(filter.Type, true, out var parsedType))
             jobType = parsedType;
 
         JobStatus? jobStatus = null;
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<JobStatus>(status, true, out var parsedStatus))
+        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<JobStatus>(filter.Status, true, out var parsedStatus))
             jobStatus = parsedStatus;
 
-        var query = new GetJobsQuery(jobType, jobStatus, requestedBy, page, pageSize);
+        var query = new GetJobsQuery(jobType, jobStatus, filter.RequestedBy, filter.Page, filter.PageSize);
         var result = await services.Mediator.Send(query, services.CancellationToken);
 
         return result.IsSuccess
@@ -142,16 +138,14 @@ public class JobEndpoints : ICarterModule
 
     private static async Task<IResult> GetJobItems(
         Guid id,
-        [FromQuery] string? status,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50,
-        [AsParameters] JobsQueryServices services = default!)
+        [AsParameters] JobItemsFilterDto filter,
+        [AsParameters] JobsQueryServices services)
     {
         JobItemStatus? itemStatus = null;
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<JobItemStatus>(status, true, out var parsedStatus))
+        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<JobItemStatus>(filter.Status, true, out var parsedStatus))
             itemStatus = parsedStatus;
 
-        var query = new GetJobItemsQuery(id, itemStatus, page, pageSize);
+        var query = new GetJobItemsQuery(id, itemStatus, filter.Page, filter.PageSize);
         var result = await services.Mediator.Send(query, services.CancellationToken);
 
         if (!result.IsSuccess)
@@ -167,16 +161,14 @@ public class JobEndpoints : ICarterModule
 
     private static async Task<IResult> GetJobHistory(
         Guid id,
-        [FromQuery] string? logLevel,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50,
-        [AsParameters] JobsQueryServices services = default!)
+        [AsParameters] JobHistoryFilterDto filter,
+        [AsParameters] JobsQueryServices services)
     {
         JobLogLevel? parsedLogLevel = null;
-        if (!string.IsNullOrEmpty(logLevel) && Enum.TryParse<JobLogLevel>(logLevel, true, out var level))
+        if (!string.IsNullOrEmpty(filter.LogLevel) && Enum.TryParse<JobLogLevel>(filter.LogLevel, true, out var level))
             parsedLogLevel = level;
 
-        var query = new GetJobHistoryQuery(id, page, pageSize, parsedLogLevel);
+        var query = new GetJobHistoryQuery(id, filter.Page, filter.PageSize, parsedLogLevel);
         var result = await services.Mediator.Send(query, services.CancellationToken);
 
         if (!result.IsSuccess)

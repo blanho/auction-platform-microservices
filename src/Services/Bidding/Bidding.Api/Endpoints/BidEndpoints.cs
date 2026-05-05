@@ -134,13 +134,12 @@ public class BidEndpoints : ICarterModule
     private static async Task<IResult> GetWinningBids(
         HttpContext context,
         IMediator mediator,
-        [FromQuery] int page = BidDefaults.DefaultPage,
-        [FromQuery] int pageSize = BidDefaults.DefaultPageSize,
+        [AsParameters] WinningBidsRequest filter,
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        page = page < 1 ? BidDefaults.DefaultPage : page;
-        pageSize = pageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(pageSize, BidDefaults.MaxPageSize);
+        var page = filter.Page < 1 ? BidDefaults.DefaultPage : filter.Page;
+        var pageSize = filter.PageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(filter.PageSize, BidDefaults.MaxPageSize);
         var query = new GetWinningBidsQuery(userId, Page: page, PageSize: pageSize);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
@@ -193,12 +192,11 @@ public class BidEndpoints : ICarterModule
     private static async Task<IResult> GetBidStats(
         HttpContext context,
         IMediator mediator,
-        [FromQuery] int days = BidDefaults.DefaultDaysForStats,
-        [FromQuery] int topLimit = BidDefaults.DefaultTopBiddersLimit,
+        [AsParameters] BidStatsRequest filter,
         CancellationToken ct = default)
     {
         var username = UserHelper.GetUsername(context.User);
-        var query = new GetBidStatsQuery(username, days, topLimit);
+        var query = new GetBidStatsQuery(username, filter.Days, filter.TopLimit);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }
