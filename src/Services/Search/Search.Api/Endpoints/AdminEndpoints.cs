@@ -60,19 +60,12 @@ public class AdminEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetHealth(
-        [FromServices] Elastic.Clients.Elasticsearch.ElasticsearchClient client,
+        [FromServices] IIndexManagementService indexService,
         CancellationToken ct)
     {
-        try
-        {
-            var response = await client.PingAsync(ct);
-            return response.IsValidResponse
-                ? Results.Ok(new { status = "healthy", elasticsearch = "connected" })
-                : Results.Problem("Elasticsearch not responding");
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem($"Elasticsearch error: {ex.Message}");
-        }
+        var result = await indexService.IsHealthyAsync(ct);
+        return result.IsSuccess
+            ? Results.Ok(new { status = "healthy", elasticsearch = "connected" })
+            : Results.Problem("Elasticsearch not responding");
     }
 }

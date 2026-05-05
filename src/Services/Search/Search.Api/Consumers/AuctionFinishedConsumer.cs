@@ -36,9 +36,9 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 
         if (message.ItemSold)
         {
-            partialDocument[ElasticsearchFields.WinningBidderId] = message.WinnerId?.ToString();
-            partialDocument[ElasticsearchFields.WinningBidderUsername] = message.WinnerUsername;
-            partialDocument[ElasticsearchFields.WinningBidAmount] = message.SoldAmount;
+            partialDocument[ElasticsearchFields.WinnerId] = message.WinnerId?.ToString();
+            partialDocument[ElasticsearchFields.WinnerUsername] = message.WinnerUsername;
+            partialDocument[ElasticsearchFields.FinalPrice] = message.SoldAmount;
             partialDocument[ElasticsearchFields.CurrentPrice] = message.SoldAmount;
         }
 

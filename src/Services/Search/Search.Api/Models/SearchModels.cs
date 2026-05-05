@@ -2,20 +2,18 @@ namespace Search.Api.Models;
 
 public class AuctionSearchRequest
 {
-
     public string? Query { get; set; }
 
     public Guid? CategoryId { get; set; }
-
-    public string? CategorySlug { get; set; }
+    public string? Category { get; set; }
 
     public Guid? BrandId { get; set; }
+    public string? Brand { get; set; }
 
     public Guid? SellerId { get; set; }
 
-    public List<string>? Statuses { get; set; }
-
-    public List<string>? Conditions { get; set; }
+    public string? Status { get; set; }
+    public string? Condition { get; set; }
 
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
@@ -23,28 +21,15 @@ public class AuctionSearchRequest
     public DateTimeOffset? EndingAfter { get; set; }
     public DateTimeOffset? EndingBefore { get; set; }
 
-    public int? MinYear { get; set; }
-    public int? MaxYear { get; set; }
-
     public string? SortBy { get; set; }
-
     public string? SortDirection { get; set; }
 
-    public string? Category { get; set; }
-
-    public string? Brand { get; set; }
-
-    public string? Status { get; set; }
-
-    public bool FeaturedOnly { get; set; } = false;
+    public bool FeaturedOnly { get; set; }
 
     public int Page { get; set; } = 1;
-
     public int PageSize { get; set; } = 20;
 
-    public List<object>? SearchAfter { get; set; }
-
-    public bool IncludeFacets { get; set; } = false;
+    public bool IncludeFacets { get; set; }
 }
 
 public class AuctionSearchResponse
@@ -64,8 +49,6 @@ public class AuctionSearchResponse
         PageSize = pageSize,
         TotalPages = 0
     };
-
-    public List<object>? NextCursor { get; set; }
 
     public SearchFacets? Facets { get; set; }
 

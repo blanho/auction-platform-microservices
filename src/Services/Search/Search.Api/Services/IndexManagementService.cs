@@ -25,8 +25,6 @@ public class IndexManagementService : IIndexManagementService
     private readonly ElasticsearchOptions _options;
     private readonly ILogger<IndexManagementService> _logger;
 
-    private const string IndexPrefix = "auctions";
-
     public IndexManagementService(
         ElasticsearchClient client,
         IOptions<ElasticsearchOptions> options,
@@ -220,5 +218,5 @@ public class IndexManagementService : IIndexManagementService
         }
     }
 
-    public static string GetIndexName() => IndexPrefix;
+    private string GetIndexName() => _options.GetIndexName();
 }

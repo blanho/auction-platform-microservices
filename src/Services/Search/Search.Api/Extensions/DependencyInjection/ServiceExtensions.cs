@@ -59,6 +59,7 @@ public static class ServiceExtensions
         services.AddScoped<IAuctionSearchService, AuctionSearchService>();
         services.AddScoped<IAuctionIndexService, AuctionIndexService>();
         services.AddSingleton<IRecentSearchService, InMemoryRecentSearchService>();
+        services.AddHostedService<SearchIndexStartupService>();
 
         return services;
     }

@@ -58,20 +58,15 @@ public class AuctionDocument
     public string? WinnerUsername { get; set; }
     public decimal? FinalPrice { get; set; }
 
-    public Guid? WinningBidderId { get => WinnerId; set => WinnerId = value; }
 
-    public string? WinningBidderUsername { get => WinnerUsername; set => WinnerUsername = value; }
-
-    public decimal? WinningBidAmount { get => FinalPrice; set => FinalPrice = value; }
+    public Dictionary<string, object>? Attributes { get; set; }
 
     public bool IsFeatured { get; set; }
 
     public GeoLocation? Location { get; set; }
-
-    public Dictionary<string, object>? Attributes { get; set; }
 }
 
- public class GeoLocation
+public class GeoLocation
 {
     public double Lat { get; set; }
     public double Lon { get; set; }

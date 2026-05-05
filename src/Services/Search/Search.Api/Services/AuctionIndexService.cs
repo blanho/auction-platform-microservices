@@ -1,4 +1,6 @@
 using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Options;
+using Search.Api.Configuration;
 using Search.Api.Documents;
 using Search.Api.Errors;
 using Search.Api.Interfaces;
@@ -11,19 +13,22 @@ public record BulkIndexResult(int Indexed, int Failed, List<string> Errors);
 public class AuctionIndexService : IAuctionIndexService
 {
     private readonly ElasticsearchClient _client;
+    private readonly string _indexName;
     private readonly ILogger<AuctionIndexService> _logger;
 
     public AuctionIndexService(
         ElasticsearchClient client,
+        IOptions<ElasticsearchOptions> esOptions,
         ILogger<AuctionIndexService> logger)
     {
         _client = client;
+        _indexName = esOptions.Value.GetIndexName();
         _logger = logger;
     }
 
     public async Task<Result> IndexAsync(AuctionDocument document, CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
+        var indexName = _indexName;
         document.LastSyncedAt = DateTimeOffset.UtcNow;
 
         try
@@ -55,7 +60,7 @@ public class AuctionIndexService : IAuctionIndexService
         IEnumerable<AuctionDocument> documents, 
         CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
+        var indexName = _indexName;
         var now = DateTimeOffset.UtcNow;
 
         var documentList = documents.ToList();
@@ -106,7 +111,7 @@ public class AuctionIndexService : IAuctionIndexService
         object partialDocument, 
         CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
+        var indexName = _indexName;
 
         try
         {
@@ -137,7 +142,7 @@ public class AuctionIndexService : IAuctionIndexService
 
     public async Task<Result> DeleteAsync(Guid auctionId, CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
+        var indexName = _indexName;
 
         try
         {
@@ -166,7 +171,7 @@ public class AuctionIndexService : IAuctionIndexService
         int bidCount, 
         CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
+        var indexName = _indexName;
 
         try
         {

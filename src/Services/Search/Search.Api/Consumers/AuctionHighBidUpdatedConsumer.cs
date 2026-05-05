@@ -33,7 +33,6 @@ public class AuctionHighBidUpdatedConsumer : IConsumer<AuctionHighBidUpdatedEven
         var partialDocument = new Dictionary<string, object?>
         {
             [ElasticsearchFields.CurrentPrice] = message.BidAmount,
-            [ElasticsearchFields.HighBidder] = message.BidderUsername,
             [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
         };
 

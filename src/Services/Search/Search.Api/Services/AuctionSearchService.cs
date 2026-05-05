@@ -13,17 +13,29 @@ namespace Search.Api.Services;
 
 public class AuctionSearchService : IAuctionSearchService
 {
+    private static readonly string[] MultiMatchFields =
+    [
+        $"{ElasticsearchFields.Title}^3",
+        ElasticsearchFields.Description,
+        $"{ElasticsearchFields.CategoryName}^2",
+        $"{ElasticsearchFields.BrandName}^2",
+        ElasticsearchFields.Tags
+    ];
+
     private readonly ElasticsearchClient _client;
     private readonly SearchOptions _options;
+    private readonly string _indexName;
     private readonly ILogger<AuctionSearchService> _logger;
 
     public AuctionSearchService(
         ElasticsearchClient client,
         IOptions<SearchOptions> options,
+        IOptions<ElasticsearchOptions> esOptions,
         ILogger<AuctionSearchService> logger)
     {
         _client = client;
         _options = options.Value;
+        _indexName = esOptions.Value.GetIndexName();
         _logger = logger;
     }
 
@@ -31,13 +43,12 @@ public class AuctionSearchService : IAuctionSearchService
         AuctionSearchRequest request,
         CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
         var pageSize = Math.Min(request.PageSize, _options.MaxPageSize);
 
         try
         {
             var response = await _client.SearchAsync<AuctionDocument>(s => s
-                .Index(indexName)
+                .Index(_indexName)
                 .From((request.Page - 1) * pageSize)
                 .Size(pageSize)
                 .Query(q => BuildQuery(request))
@@ -93,12 +104,10 @@ public class AuctionSearchService : IAuctionSearchService
         Guid auctionId,
         CancellationToken ct = default)
     {
-        var indexName = IndexManagementService.GetIndexName();
-
         try
         {
             var response = await _client.GetAsync<AuctionDocument>(auctionId.ToString(), g => g
-                .Index(indexName),
+                .Index(_indexName),
             ct);
 
             if (!response.IsValidResponse || response.Source == null)
@@ -123,12 +132,10 @@ public class AuctionSearchService : IAuctionSearchService
         if (string.IsNullOrWhiteSpace(prefix) || prefix.Length < SearchDefaults.MinAutocompleteLength)
             return Array.Empty<AutocompleteSuggestion>();
 
-        var indexName = IndexManagementService.GetIndexName();
-
         try
         {
             var response = await _client.SearchAsync<AuctionDocument>(s => s
-                .Index(indexName)
+                .Index(_indexName)
                 .Size(maxSuggestions)
                 .Source(new SourceConfig(new SourceFilter
                 {
@@ -183,21 +190,32 @@ public class AuctionSearchService : IAuctionSearchService
     {
         var queries = new List<Query>();
 
-        if (HasSearchQuery(request))
-        {
-            queries.Add(BuildMultiMatchQuery(request.Query!));
-        }
+        if (!string.IsNullOrWhiteSpace(request.Query))
+            queries.Add(BuildMultiMatchQuery(request.Query));
 
         return queries;
     }
+
+    private static Query BuildMultiMatchQuery(string searchQuery) =>
+        Query.MultiMatch(new MultiMatchQuery
+        {
+            Query = searchQuery,
+            Fields = MultiMatchFields,
+            Type = TextQueryType.BestFields,
+            Fuzziness = new Fuzziness("AUTO")
+        });
 
     private static List<Query> BuildFilterQueries(AuctionSearchRequest request)
     {
         var filters = new List<Query>();
 
-        AddCategoryFilter(filters, request.Category);
-        AddBrandFilter(filters, request.Brand);
-        AddStatusFilter(filters, request.Status);
+        AddTermFilter(filters, ElasticsearchFields.CategoryName, request.Category);
+        AddTermFilter(filters, ElasticsearchFields.CategoryId, request.CategoryId);
+        AddTermFilter(filters, ElasticsearchFields.BrandName, request.Brand);
+        AddTermFilter(filters, ElasticsearchFields.BrandId, request.BrandId);
+        AddTermFilter(filters, ElasticsearchFields.SellerId, request.SellerId);
+        AddTermFilter(filters, ElasticsearchFields.Status, request.Status);
+        AddTermFilter(filters, ElasticsearchFields.Condition, request.Condition);
         AddPriceRangeFilter(filters, request.MinPrice, request.MaxPrice);
         AddEndTimeFilter(filters, request.EndingAfter, request.EndingBefore);
         AddFeaturedFilter(filters, request.FeaturedOnly);
@@ -205,49 +223,20 @@ public class AuctionSearchService : IAuctionSearchService
         return filters;
     }
 
-    private static bool HasSearchQuery(AuctionSearchRequest request) =>
-        !string.IsNullOrWhiteSpace(request.Query);
-
-    private static Query BuildMultiMatchQuery(string searchQuery) =>
-        Query.MultiMatch(new MultiMatchQuery
-        {
-            Query = searchQuery,
-            Fields = new[] { "title^3", "description", "categoryName^2", "brandName^2", "tags" },
-            Type = TextQueryType.BestFields,
-            Fuzziness = new Fuzziness("AUTO")
-        });
-
-    private static void AddCategoryFilter(List<Query> filters, string? category)
+    private static void AddTermFilter(List<Query> filters, string fieldName, string? value)
     {
-        if (string.IsNullOrWhiteSpace(category))
+        if (string.IsNullOrWhiteSpace(value))
             return;
 
-        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.CategoryName)
-        {
-            Value = category
-        }));
+        filters.Add(Query.Term(new TermQuery(fieldName) { Value = value }));
     }
 
-    private static void AddBrandFilter(List<Query> filters, string? brand)
+    private static void AddTermFilter(List<Query> filters, string fieldName, Guid? id)
     {
-        if (string.IsNullOrWhiteSpace(brand))
+        if (!id.HasValue)
             return;
 
-        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.BrandName)
-        {
-            Value = brand
-        }));
-    }
-
-    private static void AddStatusFilter(List<Query> filters, string? status)
-    {
-        if (string.IsNullOrWhiteSpace(status))
-            return;
-
-        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.Status)
-        {
-            Value = status
-        }));
+        filters.Add(Query.Term(new TermQuery(fieldName) { Value = id.Value.ToString() }));
     }
 
     private static void AddPriceRangeFilter(List<Query> filters, decimal? minPrice, decimal? maxPrice)

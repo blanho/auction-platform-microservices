@@ -1,7 +1,5 @@
 using AuctionService.Contracts.Events;
-using BuildingBlocks.Infrastructure.Messaging;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;
