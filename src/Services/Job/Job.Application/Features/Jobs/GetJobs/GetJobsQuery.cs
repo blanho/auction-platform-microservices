@@ -6,5 +6,5 @@ public record GetJobsQuery(
     JobType? Type,
     JobStatus? Status,
     Guid? RequestedBy,
-    int Page = 1,
-    int PageSize = 20) : IQuery<PaginatedResult<JobSummaryDto>>;
+    int Page = JobDefaults.Pagination.DefaultPage,
+    int PageSize = JobDefaults.Pagination.DefaultJobPageSize) : IQuery<PaginatedResult<JobSummaryDto>>;

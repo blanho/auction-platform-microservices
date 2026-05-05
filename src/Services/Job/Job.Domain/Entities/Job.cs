@@ -36,7 +36,7 @@ public class Job : AggregateRoot
         string payloadJson,
         Guid requestedBy,
         int totalItems,
-        int maxRetryCount = 3,
+        int maxRetryCount = JobDefaults.DefaultMaxRetryCount,
         JobPriority priority = JobPriority.Normal)
     {
         if (string.IsNullOrWhiteSpace(correlationId))
@@ -73,7 +73,7 @@ public class Job : AggregateRoot
         string correlationId,
         string payloadJson,
         Guid requestedBy,
-        int maxRetryCount = 3,
+        int maxRetryCount = JobDefaults.DefaultMaxRetryCount,
         JobPriority priority = JobPriority.Normal)
     {
         if (string.IsNullOrWhiteSpace(correlationId))
@@ -278,7 +278,7 @@ public class Job : AggregateRoot
         }
 
         var processedItems = CompletedItems + FailedItems;
-        ProgressPercentage = Math.Round((decimal)processedItems / TotalItems * 100, 2);
+        ProgressPercentage = Math.Round((decimal)processedItems / TotalItems * 100, JobDefaults.Persistence.ProgressDecimalPlaces);
     }
 
     private void CheckForCompletion()

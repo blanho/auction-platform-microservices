@@ -9,9 +9,6 @@ namespace Jobs.Infrastructure.Messaging;
 
 public class JobItemDispatcher : IJobItemDispatcher
 {
-    private const int FetchBatchSize = 100;
-    private const int PublishBatchSize = 50;
-
     private readonly IJobRepository _jobRepository;
     private readonly IJobItemRepository _jobItemRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -46,7 +43,7 @@ public class JobItemDispatcher : IJobItemDispatcher
         while (!cancellationToken.IsCancellationRequested)
         {
             var pendingItems = await _jobItemRepository.GetPendingItemsByJobIdAsync(
-                jobId, FetchBatchSize, cancellationToken);
+                jobId, JobDefaults.Dispatcher.FetchBatchSize, cancellationToken);
 
             if (pendingItems.Count == 0)
                 break;
@@ -67,7 +64,7 @@ public class JobItemDispatcher : IJobItemDispatcher
                 CorrelationId = job.CorrelationId
             }).ToList();
 
-            foreach (var publishBatch in Chunk(commands, PublishBatchSize))
+            foreach (var publishBatch in Chunk(commands, JobDefaults.Dispatcher.PublishBatchSize))
             {
                 await Task.WhenAll(publishBatch.Select(cmd =>
                     _publishEndpoint.Publish(cmd, cancellationToken)));

@@ -55,7 +55,7 @@ public record CreateJobRequestDto
     public string PayloadJson { get; init; } = string.Empty;
     public int TotalItems { get; init; }
     public int Priority { get; init; }
-    public int MaxRetryCount { get; init; } = 3;
+    public int MaxRetryCount { get; init; } = JobDefaults.DefaultMaxRetryCount;
     public List<CreateJobItemRequestDto> Items { get; init; } = [];
 }
 
@@ -71,20 +71,20 @@ public record JobFilterDto
     public string? Status { get; init; }
     public string? CorrelationId { get; init; }
     public Guid? RequestedBy { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 20;
+    public int Page { get; init; } = JobDefaults.Pagination.DefaultPage;
+    public int PageSize { get; init; } = JobDefaults.Pagination.DefaultJobPageSize;
 }
 
 public record JobItemsFilterDto
 {
     public string? Status { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 50;
+    public int Page { get; init; } = JobDefaults.Pagination.DefaultPage;
+    public int PageSize { get; init; } = JobDefaults.Pagination.DefaultItemPageSize;
 }
 
 public record JobHistoryFilterDto
 {
     public string? LogLevel { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 50;
+    public int Page { get; init; } = JobDefaults.Pagination.DefaultPage;
+    public int PageSize { get; init; } = JobDefaults.Pagination.DefaultHistoryPageSize;
 }

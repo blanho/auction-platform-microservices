@@ -6,3 +6,4 @@ global using BuildingBlocks.Application.CQRS.Queries;
 global using Microsoft.Extensions.Logging;
 global using Jobs.Application.DTOs;
 global using Jobs.Application.Interfaces;
+global using Jobs.Domain.Constants;

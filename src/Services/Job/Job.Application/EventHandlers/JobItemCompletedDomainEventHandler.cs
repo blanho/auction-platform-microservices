@@ -29,7 +29,7 @@ public class JobItemCompletedDomainEventHandler : INotificationHandler<JobItemCo
             notification.TotalItems);
 
         var progressPercentage = notification.TotalItems > 0
-            ? Math.Round((decimal)notification.CompletedItems / notification.TotalItems * 100, 2)
+            ? Math.Round((decimal)notification.CompletedItems / notification.TotalItems * 100, JobDefaults.Persistence.ProgressDecimalPlaces)
             : 0;
 
         await _eventPublisher.PublishAsync(new JobProgressUpdatedEvent

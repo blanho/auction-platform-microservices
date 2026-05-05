@@ -30,7 +30,7 @@ public class JobItemConfiguration : IEntityTypeConfiguration<JobItem>
             .IsRequired();
 
         builder.Property(x => x.ErrorMessage)
-            .HasMaxLength(4000);
+            .HasMaxLength(JobDefaults.Persistence.ErrorMessageMaxLength);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();

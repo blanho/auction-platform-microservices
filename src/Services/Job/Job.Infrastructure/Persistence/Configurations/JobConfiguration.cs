@@ -24,7 +24,7 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
 
         builder.Property(x => x.CorrelationId)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(JobDefaults.Persistence.CorrelationIdMaxLength);
 
         builder.Property(x => x.PayloadJson)
             .HasColumnType("jsonb");
@@ -43,10 +43,10 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
 
         builder.Property(x => x.ProgressPercentage)
             .IsRequired()
-            .HasPrecision(5, 2);
+            .HasPrecision(JobDefaults.Persistence.ProgressPercentagePrecision, JobDefaults.Persistence.ProgressPercentageScale);
 
         builder.Property(x => x.ErrorMessage)
-            .HasMaxLength(4000);
+            .HasMaxLength(JobDefaults.Persistence.ErrorMessageMaxLength);
 
         builder.Property(x => x.RequestedBy)
             .IsRequired();

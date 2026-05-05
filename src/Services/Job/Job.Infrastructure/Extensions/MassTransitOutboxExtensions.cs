@@ -55,97 +55,97 @@ public static class MassTransitOutboxExtensions
                 {
                     e.ConfigureConsumer<RequestJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-results", e =>
                 {
                     e.ConfigureConsumer<ReportJobItemResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 5,
-                        minInterval: TimeSpan.FromMilliseconds(200),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
-                    e.PrefetchCount = 16;
+                        retryLimit: JobDefaults.Messaging.HighThroughputRetryLimit,
+                        minInterval: TimeSpan.FromMilliseconds(JobDefaults.Messaging.HighThroughputMinIntervalMs),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
+                    e.PrefetchCount = JobDefaults.Messaging.PrefetchCountItemResults;
                 });
 
                 cfg.ReceiveEndpoint("job-streaming-init", e =>
                 {
                     e.ConfigureConsumer<InitializeStreamingJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-batches", e =>
                 {
                     e.ConfigureConsumer<AddJobItemsBatchConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
-                    e.PrefetchCount = 4;
-                    e.ConcurrentMessageLimit = 2;
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
+                    e.PrefetchCount = JobDefaults.Messaging.PrefetchCountItemBatches;
+                    e.ConcurrentMessageLimit = JobDefaults.Messaging.ConcurrentMessageLimitItemBatches;
                 });
 
                 cfg.ReceiveEndpoint("job-finalize-init", e =>
                 {
                     e.ConfigureConsumer<FinalizeJobInitializationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
                 });
 
                 cfg.ReceiveEndpoint("job-item-batch-results", e =>
                 {
                     e.ConfigureConsumer<ReportJobItemBatchResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 5,
-                        minInterval: TimeSpan.FromMilliseconds(200),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
-                    e.PrefetchCount = 8;
+                        retryLimit: JobDefaults.Messaging.HighThroughputRetryLimit,
+                        minInterval: TimeSpan.FromMilliseconds(JobDefaults.Messaging.HighThroughputMinIntervalMs),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
+                    e.PrefetchCount = JobDefaults.Messaging.PrefetchCountBatchResults;
                 });
 
                 cfg.ReceiveEndpoint("job-batch-progress", e =>
                 {
                     e.ConfigureConsumer<ReportJobBatchProgressConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
-                    e.PrefetchCount = 8;
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
+                    e.PrefetchCount = JobDefaults.Messaging.PrefetchCountBatchProgress;
                 });
 
                 cfg.ReceiveEndpoint("job-fail-by-correlation", e =>
                 {
                     e.ConfigureConsumer<FailJobByCorrelationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
-                        retryLimit: 3,
-                        minInterval: TimeSpan.FromSeconds(1),
-                        maxInterval: TimeSpan.FromSeconds(30),
-                        intervalDelta: TimeSpan.FromSeconds(5)));
+                        retryLimit: JobDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
                 });
 
                 cfg.UseDelayedRedelivery(r => r.Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(2)));
+                    TimeSpan.FromSeconds(JobDefaults.Messaging.RedeliveryFastSeconds),
+                    TimeSpan.FromSeconds(JobDefaults.Messaging.RedeliverySlowSeconds),
+                    TimeSpan.FromMinutes(JobDefaults.Messaging.RedeliveryMaxMinutes)));
 
                 cfg.UseMessageRetry(r => r.Exponential(
-                    retryLimit: 5,
-                    minInterval: TimeSpan.FromMilliseconds(200),
-                    maxInterval: TimeSpan.FromSeconds(30),
-                    intervalDelta: TimeSpan.FromSeconds(5)));
+                    retryLimit: JobDefaults.Messaging.GlobalRetryLimit,
+                    minInterval: TimeSpan.FromMilliseconds(JobDefaults.Messaging.GlobalMinIntervalMs),
+                    maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
+                    intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
 
                 cfg.ConfigureEndpoints(context);
             });

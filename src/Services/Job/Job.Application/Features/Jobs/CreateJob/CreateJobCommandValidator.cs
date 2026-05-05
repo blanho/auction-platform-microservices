@@ -8,13 +8,13 @@ public class CreateJobCommandValidator : AbstractValidator<CreateJobCommand>
     {
         RuleFor(x => x.CorrelationId)
             .NotEmpty()
-            .MaximumLength(256);
+            .MaximumLength(JobDefaults.Validation.CorrelationIdMaxLength);
 
         RuleFor(x => x.TotalItems)
             .GreaterThan(0);
 
         RuleFor(x => x.MaxRetryCount)
-            .InclusiveBetween(0, 10);
+            .InclusiveBetween(0, JobDefaults.Validation.MaxRetryCountUpperBound);
 
         RuleFor(x => x.Type)
             .IsInEnum();

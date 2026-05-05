@@ -5,5 +5,5 @@ namespace Jobs.Application.Features.Jobs.GetJobItems;
 public record GetJobItemsQuery(
     Guid JobId,
     JobItemStatus? Status,
-    int Page = 1,
-    int PageSize = 50) : IQuery<PaginatedResult<JobItemDto>>;
+    int Page = JobDefaults.Pagination.DefaultPage,
+    int PageSize = JobDefaults.Pagination.DefaultItemPageSize) : IQuery<PaginatedResult<JobItemDto>>;

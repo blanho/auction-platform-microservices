@@ -13,14 +13,14 @@ public class JobProcessingWorker : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<JobProcessingWorker> _logger;
     private readonly TimeSpan _minPollingInterval = TimeSpan.FromSeconds(JobDefaults.Worker.PollingIntervalSeconds);
-    private readonly TimeSpan _maxPollingInterval = TimeSpan.FromMinutes(2);
+    private readonly TimeSpan _maxPollingInterval = TimeSpan.FromMinutes(JobDefaults.Worker.MaxPollingIntervalMinutes);
     private readonly TimeSpan _stuckJobTimeout = TimeSpan.FromMinutes(JobDefaults.Worker.StuckJobTimeoutMinutes);
-    private readonly int _batchSize = 5;
+    private readonly int _batchSize = JobDefaults.Worker.ProcessingBatchSize;
 
     private int _consecutiveEmptyPolls;
     private DateTimeOffset _lastSuccessfulPoll = DateTimeOffset.UtcNow;
 
-    public bool IsHealthy => DateTimeOffset.UtcNow - _lastSuccessfulPoll < TimeSpan.FromMinutes(5);
+    public bool IsHealthy => DateTimeOffset.UtcNow - _lastSuccessfulPoll < TimeSpan.FromMinutes(JobDefaults.Worker.HealthTimeoutMinutes);
 
     public JobProcessingWorker(
         IServiceScopeFactory scopeFactory,
@@ -145,11 +145,11 @@ public class JobProcessingWorker : BackgroundService
 
     private TimeSpan CalculateAdaptiveDelay()
     {
-        if (_consecutiveEmptyPolls <= 1)
+        if (_consecutiveEmptyPolls <= JobDefaults.Worker.MinConsecutiveEmptyPollsBeforeBackoff)
             return _minPollingInterval;
 
-        var multiplier = Math.Min(_consecutiveEmptyPolls, 6);
-        var delay = _minPollingInterval * Math.Pow(1.5, multiplier);
+        var multiplier = Math.Min(_consecutiveEmptyPolls, JobDefaults.Worker.MaxBackoffMultiplier);
+        var delay = _minPollingInterval * Math.Pow(JobDefaults.Worker.BackoffBase, multiplier);
 
         return delay > _maxPollingInterval ? _maxPollingInterval : delay;
     }

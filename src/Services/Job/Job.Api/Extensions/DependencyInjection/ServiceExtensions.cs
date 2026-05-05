@@ -46,10 +46,10 @@ public static class ServiceExtensions
                 .UseNpgsql(dataSource, npgsqlOptions =>
                 {
                     npgsqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 3,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        maxRetryCount: JobDefaults.Connection.RetryCount,
+                        maxRetryDelay: TimeSpan.FromSeconds(JobDefaults.Connection.MaxRetryDelaySeconds),
                         errorCodesToAdd: null);
-                    npgsqlOptions.CommandTimeout(30);
+                    npgsqlOptions.CommandTimeout(JobDefaults.Connection.CommandTimeoutSeconds);
                 })
                 .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 

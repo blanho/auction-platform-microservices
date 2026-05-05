@@ -4,6 +4,6 @@ namespace Jobs.Application.Features.Jobs.GetJobHistory;
 
 public record GetJobHistoryQuery(
     Guid JobId,
-    int Page = 1,
-    int PageSize = 50,
+    int Page = JobDefaults.Pagination.DefaultPage,
+    int PageSize = JobDefaults.Pagination.DefaultHistoryPageSize,
     JobLogLevel? LogLevel = null) : IQuery<JobHistoryDto>;

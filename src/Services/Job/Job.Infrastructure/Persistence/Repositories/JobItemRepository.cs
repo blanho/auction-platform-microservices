@@ -107,8 +107,7 @@ public class JobItemRepository : IJobItemRepository
         IEnumerable<(string PayloadJson, int SequenceNumber)> items,
         CancellationToken cancellationToken = default)
     {
-        const int batchSize = 1000;
-        var batch = new List<JobItem>(batchSize);
+        var batch = new List<JobItem>(JobDefaults.Persistence.BulkInsertBatchSize);
 
         foreach (var (payloadJson, sequenceNumber) in items)
         {
@@ -116,7 +115,7 @@ public class JobItemRepository : IJobItemRepository
             jobItem.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNowOffset);
             batch.Add(jobItem);
 
-            if (batch.Count >= batchSize)
+            if (batch.Count >= JobDefaults.Persistence.BulkInsertBatchSize)
             {
                 await _context.JobItems.AddRangeAsync(batch, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
