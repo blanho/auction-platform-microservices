@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Persistence;
 using JobService.Contracts.Commands;
@@ -13,9 +14,6 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateCommand>
 {
-    private const int FetchBatchSize = 200;
-    private const int SaveBatchSize = 100;
-
     private readonly IAuctionQueryRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -68,7 +66,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
         var failedCount = 0;
         var pendingChanges = 0;
 
-        var idBatches = ChunkList(message.AuctionIds, FetchBatchSize);
+        var idBatches = ChunkList(message.AuctionIds, AuctionDefaults.Batch.FetchBatchSize);
 
         foreach (var idBatch in idBatches)
         {
@@ -107,7 +105,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
                 }
             }
 
-            if (pendingChanges >= SaveBatchSize)
+            if (pendingChanges >= AuctionDefaults.Batch.SaveBatchSize)
             {
                 await _unitOfWork.SaveChangesAsync(context.CancellationToken);
                 _dbContext.ChangeTracker.Clear();

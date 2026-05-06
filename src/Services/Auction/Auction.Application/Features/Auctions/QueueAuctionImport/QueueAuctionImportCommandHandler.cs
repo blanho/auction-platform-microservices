@@ -1,4 +1,5 @@
 using AuctionService.Contracts.Commands;
+using Auctions.Domain.Constants;
 using BuildingBlocks.Application.CQRS;
 using MassTransit;
 
@@ -6,8 +7,6 @@ namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImportCommand, BackgroundJobResult>
 {
-    private const int MaxRowsPerBatch = 1000;
-
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<QueueAuctionImportCommandHandler> _logger;
 
@@ -41,7 +40,7 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
         }).ToList();
 
         var totalRows = payloadRows.Count;
-        var batches = ChunkList(payloadRows, MaxRowsPerBatch);
+        var batches = ChunkList(payloadRows, AuctionDefaults.Batch.RowsPerImportBatch);
         var totalBatches = batches.Count;
 
         for (var i = 0; i < totalBatches; i++)

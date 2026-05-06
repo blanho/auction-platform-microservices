@@ -274,20 +274,11 @@ public class StripePaymentService : IStripePaymentService
         if (stripeEvent.Data.Object is not PaymentIntent paymentIntent) return;
 
         _logger.LogInformation("PaymentIntent succeeded: {PaymentIntentId}", paymentIntent.Id);
-
-        if (paymentIntent.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.CompletePayment(paymentIntent.Id);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                _logger.LogInformation("Order {OrderId} marked as paid", orderId);
-            }
-        }
+        await UpdateOrderFromStripeEventAsync(
+            paymentIntent.Metadata,
+            order => order.CompletePayment(paymentIntent.Id),
+            "paid",
+            cancellationToken);
     }
 
     private async Task HandlePaymentIntentFailed(Event stripeEvent, CancellationToken cancellationToken)
@@ -295,20 +286,11 @@ public class StripePaymentService : IStripePaymentService
         if (stripeEvent.Data.Object is not PaymentIntent paymentIntent) return;
 
         _logger.LogWarning("PaymentIntent failed: {PaymentIntentId}", paymentIntent.Id);
-
-        if (paymentIntent.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.ChangeStatus(OrderStatus.Cancelled);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                _logger.LogInformation("Order {OrderId} marked as payment failed", orderId);
-            }
-        }
+        await UpdateOrderFromStripeEventAsync(
+            paymentIntent.Metadata,
+            order => order.ChangeStatus(OrderStatus.Cancelled),
+            "payment failed",
+            cancellationToken);
     }
 
     private async Task HandleCheckoutSessionCompleted(Event stripeEvent, CancellationToken cancellationToken)
@@ -316,19 +298,30 @@ public class StripePaymentService : IStripePaymentService
         if (stripeEvent.Data.Object is not Session session) return;
 
         _logger.LogInformation("Checkout session completed: {SessionId}", session.Id);
+        await UpdateOrderFromStripeEventAsync(
+            session.Metadata,
+            order => order.CompletePayment(session.PaymentIntentId),
+            "paid via checkout session",
+            cancellationToken);
+    }
 
-        if (session.Metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) &&
-            Guid.TryParse(orderIdStr, out var orderId))
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order != null)
-            {
-                order.CompletePayment(session.PaymentIntentId);
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+    private async Task UpdateOrderFromStripeEventAsync(
+        IDictionary<string, string> metadata,
+        Action<Order> applyChange,
+        string outcomeDescription,
+        CancellationToken cancellationToken)
+    {
+        if (!metadata.TryGetValue(StripeMetadataKeys.OrderId, out var orderIdStr) ||
+            !Guid.TryParse(orderIdStr, out var orderId))
+            return;
 
-                _logger.LogInformation("Order {OrderId} marked as paid via checkout session", orderId);
-            }
-        }
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null) return;
+
+        applyChange(order);
+        await _orderRepository.UpdateAsync(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Order {OrderId} marked as {Outcome}", orderId, outcomeDescription);
     }
 }

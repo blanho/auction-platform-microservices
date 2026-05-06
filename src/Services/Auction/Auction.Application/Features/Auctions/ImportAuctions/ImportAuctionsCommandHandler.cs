@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Auctions.Application.DTOs;
 using Auctions.Application.Interfaces;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Domain.Constants;
@@ -9,7 +10,7 @@ namespace Auctions.Application.Features.Auctions.ImportAuctions;
 
 public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsCommand, ImportAuctionsResult>
 {
-    private const int BatchSize = 500;
+
 
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly IImportCheckpointRepository _checkpointRepository;
@@ -132,7 +133,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         CancellationToken cancellationToken)
     {
         var totalInserted = 0;
-        var batches = ChunkRows(validRows, BatchSize);
+        var batches = ChunkRows(validRows, AuctionDefaults.Batch.InsertBatchSize);
 
         foreach (var batch in batches)
         {

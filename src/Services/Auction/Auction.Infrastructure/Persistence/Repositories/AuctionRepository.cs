@@ -31,6 +31,14 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
         };
 
+        private IQueryable<Auction> ActiveAuctionsWithItemDetails =>
+            _context.Auctions
+                .Where(x => !x.IsDeleted)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Category)
+                .Include(x => x.Item)
+                    .ThenInclude(i => i!.Brand);
+
         public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
             _context = context;
@@ -43,12 +51,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var query = _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            var query = ActiveAuctionsWithItemDetails
                 .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
 
@@ -67,12 +70,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             var filterParams = filter.Filter;
 
-            var query = _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            var query = ActiveAuctionsWithItemDetails
                 .AsNoTracking()
                 .AsSplitQuery()
                 .AsQueryable();
@@ -125,24 +123,14 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            return await ActiveAuctionsWithItemDetails
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public async Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            return await ActiveAuctionsWithItemDetails
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -171,7 +159,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-
             var auction = await _context.Auctions
                 .Where(x => !x.IsDeleted)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -284,12 +271,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetTrendingItemsAsync(int limit, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && x.Status == Status.Live)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            return await ActiveAuctionsWithItemDetails
+                .Where(x => x.Status == Status.Live)
                 .AsNoTracking()
                 .OrderByDescending(x => x.CurrentHighBid ?? 0)
                 .ThenByDescending(x => x.IsFeatured)
@@ -303,12 +286,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             if (idList.Count == 0)
                 return new List<Auction>();
 
-            return await _context.Auctions
-                .Where(x => !x.IsDeleted && idList.Contains(x.Id))
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand)
+            return await ActiveAuctionsWithItemDetails
+                .Where(x => idList.Contains(x.Id))
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }

@@ -1,3 +1,4 @@
+using Auctions.Domain.Constants;
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
 
@@ -5,7 +6,6 @@ namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public class QueueAuctionImportCommandValidator : AbstractValidator<QueueAuctionImportCommand>
 {
-    private const int MaxRowsPerBatch = 10_000;
 
     public QueueAuctionImportCommandValidator()
     {
@@ -20,7 +20,7 @@ public class QueueAuctionImportCommandValidator : AbstractValidator<QueueAuction
 
         RuleFor(x => x.Rows)
             .NotEmpty().WithMessage(ValidationConstants.Messages.MustContainAtLeastOne("Row"))
-            .Must(rows => rows.Count <= MaxRowsPerBatch)
-            .WithMessage(ValidationConstants.Messages.MustNotExceed("Rows", MaxRowsPerBatch));
+            .Must(rows => rows.Count <= AuctionDefaults.Batch.MaxImportRowsPerRequest)
+            .WithMessage(ValidationConstants.Messages.MustNotExceed("Rows", AuctionDefaults.Batch.MaxImportRowsPerRequest));
     }
 }

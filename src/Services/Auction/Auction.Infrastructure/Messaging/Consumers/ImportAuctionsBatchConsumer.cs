@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
 using Auctions.Application.Features.Auctions.ImportAuctions;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Domain.Constants;
 using JobService.Contracts.Commands;
@@ -13,8 +14,6 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCommand>
 {
-    private const int InsertBatchSize = 500;
-
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly ISanitizationService _sanitizationService;
     private readonly IUnitOfWork _unitOfWork;
@@ -71,7 +70,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
 
         var insertedCount = 0;
 
-        foreach (var chunk in ChunkRows(validationResult.ValidRows, InsertBatchSize))
+        foreach (var chunk in ChunkRows(validationResult.ValidRows, AuctionDefaults.Batch.InsertBatchSize))
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 

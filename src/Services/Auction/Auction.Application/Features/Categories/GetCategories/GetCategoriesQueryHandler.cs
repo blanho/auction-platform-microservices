@@ -1,6 +1,7 @@
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using Auctions.Application.Interfaces;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -15,8 +16,6 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
     private readonly ICategoryRepository _repository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetCategoriesQueryHandler> _logger;
-    private const int MaxCategories = 100;
-
     public GetCategoriesQueryHandler(
         ICategoryRepository repository,
         IMapper mapper,
@@ -46,7 +45,7 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
             }
             else
             {
-                var result = await _repository.GetPagedAsync(PaginationDefaults.DefaultPage, MaxCategories, cancellationToken);
+                var result = await _repository.GetPagedAsync(PaginationDefaults.DefaultPage, AuctionDefaults.Batch.MaxCategoriesPerQuery, cancellationToken);
                 categories = result.Items.ToList();
             }
 

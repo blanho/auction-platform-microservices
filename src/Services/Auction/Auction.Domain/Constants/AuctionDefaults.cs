@@ -39,7 +39,22 @@ public static class AuctionDefaults
 
         public const int MaxPageSize = 100;
     }
+    public static class Batch
+    {
+        public const int InsertBatchSize = 500;
 
+        public const int SaveBatchSize = 100;
+
+        public const int FetchBatchSize = 200;
+
+        public const int MaxImportRowsPerRequest = 10_000;
+
+        public const int RowsPerImportBatch = 1_000;
+
+        public const int MaxBulkUpdateSize = 5_000;
+
+        public const int MaxCategoriesPerQuery = 100;
+    }
     public static class Messaging
     {
         public const int OutboxQueryDelaySeconds = 10;

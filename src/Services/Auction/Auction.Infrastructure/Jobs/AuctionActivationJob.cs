@@ -1,3 +1,4 @@
+using Auctions.Domain.Constants;
 using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,6 @@ namespace Auctions.Infrastructure.Jobs;
 [DisallowConcurrentExecution]
 public class AuctionActivationJob : BaseJob
 {
-    private const int SaveBatchSize = 100;
-
     public const string JobId = "auction-activation";
     public const string Description = "Activates scheduled auctions at their start time";
 
@@ -55,7 +54,7 @@ public class AuctionActivationJob : BaseJob
                 activatedCount++;
                 pendingChanges++;
 
-                if (pendingChanges >= SaveBatchSize)
+                if (pendingChanges >= AuctionDefaults.Batch.SaveBatchSize)
                 {
                     await unitOfWork.SaveChangesAsync(cancellationToken);
                     dbContext.ChangeTracker.Clear();

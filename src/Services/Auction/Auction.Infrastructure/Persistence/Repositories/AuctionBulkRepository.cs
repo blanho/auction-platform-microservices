@@ -39,7 +39,7 @@ public class AuctionBulkRepository : IAuctionBulkRepository
         var utcNow = _dateTime.UtcNowOffset;
         var totalInserted = 0;
 
-        foreach (var batch in Chunk(auctions, InsertBatchSize))
+        foreach (var batch in Chunk(auctions, AuctionDefaults.Batch.InsertBatchSize))
         {
             cancellationToken.ThrowIfCancellationRequested();
 

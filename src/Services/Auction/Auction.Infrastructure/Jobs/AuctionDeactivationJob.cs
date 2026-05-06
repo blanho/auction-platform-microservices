@@ -1,3 +1,4 @@
+using Auctions.Domain.Constants;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -10,8 +11,6 @@ namespace Auctions.Infrastructure.Jobs;
 [DisallowConcurrentExecution]
 public class AuctionDeactivationJob : BaseJob
 {
-    private const int SaveBatchSize = 100;
-
     public const string JobId = "auction-deactivation";
     public const string Description = "Auto-deactivates expired auctions";
 
@@ -56,7 +55,7 @@ public class AuctionDeactivationJob : BaseJob
                 processedCount++;
                 pendingChanges++;
 
-                if (pendingChanges >= SaveBatchSize)
+                if (pendingChanges >= AuctionDefaults.Batch.SaveBatchSize)
                 {
                     await unitOfWork.SaveChangesAsync(cancellationToken);
                     dbContext.ChangeTracker.Clear();
