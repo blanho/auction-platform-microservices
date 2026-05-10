@@ -76,7 +76,7 @@ namespace Notification.Application.Services
             {
                 UnreadCount = unreadCount,
                 TotalCount = allNotifications.Count,
-                RecentNotifications = allNotifications.Take(10).ToList().ToDtoList(_mapper)
+                RecentNotifications = allNotifications.Take(NotificationDefaults.Pagination.RecentNotificationsCount).ToList().ToDtoList(_mapper)
             };
         }
 

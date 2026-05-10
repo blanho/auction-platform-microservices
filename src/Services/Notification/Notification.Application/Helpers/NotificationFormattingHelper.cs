@@ -1,4 +1,5 @@
 using System.Globalization;
+using Notification.Domain.Constants;
 
 namespace Notification.Application.Helpers;
 
@@ -30,14 +31,14 @@ public static class NotificationFormattingHelper
         return diff.TotalMinutes switch
         {
             < 1 => "just now",
-            < 60 => $"{(int)diff.TotalMinutes} minutes ago",
-            < 1440 => $"{(int)diff.TotalHours} hours ago",
-            < 10080 => $"{(int)diff.TotalDays} days ago",
+            < NotificationDefaults.Message.RelativeTimeMinutesPerHour => $"{(int)diff.TotalMinutes} minutes ago",
+            < NotificationDefaults.Message.RelativeTimeMinutesPerDay => $"{(int)diff.TotalHours} hours ago",
+            < NotificationDefaults.Message.RelativeTimeMinutesPerWeek => $"{(int)diff.TotalDays} days ago",
             _ => dateTime.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)
         };
     }
 
-    public static string TruncateMessage(string? message, int maxLength = 100)
+    public static string TruncateMessage(string? message, int maxLength = NotificationDefaults.Message.DefaultTruncateLength)
     {
         if (string.IsNullOrEmpty(message))
             return string.Empty;

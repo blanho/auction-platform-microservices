@@ -17,7 +17,7 @@ public record QueueBulkNotificationCommand(
     List<RecipientInfo> Recipients,
     Dictionary<string, string>? GlobalParameters = null,
     DateTimeOffset? ScheduledAt = null,
-    int BatchSize = 100
+    int BatchSize = NotificationDefaults.Bulk.DefaultBatchSize
 ) : ICommand<BackgroundJobResult>;
 
 public record RecipientInfo(

@@ -25,7 +25,7 @@ public interface INotificationRecordRepository
 
     Task AddUserNotificationAsync(UserNotification notification, CancellationToken ct = default);
 
-    Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = 20, CancellationToken ct = default);
+    Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = NotificationDefaults.Pagination.DefaultPageSize, CancellationToken ct = default);
 
     Task<UserNotification?> GetUserNotificationByIdAsync(Guid id, CancellationToken ct = default);
 

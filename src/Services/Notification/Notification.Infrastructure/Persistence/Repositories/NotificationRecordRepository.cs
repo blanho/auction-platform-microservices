@@ -59,7 +59,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
         await _context.UserNotifications.AddAsync(notification, ct);
     }
 
-    public async Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = 20, CancellationToken ct = default)
+    public async Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = NotificationDefaults.Pagination.DefaultPageSize, CancellationToken ct = default)
     {
         return await _context.UserNotifications
             .AsNoTracking()

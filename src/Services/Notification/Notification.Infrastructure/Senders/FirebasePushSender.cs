@@ -75,7 +75,7 @@ public class FirebasePushSender : IPushSender
                             Body = body
                         },
                         Sound = "default",
-                        Badge = 1,
+                        Badge = NotificationDefaults.Push.BadgeCount,
                         ContentAvailable = true
                     }
                 },

@@ -15,7 +15,7 @@ public interface INotificationSender
 
     Task SendInAppAsync(string userId, string title, string message, string? link = null, CancellationToken ct = default);
 
-    Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = 20, CancellationToken ct = default);
+    Task<List<UserNotification>> GetUserNotificationsAsync(string userId, int skip = 0, int take = NotificationDefaults.Pagination.DefaultPageSize, CancellationToken ct = default);
 
     Task<int> GetUnreadCountAsync(string userId, CancellationToken ct = default);
 

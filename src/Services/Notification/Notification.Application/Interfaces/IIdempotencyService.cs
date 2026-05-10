@@ -21,13 +21,13 @@ public interface IIdempotencyService
     Task<bool> IsRateLimitedAsync(
         string userId,
         string channel,
-        int windowSeconds = 60,
-        int maxCount = 10,
+        int windowSeconds = NotificationDefaults.Idempotency.RateLimitWindowSeconds,
+        int maxCount = NotificationDefaults.Idempotency.RateLimitMaxCount,
         CancellationToken ct = default);
 
     Task IncrementRateLimitAsync(
         string userId,
         string channel,
-        int windowSeconds = 60,
+        int windowSeconds = NotificationDefaults.Idempotency.RateLimitWindowSeconds,
         CancellationToken ct = default);
 }

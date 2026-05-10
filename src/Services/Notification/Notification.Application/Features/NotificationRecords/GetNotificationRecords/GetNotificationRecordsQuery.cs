@@ -9,6 +9,6 @@ public record GetNotificationRecordsQuery(
     string? TemplateKey,
     DateTimeOffset? FromDate,
     DateTimeOffset? ToDate,
-    int Page = 1,
-    int PageSize = 20
+    int Page = NotificationDefaults.Pagination.DefaultPage,
+    int PageSize = NotificationDefaults.Pagination.DefaultPageSize
 ) : IQuery<PaginatedResult<NotificationRecordDto>>;

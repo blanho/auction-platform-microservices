@@ -53,7 +53,7 @@ public static class MassTransitConfiguration
                 minIntervalSeconds: NotificationDefaults.BulkRetry.MinIntervalSeconds,
                 maxIntervalMinutes: NotificationDefaults.BulkRetry.MaxIntervalMinutes,
                 intervalDeltaSeconds: NotificationDefaults.BulkRetry.IntervalDeltaSeconds,
-                concurrencyLimit: 2);
+                concurrencyLimit: NotificationDefaults.Transport.BulkConsumerConcurrencyLimit);
             x.AddNotificationConsumer<AutoBidCreatedConsumer>(
                 concurrencyLimit: rabbitMqSettings.ConcurrencyLimit);
             x.AddNotificationConsumer<AutoBidActivatedConsumer>(
@@ -91,7 +91,7 @@ public static class MassTransitConfiguration
             x.AddNotificationConsumer<AuctionCancelledNotificationConsumer>(
                 concurrencyLimit: rabbitMqSettings.ConcurrencyLimit);
             x.AddNotificationConsumer<AuctionEndingSoonConsumer>(
-                concurrencyLimit: 1);
+                concurrencyLimit: NotificationDefaults.Transport.AuctionEndingSoonConcurrencyLimit);
             x.AddNotificationConsumer<AuctionExtendedConsumer>(
                 concurrencyLimit: rabbitMqSettings.ConcurrencyLimit);
             x.AddNotificationConsumer<UserReactivatedConsumer>(
@@ -115,8 +115,8 @@ public static class MassTransitConfiguration
             {
                 o.UsePostgres();
                 o.UseBusOutbox();
-                o.QueryDelay = TimeSpan.FromSeconds(1);
-                o.QueryTimeout = TimeSpan.FromSeconds(30);
+                o.QueryDelay = TimeSpan.FromSeconds(NotificationDefaults.Transport.OutboxQueryDelaySeconds);
+                o.QueryTimeout = TimeSpan.FromSeconds(NotificationDefaults.Transport.OutboxQueryTimeoutSeconds);
             });
 
             x.UsingRabbitMq((context, cfg) =>
@@ -125,11 +125,14 @@ public static class MassTransitConfiguration
                 {
                     h.Username(rabbitMqSettings.Username);
                     h.Password(rabbitMqSettings.Password);
-                    h.Heartbeat(TimeSpan.FromSeconds(30));
+                    h.Heartbeat(TimeSpan.FromSeconds(NotificationDefaults.Transport.HeartbeatSeconds));
                 });
 
                 cfg.UseMessageRetry(r => r
-                    .Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+                    .Incremental(
+                        NotificationDefaults.Transport.GlobalRetryCount,
+                        TimeSpan.FromSeconds(NotificationDefaults.Transport.GlobalRetryInitialSeconds),
+                        TimeSpan.FromSeconds(NotificationDefaults.Transport.GlobalRetryDeltaSeconds)));
 
                 ConfigureReceiveEndpoints(cfg, context, rabbitMqSettings);
 
@@ -152,11 +155,11 @@ public static class MassTransitConfiguration
             e.PrefetchCount = settings.PrefetchCount;
             e.UseDelayedRedelivery(r => r
                 .Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(5),
-                    TimeSpan.FromMinutes(30),
-                    TimeSpan.FromHours(1)));
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardInitialSeconds),
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardSecondSeconds),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardThirdMinutes),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardFourthMinutes),
+                    TimeSpan.FromHours(NotificationDefaults.Redelivery.StandardFifthHours)));
             e.UseInMemoryOutbox(context);
         });
 
@@ -220,11 +223,11 @@ public static class MassTransitConfiguration
             e.PrefetchCount = settings.PrefetchCount;
             e.UseDelayedRedelivery(r => r
                 .Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(5),
-                    TimeSpan.FromMinutes(30),
-                    TimeSpan.FromHours(1)));
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardInitialSeconds),
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardSecondSeconds),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardThirdMinutes),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardFourthMinutes),
+                    TimeSpan.FromHours(NotificationDefaults.Redelivery.StandardFifthHours)));
             e.UseInMemoryOutbox(context);
         });
 
@@ -237,13 +240,13 @@ public static class MassTransitConfiguration
         cfg.ReceiveEndpoint("notification-bulk-send", e =>
         {
             e.ConfigureConsumer<SendBulkNotificationConsumer>(context);
-            e.PrefetchCount = 1;
-            e.UseConcurrencyLimit(2);
+            e.PrefetchCount = NotificationDefaults.Transport.BulkConsumerPrefetchCount;
+            e.UseConcurrencyLimit(NotificationDefaults.Transport.BulkConsumerConcurrencyLimit);
             e.UseDelayedRedelivery(r => r
                 .Intervals(
-                    TimeSpan.FromMinutes(1),
-                    TimeSpan.FromMinutes(5),
-                    TimeSpan.FromMinutes(15)));
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.BulkFirstMinutes),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.BulkSecondMinutes),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.BulkThirdMinutes)));
             e.UseInMemoryOutbox(context);
         });
 

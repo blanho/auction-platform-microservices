@@ -42,9 +42,9 @@ public static class ConsumerRegistrationExtensions
             e.PrefetchCount = prefetchCount;
             e.UseDelayedRedelivery(r => r
                 .Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(5)));
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardInitialSeconds),
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardSecondSeconds),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardThirdMinutes)));
             e.UseInMemoryOutbox(context);
         });
     }
@@ -62,9 +62,9 @@ public static class ConsumerRegistrationExtensions
             e.PrefetchCount = prefetchCount;
             e.UseDelayedRedelivery(r => r
                 .Intervals(
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(30),
-                    TimeSpan.FromMinutes(5)));
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardInitialSeconds),
+                    TimeSpan.FromSeconds(NotificationDefaults.Redelivery.StandardSecondSeconds),
+                    TimeSpan.FromMinutes(NotificationDefaults.Redelivery.StandardThirdMinutes)));
             e.UseInMemoryOutbox(context);
         });
     }

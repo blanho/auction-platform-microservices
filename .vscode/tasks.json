@@ -16,6 +16,11 @@
 			"command": "dotnet run --project AuctionService/API/AuctionService.API.csproj",
 			"isBackground": true,
 			"group": "test"
+		},
+		{
+			"label": "Build Notification Service",
+			"type": "shell",
+			"command": "dotnet build src/Services/Notification/Notification.Api/Notification.Api.csproj --nologo 2>&1 | tail -4"
 		}
 	]
 }

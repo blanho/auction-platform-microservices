@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 
 namespace Notification.Infrastructure.Persistence.Configurations;
@@ -12,7 +13,7 @@ public class NotificationPreferenceConfiguration : IEntityTypeConfiguration<Noti
 
         builder.Property(x => x.UserId)
             .IsRequired()
-            .HasMaxLength(450);
+            .HasMaxLength(NotificationDefaults.Column.UserIdMaxLength);
 
         builder.Property(x => x.EmailEnabled)
             .IsRequired()

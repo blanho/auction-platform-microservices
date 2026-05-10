@@ -4,6 +4,6 @@ namespace Notification.Application.Features.Notifications.GetUserNotifications;
 
 public record GetUserNotificationsQuery(
     string UserId,
-    int Page = 1,
-    int PageSize = 20
+    int Page = NotificationDefaults.Pagination.DefaultPage,
+    int PageSize = NotificationDefaults.Pagination.DefaultPageSize
 ) : IQuery<PaginatedResult<NotificationDto>>;

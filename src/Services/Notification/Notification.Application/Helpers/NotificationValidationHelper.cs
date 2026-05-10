@@ -21,7 +21,7 @@ public static class NotificationValidationHelper
             return false;
 
         var digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
-        return digitsOnly.Length >= 10 && digitsOnly.Length <= 15;
+        return digitsOnly.Length >= NotificationDefaults.Phone.MinDigitCount && digitsOnly.Length <= NotificationDefaults.Phone.MaxDigitCount;
     }
 
     public static bool IsValidUserId(string? userId)
@@ -29,7 +29,7 @@ public static class NotificationValidationHelper
         if (string.IsNullOrWhiteSpace(userId))
             return false;
 
-        return Guid.TryParse(userId, out _) || userId.Length >= 3;
+        return Guid.TryParse(userId, out _) || userId.Length >= NotificationDefaults.Validation.MinUserIdLength;
     }
 
     public static bool IsValidTemplateKey(string? key)

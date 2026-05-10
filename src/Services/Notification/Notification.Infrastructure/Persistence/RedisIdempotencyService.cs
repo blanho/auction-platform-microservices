@@ -9,7 +9,7 @@ public class RedisIdempotencyService : IIdempotencyService
     private readonly IDatabase _db;
     private readonly ILogger<RedisIdempotencyService> _logger;
     private const string KeyPrefix = "notification:idempotency";
-    private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(24);
+    private static readonly TimeSpan DefaultTtl = TimeSpan.FromHours(NotificationDefaults.Idempotency.DefaultTtlHours);
 
     public RedisIdempotencyService(
         IConnectionMultiplexer redis,
@@ -53,7 +53,7 @@ public class RedisIdempotencyService : IIdempotencyService
             return null;
 
         var key = GetIdempotencyKey(eventId, channel);
-        var wasSet = await _db.StringSetAsync(key, "processing", lockTimeout ?? TimeSpan.FromMinutes(5), When.NotExists);
+        var wasSet = await _db.StringSetAsync(key, "processing", lockTimeout ?? TimeSpan.FromMinutes(NotificationDefaults.Idempotency.LockTimeoutMinutes), When.NotExists);
         
         return wasSet ? new NoOpDisposable() : null;
     }
@@ -61,8 +61,8 @@ public class RedisIdempotencyService : IIdempotencyService
     public Task<bool> IsRateLimitedAsync(
         string userId,
         string channel,
-        int windowSeconds = 60,
-        int maxCount = 10,
+        int windowSeconds = NotificationDefaults.Idempotency.RateLimitWindowSeconds,
+        int maxCount = NotificationDefaults.Idempotency.RateLimitMaxCount,
         CancellationToken ct = default)
     {
         return Task.FromResult(false);
@@ -71,7 +71,7 @@ public class RedisIdempotencyService : IIdempotencyService
     public Task IncrementRateLimitAsync(
         string userId,
         string channel,
-        int windowSeconds = 60,
+        int windowSeconds = NotificationDefaults.Idempotency.RateLimitWindowSeconds,
         CancellationToken ct = default)
     {
         return Task.CompletedTask;

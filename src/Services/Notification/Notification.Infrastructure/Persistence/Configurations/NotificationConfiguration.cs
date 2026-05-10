@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Notification.Domain.Constants;
 
 namespace Notification.Infrastructure.Persistence.Configurations;
 
@@ -11,11 +12,11 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Domain.Entitie
 
         builder.Property(x => x.UserId)
             .IsRequired()
-            .HasMaxLength(450);
+            .HasMaxLength(NotificationDefaults.Column.UserIdMaxLength);
 
         builder.Property(x => x.Username)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(NotificationDefaults.Column.UsernameMaxLength);
 
         builder.Property(x => x.Type)
             .IsRequired()
@@ -23,11 +24,11 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Domain.Entitie
 
         builder.Property(x => x.Title)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(NotificationDefaults.Column.TitleMaxLength);
 
         builder.Property(x => x.Message)
             .IsRequired()
-            .HasMaxLength(2000);
+            .HasMaxLength(NotificationDefaults.Column.MessageMaxLength);
 
         builder.Property(x => x.HtmlContent);
 
@@ -54,7 +55,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Domain.Entitie
         builder.Property(x => x.OrderId);
 
         builder.Property(x => x.ReferenceId)
-            .HasMaxLength(100);
+            .HasMaxLength(NotificationDefaults.Column.ReferenceIdMaxLength);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();

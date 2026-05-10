@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 
 namespace Notification.Infrastructure.Persistence.Configurations;
@@ -12,18 +13,18 @@ public class UserNotificationConfiguration : IEntityTypeConfiguration<UserNotifi
 
         builder.Property(x => x.UserId)
             .IsRequired()
-            .HasMaxLength(450);
+            .HasMaxLength(NotificationDefaults.Column.UserIdMaxLength);
 
         builder.Property(x => x.Title)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(NotificationDefaults.Column.TitleMaxLength);
 
         builder.Property(x => x.Message)
             .IsRequired()
-            .HasMaxLength(2000);
+            .HasMaxLength(NotificationDefaults.Column.MessageMaxLength);
 
         builder.Property(x => x.Link)
-            .HasMaxLength(500);
+            .HasMaxLength(NotificationDefaults.Column.LinkMaxLength);
 
         builder.Property(x => x.IsRead)
             .IsRequired()
@@ -38,7 +39,7 @@ public class UserNotificationConfiguration : IEntityTypeConfiguration<UserNotifi
         builder.Property(x => x.OrderId);
 
         builder.Property(x => x.Type)
-            .HasMaxLength(50);
+            .HasMaxLength(NotificationDefaults.Column.NotificationTypeMaxLength);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();
