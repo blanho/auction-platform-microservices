@@ -27,6 +27,7 @@
   <ItemGroup>
     <!-- GrpcServices="Both" generates BidGrpcBase (for Bidding.Api server) and
          BidGrpcClient (for consumers needing to query bids) in a single assembly. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="6.0.4" />
     <Protobuf Include="Grpc\bids.proto" GrpcServices="Both" />
   </ItemGroup>
 
