@@ -3,7 +3,7 @@ using BuildingBlocks.Domain.Entities;
 
 namespace Auctions.Domain.Entities;
 
-public class Brand : AggregateRoot
+public class Brand : BaseEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string Slug { get; private set; } = string.Empty;

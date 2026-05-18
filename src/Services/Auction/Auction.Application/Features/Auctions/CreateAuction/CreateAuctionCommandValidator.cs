@@ -39,7 +39,9 @@ public class CreateAuctionCommandValidator : AbstractValidator<CreateAuctionComm
 
         RuleFor(x => x.AuctionEnd)
             .GreaterThan(DateTimeOffset.UtcNow.AddHours(1))
-            .WithMessage(ValidationConstants.Messages.MustBeAtLeast("Auction end date", 1));
+            .WithMessage(ValidationConstants.Messages.MustBeAtLeast("Auction end date", 1))
+            .LessThanOrEqualTo(DateTimeOffset.UtcNow.AddDays(30))
+            .WithMessage("Auction end date must not exceed 30 days from now.");
 
         RuleFor(x => x.SellerUsername)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller username"));

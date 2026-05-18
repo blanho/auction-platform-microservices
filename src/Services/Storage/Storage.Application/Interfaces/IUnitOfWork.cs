@@ -1,6 +1,7 @@
+using BuildingBlocks.Application.Abstractions;
+
 namespace Storage.Application.Interfaces;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : BuildingBlocks.Application.Abstractions.IUnitOfWork
 {
-    Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

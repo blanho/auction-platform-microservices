@@ -4,7 +4,7 @@ using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Domain.Entities;
 
-public class Category : AggregateRoot
+public class Category : BaseEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string Slug { get; private set; } = string.Empty;

@@ -40,6 +40,13 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
             stopwatch.Stop();
 
+            if (stopwatch.ElapsedMilliseconds > 500)
+                _logger.LogWarning(
+                    "[SLOW] {RequestName} CorrelationId={CorrelationId} took {ElapsedMilliseconds}ms",
+                    requestName,
+                    correlationId,
+                    stopwatch.ElapsedMilliseconds);
+
             _logger.LogInformation(
                 "[END] {RequestName} CorrelationId={CorrelationId} completed in {ElapsedMilliseconds}ms",
                 requestName,
@@ -48,11 +55,11 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 
             return response;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             stopwatch.Stop();
 
-            _logger.LogWarning(
+            _logger.LogWarning(ex,
                 "[FAILED] {RequestName} CorrelationId={CorrelationId} failed after {ElapsedMilliseconds}ms",
                 requestName,
                 correlationId,

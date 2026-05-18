@@ -113,10 +113,5 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
             _logger.LogWarning(ex, "Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
             return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Buy Now failed for auction {AuctionId}", request.AuctionId);
-            return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Failed("An unexpected error occurred. Please try again."));
-        }
     }
 }
