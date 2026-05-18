@@ -11,7 +11,6 @@ using Notification.Domain.Entities;
 using NotificationService.Contracts.Commands;
 using NotificationService.Contracts.Enums;
 using NotificationService.Contracts.Events;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Messaging.Consumers;
 

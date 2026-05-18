@@ -3,7 +3,6 @@ using Notification.Application.DTOs;
 using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Application.Features.Preferences.UpdatePreferences;
 

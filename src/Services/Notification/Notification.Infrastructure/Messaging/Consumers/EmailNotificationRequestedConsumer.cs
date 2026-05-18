@@ -4,7 +4,6 @@ using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Constants;
 using NotificationService.Contracts.Events;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Consumers;
 

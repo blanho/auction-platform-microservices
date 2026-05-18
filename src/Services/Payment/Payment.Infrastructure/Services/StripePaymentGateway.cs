@@ -7,7 +7,6 @@ using Payment.Infrastructure.Configuration;
 using Payment.Infrastructure.Constants;
 using Stripe;
 using Stripe.Checkout;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Services;
 

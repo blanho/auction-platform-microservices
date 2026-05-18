@@ -17,6 +17,7 @@ global using Auctions.Application.DTOs.Categories;
 global using Auctions.Application.DTOs.Reviews;
 global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Interfaces;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 global using AuctionStatus = Auctions.Domain.Enums.Status;
 global using AuctionService.Contracts.Grpc;

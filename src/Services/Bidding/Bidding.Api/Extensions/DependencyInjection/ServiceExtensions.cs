@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using BuildingBlocks.Application.Abstractions.Providers;
 using System.Text.Json.Serialization;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Bidding.Api.Extensions.DependencyInjection
 {

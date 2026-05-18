@@ -1,7 +1,6 @@
 using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Application.Features.Preferences.GetPreferences;
 

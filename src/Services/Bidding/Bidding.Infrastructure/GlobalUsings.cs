@@ -1,5 +1,6 @@
 
 global using BuildingBlocks.Application.Abstractions;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 global using Bidding.Domain.Entities;
 global using Bidding.Application.Interfaces;

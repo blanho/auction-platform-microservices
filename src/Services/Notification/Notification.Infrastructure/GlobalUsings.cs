@@ -1,4 +1,5 @@
 global using BuildingBlocks.Application.Abstractions;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 global using Notification.Domain.Constants;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Logging;

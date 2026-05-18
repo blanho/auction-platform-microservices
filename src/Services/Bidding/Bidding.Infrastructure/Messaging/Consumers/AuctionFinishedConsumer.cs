@@ -3,7 +3,6 @@ using Bidding.Application.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using AuctionService.Contracts.Events;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Bidding.Infrastructure.Messaging.Consumers;
 

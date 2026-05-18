@@ -7,6 +7,7 @@ global using Bidding.Domain.Constants;
 global using BuildingBlocks.Web.Extensions;
 global using BuildingBlocks.Web.Middleware;
 global using BuildingBlocks.Application.Abstractions;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 global using Bidding.Domain.Entities;
 global using Bidding.Application.DTOs;

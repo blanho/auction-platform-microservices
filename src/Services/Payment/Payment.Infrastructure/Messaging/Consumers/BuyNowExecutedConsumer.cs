@@ -4,7 +4,6 @@ using BuildingBlocks.Infrastructure.Caching;
 using AuctionService.Contracts.Events;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Infrastructure.Messaging.Consumers;
 

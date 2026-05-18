@@ -1,5 +1,4 @@
 using Notification.Application.Interfaces;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Application.Features.Notifications.MarkAsRead;
 

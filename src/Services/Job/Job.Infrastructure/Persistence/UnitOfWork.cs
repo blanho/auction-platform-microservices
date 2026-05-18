@@ -1,5 +1,4 @@
 using BuildingBlocks.Infrastructure.Repository;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 using MediatR;
 
 namespace Jobs.Infrastructure.Persistence;

@@ -5,7 +5,6 @@ using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 using NotificationEntity = Notification.Domain.Entities.Notification;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Application.Features.Notifications.CreateNotification;
 

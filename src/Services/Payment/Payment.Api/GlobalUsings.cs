@@ -4,6 +4,7 @@ global using BuildingBlocks.Web.Authorization;
 global using BuildingBlocks.Web.Observability;
 global using BuildingBlocks.Web.OpenApi;
 global using BuildingBlocks.Application.Abstractions;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 global using BuildingBlocks.Infrastructure.Caching;
 global using MediatR;
 global using Carter;

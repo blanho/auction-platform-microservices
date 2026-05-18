@@ -4,7 +4,6 @@ using JobService.Contracts.Commands;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Job = Jobs.Domain.Entities.Job;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 

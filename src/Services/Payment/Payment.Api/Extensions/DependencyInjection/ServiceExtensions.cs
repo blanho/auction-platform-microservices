@@ -10,7 +10,6 @@ using BuildingBlocks.Application.Extensions;
 using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Payment.Api.Extensions.DependencyInjection;
 

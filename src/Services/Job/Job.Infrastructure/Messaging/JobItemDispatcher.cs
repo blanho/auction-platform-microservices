@@ -3,7 +3,6 @@ using Jobs.Domain.Enums;
 using JobService.Contracts.Commands;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Jobs.Infrastructure.Messaging;
 
