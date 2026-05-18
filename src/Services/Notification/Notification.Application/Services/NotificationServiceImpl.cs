@@ -5,7 +5,6 @@ using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
-using NotificationEntity = Notification.Domain.Entities.Notification;
 
 namespace Notification.Application.Services
 {

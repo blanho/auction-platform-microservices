@@ -1,4 +1,3 @@
-using Auction = Auctions.Domain.Entities.Auction;
 using Auctions.Application.DTOs.Audit;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;

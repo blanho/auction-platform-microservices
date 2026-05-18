@@ -4,7 +4,6 @@ using Analytics.Api.Errors;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;
 using BuildingBlocks.Application.Abstractions;
-using IUnitOfWork = Analytics.Api.Interfaces.IUnitOfWork;
 
 namespace Analytics.Api.Services;
 

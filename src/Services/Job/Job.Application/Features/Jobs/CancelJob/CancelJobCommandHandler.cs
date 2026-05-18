@@ -2,7 +2,6 @@ using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
-using JobStatus = Jobs.Domain.Enums.JobStatus;
 
 namespace Jobs.Application.Features.Jobs.CancelJob;
 

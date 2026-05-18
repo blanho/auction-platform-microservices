@@ -4,7 +4,6 @@ using Storage.Application.Interfaces;
 using Storage.Infrastructure.Messaging;
 using Storage.Infrastructure.Persistence;
 using Storage.Infrastructure.Persistence.Repositories;
-using StorageUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Storage.Infrastructure.Extensions;
 
@@ -13,7 +12,7 @@ public static class StorageServiceExtensions
     public static IServiceCollection AddStorageInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IStoredFileRepository, StoredFileRepository>();
-        services.AddScoped<StorageUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

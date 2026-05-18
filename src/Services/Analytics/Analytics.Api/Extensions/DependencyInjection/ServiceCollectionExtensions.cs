@@ -10,7 +10,6 @@ using BuildingBlocks.Infrastructure.Messaging;
 using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using IUnitOfWork = Analytics.Api.Interfaces.IUnitOfWork;
 
 namespace Analytics.Api.Extensions.DependencyInjection;
 

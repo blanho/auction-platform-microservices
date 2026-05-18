@@ -18,3 +18,4 @@ global using Auctions.Application.DTOs.Reviews;
 global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Enums;
 global using Auctions.Application.Interfaces;
+global using Auction = Auctions.Domain.Entities.Auction;

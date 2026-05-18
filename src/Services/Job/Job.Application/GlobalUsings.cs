@@ -7,3 +7,5 @@ global using Microsoft.Extensions.Logging;
 global using Jobs.Application.DTOs;
 global using Jobs.Application.Interfaces;
 global using Jobs.Domain.Constants;
+global using Job = Jobs.Domain.Entities.Job;
+global using JobStatus = Jobs.Domain.Enums.JobStatus;

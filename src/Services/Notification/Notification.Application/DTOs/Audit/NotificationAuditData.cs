@@ -1,5 +1,4 @@
 using Notification.Domain.Entities;
-using NotificationEntity = Notification.Domain.Entities.Notification;
 
 namespace Notification.Application.DTOs.Audit;
 

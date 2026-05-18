@@ -4,7 +4,6 @@ using IdentityService.Contracts.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using NotificationService.Contracts.Events;
-using Auction = Auctions.Domain.Entities.Auction;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

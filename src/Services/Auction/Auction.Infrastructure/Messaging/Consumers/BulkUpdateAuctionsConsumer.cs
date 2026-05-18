@@ -8,7 +8,6 @@ using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using Auction = Auctions.Domain.Entities.Auction;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

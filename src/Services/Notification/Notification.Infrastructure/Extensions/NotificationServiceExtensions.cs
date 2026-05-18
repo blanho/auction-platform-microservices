@@ -12,7 +12,6 @@ using Notification.Infrastructure.Persistence.Repositories;
 using Notification.Infrastructure.Senders;
 using SendGrid;
 using StackExchange.Redis;
-using NotificationUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Extensions;
 
@@ -27,7 +26,7 @@ public static class NotificationServiceExtensions
         services.AddScoped<ITemplateRepository, TemplateRepository>();
         services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
 
-        services.AddScoped<NotificationUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

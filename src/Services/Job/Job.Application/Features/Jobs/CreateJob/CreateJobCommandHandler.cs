@@ -3,7 +3,6 @@ using BuildingBlocks.Application.Abstractions.Auditing;
 using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
 using Jobs.Domain.Entities;
-using Job = Jobs.Domain.Entities.Job;
 
 namespace Jobs.Application.Features.Jobs.CreateJob;
 

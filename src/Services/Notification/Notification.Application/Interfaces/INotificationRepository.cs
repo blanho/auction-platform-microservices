@@ -1,7 +1,6 @@
 #nullable enable
 using BuildingBlocks.Application.Abstractions;
 using Notification.Domain.Enums;
-using NotificationEntity = Notification.Domain.Entities.Notification;
 
 namespace Notification.Application.Interfaces;
 

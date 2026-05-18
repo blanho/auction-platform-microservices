@@ -3,7 +3,6 @@ using Common.Contracts.Events;
 using MassTransit;
 using Analytics.Api.Entities;
 using Analytics.Api.Interfaces;
-using IUnitOfWork = Analytics.Api.Interfaces.IUnitOfWork;
 
 namespace Analytics.Api.Consumers;
 

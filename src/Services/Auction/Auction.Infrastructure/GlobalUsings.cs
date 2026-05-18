@@ -12,6 +12,7 @@ global using Auctions.Application.DTOs.Auctions;
 global using Auctions.Application.DTOs.Categories;
 global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Interfaces;
+global using Auction = Auctions.Domain.Entities.Auction;
 global using Auctions.Infrastructure.Persistence.Repositories;
 
 global using AuctionService.Contracts.Events;

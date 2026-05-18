@@ -2,6 +2,7 @@ global using BuildingBlocks.Web.Authorization;
 global using BuildingBlocks.Web.Extensions;
 global using BuildingBlocks.Application.Abstractions;
 global using Analytics.Api.Entities;
+global using IUnitOfWork = Analytics.Api.Interfaces.IUnitOfWork;
 global using Analytics.Api.Extensions.Mappings;
 global using Analytics.Api.Models;
 global using Analytics.Api.Interfaces;

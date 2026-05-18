@@ -4,7 +4,6 @@ using Notification.Application.DTOs;
 using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
-using NotificationEntity = Notification.Domain.Entities.Notification;
 
 namespace Notification.Application.Features.Notifications.CreateNotification;
 

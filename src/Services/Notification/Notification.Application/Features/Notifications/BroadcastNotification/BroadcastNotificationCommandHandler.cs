@@ -1,7 +1,6 @@
 using AutoMapper;
 using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
-using NotificationEntity = Notification.Domain.Entities.Notification;
 
 namespace Notification.Application.Features.Notifications.BroadcastNotification;
 
