@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Abstractions;
 using Identity.Api.DTOs.Seller;
 using Identity.Api.DTOs.Users;
 using Identity.Api.Models;

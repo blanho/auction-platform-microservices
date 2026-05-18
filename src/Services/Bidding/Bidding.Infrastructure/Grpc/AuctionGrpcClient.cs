@@ -1,7 +1,6 @@
 using AuctionService.Contracts.Grpc;
 using Bidding.Application.Interfaces;
 using Grpc.Core;
-using Microsoft.Extensions.Logging;
 
 namespace Bidding.Infrastructure.Grpc;
 

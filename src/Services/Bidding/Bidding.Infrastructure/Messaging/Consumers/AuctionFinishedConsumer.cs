@@ -1,7 +1,6 @@
 
 using Bidding.Application.Interfaces;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using AuctionService.Contracts.Events;
 
 namespace Bidding.Infrastructure.Messaging.Consumers;

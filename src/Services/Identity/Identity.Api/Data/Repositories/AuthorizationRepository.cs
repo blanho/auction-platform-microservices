@@ -3,7 +3,6 @@ using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Web.Exceptions;
 using Identity.Api.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Identity.Api.Data.Repositories;
 

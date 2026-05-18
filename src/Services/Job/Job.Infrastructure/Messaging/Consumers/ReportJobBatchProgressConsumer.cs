@@ -2,7 +2,6 @@ using Jobs.Application.Interfaces;
 using Jobs.Domain.Enums;
 using JobService.Contracts.Commands;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 

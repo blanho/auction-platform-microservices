@@ -2,7 +2,6 @@ using BuildingBlocks.Application.Abstractions.Messaging;
 using Identity.Api.DomainEvents;
 using NotificationService.Contracts.Events;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Identity.Api.EventHandlers;
 

@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Abstractions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Api.Errors;

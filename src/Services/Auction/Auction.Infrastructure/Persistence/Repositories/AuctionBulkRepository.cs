@@ -4,7 +4,6 @@ using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 

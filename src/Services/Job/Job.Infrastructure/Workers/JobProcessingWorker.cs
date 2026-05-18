@@ -1,10 +1,8 @@
-using BuildingBlocks.Application.Abstractions;
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Enums;
 using Jobs.Domain.Constants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Jobs.Infrastructure.Workers;
 

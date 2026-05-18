@@ -1,5 +1,4 @@
 using AutoMapper;
-using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;

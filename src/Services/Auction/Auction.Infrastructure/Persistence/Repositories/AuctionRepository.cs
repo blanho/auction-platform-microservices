@@ -4,7 +4,6 @@ using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Paging;
 using Auctions.Domain.Enums;

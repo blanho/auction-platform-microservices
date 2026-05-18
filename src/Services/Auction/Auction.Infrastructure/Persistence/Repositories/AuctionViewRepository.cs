@@ -3,7 +3,6 @@ using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Application.Abstractions;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 

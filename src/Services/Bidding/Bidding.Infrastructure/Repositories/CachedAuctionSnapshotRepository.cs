@@ -1,6 +1,5 @@
 using Bidding.Application.Interfaces;
 using BuildingBlocks.Infrastructure.Caching;
-using Microsoft.Extensions.Logging;
 
 namespace Bidding.Infrastructure.Repositories;
 

@@ -1,5 +1,4 @@
 using MassTransit;
-using Microsoft.Extensions.Logging;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

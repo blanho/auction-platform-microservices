@@ -17,3 +17,4 @@ global using MediatR;
 global using Carter;
 
 global using Results = Microsoft.AspNetCore.Http.Results;
+global using Microsoft.Extensions.Logging;

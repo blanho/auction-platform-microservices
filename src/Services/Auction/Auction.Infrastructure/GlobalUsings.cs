@@ -19,3 +19,4 @@ global using AuctionService.Contracts.Events;
 global using BidService.Contracts.Events;
 global using OrchestrationService.Contracts.Events;
 global using StorageService.Contracts.Events;
+global using Microsoft.Extensions.Logging;

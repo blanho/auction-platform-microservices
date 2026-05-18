@@ -1,7 +1,6 @@
 using Auctions.Domain.Constants;
 using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Persistence;
-using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Abstractions;
 using Identity.Api.DTOs.Auth;
 using Identity.Api.DTOs.Profile;
 

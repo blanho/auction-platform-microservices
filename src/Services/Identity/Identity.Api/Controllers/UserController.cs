@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Identity.Api.DTOs.Seller;

@@ -3,7 +3,6 @@ using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quartz;
 
 namespace Auctions.Infrastructure.Jobs;

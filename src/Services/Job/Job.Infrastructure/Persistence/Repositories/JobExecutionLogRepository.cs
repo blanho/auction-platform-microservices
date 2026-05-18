@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Abstractions;
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Entities;
 using Jobs.Domain.Enums;

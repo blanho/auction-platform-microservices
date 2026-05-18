@@ -4,7 +4,6 @@ using Identity.Api.Data;
 using IdentityService.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quartz;
 
 namespace Identity.Api.Jobs;
