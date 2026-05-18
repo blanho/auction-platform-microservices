@@ -13,7 +13,7 @@ namespace Notification.Application.Services
     {
         private readonly INotificationRepository _repository;
         private readonly INotificationPreferenceRepository _preferenceRepository;
-        private readonly Interfaces.IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly INotificationHubService _hubService;
         private readonly IDateTimeProvider _dateTime;
@@ -21,7 +21,7 @@ namespace Notification.Application.Services
         public NotificationServiceImpl(
             INotificationRepository repository,
             INotificationPreferenceRepository preferenceRepository,
-            Interfaces.IUnitOfWork unitOfWork,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             INotificationHubService hubService,
             IDateTimeProvider dateTime)

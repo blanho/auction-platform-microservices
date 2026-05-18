@@ -1,6 +1,6 @@
 using BuildingBlocks.Infrastructure.Repository;
 using MediatR;
-using NotificationUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
+using NotificationUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Persistence;
 

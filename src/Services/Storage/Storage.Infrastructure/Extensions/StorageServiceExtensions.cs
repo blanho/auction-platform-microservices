@@ -4,7 +4,7 @@ using Storage.Application.Interfaces;
 using Storage.Infrastructure.Messaging;
 using Storage.Infrastructure.Persistence;
 using Storage.Infrastructure.Persistence.Repositories;
-using StorageUnitOfWork = Storage.Application.Interfaces.IUnitOfWork;
+using StorageUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Storage.Infrastructure.Extensions;
 

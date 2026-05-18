@@ -6,7 +6,7 @@ using Notification.Domain.Constants;
 using Notification.Domain.Entities;
 using NotificationService.Contracts.Events;
 using NotificationService.Contracts.Enums;
-using IUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Consumers;
 

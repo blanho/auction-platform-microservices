@@ -1,5 +1,5 @@
-using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
+using Auctions.Application.Errors;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
@@ -29,36 +29,28 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
     {
         _logger.LogInformation("Creating category {Name}", request.Name);
 
-        try
+        var slugExists = await _repository.SlugExistsAsync(request.Slug, null, cancellationToken);
+        if (slugExists)
         {
-            var slugExists = await _repository.SlugExistsAsync(request.Slug, null, cancellationToken);
-            if (slugExists)
-            {
-                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
-            }
-
-            var category = Category.Create(
-                request.Name,
-                request.Slug,
-                request.Icon,
-                request.Description,
-                request.DisplayOrder,
-                request.IsActive,
-                request.ParentCategoryId);
-
-            var createdCategory = await _repository.CreateAsync(category, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Created category {CategoryId} with name {Name}", createdCategory.Id, request.Name);
-
-            var dto = _mapper.Map<CategoryDto>(createdCategory);
-            return Result<CategoryDto>.Success(dto);
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to create category {Name}: {Error}", request.Name, ex.Message);
-            return Result.Failure<CategoryDto>(AuctionErrors.Category.CreateFailed(ex.Message));
-        }
+
+        var category = Category.Create(
+            request.Name,
+            request.Slug,
+            request.Icon,
+            request.Description,
+            request.DisplayOrder,
+            request.IsActive,
+            request.ParentCategoryId);
+
+        var createdCategory = await _repository.CreateAsync(category, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Created category {CategoryId} with name {Name}", createdCategory.Id, request.Name);
+
+        var dto = _mapper.Map<CategoryDto>(createdCategory);
+        return Result<CategoryDto>.Success(dto);
     }
 }
 

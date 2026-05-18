@@ -5,4 +5,4 @@ global using MediatR;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Storage.Application.DTOs;
-global using IUnitOfWork = Storage.Application.Interfaces.IUnitOfWork;
+global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;

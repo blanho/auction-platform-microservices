@@ -9,12 +9,8 @@ public static class AuctionErrors
         public static Error NotFound => Error.Create("Auction.NotFound", "Auction not found");
         public static Error NotFoundById(Guid id) => Error.Create("Auction.NotFound", $"Auction with ID {id} was not found");
         public static Error Forbidden => Error.Create("Auction.Forbidden", "You are not authorized to perform this action on the auction");
-        public static Error FetchFailed(string reason) => LocalizableError.Localizable("Auction.FetchFailed", $"Failed to fetch auction: {reason}", reason);
         public static Error InvalidStatus(string currentStatus) => Error.Create("Auction.InvalidStatus", $"Cannot perform this action on auction with status {currentStatus}.");
-        public static Error DeactivationFailed(string reason) => LocalizableError.Localizable("Auction.DeactivationFailed", $"Failed to deactivate auction: {reason}", reason);
-        public static Error ActivationFailed(string reason) => LocalizableError.Localizable("Auction.ActivationFailed", $"Failed to activate auction: {reason}", reason);
         public static Error EndDatePassed => Error.Create("Auction.EndDatePassed", "Cannot activate auction. The auction end date has already passed.");
-        public static Error BulkUpdateFailed(string reason) => LocalizableError.Localizable("Auction.BulkUpdateFailed", $"Failed to bulk update auctions: {reason}", reason);
     }
 
     public static class BuyNow
@@ -38,9 +34,6 @@ public static class AuctionErrors
         public static Error NotFound => Error.Create("Brand.NotFound", "Brand not found");
         public static Error NotFoundById(Guid id) => Error.Create("Brand.NotFound", $"Brand with ID '{id}' was not found");
         public static Error SlugExists(string slug) => LocalizableError.Localizable("Brand.SlugExists", $"A brand with slug '{slug}' already exists", slug);
-        public static Error DeleteFailed(string reason) => LocalizableError.Localizable("Brand.DeleteFailed", $"Failed to delete brand: {reason}", reason);
-        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("Brand.UpdateFailed", $"Failed to update brand: {reason}", reason);
-        public static Error FetchError(string reason) => LocalizableError.Localizable("Brand.FetchError", $"Error fetching brand: {reason}", reason);
     }
 
     public static class Category
@@ -50,10 +43,6 @@ public static class AuctionErrors
         public static Error SlugExists(string slug) => LocalizableError.Localizable("Category.SlugExists", $"A category with slug '{slug}' already exists", slug);
         public static Error SelfParent => Error.Create("Category.SelfParent", "A category cannot be its own parent");
         public static Error HasItems => Error.Create("Category.HasItems", "Cannot delete category that has associated items. Please reassign or delete the items first.");
-        public static Error CreateFailed(string reason) => LocalizableError.Localizable("Category.CreateFailed", $"Failed to create category: {reason}", reason);
-        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("Category.UpdateFailed", $"Failed to update category: {reason}", reason);
-        public static Error DeleteFailed(string reason) => LocalizableError.Localizable("Category.DeleteFailed", $"Failed to delete category: {reason}", reason);
-        public static Error FetchError(string reason) => LocalizableError.Localizable("Categories.FetchError", $"Error fetching categories: {reason}", reason);
     }
 
     public static class Review

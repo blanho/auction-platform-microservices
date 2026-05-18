@@ -12,7 +12,7 @@ using Notification.Infrastructure.Persistence.Repositories;
 using Notification.Infrastructure.Senders;
 using SendGrid;
 using StackExchange.Redis;
-using NotificationUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
+using NotificationUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Infrastructure.Extensions;
 

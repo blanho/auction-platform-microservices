@@ -1,6 +1,6 @@
 using BuildingBlocks.Infrastructure.Repository;
 using MediatR;
-using StorageUnitOfWork = Storage.Application.Interfaces.IUnitOfWork;
+using StorageUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Storage.Infrastructure.Persistence;
 

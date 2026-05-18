@@ -48,11 +48,7 @@ public static class LocalizationKeys
         public const string Created = "Auction.Created";
         public const string Updated = "Auction.Updated";
         public const string Deleted = "Auction.Deleted";
-        public const string FetchFailed = "Auction.FetchFailed";
         public const string EndDatePassed = "Auction.EndDatePassed";
-        public const string BulkUpdateFailed = "Auction.BulkUpdateFailed";
-        public const string DeactivationFailed = "Auction.DeactivationFailed";
-        public const string ActivationFailed = "Auction.ActivationFailed";
         public const string NotActive = "Auction.NotActive";
         public const string IndexFailed = "Auction.IndexFailed";
         public const string RemoveFailed = "Auction.RemoveFailed";
@@ -78,9 +74,6 @@ public static class LocalizationKeys
     {
         public const string NotFound = "Brand.NotFound";
         public const string SlugExists = "Brand.SlugExists";
-        public const string DeleteFailed = "Brand.DeleteFailed";
-        public const string UpdateFailed = "Brand.UpdateFailed";
-        public const string FetchError = "Brand.FetchError";
     }
 
     public static class Category
@@ -89,10 +82,6 @@ public static class LocalizationKeys
         public const string SlugExists = "Category.SlugExists";
         public const string SelfParent = "Category.SelfParent";
         public const string HasItems = "Category.HasItems";
-        public const string CreateFailed = "Category.CreateFailed";
-        public const string UpdateFailed = "Category.UpdateFailed";
-        public const string DeleteFailed = "Category.DeleteFailed";
-        public const string FetchError = "Categories.FetchError";
     }
 
     public static class Review

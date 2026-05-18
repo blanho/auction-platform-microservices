@@ -1,7 +1,7 @@
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
-using IUnitOfWork = Notification.Application.Interfaces.IUnitOfWork;
+using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
 namespace Notification.Application.Features.Notifications.DeleteNotification;
 
