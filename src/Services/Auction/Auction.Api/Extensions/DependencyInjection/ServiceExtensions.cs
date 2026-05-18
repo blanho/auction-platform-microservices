@@ -1,7 +1,6 @@
 using Auctions.Application.Services;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
-using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;

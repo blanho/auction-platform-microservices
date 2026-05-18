@@ -4,7 +4,6 @@ using Search.Api.Configuration;
 using Search.Api.Documents;
 using Search.Api.Errors;
 using Search.Api.Interfaces;
-using Result = BuildingBlocks.Application.Abstractions.Result;
 
 namespace Search.Api.Services;
 

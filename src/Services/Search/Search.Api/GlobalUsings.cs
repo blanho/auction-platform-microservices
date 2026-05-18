@@ -6,3 +6,4 @@ global using Search.Api.Models;
 global using Search.Api.Extensions;
 global using Search.Api.Extensions.Mappings;
 global using BuildingBlocks.Application.Abstractions;
+global using Result = BuildingBlocks.Application.Abstractions.Result;
