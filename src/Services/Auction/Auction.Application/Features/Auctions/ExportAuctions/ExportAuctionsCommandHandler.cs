@@ -6,18 +6,18 @@ namespace Auctions.Application.Features.Auctions.ExportAuctions;
 
 public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsCommand, ExportAuctionsResult>
 {
-    private readonly IAuctionExportRepository _exportRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IEnumerable<IReportExporter> _exporters;
     private readonly ILogger<ExportAuctionsCommandHandler> _logger;
     private readonly IDateTimeProvider _dateTime;
 
     public ExportAuctionsCommandHandler(
-        IAuctionExportRepository exportRepository,
+        IAuctionReadRepository readRepository,
         IEnumerable<IReportExporter> exporters,
         ILogger<ExportAuctionsCommandHandler> logger,
         IDateTimeProvider dateTime)
     {
-        _exportRepository = exportRepository;
+        _readRepository = readRepository;
         _exporters = exporters;
         _logger = logger;
         _dateTime = dateTime;
@@ -38,7 +38,7 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
                 AuctionErrors.Export.UnsupportedFormat(request.Format.ToString()));
         }
 
-        var auctions = await _exportRepository.GetAuctionsForExportAsync(
+        var auctions = await _readRepository.GetAuctionsForExportAsync(
             request.StatusFilter,
             request.SellerFilter,
             request.StartDate,

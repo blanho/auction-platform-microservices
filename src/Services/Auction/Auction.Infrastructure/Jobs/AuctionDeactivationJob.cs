@@ -25,12 +25,12 @@ public class AuctionDeactivationJob : BaseJob
         IServiceProvider scopedProvider,
         CancellationToken cancellationToken)
     {
-        var schedulerRepository = scopedProvider.GetRequiredService<IAuctionSchedulerRepository>();
+        var readRepository = scopedProvider.GetRequiredService<IAuctionReadRepository>();
         var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
         var dbContext = scopedProvider.GetRequiredService<AuctionDbContext>();
 
-        var expiredAuctions = await schedulerRepository.GetAuctionsToAutoDeactivateAsync(cancellationToken);
+        var expiredAuctions = await readRepository.GetAuctionsToAutoDeactivateAsync(cancellationToken);
 
         if (expiredAuctions.Count == 0)
         {

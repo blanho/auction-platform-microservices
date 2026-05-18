@@ -4,11 +4,11 @@ namespace Auctions.Application.Features.Auctions.GetTrendingSearches;
 
 public class GetTrendingSearchesQueryHandler : IQueryHandler<GetTrendingSearchesQuery, List<TrendingSearchDto>>
 {
-    private readonly IAuctionQueryRepository _auctionRepository;
+    private readonly IAuctionReadRepository _auctionRepository;
     private readonly IDateTimeProvider _dateTime;
 
     public GetTrendingSearchesQueryHandler(
-        IAuctionQueryRepository auctionRepository,
+        IAuctionReadRepository auctionRepository,
         IDateTimeProvider dateTime)
     {
         _auctionRepository = auctionRepository;

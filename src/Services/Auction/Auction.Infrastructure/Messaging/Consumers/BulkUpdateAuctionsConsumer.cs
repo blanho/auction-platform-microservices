@@ -14,7 +14,7 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateCommand>
 {
-    private readonly IAuctionQueryRepository _readRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
@@ -22,7 +22,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
     private readonly ILogger<BulkUpdateAuctionsConsumer> _logger;
 
     public BulkUpdateAuctionsConsumer(
-        IAuctionQueryRepository readRepository,
+        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,

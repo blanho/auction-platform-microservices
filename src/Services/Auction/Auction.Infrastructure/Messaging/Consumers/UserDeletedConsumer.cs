@@ -9,14 +9,14 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
 {
-    private readonly IAuctionUserRepository _readRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<UserDeletedConsumer> _logger;
 
     public UserDeletedConsumer(
-        IAuctionUserRepository readRepository,
+        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,

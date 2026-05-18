@@ -6,13 +6,13 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class UserUpdatedConsumer : IConsumer<UserUpdatedEvent>
 {
-    private readonly IAuctionUserRepository _readRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserUpdatedConsumer> _logger;
 
     public UserUpdatedConsumer(
-        IAuctionUserRepository readRepository,
+        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         ILogger<UserUpdatedConsumer> logger)

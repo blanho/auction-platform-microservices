@@ -8,7 +8,7 @@ namespace Auctions.Application.Features.Auctions.BulkUpdateAuctions;
 
 public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctionsCommand, int>
 {
-    private readonly IAuctionQueryRepository _readRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly ILogger<BulkUpdateAuctionsCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +16,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
     private readonly IAuditPublisher _auditPublisher;
 
     public BulkUpdateAuctionsCommandHandler(
-        IAuctionQueryRepository readRepository,
+        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         ILogger<BulkUpdateAuctionsCommandHandler> logger,
         IUnitOfWork unitOfWork,

@@ -14,16 +14,16 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
 {
-    private readonly IAuctionExportRepository _exportRepository;
+    private readonly IAuctionReadRepository _readRepository;
     private readonly IEnumerable<IReportExporter> _exporters;
     private readonly ILogger<ExportAuctionsConsumer> _logger;
 
     public ExportAuctionsConsumer(
-        IAuctionExportRepository exportRepository,
+        IAuctionReadRepository readRepository,
         IEnumerable<IReportExporter> exporters,
         ILogger<ExportAuctionsConsumer> logger)
     {
-        _exportRepository = exportRepository;
+        _readRepository = readRepository;
         _exporters = exporters;
         _logger = logger;
     }
@@ -76,7 +76,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
         }
 
         var statusFilter = ParseStatusFilter(message.StatusFilter);
-        var auctions = await _exportRepository.GetAuctionsForExportAsync(
+        var auctions = await _readRepository.GetAuctionsForExportAsync(
             statusFilter, message.SellerFilter, message.StartDate, message.EndDate,
             context.CancellationToken);
 

@@ -24,7 +24,7 @@ public partial class AuctionGrpcService
             };
         }
 
-        var auction = await _auctionQueryRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _readRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
@@ -99,7 +99,7 @@ public partial class AuctionGrpcService
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid auction ID"));
         }
 
-        var auction = await _auctionQueryRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _readRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
@@ -138,7 +138,7 @@ public partial class AuctionGrpcService
             };
         }
 
-        var auction = await _auctionQueryRepository.GetByIdAsync(auctionId, context.CancellationToken);
+        var auction = await _readRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {

@@ -11,12 +11,7 @@ using BuildingBlocks.Infrastructure.Repository;
 
 namespace Auctions.Infrastructure.Persistence.Repositories;
 
-public class CachedAuctionRepository : 
-    IAuctionQueryRepository, 
-    IAuctionWriteRepository,
-    IAuctionSchedulerRepository,
-    IAuctionUserRepository,
-    IAuctionExportRepository
+public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepository
 {
     private readonly AuctionRepository _inner;
     private readonly ICacheService _cache;
@@ -51,20 +46,20 @@ public class CachedAuctionRepository :
     }
 
     public async Task<PaginatedResult<Auction>> GetPagedAsync(
-        AuctionFilterDto queryParams,
+        AuctionFilterDto filter,
         CancellationToken cancellationToken = default)
     {
-        var filter = queryParams.Filter;
-        var key = CacheKeys.AuctionList($"page:{queryParams.Page}:size:{queryParams.PageSize}:status:{filter.Status}:seller:{filter.Seller}:winner:{filter.Winner}:search:{filter.SearchTerm}:category:{filter.Category}:featured:{filter.IsFeatured}:orderBy:{queryParams.SortBy}:desc:{queryParams.SortDescending}");
+        var filterParams = filter.Filter;
+        var key = CacheKeys.AuctionList($"page:{filter.Page}:size:{filter.PageSize}:status:{filterParams.Status}:seller:{filterParams.Seller}:winner:{filterParams.Winner}:search:{filterParams.SearchTerm}:category:{filterParams.Category}:featured:{filterParams.IsFeatured}:orderBy:{filter.SortBy}:desc:{filter.SortDescending}");
         var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
         if (cached != null)
         {
-            _logger.LogDebug("Cache HIT for paged auctions (page {Page}, size {Size})", queryParams.Page, queryParams.PageSize);
+            _logger.LogDebug("Cache HIT for paged auctions (page {Page}, size {Size})", filter.Page, filter.PageSize);
             return cached;
         }
 
         _logger.LogDebug("Cache MISS for paged auctions - fetching from database");
-        var result = await _inner.GetPagedAsync(queryParams, cancellationToken);
+        var result = await _inner.GetPagedAsync(filter, cancellationToken);
         await _cache.SetAsync(key, result, AuctionListTtl, cancellationToken);
         return result;
     }
