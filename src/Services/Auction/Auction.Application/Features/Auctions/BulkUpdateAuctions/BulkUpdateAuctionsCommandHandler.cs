@@ -1,6 +1,5 @@
 using Auction = Auctions.Domain.Entities.Auction;
 using Auctions.Application.DTOs.Audit;
-using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
@@ -37,47 +36,39 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
         _logger.LogInformation("Bulk updating {Count} auctions, Activate: {Activate}", 
             request.AuctionIds.Count, request.Activate);
 
-        try
+        var updatedCount = 0;
+        var auditEntries = new List<(Guid AuctionId, AuctionAuditData OldData, AuctionAuditData NewData)>();
+
+        foreach (var auctionId in request.AuctionIds)
         {
-            var updatedCount = 0;
-            var auditEntries = new List<(Guid AuctionId, AuctionAuditData OldData, AuctionAuditData NewData)>();
-
-            foreach (var auctionId in request.AuctionIds)
+            var auction = await _readRepository.GetByIdAsync(auctionId, cancellationToken);
+            if (auction == null)
             {
-                var auction = await _readRepository.GetByIdAsync(auctionId, cancellationToken);
-                if (auction == null)
-                {
-                    _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
-                    continue;
-                }
-
-                var oldData = AuctionAuditData.FromAuction(auction);
-
-                if (TryApplyStatusChange(auction, request.Activate))
-                {
-                    await _writeRepository.UpdateAsync(auction, cancellationToken);
-                    auditEntries.Add((auctionId, oldData, AuctionAuditData.FromAuction(auction)));
-                    updatedCount++;
-                }
+                _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
+                continue;
             }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var oldData = AuctionAuditData.FromAuction(auction);
 
-            var action = request.Activate ? "BulkActivated" : "BulkDeactivated";
-            await _auditPublisher.PublishBatchAsync(
-                auditEntries.Select(e => (e.AuctionId, e.NewData)),
-                AuditAction.Updated,
-                new Dictionary<string, object> { ["Action"] = action },
-                cancellationToken);
+            if (TryApplyStatusChange(auction, request.Activate))
+            {
+                await _writeRepository.UpdateAsync(auction, cancellationToken);
+                auditEntries.Add((auctionId, oldData, AuctionAuditData.FromAuction(auction)));
+                updatedCount++;
+            }
+        }
 
-            _logger.LogInformation("Successfully updated {UpdatedCount} auctions", updatedCount);
-            return Result.Success(updatedCount);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to bulk update auctions");
-            return Result.Failure<int>(AuctionErrors.Auction.BulkUpdateFailed(ex.Message));
-        }
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var action = request.Activate ? "BulkActivated" : "BulkDeactivated";
+        await _auditPublisher.PublishBatchAsync(
+            auditEntries.Select(e => (e.AuctionId, e.NewData)),
+            AuditAction.Updated,
+            new Dictionary<string, object> { ["Action"] = action },
+            cancellationToken);
+
+        _logger.LogInformation("Successfully updated {UpdatedCount} auctions", updatedCount);
+        return Result.Success(updatedCount);
     }
 
     private bool TryApplyStatusChange(Auction auction, bool activate)

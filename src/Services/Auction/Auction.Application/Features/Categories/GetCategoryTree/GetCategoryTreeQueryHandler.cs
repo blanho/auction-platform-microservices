@@ -1,5 +1,3 @@
-using Auctions.Application.Errors;
-using AutoMapper;
 using BuildingBlocks.Application.CQRS;
 
 namespace Auctions.Application.Features.Categories.GetCategoryTree;
@@ -21,53 +19,44 @@ public class GetCategoryTreeQueryHandler : IQueryHandler<GetCategoryTreeQuery, L
     {
         _logger.LogInformation("Fetching category tree - ActiveOnly: {ActiveOnly}", request.ActiveOnly);
 
-        try
-        {
-            var categories = request.ActiveOnly
-                ? await _repository.GetActiveCategoriesAsync(cancellationToken)
-                : (await _repository.GetCategoriesWithCountAsync(cancellationToken));
+        var categories = request.ActiveOnly
+            ? await _repository.GetActiveCategoriesAsync(cancellationToken)
+            : (await _repository.GetCategoriesWithCountAsync(cancellationToken));
 
-            var lookup = categories.ToDictionary(c => c.Id);
-            var rootNodes = new List<CategoryTreeDto>();
+        var rootNodes = new List<CategoryTreeDto>();
 
-            var dtoMap = categories.ToDictionary(
-                c => c.Id,
-                c => new CategoryTreeDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Slug = c.Slug,
-                    Icon = c.Icon,
-                    Description = c.Description,
-                    DisplayOrder = c.DisplayOrder,
-                    IsActive = c.IsActive
-                });
-
-            foreach (var category in categories)
+        var dtoMap = categories.ToDictionary(
+            c => c.Id,
+            c => new CategoryTreeDto
             {
-                var dto = dtoMap[category.Id];
+                Id = c.Id,
+                Name = c.Name,
+                Slug = c.Slug,
+                Icon = c.Icon,
+                Description = c.Description,
+                DisplayOrder = c.DisplayOrder,
+                IsActive = c.IsActive
+            });
 
-                if (category.ParentCategoryId.HasValue && dtoMap.TryGetValue(category.ParentCategoryId.Value, out var parentDto))
-                {
-                    parentDto.Children.Add(dto);
-                }
-                else
-                {
-                    rootNodes.Add(dto);
-                }
-            }
-
-            SortTreeRecursive(rootNodes);
-
-            _logger.LogInformation("Successfully built category tree with {RootCount} root categories", rootNodes.Count);
-
-            return Result<List<CategoryTreeDto>>.Success(rootNodes);
-        }
-        catch (Exception ex)
+        foreach (var category in categories)
         {
-            _logger.LogError(ex, "Error fetching category tree");
-            return Result.Failure<List<CategoryTreeDto>>(AuctionErrors.Category.FetchError(ex.Message));
+            var dto = dtoMap[category.Id];
+
+            if (category.ParentCategoryId.HasValue && dtoMap.TryGetValue(category.ParentCategoryId.Value, out var parentDto))
+            {
+                parentDto.Children.Add(dto);
+            }
+            else
+            {
+                rootNodes.Add(dto);
+            }
         }
+
+        SortTreeRecursive(rootNodes);
+
+        _logger.LogInformation("Successfully built category tree with {RootCount} root categories", rootNodes.Count);
+
+        return Result<List<CategoryTreeDto>>.Success(rootNodes);
     }
 
     private static void SortTreeRecursive(List<CategoryTreeDto> nodes)

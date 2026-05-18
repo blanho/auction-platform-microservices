@@ -28,51 +28,39 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
     {
         _logger.LogInformation("Updating category {CategoryId}", request.Id);
 
-        try
-        {
-            var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (category == null)
-            {
-                return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
-            }
-
-            var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
-            if (slugExists)
-            {
-                return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
-            }
-
-            if (request.ParentCategoryId == request.Id)
-            {
-                return Result.Failure<CategoryDto>(AuctionErrors.Category.SelfParent);
-            }
-
-            category.Update(
-                request.Name,
-                request.Slug,
-                request.Icon,
-                request.Description,
-                request.DisplayOrder,
-                request.IsActive,
-                request.ParentCategoryId);
-
-            await _repository.UpdateAsync(category, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Updated category {CategoryId}", request.Id);
-
-            var dto = _mapper.Map<CategoryDto>(category);
-            return Result<CategoryDto>.Success(dto);
-        }
-        catch (KeyNotFoundException)
+        var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (category == null)
         {
             return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
         }
-        catch (Exception ex)
+
+        var slugExists = await _repository.SlugExistsAsync(request.Slug, request.Id, cancellationToken);
+        if (slugExists)
         {
-            _logger.LogError("Failed to update category {CategoryId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<CategoryDto>(AuctionErrors.Category.UpdateFailed(ex.Message));
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.SlugExists(request.Slug));
         }
+
+        if (request.ParentCategoryId == request.Id)
+        {
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.SelfParent);
+        }
+
+        category.Update(
+            request.Name,
+            request.Slug,
+            request.Icon,
+            request.Description,
+            request.DisplayOrder,
+            request.IsActive,
+            request.ParentCategoryId);
+
+        await _repository.UpdateAsync(category, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Updated category {CategoryId}", request.Id);
+
+        var dto = _mapper.Map<CategoryDto>(category);
+        return Result<CategoryDto>.Success(dto);
     }
 }
 

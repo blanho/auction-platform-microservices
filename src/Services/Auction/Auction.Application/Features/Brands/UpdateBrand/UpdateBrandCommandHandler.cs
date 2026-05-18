@@ -28,53 +28,45 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
     {
         _logger.LogInformation("Updating brand {BrandId}", request.Id);
 
-        try
+        var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (brand == null)
         {
-            var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (brand == null)
-            {
-                return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Name) && request.Name != brand.Name)
-            {
-                var newSlug = SlugHelper.GenerateSlug(request.Name);
-                var existingBrand = await _repository.GetBySlugAsync(newSlug, cancellationToken);
-                if (existingBrand != null && existingBrand.Id != request.Id)
-                {
-                    return Result.Failure<BrandDto>(AuctionErrors.Brand.SlugExists(newSlug));
-                }
-
-                brand.Update(
-                    name: request.Name,
-                    slug: newSlug,
-                    description: request.Description,
-                    displayOrder: request.DisplayOrder,
-                    isActive: request.IsActive,
-                    isFeatured: request.IsFeatured);
-            }
-            else
-            {
-                brand.Update(
-                    description: request.Description,
-                    displayOrder: request.DisplayOrder,
-                    isActive: request.IsActive,
-                    isFeatured: request.IsFeatured);
-            }
-
-            await _repository.UpdateAsync(brand, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Updated brand {BrandId}", request.Id);
-
-            var dto = _mapper.Map<BrandDto>(brand);
-            return Result<BrandDto>.Success(dto);
+            return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
         }
-        catch (Exception ex)
+
+        if (!string.IsNullOrWhiteSpace(request.Name) && request.Name != brand.Name)
         {
-            _logger.LogError("Failed to update brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<BrandDto>(AuctionErrors.Brand.UpdateFailed(ex.Message));
+            var newSlug = SlugHelper.GenerateSlug(request.Name);
+            var existingBrand = await _repository.GetBySlugAsync(newSlug, cancellationToken);
+            if (existingBrand != null && existingBrand.Id != request.Id)
+            {
+                return Result.Failure<BrandDto>(AuctionErrors.Brand.SlugExists(newSlug));
+            }
+
+            brand.Update(
+                name: request.Name,
+                slug: newSlug,
+                description: request.Description,
+                displayOrder: request.DisplayOrder,
+                isActive: request.IsActive,
+                isFeatured: request.IsFeatured);
         }
+        else
+        {
+            brand.Update(
+                description: request.Description,
+                displayOrder: request.DisplayOrder,
+                isActive: request.IsActive,
+                isFeatured: request.IsFeatured);
+        }
+
+        await _repository.UpdateAsync(brand, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Updated brand {BrandId}", request.Id);
+
+        var dto = _mapper.Map<BrandDto>(brand);
+        return Result<BrandDto>.Success(dto);
     }
 }
 

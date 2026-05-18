@@ -23,26 +23,18 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
     {
         _logger.LogInformation("Deleting brand {BrandId}", request.Id);
 
-        try
+        var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (brand == null)
         {
-            var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (brand == null)
-            {
-                return Result.Failure(AuctionErrors.Brand.NotFoundById(request.Id));
-            }
-
-            await _repository.DeleteAsync(request.Id, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Deleted brand {BrandId}", request.Id);
-
-            return Result.Success();
+            return Result.Failure(AuctionErrors.Brand.NotFoundById(request.Id));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to delete brand {BrandId}: {Error}", request.Id, ex.Message);
-            return Result.Failure(AuctionErrors.Brand.DeleteFailed(ex.Message));
-        }
+
+        await _repository.DeleteAsync(request.Id, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Deleted brand {BrandId}", request.Id);
+
+        return Result.Success();
     }
 }
 

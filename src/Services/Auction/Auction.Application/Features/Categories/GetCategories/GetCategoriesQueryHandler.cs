@@ -31,35 +31,27 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
         _logger.LogInformation("Fetching categories - ActiveOnly: {ActiveOnly}, IncludeCount: {IncludeCount}",
             request.ActiveOnly, request.IncludeCount);
 
-        try
+        List<Category> categories;
+
+        if (request.IncludeCount)
         {
-            List<Category> categories;
-            
-            if (request.IncludeCount)
-            {
-                categories = await _repository.GetCategoriesWithCountAsync(cancellationToken);
-            }
-            else if (request.ActiveOnly)
-            {
-                categories = await _repository.GetActiveCategoriesAsync(cancellationToken);
-            }
-            else
-            {
-                var result = await _repository.GetPagedAsync(PaginationDefaults.DefaultPage, AuctionDefaults.Batch.MaxCategoriesPerQuery, cancellationToken);
-                categories = result.Items.ToList();
-            }
-
-            var dtos = categories.Select(c => _mapper.Map<CategoryDto>(c)).ToList();
-
-            _logger.LogInformation("Successfully fetched {Count} categories", dtos.Count);
-
-            return Result<List<CategoryDto>>.Success(dtos);
+            categories = await _repository.GetCategoriesWithCountAsync(cancellationToken);
         }
-        catch (Exception ex)
+        else if (request.ActiveOnly)
         {
-            _logger.LogError(ex, "Error fetching categories");
-            return Result.Failure<List<CategoryDto>>(AuctionErrors.Category.FetchError(ex.Message));
+            categories = await _repository.GetActiveCategoriesAsync(cancellationToken);
         }
+        else
+        {
+            var result = await _repository.GetPagedAsync(PaginationDefaults.DefaultPage, AuctionDefaults.Batch.MaxCategoriesPerQuery, cancellationToken);
+            categories = result.Items.ToList();
+        }
+
+        var dtos = categories.Select(c => _mapper.Map<CategoryDto>(c)).ToList();
+
+        _logger.LogInformation("Successfully fetched {Count} categories", dtos.Count);
+
+        return Result<List<CategoryDto>>.Success(dtos);
     }
 }
 

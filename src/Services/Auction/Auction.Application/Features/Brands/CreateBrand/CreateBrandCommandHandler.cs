@@ -28,36 +28,28 @@ public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, Bra
     {
         _logger.LogInformation("Creating brand {Name}", request.Name);
 
-        try
+        var slug = SlugHelper.GenerateSlug(request.Name);
+
+        var existingBrand = await _repository.GetBySlugAsync(slug, cancellationToken);
+        if (existingBrand != null)
         {
-            var slug = SlugHelper.GenerateSlug(request.Name);
-            
-            var existingBrand = await _repository.GetBySlugAsync(slug, cancellationToken);
-            if (existingBrand != null)
-            {
-                return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{slug}' already exists"));
-            }
-
-            var brand = Brand.Create(
-                request.Name,
-                slug,
-                request.Description,
-                request.DisplayOrder,
-                request.IsFeatured);
-
-            var createdBrand = await _repository.AddAsync(brand, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Created brand {BrandId} with name {Name}", createdBrand.Id, request.Name);
-
-            var dto = _mapper.Map<BrandDto>(createdBrand);
-            return Result<BrandDto>.Success(dto);
+            return Result.Failure<BrandDto>(Error.Create("Brand.SlugExists", $"A brand with slug '{slug}' already exists"));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to create brand {Name}: {Error}", request.Name, ex.Message);
-            return Result.Failure<BrandDto>(Error.Create("Brand.CreateFailed", $"Failed to create brand: {ex.Message}"));
-        }
+
+        var brand = Brand.Create(
+            request.Name,
+            slug,
+            request.Description,
+            request.DisplayOrder,
+            request.IsFeatured);
+
+        var createdBrand = await _repository.AddAsync(brand, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Created brand {BrandId} with name {Name}", createdBrand.Id, request.Name);
+
+        var dto = _mapper.Map<BrandDto>(createdBrand);
+        return Result<BrandDto>.Success(dto);
     }
 }
 

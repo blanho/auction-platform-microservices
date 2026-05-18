@@ -23,35 +23,23 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
     {
         _logger.LogInformation("Deleting category {CategoryId}", request.Id);
 
-        try
-        {
-            var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (category == null)
-            {
-                return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.Id));
-            }
-
-            if (category.Items.Any())
-            {
-                return Result.Failure<bool>(AuctionErrors.Category.HasItems);
-            }
-
-            await _repository.DeleteAsync(request.Id, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Deleted category {CategoryId}", request.Id);
-
-            return Result<bool>.Success(true);
-        }
-        catch (KeyNotFoundException)
+        var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (category == null)
         {
             return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.Id));
         }
-        catch (Exception ex)
+
+        if (category.Items.Any())
         {
-            _logger.LogError("Failed to delete category {CategoryId}: {Error}", request.Id, ex.Message);
-            return Result.Failure<bool>(AuctionErrors.Category.DeleteFailed(ex.Message));
+            return Result.Failure<bool>(AuctionErrors.Category.HasItems);
         }
+
+        await _repository.DeleteAsync(request.Id, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Deleted category {CategoryId}", request.Id);
+
+        return Result<bool>.Success(true);
     }
 }
 

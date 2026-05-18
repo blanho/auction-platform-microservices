@@ -28,24 +28,16 @@ public class GetCategoryByIdQueryHandler : IQueryHandler<GetCategoryByIdQuery, C
     {
         _logger.LogInformation("Fetching category {CategoryId}", request.Id);
 
-        try
+        var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (category == null)
         {
-            var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (category == null)
-            {
-                return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
-            }
-
-            var dto = _mapper.Map<CategoryDto>(category);
-
-            _logger.LogInformation("Successfully fetched category {CategoryId}", request.Id);
-
-            return Result<CategoryDto>.Success(dto);
+            return Result.Failure<CategoryDto>(AuctionErrors.Category.NotFoundById(request.Id));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching category {CategoryId}", request.Id);
-            return Result.Failure<CategoryDto>(AuctionErrors.Category.FetchError(ex.Message));
-        }
+
+        var dto = _mapper.Map<CategoryDto>(category);
+
+        _logger.LogInformation("Successfully fetched category {CategoryId}", request.Id);
+
+        return Result<CategoryDto>.Success(dto);
     }
 }

@@ -28,25 +28,17 @@ public class GetBrandByIdQueryHandler : IQueryHandler<GetBrandByIdQuery, BrandDt
     {
         _logger.LogInformation("Fetching brand {BrandId}", request.Id);
 
-        try
+        var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        if (brand == null)
         {
-            var brand = await _repository.GetByIdAsync(request.Id, cancellationToken);
-            if (brand == null)
-            {
-                return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
-            }
-
-            var dto = _mapper.Map<BrandDto>(brand);
-
-            _logger.LogInformation("Successfully fetched brand {BrandId}", request.Id);
-
-            return Result<BrandDto>.Success(dto);
+            return Result.Failure<BrandDto>(AuctionErrors.Brand.NotFoundById(request.Id));
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching brand {BrandId}", request.Id);
-            return Result.Failure<BrandDto>(AuctionErrors.Brand.FetchError(ex.Message));
-        }
+
+        var dto = _mapper.Map<BrandDto>(brand);
+
+        _logger.LogInformation("Successfully fetched brand {BrandId}", request.Id);
+
+        return Result<BrandDto>.Success(dto);
     }
 }
 

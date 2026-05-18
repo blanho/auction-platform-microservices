@@ -2,7 +2,6 @@ using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Application.Features.Auctions.CancelAuction;
 
@@ -51,33 +50,25 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
 
         var oldAuctionData = AuctionAuditData.FromAuction(auction);
 
-        try
-        {
-            auction.Cancel(request.Reason);
-            await _repository.UpdateAsync(auction, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        auction.Cancel(request.Reason);
+        await _repository.UpdateAsync(auction, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                AuctionAuditData.FromAuction(auction),
-                AuditAction.Updated,
-                oldAuctionData,
-                new Dictionary<string, object>
-                {
-                    ["Action"] = "Cancelled",
-                    ["Reason"] = request.Reason ?? string.Empty
-                },
-                cancellationToken);
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "Cancelled",
+                ["Reason"] = request.Reason ?? string.Empty
+            },
+            cancellationToken);
 
-            _logger.LogInformation("Auction {AuctionId} cancelled successfully. Reason: {Reason}",
-                request.AuctionId, request.Reason);
+        _logger.LogInformation("Auction {AuctionId} cancelled successfully. Reason: {Reason}",
+            request.AuctionId, request.Reason);
 
-            return Result.Success(true);
-        }
-        catch (InvalidEntityStateException ex)
-        {
-            _logger.LogWarning(ex, "Invalid state transition for auction {AuctionId}", request.AuctionId);
-            return Result.Failure<bool>(AuctionErrors.Auction.InvalidStatus(ex.Message));
-        }
+        return Result.Success(true);
     }
 }

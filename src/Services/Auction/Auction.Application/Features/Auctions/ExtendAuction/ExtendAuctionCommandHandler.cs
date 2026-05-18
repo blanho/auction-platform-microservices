@@ -2,7 +2,6 @@ using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Domain.Exceptions;
 
 namespace Auctions.Application.Features.Auctions.ExtendAuction;
 
@@ -53,37 +52,29 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
         var oldAuctionData = AuctionAuditData.FromAuction(auction);
         var previousEnd = auction.AuctionEnd;
 
-        try
-        {
-            var extension = TimeSpan.FromMinutes(request.ExtensionMinutes);
-            auction.ExtendAuctionEnd(extension);
+        var extension = TimeSpan.FromMinutes(request.ExtensionMinutes);
+        auction.ExtendAuctionEnd(extension);
 
-            await _repository.UpdateAsync(auction, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _repository.UpdateAsync(auction, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _auditPublisher.PublishAsync(
-                auction.Id,
-                AuctionAuditData.FromAuction(auction),
-                AuditAction.Updated,
-                oldAuctionData,
-                new Dictionary<string, object>
-                {
-                    ["Action"] = "Extended",
-                    ["ExtensionMinutes"] = request.ExtensionMinutes,
-                    ["PreviousEnd"] = previousEnd,
-                    ["NewEnd"] = auction.AuctionEnd
-                },
-                cancellationToken);
+        await _auditPublisher.PublishAsync(
+            auction.Id,
+            AuctionAuditData.FromAuction(auction),
+            AuditAction.Updated,
+            oldAuctionData,
+            new Dictionary<string, object>
+            {
+                ["Action"] = "Extended",
+                ["ExtensionMinutes"] = request.ExtensionMinutes,
+                ["PreviousEnd"] = previousEnd,
+                ["NewEnd"] = auction.AuctionEnd
+            },
+            cancellationToken);
 
-            _logger.LogInformation("Auction {AuctionId} extended to {NewEnd}",
-                request.AuctionId, auction.AuctionEnd);
+        _logger.LogInformation("Auction {AuctionId} extended to {NewEnd}",
+            request.AuctionId, auction.AuctionEnd);
 
-            return Result.Success(auction.AuctionEnd);
-        }
-        catch (InvalidEntityStateException ex)
-        {
-            _logger.LogWarning(ex, "Cannot extend auction {AuctionId}", request.AuctionId);
-            return Result.Failure<DateTimeOffset>(AuctionErrors.Auction.InvalidStatus(ex.Message));
-        }
+        return Result.Success(auction.AuctionEnd);
     }
 }

@@ -23,39 +23,31 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
         _logger.LogInformation("Bulk updating {Count} categories to IsActive={IsActive}", 
             request.CategoryIds.Count, request.IsActive);
 
-        try
+        var updatedCount = 0;
+        var categories = await _repository.GetByIdsForUpdateAsync(request.CategoryIds, cancellationToken);
+        var categoriesById = categories.ToDictionary(x => x.Id, x => x);
+
+        foreach (var categoryId in request.CategoryIds.Distinct())
         {
-            var updatedCount = 0;
-            var categories = await _repository.GetByIdsForUpdateAsync(request.CategoryIds, cancellationToken);
-            var categoriesById = categories.ToDictionary(x => x.Id, x => x);
-
-            foreach (var categoryId in request.CategoryIds.Distinct())
+            if (!categoriesById.TryGetValue(categoryId, out var category))
             {
-                if (!categoriesById.TryGetValue(categoryId, out var category))
-                {
-                    _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
-                    continue;
-                }
-
-                if (request.IsActive)
-                    category.Activate();
-                else
-                    category.Deactivate();
-                await _repository.UpdateAsync(category, cancellationToken);
-                updatedCount++;
+                _logger.LogWarning("Category {CategoryId} not found during bulk update", categoryId);
+                continue;
             }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Bulk updated {UpdatedCount} categories", updatedCount);
-
-            return Result<int>.Success(updatedCount);
+            if (request.IsActive)
+                category.Activate();
+            else
+                category.Deactivate();
+            await _repository.UpdateAsync(category, cancellationToken);
+            updatedCount++;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to bulk update categories: {Error}", ex.Message);
-            return Result.Failure<int>(Error.Create("Category.BulkUpdateFailed", $"Failed to bulk update categories: {ex.Message}"));
-        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Bulk updated {UpdatedCount} categories", updatedCount);
+
+        return Result<int>.Success(updatedCount);
     }
 }
 
