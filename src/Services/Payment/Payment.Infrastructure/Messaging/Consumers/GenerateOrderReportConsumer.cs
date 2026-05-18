@@ -1,8 +1,8 @@
+using MassTransit;
 using System.Diagnostics;
 using System.Text.Json;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using Payment.Application.Interfaces;
 using Payment.Application.Features.Orders.QueueOrderReportGeneration;

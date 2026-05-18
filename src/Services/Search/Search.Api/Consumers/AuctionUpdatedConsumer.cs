@@ -1,6 +1,5 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
-using MassTransit;
 using Search.Api.Constants;
 using Search.Api.Services;
 

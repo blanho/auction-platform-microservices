@@ -1,4 +1,3 @@
-using MassTransit;
 using StorageService.Contracts.Events;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;

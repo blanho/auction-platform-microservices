@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
-using Microsoft.EntityFrameworkCore;
 using Payment.Application.DTOs;
 using Payment.Application.Filtering;
 using Payment.Application.Helpers;

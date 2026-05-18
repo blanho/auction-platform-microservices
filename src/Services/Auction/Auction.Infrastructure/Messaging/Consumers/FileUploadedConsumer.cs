@@ -1,5 +1,4 @@
 using Auctions.Domain.Entities;
-using MassTransit;
 using StorageService.Contracts.Events;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;

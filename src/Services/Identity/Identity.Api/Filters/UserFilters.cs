@@ -1,6 +1,5 @@
 using BuildingBlocks.Application.Filtering;
 using Identity.Api.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Filters;
 

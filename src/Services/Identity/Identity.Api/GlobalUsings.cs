@@ -5,3 +5,4 @@ global using NotificationService.Contracts.Events;
 global using NotificationService.Contracts.Enums;
 global using Microsoft.Extensions.Logging;
 global using BuildingBlocks.Application.Abstractions;
+global using Microsoft.EntityFrameworkCore;

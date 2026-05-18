@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;

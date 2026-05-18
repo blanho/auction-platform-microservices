@@ -1,7 +1,6 @@
 using AuctionService.Contracts.Events;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Web.Exceptions;
-using MassTransit;
 using Search.Api.Documents;
 using Search.Api.Services;
 

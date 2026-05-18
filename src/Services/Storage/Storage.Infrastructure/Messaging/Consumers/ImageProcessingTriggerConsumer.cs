@@ -1,6 +1,5 @@
 using System.Text.Json;
 using JobService.Contracts.Commands;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using StorageService.Contracts.Events;
 

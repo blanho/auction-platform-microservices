@@ -1,7 +1,5 @@
 using Jobs.Domain.Entities;
 using BuildingBlocks.Infrastructure.Repository.Converters;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Jobs.Infrastructure.Persistence;
 

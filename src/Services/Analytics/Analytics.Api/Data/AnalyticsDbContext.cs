@@ -1,5 +1,3 @@
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Entities;
 using BuildingBlocks.Infrastructure.Repository.Converters;
 

@@ -1,7 +1,6 @@
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Enums;
 using JobService.Contracts.Commands;
-using MassTransit;
 
 namespace Jobs.Infrastructure.Messaging;
 

@@ -1,4 +1,3 @@
-using MassTransit;
 using Notification.Domain.Constants;
 
 namespace Notification.Infrastructure.Messaging;

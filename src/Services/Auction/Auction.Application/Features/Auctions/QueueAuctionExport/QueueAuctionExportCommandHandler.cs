@@ -1,6 +1,5 @@
 using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
-using MassTransit;
 
 namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 

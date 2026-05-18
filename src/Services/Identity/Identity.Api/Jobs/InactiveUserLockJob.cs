@@ -2,7 +2,6 @@ using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Scheduling;
 using Identity.Api.Data;
 using IdentityService.Contracts.Events;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 

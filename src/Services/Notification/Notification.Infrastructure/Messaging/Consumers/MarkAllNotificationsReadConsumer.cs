@@ -1,4 +1,3 @@
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using NotificationService.Contracts.Commands;
 

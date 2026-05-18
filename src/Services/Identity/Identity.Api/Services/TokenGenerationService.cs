@@ -12,7 +12,6 @@ using Identity.Api.Models;
 using IdentityService.Contracts.Events;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.Api.Services;

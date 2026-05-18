@@ -1,3 +1,4 @@
+using MassTransit;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Infrastructure.Scheduling;
@@ -8,7 +9,6 @@ using Identity.Api.Jobs;
 using Identity.Api.Mappings;
 using Identity.Api.Services;
 using BuildingBlocks.Infrastructure.Messaging;
-using MassTransit;
 
 namespace Identity.Api.Extensions.DependencyInjection;
 

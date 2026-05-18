@@ -1,7 +1,6 @@
 using Analytics.Api.Data;
 using Analytics.Api.Interfaces;
 using Analytics.Api.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Repositories;
 

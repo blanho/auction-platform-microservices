@@ -1,4 +1,3 @@
-using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Storage.Infrastructure.Configuration;

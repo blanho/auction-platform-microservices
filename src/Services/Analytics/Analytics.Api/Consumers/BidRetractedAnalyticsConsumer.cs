@@ -2,7 +2,6 @@ using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
-using MassTransit;
 
 namespace Analytics.Api.Consumers;
 

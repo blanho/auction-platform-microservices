@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;

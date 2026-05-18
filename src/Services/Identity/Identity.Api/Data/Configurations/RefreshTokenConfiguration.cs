@@ -1,5 +1,4 @@
 using Identity.Api.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Identity.Api.Data.Configurations;

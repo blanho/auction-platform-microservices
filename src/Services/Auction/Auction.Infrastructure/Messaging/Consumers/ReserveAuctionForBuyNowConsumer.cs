@@ -1,7 +1,6 @@
 using Auctions.Domain.Enums;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
-using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

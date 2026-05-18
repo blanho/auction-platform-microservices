@@ -20,3 +20,5 @@ global using BidService.Contracts.Events;
 global using OrchestrationService.Contracts.Events;
 global using StorageService.Contracts.Events;
 global using Microsoft.Extensions.Logging;
+global using MassTransit;
+global using Microsoft.EntityFrameworkCore;

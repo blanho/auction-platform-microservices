@@ -1,5 +1,4 @@
 using Payment.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Payment.Infrastructure.Persistence.Configurations;

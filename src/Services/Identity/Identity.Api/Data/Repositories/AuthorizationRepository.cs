@@ -2,7 +2,6 @@ using BuildingBlocks.Domain.Authorization;
 using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Web.Exceptions;
 using Identity.Api.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Data.Repositories;
 

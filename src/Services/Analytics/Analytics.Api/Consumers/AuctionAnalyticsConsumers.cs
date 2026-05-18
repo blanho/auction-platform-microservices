@@ -2,8 +2,6 @@ using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using AuctionService.Contracts.Events;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Consumers;
 

@@ -9,3 +9,5 @@ global using Analytics.Api.Interfaces;
 global using Analytics.Api.Services;
 global using Analytics.Api.Repositories;
 global using Analytics.Api.Data;
+global using MassTransit;
+global using Microsoft.EntityFrameworkCore;

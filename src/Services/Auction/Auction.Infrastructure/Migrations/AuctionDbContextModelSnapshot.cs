@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;

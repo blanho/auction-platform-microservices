@@ -1,7 +1,6 @@
 using Identity.Api.Data;
 using Identity.Api.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Extensions.DependencyInjection;
 

@@ -1,6 +1,5 @@
 using Jobs.Application.Interfaces;
 using JobService.Contracts.Commands;
-using MassTransit;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 

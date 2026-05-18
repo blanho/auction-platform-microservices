@@ -1,8 +1,6 @@
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using BidService.Contracts.Events;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Consumers;
 

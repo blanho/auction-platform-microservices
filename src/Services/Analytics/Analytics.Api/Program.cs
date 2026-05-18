@@ -7,7 +7,6 @@ using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

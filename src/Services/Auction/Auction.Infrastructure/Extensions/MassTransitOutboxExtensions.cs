@@ -1,7 +1,6 @@
 using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Messaging;
-using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Auctions.Infrastructure.Messaging.Consumers;

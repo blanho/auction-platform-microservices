@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Paging;
-using Microsoft.EntityFrameworkCore;
 using Payment.Application.Filtering;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;

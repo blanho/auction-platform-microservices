@@ -1,7 +1,6 @@
 using Analytics.Api.Constants;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
-using MassTransit;
 using PaymentService.Contracts.Events;
 
 namespace Analytics.Api.Consumers;

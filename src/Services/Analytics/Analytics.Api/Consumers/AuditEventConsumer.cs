@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Common.Contracts.Events;
-using MassTransit;
 using Analytics.Api.Entities;
 using Analytics.Api.Interfaces;
 

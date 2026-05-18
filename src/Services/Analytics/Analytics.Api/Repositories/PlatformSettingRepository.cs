@@ -1,5 +1,4 @@
 using BuildingBlocks.Application.Abstractions;
-using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using Analytics.Api.Enums;

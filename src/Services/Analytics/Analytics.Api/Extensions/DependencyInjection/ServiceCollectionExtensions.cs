@@ -8,8 +8,6 @@ using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Infrastructure.Messaging;
 using FluentValidation;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Api.Extensions.DependencyInjection;
 

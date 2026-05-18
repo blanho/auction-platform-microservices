@@ -1,5 +1,4 @@
 using BidService.Contracts.Events;
-using MassTransit;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;

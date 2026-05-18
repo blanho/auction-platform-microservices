@@ -1,6 +1,5 @@
 #nullable enable
 using Auctions.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Auctions.Infrastructure.Persistence.Configurations;

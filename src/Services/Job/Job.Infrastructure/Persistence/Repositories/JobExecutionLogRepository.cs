@@ -1,7 +1,6 @@
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Entities;
 using Jobs.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Jobs.Infrastructure.Persistence.Repositories;
 

@@ -1,8 +1,6 @@
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence.Configurations;
 using BuildingBlocks.Infrastructure.Repository.Converters;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Auctions.Infrastructure.Persistence
 {

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MassTransit;
 using BuildingBlocks.Infrastructure.Repository.Converters;
 using Notification.Domain.Entities;
 

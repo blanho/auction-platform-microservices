@@ -1,7 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Auctions.Domain.Enums;
 using IdentityService.Contracts.Events;
-using MassTransit;
 using NotificationService.Contracts.Events;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;

@@ -1,7 +1,6 @@
-using Identity.Api.Models;
 using MassTransit;
+using Identity.Api.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Data;
 

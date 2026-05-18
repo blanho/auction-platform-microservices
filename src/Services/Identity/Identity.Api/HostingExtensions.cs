@@ -5,7 +5,6 @@ using BuildingBlocks.Web.Observability;
 using Identity.Api.Data;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Identity.Api;

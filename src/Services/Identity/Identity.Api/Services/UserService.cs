@@ -12,7 +12,6 @@ using Identity.Api.Interfaces;
 using Identity.Api.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Api.Services;
 

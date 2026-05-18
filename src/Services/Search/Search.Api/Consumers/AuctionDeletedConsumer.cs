@@ -1,5 +1,4 @@
 using AuctionService.Contracts.Events;
-using MassTransit;
 using Search.Api.Services;
 
 namespace Search.Api.Consumers;

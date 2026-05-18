@@ -1,7 +1,6 @@
 #nullable enable
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Auctions.Infrastructure.Persistence.Repositories

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
 using Analytics.Api.Models;
 using Analytics.Api.Interfaces;

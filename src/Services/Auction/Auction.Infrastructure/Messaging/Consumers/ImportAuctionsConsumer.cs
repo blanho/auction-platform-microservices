@@ -6,7 +6,6 @@ using Auctions.Domain.Entities;
 using BuildingBlocks.Domain.Constants;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
-using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

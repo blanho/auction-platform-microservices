@@ -6,7 +6,6 @@ using Auctions.Domain.Enums;
 using Auctions.Infrastructure.Persistence;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
-using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

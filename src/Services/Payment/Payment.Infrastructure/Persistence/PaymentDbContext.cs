@@ -1,7 +1,6 @@
+using MassTransit;
 using Payment.Domain.Entities;
 using BuildingBlocks.Infrastructure.Repository.Converters;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
 
 namespace Payment.Infrastructure.Persistence;
 

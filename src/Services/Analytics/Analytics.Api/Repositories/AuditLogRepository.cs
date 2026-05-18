@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Common.Contracts.Events;
-using Microsoft.EntityFrameworkCore;
 using Analytics.Api.Data;
 using Analytics.Api.Entities;
 using Analytics.Api.Models;

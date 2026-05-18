@@ -1,8 +1,8 @@
+using MassTransit;
 using Payment.Infrastructure.Persistence;
 using Payment.Infrastructure.Messaging.Consumers;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Messaging;
-using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

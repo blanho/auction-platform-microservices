@@ -1,4 +1,3 @@
-using MassTransit;
 using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
 using Notification.Domain.Constants;

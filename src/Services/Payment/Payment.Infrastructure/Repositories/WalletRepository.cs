@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Infrastructure.Persistence;

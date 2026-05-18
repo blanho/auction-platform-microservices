@@ -1,4 +1,3 @@
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;

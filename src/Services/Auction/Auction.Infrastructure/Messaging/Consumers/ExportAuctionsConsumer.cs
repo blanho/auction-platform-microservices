@@ -7,7 +7,6 @@ using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
-using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

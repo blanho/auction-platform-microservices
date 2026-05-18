@@ -1,6 +1,5 @@
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
-using MassTransit;
 using BuildingBlocks.Infrastructure.Extensions;
 using Search.Api.Configuration;
 using Search.Api.Consumers;

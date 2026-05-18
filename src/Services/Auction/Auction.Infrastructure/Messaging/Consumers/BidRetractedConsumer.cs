@@ -1,5 +1,4 @@
 using BidService.Contracts.Events;
-using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 

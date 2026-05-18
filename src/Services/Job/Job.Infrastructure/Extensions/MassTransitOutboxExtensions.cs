@@ -3,7 +3,6 @@ using BuildingBlocks.Infrastructure.Messaging;
 using Jobs.Domain.Constants;
 using Jobs.Infrastructure.Messaging.Consumers;
 using Jobs.Infrastructure.Persistence;
-using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
