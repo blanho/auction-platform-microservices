@@ -1,9 +1,11 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Orders.CancelOrder;
@@ -65,8 +67,8 @@ public class CancelOrderCommandHandler : ICommandHandler<CancelOrderCommand, Ord
             oldOrderData,
             new Dictionary<string, object>
             {
-                ["Action"] = "Cancelled",
-                ["Reason"] = request.Reason ?? string.Empty
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.Cancelled,
+                [AuditMetadataKeys.Reason] = request.Reason ?? string.Empty
             },
             cancellationToken);
 

@@ -41,3 +41,10 @@ public sealed class DomainConflictException : DomainException
 {
     public DomainConflictException(string message) : base(message) { }
 }
+
+public sealed class ConcurrencyException : DomainException
+{
+    public ConcurrencyException(string message) : base(message) { }
+    public ConcurrencyException(string message, Exception innerException) : base(message, innerException) { }
+}
+

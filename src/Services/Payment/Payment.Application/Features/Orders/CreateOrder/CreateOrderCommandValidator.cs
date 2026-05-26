@@ -1,12 +1,11 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
-using Payment.Application.DTOs;
 
 namespace Payment.Application.Features.Orders.CreateOrder;
 
-public class CreateOrderDtoValidator : AbstractValidator<CreateOrderDto>
+public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
-    public CreateOrderDtoValidator()
+    public CreateOrderCommandValidator()
     {
         RuleFor(x => x.AuctionId)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Auction ID"));

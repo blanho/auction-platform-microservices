@@ -2,6 +2,7 @@ using System.Globalization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
+using BuildingBlocks.Web.OpenApi;
 using Identity.Api.Data;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
@@ -13,13 +14,7 @@ internal static class HostingExtensions
 {
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
-        builder.Host.UseSerilog((ctx, lc) =>
-        {
-            lc.WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}",
-                formatProvider: CultureInfo.InvariantCulture);
-            lc.Enrich.FromLogContext().ReadFrom.Configuration(ctx.Configuration);
-        });
+        builder.AddCentralizedLogging();
         return builder;
     }
 
@@ -49,6 +44,8 @@ internal static class HostingExtensions
             .AddAuditServices(builder.Configuration, "identity-service");
 
         builder.Services.AddObservability(builder.Configuration);
+        builder.Services.AddCommonApiVersioning();
+        builder.Services.AddCommonOpenApi();
 
         builder.Services.AddCustomHealthChecks(
             redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
@@ -67,10 +64,17 @@ internal static class HostingExtensions
             db.Database.Migrate();
         }
 
+        app.UseCorrelationIdLogging();
         app.UseCorrelationId();
         app.UseSerilogRequestLogging();
         app.UseAppExceptionHandling();
         app.UseApiSecurityHeaders();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCommonOpenApi();
+            app.UseCommonSwaggerUI("Identity Service");
+        }
 
         var allowedOrigins = app.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"];

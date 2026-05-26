@@ -8,6 +8,7 @@ public static class WalletTransactionDescriptions
     public const string Withdrawal = "Withdrawal";
     public const string PaymentProcessed = "Payment processed";
     public const string RefundProcessed = "Refund processed";
+    public const string FundsHeldForReferenceFormat = "Funds held for {0}";
 }
 
 public static class WalletReferenceTypes

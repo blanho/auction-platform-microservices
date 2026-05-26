@@ -1,9 +1,11 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Orders.ShipOrder;
@@ -75,9 +77,9 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
             oldOrderData,
             new Dictionary<string, object>
             {
-                ["Action"] = "Shipped",
-                ["TrackingNumber"] = request.TrackingNumber ?? string.Empty,
-                ["ShippingCarrier"] = request.ShippingCarrier ?? string.Empty
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.Shipped,
+                [AuditMetadataKeys.TrackingNumber] = request.TrackingNumber ?? string.Empty,
+                [AuditMetadataKeys.ShippingCarrier] = request.ShippingCarrier ?? string.Empty
             },
             cancellationToken);
 

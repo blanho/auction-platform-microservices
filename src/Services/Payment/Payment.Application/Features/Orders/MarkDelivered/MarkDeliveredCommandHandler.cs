@@ -1,9 +1,11 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Orders.MarkDelivered;
@@ -67,7 +69,7 @@ public class MarkDeliveredCommandHandler : ICommandHandler<MarkDeliveredCommand,
             OrderAuditData.FromOrder(updated),
             AuditAction.Updated,
             oldOrderData,
-            new Dictionary<string, object> { ["Action"] = "Delivered" },
+            new Dictionary<string, object> { [AuditMetadataKeys.Action] = WalletDefaults.Audit.Delivered },
             cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as delivered", updated.Id);

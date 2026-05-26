@@ -1,6 +1,8 @@
 using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 
 namespace Bidding.Application.Features.AutoBids.ToggleAutoBid;
 
@@ -52,7 +54,7 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
         if (request.Activate)
         {
             var snapshot = await _snapshotRepository.GetAsync(autoBid.AuctionId, cancellationToken);
-            if (snapshot == null || snapshot.Status != "Live" || snapshot.EndTime <= _dateTime.UtcNow)
+            if (snapshot == null || snapshot.Status != BidDefaults.AuctionStatuses.Live || snapshot.EndTime <= _dateTime.UtcNow)
                 return Result.Failure<ToggleAutoBidResult>(BiddingErrors.Auction.AlreadyEnded);
             autoBid.Activate();
         }
@@ -70,7 +72,7 @@ public class ToggleAutoBidCommandHandler : ICommandHandler<ToggleAutoBidCommand,
             oldAutoBidData,
             new Dictionary<string, object>
             {
-                ["Action"] = request.Activate ? "Activated" : "Deactivated"
+                [AuditMetadataKeys.Action] = request.Activate ? BidDefaults.BiddingAuditActions.Activated : BidDefaults.BiddingAuditActions.Deactivated
             },
             cancellationToken);
 

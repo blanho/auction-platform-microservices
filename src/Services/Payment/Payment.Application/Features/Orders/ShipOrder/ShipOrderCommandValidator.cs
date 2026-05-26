@@ -1,13 +1,15 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
-using Payment.Application.DTOs;
 
 namespace Payment.Application.Features.Orders.ShipOrder;
 
-public class UpdateShippingDtoValidator : AbstractValidator<UpdateShippingDto>
+public class ShipOrderCommandValidator : AbstractValidator<ShipOrderCommand>
 {
-    public UpdateShippingDtoValidator()
+    public ShipOrderCommandValidator()
     {
+        RuleFor(x => x.OrderId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Order ID"));
+
         RuleFor(x => x.TrackingNumber)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Tracking number"))
             .MaximumLength(ValidationConstants.StringLength.Standard)

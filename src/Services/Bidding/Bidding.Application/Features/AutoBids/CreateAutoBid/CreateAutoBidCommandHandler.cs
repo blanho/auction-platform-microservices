@@ -1,5 +1,6 @@
 using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Bidding.Application.Features.AutoBids.CreateAutoBid;
@@ -46,7 +47,7 @@ public class CreateAutoBidCommandHandler : ICommandHandler<CreateAutoBidCommand,
         var snapshot = await _snapshotRepository.GetAsync(request.AuctionId, cancellationToken);
         if (snapshot == null)
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotFound);
-        if (snapshot.Status != "Live")
+        if (snapshot.Status != BidDefaults.AuctionStatuses.Live)
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.NotActive);
         if (snapshot.EndTime <= _dateTime.UtcNow)
             return Result.Failure<CreateAutoBidResult>(BiddingErrors.Auction.AlreadyEnded);

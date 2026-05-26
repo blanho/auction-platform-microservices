@@ -8,6 +8,7 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
+using BuildingBlocks.Web.OpenApi;
 using Carter;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,8 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
+builder.AddCentralizedLogging();
+
 var applicationAssembly = typeof(Storage.Application.DTOs.StoredFileDto).Assembly;
 
 builder.Services.AddCommonUtilities();
@@ -31,6 +34,8 @@ builder.Services.AddAppLocalization<StorageResources>();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 builder.Services.AddCQRS(typeof(Storage.Application.Features.Files.UploadFile.UploadFileCommand).Assembly);
+builder.Services.AddCommonApiVersioning();
+builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
 builder.Services.AddFileStorage(builder.Configuration);
 builder.Services.AddDbContext<StorageDbContext>(options =>
@@ -70,9 +75,17 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCommonOpenApi();
+    app.UseCommonSwaggerUI("Storage Service");
+}
 app.MapCustomHealthChecks();
 app.UseHttpsRedirection();
 app.UseAuthentication();

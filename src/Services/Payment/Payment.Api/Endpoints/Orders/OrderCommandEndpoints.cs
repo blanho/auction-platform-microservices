@@ -67,19 +67,10 @@ public class OrderCommandEndpoints : ICarterModule
 
     private static async Task<IResult> Create(
         CreateOrderDto dto,
-        IValidator<CreateOrderDto> validator,
         IMediator mediator,
         ILogger<OrderCommandEndpoints> logger,
         CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(dto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            return Results.BadRequest(ProblemDetailsHelper.FromError(
-                Error.Create("Order.ValidationFailed", errors)));
-        }
-
         var command = new CreateOrderCommand(
             dto.AuctionId,
             dto.BuyerId!.Value,

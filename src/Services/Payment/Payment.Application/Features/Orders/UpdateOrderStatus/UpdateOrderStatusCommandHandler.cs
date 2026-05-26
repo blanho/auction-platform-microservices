@@ -1,9 +1,11 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Orders.UpdateOrderStatus;
@@ -75,7 +77,7 @@ public class UpdateOrderStatusCommandHandler : ICommandHandler<UpdateOrderStatus
             OrderAuditData.FromOrder(updated),
             AuditAction.Updated,
             oldOrderData,
-            new Dictionary<string, object> { ["Action"] = "StatusUpdated" },
+            new Dictionary<string, object> { [AuditMetadataKeys.Action] = WalletDefaults.Audit.StatusUpdated },
             cancellationToken);
 
         _logger.LogInformation("Updated order {OrderId}", updated.Id);

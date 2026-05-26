@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
@@ -43,7 +44,7 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
 
     public async Task<Result<WalletTransactionDto>> Handle(DepositCommand request, CancellationToken cancellationToken)
     {
-        var lockKey = $"wallet:operation:{request.Username}";
+        var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
 
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
@@ -68,7 +69,7 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
             type: TransactionType.Deposit,
             amount: request.Amount,
             balanceAfter: balanceAfter,
-            description: request.Description ?? "Deposit",
+            description: request.Description ?? WalletTransactionDescriptions.Deposit,
             paymentMethod: request.PaymentMethod);
         
         transaction.Complete();
@@ -84,9 +85,9 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "Deposit",
-                ["Amount"] = request.Amount,
-                ["NewBalance"] = wallet.Balance
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.Deposit,
+                [AuditMetadataKeys.Amount] = request.Amount,
+                [AuditMetadataKeys.NewBalance] = wallet.Balance
             },
             cancellationToken: cancellationToken);
 

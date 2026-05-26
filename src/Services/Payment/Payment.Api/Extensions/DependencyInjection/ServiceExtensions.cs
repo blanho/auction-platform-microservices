@@ -15,18 +15,6 @@ namespace Payment.Api.Extensions.DependencyInjection;
 
 public static class ServiceExtensions
 {
-    public static WebApplicationBuilder AddApplicationLogging(this WebApplicationBuilder builder)
-    {
-        builder.Host.UseSerilog((context, loggerConfig) =>
-        {
-            loggerConfig
-                .ReadFrom.Configuration(context.Configuration)
-                .Enrich.FromLogContext();
-        });
-
-        return builder;
-    }
-
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers()

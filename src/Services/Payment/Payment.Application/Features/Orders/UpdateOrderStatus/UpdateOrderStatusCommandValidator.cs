@@ -1,13 +1,15 @@
 using BuildingBlocks.Domain.Constants;
 using FluentValidation;
-using Payment.Application.DTOs;
 
 namespace Payment.Application.Features.Orders.UpdateOrderStatus;
 
-public class UpdateOrderDtoValidator : AbstractValidator<UpdateOrderDto>
+public class UpdateOrderStatusCommandValidator : AbstractValidator<UpdateOrderStatusCommand>
 {
-    public UpdateOrderDtoValidator()
+    public UpdateOrderStatusCommandValidator()
     {
+        RuleFor(x => x.OrderId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Order ID"));
+
         When(x => x.Status.HasValue, () =>
         {
             RuleFor(x => x.Status)

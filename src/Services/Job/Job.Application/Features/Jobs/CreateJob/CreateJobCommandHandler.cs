@@ -1,5 +1,6 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
 using Jobs.Domain.Entities;
@@ -67,9 +68,9 @@ public class CreateJobCommandHandler : ICommandHandler<CreateJobCommand, JobDto>
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Type"] = job.Type.ToString(),
-                ["CorrelationId"] = job.CorrelationId,
-                ["TotalItems"] = job.TotalItems
+                [AuditMetadataKeys.Type] = job.Type.ToString(),
+                [AuditMetadataKeys.CorrelationId] = job.CorrelationId,
+                [AuditMetadataKeys.TotalItems] = job.TotalItems
             },
             cancellationToken: cancellationToken);
 

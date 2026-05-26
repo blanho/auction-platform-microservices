@@ -1,7 +1,9 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
+using Jobs.Domain.Constants;
 
 namespace Jobs.Application.Features.Jobs.RetryJob;
 
@@ -42,8 +44,8 @@ public class RetryJobCommandHandler(
             oldJobData,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "Retry",
-                ["PreviousStatus"] = oldJobData.Status
+                [AuditMetadataKeys.Action] = JobDefaults.Audit.Retry,
+                [AuditMetadataKeys.PreviousStatus] = oldJobData.Status
             },
             cancellationToken: cancellationToken);
 

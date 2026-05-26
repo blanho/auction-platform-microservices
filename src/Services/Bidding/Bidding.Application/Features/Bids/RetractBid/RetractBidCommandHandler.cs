@@ -1,8 +1,10 @@
 using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using Bidding.Application.Services;
 using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 
 namespace Bidding.Application.Features.Bids.RetractBid;
 
@@ -47,7 +49,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             return Result.Failure<RetractBidResult>(BiddingErrors.Bid.Unauthorized);
         }
 
-        var lockKey = $"auction-bid:{bid.AuctionId}";
+        var lockKey = BidLockKeys.ForAuction(bid.AuctionId);
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
             TimeSpan.FromSeconds(BidDefaults.BidLockTimeoutSeconds),
@@ -101,9 +103,9 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
             oldBidData,
             new Dictionary<string, object>
             {
-                ["Action"] = "Retracted",
-                ["Reason"] = request.Reason ?? string.Empty,
-                ["WasHighestBid"] = wasHighestBid
+                [AuditMetadataKeys.Action] = BidDefaults.BiddingAuditActions.Retracted,
+                [AuditMetadataKeys.Reason] = request.Reason ?? string.Empty,
+                [AuditMetadataKeys.WasHighestBid] = wasHighestBid
             },
             cancellationToken);
 

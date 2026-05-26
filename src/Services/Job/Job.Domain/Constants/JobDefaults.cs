@@ -79,4 +79,10 @@ public static class JobDefaults
         public const int ProgressPercentageScale = 2;
         public const int ProgressDecimalPlaces = 2;
     }
+
+    public static class Audit
+    {
+        public const string Cancel = "Cancel";
+        public const string Retry = "Retry";
+    }
 }

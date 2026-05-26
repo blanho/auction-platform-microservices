@@ -9,6 +9,16 @@ public static class AuctionDefaults
         public const int WaitSeconds = 5;
 
         public const int RetryDelayMilliseconds = 100;
+
+        public const string BuyNowKeyFormat = "auction:buynow:{0}";
+
+        public static string GetAuctionBuyNowKey(Guid auctionId) =>
+            string.Format(BuyNowKeyFormat, auctionId);
+    }
+
+    public static class Audit
+    {
+        public const string BuyNow = "BuyNow";
     }
 
     public static class Cache

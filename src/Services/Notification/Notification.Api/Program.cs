@@ -14,6 +14,7 @@ using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Web.Observability;
+using BuildingBlocks.Web.OpenApi;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,8 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
+builder.AddCentralizedLogging();
+
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
 
@@ -39,6 +42,8 @@ builder.Services.AddStackExchangeRedisCache(options => options.Configuration = r
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddCQRS(typeof(Notification.Application.Features.Notifications.CreateNotification.CreateNotificationCommand).Assembly);
+builder.Services.AddCommonApiVersioning();
+builder.Services.AddCommonOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationHubService, NotificationHubService>();
 builder.Services.AddNotificationCors(builder.Configuration);
@@ -110,9 +115,17 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCommonOpenApi();
+    app.UseCommonSwaggerUI("Notification Service");
+}
 app.MapCustomHealthChecks();
 app.UseHttpsRedirection();
 app.UseCors("SignalRCorsPolicy");

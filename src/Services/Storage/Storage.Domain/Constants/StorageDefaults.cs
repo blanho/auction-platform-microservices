@@ -66,4 +66,15 @@ public static class StorageDefaults
     {
         public const int FileNameMaxLength = 255;
     }
+
+    public static class Providers
+    {
+        public const string AzureBlob = "AzureBlob";
+        public const string Local = "Local";
+
+        public static Enums.StorageProvider Resolve(string providerName) =>
+            string.Equals(providerName, AzureBlob, StringComparison.OrdinalIgnoreCase)
+                ? Enums.StorageProvider.AzureBlob
+                : Enums.StorageProvider.Local;
+    }
 }

@@ -1,9 +1,11 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
 using Payment.Domain.Entities;
 
 namespace Payment.Application.Features.Orders.ProcessPayment;
@@ -64,9 +66,9 @@ public class ProcessPaymentCommandHandler : ICommandHandler<ProcessPaymentComman
             oldOrderData,
             new Dictionary<string, object>
             {
-                ["Action"] = "PaymentCompleted",
-                ["PaymentMethod"] = request.PaymentMethod ?? "Unknown",
-                ["TransactionId"] = request.ExternalTransactionId ?? string.Empty
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.PaymentCompleted,
+                [AuditMetadataKeys.PaymentMethod] = request.PaymentMethod ?? "Unknown",
+                [AuditMetadataKeys.TransactionId] = request.ExternalTransactionId ?? string.Empty
             },
             cancellationToken);
 

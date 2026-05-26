@@ -3,6 +3,7 @@ using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Auctions.Domain.Enums;
 using Auctions.Domain.Constants;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
     {
         _logger.LogInformation("Processing Buy Now for auction {AuctionId}", request.AuctionId);
 
-        var lockKey = $"auction:buynow:{request.AuctionId}";
+        var lockKey = AuctionDefaults.Lock.GetAuctionBuyNowKey(request.AuctionId);
         await using var lockHandle = await _distributedLock.AcquireAsync(
             lockKey,
             expiry: TimeSpan.FromSeconds(AuctionDefaults.Lock.ExpirySeconds),
@@ -88,10 +89,10 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 oldAuctionData,
                 new Dictionary<string, object>
                 {
-                    ["Action"] = "BuyNow",
-                    ["BuyerId"] = request.BuyerId,
-                    ["BuyerUsername"] = request.BuyerUsername,
-                    ["Price"] = auction.BuyNowPrice!.Value
+                    [AuditMetadataKeys.Action] = AuctionDefaults.Audit.BuyNow,
+                    [AuditMetadataKeys.BuyerId] = request.BuyerId,
+                    [AuditMetadataKeys.BuyerUsername] = request.BuyerUsername,
+                    [AuditMetadataKeys.Price] = auction.BuyNowPrice!.Value
                 },
                 cancellationToken);
 
@@ -108,7 +109,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 Success = true
             });
         }
-        catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
+        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
         {
             _logger.LogWarning(ex, "Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
             return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);

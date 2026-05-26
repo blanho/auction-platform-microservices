@@ -1,7 +1,9 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
+using Identity.Api.Constants;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Seller;
@@ -206,7 +208,7 @@ public class UserService : IUserService
             user => { user.IsSuspended = true; user.SuspensionReason = reason; user.SuspendedAt = DateTimeOffset.UtcNow; },
             IdentityErrors.User.SuspendFailed,
             (user, _) => new UserSuspendedDomainEvent { UserId = user.Id, Username = user.UserName!, Reason = reason },
-            new Dictionary<string, object> { ["action"] = "suspend", ["reason"] = reason },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Suspend, [AuditMetadataKeys.ReasonLower] = reason },
             cancellationToken);
 
         if (result.IsSuccess)
@@ -224,7 +226,7 @@ public class UserService : IUserService
             user => { user.IsSuspended = false; user.SuspensionReason = null; user.SuspendedAt = null; },
             IdentityErrors.User.UnsuspendFailed,
             (user, _) => new UserReactivatedDomainEvent { UserId = user.Id, Username = user.UserName! },
-            new Dictionary<string, object> { ["action"] = "unsuspend" },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Unsuspend },
             cancellationToken);
 
         if (result.IsSuccess)
@@ -240,7 +242,7 @@ public class UserService : IUserService
             user => user.IsActive = true,
             IdentityErrors.User.ActivateFailed,
             (_, _) => null,
-            new Dictionary<string, object> { ["action"] = "activate" },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Activate },
             cancellationToken);
     }
 
@@ -251,7 +253,7 @@ public class UserService : IUserService
             user => user.IsActive = false,
             IdentityErrors.User.DeactivateFailed,
             (_, _) => null,
-            new Dictionary<string, object> { ["action"] = "deactivate" },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Deactivate },
             cancellationToken);
     }
 
@@ -322,9 +324,9 @@ public class UserService : IUserService
             oldUserData,
             new Dictionary<string, object>
             {
-                ["action"] = "role_change",
-                ["previousRoles"] = currentRoles.ToList(),
-                ["newRoles"] = rolesList
+                [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.RoleChange,
+                [AuditMetadataKeys.PreviousRoles] = currentRoles.ToList(),
+                [AuditMetadataKeys.NewRoles] = rolesList
             },
             cancellationToken);
 

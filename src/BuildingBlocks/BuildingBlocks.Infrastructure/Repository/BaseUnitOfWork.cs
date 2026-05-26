@@ -34,7 +34,15 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
             entity.ClearDomainEvents();
         }
 
-        var result = await Context.SaveChangesAsync(cancellationToken);
+        int result;
+        try
+        {
+            result = await Context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new BuildingBlocks.Domain.Exceptions.ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
+        }
 
         foreach (var domainEvent in domainEvents)
         {

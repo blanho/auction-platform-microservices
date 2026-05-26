@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
@@ -61,7 +62,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             }
         }
 
-        var lockKey = $"wallet:operation:{request.Username}";
+        var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
 
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
@@ -101,7 +102,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
+        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict processing payment for user {Username}, order {ReferenceId}. Lock may have been released prematurely.",
@@ -115,10 +116,10 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "ProcessWalletPayment",
-                ["Amount"] = request.Amount,
-                ["ReferenceId"] = request.ReferenceId,
-                ["NewBalance"] = wallet.Balance
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.ProcessWalletPayment,
+                [AuditMetadataKeys.Amount] = request.Amount,
+                [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
+                [AuditMetadataKeys.NewBalance] = wallet.Balance
             },
             cancellationToken: cancellationToken);
 

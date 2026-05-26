@@ -1,5 +1,6 @@
 using AuctionService.Contracts.Events;
 using Bidding.Application.Interfaces;
+using Bidding.Domain.Constants;
 using MassTransit;
 
 namespace Bidding.Infrastructure.Messaging.Consumers;
@@ -32,7 +33,7 @@ public class AuctionStartedSnapshotConsumer : IConsumer<AuctionStartedEvent>
             SellerUsername: message.Seller,
             SellerId: existing?.SellerId ?? Guid.Empty,
             EndTime: message.EndTime,
-            Status: "Live",
+            Status: BidDefaults.AuctionStatuses.Live,
             ReservePrice: message.ReservePrice,
             CurrentHighBid: existing?.CurrentHighBid);
 

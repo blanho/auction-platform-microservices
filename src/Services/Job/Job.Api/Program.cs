@@ -20,7 +20,7 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
-builder.AddApplicationLogging();
+builder.AddCentralizedLogging();
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
@@ -49,8 +49,10 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
 app.MapCustomHealthChecks();
 app.UseHttpsRedirection();

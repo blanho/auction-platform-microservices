@@ -1,10 +1,12 @@
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Options;
 using Storage.Application.DTOs.Audit;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
+using Storage.Domain.Constants;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
 
@@ -33,7 +35,7 @@ public class ConfirmPresignedUploadCommandHandler(
         }
 
         var url = await fileStorageService.GetUrlAsync(request.StoredFileName, cancellationToken);
-        var provider = ResolveStorageProvider(storageSettings.Value.Provider);
+        var provider = StorageDefaults.Providers.Resolve(storageSettings.Value.Provider);
 
         var storedFile = StoredFile.Create(
             request.FileName,
@@ -54,10 +56,10 @@ public class ConfirmPresignedUploadCommandHandler(
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["FileName"] = storedFile.FileName,
-                ["FileSize"] = storedFile.FileSize,
-                ["Provider"] = provider.ToString(),
-                ["PresignedUpload"] = true
+                [AuditMetadataKeys.FileName] = storedFile.FileName,
+                [AuditMetadataKeys.FileSize] = storedFile.FileSize,
+                [AuditMetadataKeys.Provider] = provider.ToString(),
+                [AuditMetadataKeys.PresignedUpload] = true
             },
             cancellationToken: cancellationToken);
 
@@ -68,9 +70,4 @@ public class ConfirmPresignedUploadCommandHandler(
             storedFile.Id, storedFile.FileName, storedFile.ContentType,
             storedFile.FileSize, storedFile.Url, storedFile.CreatedAt));
     }
-
-    private static StorageProvider ResolveStorageProvider(string providerName) =>
-        string.Equals(providerName, "AzureBlob", StringComparison.OrdinalIgnoreCase)
-            ? StorageProvider.AzureBlob
-            : StorageProvider.Local;
 }

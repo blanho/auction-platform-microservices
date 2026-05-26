@@ -1,6 +1,8 @@
 using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 
 namespace Bidding.Application.Features.AutoBids.CancelAutoBid;
 
@@ -56,7 +58,7 @@ public class CancelAutoBidCommandHandler : ICommandHandler<CancelAutoBidCommand,
             AutoBidAuditData.FromAutoBid(autoBid),
             AuditAction.Updated,
             oldAutoBidData,
-            new Dictionary<string, object> { ["Action"] = "Cancelled" },
+            new Dictionary<string, object> { [AuditMetadataKeys.Action] = BidDefaults.BiddingAuditActions.Cancelled },
             cancellationToken);
 
         _logger.LogInformation("Auto-bid {AutoBidId} cancelled successfully", request.AutoBidId);

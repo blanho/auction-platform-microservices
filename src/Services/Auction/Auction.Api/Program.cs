@@ -6,6 +6,7 @@ using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Extensions;
+using BuildingBlocks.Web.Observability;
 using Carter;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,7 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
-builder.AddApplicationLogging();
+builder.AddCentralizedLogging();
 
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 
@@ -57,8 +58,10 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
 app.MapCustomHealthChecks();
 app.UseHttpsRedirection();

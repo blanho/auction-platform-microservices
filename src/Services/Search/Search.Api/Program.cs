@@ -1,6 +1,7 @@
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
+using BuildingBlocks.Web.OpenApi;
 using Carter;
 using Search.Api.Extensions.DependencyInjection;
 using Search.Api.Resources;
@@ -27,15 +28,15 @@ builder.Services.AddCustomHealthChecks(
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
     elasticsearchUri: builder.Configuration["Elasticsearch:Uri"],
     serviceName: "SearchService");
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddCommonApiVersioning();
+builder.Services.AddCommonOpenApi();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1"));
+    app.UseCommonOpenApi();
+    app.UseCommonSwaggerUI("Search Service");
 }
 
 app.UseCorrelationId();

@@ -1,5 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
+using Identity.Api.Constants;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.Auth;
@@ -88,7 +90,7 @@ public class ProfileService : IProfileService
             UserAuditData.FromUser(user, roles),
             AuditAction.Updated,
             oldUserData,
-            new Dictionary<string, object> { ["action"] = "profile_update" },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.ProfileUpdate },
             cancellationToken);
 
         return Result.Success(profile);
@@ -122,7 +124,7 @@ public class ProfileService : IProfileService
                 Success = true
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { ["action"] = "password_change" },
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.PasswordChange },
             cancellationToken: cancellationToken);
 
         _logger.LogInformation("User {UserId} changed their password", userId);

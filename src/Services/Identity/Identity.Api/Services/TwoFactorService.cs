@@ -1,4 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
+using Identity.Api.Constants;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
 using Identity.Api.DTOs.TwoFactor;
@@ -118,7 +120,7 @@ public class TwoFactorService : ITwoFactorService
                 IsEnabled = true
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { ["action"] = "2fa_enabled" });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorEnabled });
 
         return Result.Success(new RecoveryCodesResponse
         {
@@ -159,7 +161,7 @@ public class TwoFactorService : ITwoFactorService
                 IsEnabled = false
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { ["action"] = "2fa_disabled" });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorDisabled });
 
         return Result.Success();
     }

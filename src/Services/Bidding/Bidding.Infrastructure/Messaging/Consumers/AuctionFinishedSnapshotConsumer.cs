@@ -1,5 +1,6 @@
 using AuctionService.Contracts.Events;
 using Bidding.Application.Interfaces;
+using Bidding.Domain.Constants;
 using MassTransit;
 
 namespace Bidding.Infrastructure.Messaging.Consumers;
@@ -33,7 +34,7 @@ public class AuctionFinishedSnapshotConsumer : IConsumer<AuctionFinishedEvent>
             return;
         }
 
-        var updated = existing with { Status = "Finished" };
+        var updated = existing with { Status = BidDefaults.AuctionStatuses.Finished };
         await _snapshotRepository.UpsertAsync(updated, context.CancellationToken);
     }
 }

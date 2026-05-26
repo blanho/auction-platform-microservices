@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
@@ -43,7 +44,7 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
 
     public async Task<Result<WalletTransactionDto>> Handle(ReleaseFundsCommand request, CancellationToken cancellationToken)
     {
-        var lockKey = $"wallet:operation:{request.Username}";
+        var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
         
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
@@ -82,7 +83,7 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
+        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict releasing funds for reference {ReferenceId}. Lock may have been released prematurely.",
@@ -96,10 +97,10 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "ReleaseFunds",
-                ["Amount"] = request.Amount,
-                ["ReferenceId"] = request.ReferenceId,
-                ["NewHeldAmount"] = wallet.HeldAmount
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.ReleaseFunds,
+                [AuditMetadataKeys.Amount] = request.Amount,
+                [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
+                [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
             },
             cancellationToken: cancellationToken);
 

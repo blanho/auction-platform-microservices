@@ -8,6 +8,25 @@ public static class WalletDefaults
     {
         public static readonly TimeSpan StandardExpiry = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan ExtendedExpiry = TimeSpan.FromSeconds(30);
+
+        public const string WalletOperationKeyFormat = "wallet:operation:{0}";
+
+        public static string GetWalletOperationKey(string username) =>
+            string.Format(WalletOperationKeyFormat, username);
+    }
+
+    public static class Audit
+    {
+        public const string Deposit = "Deposit";
+        public const string Withdraw = "Withdraw";
+        public const string HoldFunds = "HoldFunds";
+        public const string ReleaseFunds = "ReleaseFunds";
+        public const string ProcessWalletPayment = "ProcessWalletPayment";
+        public const string StatusUpdated = "StatusUpdated";
+        public const string Delivered = "Delivered";
+        public const string Shipped = "Shipped";
+        public const string Cancelled = "Cancelled";
+        public const string PaymentCompleted = "PaymentCompleted";
     }
 
     public static class Messaging

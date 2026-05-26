@@ -6,6 +6,7 @@ using Carter;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
+using BuildingBlocks.Web.OpenApi;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 
@@ -26,10 +27,7 @@ builder.WebHost.ConfigureKestrel((context, options) =>
     options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
 });
 
-builder.Host.UseSerilog((context, loggerConfig) => loggerConfig
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+builder.AddCentralizedLogging();
 
 builder.Services
     .AddObservability(builder.Configuration)
@@ -62,8 +60,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddCommonApiVersioning();
+builder.Services.AddCommonOpenApi();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
@@ -80,13 +78,15 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseCommonOpenApi();
+    app.UseCommonSwaggerUI("Analytics Service");
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
 app.UseAuthentication();
 app.UseAuthorization();

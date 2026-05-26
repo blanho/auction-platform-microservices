@@ -21,4 +21,18 @@ public static class IdentityDefaults
         public const string ConfirmationLinkKey = "confirmationLink";
         public const string ResetLinkKey = "resetLink";
     }
+
+    public static class Audit
+    {
+        public const string TwoFactorEnabled = "2fa_enabled";
+        public const string TwoFactorDisabled = "2fa_disabled";
+        public const string PasswordChange = "password_change";
+        public const string ProfileUpdate = "profile_update";
+        public const string Login = "login";
+        public const string Suspend = "suspend";
+        public const string Unsuspend = "unsuspend";
+        public const string Activate = "activate";
+        public const string Deactivate = "deactivate";
+        public const string RoleChange = "role_change";
+    }
 }

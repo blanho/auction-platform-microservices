@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
@@ -43,7 +44,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
 
     public async Task<Result<WalletTransactionDto>> Handle(HoldFundsCommand request, CancellationToken cancellationToken)
     {
-        var lockKey = $"wallet:operation:{request.Username}";
+        var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
         
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
@@ -69,7 +70,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             type: TransactionType.Hold,
             amount: request.Amount,
             balanceAfter: wallet.Balance,
-            description: $"Funds held for {request.ReferenceType}",
+            description: string.Format(WalletTransactionDescriptions.FundsHeldForReferenceFormat, request.ReferenceType),
             referenceId: request.ReferenceId,
             referenceType: request.ReferenceType);
         
@@ -82,7 +83,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
+        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict holding funds for reference {ReferenceId}. Lock may have been released prematurely.",
@@ -96,11 +97,11 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "HoldFunds",
-                ["Amount"] = request.Amount,
-                ["ReferenceId"] = request.ReferenceId,
-                ["ReferenceType"] = request.ReferenceType,
-                ["NewHeldAmount"] = wallet.HeldAmount
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.HoldFunds,
+                [AuditMetadataKeys.Amount] = request.Amount,
+                [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
+                [AuditMetadataKeys.ReferenceType] = request.ReferenceType,
+                [AuditMetadataKeys.NewHeldAmount] = wallet.HeldAmount
             },
             cancellationToken: cancellationToken);
 

@@ -77,4 +77,26 @@ public static class BidDefaults
 
         public const int DefaultRetryAfterSeconds = 10;
     }
+
+    public static class AuctionStatuses
+    {
+        public const string Live = "Live";
+        public const string Finished = "Finished";
+        public const string Deleted = "Deleted";
+    }
+
+    public static class BiddingAuditActions
+    {
+        public const string Activated = "Activated";
+        public const string Deactivated = "Deactivated";
+        public const string Cancelled = "Cancelled";
+        public const string MaxAmountUpdated = "MaxAmountUpdated";
+        public const string Retracted = "Retracted";
+    }
+
+    public static class WinningBids
+    {
+        public const string DefaultAuctionTitle = "Auction";
+        public const string DefaultPaymentStatus = "Pending";
+    }
 }

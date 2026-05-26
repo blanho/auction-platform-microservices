@@ -3,6 +3,7 @@ using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Extensions.Mappings;
 using Bidding.Application.Helpers;
 using Bidding.Application.Interfaces;
+using Bidding.Application.Services;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
@@ -10,6 +11,7 @@ using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Providers;
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 
 namespace Bidding.Application.Features.Bids.PlaceBid;
@@ -48,7 +50,7 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
             "Processing bid for auction {AuctionId} by {Bidder}, Amount: {Amount}",
             request.AuctionId, request.BidderUsername, request.Amount);
 
-        var lockKey = $"auction-bid:{request.AuctionId}";
+        var lockKey = BidLockKeys.ForAuction(request.AuctionId);
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
             TimeSpan.FromSeconds(BidDefaults.BidLockTimeoutSeconds),
@@ -95,7 +97,7 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 
     private Result ValidateAuction(AuctionSnapshot snapshot, PlaceBidCommand request)
     {
-        if (snapshot.Status != "Live")
+        if (snapshot.Status != BidDefaults.AuctionStatuses.Live)
             return Result.Failure(BidErrors.AuctionNotLive);
 
         if (snapshot.EndTime <= _dateTime.UtcNow)

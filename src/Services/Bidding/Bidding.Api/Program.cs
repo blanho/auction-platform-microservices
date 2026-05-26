@@ -25,7 +25,7 @@ builder.Services.ValidateStandardConfiguration(
     requiresRabbitMQ: true,
     requiresIdentity: true);
 
-builder.AddApplicationLogging();
+builder.AddCentralizedLogging();
 
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis")
     ?? throw new InvalidOperationException("Redis connection string is required");
@@ -75,8 +75,10 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 }
 
 app.UseApiSecurityHeaders();
+app.UseCorrelationIdLogging();
 app.UseCorrelationId();
 app.UseRequestTracing();
+app.UseSerilogRequestLogging();
 app.UseAppExceptionHandling();
 app.MapCustomHealthChecks();
 app.UseHttpsRedirection();

@@ -1,6 +1,8 @@
 using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Errors;
+using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 
 namespace Bidding.Application.Features.AutoBids.UpdateAutoBid;
 
@@ -62,9 +64,9 @@ public class UpdateAutoBidCommandHandler : ICommandHandler<UpdateAutoBidCommand,
             oldAutoBidData,
             new Dictionary<string, object>
             {
-                ["Action"] = "MaxAmountUpdated",
-                ["PreviousMaxAmount"] = oldAutoBidData.MaxAmount,
-                ["NewMaxAmount"] = request.NewMaxAmount
+                [AuditMetadataKeys.Action] = BidDefaults.BiddingAuditActions.MaxAmountUpdated,
+                [AuditMetadataKeys.PreviousMaxAmount] = oldAutoBidData.MaxAmount,
+                [AuditMetadataKeys.NewMaxAmount] = request.NewMaxAmount
             },
             cancellationToken);
 

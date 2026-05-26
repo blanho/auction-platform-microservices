@@ -1,5 +1,6 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Identity.Api.Constants;
 using Identity.Api.DomainEvents;
 using Identity.Api.DTOs.Audit;
@@ -506,7 +507,7 @@ public class AuthService(
                 Success = true
             },
             AuditAction.Updated,
-            metadata: new Dictionary<string, object> { ["action"] = "login" });
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Login });
 
         logger.LogInformation("User {Username} logged in successfully", user.UserName);
 

@@ -12,6 +12,7 @@
     <PackageReference Include="Yarp.ReverseProxy" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="AspNetCore.HealthChecks.Uris" />
   </ItemGroup>
 
 </Project>

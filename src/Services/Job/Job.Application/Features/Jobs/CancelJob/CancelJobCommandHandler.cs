@@ -1,7 +1,9 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using BuildingBlocks.Application.Constants;
 using Jobs.Application.DTOs.Audit;
 using Jobs.Application.Errors;
+using Jobs.Domain.Constants;
 
 namespace Jobs.Application.Features.Jobs.CancelJob;
 
@@ -40,8 +42,8 @@ public class CancelJobCommandHandler(
             oldJobData,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "Cancel",
-                ["PreviousStatus"] = oldJobData.Status
+                [AuditMetadataKeys.Action] = JobDefaults.Audit.Cancel,
+                [AuditMetadataKeys.PreviousStatus] = oldJobData.Status
             },
             cancellationToken: cancellationToken);
 

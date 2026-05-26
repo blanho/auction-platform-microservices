@@ -1,6 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
+using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Logging;
 using Payment.Application.DTOs;
 using Payment.Application.DTOs.Audit;
@@ -43,7 +44,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
 
     public async Task<Result<WalletTransactionDto>> Handle(WithdrawCommand request, CancellationToken cancellationToken)
     {
-        var lockKey = $"wallet:operation:{request.Username}";
+        var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
         
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
@@ -71,7 +72,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             type: TransactionType.Withdrawal,
             amount: request.Amount,
             balanceAfter: balanceAfter,
-            description: request.Description ?? "Withdrawal",
+            description: request.Description ?? WalletTransactionDescriptions.Withdrawal,
             paymentMethod: request.PaymentMethod);
 
         wallet.Withdraw(request.Amount);
@@ -82,7 +83,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (Exception ex) when (ex.GetType().Name.EndsWith("ConcurrencyException", StringComparison.Ordinal))
+        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict during withdrawal. Lock may have been released prematurely.");
@@ -95,9 +96,9 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             AuditAction.Created,
             metadata: new Dictionary<string, object>
             {
-                ["Action"] = "Withdraw",
-                ["Amount"] = request.Amount,
-                ["NewBalance"] = wallet.Balance
+                [AuditMetadataKeys.Action] = WalletDefaults.Audit.Withdraw,
+                [AuditMetadataKeys.Amount] = request.Amount,
+                [AuditMetadataKeys.NewBalance] = wallet.Balance
             },
             cancellationToken: cancellationToken);
 
