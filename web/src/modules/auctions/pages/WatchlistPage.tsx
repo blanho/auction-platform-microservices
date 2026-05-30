@@ -250,10 +250,7 @@ export function WatchlistPage() {
   const [sortBy, setSortBy] = useState<'ending-soon' | 'newest' | 'price-low' | 'price-high'>(
     'ending-soon'
   )
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 6 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 6 }, () => crypto.randomUUID()), [])
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const { data, isLoading, error } = useWatchlist()

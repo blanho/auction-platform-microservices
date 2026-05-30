@@ -34,7 +34,7 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
 
     public async Task<Result<OrderDto>> Handle(ShipOrderCommand request, CancellationToken cancellationToken)
     {
-        var order = await _repository.GetByIdAsync(request.OrderId);
+        var order = await _repository.GetByIdAsync(request.OrderId, cancellationToken);
         if (order == null)
         {
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
@@ -67,7 +67,7 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
             order.AddSellerNotes(request.SellerNotes);
         }
 
-        var updated = await _repository.UpdateAsync(order);
+        var updated = await _repository.UpdateAsync(order, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditPublisher.PublishAsync(

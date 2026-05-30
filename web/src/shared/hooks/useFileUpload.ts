@@ -62,11 +62,7 @@ function validateFile(file: File, config: FileValidationConfig): string | null {
   return null
 }
 
-function buildAttachment(
-  file: File,
-  result: StoredFileDto,
-  displayOrder: number
-): FileAttachment {
+function buildAttachment(file: File, result: StoredFileDto, displayOrder: number): FileAttachment {
   const isImage = file.type.startsWith('image/')
   return {
     fileId: result.fileId,
@@ -89,11 +85,14 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
     onUploadError,
   } = options
 
-  const validationConfig = useMemo<FileValidationConfig>(() => ({
-    maxFileSize,
-    maxFiles,
-    acceptedTypes,
-  }), [maxFileSize, maxFiles, acceptedTypes])
+  const validationConfig = useMemo<FileValidationConfig>(
+    () => ({
+      maxFileSize,
+      maxFiles,
+      acceptedTypes,
+    }),
+    [maxFileSize, maxFiles, acceptedTypes]
+  )
 
   const [uploads, setUploads] = useState<FileUploadProgress[]>([])
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
@@ -116,20 +115,13 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
   }, [])
 
   const uploadMutation = useMutation({
-    mutationFn: ({
-      file,
-      onProgress,
-    }: {
-      file: File
-      onProgress: (progress: number) => void
-    }) => storageApi.uploadFile(file, { subFolder, onProgress }),
+    mutationFn: ({ file, onProgress }: { file: File; onProgress: (progress: number) => void }) =>
+      storageApi.uploadFile(file, { subFolder, onProgress }),
   })
 
   const updateUploadState = useCallback(
     (uploadId: string, updates: Partial<FileUploadProgress>) => {
-      setUploads((prev) =>
-        prev.map((u) => (u.id === uploadId ? { ...u, ...updates } : u))
-      )
+      setUploads((prev) => prev.map((u) => (u.id === uploadId ? { ...u, ...updates } : u)))
     },
     []
   )
@@ -145,10 +137,12 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
       const currentCount = attachments.length
       if (currentCount + files.length > validationConfig.maxFiles) {
-        return [{
-          file: files[0],
-          reason: `Maximum ${validationConfig.maxFiles} files allowed. ${validationConfig.maxFiles - currentCount} slots remaining.`,
-        }]
+        return [
+          {
+            file: files[0],
+            reason: `Maximum ${validationConfig.maxFiles} files allowed. ${validationConfig.maxFiles - currentCount} slots remaining.`,
+          },
+        ]
       }
 
       for (const file of files) {
@@ -221,33 +215,42 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
       return errors
     },
-    [attachments.length, validationConfig, uploadMutation, updateUploadState, trackPreviewUrl, onUploadComplete, onUploadError]
+    [
+      attachments.length,
+      validationConfig,
+      uploadMutation,
+      updateUploadState,
+      trackPreviewUrl,
+      onUploadComplete,
+      onUploadError,
+    ]
   )
 
-  const removeAttachment = useCallback((fileId: string) => {
-    setAttachments((prev) => {
-      const removed = prev.find((a) => a.fileId === fileId)
-      if (removed?.previewUrl) {
-        revokePreviewUrl(removed.previewUrl)
-      }
-
-      const filtered = prev.filter((a) => a.fileId !== fileId)
-      const hadPrimary = removed?.isPrimary
-      return filtered.map((a, idx) => {
-        let isPrimary = a.isPrimary
-        if (hadPrimary) {
-          isPrimary = idx === 0
+  const removeAttachment = useCallback(
+    (fileId: string) => {
+      setAttachments((prev) => {
+        const removed = prev.find((a) => a.fileId === fileId)
+        if (removed?.previewUrl) {
+          revokePreviewUrl(removed.previewUrl)
         }
-        return { ...a, displayOrder: idx, isPrimary }
+
+        const filtered = prev.filter((a) => a.fileId !== fileId)
+        const hadPrimary = removed?.isPrimary
+        return filtered.map((a, idx) => {
+          let isPrimary = a.isPrimary
+          if (hadPrimary) {
+            isPrimary = idx === 0
+          }
+          return { ...a, displayOrder: idx, isPrimary }
+        })
       })
-    })
-    setUploads((prev) => prev.filter((u) => u.fileId !== fileId))
-  }, [revokePreviewUrl])
+      setUploads((prev) => prev.filter((u) => u.fileId !== fileId))
+    },
+    [revokePreviewUrl]
+  )
 
   const setPrimaryAttachment = useCallback((fileId: string) => {
-    setAttachments((prev) =>
-      prev.map((a) => ({ ...a, isPrimary: a.fileId === fileId }))
-    )
+    setAttachments((prev) => prev.map((a) => ({ ...a, isPrimary: a.fileId === fileId })))
   }, [])
 
   const reorderAttachments = useCallback((fromIndex: number, toIndex: number) => {
@@ -276,9 +279,10 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
   const isUploading = uploads.some((u) => u.status === 'uploading')
   const hasErrors = uploads.some((u) => u.status === 'error')
   const remainingSlots = maxFiles - attachments.length
-  const totalProgress = uploads.length > 0
-    ? Math.round(uploads.reduce((sum, u) => sum + u.progress, 0) / uploads.length)
-    : 0
+  const totalProgress =
+    uploads.length > 0
+      ? Math.round(uploads.reduce((sum, u) => sum + u.progress, 0) / uploads.length)
+      : 0
 
   return {
     uploads,

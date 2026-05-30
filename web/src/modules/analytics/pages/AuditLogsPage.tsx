@@ -69,7 +69,6 @@ const ACTION_OPTIONS = Object.values(AUDIT_ACTION).map((act) => ({
 }))
 
 export function AuditLogsPage() {
-
   const { t: _t } = useTranslation('analytics')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(20)
@@ -128,8 +127,12 @@ export function AuditLogsPage() {
 
   const items = data?.items
   const filteredItems = useMemo(() => {
-    if (!items) {return []}
-    if (!search) {return items}
+    if (!items) {
+      return []
+    }
+    if (!search) {
+      return items
+    }
     const searchLower = search.toLowerCase()
     return items.filter(
       (log) =>
@@ -236,7 +239,8 @@ export function AuditLogsPage() {
                       cellSx={{ py: 8 }}
                     />
                   )}
-                  {!isLoading && filteredItems.length > 0 && (
+                  {!isLoading &&
+                    filteredItems.length > 0 &&
                     filteredItems.map((log) => (
                       <TableRow
                         key={log.id}
@@ -295,8 +299,7 @@ export function AuditLogsPage() {
                           </Tooltip>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>

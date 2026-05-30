@@ -143,7 +143,10 @@ export function CategoriesManagementPage() {
           </TableCell>
           <TableCell>
             <Chip
-              label={t('detail.bidCount', { count: category.auctionCount ?? 0 }).replace('bids', t('title').toLowerCase())}
+              label={t('detail.bidCount', { count: category.auctionCount ?? 0 }).replace(
+                'bids',
+                t('title').toLowerCase()
+              )}
               size="small"
               variant="outlined"
             />
@@ -228,7 +231,9 @@ export function CategoriesManagementPage() {
       </motion.div>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingCategory ? t('categories.editCategory') : t('categories.addCategory')}</DialogTitle>
+        <DialogTitle>
+          {editingCategory ? t('categories.editCategory') : t('categories.addCategory')}
+        </DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 1 }}>
@@ -264,7 +269,13 @@ export function CategoriesManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label={t('form.description')} fullWidth multiline rows={3} />
+                  <TextField
+                    {...field}
+                    label={t('form.description')}
+                    fullWidth
+                    multiline
+                    rows={3}
+                  />
                 )}
               />
             </Stack>

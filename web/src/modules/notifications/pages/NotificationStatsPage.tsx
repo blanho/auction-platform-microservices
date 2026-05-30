@@ -5,7 +5,6 @@ import { useNotificationStats } from '../hooks'
 import { Skeleton } from '@mui/material'
 
 export function NotificationStatsPage() {
-
   const { t: _t } = useTranslation('notifications')
   const { data: stats, isLoading } = useNotificationStats()
 

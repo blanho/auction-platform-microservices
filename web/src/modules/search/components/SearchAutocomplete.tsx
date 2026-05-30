@@ -130,7 +130,9 @@ export function SearchAutocomplete({
 
   const handleSearch = useCallback(
     (query: string) => {
-      if (!query.trim()) {return}
+      if (!query.trim()) {
+        return
+      }
 
       if (onSearch) {
         onSearch(query)
@@ -144,7 +146,9 @@ export function SearchAutocomplete({
 
   const handleOptionSelect = useCallback(
     (_: unknown, option: GroupedOption | string | null) => {
-      if (!option) {return}
+      if (!option) {
+        return
+      }
 
       const query = typeof option === 'string' ? option : option.label
       handleSearch(query)
@@ -178,8 +182,12 @@ export function SearchAutocomplete({
   }
 
   const groupBy = (option: GroupedOption) => {
-    if (option.type === 'recent') {return t('searchBar.recentSearches')}
-    if (option.type === 'trending') {return t('searchBar.trending')}
+    if (option.type === 'recent') {
+      return t('searchBar.recentSearches')
+    }
+    if (option.type === 'trending') {
+      return t('searchBar.trending')
+    }
     return 'Suggestions'
   }
 

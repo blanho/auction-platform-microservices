@@ -8,11 +8,13 @@ namespace Payment.Application.Interfaces;
 public interface IOrderRepository
 {
     Task<Order> GetByIdAsync(Guid id);
+    Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<Order> GetByAuctionIdAsync(Guid auctionId);
     Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams);
     Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams);
     Task<Order> AddAsync(Order order);
     Task<Order> UpdateAsync(Order order);
+    Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken);
     Task<int> GetCountByBuyerUsernameAsync(string username);
     Task<int> GetCountBySellerUsernameAsync(string username);
     

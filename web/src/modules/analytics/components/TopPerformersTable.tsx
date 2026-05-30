@@ -207,13 +207,21 @@ export function TopPerformersTable() {
           },
         }}
       >
-        <Tab icon={<TrendingUp sx={{ fontSize: 18 }} />} iconPosition="start" label={t('analytics.topSellers')} />
+        <Tab
+          icon={<TrendingUp sx={{ fontSize: 18 }} />}
+          iconPosition="start"
+          label={t('analytics.topSellers')}
+        />
         <Tab
           icon={<ShoppingCart sx={{ fontSize: 18 }} />}
           iconPosition="start"
           label={t('analytics.topBuyers')}
         />
-        <Tab icon={<Gavel sx={{ fontSize: 18 }} />} iconPosition="start" label={t('analytics.hotAuctions')} />
+        <Tab
+          icon={<Gavel sx={{ fontSize: 18 }} />}
+          iconPosition="start"
+          label={t('analytics.hotAuctions')}
+        />
       </Tabs>
 
       <TabPanel value={tabValue} index={0}>
@@ -229,7 +237,9 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={seller.username ?? `Seller ${index + 1}`}
                 primaryValue={formatCurrency(seller.totalSales ?? 0)}
-                secondaryValue={t('analytics.order_other', { count: formatNumber(seller.orderCount ?? 0) })}
+                secondaryValue={t('analytics.order_other', {
+                  count: formatNumber(seller.orderCount ?? 0),
+                })}
                 badge={index === 0 ? t('analytics.topSeller') : undefined}
               />
             ))
@@ -250,7 +260,9 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={buyer.username ?? `Buyer ${index + 1}`}
                 primaryValue={formatCurrency(buyer.totalSpent ?? 0)}
-                secondaryValue={t('analytics.auctionWon_other', { count: formatNumber(buyer.auctionsWon ?? 0) })}
+                secondaryValue={t('analytics.auctionWon_other', {
+                  count: formatNumber(buyer.auctionsWon ?? 0),
+                })}
                 badge={index === 0 ? t('analytics.topBuyer') : undefined}
               />
             ))
@@ -271,7 +283,9 @@ export function TopPerformersTable() {
                 rank={index + 1}
                 name={auction.title ?? `Auction ${index + 1}`}
                 primaryValue={formatCurrency(auction.finalPrice ?? 0)}
-                secondaryValue={t('analytics.bidCount_other', { count: formatNumber(auction.bidCount ?? 0) })}
+                secondaryValue={t('analytics.bidCount_other', {
+                  count: formatNumber(auction.bidCount ?? 0),
+                })}
                 badge={index === 0 ? t('analytics.mostPopular') : undefined}
               />
             ))

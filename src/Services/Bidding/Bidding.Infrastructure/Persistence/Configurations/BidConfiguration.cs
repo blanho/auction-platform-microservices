@@ -36,7 +36,7 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
 
         builder.HasIndex(e => new { e.AuctionId, e.Amount })
             .IsUnique()
-            .HasFilter($"\"IsDeleted\" = false AND \"Status\" = {(int)BidStatus.Accepted}");
+            .HasFilter($"\"IsDeleted\" = false AND \"Status\" IN ({(int)BidStatus.Accepted}, {(int)BidStatus.AcceptedBelowReserve})");
 
         builder.HasQueryFilter(e => !e.IsDeleted);
     }

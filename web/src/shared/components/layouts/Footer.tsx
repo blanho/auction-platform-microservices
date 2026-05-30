@@ -149,7 +149,11 @@ export function Footer() {
               </Typography>
 
               <Collapse in={isSubscribed}>
-                <InlineAlert severity="success" sx={{ mb: 2 }} onClose={() => setIsSubscribed(false)}>
+                <InlineAlert
+                  severity="success"
+                  sx={{ mb: 2 }}
+                  onClose={() => setIsSubscribed(false)}
+                >
                   {t('footer.newsletterSuccess')}
                 </InlineAlert>
               </Collapse>

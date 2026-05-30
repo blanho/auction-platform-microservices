@@ -42,11 +42,11 @@ const REPORT_STATUS_OPTIONS: {
   label: string
   color: 'default' | 'warning' | 'success' | 'error'
 }[] = [
-    { value: 'Pending', label: 'Pending', color: 'warning' },
-    { value: 'UnderReview', label: 'Under Review', color: 'default' },
-    { value: 'Resolved', label: 'Resolved', color: 'success' },
-    { value: 'Dismissed', label: 'Dismissed', color: 'error' },
-  ]
+  { value: 'Pending', label: 'Pending', color: 'warning' },
+  { value: 'UnderReview', label: 'Under Review', color: 'default' },
+  { value: 'Resolved', label: 'Resolved', color: 'success' },
+  { value: 'Dismissed', label: 'Dismissed', color: 'error' },
+]
 
 const REPORT_TYPE_OPTIONS: { value: ReportType; label: string }[] = [
   { value: 'Fraud', label: 'Fraud' },
@@ -63,11 +63,11 @@ const REPORT_PRIORITY_OPTIONS: {
   label: string
   color: 'default' | 'info' | 'warning' | 'error'
 }[] = [
-    { value: 'Low', label: 'Low', color: 'default' },
-    { value: 'Medium', label: 'Medium', color: 'info' },
-    { value: 'High', label: 'High', color: 'warning' },
-    { value: 'Critical', label: 'Critical', color: 'error' },
-  ]
+  { value: 'Low', label: 'Low', color: 'default' },
+  { value: 'Medium', label: 'Medium', color: 'info' },
+  { value: 'High', label: 'High', color: 'warning' },
+  { value: 'Critical', label: 'Critical', color: 'error' },
+]
 
 const getStatusChip = (status: ReportStatus) => {
   return <StatusBadge status={status} />
@@ -91,7 +91,6 @@ const getTypeLabel = (type: ReportType) => {
 }
 
 export const ReportsPage = () => {
-
   const { t: _t } = useTranslation('analytics')
   const [filters, setFilters] = useState<ReportQueryParams>({
     page: 1,
@@ -159,7 +158,9 @@ export const ReportsPage = () => {
   }
 
   const handleUpdateStatus = async () => {
-    if (!selectedReportId) { return }
+    if (!selectedReportId) {
+      return
+    }
     try {
       await updateMutation.mutateAsync({
         id: selectedReportId,
@@ -173,7 +174,9 @@ export const ReportsPage = () => {
   }
 
   const handleDeleteReport = async () => {
-    if (!selectedReportId) { return }
+    if (!selectedReportId) {
+      return
+    }
     try {
       await deleteMutation.mutateAsync(selectedReportId)
       setDeleteDialogOpen(false)
@@ -206,13 +209,12 @@ export const ReportsPage = () => {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statsLoading && (
+        {statsLoading &&
           [1, 2, 3, 4, 5, 6, 7].map((i) => (
             <Grid key={i} size={{ xs: 6, sm: 4, md: 'auto' }}>
               <Skeleton height={80} width={120} />
             </Grid>
-          ))
-        )}
+          ))}
         {!statsLoading && stats && (
           <>
             <Grid size={{ xs: 6, sm: 4, md: 'auto' }}>
@@ -328,7 +330,7 @@ export const ReportsPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {reportsLoading && (
+              {reportsLoading &&
                 [1, 2, 3, 4, 5].map((i) => (
                   <TableRow key={i}>
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((j) => (
@@ -337,9 +339,10 @@ export const ReportsPage = () => {
                       </TableCell>
                     ))}
                   </TableRow>
-                ))
-              )}
-              {!reportsLoading && reportsData?.items && reportsData.items.length > 0 && (
+                ))}
+              {!reportsLoading &&
+                reportsData?.items &&
+                reportsData.items.length > 0 &&
                 reportsData.items.map((report) => (
                   <TableRow key={report.id} hover>
                     <TableCell>{report.reporterUsername}</TableCell>
@@ -379,8 +382,7 @@ export const ReportsPage = () => {
                       </Stack>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+                ))}
               {!reportsLoading && (!reportsData?.items || reportsData.items.length === 0) && (
                 <TableEmptyStateRow colSpan={8} title="No reports found" cellSx={{ py: 4 }} />
               )}

@@ -39,7 +39,11 @@ interface SetupResponse {
 
 export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
   const { t } = useTranslation('common')
-  const steps = [t('twoFactor.stepInstallApp'), t('twoFactor.stepScanQr'), t('twoFactor.stepVerify')]
+  const steps = [
+    t('twoFactor.stepInstallApp'),
+    t('twoFactor.stepScanQr'),
+    t('twoFactor.stepVerify'),
+  ]
   const queryClient = useQueryClient()
   const [activeStep, setActiveStep] = useState(0)
   const [verificationCode, setVerificationCode] = useState('')
@@ -432,7 +436,11 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >
-                  {verifyMutation.isPending ? <CircularProgress size={24} /> : t('twoFactor.verifyEnable')}
+                  {verifyMutation.isPending ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('twoFactor.verifyEnable')
+                  )}
                 </Button>
               </Stack>
             </motion.div>

@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { http } from '@/services/http'
 import type {
   StoredFileDto,
@@ -8,25 +7,6 @@ import type {
   PresignedUploadDto,
   PresignedDownloadDto,
 } from '@/shared/types/storage.types'
-import { getAccessToken } from '@/modules/auth/utils/token.utils'
-import { getCsrfToken } from '@/modules/auth/utils/csrf.utils'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
-function buildAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {}
-  const token = getAccessToken()
-  const csrfToken = getCsrfToken()
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
-  if (csrfToken) {
-    headers['X-XSRF-TOKEN'] = csrfToken
-  }
-
-  return headers
-}
 
 function createProgressHandler(onProgress?: (progress: number) => void) {
   if (!onProgress) {
@@ -54,20 +34,11 @@ export const storageApi = {
       formData.append('subFolder', options.subFolder)
     }
 
-    const response = await axios.post<StoredFileDto>(
-      `${API_BASE_URL}/files`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...buildAuthHeaders(),
-        },
-        withCredentials: true,
-        onUploadProgress: createProgressHandler(options?.onProgress),
-      }
-    )
+    const { data } = await http.postForm<StoredFileDto>('/files', formData, {
+      onUploadProgress: createProgressHandler(options?.onProgress),
+    })
 
-    return response.data
+    return data
   },
 
   async uploadMultipleFiles(
@@ -87,20 +58,11 @@ export const storageApi = {
       formData.append('subFolder', options.subFolder)
     }
 
-    const response = await axios.post<BatchUploadResponse>(
-      `${API_BASE_URL}/files/batch`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...buildAuthHeaders(),
-        },
-        withCredentials: true,
-        onUploadProgress: createProgressHandler(options?.onProgress),
-      }
-    )
+    const { data } = await http.postForm<BatchUploadResponse>('/files/batch', formData, {
+      onUploadProgress: createProgressHandler(options?.onProgress),
+    })
 
-    return response.data
+    return data
   },
 
   async getFileUrl(fileId: string): Promise<FileUrlDto> {
@@ -133,13 +95,13 @@ export const storageApi = {
     headers: Record<string, string>,
     onProgress?: (progress: number) => void
   ): Promise<void> {
-    await axios.put(uploadUrl, file, {
-      headers: {
-        ...headers,
-        'Content-Type': file.type,
-      },
-      onUploadProgress: createProgressHandler(onProgress),
+    // Presigned URL uploads go to external storage (e.g. Azure Blob) — raw fetch is intentional here.
+    await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': file.type },
+      body: file,
     })
+    onProgress?.(100)
   },
 
   async uploadLargeFile(

@@ -47,10 +47,7 @@ export function UploadErrorList({ errors }: Readonly<UploadErrorListProps>) {
                 <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
                   {upload.file.name}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: palette.semantic.error }}
-                >
+                <Typography variant="caption" sx={{ color: palette.semantic.error }}>
                   {upload.error ?? t('upload.uploadFailed')}
                 </Typography>
               </Box>

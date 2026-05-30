@@ -26,7 +26,6 @@ const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
 ]
 
 export function BroadcastNotificationPage() {
-
   const { t: _t } = useTranslation('notifications')
   const [formData, setFormData] = useState<BroadcastNotificationDto>({
     type: 'system',

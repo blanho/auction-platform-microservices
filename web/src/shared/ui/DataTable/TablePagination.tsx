@@ -115,7 +115,11 @@ export function TablePagination({
 
         {showItemCount && (
           <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-            {t('table.itemRange', { start: startItem, end: endItem, total: totalCount.toLocaleString() })}
+            {t('table.itemRange', {
+              start: startItem,
+              end: endItem,
+              total: totalCount.toLocaleString(),
+            })}
           </Typography>
         )}
       </Stack>

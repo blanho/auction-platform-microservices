@@ -40,10 +40,7 @@ export const biddingApi = {
     return response.data
   },
 
-  async getWinningBids(
-    page = 1,
-    pageSize = 20
-  ): Promise<PaginatedResponse<WinningBid>> {
+  async getWinningBids(page = 1, pageSize = 20): Promise<PaginatedResponse<WinningBid>> {
     const response = await http.get<PaginatedResponse<WinningBid>>('/bids/winning', {
       params: { page, pageSize },
     })
@@ -77,11 +74,7 @@ export const biddingApi = {
     return response.data
   },
 
-  async getMyAutoBids(
-    activeOnly?: boolean,
-    page = 1,
-    pageSize = 20
-  ): Promise<AutoBidsResult> {
+  async getMyAutoBids(activeOnly?: boolean, page = 1, pageSize = 20): Promise<AutoBidsResult> {
     const response = await http.get<AutoBidsResult>('/autobids/my', {
       params: { activeOnly, page, pageSize },
     })

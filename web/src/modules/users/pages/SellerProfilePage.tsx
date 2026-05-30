@@ -169,9 +169,7 @@ function AuctionCard({
         sx={{
           height: 200,
           bgcolor: 'grey.100',
-          backgroundImage: auction.primaryImageUrl
-            ? `url(${auction.primaryImageUrl})`
-            : undefined,
+          backgroundImage: auction.primaryImageUrl ? `url(${auction.primaryImageUrl})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           display: 'flex',
@@ -179,9 +177,7 @@ function AuctionCard({
           justifyContent: 'center',
         }}
       >
-        {!auction.primaryImageUrl && (
-          <Storefront sx={{ fontSize: 48, color: 'grey.400' }} />
-        )}
+        {!auction.primaryImageUrl && <Storefront sx={{ fontSize: 48, color: 'grey.400' }} />}
       </Box>
       <CardContent>
         <Typography variant="subtitle1" fontWeight={600} noWrap>
@@ -216,10 +212,7 @@ function ListingsTabContent({
   isLoading: boolean
   auctions: AuctionListingItem[]
 }>) {
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 4 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 4 }, () => crypto.randomUUID()), [])
 
   if (isLoading) {
     return (
@@ -272,16 +265,15 @@ function ReviewsTabContent({
 }: Readonly<{
   isLoading: boolean
   reviews: ReviewSummaryItem[] | undefined
-  ratingSummary: {
-    averageRating: number
-    totalReviews: number
-    ratingDistribution: Record<number, number>
-  } | undefined
+  ratingSummary:
+    | {
+        averageRating: number
+        totalReviews: number
+        ratingDistribution: Record<number, number>
+      }
+    | undefined
 }>) {
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 3 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 3 }, () => crypto.randomUUID()), [])
 
   return (
     <>
@@ -293,12 +285,7 @@ function ReviewsTabContent({
                 <Typography variant="h2" fontWeight={700}>
                   {ratingSummary.averageRating.toFixed(1)}
                 </Typography>
-                <Rating
-                  value={ratingSummary.averageRating}
-                  precision={0.1}
-                  readOnly
-                  size="large"
-                />
+                <Rating value={ratingSummary.averageRating} precision={0.1} readOnly size="large" />
                 <Typography variant="body2" color="text.secondary" mt={1}>
                   Based on {ratingSummary.totalReviews} reviews
                 </Typography>
@@ -350,7 +337,6 @@ function ReviewsTabContent({
 }
 
 export function SellerProfilePage() {
-
   const { t: _t } = useTranslation('users')
   const { sellerId } = useParams<{ sellerId: string }>()
   const [activeTab, setActiveTab] = useState(0)

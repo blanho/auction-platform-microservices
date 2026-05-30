@@ -97,18 +97,34 @@ export const FloatingCards = () => {
               />
             </Box>
             <Box sx={{ p: 2.5 }}>
-              <Typography variant="caption" sx={{ color: colors.text.disabled, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.65rem' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: colors.text.disabled,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  fontSize: '0.65rem',
+                }}
+              >
                 {primary.categoryName}
               </Typography>
               <Typography
                 variant="subtitle1"
-                sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, my: 1, lineHeight: 1.3 }}
+                sx={{
+                  color: colors.text.primary,
+                  fontWeight: typography.fontWeight.semibold,
+                  my: 1,
+                  lineHeight: 1.3,
+                }}
               >
                 {primary.title}
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: colors.text.disabled, fontSize: '0.65rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: colors.text.disabled, fontSize: '0.65rem' }}
+                  >
                     {t('floatingCards.currentBid')}
                   </Typography>
                   <Typography
@@ -121,7 +137,11 @@ export const FloatingCards = () => {
                 <Chip
                   label={t('floatingCards.bidsCount', { count: primary.bidCount })}
                   size="small"
-                  sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: colors.text.secondary, fontSize: '0.7rem' }}
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.06)',
+                    color: colors.text.secondary,
+                    fontSize: '0.7rem',
+                  }}
                 />
               </Box>
             </Box>
@@ -174,12 +194,25 @@ export const FloatingCards = () => {
               )}
             </Box>
             <Box sx={{ p: 2 }}>
-              <Typography variant="caption" sx={{ color: colors.text.disabled, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.6rem' }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: colors.text.disabled,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  fontSize: '0.6rem',
+                }}
+              >
                 {secondary.categoryName}
               </Typography>
               <Typography
                 variant="subtitle2"
-                sx={{ color: colors.text.primary, fontWeight: typography.fontWeight.semibold, mt: 0.5, lineHeight: 1.3 }}
+                sx={{
+                  color: colors.text.primary,
+                  fontWeight: typography.fontWeight.semibold,
+                  mt: 0.5,
+                  lineHeight: 1.3,
+                }}
               >
                 {secondary.title}
               </Typography>

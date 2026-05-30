@@ -8,7 +8,6 @@ import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function PaymentCancelPage() {
-
   const { t: _t } = useTranslation('payments')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()

@@ -121,7 +121,6 @@ const SearchResultCard = ({ result }: { result: SearchResult }) => (
 )
 
 export function SearchPage() {
-
   const { t: _t } = useTranslation('search')
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get('q') || '')
@@ -143,10 +142,7 @@ export function SearchPage() {
     filters.minPrice || 0,
     filters.maxPrice || 10000,
   ])
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 5 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 5 }, () => crypto.randomUUID()), [])
 
   const { data: searchResults, isLoading, error } = useSearch(filters, !!filters.query)
   const { data: suggestions } = useSearchSuggestions(
@@ -160,14 +156,27 @@ export function SearchPage() {
   const updateSearchParams = useCallback(
     (newFilters: SearchFilters) => {
       const params = new URLSearchParams()
-      if (newFilters.query) {params.set('q', newFilters.query)}
-      if (newFilters.types?.length) {params.set('types', newFilters.types.join(','))}
-      if (newFilters.categoryId) {params.set('category', newFilters.categoryId)}
-      if (newFilters.minPrice) {params.set('minPrice', newFilters.minPrice.toString())}
-      if (newFilters.maxPrice) {params.set('maxPrice', newFilters.maxPrice.toString())}
-      if (newFilters.sortBy && newFilters.sortBy !== 'relevance')
-        {params.set('sortBy', newFilters.sortBy)}
-      if (newFilters.page && newFilters.page > 1) {params.set('page', newFilters.page.toString())}
+      if (newFilters.query) {
+        params.set('q', newFilters.query)
+      }
+      if (newFilters.types?.length) {
+        params.set('types', newFilters.types.join(','))
+      }
+      if (newFilters.categoryId) {
+        params.set('category', newFilters.categoryId)
+      }
+      if (newFilters.minPrice) {
+        params.set('minPrice', newFilters.minPrice.toString())
+      }
+      if (newFilters.maxPrice) {
+        params.set('maxPrice', newFilters.maxPrice.toString())
+      }
+      if (newFilters.sortBy && newFilters.sortBy !== 'relevance') {
+        params.set('sortBy', newFilters.sortBy)
+      }
+      if (newFilters.page && newFilters.page > 1) {
+        params.set('page', newFilters.page.toString())
+      }
       setSearchParams(params)
     },
     [setSearchParams]
@@ -506,12 +515,8 @@ export function SearchPage() {
               sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
             >
               <Typography sx={{ color: palette.neutral[500] }}>
-                {isLoading && (
-                  <Skeleton width={200} />
-                )}
-                {!isLoading && (
-                  `${searchResults?.totalCount || 0} results for "${filters.query}"`
-                )}
+                {isLoading && <Skeleton width={200} />}
+                {!isLoading && `${searchResults?.totalCount || 0} results for "${filters.query}"`}
               </Typography>
             </Box>
 

@@ -27,6 +27,8 @@ public static class Perm
     public const string OrderViewOwn = "order:view-own";
     public const string OrderCreate = "order:create";
     public const string OrderCancel = "order:cancel";
+    public const string OrderShip = "order:ship";
+    public const string OrderDeliver = "order:deliver";
     public const string OrderRefund = "order:refund";
 
     public const string PaymentView = "payment:view";
@@ -91,6 +93,8 @@ public static class Permissions
         public const string ViewOwn = Perm.OrderViewOwn;
         public const string Create = Perm.OrderCreate;
         public const string Cancel = Perm.OrderCancel;
+        public const string Ship = Perm.OrderShip;
+        public const string Deliver = Perm.OrderDeliver;
         public const string Refund = Perm.OrderRefund;
     }
 

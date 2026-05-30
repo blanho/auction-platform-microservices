@@ -303,7 +303,7 @@ function ReviewCard({ review, onVote, isVoting, currentUserId }: ReviewCardProps
                 }}
               >
                 <Typography variant="caption" color="primary" fontWeight={600}>
-                    {t('review.sellerResponse')}
+                  {t('review.sellerResponse')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   {review.sellerResponse.content}

@@ -25,8 +25,9 @@ import {
 import { FilterList, Close, KeyboardArrowDown, GridView, ViewList } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
+import { componentStyles } from '@/shared/theme/component-styles'
 import { AuctionProductCard, AuctionProductCardSkeleton } from '../components/AuctionProductCard'
-import { useAuctions, useActiveCategories } from '../hooks'
+import { useAuctions, useActiveCategories, useToggleWatchlist } from '../hooks'
 
 export const AuctionListingPage = () => {
   const { t } = useTranslation('auctions')
@@ -51,7 +52,6 @@ export const AuctionListingPage = () => {
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedConditions, setSelectedConditions] = useState<string[]>([])
@@ -61,11 +61,9 @@ export const AuctionListingPage = () => {
 
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
+  const toggleWatchlistMutation = useToggleWatchlist()
 
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 12 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonCount = 12
 
   const { data, isLoading } = useAuctions({
     categoryId: selectedCategories[0],
@@ -77,21 +75,20 @@ export const AuctionListingPage = () => {
 
   const activeFiltersCount = useMemo(() => {
     let count = 0
-    if (selectedCategories.length) {count++}
-    if (selectedConditions.length) {count++}
-    if (priceRange[0] > 0 || priceRange[1] < 20000) {count++}
-    if (verifiedOnly) {count++}
+    if (selectedCategories.length) {
+      count++
+    }
+    if (selectedConditions.length) {
+      count++
+    }
+    if (priceRange[0] > 0 || priceRange[1] < 20000) {
+      count++
+    }
+    if (verifiedOnly) {
+      count++
+    }
     return count
   }, [selectedCategories, selectedConditions, priceRange, verifiedOnly])
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {next.delete(id)}
-      else {next.add(id)}
-      return next
-    })
-  }
 
   const clearAllFilters = () => {
     setSelectedCategories([])
@@ -117,13 +114,7 @@ export const AuctionListingPage = () => {
         <Button
           size="small"
           onClick={clearAllFilters}
-          sx={{
-            color: palette.brand.primary,
-            textTransform: 'none',
-            mb: 2,
-            p: 0,
-            '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
-          }}
+          sx={componentStyles.textBrandButton}
         >
           {t('filter.clearAll')}
         </Button>
@@ -132,14 +123,7 @@ export const AuctionListingPage = () => {
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: palette.neutral[900],
-            mb: 2,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-            fontSize: '0.7rem',
-          }}
+          sx={componentStyles.sectionLabel}
         >
           {t('filter.category')}
         </Typography>
@@ -158,10 +142,7 @@ export const AuctionListingPage = () => {
                       setSelectedCategories(selectedCategories.filter((c) => c !== category.id))
                     }
                   }}
-                  sx={{
-                    color: palette.neutral[500],
-                    '&.Mui-checked': { color: palette.brand.primary },
-                  }}
+                  sx={componentStyles.brandCheckbox}
                 />
               }
               label={
@@ -185,14 +166,7 @@ export const AuctionListingPage = () => {
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: palette.neutral[900],
-            mb: 2,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-            fontSize: '0.7rem',
-          }}
+          sx={componentStyles.sectionLabel}
         >
           {t('filter.priceRange')}
         </Typography>
@@ -227,14 +201,7 @@ export const AuctionListingPage = () => {
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="subtitle2"
-          sx={{
-            fontWeight: 600,
-            color: palette.neutral[900],
-            mb: 2,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-            fontSize: '0.7rem',
-          }}
+          sx={componentStyles.sectionLabel}
         >
           {t('filter.condition')}
         </Typography>
@@ -253,10 +220,7 @@ export const AuctionListingPage = () => {
                       setSelectedConditions(selectedConditions.filter((c) => c !== condition.value))
                     }
                   }}
-                  sx={{
-                    color: palette.neutral[500],
-                    '&.Mui-checked': { color: palette.brand.primary },
-                  }}
+                  sx={componentStyles.brandCheckbox}
                 />
               }
               label={
@@ -277,10 +241,7 @@ export const AuctionListingPage = () => {
             size="small"
             checked={verifiedOnly}
             onChange={(e) => setVerifiedOnly(e.target.checked)}
-            sx={{
-              color: palette.neutral[500],
-              '&.Mui-checked': { color: palette.brand.primary },
-            }}
+            sx={componentStyles.brandCheckbox}
           />
         }
         label={
@@ -401,11 +362,7 @@ export const AuctionListingPage = () => {
                         label={t('filter.verifiedOnly')}
                         size="small"
                         onDelete={() => setVerifiedOnly(false)}
-                        sx={{
-                          bgcolor: palette.brand.muted,
-                          color: palette.brand.primary,
-                          '& .MuiChip-deleteIcon': { color: palette.brand.primary },
-                        }}
+                        sx={componentStyles.brandChip}
                       />
                     )}
                   </Box>
@@ -461,8 +418,8 @@ export const AuctionListingPage = () => {
 
             <Grid container spacing={3}>
               {isLoading
-                ? skeletonKeys.map((key) => (
-                    <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={key}>
+                ? Array.from({ length: skeletonCount }, (_, i) => (
+                    <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={i}>
                       <AuctionProductCardSkeleton />
                     </Grid>
                   ))
@@ -484,8 +441,13 @@ export const AuctionListingPage = () => {
                         endTime={auction.endTime}
                         bidCount={auction.bidCount}
                         seller={{ name: auction.sellerName, verified: true }}
-                        isFavorited={favorites.has(auction.id)}
-                        onFavoriteToggle={toggleFavorite}
+                        isFavorited={auction.isWatching ?? false}
+                        onFavoriteToggle={() =>
+                          toggleWatchlistMutation.mutate({
+                            auctionId: auction.id,
+                            isInWatchlist: auction.isWatching ?? false,
+                          })
+                        }
                       />
                     </Grid>
                   ))}
@@ -495,19 +457,7 @@ export const AuctionListingPage = () => {
               <Button
                 variant="outlined"
                 size="large"
-                sx={{
-                  borderColor: palette.neutral[900],
-                  color: palette.neutral[900],
-                  px: 6,
-                  py: 1.5,
-                  textTransform: 'none',
-                  borderRadius: 0,
-                  fontWeight: 500,
-                  '&:hover': {
-                    borderColor: palette.neutral[900],
-                    bgcolor: 'rgba(28,25,23,0.05)',
-                  },
-                }}
+                sx={componentStyles.outlinedDarkButton}
               >
                 {t('common:actions.loadMore')}
               </Button>
@@ -530,14 +480,7 @@ export const AuctionListingPage = () => {
             fullWidth
             variant="contained"
             onClick={() => setFilterDrawerOpen(false)}
-            sx={{
-              bgcolor: palette.neutral[900],
-              color: palette.neutral[50],
-              py: 1.5,
-              textTransform: 'none',
-              borderRadius: 0,
-              '&:hover': { bgcolor: palette.neutral[700] },
-            }}
+            sx={componentStyles.darkButton}
           >
             {t('filter.apply')}
           </Button>

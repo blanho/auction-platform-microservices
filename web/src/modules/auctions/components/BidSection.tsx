@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -16,6 +16,9 @@ import { InlineAlert } from '@/shared/ui'
 import { Gavel, Timer, LocalOffer, AutoMode } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { AutoBidDialog } from '@/modules/bidding/components/AutoBidDialog'
+import { useCountdown } from '@/shared/hooks/useCountdown'
+import { formatCurrency } from '../utils'
+import { getMinimumNextBid, getSuggestedBids } from '../constants/bid-increments'
 
 interface BidSectionProps {
   auctionId: string
@@ -58,72 +61,19 @@ export function BidSection({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [timeLeft, setTimeLeft] = useState('')
-  const [isUrgent, setIsUrgent] = useState(false)
   const [autoBidDialogOpen, setAutoBidDialogOpen] = useState(false)
   const { t } = useTranslation('common')
+  const { timeLeft, isExpired, isUrgent } = useCountdown(endTime)
 
-  const minimumBid = useMemo(() => {
-    const base = currentBid > 0 ? currentBid : startingPrice
+  const minimumBid = useMemo(
+    () => getMinimumNextBid(currentBid > 0 ? currentBid : startingPrice),
+    [currentBid, startingPrice]
+  )
 
-    const getIncrement = (amount: number): number => {
-      if (amount < 100) {return 1}
-      if (amount < 1000) {return 5}
-      if (amount < 5000) {return 25}
-      return 100
-    }
-
-    return base + getIncrement(base)
-  }, [currentBid, startingPrice])
-
-  const suggestedBids = useMemo(() => {
-    const base = minimumBid
-
-    const getSuggestedIncrement = (amount: number): number => {
-      if (amount < 100) {return 5}
-      if (amount < 1000) {return 25}
-      if (amount < 5000) {return 100}
-      return 500
-    }
-
-    const increment = getSuggestedIncrement(base)
-    return [base, base + increment, base + increment * 2]
-  }, [minimumBid])
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const end = new Date(endTime).getTime()
-      const now = Date.now()
-      const diff = end - now
-
-      if (diff <= 0) {
-      setTimeLeft(t('auctionCard.auctionEnded'))
-        setIsUrgent(false)
-        return
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-
-      setIsUrgent(diff < 1000 * 60 * 60)
-
-      if (days > 0) {
-        setTimeLeft(`${days}d ${hours}h ${minutes}m`)
-      } else if (hours > 0) {
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`)
-      } else if (minutes > 0) {
-        setTimeLeft(`${minutes}m ${seconds}s`)
-      } else {
-        setTimeLeft(`${seconds}s`)
-      }
-    }
-
-    calculateTimeLeft()
-    const interval = setInterval(calculateTimeLeft, 1000)
-    return () => clearInterval(interval)
-  }, [endTime])
+  const suggestedBids = useMemo(
+    () => getSuggestedBids(currentBid, startingPrice),
+    [currentBid, startingPrice]
+  )
 
   const handleSubmitBid = async () => {
     const amount = Number.parseFloat(bidAmount)
@@ -137,7 +87,7 @@ export function BidSection({
 
     try {
       await onPlaceBid(amount)
-      setSuccess(`Bid of $${amount.toLocaleString()} placed successfully!`)
+      setSuccess(t('auctionCard.bidPlacedSuccess', { amount: formatCurrency(amount) }))
       setBidAmount('')
     } catch {
       setError(t('errors.defaultMessage'))
@@ -151,6 +101,7 @@ export function BidSection({
   }
 
   const isAuctionActive = status === 'active' || status === 'ending-soon'
+  const displayTimeLeft = isExpired ? t('auctionCard.auctionEnded') : timeLeft
 
   return (
     <Box
@@ -182,7 +133,7 @@ export function BidSection({
             },
           }}
         >
-          {isAuctionActive ? t('auctionCard.endsIn', { time: timeLeft }) : timeLeft}
+          {isAuctionActive ? t('auctionCard.endsIn', { time: displayTimeLeft }) : displayTimeLeft}
         </Typography>
       </Box>
 
@@ -200,11 +151,11 @@ export function BidSection({
 
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
         <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
-          {bidCount} {bidCount === 1 ? 'bid' : 'bids'}
+          {t('auctionCard.bid', { count: bidCount })}
         </Typography>
         {currentBid === 0 && (
           <Chip
-            label="No bids yet"
+            label={t('auctionCard.noBidsYet')}
             size="small"
             sx={{
               bgcolor: palette.brand.muted,
@@ -216,13 +167,10 @@ export function BidSection({
       </Stack>
 
       {userBid && (
-        <InlineAlert
-          severity={userBid.isWinning ? 'success' : 'warning'}
-          sx={{ mb: 2 }}
-        >
+        <InlineAlert severity={userBid.isWinning ? 'success' : 'warning'} sx={{ mb: 2 }}>
           {userBid.isWinning
-            ? `You're the highest bidder at $${userBid.amount.toLocaleString()}`
-            : `You've been outbid. Your bid: $${userBid.amount.toLocaleString()}`}
+            ? t('auctionCard.highestBidder', { amount: formatCurrency(userBid.amount) })
+            : t('auctionCard.outbid', { amount: formatCurrency(userBid.amount) })}
         </InlineAlert>
       )}
 
@@ -369,7 +317,9 @@ export function BidSection({
             }}
           >
             {existingAutoBid?.isActive
-              ? t('auctionCard.autoBidActive', { amount: existingAutoBid.maxAmount.toLocaleString() })
+              ? t('auctionCard.autoBidActive', {
+                  amount: existingAutoBid.maxAmount.toLocaleString(),
+                })
               : t('auctionCard.setUpAutoBid')}
           </Button>
 
@@ -385,7 +335,9 @@ export function BidSection({
         </>
       )}
 
-      {!isAuctionActive && <InlineAlert severity="info">{t('auctionCard.auctionEndedInfo')}</InlineAlert>}
+      {!isAuctionActive && (
+        <InlineAlert severity="info">{t('auctionCard.auctionEndedInfo')}</InlineAlert>
+      )}
 
       <Box
         sx={{

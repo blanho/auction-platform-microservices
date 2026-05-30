@@ -94,7 +94,9 @@ export const AuctionCard = memo(({ auction }: AuctionCardProps) => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <Typography sx={{ fontWeight: typography.fontWeight.semibold, fontSize: '1rem', color: '#1C1917' }}>
+          <Typography
+            sx={{ fontWeight: typography.fontWeight.semibold, fontSize: '1rem', color: '#1C1917' }}
+          >
             {formatCurrency(auction.currentBid)}
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: '#A8A29E' }}>

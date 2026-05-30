@@ -8,7 +8,7 @@ public static class BidDefaults
     public const int AntiSnipeThresholdMinutes = 2;
     public const int AntiSnipeExtensionMinutes = 2;
 
-    public const int BidLockTimeoutSeconds = 10;
+    public const int BidLockExpirySeconds = 30;
     public const int AutoBidLockExpirySeconds = 30;
     public const int AutoBidLockWaitSeconds = 10;
 

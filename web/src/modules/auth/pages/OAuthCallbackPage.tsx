@@ -78,7 +78,8 @@ export function OAuthCallbackPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

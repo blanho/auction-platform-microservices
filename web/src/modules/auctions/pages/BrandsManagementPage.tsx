@@ -80,21 +80,24 @@ export function BrandsManagementPage() {
   const updateMutation = useUpdateBrand()
   const deleteMutation = useDeleteBrand()
 
-  const handleOpenDialog = useCallback((brand?: Brand) => {
-    if (brand) {
-      setEditingBrand(brand)
-      reset({
-        name: brand.name,
-        slug: brand.slug,
-        description: brand.description || '',
-        websiteUrl: brand.websiteUrl || '',
-      })
-    } else {
-      setEditingBrand(null)
-      reset({ name: '', slug: '', description: '', websiteUrl: '' })
-    }
-    setDialogOpen(true)
-  }, [reset])
+  const handleOpenDialog = useCallback(
+    (brand?: Brand) => {
+      if (brand) {
+        setEditingBrand(brand)
+        reset({
+          name: brand.name,
+          slug: brand.slug,
+          description: brand.description || '',
+          websiteUrl: brand.websiteUrl || '',
+        })
+      } else {
+        setEditingBrand(null)
+        reset({ name: '', slug: '', description: '', websiteUrl: '' })
+      }
+      setDialogOpen(true)
+    },
+    [reset]
+  )
 
   const columns: ColumnConfig<Brand>[] = useMemo(
     () => [
@@ -197,7 +200,7 @@ export function BrandsManagementPage() {
         ),
       },
     ],
-    [handleOpenDialog]
+    [handleOpenDialog, t]
   )
 
   const onSubmit = (data: BrandFormData) => {
@@ -327,7 +330,13 @@ export function BrandsManagementPage() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label={t('form.description')} fullWidth multiline rows={3} />
+                  <TextField
+                    {...field}
+                    label={t('form.description')}
+                    fullWidth
+                    multiline
+                    rows={3}
+                  />
                 )}
               />
 
@@ -367,9 +376,7 @@ export function BrandsManagementPage() {
       <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
         <DialogTitle>{t('brands.deleteBrand')}</DialogTitle>
         <DialogContent>
-          <Typography>
-            {t('brands.deleteConfirmation', { name: deleteDialog?.name })}
-          </Typography>
+          <Typography>{t('brands.deleteConfirmation', { name: deleteDialog?.name })}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialog(null)}>{t('common:actions.cancel')}</Button>

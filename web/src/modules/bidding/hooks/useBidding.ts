@@ -13,7 +13,7 @@ export const bidKeys = {
 
 export const useBidsForAuction = (auctionId: string) => {
   return useQuery({
-    queryKey: ['bids', 'auction', auctionId],
+    queryKey: bidKeys.forAuction(auctionId),
     queryFn: () => biddingApi.getBidsForAuction(auctionId),
     enabled: !!auctionId,
   })
@@ -21,7 +21,7 @@ export const useBidsForAuction = (auctionId: string) => {
 
 export const useMyBids = () => {
   return useQuery({
-    queryKey: ['bids', 'my'],
+    queryKey: bidKeys.my(),
     queryFn: () => biddingApi.getMyBids(),
   })
 }
@@ -40,7 +40,7 @@ export const usePlaceBid = () => {
 
 export const useMyAutoBids = (activeOnly?: boolean) => {
   return useQuery({
-    queryKey: ['autoBids', 'my', activeOnly],
+    queryKey: bidKeys.myAutoBids(),
     queryFn: () => biddingApi.getMyAutoBids(activeOnly),
   })
 }
@@ -51,7 +51,7 @@ export const useCancelAutoBid = () => {
   return useMutation({
     mutationFn: (autoBidId: string) => biddingApi.cancelAutoBid(autoBidId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['autoBids'] })
+      queryClient.invalidateQueries({ queryKey: bidKeys.all })
     },
   })
 }

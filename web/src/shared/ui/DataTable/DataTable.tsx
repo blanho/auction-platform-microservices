@@ -76,10 +76,7 @@ export function DataTable<T extends { id?: string }>({
   tableContainerSx,
   animated = true,
 }: Readonly<DataTableProps<T>>) {
-  const visibleColumns = useMemo(
-    () => columns.filter((col) => !col.hidden),
-    [columns]
-  )
+  const visibleColumns = useMemo(() => columns.filter((col) => !col.hidden), [columns])
 
   const items = useMemo(() => data?.items ?? [], [data?.items])
   const totalCount = data?.totalCount ?? 0
@@ -232,7 +229,12 @@ export function DataTable<T extends { id?: string }>({
   }
 
   const tableBodyProps = animated
-    ? { component: motion.tbody, variants: staggerContainer, initial: 'initial', animate: 'animate' }
+    ? {
+        component: motion.tbody,
+        variants: staggerContainer,
+        initial: 'initial',
+        animate: 'animate',
+      }
     : {}
 
   return (

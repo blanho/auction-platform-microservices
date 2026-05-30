@@ -155,7 +155,13 @@ export const AuctionsListPage = () => {
                       {formatTimeLeft(auction.endTime)}
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                    }}
+                  >
                     <Typography
                       sx={{
                         fontWeight: typography.fontWeight.semibold,
@@ -269,15 +275,19 @@ export const AuctionsListPage = () => {
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>{t('filter.category')}</InputLabel>
-          <Select value={category} label={t('filter.category')} onChange={(e) => {
-            const value = e.target.value
-            if (value === 'all') {
-              searchParams.delete('categoryId')
-            } else {
-              searchParams.set('categoryId', value)
-            }
-            setSearchParams(searchParams)
-          }}>
+          <Select
+            value={category}
+            label={t('filter.category')}
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === 'all') {
+                searchParams.delete('categoryId')
+              } else {
+                searchParams.set('categoryId', value)
+              }
+              setSearchParams(searchParams)
+            }}
+          >
             <MenuItem value="all">{t('filter.allCategories')}</MenuItem>
             {categories.map((cat) => (
               <MenuItem key={cat.id} value={cat.id}>
@@ -289,7 +299,11 @@ export const AuctionsListPage = () => {
 
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>{t('filter.sortBy')}</InputLabel>
-          <Select value={sortBy} label={t('filter.sortBy')} onChange={(e) => setSortBy(e.target.value)}>
+          <Select
+            value={sortBy}
+            label={t('filter.sortBy')}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
             <MenuItem value="ending-soon">{t('sort.endingSoon')}</MenuItem>
             <MenuItem value="newest">{t('sort.newest')}</MenuItem>
             <MenuItem value="price-low">{t('sort.priceLowToHigh')}</MenuItem>

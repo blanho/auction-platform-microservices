@@ -108,7 +108,9 @@ const MyReviewsPage = lazy(() =>
   import('@/modules/users/pages/MyReviewsPage').then((m) => ({ default: m.MyReviewsPage }))
 )
 const AuctionListingPage = lazy(() =>
-  import('@/modules/auctions/pages/AuctionListingPage').then((m) => ({ default: m.AuctionListingPage }))
+  import('@/modules/auctions/pages/AuctionListingPage').then((m) => ({
+    default: m.AuctionListingPage,
+  }))
 )
 
 const MyBidsPage = lazy(() =>
@@ -384,9 +386,7 @@ export const router = createBrowserRouter([
       {
         path: '/admin/jobs',
         element: (
-          <ProtectedRoute permissions={['admin:access']}>
-            {withSuspense(JobsPage)}
-          </ProtectedRoute>
+          <ProtectedRoute permissions={['admin:access']}>{withSuspense(JobsPage)}</ProtectedRoute>
         ),
       },
       {

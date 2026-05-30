@@ -24,12 +24,12 @@
     --ring: 20 14% 10%;
     --radius: 0;
 
-    --color-primary: #1C1917;
-    --color-secondary: #44403C;
-    --color-cta: #1C1917;
+    --color-primary: #1c1917;
+    --color-secondary: #44403c;
+    --color-cta: #1c1917;
     --color-cta-hover: #292524;
-    --color-background: #FFFFFF;
-    --color-text: #1C1917;
+    --color-background: #ffffff;
+    --color-text: #1c1917;
   }
 
   .dark {
@@ -60,9 +60,14 @@
 }
 
 body {
-  background-color: #FFFFFF;
-  color: #1C1917;
-  font-family: 'Inter', -apple-system, 'Helvetica Neue', 'Arial', sans-serif;
+  background-color: #ffffff;
+  color: #1c1917;
+  font-family:
+    'Inter',
+    -apple-system,
+    'Helvetica Neue',
+    'Arial',
+    sans-serif;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,6 +75,11 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

@@ -86,10 +86,13 @@ const FILTER_CONFIG: FilterPanelConfig = {
 }
 
 export function RecordsDashboardPage() {
-
   const { t: _t } = useTranslation('notifications')
   const pagination = usePagination<NotificationRecordFilter>({ defaultPageSize: 20 })
-  const { data: recordsData, isLoading, refetch } = useRecords({
+  const {
+    data: recordsData,
+    isLoading,
+    refetch,
+  } = useRecords({
     page: pagination.page,
     pageSize: pagination.pageSize,
     sortBy: pagination.sortBy,

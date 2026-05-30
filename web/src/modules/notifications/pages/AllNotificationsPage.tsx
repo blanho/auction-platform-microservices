@@ -42,7 +42,6 @@ const STATUS_CONFIG: Record<
 }
 
 export function AllNotificationsPage() {
-
   const { t: _t } = useTranslation('notifications')
   const [filters, setFilters] = useState<
     AdminNotificationFilters & { page: number; pageSize: number }
@@ -156,13 +155,10 @@ export function AllNotificationsPage() {
             <TableBody>
               {isLoading && <TableSkeletonRows rows={10} columns={6} />}
               {!isLoading && (data?.items?.length ?? 0) === 0 && (
-                <TableEmptyStateRow
-                  colSpan={6}
-                  title="No notifications found"
-                  cellSx={{ py: 8 }}
-                />
+                <TableEmptyStateRow colSpan={6} title="No notifications found" cellSx={{ py: 8 }} />
               )}
-              {!isLoading && (data?.items?.length ?? 0) > 0 && (
+              {!isLoading &&
+                (data?.items?.length ?? 0) > 0 &&
                 data?.items.map((notification: Notification) => (
                   <TableRow
                     key={notification.id}
@@ -234,8 +230,7 @@ export function AllNotificationsPage() {
                       </Typography>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

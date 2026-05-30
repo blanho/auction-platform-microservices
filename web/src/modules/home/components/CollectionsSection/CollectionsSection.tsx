@@ -18,7 +18,9 @@ export const CollectionsSection = () => {
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+      <Box
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }}
+      />
 
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
         <motion.div
@@ -120,7 +122,8 @@ export const CollectionsSection = () => {
                       sx={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
+                        background:
+                          'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
                       }}
                     />
                     <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 3 }}>

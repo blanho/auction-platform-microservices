@@ -53,7 +53,7 @@ namespace Bidding.Application.Services
             var lockKey = BidLockKeys.ForAuction(dto.AuctionId);
             await using var lockHandle = await _distributedLock.TryAcquireAsync(
                 lockKey,
-                TimeSpan.FromSeconds(BidDefaults.BidLockTimeoutSeconds),
+                TimeSpan.FromSeconds(BidDefaults.BidLockExpirySeconds),
                 ct);
 
             if (lockHandle == null)

@@ -71,7 +71,6 @@ const CATEGORY_ICONS: Record<SettingCategory, React.ReactElement> = {
 const CATEGORIES = Object.values(SETTING_CATEGORY) as SettingCategory[]
 
 export function PlatformSettingsPage() {
-
   const { t: _t } = useTranslation('analytics')
   const [selectedCategory, setSelectedCategory] = useState<SettingCategory>('Platform')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -96,7 +95,9 @@ export function PlatformSettingsPage() {
   const deleteMutation = useDeleteSetting()
 
   const groupedSettings = useMemo(() => {
-    if (!settings) {return { system: [], custom: [] }}
+    if (!settings) {
+      return { system: [], custom: [] }
+    }
     return {
       system: settings.filter((s) => s.isSystem),
       custom: settings.filter((s) => !s.isSystem),
@@ -111,7 +112,9 @@ export function PlatformSettingsPage() {
   }
 
   const handleEditSave = () => {
-    if (!selectedSetting) {return}
+    if (!selectedSetting) {
+      return
+    }
 
     const error = validateSettingValue(editValue, selectedSetting.dataType)
     if (error) {
@@ -137,7 +140,9 @@ export function PlatformSettingsPage() {
   }
 
   const handleDeleteConfirm = () => {
-    if (!selectedSetting) {return}
+    if (!selectedSetting) {
+      return
+    }
 
     deleteMutation.mutate(selectedSetting.id, {
       onSuccess: () => {
@@ -187,7 +192,9 @@ export function PlatformSettingsPage() {
   }
 
   const renderEditField = () => {
-    if (!selectedSetting) {return null}
+    if (!selectedSetting) {
+      return null
+    }
 
     if (selectedSetting.dataType === 'boolean') {
       return (
@@ -414,7 +421,7 @@ export function PlatformSettingsPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {isLoading && (
+                  {isLoading &&
                     Array.from({ length: 5 }).map((_, i) => (
                       <TableRow key={i}>
                         <TableCell>
@@ -436,8 +443,7 @@ export function PlatformSettingsPage() {
                           <Skeleton variant="circular" width={32} height={32} />
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
+                    ))}
                   {!isLoading && groupedSettings.custom.length === 0 && (
                     <TableEmptyStateRow
                       colSpan={6}
@@ -447,7 +453,8 @@ export function PlatformSettingsPage() {
                       cellSx={{ py: 8 }}
                     />
                   )}
-                  {!isLoading && groupedSettings.custom.length > 0 && (
+                  {!isLoading &&
+                    groupedSettings.custom.length > 0 &&
                     groupedSettings.custom.map((setting) => (
                       <TableRow key={setting.id} hover sx={{ cursor: 'pointer' }}>
                         <TableCell>
@@ -499,8 +506,7 @@ export function PlatformSettingsPage() {
                           </Tooltip>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>

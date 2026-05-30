@@ -14,7 +14,9 @@ export const useSignalRNotifications = () => {
 
   const handleNotification = useCallback(
     (notification: NotificationPayload) => {
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
       signalRLogger.info('📬 New notification received:', notification.id)
       queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
       queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
@@ -24,7 +26,9 @@ export const useSignalRNotifications = () => {
 
   const handleNotificationRead = useCallback(
     (notificationId: string) => {
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
       signalRLogger.info('✅ Notification marked as read:', notificationId)
       queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
       queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
@@ -33,7 +37,9 @@ export const useSignalRNotifications = () => {
   )
 
   const handleAllNotificationsRead = useCallback(() => {
-    if (!isMountedRef.current) {return}
+    if (!isMountedRef.current) {
+      return
+    }
     signalRLogger.info('✅ All notifications marked as read')
     queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
     queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
@@ -50,7 +56,9 @@ export const useSignalRNotifications = () => {
       return
     }
 
-    if (hasConnected.current) {return}
+    if (hasConnected.current) {
+      return
+    }
 
     const connectAndListen = async () => {
       try {

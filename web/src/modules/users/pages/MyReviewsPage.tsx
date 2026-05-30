@@ -23,7 +23,12 @@ import {
 import { Star, RateReview, Reply } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { useReviewsForUser, useReviewsByUser, useUserRatingSummary, useAddSellerResponse } from '../hooks/useReviews'
+import {
+  useReviewsForUser,
+  useReviewsByUser,
+  useUserRatingSummary,
+  useAddSellerResponse,
+} from '../hooks/useReviews'
 import { useAuth } from '@/app/hooks/useAuth'
 import { InlineAlert } from '@/shared/ui'
 import { formatRelativeTime } from '@/shared/utils/formatters'
@@ -94,11 +99,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
           <Stack direction="row" spacing={1} alignItems="center">
             <Rating value={review.rating} readOnly size="small" />
             {type === 'received' && canRespond && !review.sellerResponse && (
-              <Button
-                size="small"
-                startIcon={<Reply />}
-                onClick={() => onRespond?.(review.id)}
-              >
+              <Button size="small" startIcon={<Reply />} onClick={() => onRespond?.(review.id)}>
                 Respond
               </Button>
             )}
@@ -116,12 +117,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
           </Typography>
         </Box>
 
-        <Button
-          component={Link}
-          to={`/auctions/${review.auctionId}`}
-          size="small"
-          sx={{ mt: 2 }}
-        >
+        <Button component={Link} to={`/auctions/${review.auctionId}`} size="small" sx={{ mt: 2 }}>
           View Auction
         </Button>
 
@@ -149,10 +145,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
 }
 
 function ReviewsSkeleton() {
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 3 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 3 }, () => crypto.randomUUID()), [])
 
   return (
     <Stack spacing={2}>
@@ -188,12 +181,7 @@ function ReceivedReviewsContent({
   }
 
   if (!reviews || reviews.length === 0) {
-    return (
-      <EmptyState
-        message="No reviews received yet"
-        icon={<Star sx={{ fontSize: 64 }} />}
-      />
-    )
+    return <EmptyState message="No reviews received yet" icon={<Star sx={{ fontSize: 64 }} />} />
   }
 
   return (
@@ -223,12 +211,7 @@ function GivenReviewsContent({
   }
 
   if (!reviews || reviews.length === 0) {
-    return (
-      <EmptyState
-        message="No reviews given yet"
-        icon={<RateReview sx={{ fontSize: 64 }} />}
-      />
-    )
+    return <EmptyState message="No reviews given yet" icon={<RateReview sx={{ fontSize: 64 }} />} />
   }
 
   return (
@@ -241,7 +224,6 @@ function GivenReviewsContent({
 }
 
 export function MyReviewsPage() {
-
   const { t: _t } = useTranslation('users')
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState(0)
@@ -318,11 +300,7 @@ export function MyReviewsPage() {
                       <Typography variant="h3" fontWeight={700}>
                         {ratingSummary?.averageRating.toFixed(1) ?? '0.0'}
                       </Typography>
-                      <Rating
-                        value={ratingSummary?.averageRating ?? 0}
-                        precision={0.1}
-                        readOnly
-                      />
+                      <Rating value={ratingSummary?.averageRating ?? 0} precision={0.1} readOnly />
                       <Typography variant="body2" color="text.secondary" mt={1}>
                         Average Rating
                       </Typography>

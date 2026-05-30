@@ -3,13 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
-import {
-  Error as ErrorIcon,
-  East,
-  Email,
-  MarkEmailRead,
-  CheckCircle,
-} from '@mui/icons-material'
+import { Error as ErrorIcon, East, Email, MarkEmailRead, CheckCircle } from '@mui/icons-material'
 import { useConfirmEmail, useResendConfirmation } from '../hooks'
 import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
@@ -29,7 +23,7 @@ export function ConfirmEmailPage() {
     if (token && userId) {
       confirmEmail.mutate({ token, userId })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, userId])
 
   const handleResend = async () => {
@@ -64,7 +58,8 @@ export function ConfirmEmailPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -218,7 +213,8 @@ export function ConfirmEmailPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -290,7 +286,8 @@ export function ConfirmEmailPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -446,7 +443,8 @@ export function ConfirmEmailPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}

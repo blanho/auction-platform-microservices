@@ -31,7 +31,6 @@ import type { UpdateProfileRequest } from '../types'
 import { usersApi } from '../api'
 
 export function ProfilePage() {
-
   const { t: _t } = useTranslation('users')
   const [isEditing, setIsEditing] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -86,7 +85,9 @@ export function ProfilePage() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {return}
+    if (!file) {
+      return
+    }
 
     setUploadingAvatar(true)
     try {
@@ -108,8 +109,12 @@ export function ProfilePage() {
   }
 
   const getSellerStatusChip = () => {
-    if (sellerLoading) {return null}
-    if (!sellerStatus) {return null}
+    if (sellerLoading) {
+      return null
+    }
+    if (!sellerStatus) {
+      return null
+    }
 
     if (sellerStatus.isSeller) {
       return <Chip icon={<Store />} label="Verified Seller" color="success" size="small" />

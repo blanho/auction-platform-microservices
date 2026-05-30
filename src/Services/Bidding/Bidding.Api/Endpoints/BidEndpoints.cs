@@ -32,7 +32,7 @@ public class BidEndpoints : ICarterModule
         group.MapPost("/", PlaceBid)
             .WithName("PlaceBid")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Bids.Place))
-            .RequireRateLimiting("BidRateLimit")
+            .RequireRateLimiting("bidding")
             .Produces<BidDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
@@ -91,12 +91,20 @@ public class BidEndpoints : ICarterModule
             dto.Amount,
             bidderId,
             bidderUsername,
-            Guid.NewGuid().ToString());
+            GetIdempotencyKey(context));
 
         var result = await mediator.Send(command, ct);
 
         return result.ToApiResult(bid => 
             Results.Created($"/api/v1/bids/auction/{dto.AuctionId}", bid));
+    }
+
+    private static string GetIdempotencyKey(HttpContext context)
+    {
+        return context.Request.Headers.TryGetValue("Idempotency-Key", out var values) &&
+               !string.IsNullOrWhiteSpace(values.FirstOrDefault())
+            ? values.First()!
+            : Guid.NewGuid().ToString();
     }
 
     private static async Task<IResult> GetBidById(

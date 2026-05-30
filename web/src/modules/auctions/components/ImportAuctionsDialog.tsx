@@ -22,7 +22,10 @@ import {
 } from '@mui/material'
 import { FileUpload, CheckCircle, Error as ErrorIcon, InsertDriveFile } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
-import type { ImportAuctionsResult, ImportAuctionError } from '@/modules/auctions/types/import-export.types'
+import type {
+  ImportAuctionsResult,
+  ImportAuctionError,
+} from '@/modules/auctions/types/import-export.types'
 import { useImportAuctionsFile } from '@/modules/auctions/hooks/useImportExport'
 
 interface ImportAuctionsDialogProps {
@@ -31,7 +34,11 @@ interface ImportAuctionsDialogProps {
   onSuccess?: () => void
 }
 
-export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<ImportAuctionsDialogProps>) {
+export function ImportAuctionsDialog({
+  open,
+  onClose,
+  onSuccess,
+}: Readonly<ImportAuctionsDialogProps>) {
   const { t } = useTranslation('common')
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -121,11 +128,7 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
-          {importMutation.isError && (
-            <Alert severity="error">
-              {t('import.importFailed')}
-            </Alert>
-          )}
+          {importMutation.isError && <Alert severity="error">{t('import.importFailed')}</Alert>}
 
           {!result && (
             <>
@@ -241,12 +244,18 @@ export function ImportAuctionsDialog({ open, onClose, onSuccess }: Readonly<Impo
                     borderRadius: 4,
                     bgcolor: 'grey.200',
                     '& .MuiLinearProgress-bar': {
-                      bgcolor: result.failureCount > 0 ? palette.semantic.warning : palette.semantic.success,
+                      bgcolor:
+                        result.failureCount > 0
+                          ? palette.semantic.warning
+                          : palette.semantic.success,
                     },
                   }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {t('import.importedSuccessfully', { success: result.successCount, total: result.totalRows })}
+                  {t('import.importedSuccessfully', {
+                    success: result.successCount,
+                    total: result.totalRows,
+                  })}
                 </Typography>
               </Box>
 

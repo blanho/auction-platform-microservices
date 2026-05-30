@@ -43,10 +43,7 @@ export const AutoBidManagementPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const skeletonKeys = useMemo(
-    () => Array.from({ length: 6 }, () => crypto.randomUUID()),
-    []
-  )
+  const skeletonKeys = useMemo(() => Array.from({ length: 6 }, () => crypto.randomUUID()), [])
   const [selectedAutoBid, setSelectedAutoBid] = useState<AutoBid | null>(null)
   const [editForm, setEditForm] = useState<UpdateAutoBidRequest>({})
 
@@ -77,7 +74,9 @@ export const AutoBidManagementPage = () => {
   }
 
   const handleSaveEdit = async () => {
-    if (!selectedAutoBid) {return}
+    if (!selectedAutoBid) {
+      return
+    }
 
     try {
       await updateMutation.mutateAsync({
@@ -97,7 +96,9 @@ export const AutoBidManagementPage = () => {
   }
 
   const confirmDelete = async () => {
-    if (!selectedAutoBid) {return}
+    if (!selectedAutoBid) {
+      return
+    }
 
     try {
       await cancelMutation.mutateAsync(selectedAutoBid.id)
@@ -511,7 +512,9 @@ export const AutoBidManagementPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>{t('autoBid.editTitle')}</DialogTitle>
+        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>
+          {t('autoBid.editTitle')}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={3} mt={2}>
             <TextField
@@ -573,11 +576,11 @@ export const AutoBidManagementPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>{t('autoBid.confirmDelete')}</DialogTitle>
+        <DialogTitle sx={{ fontFamily: 'Russo One', color: '#1E293B' }}>
+          {t('autoBid.confirmDelete')}
+        </DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontFamily: 'Chakra Petch' }}>
-            {t('autoBid.deleteWarning')}
-          </Typography>
+          <Typography sx={{ fontFamily: 'Chakra Petch' }}>{t('autoBid.deleteWarning')}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)} sx={{ fontFamily: 'Chakra Petch' }}>

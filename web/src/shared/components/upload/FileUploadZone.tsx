@@ -31,10 +31,7 @@ export function FileUploadZone({
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const acceptString = useMemo(
-    () => Array.from(acceptedTypes).join(','),
-    [acceptedTypes]
-  )
+  const acceptString = useMemo(() => Array.from(acceptedTypes).join(','), [acceptedTypes])
 
   const hasImages = useMemo(
     () => acceptedTypes.some((t) => (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(t)),
@@ -133,10 +130,7 @@ export function FileUploadZone({
 
       {attachments.length > 0 && (
         <Stack spacing={1} sx={{ mt: 2 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ color: palette.neutral[500], fontWeight: 600 }}
-          >
+          <Typography variant="subtitle2" sx={{ color: palette.neutral[500], fontWeight: 600 }}>
             {t('upload.uploadedFiles_other', { count: attachments.length })}
           </Typography>
           <AnimatePresence mode="popLayout">

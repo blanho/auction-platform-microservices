@@ -34,18 +34,19 @@ export const HeroStats = ({ stats }: HeroStatsProps) => {
             sx={{
               position: 'relative',
               pl: index > 0 ? { md: 6 } : 0,
-              '&::before': index > 0
-                ? {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    top: '10%',
-                    height: '80%',
-                    width: 1,
-                    background: 'rgba(255,255,255,0.2)',
-                    display: { xs: 'none', md: 'block' },
-                  }
-                : undefined,
+              '&::before':
+                index > 0
+                  ? {
+                      content: '""',
+                      position: 'absolute',
+                      left: 0,
+                      top: '10%',
+                      height: '80%',
+                      width: 1,
+                      background: 'rgba(255,255,255,0.2)',
+                      display: { xs: 'none', md: 'block' },
+                    }
+                  : undefined,
             }}
           >
             <Typography

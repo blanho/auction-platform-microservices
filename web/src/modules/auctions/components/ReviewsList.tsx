@@ -268,7 +268,9 @@ export function ReviewsList({
     return (
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Star sx={{ fontSize: 48, color: palette.neutral[300], mb: 2 }} />
-        <Typography sx={{ color: palette.neutral[500], mb: 1 }}>{t('review.noReviewsYet')}</Typography>
+        <Typography sx={{ color: palette.neutral[500], mb: 1 }}>
+          {t('review.noReviewsYet')}
+        </Typography>
         <Typography sx={{ color: palette.neutral[400], fontSize: '0.875rem' }}>
           {t('review.beFirstToReview')}
         </Typography>

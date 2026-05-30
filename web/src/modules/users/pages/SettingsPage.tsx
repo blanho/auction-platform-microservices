@@ -44,7 +44,6 @@ import type { ChangePasswordRequest } from '../types'
 import { TwoFactorSetup } from '@/modules/auth/components/TwoFactorSetup'
 
 export function SettingsPage() {
-
   const { t: _t } = useTranslation('users')
   const [activeSection, setActiveSection] = useState<'security' | 'notifications' | 'appearance'>(
     'security'

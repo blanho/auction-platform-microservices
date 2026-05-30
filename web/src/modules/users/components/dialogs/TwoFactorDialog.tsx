@@ -74,9 +74,7 @@ export function TwoFactorDialog({
                   />
                   <Typography>{t('twoFactor.status')}</Typography>
                 </Box>
-                <StatusBadge
-                  status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                />
+                <StatusBadge status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'} />
               </Box>
 
               {status?.twoFactorEnabled && (
@@ -93,7 +91,9 @@ export function TwoFactorDialog({
                       <Typography>{t('twoFactor.recoveryCodes')}</Typography>
                     </Box>
                     <Chip
-                      label={status?.hasRecoveryCodes ? t('twoFactor.available') : t('twoFactor.notSet')}
+                      label={
+                        status?.hasRecoveryCodes ? t('twoFactor.available') : t('twoFactor.notSet')
+                      }
                       color={getRecoveryCodesColor(status?.hasRecoveryCodes || false)}
                       size="small"
                     />
@@ -101,9 +101,7 @@ export function TwoFactorDialog({
 
                   <Divider />
 
-                  <InlineAlert severity="warning">
-                    {t('twoFactor.securityWarning')}
-                  </InlineAlert>
+                  <InlineAlert severity="warning">{t('twoFactor.securityWarning')}</InlineAlert>
 
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button

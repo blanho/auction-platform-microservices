@@ -47,7 +47,9 @@ export const PromoBanner = ({
   const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (!autoRotate || isPaused || resolvedPromotions.length <= 1) {return}
+    if (!autoRotate || isPaused || resolvedPromotions.length <= 1) {
+      return
+    }
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % resolvedPromotions.length)
@@ -71,7 +73,7 @@ export const PromoBanner = ({
   }
 
   const hasPromotions = resolvedPromotions.length > 0
-  
+
   if (!hasPromotions) {
     return null
   }
@@ -212,7 +214,8 @@ export const PromoBanner = ({
                   width: 5,
                   height: 5,
                   borderRadius: '50%',
-                  bgcolor: index === safeCurrentIndex ? palette.neutral[50] : 'rgba(250,250,249,0.3)',
+                  bgcolor:
+                    index === safeCurrentIndex ? palette.neutral[50] : 'rgba(250,250,249,0.3)',
                   cursor: 'pointer',
                   transition: 'background-color 0.2s ease',
                 }}

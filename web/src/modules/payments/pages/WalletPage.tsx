@@ -50,7 +50,6 @@ import { getTransactionIcon } from '../utils'
 import { formatCurrency } from '@/shared/utils/formatters'
 
 export function WalletPage() {
-
   const { t: _t } = useTranslation('payments')
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState(0)
@@ -69,7 +68,9 @@ export function WalletPage() {
   const withdraw = useWithdraw()
 
   const handleDeposit = async () => {
-    if (!depositAmount || !selectedPaymentMethod) {return}
+    if (!depositAmount || !selectedPaymentMethod) {
+      return
+    }
     try {
       await deposit.mutateAsync({
         amount: parseFloat(depositAmount),
@@ -84,7 +85,9 @@ export function WalletPage() {
   }
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !selectedPaymentMethod) {return}
+    if (!withdrawAmount || !selectedPaymentMethod) {
+      return
+    }
     try {
       await withdraw.mutateAsync({
         amount: parseFloat(withdrawAmount),
@@ -329,17 +332,18 @@ export function WalletPage() {
             <TableBody>
               {transactionsLoading && <TableSkeletonRows rows={5} columns={5} />}
               {!transactionsLoading && transactions?.items?.length === 0 && (
-                <TableEmptyStateRow
-                  colSpan={5}
-                  title="No transactions yet"
-                  cellSx={{ py: 6 }}
-                />
+                <TableEmptyStateRow colSpan={5} title="No transactions yet" cellSx={{ py: 6 }} />
               )}
-              {!transactionsLoading && transactions?.items?.length !== 0 && (
+              {!transactionsLoading &&
+                transactions?.items?.length !== 0 &&
                 transactions?.items
                   ?.filter((t) => {
-                    if (activeTab === 1) {return t.type === 'deposit'}
-                    if (activeTab === 2) {return t.type === 'withdrawal'}
+                    if (activeTab === 1) {
+                      return t.type === 'deposit'
+                    }
+                    if (activeTab === 2) {
+                      return t.type === 'withdrawal'
+                    }
                     return true
                   })
                   .map((transaction) => (
@@ -405,8 +409,7 @@ export function WalletPage() {
                         </Typography>
                       </TableCell>
                     </TableRow>
-                  ))
-              )}
+                  ))}
             </TableBody>
           </Table>
         </TableContainer>

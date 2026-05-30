@@ -15,7 +15,11 @@ interface BulkImportDialogProps {
   onComplete: () => void
 }
 
-export function BulkImportDialog({ open, onClose, onComplete: _onComplete }: BulkImportDialogProps) {
+export function BulkImportDialog({
+  open,
+  onClose,
+  onComplete: _onComplete,
+}: BulkImportDialogProps) {
   const { t } = useTranslation('common')
 
   return (

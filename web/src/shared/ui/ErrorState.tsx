@@ -11,12 +11,7 @@ interface ErrorStateProps {
   showHomeButton?: boolean
 }
 
-export function ErrorState({
-  title,
-  message,
-  onRetry,
-  showHomeButton = false,
-}: ErrorStateProps) {
+export function ErrorState({ title, message, onRetry, showHomeButton = false }: ErrorStateProps) {
   const { t } = useTranslation()
   const displayTitle = title || t('errors.defaultTitle')
   const displayMessage = message || t('errors.defaultMessage')

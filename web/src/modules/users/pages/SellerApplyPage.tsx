@@ -72,7 +72,6 @@ const benefits = [
 ]
 
 export function SellerApplyPage() {
-
   const { t: _t } = useTranslation('users')
   const [success, setSuccess] = useState(false)
 

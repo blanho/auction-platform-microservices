@@ -7,10 +7,7 @@ interface LoadingScreenProps {
   fullScreen?: boolean
 }
 
-export const LoadingScreen = ({
-  message,
-  fullScreen = true,
-}: LoadingScreenProps) => {
+export const LoadingScreen = ({ message, fullScreen = true }: LoadingScreenProps) => {
   const { t } = useTranslation()
   const displayMessage = message || t('loading')
 

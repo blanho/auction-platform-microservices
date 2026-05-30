@@ -16,7 +16,9 @@ export const HowItWorksSection = () => {
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+      <Box
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }}
+      />
 
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
         <motion.div

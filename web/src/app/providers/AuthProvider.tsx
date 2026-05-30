@@ -61,7 +61,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const silentRefresh = useCallback(async (): Promise<boolean> => {
     try {
       const response = await authApi.refreshToken()
-      if (!isMountedRef.current) {return false}
+      if (!isMountedRef.current) {
+        return false
+      }
       setAccessToken(response.accessToken, response.expiresIn)
       return true
     } catch {
@@ -84,10 +86,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, REFRESH_INTERVAL_MS)
   }, [silentRefresh])
 
+  /**
+   * Single source of truth for all post-authentication state updates.
+   * Called by login, loginWith2FA, and register after a successful auth response.
+   */
+  const handleAuthSuccess = useCallback(
+    async (response: AuthResponse): Promise<void> => {
+      const authUser = extractUserFromResponse(response)
+      setAccessToken(response.accessToken, response.expiresIn)
+      setUser(authUser)
+      setStoredUser(authUser)
+      setStatus('authenticated')
+      startRefreshTimer()
+      await signalRService.connect()
+    },
+    [startRefreshTimer]
+  )
+
   const refreshUser = useCallback(async () => {
     try {
       const userData = await authApi.getCurrentUser()
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
 
       setUser(userData)
       setStoredUser(userData)
@@ -107,7 +128,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const refreshed = await silentRefresh()
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
 
       if (refreshed) {
         await refreshUser()
@@ -129,7 +152,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       isMountedRef.current = false
-      if (refreshTimerRef.current) {clearInterval(refreshTimerRef.current)}
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current)
+      }
     }
   }, [initializeAuth])
 
@@ -145,15 +170,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { requiresTwoFactor: true, twoFactorStateToken: response.twoFactorStateToken }
       }
 
-      const authUser = extractUserFromResponse(response)
-      setAccessToken(response.accessToken, response.expiresIn)
-      setUser(authUser)
-      setStoredUser(authUser)
-      setStatus('authenticated')
-      startRefreshTimer()
-
-      await signalRService.connect()
-
+      await handleAuthSuccess(response)
       return {}
     } catch (err) {
       setStatus('unauthenticated')
@@ -169,15 +186,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const response = await authApi.loginWith2FA(data)
-
-      const authUser = extractUserFromResponse(response)
-      setAccessToken(response.accessToken, response.expiresIn)
-      setUser(authUser)
-      setStoredUser(authUser)
-      setStatus('authenticated')
-      startRefreshTimer()
-
-      await signalRService.connect()
+      await handleAuthSuccess(response)
     } catch (err) {
       setStatus('unauthenticated')
       const message = err instanceof Error ? err.message : '2FA verification failed'
@@ -192,15 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const response = await authApi.register(data)
-
-      const authUser = extractUserFromResponse(response)
-      setAccessToken(response.accessToken, response.expiresIn)
-      setUser(authUser)
-      setStoredUser(authUser)
-      setStatus('authenticated')
-      startRefreshTimer()
-
-      await signalRService.connect()
+      await handleAuthSuccess(response)
     } catch (err) {
       setStatus('unauthenticated')
       const message = err instanceof Error ? err.message : 'Registration failed'

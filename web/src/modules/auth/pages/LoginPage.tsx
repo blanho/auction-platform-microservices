@@ -180,7 +180,8 @@ export function LoginPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -290,7 +291,11 @@ export function LoginPage() {
                   },
                 }}
               >
-                {isLoggingIn ? <CircularProgress size={20} color="inherit" /> : t('twoFactor.submit')}
+                {isLoggingIn ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  t('twoFactor.submit')
+                )}
               </Button>
 
               <Button
@@ -336,7 +341,8 @@ export function LoginPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1600081728723-c8aa2ee3236a?w=1200&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -358,11 +364,7 @@ export function LoginPage() {
             color: palette.neutral[0],
           }}
         >
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={staggerContainer}
-          >
+          <motion.div initial="initial" animate="animate" variants={staggerContainer}>
             <motion.div variants={staggerItem}>
               <Typography
                 sx={{
@@ -374,8 +376,7 @@ export function LoginPage() {
                 }}
               >
                 Discover Rare
-                <br />
-                & Exceptional Pieces
+                <br />& Exceptional Pieces
               </Typography>
             </motion.div>
 
@@ -388,7 +389,8 @@ export function LoginPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Join thousands of collectors finding authenticated luxury items from trusted sellers worldwide.
+                Join thousands of collectors finding authenticated luxury items from trusted sellers
+                worldwide.
               </Typography>
             </motion.div>
 
@@ -485,10 +487,7 @@ export function LoginPage() {
 
             {sessionMessage && (
               <motion.div variants={staggerItem}>
-                <InlineAlert
-                  severity={sessionMessage.severity}
-                  sx={{ mb: 3, borderRadius: 0 }}
-                >
+                <InlineAlert severity={sessionMessage.severity} sx={{ mb: 3, borderRadius: 0 }}>
                   {sessionMessage.message}
                 </InlineAlert>
               </motion.div>

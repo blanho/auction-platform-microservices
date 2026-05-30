@@ -51,12 +51,16 @@ export function NotificationItem({
   }
 
   const handleDelete = () => {
-    if (onDelete) {onDelete(notification.id)}
+    if (onDelete) {
+      onDelete(notification.id)
+    }
     handleMenuClose()
   }
 
   const handleArchive = () => {
-    if (onArchive) {onArchive(notification.id)}
+    if (onArchive) {
+      onArchive(notification.id)
+    }
     handleMenuClose()
   }
 

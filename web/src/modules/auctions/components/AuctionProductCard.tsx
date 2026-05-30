@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Box, Typography, IconButton, Chip, Skeleton } from '@mui/material'
 import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
-import { formatTimeLeft, formatCurrency } from '../utils'
+import { formatCurrency } from '../utils'
+import { useCountdown } from '@/shared/hooks/useCountdown'
 
 interface AuctionProductCardProps {
   id: string
@@ -41,31 +42,24 @@ export const AuctionProductCard = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [imageLoadedForUrl, setImageLoadedForUrl] = useState<string | null>(null)
   const [isHovered, setIsHovered] = useState(false)
-  const [timeLeft, setTimeLeft] = useState('')
-  const [isEndingSoon, setIsEndingSoon] = useState(false)
   const { t } = useTranslation('common')
   const currentImage = images[currentImageIndex]
-  const currentPrice = currentBid > 0 ? currentBid : startingPrice ?? 0
-  const isImageLoaded = useMemo(() => !currentImage || imageLoadedForUrl === currentImage, [currentImage, imageLoadedForUrl])
+  const currentPrice = currentBid > 0 ? currentBid : (startingPrice ?? 0)
+  const { timeLeft, isUrgent: isEndingSoon } = useCountdown(endTime, 60_000)
+  const isImageLoaded = useMemo(
+    () => !currentImage || imageLoadedForUrl === currentImage,
+    [currentImage, imageLoadedForUrl]
+  )
 
-  useEffect(() => {
-    const updateTimeLeft = () => {
-      const now = Date.now()
-      const endMs = new Date(endTime).getTime()
-      setTimeLeft(formatTimeLeft(endTime))
-      setIsEndingSoon(endMs - now < 24 * 60 * 60 * 1000)
-    }
-    updateTimeLeft()
-    const interval = setInterval(updateTimeLeft, 60000)
-    return () => clearInterval(interval)
-  }, [endTime])
 
   const handleImageLoad = () => {
     setImageLoadedForUrl(currentImage)
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (images.length <= 1) {return}
+    if (images.length <= 1) {
+      return
+    }
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const segmentWidth = rect.width / images.length
@@ -305,7 +299,7 @@ export const AuctionProductCard = ({
                   fontFamily: '"Playfair Display", serif',
                 }}
               >
-                {formatCurrency(currentPrice)}
+              {formatCurrency(currentPrice)}
               </Typography>
             </Box>
             <Typography

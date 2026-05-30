@@ -17,14 +17,7 @@ import {
   Chip,
 } from '@mui/material'
 import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
-import {
-  Search,
-  Close,
-  FilterList,
-  ExpandMore,
-  ExpandLess,
-  Refresh,
-} from '@mui/icons-material'
+import { Search, Close, FilterList, ExpandMore, ExpandLess, Refresh } from '@mui/icons-material'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { FilterField, FilterPanelConfig } from '@/shared/types/filter.types'
 
@@ -136,11 +129,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
                     </MenuItem>
                   )}
                   {field.options.map((option) => (
-                    <MenuItem
-                      key={option.value}
-                      value={option.value}
-                      disabled={option.disabled}
-                    >
+                    <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
                       {option.label}
                     </MenuItem>
                   ))}
@@ -278,7 +267,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
           return null
       }
     },
-    [value, handleFieldChange, handleClearField]
+    [value, handleFieldChange, handleClearField, t]
   )
 
   const filterContent = (
@@ -288,12 +277,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
       <Grid size={{ xs: 12, sm: 'auto' }}>
         <Stack direction="row" spacing={1} alignItems="center" height="100%">
           {(config.showClearButton ?? true) && activeFilterCount > 0 && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Close />}
-              onClick={handleClearAll}
-            >
+            <Button variant="outlined" size="small" startIcon={<Close />} onClick={handleClearAll}>
               {t('table.clearWithCount', { count: activeFilterCount })}
             </Button>
           )}
@@ -376,9 +360,7 @@ export function FilterPanel<TFilter extends object = Record<string, unknown>>({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-              {filterContent}
-            </Box>
+            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>{filterContent}</Box>
           </motion.div>
         )}
       </AnimatePresence>

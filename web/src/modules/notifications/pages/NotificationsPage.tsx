@@ -30,7 +30,6 @@ import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
 
 export function NotificationsPage() {
-
   const { t: _t } = useTranslation('notifications')
   const [activeTab, setActiveTab] = useState(0)
   const [filters, setFilters] = useState<NotificationFilters>({
@@ -39,8 +38,12 @@ export function NotificationsPage() {
   })
 
   const statusFilter = useMemo(() => {
-    if (activeTab === 1) {return 'unread'}
-    if (activeTab === 2) {return 'archived'}
+    if (activeTab === 1) {
+      return 'unread'
+    }
+    if (activeTab === 2) {
+      return 'archived'
+    }
     return undefined
   }, [activeTab])
 
@@ -58,13 +61,16 @@ export function NotificationsPage() {
   const deleteNotification = useDeleteNotification()
   const archiveNotification = useArchiveNotification()
 
-  const handleMarkAsRead = useCallback(async (id: string) => {
-    try {
-      await markAsRead.mutateAsync(id)
-    } catch {
-      // Error handled by mutation
-    }
-  }, [markAsRead])
+  const handleMarkAsRead = useCallback(
+    async (id: string) => {
+      try {
+        await markAsRead.mutateAsync(id)
+      } catch {
+        // Error handled by mutation
+      }
+    },
+    [markAsRead]
+  )
 
   const handleMarkAllAsRead = useCallback(async () => {
     try {
@@ -74,21 +80,27 @@ export function NotificationsPage() {
     }
   }, [markAllAsRead])
 
-  const handleDelete = useCallback(async (id: string) => {
-    try {
-      await deleteNotification.mutateAsync(id)
-    } catch {
-      // Error handled by mutation
-    }
-  }, [deleteNotification])
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await deleteNotification.mutateAsync(id)
+      } catch {
+        // Error handled by mutation
+      }
+    },
+    [deleteNotification]
+  )
 
-  const handleArchive = useCallback(async (id: string) => {
-    try {
-      await archiveNotification.mutateAsync(id)
-    } catch {
-      // Error handled by mutation
-    }
-  }, [archiveNotification])
+  const handleArchive = useCallback(
+    async (id: string) => {
+      try {
+        await archiveNotification.mutateAsync(id)
+      } catch {
+        // Error handled by mutation
+      }
+    },
+    [archiveNotification]
+  )
 
   const getEmptyMessage = () => {
     switch (activeTab) {

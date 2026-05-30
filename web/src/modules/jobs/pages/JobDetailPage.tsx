@@ -113,7 +113,6 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50]
 const DEFAULT_PAGE_SIZE = 10
 
 export function JobDetailPage() {
-
   const { t: _t } = useTranslation('jobs')
   const { jobId = '' } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
@@ -126,11 +125,14 @@ export function JobDetailPage() {
   const cancelMutation = useCancelJob()
   const retryMutation = useRetryJob()
 
-  const itemParams: JobItemFilterParams = useMemo(() => ({
-    ...(itemStatusFilter !== 'all' && { status: itemStatusFilter }),
-    page: itemPage + 1,
-    pageSize: itemPageSize,
-  }), [itemStatusFilter, itemPage, itemPageSize])
+  const itemParams: JobItemFilterParams = useMemo(
+    () => ({
+      ...(itemStatusFilter !== 'all' && { status: itemStatusFilter }),
+      page: itemPage + 1,
+      pageSize: itemPageSize,
+    }),
+    [itemStatusFilter, itemPage, itemPageSize]
+  )
 
   const { data: itemsData, isLoading: itemsLoading } = useJobItems(jobId, itemParams)
 
@@ -178,7 +180,11 @@ export function JobDetailPage() {
                       />
                     )}
                   </Stack>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', mt: 0.25 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontFamily: 'monospace', mt: 0.25 }}
+                  >
                     {jobId}
                   </Typography>
                 </Box>
@@ -218,259 +224,265 @@ export function JobDetailPage() {
 
         {isLoading ? (
           <DetailSkeleton />
-        ) : job && (
-          <>
-            <motion.div variants={staggerItem}>
-              <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12, md: 7 }}>
-                  <Card sx={{ p: 3, height: '100%' }}>
-                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
-                      Details
-                    </Typography>
-                    <Divider sx={{ mb: 1 }} />
-                    <MetadataRow label="Type">
-                      <Typography variant="body2">{JOB_TYPE_LABELS[job.jobType]}</Typography>
-                    </MetadataRow>
-                    <MetadataRow label="Priority">
-                      <Chip
-                        size="small"
-                        label={JOB_PRIORITY_LABELS[job.priority]}
-                        color={JOB_PRIORITY_COLORS[job.priority]}
-                        variant="outlined"
-                        sx={{ height: 24 }}
-                      />
-                    </MetadataRow>
-                    <MetadataRow label="Correlation ID">
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                        {job.correlationId}
+        ) : (
+          job && (
+            <>
+              <motion.div variants={staggerItem}>
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <Grid size={{ xs: 12, md: 7 }}>
+                    <Card sx={{ p: 3, height: '100%' }}>
+                      <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                        Details
                       </Typography>
-                    </MetadataRow>
-                    {job.requestedBy && (
-                      <MetadataRow label="Requested By">
-                        <Typography variant="body2">{job.requestedBy}</Typography>
+                      <Divider sx={{ mb: 1 }} />
+                      <MetadataRow label="Type">
+                        <Typography variant="body2">{JOB_TYPE_LABELS[job.jobType]}</Typography>
                       </MetadataRow>
-                    )}
-                    <MetadataRow label="Created">
-                      <Typography variant="body2">{formatRelativeTime(job.createdAt)}</Typography>
-                    </MetadataRow>
-                    {job.startedAt && (
-                      <MetadataRow label="Started">
-                        <Typography variant="body2">{formatRelativeTime(job.startedAt)}</Typography>
+                      <MetadataRow label="Priority">
+                        <Chip
+                          size="small"
+                          label={JOB_PRIORITY_LABELS[job.priority]}
+                          color={JOB_PRIORITY_COLORS[job.priority]}
+                          variant="outlined"
+                          sx={{ height: 24 }}
+                        />
                       </MetadataRow>
-                    )}
-                    {job.completedAt && (
-                      <MetadataRow label="Completed">
-                        <Typography variant="body2">{formatRelativeTime(job.completedAt)}</Typography>
+                      <MetadataRow label="Correlation ID">
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                          {job.correlationId}
+                        </Typography>
                       </MetadataRow>
-                    )}
-                    <MetadataRow label="Duration">
-                      <Typography variant="body2">
-                        {getJobDuration(job.startedAt, job.completedAt)}
-                      </Typography>
-                    </MetadataRow>
-                    {job.errorMessage && (
-                      <MetadataRow label="Error">
-                        <Alert severity="error" variant="outlined" sx={{ py: 0.5, px: 1.5 }}>
-                          {job.errorMessage}
-                        </Alert>
-                      </MetadataRow>
-                    )}
-                  </Card>
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 5 }}>
-                  <Card sx={{ p: 3, height: '100%' }}>
-                    <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-                      Progress
-                    </Typography>
-                    <Box sx={{ textAlign: 'center', mb: 3 }}>
-                      <Typography variant="h2" fontWeight={700} sx={{ color: progressColor }}>
-                        {job.progress.toFixed(1)}%
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={job.progress}
-                      sx={{
-                        height: 10,
-                        borderRadius: 2,
-                        mb: 3,
-                        bgcolor: `${progressColor}20`,
-                        '& .MuiLinearProgress-bar': { bgcolor: progressColor, borderRadius: 2 },
-                      }}
-                    />
-                    <Grid container spacing={2}>
-                      <Grid size={4}>
-                        <Box sx={{ textAlign: 'center' }}>
-                          <Typography variant="h5" fontWeight={700}>
-                            {job.totalItems.toLocaleString()}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Total
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid size={4}>
-                        <Box sx={{ textAlign: 'center' }}>
-                          <Typography variant="h5" fontWeight={700} color="success.main">
-                            {job.completedItems.toLocaleString()}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Completed
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid size={4}>
-                        <Box sx={{ textAlign: 'center' }}>
-                          <Typography variant="h5" fontWeight={700} color="error.main">
-                            {job.failedItems.toLocaleString()}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Failed
-                          </Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              </Grid>
-            </motion.div>
-
-            <motion.div variants={staggerItem}>
-              <Card sx={{ p: 0 }}>
-                <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Typography variant="h6" fontWeight={600}>
-                      Items
-                    </Typography>
-                    <FormControl size="small" sx={{ minWidth: 140 }}>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={itemStatusFilter}
-                        label="Status"
-                        onChange={(e) => {
-                          setItemStatusFilter(e.target.value as JobItemStatus | 'all')
-                          setItemPage(0)
-                        }}
-                      >
-                        <MenuItem value="all">All Status</MenuItem>
-                        {Object.entries(JOB_ITEM_STATUS_LABELS).map(([key, label]) => (
-                          <MenuItem key={key} value={key}>{label}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </Box>
-
-                <TableContainer sx={{ overflowX: 'auto' }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Retries</TableCell>
-                        <TableCell>Created</TableCell>
-                        <TableCell>Processed</TableCell>
-                        <TableCell>Error</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {itemsLoading &&
-                        Array.from({ length: 5 }).map((_, i) => (
-                          <TableRow key={`item-skeleton-${i.toString()}`}>
-                            {Array.from({ length: 6 }).map((__, j) => (
-                              <TableCell key={`item-skeleton-cell-${j.toString()}`}>
-                                <Skeleton width={j === 5 ? 150 : 60} />
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        ))
-                      }
-                      {!itemsLoading && items.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                            <Typography variant="body2" color="text.secondary">
-                              No items found
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
+                      {job.requestedBy && (
+                        <MetadataRow label="Requested By">
+                          <Typography variant="body2">{job.requestedBy}</Typography>
+                        </MetadataRow>
                       )}
-                      {!itemsLoading &&
-                        items.map((item) => (
-                          <TableRow key={item.id} hover>
-                            <TableCell>
-                              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                {item.sequenceNumber}
+                      <MetadataRow label="Created">
+                        <Typography variant="body2">{formatRelativeTime(job.createdAt)}</Typography>
+                      </MetadataRow>
+                      {job.startedAt && (
+                        <MetadataRow label="Started">
+                          <Typography variant="body2">
+                            {formatRelativeTime(job.startedAt)}
+                          </Typography>
+                        </MetadataRow>
+                      )}
+                      {job.completedAt && (
+                        <MetadataRow label="Completed">
+                          <Typography variant="body2">
+                            {formatRelativeTime(job.completedAt)}
+                          </Typography>
+                        </MetadataRow>
+                      )}
+                      <MetadataRow label="Duration">
+                        <Typography variant="body2">
+                          {getJobDuration(job.startedAt, job.completedAt)}
+                        </Typography>
+                      </MetadataRow>
+                      {job.errorMessage && (
+                        <MetadataRow label="Error">
+                          <Alert severity="error" variant="outlined" sx={{ py: 0.5, px: 1.5 }}>
+                            {job.errorMessage}
+                          </Alert>
+                        </MetadataRow>
+                      )}
+                    </Card>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 5 }}>
+                    <Card sx={{ p: 3, height: '100%' }}>
+                      <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+                        Progress
+                      </Typography>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <Typography variant="h2" fontWeight={700} sx={{ color: progressColor }}>
+                          {job.progress.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={job.progress}
+                        sx={{
+                          height: 10,
+                          borderRadius: 2,
+                          mb: 3,
+                          bgcolor: `${progressColor}20`,
+                          '& .MuiLinearProgress-bar': { bgcolor: progressColor, borderRadius: 2 },
+                        }}
+                      />
+                      <Grid container spacing={2}>
+                        <Grid size={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="h5" fontWeight={700}>
+                              {job.totalItems.toLocaleString()}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Total
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid size={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="h5" fontWeight={700} color="success.main">
+                              {job.completedItems.toLocaleString()}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Completed
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid size={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="h5" fontWeight={700} color="error.main">
+                              {job.failedItems.toLocaleString()}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Failed
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </motion.div>
+
+              <motion.div variants={staggerItem}>
+                <Card sx={{ p: 0 }}>
+                  <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Typography variant="h6" fontWeight={600}>
+                        Items
+                      </Typography>
+                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={itemStatusFilter}
+                          label="Status"
+                          onChange={(e) => {
+                            setItemStatusFilter(e.target.value as JobItemStatus | 'all')
+                            setItemPage(0)
+                          }}
+                        >
+                          <MenuItem value="all">All Status</MenuItem>
+                          {Object.entries(JOB_ITEM_STATUS_LABELS).map(([key, label]) => (
+                            <MenuItem key={key} value={key}>
+                              {label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Stack>
+                  </Box>
+
+                  <TableContainer sx={{ overflowX: 'auto' }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>#</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Retries</TableCell>
+                          <TableCell>Created</TableCell>
+                          <TableCell>Processed</TableCell>
+                          <TableCell>Error</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {itemsLoading &&
+                          Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={`item-skeleton-${i.toString()}`}>
+                              {Array.from({ length: 6 }).map((__, j) => (
+                                <TableCell key={`item-skeleton-cell-${j.toString()}`}>
+                                  <Skeleton width={j === 5 ? 150 : 60} />
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        {!itemsLoading && items.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                No items found
                               </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                size="small"
-                                label={JOB_ITEM_STATUS_LABELS[item.status]}
-                                color={JOB_ITEM_STATUS_COLORS[item.status]}
-                                sx={{ height: 22 }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {item.retryCount} / {item.maxRetryCount}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {formatRelativeTime(item.createdAt)}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {item.processedAt ? formatRelativeTime(item.processedAt) : '—'}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              {item.errorMessage ? (
-                                <Tooltip title={item.errorMessage}>
-                                  <Typography
-                                    variant="caption"
-                                    color="error"
-                                    sx={{
-                                      display: 'block',
-                                      maxWidth: 250,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {item.errorMessage}
-                                  </Typography>
-                                </Tooltip>
-                              ) : (
-                                <Typography variant="body2" color="text.secondary">
-                                  —
-                                </Typography>
-                              )}
                             </TableCell>
                           </TableRow>
-                        ))
-                      }
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                        )}
+                        {!itemsLoading &&
+                          items.map((item) => (
+                            <TableRow key={item.id} hover>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                                  {item.sequenceNumber}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  size="small"
+                                  label={JOB_ITEM_STATUS_LABELS[item.status]}
+                                  color={JOB_ITEM_STATUS_COLORS[item.status]}
+                                  sx={{ height: 22 }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {item.retryCount} / {item.maxRetryCount}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {formatRelativeTime(item.createdAt)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {item.processedAt ? formatRelativeTime(item.processedAt) : '—'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                {item.errorMessage ? (
+                                  <Tooltip title={item.errorMessage}>
+                                    <Typography
+                                      variant="caption"
+                                      color="error"
+                                      sx={{
+                                        display: 'block',
+                                        maxWidth: 250,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {item.errorMessage}
+                                    </Typography>
+                                  </Tooltip>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    —
+                                  </Typography>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
 
-                <TablePagination
-                  component="div"
-                  count={totalItems}
-                  page={itemPage}
-                  onPageChange={(_, p) => setItemPage(p)}
-                  rowsPerPage={itemPageSize}
-                  onRowsPerPageChange={(e) => {
-                    setItemPageSize(Number.parseInt(e.target.value, 10))
-                    setItemPage(0)
-                  }}
-                  rowsPerPageOptions={PAGE_SIZE_OPTIONS}
-                />
-              </Card>
-            </motion.div>
-          </>
+                  <TablePagination
+                    component="div"
+                    count={totalItems}
+                    page={itemPage}
+                    onPageChange={(_, p) => setItemPage(p)}
+                    rowsPerPage={itemPageSize}
+                    onRowsPerPageChange={(e) => {
+                      setItemPageSize(Number.parseInt(e.target.value, 10))
+                      setItemPage(0)
+                    }}
+                    rowsPerPageOptions={PAGE_SIZE_OPTIONS}
+                  />
+                </Card>
+              </motion.div>
+            </>
+          )
         )}
       </motion.div>
     </Container>

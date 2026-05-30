@@ -114,7 +114,9 @@ export function MyBidsPage() {
   }
 
   const handleUpdateAutoBid = async () => {
-    if (!editAutoBid || !newMaxAmount) {return}
+    if (!editAutoBid || !newMaxAmount) {
+      return
+    }
     try {
       await updateAutoBid.mutateAsync({
         autoBidId: editAutoBid.id,
@@ -306,7 +308,8 @@ export function MyBidsPage() {
                   cellSx={{ py: 8 }}
                 />
               )}
-              {!bidsLoading && (myBids?.length ?? 0) > 0 && (
+              {!bidsLoading &&
+                (myBids?.length ?? 0) > 0 &&
                 myBids?.map((bid) => (
                   <TableRow key={bid.id} hover>
                     <TableCell>
@@ -370,8 +373,7 @@ export function MyBidsPage() {
                       </Tooltip>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

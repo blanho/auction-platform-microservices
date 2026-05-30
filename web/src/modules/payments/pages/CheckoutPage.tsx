@@ -77,7 +77,6 @@ type ShippingFormData = z.infer<typeof shippingSchema>
 const steps = ['Shipping', 'Payment', 'Confirmation']
 
 export function CheckoutPage() {
-
   const { t: _t } = useTranslation('payments')
   const { auctionId } = useParams<{ auctionId: string }>()
   const navigate = useNavigate()

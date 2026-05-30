@@ -64,7 +64,9 @@ export function ImageGallery({
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isZoomed) {return}
+    if (!isZoomed) {
+      return
+    }
     const rect = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
@@ -74,9 +76,15 @@ export function ImageGallery({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLightboxOpen) {
-        if (e.key === 'ArrowLeft') {handlePrevious()}
-        if (e.key === 'ArrowRight') {handleNext()}
-        if (e.key === 'Escape') {setIsLightboxOpen(false)}
+        if (e.key === 'ArrowLeft') {
+          handlePrevious()
+        }
+        if (e.key === 'ArrowRight') {
+          handleNext()
+        }
+        if (e.key === 'Escape') {
+          setIsLightboxOpen(false)
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown)

@@ -100,13 +100,15 @@ const ColorlibStepIconRoot = styled('div')<{
   }),
 }))
 
-function ColorlibStepIcon(props: Readonly<{
-  active: boolean
-  completed: boolean
-  error?: boolean
-  icon: React.ReactNode
-  className?: string
-}>) {
+function ColorlibStepIcon(
+  props: Readonly<{
+    active: boolean
+    completed: boolean
+    error?: boolean
+    icon: React.ReactNode
+    className?: string
+  }>
+) {
   const { active, completed, error, className, icon } = props
 
   return (
@@ -134,7 +136,6 @@ function OrderStepIcon({ icon, ...props }: Readonly<OrderStepIconProps>) {
 }
 
 export function OrderDetailPage() {
-
   const { t: _t } = useTranslation('payments')
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
@@ -155,13 +156,17 @@ export function OrderDetailPage() {
   const markDelivered = useMarkDelivered()
 
   const handleCopyOrderId = () => {
-    if (!orderId) {return}
+    if (!orderId) {
+      return
+    }
     navigator.clipboard.writeText(orderId)
     setSnackbar({ open: true, message: 'Order ID copied to clipboard', severity: 'success' })
   }
 
   const handleShipOrder = async () => {
-    if (!trackingNumber || !shippingCarrier || !orderId) {return}
+    if (!trackingNumber || !shippingCarrier || !orderId) {
+      return
+    }
     try {
       await shipOrder.mutateAsync({
         id: orderId,
@@ -177,7 +182,9 @@ export function OrderDetailPage() {
   }
 
   const handleCancelOrder = async () => {
-    if (!orderId) {return}
+    if (!orderId) {
+      return
+    }
     try {
       await cancelOrder.mutateAsync({
         id: orderId,
@@ -192,7 +199,9 @@ export function OrderDetailPage() {
   }
 
   const handleMarkDelivered = async () => {
-    if (!orderId) {return}
+    if (!orderId) {
+      return
+    }
     try {
       await markDelivered.mutateAsync(orderId)
       setSnackbar({ open: true, message: 'Order marked as delivered', severity: 'success' })

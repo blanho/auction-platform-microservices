@@ -212,7 +212,9 @@ export function AutoBidDialog({
                     }}
                     error={maxAmount < minMaxAmount}
                     helperText={
-                      maxAmount < minMaxAmount ? t('autoBid.minimum', { amount: formatCurrency(minMaxAmount) }) : ''
+                      maxAmount < minMaxAmount
+                        ? t('autoBid.minimum', { amount: formatCurrency(minMaxAmount) })
+                        : ''
                     }
                   />
                   <Slider
@@ -248,7 +250,9 @@ export function AutoBidDialog({
                         startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       },
                     }}
-                    helperText={t('autoBid.minimumIncrement', { amount: formatCurrency(minBidIncrement) })}
+                    helperText={t('autoBid.minimumIncrement', {
+                      amount: formatCurrency(minBidIncrement),
+                    })}
                   />
                 </Box>
 
@@ -278,7 +282,11 @@ export function AutoBidDialog({
                     {t('autoBid.summary')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {t('autoBid.summaryDesc', { bids: potentialBids, increment: formatCurrency(incrementAmount), max: formatCurrency(maxAmount) })}
+                    {t('autoBid.summaryDesc', {
+                      bids: potentialBids,
+                      increment: formatCurrency(incrementAmount),
+                      max: formatCurrency(maxAmount),
+                    })}
                   </Typography>
                 </Box>
 

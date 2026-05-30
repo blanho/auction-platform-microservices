@@ -75,10 +75,7 @@ export const JOB_PRIORITY_LABELS: Record<JobPriority, string> = {
   Critical: 'Critical',
 }
 
-export const JOB_PRIORITY_COLORS: Record<
-  JobPriority,
-  'default' | 'info' | 'warning' | 'error'
-> = {
+export const JOB_PRIORITY_COLORS: Record<JobPriority, 'default' | 'info' | 'warning' | 'error'> = {
   Low: 'default',
   Normal: 'info',
   High: 'warning',

@@ -192,7 +192,11 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
     </Card>
   )
 
-  if (!isLoading && (!data || data.items.length === 0) && Object.keys(pagination.filter).length === 0) {
+  if (
+    !isLoading &&
+    (!data || data.items.length === 0) &&
+    Object.keys(pagination.filter).length === 0
+  ) {
     return emptyContent
   }
 
@@ -228,7 +232,6 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
 }
 
 export function OrdersPage() {
-
   const { t: _t } = useTranslation('payments')
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')

@@ -20,7 +20,9 @@ function onTokenRefreshed(token: string | null) {
 }
 
 function isRetryableError(error: AxiosError): boolean {
-  if (!error.response) {return true}
+  if (!error.response) {
+    return true
+  }
   const status = error.response.status
   return status >= 500 || status === 408 || status === 429
 }
@@ -159,6 +161,21 @@ class HttpService {
 
   delete<T>(url: string) {
     return this.client.delete<T>(url)
+  }
+
+  /**
+   * Upload multipart/form-data through the shared interceptor pipeline
+   * (auth token, CSRF, retry, token refresh — all applied automatically).
+   */
+  postForm<T>(
+    url: string,
+    formData: FormData,
+    config?: { onUploadProgress?: (event: { loaded: number; total?: number }) => void }
+  ) {
+    return this.client.post<T>(url, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      ...config,
+    })
   }
 }
 

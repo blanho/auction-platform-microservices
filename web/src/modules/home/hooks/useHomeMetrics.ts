@@ -16,7 +16,12 @@ export function useHomeMetrics(): HomeMetrics {
   const { data: totalAuctionsData } = useAuctions({ page: 1, pageSize: 1 })
   const { data: categoriesData } = useActiveCategories()
   const { data: brandsData } = useBrands({ activeOnly: true, page: 1, pageSize: 1 })
-  const { data: featuredBrandsData } = useBrands({ activeOnly: true, featuredOnly: true, page: 1, pageSize: 1 })
+  const { data: featuredBrandsData } = useBrands({
+    activeOnly: true,
+    featuredOnly: true,
+    page: 1,
+    pageSize: 1,
+  })
 
   return useMemo(
     () => ({

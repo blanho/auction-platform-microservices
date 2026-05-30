@@ -1,3 +1,4 @@
+using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Providers;
@@ -280,7 +281,18 @@ namespace Bidding.Application.Services
         private async Task ExecuteAutoBid(AutoBid autoBid, Guid auctionId, decimal amount, CancellationToken cancellationToken)
         {
             var bidDto = new PlaceBidDto { AuctionId = auctionId, Amount = amount };
-            await _bidService.PlaceBidAsync(bidDto, autoBid.UserId, autoBid.Username, isAutoBid: true, cancellationToken);
+            var bid = await _bidService.PlaceBidAsync(bidDto, autoBid.UserId, autoBid.Username, isAutoBid: true, cancellationToken);
+
+            if (!IsAcceptedBid(bid))
+            {
+                _logger.LogWarning(
+                    "Auto-bid for auction {AuctionId} by {Username} was not accepted. Status: {Status}, Reason: {Reason}",
+                    auctionId,
+                    autoBid.Username,
+                    bid.Status,
+                    bid.ErrorMessage);
+                return;
+            }
 
             autoBid.RecordBid(amount);
             await _autoBidRepository.UpdateAsync(autoBid);
@@ -288,6 +300,11 @@ namespace Bidding.Application.Services
 
             _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",
                 auctionId, autoBid.Username, amount);
+        }
+
+        private static bool IsAcceptedBid(BidDto bid)
+        {
+            return bid.Status is nameof(BidStatus.Accepted) or nameof(BidStatus.AcceptedBelowReserve);
         }
     }
 }

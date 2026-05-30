@@ -85,7 +85,6 @@ const statCards: StatCardConfig[] = [
 ]
 
 export function AdminDashboardPage() {
-
   const { t: _t } = useTranslation('analytics')
   const [period, setPeriod] = useState<string>('week')
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminDashboardStats()
@@ -94,11 +93,14 @@ export function AdminDashboardPage() {
   const { data: analytics } = usePlatformAnalytics({ period })
   const { data: categories, isLoading: categoriesLoading } = useCategoryPerformance()
 
-  const handlePeriodChange = useCallback((_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
-    if (newPeriod) {
-      setPeriod(newPeriod)
-    }
-  }, [])
+  const handlePeriodChange = useCallback(
+    (_: React.MouseEvent<HTMLElement>, newPeriod: string | null) => {
+      if (newPeriod) {
+        setPeriod(newPeriod)
+      }
+    },
+    []
+  )
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

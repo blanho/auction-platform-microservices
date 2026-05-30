@@ -21,7 +21,6 @@ import { formatCurrency } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function PaymentSuccessPage() {
-
   const { t: _t } = useTranslation('payments')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()

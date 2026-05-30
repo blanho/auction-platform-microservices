@@ -61,7 +61,6 @@ const CHANNEL_COLORS: Record<NotificationChannel, string> = {
 }
 
 export function TemplatesManagementPage() {
-
   const { t: _t } = useTranslation('notifications')
   const [page, setPage] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -209,13 +208,10 @@ export function TemplatesManagementPage() {
             <TableBody>
               {isLoading && <TableSkeletonRows rows={5} columns={6} />}
               {!isLoading && templateCount === 0 && (
-                <TableEmptyStateRow
-                  colSpan={6}
-                  title="No templates found"
-                  cellSx={{ py: 8 }}
-                />
+                <TableEmptyStateRow colSpan={6} title="No templates found" cellSx={{ py: 8 }} />
               )}
-              {!isLoading && templateCount > 0 && (
+              {!isLoading &&
+                templateCount > 0 &&
                 templatesData?.items.map((template) => (
                   <TableRow
                     key={template.id}
@@ -297,8 +293,7 @@ export function TemplatesManagementPage() {
                       </Tooltip>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+                ))}
             </TableBody>
           </Table>
         </TableContainer>

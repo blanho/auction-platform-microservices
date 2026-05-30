@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Gateway.Api.Resources;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,7 +15,7 @@ public static class RateLimiterExtensions
         {
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
                 RateLimitPartition.GetFixedWindowLimiter(
-                    context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                    GetPartitionKey(context),
                     _ => new FixedWindowRateLimiterOptions
                     {
                         AutoReplenishment = true,
@@ -29,6 +30,14 @@ public static class RateLimiterExtensions
         });
 
         return services;
+    }
+
+    private static string GetPartitionKey(HttpContext context)
+    {
+        return context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? context.User?.FindFirst("sub")?.Value
+            ?? context.Connection.RemoteIpAddress?.ToString()
+            ?? "anonymous";
     }
 
     private static void ConfigureNamedLimiters(RateLimiterOptions options)

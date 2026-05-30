@@ -33,11 +33,7 @@ import {
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import {
-  RevenueChart,
-  CategoryChart,
-  PerformanceMetrics,
-} from '../components'
+import { RevenueChart, CategoryChart, PerformanceMetrics } from '../components'
 import { useUserDashboard, useSellerAnalytics, useQuickStats } from '../hooks/useAnalytics'
 import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
@@ -45,14 +41,14 @@ import type { TimeRange } from '../utils/date.utils'
 import type { TrendDataPoint, CategoryBreakdown } from '../types'
 
 export function UserDashboardPage() {
-
   const { t: _t } = useTranslation('analytics')
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
   const { data: userStats, isLoading: userLoading, error: userError } = useUserDashboard()
   const { data: sellerAnalytics, isLoading: sellerLoading } = useSellerAnalytics(timeRange)
   const { data: quickStats, isLoading: quickLoading } = useQuickStats()
 
-  const hasSellerData = sellerAnalytics && (sellerAnalytics.totalAuctions > 0 || sellerAnalytics.totalRevenue > 0)
+  const hasSellerData =
+    sellerAnalytics && (sellerAnalytics.totalAuctions > 0 || sellerAnalytics.totalRevenue > 0)
 
   const handleTimeRangeChange = (_: React.MouseEvent<HTMLElement>, newRange: TimeRange | null) => {
     if (newRange) {

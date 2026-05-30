@@ -52,7 +52,7 @@ public class RetractBidCommandHandler : ICommandHandler<RetractBidCommand, Retra
         var lockKey = BidLockKeys.ForAuction(bid.AuctionId);
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
-            TimeSpan.FromSeconds(BidDefaults.BidLockTimeoutSeconds),
+            TimeSpan.FromSeconds(BidDefaults.BidLockExpirySeconds),
             cancellationToken);
 
         if (lockHandle == null)

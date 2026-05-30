@@ -32,14 +32,10 @@ export function AttachmentItem({
           borderColor: attachment.isPrimary
             ? alpha(palette.brand.primary, 0.4)
             : palette.neutral[200],
-          bgcolor: attachment.isPrimary
-            ? alpha(palette.brand.primary, 0.03)
-            : 'transparent',
+          bgcolor: attachment.isPrimary ? alpha(palette.brand.primary, 0.03) : 'transparent',
           transition: 'all 0.2s ease-out',
           '&:hover': {
-            borderColor: attachment.isPrimary
-              ? palette.brand.primary
-              : palette.neutral[300],
+            borderColor: attachment.isPrimary ? palette.brand.primary : palette.neutral[300],
             bgcolor: attachment.isPrimary
               ? alpha(palette.brand.primary, 0.05)
               : alpha(palette.neutral[100], 0.5),

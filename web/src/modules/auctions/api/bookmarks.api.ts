@@ -42,7 +42,10 @@ interface PaginatedWatchlistResponse {
 
 export const bookmarksApi = {
   async getWatchlist(filters?: WatchlistFilters): Promise<WatchlistItem[]> {
-    const response = await http.get<PaginatedWatchlistResponse | WatchlistItem[]>('/bookmarks/watchlist', { params: filters })
+    const response = await http.get<PaginatedWatchlistResponse | WatchlistItem[]>(
+      '/bookmarks/watchlist',
+      { params: filters }
+    )
     if (Array.isArray(response.data)) {
       return response.data
     }

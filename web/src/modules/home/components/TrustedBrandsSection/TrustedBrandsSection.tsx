@@ -6,7 +6,12 @@ import { typography } from '@/shared/theme/tokens'
 import { useTranslation } from 'react-i18next'
 
 export const TrustedBrandsSection = () => {
-  const { data: featuredBrandsData } = useBrands({ activeOnly: true, featuredOnly: true, page: 1, pageSize: 8 })
+  const { data: featuredBrandsData } = useBrands({
+    activeOnly: true,
+    featuredOnly: true,
+    page: 1,
+    pageSize: 8,
+  })
   const { data: activeBrandsData } = useBrands({ activeOnly: true, page: 1, pageSize: 8 })
 
   const brands = useMemo(() => {
@@ -23,7 +28,9 @@ export const TrustedBrandsSection = () => {
 
   return (
     <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#FFFFFF', position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+      <Box
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }}
+      />
 
       <Container maxWidth="lg">
         <motion.div

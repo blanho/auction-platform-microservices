@@ -21,7 +21,11 @@ export function TableEmptyStateRow({
 }: TableEmptyStateRowProps) {
   return (
     <TableRow>
-      <TableCell colSpan={colSpan} align="center" sx={{ py: 6, ...((typeof cellSx === 'object' && !Array.isArray(cellSx)) ? cellSx : {}) }}>
+      <TableCell
+        colSpan={colSpan}
+        align="center"
+        sx={{ py: 6, ...(typeof cellSx === 'object' && !Array.isArray(cellSx) ? cellSx : {}) }}
+      >
         <Stack spacing={1} alignItems="center">
           {icon && <Box>{icon}</Box>}
           <Typography variant="h6" color="text.secondary">

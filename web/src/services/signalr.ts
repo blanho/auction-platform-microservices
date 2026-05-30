@@ -55,7 +55,9 @@ class SignalRService {
   }
 
   private setupEventHandlers(): void {
-    if (!this.connection) {return}
+    if (!this.connection) {
+      return
+    }
 
     this.connection.onreconnecting((error) => {
       signalRLogger.warn('🔄 Reconnecting...', error)
@@ -97,7 +99,9 @@ class SignalRService {
   }
 
   off<T = unknown>(eventName: string, callback?: (data: T) => void): void {
-    if (!this.connection) {return}
+    if (!this.connection) {
+      return
+    }
     if (callback) {
       this.connection.off(eventName, callback)
     } else {

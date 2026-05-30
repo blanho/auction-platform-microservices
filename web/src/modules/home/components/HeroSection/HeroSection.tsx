@@ -51,7 +51,8 @@ export const HeroSection = () => {
         sx={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=1920&q=80)',
+          backgroundImage:
+            'url(https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=1920&q=80)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 0.35,

@@ -95,7 +95,8 @@ export function ForgotPasswordPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -242,7 +243,8 @@ export function ForgotPasswordPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

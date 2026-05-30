@@ -38,9 +38,7 @@ export function SuspendUserDialog({
       <DialogTitle>{t('userManagement.suspendTitle')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
-          <InlineAlert severity="warning">
-            {t('userManagement.suspendWarning')}
-          </InlineAlert>
+          <InlineAlert severity="warning">{t('userManagement.suspendWarning')}</InlineAlert>
           <Typography>
             {t('userManagement.suspendQuestion')} <strong>{getAdminUserDisplayName(user)}</strong>?
           </Typography>

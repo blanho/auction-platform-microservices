@@ -1,8 +1,4 @@
-import {
-  TextField,
-  InputAdornment,
-  IconButton,
-} from '@mui/material'
+import { TextField, InputAdornment, IconButton } from '@mui/material'
 import type { TextFieldProps } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import type {
@@ -46,20 +42,22 @@ export function FormField<T extends FieldValues>({
   const isPasswordField = type === 'password' || showPasswordToggle
   const effectiveType = isPasswordField && showPassword ? 'text' : type
 
-  const passwordAdornment = showPasswordToggle ? {
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          onClick={() => setShowPassword(!showPassword)}
-          edge="end"
-          size="small"
-          tabIndex={-1}
-        >
-          {showPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  } : {}
+  const passwordAdornment = showPasswordToggle
+    ? {
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              onClick={() => setShowPassword(!showPassword)}
+              edge="end"
+              size="small"
+              tabIndex={-1}
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </InputAdornment>
+        ),
+      }
+    : {}
 
   const mergedInputProps = {
     ...passwordAdornment,

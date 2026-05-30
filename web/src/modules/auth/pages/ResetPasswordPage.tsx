@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
 import { InlineAlert, FormField } from '@/shared/ui'
-import {
-  LockReset,
-  West,
-  East,
-  CheckCircle,
-  Cancel,
-  Error as ErrorIcon,
-} from '@mui/icons-material'
+import { LockReset, West, East, CheckCircle, Cancel, Error as ErrorIcon } from '@mui/icons-material'
 import { z } from 'zod'
 import { useResetPassword } from '../hooks'
 import { palette } from '@/shared/theme/tokens'
@@ -94,14 +87,14 @@ export function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordForm>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
   })
 
-  const watchPassword = watch('password', '')
+  const watchPassword = useWatch({ control, name: 'password', defaultValue: '' })
 
   useEffect(() => {
     if (resetSuccess) {
@@ -148,7 +141,8 @@ export function ResetPasswordPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -257,7 +251,8 @@ export function ResetPasswordPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -371,7 +366,8 @@ export function ResetPasswordPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

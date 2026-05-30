@@ -92,7 +92,9 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             />
             <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
               ({seller.rating.toFixed(1)}
-              {seller.reviewCount !== undefined && ` • ${t('seller.review_other', { count: seller.reviewCount })}`})
+              {seller.reviewCount !== undefined &&
+                ` • ${t('seller.review_other', { count: seller.reviewCount })}`}
+              )
             </Typography>
           </Stack>
         </Box>

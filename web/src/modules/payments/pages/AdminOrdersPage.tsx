@@ -229,7 +229,6 @@ const STATUS_FILTER_OPTIONS = [
 ]
 
 export function AdminOrdersPage() {
-
   const { t: _t } = useTranslation('payments')
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
@@ -247,10 +246,7 @@ export function AdminOrdersPage() {
     []
   )
 
-  const filterValues = useMemo(
-    () => ({ status: statusFilter }),
-    [statusFilter]
-  )
+  const filterValues = useMemo(() => ({ status: statusFilter }), [statusFilter])
 
   const handleFilterChange = useCallback((key: string, value: string) => {
     if (key === 'status') {
@@ -330,7 +326,9 @@ export function AdminOrdersPage() {
   }, [handleMenuClose])
 
   const handleCancelOrder = useCallback(() => {
-    if (!selectedOrder) {return}
+    if (!selectedOrder) {
+      return
+    }
     cancelMutation.mutate({ id: selectedOrder.id, reason: cancelReason })
   }, [selectedOrder, cancelReason, cancelMutation])
 

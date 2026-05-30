@@ -39,6 +39,13 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
+    public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _context.Orders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+    }
+
     public async Task<Order> GetByAuctionIdAsync(Guid auctionId)
     {
         return await _context.Orders
@@ -86,6 +93,13 @@ public class OrderRepository : IOrderRepository
         order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Orders.Update(order);
         return order;
+    }
+
+    public async Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken)
+    {
+        order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
+        _context.Orders.Update(order);
+        return await Task.FromResult(order);
     }
 
     public async Task<int> GetCountByBuyerUsernameAsync(string username)

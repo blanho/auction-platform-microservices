@@ -24,12 +24,18 @@ public static class AuditMetadataKeys
     public const string Provider = "Provider";
     public const string PresignedUpload = "PresignedUpload";
     public const string BatchUpload = "BatchUpload";
-    public const string ActionLower = "action";
     public const string TrackingNumber = "TrackingNumber";
     public const string ShippingCarrier = "ShippingCarrier";
     public const string PaymentMethod = "PaymentMethod";
     public const string TransactionId = "TransactionId";
-    public const string PreviousRoles = "previousRoles";
-    public const string NewRoles = "newRoles";
+    public const string PreviousRoles = "PreviousRoles";
+    public const string NewRoles = "NewRoles";
+
+    /// <summary>
+    /// Lowercase variants produce camelCase JSON keys in audit payloads,
+    /// as required by the Identity service audit consumer.
+    /// Do not remove without updating all Identity service callsites.
+    /// </summary>
+    public const string ActionLower = "action";
     public const string ReasonLower = "reason";
 }

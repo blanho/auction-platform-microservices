@@ -56,26 +56,38 @@ export const ordersApi = {
     return { items: response.data, totalCount }
   },
 
-  async getMyPurchases(
-    filters: OrderFilters
-  ): Promise<PaginatedResponse<Order>> {
+  async getMyPurchases(filters: OrderFilters): Promise<PaginatedResponse<Order>> {
     const response = await http.get<Order[]>('/orders/buyer/me', { params: filters })
     const totalCount = parseInt(response.headers['x-total-count'] || '0', 10)
     const pageSize = filters.pageSize || 20
     const page = filters.page || 1
     const totalPages = Math.ceil(totalCount / pageSize)
-    return { items: response.data, totalCount, totalPages, page, pageSize, hasNextPage: page < totalPages, hasPreviousPage: page > 1 }
+    return {
+      items: response.data,
+      totalCount,
+      totalPages,
+      page,
+      pageSize,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    }
   },
 
-  async getMySales(
-    filters: OrderFilters
-  ): Promise<PaginatedResponse<Order>> {
+  async getMySales(filters: OrderFilters): Promise<PaginatedResponse<Order>> {
     const response = await http.get<Order[]>('/orders/seller/me', { params: filters })
     const totalCount = parseInt(response.headers['x-total-count'] || '0', 10)
     const pageSize = filters.pageSize || 20
     const page = filters.page || 1
     const totalPages = Math.ceil(totalCount / pageSize)
-    return { items: response.data, totalCount, totalPages, page, pageSize, hasNextPage: page < totalPages, hasPreviousPage: page > 1 }
+    return {
+      items: response.data,
+      totalCount,
+      totalPages,
+      page,
+      pageSize,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    }
   },
 
   async createOrder(data: CreateOrderRequest): Promise<Order> {

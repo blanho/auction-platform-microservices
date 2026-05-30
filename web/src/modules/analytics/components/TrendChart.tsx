@@ -80,7 +80,9 @@ export function TrendChart() {
   const isLoading = auctionLoading || revenueLoading
 
   const chartData = useMemo(() => {
-    if (!auctionTrends?.length && !revenueTrends?.length) {return []}
+    if (!auctionTrends?.length && !revenueTrends?.length) {
+      return []
+    }
 
     const dateMap = new Map<
       string,

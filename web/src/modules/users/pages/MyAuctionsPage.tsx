@@ -127,7 +127,6 @@ const STATUS_TAB_MAP: (AuctionStatus | undefined)[] = [
 ]
 
 export function MyAuctionsPage() {
-
   const { t: _t } = useTranslation('users')
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -149,7 +148,9 @@ export function MyAuctionsPage() {
   }>({ open: false, message: '', severity: 'success' })
   const [cancelDialog, setCancelDialog] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
-  const [extendDialog, setExtendDialog] = useState<{ id: string; currentEndTime: string } | null>(null)
+  const [extendDialog, setExtendDialog] = useState<{ id: string; currentEndTime: string } | null>(
+    null
+  )
   const [newEndTime, setNewEndTime] = useState('')
 
   const statusFilter = STATUS_TAB_MAP[tabValue]
@@ -247,7 +248,11 @@ export function MyAuctionsPage() {
         { id: cancelDialog, reason: cancelReason || undefined },
         {
           onSuccess: () => {
-            setSnackbar({ open: true, message: 'Auction cancelled successfully', severity: 'success' })
+            setSnackbar({
+              open: true,
+              message: 'Auction cancelled successfully',
+              severity: 'success',
+            })
             setCancelDialog(null)
             setCancelReason('')
           },
@@ -265,7 +270,11 @@ export function MyAuctionsPage() {
         { id: extendDialog.id, newEndTime },
         {
           onSuccess: () => {
-            setSnackbar({ open: true, message: 'Auction extended successfully', severity: 'success' })
+            setSnackbar({
+              open: true,
+              message: 'Auction extended successfully',
+              severity: 'success',
+            })
             setExtendDialog(null)
             setNewEndTime('')
           },
@@ -296,7 +305,13 @@ export function MyAuctionsPage() {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
       <Box sx={{ mb: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+          gap={2}
+        >
           <Box>
             <Typography
               variant="h4"
@@ -860,11 +875,7 @@ export function MyAuctionsPage() {
               '&:hover': { bgcolor: '#D97706' },
             }}
           >
-            {cancelAuctionMutation.isPending ? (
-              <CircularProgress size={20} />
-            ) : (
-              'Cancel Auction'
-            )}
+            {cancelAuctionMutation.isPending ? <CircularProgress size={20} /> : 'Cancel Auction'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -887,9 +898,7 @@ export function MyAuctionsPage() {
           {extendDialog && (
             <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600], mb: 2 }}>
               Current end time:{' '}
-              <strong>
-                {new Date(extendDialog.currentEndTime).toLocaleString()}
-              </strong>
+              <strong>{new Date(extendDialog.currentEndTime).toLocaleString()}</strong>
             </Typography>
           )}
           <TextField
@@ -953,10 +962,7 @@ export function MyAuctionsPage() {
         </Alert>
       </Snackbar>
 
-      <ExportAuctionsDialog
-        open={exportDialogOpen}
-        onClose={() => setExportDialogOpen(false)}
-      />
+      <ExportAuctionsDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
 
       <ImportAuctionsDialog
         open={importDialogOpen}

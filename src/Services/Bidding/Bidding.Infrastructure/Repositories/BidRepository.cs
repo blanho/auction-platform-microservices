@@ -174,7 +174,7 @@ namespace Bidding.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .OrderByDescending(x => x.Amount)
-                .ThenByDescending(x => x.BidTime)
+                .ThenBy(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -193,7 +193,7 @@ namespace Bidding.Infrastructure.Repositories
                 .GroupBy(x => x.AuctionId)
                 .Select(g => g
                     .OrderByDescending(b => b.Amount)
-                    .ThenByDescending(b => b.BidTime)
+                    .ThenBy(b => b.BidTime)
                     .First())
                 .ToListAsync(cancellationToken);
 
@@ -213,7 +213,7 @@ namespace Bidding.Infrastructure.Repositories
             var higherCount = await _context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
-                .Where(x => x.Amount > amount || (x.Amount == amount && x.BidTime > bidTime))
+                .Where(x => x.Amount > amount || (x.Amount == amount && x.BidTime < bidTime))
                 .CountAsync(cancellationToken);
 
             return higherCount + 1;
@@ -227,7 +227,7 @@ namespace Bidding.Infrastructure.Repositories
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve) &&
                     x.Id != excludeBidId)
                 .OrderByDescending(x => x.Amount)
-                .ThenByDescending(x => x.BidTime)
+                .ThenBy(x => x.BidTime)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -305,12 +305,12 @@ namespace Bidding.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .GroupBy(x => x.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).First())
+                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
                     (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    ob.Amount > b.Amount))
+                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))))
                 .CountAsync(cancellationToken);
 
             return count;
@@ -327,12 +327,12 @@ namespace Bidding.Infrastructure.Repositories
             var winningBidsQuery = query
                 .Where(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve)
                 .GroupBy(b => b.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).First())
+                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
                     (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    ob.Amount > b.Amount));
+                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))));
 
             var auctionsWon = await winningBidsQuery.CountAsync(cancellationToken);
             var totalAmountWon = await winningBidsQuery.SumAsync(b => b.Amount, cancellationToken);
@@ -427,12 +427,12 @@ namespace Bidding.Infrastructure.Repositories
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
                 .GroupBy(x => x.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).First())
+                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
                 .Where(b => !_context.Bids.Any(ob =>
                     !ob.IsDeleted &&
                     ob.AuctionId == b.AuctionId &&
                     (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    ob.Amount > b.Amount));
+                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))));
 
             if (filter.AuctionId.HasValue)
             {

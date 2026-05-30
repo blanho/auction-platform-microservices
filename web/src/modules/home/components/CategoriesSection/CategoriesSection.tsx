@@ -14,7 +14,9 @@ export const CategoriesSection = () => {
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FAFAF9', position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+      <Box
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }}
+      />
       <Container maxWidth="xl">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -145,7 +147,8 @@ export const CategoriesSection = () => {
                       sx={{
                         position: 'absolute',
                         inset: 0,
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
+                        background:
+                          'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)',
                       }}
                     />
                     <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 2 }}>
@@ -160,7 +163,9 @@ export const CategoriesSection = () => {
                       >
                         {category.name}
                       </Typography>
-                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', mt: 0.5 }}>
+                      <Typography
+                        sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.6875rem', mt: 0.5 }}
+                      >
                         {t('categories.itemCount', { count: category.auctionCount ?? 0 })}
                       </Typography>
                     </Box>

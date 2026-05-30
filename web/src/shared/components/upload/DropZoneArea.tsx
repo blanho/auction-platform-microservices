@@ -38,16 +38,12 @@ export function DropZoneArea({
       }}
       sx={{
         border: '2px dashed',
-        borderColor: isDragOver
-          ? palette.brand.primary
-          : alpha(palette.neutral[400], 0.4),
+        borderColor: isDragOver ? palette.brand.primary : alpha(palette.neutral[400], 0.4),
         borderRadius: 2,
         p: compact ? 3 : 4,
         textAlign: 'center',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
-        bgcolor: isDragOver
-          ? alpha(palette.brand.primary, 0.04)
-          : 'transparent',
+        bgcolor: isDragOver ? alpha(palette.brand.primary, 0.04) : 'transparent',
         transition: 'all 0.2s ease-out',
         opacity: isDisabled ? 0.5 : 1,
         outline: 'none',
@@ -89,17 +85,24 @@ export function DropZoneArea({
 
       <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1.5 }}>
         {hasImages && (
-          <Chip label={t('upload.images')} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+          <Chip
+            label={t('upload.images')}
+            size="small"
+            variant="outlined"
+            sx={{ borderRadius: 1 }}
+          />
         )}
         {hasDocuments && (
-          <Chip label={t('upload.documents')} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+          <Chip
+            label={t('upload.documents')}
+            size="small"
+            variant="outlined"
+            sx={{ borderRadius: 1 }}
+          />
         )}
       </Stack>
 
-      <Typography
-        variant="caption"
-        sx={{ color: palette.neutral[400], mt: 1, display: 'block' }}
-      >
+      <Typography variant="caption" sx={{ color: palette.neutral[400], mt: 1, display: 'block' }}>
         {t('upload.maxSize', { size: maxSizeMb, remaining: remainingSlots, total: maxFiles })}
       </Typography>
     </Box>

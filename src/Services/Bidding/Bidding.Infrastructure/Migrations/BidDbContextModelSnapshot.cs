@@ -152,7 +152,7 @@ namespace Bidding.Infrastructure.Migrations
 
                     b.HasIndex("AuctionId", "Amount")
                         .IsUnique()
-                        .HasFilter("\"IsDeleted\" = false AND \"Status\" = 1");
+                        .HasFilter("\"IsDeleted\" = false AND \"Status\" IN (1, 2)");
 
                     b.HasIndex("AuctionId", "BidTime");
 

@@ -11,11 +11,7 @@ interface AuctionGridProps {
 
 const SKELETON_ITEMS = Array.from({ length: 8 }, (_, index) => index)
 
-export const AuctionGrid = ({
-  auctions,
-  isLoading,
-  emptyMessage,
-}: AuctionGridProps) => {
+export const AuctionGrid = ({ auctions, isLoading, emptyMessage }: AuctionGridProps) => {
   const { t } = useTranslation('common')
   const resolvedEmptyMessage = emptyMessage ?? t('auctionCard.noAuctionsFound')
   if (isLoading) {
@@ -31,7 +27,9 @@ export const AuctionGrid = ({
   }
 
   if (auctions.length === 0) {
-    return <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>{resolvedEmptyMessage}</Box>
+    return (
+      <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>{resolvedEmptyMessage}</Box>
+    )
   }
 
   return (

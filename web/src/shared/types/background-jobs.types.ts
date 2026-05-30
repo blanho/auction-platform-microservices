@@ -1,9 +1,4 @@
-export type BackgroundJobStatus = 
-  | 'Pending'
-  | 'Running'
-  | 'Completed'
-  | 'Failed'
-  | 'Cancelled'
+export type BackgroundJobStatus = 'Pending' | 'Running' | 'Completed' | 'Failed' | 'Cancelled'
 
 export interface BackgroundJobResponse {
   id: string

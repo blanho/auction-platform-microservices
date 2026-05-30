@@ -17,7 +17,9 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
 
   const handleBidPlaced = useCallback(
     (bidUpdate: BidUpdatePayload) => {
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
       if (bidUpdate.auctionId === currentAuctionId.current) {
         signalRLogger.info('💰 New bid placed:', bidUpdate.bidId)
         queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
@@ -29,7 +31,9 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
 
   const handleAuctionEnded = useCallback(
     (status: AuctionStatusPayload) => {
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
       if (status.auctionId === currentAuctionId.current) {
         signalRLogger.info('🏁 Auction ended:', status.auctionId)
         queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
@@ -40,7 +44,9 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
 
   const handleAuctionExtended = useCallback(
     (status: AuctionStatusPayload) => {
-      if (!isMountedRef.current) {return}
+      if (!isMountedRef.current) {
+        return
+      }
       if (status.auctionId === currentAuctionId.current) {
         signalRLogger.info('⏰ Auction extended:', status.auctionId)
         queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
@@ -61,7 +67,9 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
     }
 
     const joinRoomAndListen = async () => {
-      if (hasJoined.current) {return}
+      if (hasJoined.current) {
+        return
+      }
 
       try {
         await signalRService.joinAuctionRoom(auctionId)

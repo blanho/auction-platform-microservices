@@ -38,7 +38,9 @@ function mapAuctionStatus(status: string): AuctionStatus {
  * Determines if auction is ending soon (within 1 hour)
  */
 function isEndingSoon(endTime: string, status: string): boolean {
-  if (status !== 'Active') {return false}
+  if (status !== 'Active') {
+    return false
+  }
   const end = new Date(endTime)
   const now = new Date()
   const hoursRemaining = (end.getTime() - now.getTime()) / (1000 * 60 * 60)

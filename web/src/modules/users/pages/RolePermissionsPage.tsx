@@ -22,11 +22,15 @@ import {
   useSetPermissions,
 } from '../hooks'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { RoleCard, RoleCardSkeleton, PermissionsPanel, PermissionsPanelSkeleton } from '../components'
+import {
+  RoleCard,
+  RoleCardSkeleton,
+  PermissionsPanel,
+  PermissionsPanelSkeleton,
+} from '../components'
 import type { RoleDto } from '../types'
 
 export function RolePermissionsPage() {
-
   const { t: _t } = useTranslation('users')
   const [selectedRole, setSelectedRole] = useState<RoleDto | null>(null)
   const [loadingPermission, setLoadingPermission] = useState<string | null>(null)
@@ -108,10 +112,7 @@ export function RolePermissionsPage() {
         })
 
         setSelectedRole((prev) => (prev ? { ...prev, permissions: newPermissions } : null))
-        showSnackbar(
-          `All permissions in category ${enabled ? 'granted' : 'revoked'}`,
-          'success'
-        )
+        showSnackbar(`All permissions in category ${enabled ? 'granted' : 'revoked'}`, 'success')
         refetchRoles()
       } catch {
         showSnackbar('Failed to update permissions', 'error')

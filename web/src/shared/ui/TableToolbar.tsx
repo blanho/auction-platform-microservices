@@ -81,8 +81,7 @@ export function TableToolbar({
   )
 
   const hasActiveFilters =
-    localSearch ||
-    Object.values(filterValues).some((v) => v !== '' && v !== undefined)
+    localSearch || Object.values(filterValues).some((v) => v !== '' && v !== undefined)
 
   return (
     <Stack
@@ -131,12 +130,7 @@ export function TableToolbar({
       {(showClearButton || showRefreshButton) && (
         <Box sx={{ display: 'flex', gap: 1, ml: { md: 'auto' } }}>
           {showClearButton && hasActiveFilters && onClearFilters && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Close />}
-              onClick={onClearFilters}
-            >
+            <Button variant="outlined" size="small" startIcon={<Close />} onClick={onClearFilters}>
               {t('table.clear')}
             </Button>
           )}

@@ -50,7 +50,7 @@ public class OrderCommandEndpoints : ICarterModule
             .WithSummary("Mark order as shipped")
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Ship));
 
         group.MapPost("/{id:guid}/cancel", CancelOrder)
             .WithName("CancelOrder")
@@ -62,7 +62,7 @@ public class OrderCommandEndpoints : ICarterModule
             .WithName("MarkOrderDelivered")
             .WithSummary("Mark order as delivered")
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Deliver));
     }
 
     private static async Task<IResult> Create(

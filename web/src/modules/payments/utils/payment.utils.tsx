@@ -7,7 +7,9 @@ export function getCardBrandIcon(_brand?: string): React.ReactElement {
 }
 
 export function formatCardBrand(brand?: string): string {
-  if (!brand) {return 'Card'}
+  if (!brand) {
+    return 'Card'
+  }
   return CARD_BRANDS[brand.toLowerCase()] || brand
 }
 
@@ -16,14 +18,18 @@ export function formatCardNumber(last4: string, brand?: string): string {
 }
 
 export function formatCardExpiry(month?: number, year?: number): string {
-  if (!month || !year) {return ''}
+  if (!month || !year) {
+    return ''
+  }
   const formattedMonth = month.toString().padStart(2, '0')
   const formattedYear = year.toString().slice(-2)
   return `${formattedMonth}/${formattedYear}`
 }
 
 export function isCardExpired(month?: number, year?: number): boolean {
-  if (!month || !year) {return false}
+  if (!month || !year) {
+    return false
+  }
   const now = new Date()
   const expiryDate = new Date(year, month)
   return expiryDate < now

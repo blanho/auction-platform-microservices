@@ -2,21 +2,8 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18next from 'i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Drawer,
-  Box,
-  Typography,
-  IconButton,
-  Button,
-  Skeleton,
-} from '@mui/material'
-import {
-  Close,
-  FavoriteBorder,
-  Favorite,
-  Timer,
-  East,
-} from '@mui/icons-material'
+import { Drawer, Box, Typography, IconButton, Button, Skeleton } from '@mui/material'
+import { Close, FavoriteBorder, Favorite, Timer, East } from '@mui/icons-material'
 import { useWatchlist, useRemoveFromWatchlist, useWatchlistCount } from '@/modules/auctions/hooks'
 import type { WatchlistItem } from '@/modules/auctions/api/bookmarks.api'
 import { palette } from '@/shared/theme/tokens'
@@ -56,7 +43,12 @@ function formatTimeLeft(endTime: string): string {
   return i18next.t('time.minutesLeft', { minutes })
 }
 
-function WishlistItemCard({ item, onRemove, isRemoving, onClose }: Readonly<WishlistItemCardProps>) {
+function WishlistItemCard({
+  item,
+  onRemove,
+  isRemoving,
+  onClose,
+}: Readonly<WishlistItemCardProps>) {
   const { t } = useTranslation()
   const { auction } = item
 
@@ -131,7 +123,8 @@ function WishlistItemCard({ item, onRemove, isRemoving, onClose }: Readonly<Wish
             <Typography
               sx={{
                 fontSize: '0.75rem',
-                color: auction.status === 'ending-soon' ? palette.semantic.error : palette.neutral[500],
+                color:
+                  auction.status === 'ending-soon' ? palette.semantic.error : palette.neutral[500],
                 fontWeight: auction.status === 'ending-soon' ? 600 : 400,
               }}
             >

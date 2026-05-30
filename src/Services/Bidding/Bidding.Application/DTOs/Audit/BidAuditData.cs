@@ -1,3 +1,4 @@
+using Bidding.Application.DTOs;
 using Bidding.Domain.Entities;
 
 namespace Bidding.Application.DTOs.Audit;
@@ -23,6 +24,21 @@ public record BidAuditData
             BidderUsername = bid.BidderUsername,
             Amount = bid.Amount,
             Status = bid.Status.ToString(),
+            BidTime = bid.BidTime,
+            CreatedAt = bid.CreatedAt
+        };
+    }
+
+    public static BidAuditData FromDto(BidDto bid)
+    {
+        return new BidAuditData
+        {
+            BidId = bid.Id,
+            AuctionId = bid.AuctionId,
+            BidderId = bid.BidderId,
+            BidderUsername = bid.BidderUsername,
+            Amount = bid.Amount,
+            Status = bid.Status,
             BidTime = bid.BidTime,
             CreatedAt = bid.CreatedAt
         };

@@ -4,7 +4,9 @@ export function serializeShippingAddress(address: ShippingAddress): string {
   return JSON.stringify(address)
 }
 
-export function parseShippingAddress(addressString: string | ShippingAddress | undefined): ShippingAddress | null {
+export function parseShippingAddress(
+  addressString: string | ShippingAddress | undefined
+): ShippingAddress | null {
   if (!addressString) {
     return null
   }
@@ -27,7 +29,9 @@ export function parseShippingAddress(addressString: string | ShippingAddress | u
   }
 }
 
-export function formatShippingAddressForDisplay(address: ShippingAddress | string | undefined): string {
+export function formatShippingAddressForDisplay(
+  address: ShippingAddress | string | undefined
+): string {
   if (!address) {
     return 'No address provided'
   }

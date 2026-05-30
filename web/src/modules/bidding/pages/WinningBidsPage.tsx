@@ -21,7 +21,6 @@ import { BID_CONSTANTS } from '../constants'
 import { formatCurrency, formatRelativeTime } from '@/shared/utils'
 
 export const WinningBidsPage = () => {
-
   const { t: _t } = useTranslation('bidding')
   const navigate = useNavigate()
   const [page, setPage] = useState(1)

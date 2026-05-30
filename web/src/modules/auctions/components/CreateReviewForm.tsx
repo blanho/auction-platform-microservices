@@ -1,14 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Typography,
-  TextField,
-  Rating,
-  Button,
-  Stack,
-  CircularProgress,
-} from '@mui/material'
+import { Box, Typography, TextField, Rating, Button, Stack, CircularProgress } from '@mui/material'
 import { InlineAlert } from '@/shared/ui'
 import { Star } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
@@ -24,16 +16,16 @@ interface CreateReviewFormProps {
   onCancel?: () => void
 }
 
-  const getRatingLabel = (value: number) => {
-    const labels: Record<number, string> = {
-      1: t('review.ratingPoor'),
-      2: t('review.ratingFair'),
-      3: t('review.ratingGood'),
-      4: t('review.ratingVeryGood'),
-      5: t('review.ratingExcellent'),
-    }
-    return labels[value] ?? ''
+const getRatingLabel = (value: number) => {
+  const labels: Record<number, string> = {
+    1: t('review.ratingPoor'),
+    2: t('review.ratingFair'),
+    3: t('review.ratingGood'),
+    4: t('review.ratingVeryGood'),
+    5: t('review.ratingExcellent'),
   }
+  return labels[value] ?? ''
+}
 
 export function CreateReviewForm({
   auctionId,
@@ -126,7 +118,7 @@ export function CreateReviewForm({
           />
           {(rating !== null || hover >= 0) && (
             <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
-              {getRatingLabel(hover >= 0 ? hover : rating ?? 0)}
+              {getRatingLabel(hover >= 0 ? hover : (rating ?? 0))}
             </Typography>
           )}
         </Stack>

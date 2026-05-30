@@ -188,7 +188,7 @@ function AddPaymentMethodDialog({
   const formatExpiryDate = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
     if (v.length >= 2) {
-      return `${v.substring(0, 2)  }/${  v.substring(2, 4)}`
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`
     }
     return v
   }
@@ -290,7 +290,6 @@ function PaymentMethodsSkeleton() {
 }
 
 export function PaymentMethodsPage() {
-
   const { t: _t } = useTranslation('payments')
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)

@@ -41,13 +41,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12 }}>
-          <FormField
-            name="title"
-            register={register}
-            errors={errors}
-            fullWidth
-            label="Title"
-          />
+          <FormField name="title" register={register} errors={errors} fullWidth label="Title" />
         </Grid>
         <Grid size={{ xs: 12 }}>
           <FormField

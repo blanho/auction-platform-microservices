@@ -40,7 +40,6 @@ const formatDateLong = (dateString: string) => {
 }
 
 export function TransactionDetailPage() {
-
   const { t: _t } = useTranslation('payments')
   const { transactionId } = useParams<{ transactionId: string }>()
   const navigate = useNavigate()
@@ -61,7 +60,9 @@ export function TransactionDetailPage() {
   })
 
   const handleCopyId = () => {
-    if (!transactionId) {return}
+    if (!transactionId) {
+      return
+    }
     navigator.clipboard.writeText(transactionId)
   }
 

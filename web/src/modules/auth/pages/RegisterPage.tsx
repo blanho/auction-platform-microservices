@@ -184,7 +184,8 @@ export function RegisterPage() {
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -331,7 +332,8 @@ export function RegisterPage() {
           sx={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: 'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -353,11 +355,7 @@ export function RegisterPage() {
             color: palette.neutral[0],
           }}
         >
-          <motion.div
-            initial="initial"
-            animate="animate"
-            variants={staggerContainer}
-          >
+          <motion.div initial="initial" animate="animate" variants={staggerContainer}>
             <motion.div variants={staggerItem}>
               <Typography
                 sx={{
@@ -383,7 +381,8 @@ export function RegisterPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Join our community of collectors and discover extraordinary pieces from around the world.
+                Join our community of collectors and discover extraordinary pieces from around the
+                world.
               </Typography>
             </motion.div>
 
@@ -608,9 +607,7 @@ export function RegisterPage() {
                     }
                   />
                   {!agreedToTerms && isSubmitting && (
-                    <FormHelperText error>
-                      {t('validation.termsRequired')}
-                    </FormHelperText>
+                    <FormHelperText error>{t('validation.termsRequired')}</FormHelperText>
                   )}
                 </Box>
 

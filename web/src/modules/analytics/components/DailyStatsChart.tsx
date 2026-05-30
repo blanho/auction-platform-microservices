@@ -65,7 +65,9 @@ export function DailyStatsChart() {
   const { data: dailyStats, isLoading } = useDailyStats()
 
   const chartData = useMemo(() => {
-    if (!dailyStats) {return []}
+    if (!dailyStats) {
+      return []
+    }
 
     const dateMap = new Map<string, ChartDataPoint>()
 

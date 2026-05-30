@@ -43,7 +43,9 @@ export const FeaturedAuctionsSection = () => {
 
   return (
     <Box sx={{ py: { xs: 10, md: 16 }, bgcolor: '#FFFFFF', position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }} />
+      <Box
+        sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', bgcolor: '#E7E5E4' }}
+      />
 
       <Container maxWidth="xl">
         <motion.div
@@ -127,13 +129,11 @@ export const FeaturedAuctionsSection = () => {
                 {error instanceof Error ? error.message : t('featuredAuctions.errorFallback')}
               </Alert>
             </Grid>
-          ) : featuredLoading && (
+          ) : (
+            featuredLoading &&
             Array.from({ length: 4 }).map((_, index) => (
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={index}>
-                <Skeleton
-                  variant="rectangular"
-                  sx={{ aspectRatio: '3/4', bgcolor: '#F5F5F4' }}
-                />
+                <Skeleton variant="rectangular" sx={{ aspectRatio: '3/4', bgcolor: '#F5F5F4' }} />
               </Grid>
             ))
           )}
@@ -144,7 +144,9 @@ export const FeaturedAuctionsSection = () => {
               </Typography>
             </Grid>
           )}
-          {!isError && !featuredLoading && featuredAuctions.length > 0 && (
+          {!isError &&
+            !featuredLoading &&
+            featuredAuctions.length > 0 &&
             featuredAuctions.map((auction, index) => (
               <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={auction.id}>
                 <motion.div
@@ -261,7 +263,13 @@ export const FeaturedAuctionsSection = () => {
                     >
                       {auction.title}
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Typography
                         sx={{
                           color: '#1C1917',
@@ -283,8 +291,7 @@ export const FeaturedAuctionsSection = () => {
                   </Box>
                 </motion.div>
               </Grid>
-            ))
-          )}
+            ))}
         </Grid>
       </Container>
     </Box>

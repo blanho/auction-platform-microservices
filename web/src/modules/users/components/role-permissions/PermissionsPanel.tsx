@@ -117,7 +117,10 @@ export function PermissionsPanel({
               {t('rolePermissions.permissionsFor', { role: role.name })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {t('rolePermissions.permissionsEnabled', { enabled: enabledPermissions.size, total: definitions.length })}
+              {t('rolePermissions.permissionsEnabled', {
+                enabled: enabledPermissions.size,
+                total: definitions.length,
+              })}
             </Typography>
           </Box>
           <Chip
@@ -162,7 +165,13 @@ export function PermissionsPanel({
                         color={allEnabled ? 'success' : 'default'}
                         variant={allEnabled ? 'filled' : 'outlined'}
                       />
-                      <Tooltip title={allEnabled ? t('rolePermissions.revokeAll') : t('rolePermissions.grantAll')}>
+                      <Tooltip
+                        title={
+                          allEnabled
+                            ? t('rolePermissions.revokeAll')
+                            : t('rolePermissions.grantAll')
+                        }
+                      >
                         <IconButton
                           size="small"
                           onClick={(e) => {

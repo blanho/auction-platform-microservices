@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
@@ -35,33 +35,33 @@ import { BidSection, BidSectionSkeleton } from '../components/BidSection'
 import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
 import { ProductTabs, ProductTabsSkeleton } from '../components/ProductTabs'
 import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
-import { useAuctionSignalR, useAuction, useBuyNow, useToggleWatchlist } from '../hooks'
+import { useAuction } from '../hooks'
 import { useRecordView } from '../hooks/useViews'
-import { useAutoBidForAuction, usePlaceBid } from '@/modules/bidding/hooks'
+import { useAuctionSignalR } from '../hooks/useAuctionSignalR'
+import { useAuctionDetailActions } from '../hooks/useAuctionDetailActions'
+import { useAutoBidForAuction } from '@/modules/bidding/hooks'
 import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
   const { t } = useTranslation('auctions')
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const { data: auction, isLoading } = useAuction(id ?? '')
   const { isAuthenticated } = useAuth()
   const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
-  const buyNowMutation = useBuyNow()
-  const toggleWatchlistMutation = useToggleWatchlist()
-  const placeBidMutation = usePlaceBid()
   const recordView = useRecordView()
   const hasRecordedView = useRef(false)
-  const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error' | 'info'
-  }>({
-    open: false,
-    message: '',
-    severity: 'info',
-  })
+
+  const {
+    snackbar,
+    buyNowDialogOpen,
+    setBuyNowDialogOpen,
+    buyNowMutation,
+    handleToggleFavorite,
+    handleShare,
+    handlePlaceBid,
+    handleBuyNow,
+    confirmBuyNow,
+  } = useAuctionDetailActions(id, auction)
 
   useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
 
@@ -71,97 +71,6 @@ export function AuctionDetailPage() {
       recordView.mutate(id)
     }
   }, [id, isLoading, auction, recordView])
-
-  const handleToggleFavorite = useCallback(() => {
-    if (!id) {
-      return
-    }
-    toggleWatchlistMutation.mutate(
-      { auctionId: id, isInWatchlist: auction?.isWatching ?? false },
-      {
-        onSuccess: () => {
-          setSnackbar({
-            open: true,
-            message: auction?.isWatching ? t('messages.removedFromWatchlist') : t('messages.addedToWatchlist'),
-            severity: 'success',
-          })
-        },
-        onError: () => {
-          setSnackbar({
-            open: true,
-            message: t('watchlist.updateFailed'),
-            severity: 'error',
-          })
-        },
-      }
-    )
-  }, [id, auction?.isWatching, toggleWatchlistMutation])
-
-  const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(globalThis.location.href)
-    setSnackbar({
-      open: true,
-      message: t('messages.linkCopied'),
-      severity: 'success',
-    })
-  }, [t])
-
-  const handlePlaceBid = useCallback(
-    async (amount: number) => {
-      if (!id) {
-        return
-      }
-      placeBidMutation.mutate(
-        { auctionId: id, amount },
-        {
-          onSuccess: () => {
-            setSnackbar({
-              open: true,
-              message: t('messages.bidPlaced'),
-              severity: 'success',
-            })
-          },
-          onError: (error) => {
-            setSnackbar({
-              open: true,
-              message: error instanceof Error ? error.message : t('messages.bidFailed'),
-              severity: 'error',
-            })
-          },
-        }
-      )
-    },
-    [id, placeBidMutation]
-  )
-
-  const handleBuyNow = useCallback(async () => {
-    setBuyNowDialogOpen(true)
-  }, [])
-
-  const confirmBuyNow = useCallback(async () => {
-    if (!id) {
-      return
-    }
-    buyNowMutation.mutate(id, {
-      onSuccess: () => {
-        setBuyNowDialogOpen(false)
-        setSnackbar({
-          open: true,
-          message: t('messages.purchaseSuccess'),
-          severity: 'success',
-        })
-        setTimeout(() => navigate('/account/orders'), 2000)
-      },
-      onError: () => {
-        setBuyNowDialogOpen(false)
-        setSnackbar({
-          open: true,
-          message: t('messages.purchaseFailed'),
-          severity: 'error',
-        })
-      },
-    })
-  }, [id, buyNowMutation, navigate])
 
   if (isLoading || !auction) {
     return <AuctionDetailPageSkeleton />
@@ -255,7 +164,9 @@ export function AuctionDetailPage() {
                   sx={{ color: palette.neutral[500] }}
                 >
                   <Visibility fontSize="small" />
-                  <Typography variant="body2">{auction.watcherCount} {t('detail.watching')}</Typography>
+                  <Typography variant="body2">
+                    {auction.watcherCount} {t('detail.watching')}
+                  </Typography>
                 </Stack>
 
                 <Stack direction="row" spacing={0.5}>
@@ -318,13 +229,7 @@ export function AuctionDetailPage() {
               <Box sx={{ mt: 3 }}>
                 <SellerInfo
                   seller={auction.seller}
-                  onContact={() =>
-                    setSnackbar({
-                      open: true,
-                      message: t('messages.openingChat'),
-                      severity: 'info',
-                    })
-                  }
+                  onContact={() => snackbar.show(t('messages.openingChat'), 'info')}
                 />
               </Box>
             </Box>
@@ -405,7 +310,7 @@ export function AuctionDetailPage() {
                 color: palette.brand.primary,
               }}
             >
-              ${auction?.buyNowPrice?.toLocaleString()}
+              {auction?.buyNowPrice?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
             </Typography>
           </Box>
         </DialogContent>
@@ -440,13 +345,10 @@ export function AuctionDetailPage() {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        onClose={snackbar.close}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <InlineAlert
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+        <InlineAlert severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </InlineAlert>
       </Snackbar>
