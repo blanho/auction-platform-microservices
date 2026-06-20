@@ -62,7 +62,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             CollectAffectedBidder(auction, affectedBidderAuctions);
             auction.Cancel("Seller account deleted");
             await _writeRepository.UpdateAsync(auction, cancellationToken);
-            
+
             _logger.LogWarning(
                 "Cancelled auction {AuctionId} ({Title}) - Status: {Status}, Had bids: {HadBids}",
                 auction.Id,

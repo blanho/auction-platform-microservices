@@ -32,7 +32,7 @@ public class GetBidByIdQueryHandler : IQueryHandler<GetBidByIdQuery, BidDetailDt
         var isWinningBid = isHighestBid && bid.Status == BidStatus.Accepted;
 
         var nextMinimumBid = isHighestBid || highestBid == null ? null : (decimal?)BidIncrementHelper.GetMinimumNextBid(highestBid.Amount);
-        
+
         return Result.Success<BidDetailDto?>(new BidDetailDto
         {
             Id = bid.Id,

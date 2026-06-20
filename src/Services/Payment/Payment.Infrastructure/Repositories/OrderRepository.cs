@@ -17,15 +17,15 @@ public class OrderRepository : IOrderRepository
 {
     private readonly PaymentDbContext _context;
 
-    private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap = 
+    private static readonly Dictionary<string, Expression<Func<Order, object>>> OrderSortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["createdat"] = o => o.CreatedAt,
-        ["totalamount"] = o => o.TotalAmount,
-        ["status"] = o => o.Status,
-        ["paidat"] = o => o.PaidAt!,
-        ["itemtitle"] = o => o.ItemTitle
-    };
+        {
+            ["createdat"] = o => o.CreatedAt,
+            ["totalamount"] = o => o.TotalAmount,
+            ["status"] = o => o.Status,
+            ["paidat"] = o => o.PaidAt!,
+            ["itemtitle"] = o => o.ItemTitle
+        };
 
     public OrderRepository(PaymentDbContext context)
     {
@@ -66,7 +66,7 @@ public class OrderRepository : IOrderRepository
     private async Task<PaginatedResult<Order>> GetOrdersByQueryParamsAsync(OrderQueryParams queryParams)
     {
         var query = _context.Orders.AsNoTracking();
-        
+
         if (queryParams.Filter != null)
         {
             query = queryParams.Filter.Apply(query);
@@ -117,8 +117,8 @@ public class OrderRepository : IOrderRepository
     }
 
     public async Task<RevenueStatsDto> GetRevenueStatsAsync(
-        DateTimeOffset? startDate, 
-        DateTimeOffset? endDate, 
+        DateTimeOffset? startDate,
+        DateTimeOffset? endDate,
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -127,14 +127,14 @@ public class OrderRepository : IOrderRepository
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
         var query = _context.Orders.AsNoTracking().AsQueryable();
-        
+
         if (startDate.HasValue)
             query = query.Where(o => o.CreatedAt >= startDate.Value);
         if (endDate.HasValue)
             query = query.Where(o => o.CreatedAt <= endDate.Value);
 
         var allOrders = await query.ToListAsync(cancellationToken);
-        
+
         var completedOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Completed).ToList();
         var pendingOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Pending).ToList();
         var refundedOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Refunded).ToList();
@@ -229,7 +229,7 @@ public class OrderRepository : IOrderRepository
         CancellationToken cancellationToken = default)
     {
         var query = _context.Orders.AsNoTracking();
-        
+
         if (queryParams.Filter != null)
         {
             query = queryParams.Filter.Apply(query);

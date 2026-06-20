@@ -112,7 +112,7 @@ public static class ObservabilityExtensions
 
         return services;
     }
-    
+
     public static IApplicationBuilder UseRequestTracing(this IApplicationBuilder app)
     {
         return app.UseMiddleware<TracingMiddleware>();

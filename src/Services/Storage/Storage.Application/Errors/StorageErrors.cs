@@ -22,9 +22,6 @@ public static class StorageErrors
     public static Error InvalidContentType(string contentType) =>
         LocalizableError.Localizable("Storage.InvalidContentType", $"Content type '{contentType}' is not allowed", contentType);
 
-    public static readonly Error NoFilesProvided =
-        Error.Create("Storage.NoFiles", "No files provided");
-
     public static Error TooManyFiles(int max) =>
         LocalizableError.Localizable("Storage.TooManyFiles", $"Maximum {max} files allowed per upload", max);
 

@@ -32,7 +32,7 @@ public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistComman
 
         var exists = await _bookmarkRepository.ExistsAsync(
             request.UserId, request.AuctionId, BookmarkType.Watchlist, cancellationToken);
-        
+
         if (exists)
             return Result.Failure<BookmarkItemDto>(AuctionErrors.Bookmark.AlreadyExists);
 
@@ -47,7 +47,7 @@ public class AddToWatchlistCommandHandler : ICommandHandler<AddToWatchlistComman
         await _bookmarkRepository.AddAsync(bookmark, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("User {Username} added auction {AuctionId} to watchlist", 
+        _logger.LogInformation("User {Username} added auction {AuctionId} to watchlist",
             request.Username, request.AuctionId);
 
         var result = new BookmarkItemDto

@@ -38,7 +38,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
         _logger.LogInformation("Activating auction {AuctionId}", request.AuctionId);
 
         var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
-        
+
         if (auction == null)
         {
             return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
@@ -46,7 +46,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
 
         if (auction.SellerId != request.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to activate auction {AuctionId} owned by {OwnerId}", 
+            _logger.LogWarning("User {UserId} attempted to activate auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.AuctionId, auction.SellerId);
             return Result.Failure<AuctionDto>(AuctionErrors.Auction.Forbidden);
         }
@@ -81,7 +81,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
             },
             cancellationToken);
 
-        _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live", 
+        _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live",
             request.AuctionId, previousStatus);
 
         return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));

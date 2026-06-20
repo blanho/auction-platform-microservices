@@ -79,10 +79,10 @@ public class IndexManagementService : IIndexManagementService
                         .EdgeNGram("autocomplete_tokenizer", e => e
                             .MinGram(SearchDefaults.NgramMinLength)
                             .MaxGram(SearchDefaults.NgramMaxLength)
-                            .TokenChars(new[] 
-                            { 
-                                TokenChar.Letter, 
-                                TokenChar.Digit 
+                            .TokenChars(new[]
+                            {
+                                TokenChar.Letter,
+                                TokenChar.Digit
                             })))))
             .Mappings(m => m
                 .Dynamic(DynamicMapping.Strict)
@@ -207,8 +207,8 @@ public class IndexManagementService : IIndexManagementService
         try
         {
             var response = await _client.PingAsync(ct);
-            return response.IsValidResponse 
-                ? Result.Success() 
+            return response.IsValidResponse
+                ? Result.Success()
                 : Result.Failure(IndexErrors.ConnectionFailed("Elasticsearch ping failed"));
         }
         catch (Exception ex)

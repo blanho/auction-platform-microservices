@@ -58,9 +58,9 @@ public class BidGrpcService : BidGrpc.BidGrpcBase
         if (!Guid.TryParse(request.AuctionId, out var auctionId))
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid auction ID format"));
 
-        var bids       = await _bidRepository.GetBidsByAuctionIdAsync(auctionId, context.CancellationToken);
-        var userBids   = bids.Where(b => b.BidderUsername.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase)).ToList();
-        var hasBid     = userBids.Count > 0;
+        var bids = await _bidRepository.GetBidsByAuctionIdAsync(auctionId, context.CancellationToken);
+        var userBids = bids.Where(b => b.BidderUsername.Equals(request.Bidder, StringComparison.OrdinalIgnoreCase)).ToList();
+        var hasBid = userBids.Count > 0;
         var highestBid = userBids.OrderByDescending(b => b.Amount).FirstOrDefault();
 
         var response = new HasUserBidResponse { HasBid = hasBid };
@@ -72,12 +72,12 @@ public class BidGrpcService : BidGrpc.BidGrpcBase
 
     private static BidResponse MapToResponse(Bidding.Domain.Entities.Bid bid) => new()
     {
-        Id        = bid.Id.ToString(),
+        Id = bid.Id.ToString(),
         AuctionId = bid.AuctionId.ToString(),
-        Bidder    = bid.BidderUsername,
+        Bidder = bid.BidderUsername,
         AmountCents = DecimalToCents(bid.Amount),
-        BidTime   = bid.BidTime.ToString("O"),
-        Status    = bid.Status.ToString()
+        BidTime = bid.BidTime.ToString("O"),
+        Status = bid.Status.ToString()
     };
 
     private static long DecimalToCents(decimal amount) =>

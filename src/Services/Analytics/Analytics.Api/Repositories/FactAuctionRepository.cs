@@ -293,12 +293,12 @@ public class FactAuctionRepository : IFactAuctionRepository
             {
                 Id = a.AuctionId.ToString(),
                 Title = a.Title,
-                CurrentBid = bidCounts.ContainsKey(a.AuctionId) 
-                    ? bidCounts[a.AuctionId].CurrentBid 
+                CurrentBid = bidCounts.ContainsKey(a.AuctionId)
+                    ? bidCounts[a.AuctionId].CurrentBid
                     : a.StartingPrice,
                 Views = null,
-                Bids = bidCounts.ContainsKey(a.AuctionId) 
-                    ? bidCounts[a.AuctionId].BidCount 
+                Bids = bidCounts.ContainsKey(a.AuctionId)
+                    ? bidCounts[a.AuctionId].BidCount
                     : 0
             })
             .OrderByDescending(l => l.Bids)

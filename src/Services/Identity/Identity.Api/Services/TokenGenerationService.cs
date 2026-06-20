@@ -409,13 +409,13 @@ public class TokenGenerationService : ITokenGenerationService
                 ClockSkew = TimeSpan.Zero
             }, out _);
 
-            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value 
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                 ?? principal.FindFirst("sub")?.Value;
             var purpose = principal.FindFirst("purpose")?.Value;
 
             if (purpose != "2fa-state" || string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning("Invalid 2FA state token: purpose={Purpose}, hasUserId={HasUserId}", 
+                _logger.LogWarning("Invalid 2FA state token: purpose={Purpose}, hasUserId={HasUserId}",
                     purpose, !string.IsNullOrEmpty(userId));
                 return (false, null);
             }

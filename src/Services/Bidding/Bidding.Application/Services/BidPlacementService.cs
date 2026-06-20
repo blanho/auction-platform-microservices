@@ -125,12 +125,12 @@ namespace Bidding.Application.Services
                 if (auctionDetails == null) return;
 
                 var timeRemaining = auctionDetails.EndTime - _dateTime.UtcNow;
-                if (timeRemaining <= TimeSpan.FromMinutes(BidDefaults.AntiSnipeThresholdMinutes) && 
+                if (timeRemaining <= TimeSpan.FromMinutes(BidDefaults.AntiSnipeThresholdMinutes) &&
                     timeRemaining > TimeSpan.Zero)
                 {
                     var newEndTime = auctionDetails.EndTime.AddMinutes(BidDefaults.AntiSnipeExtensionMinutes);
                     var result = await _auctionGrpcClient.ExtendAuctionAsync(auctionId, newEndTime, ct);
-                    
+
                     if (result.Success)
                     {
                         _logger.LogInformation(

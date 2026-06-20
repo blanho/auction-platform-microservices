@@ -9,7 +9,7 @@ namespace Notification.Infrastructure.Consumers;
 public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationRequestedEvent>
 {
     private static string EmailChannelType => NotificationChannelNames.Email;
-    
+
     private readonly IIdempotencyService _idempotency;
     private readonly ITemplateRepository _templateRepo;
     private readonly INotificationRecordRepository _recordRepo;

@@ -17,10 +17,10 @@ public interface IOrderRepository
     Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken);
     Task<int> GetCountByBuyerUsernameAsync(string username);
     Task<int> GetCountBySellerUsernameAsync(string username);
-    
+
     Task<PaginatedResult<Order>> GetAllAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default);
     Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default);
-    
+
     Task<RevenueStatsDto> GetRevenueStatsAsync(DateTimeOffset? startDate, DateTimeOffset? endDate, CancellationToken cancellationToken = default);
     Task<List<DailyRevenueStatDto>> GetDailyRevenueAsync(int days, CancellationToken cancellationToken = default);
     Task<List<TopSellerDto>> GetTopSellersAsync(int limit, string period, CancellationToken cancellationToken = default);

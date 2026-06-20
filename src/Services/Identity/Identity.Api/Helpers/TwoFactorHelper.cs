@@ -11,13 +11,13 @@ public static class TwoFactorHelper
     {
         var result = new StringBuilder();
         var currentPosition = 0;
-        
+
         while (currentPosition + 4 < unformattedKey.Length)
         {
             result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
             currentPosition += 4;
         }
-        
+
         if (currentPosition < unformattedKey.Length)
         {
             result.Append(unformattedKey.AsSpan(currentPosition));

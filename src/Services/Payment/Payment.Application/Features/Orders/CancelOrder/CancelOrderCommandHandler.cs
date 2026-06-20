@@ -50,7 +50,7 @@ public class CancelOrderCommandHandler : ICommandHandler<CancelOrderCommand, Ord
             return Result.Failure<OrderDto>(PaymentErrors.Order.AlreadyShippedById(request.OrderId));
         }
 
-        _logger.LogInformation("Cancelling order {OrderId}. Reason: {Reason}", 
+        _logger.LogInformation("Cancelling order {OrderId}. Reason: {Reason}",
             request.OrderId, request.Reason ?? "Not specified");
 
         var oldOrderData = OrderAuditData.FromOrder(order);

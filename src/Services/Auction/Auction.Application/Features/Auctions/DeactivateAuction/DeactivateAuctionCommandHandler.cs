@@ -35,7 +35,7 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
         _logger.LogInformation("Deactivating auction {AuctionId}", request.AuctionId);
 
         var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
-        
+
         if (auction == null)
         {
             return Result.Failure<AuctionDto>(AuctionErrors.Auction.NotFoundById(request.AuctionId));
@@ -43,11 +43,11 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
 
         if (auction.SellerId != request.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to deactivate auction {AuctionId} owned by {OwnerId}", 
+            _logger.LogWarning("User {UserId} attempted to deactivate auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.AuctionId, auction.SellerId);
             return Result.Failure<AuctionDto>(AuctionErrors.Auction.Forbidden);
         }
-        
+
         if (auction.Status != Status.Live && auction.Status != Status.Scheduled)
         {
             return Result.Failure<AuctionDto>(AuctionErrors.Auction.InvalidStatus(auction.Status.ToString()));
@@ -73,7 +73,7 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
             },
             cancellationToken);
 
-        _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive", 
+        _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive",
             request.AuctionId, previousStatus);
 
         return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));

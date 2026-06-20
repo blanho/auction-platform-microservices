@@ -1,4 +1,4 @@
-    using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Messaging;
 using Jobs.Domain.Constants;
 using Jobs.Infrastructure.Messaging.Consumers;

@@ -40,7 +40,7 @@ public class GetWalletTransactionsQueryHandler : IQueryHandler<GetWalletTransact
         };
 
         var result = await _transactionRepository.GetByUsernameAsync(queryParams, cancellationToken);
-        
+
         return new PaginatedResult<WalletTransactionDto>(
             result.Items.ToDtoList(_mapper),
             result.TotalCount,

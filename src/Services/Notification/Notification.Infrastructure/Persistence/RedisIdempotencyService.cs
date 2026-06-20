@@ -54,7 +54,7 @@ public class RedisIdempotencyService : IIdempotencyService
 
         var key = GetIdempotencyKey(eventId, channel);
         var wasSet = await _db.StringSetAsync(key, "processing", lockTimeout ?? TimeSpan.FromMinutes(NotificationDefaults.Idempotency.LockTimeoutMinutes), When.NotExists);
-        
+
         return wasSet ? new NoOpDisposable() : null;
     }
 

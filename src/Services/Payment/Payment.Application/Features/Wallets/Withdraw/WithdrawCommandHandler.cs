@@ -45,7 +45,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
     public async Task<Result<WalletTransactionDto>> Handle(WithdrawCommand request, CancellationToken cancellationToken)
     {
         var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
-        
+
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
             LockExpiry,
@@ -65,7 +65,7 @@ public class WithdrawCommandHandler : ICommandHandler<WithdrawCommand, WalletTra
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientBalance);
 
         var balanceAfter = wallet.Balance - request.Amount;
-        
+
         var transaction = WalletTransaction.Create(
             userId: wallet.UserId,
             username: request.Username,

@@ -65,7 +65,7 @@ public static class MassTransitExtensions
                         maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
                         intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
                 });
-                
+
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
@@ -75,7 +75,7 @@ public static class MassTransitExtensions
                         maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
                         intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
                 });
-                
+
                 cfg.ReceiveEndpoint("payment-generate-order-report", e =>
                 {
                     e.ConfigureConsumer<GenerateOrderReportConsumer>(context);

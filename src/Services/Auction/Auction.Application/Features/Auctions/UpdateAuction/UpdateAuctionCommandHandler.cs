@@ -43,7 +43,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
         if (auction.SellerId != request.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to update auction {AuctionId} owned by {OwnerId}", 
+            _logger.LogWarning("User {UserId} attempted to update auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.Id, auction.SellerId);
             return Result.Failure<bool>(AuctionErrors.Auction.Forbidden);
         }

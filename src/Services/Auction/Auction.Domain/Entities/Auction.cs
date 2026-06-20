@@ -279,7 +279,7 @@ public class Auction : AggregateRoot
 
         var oldStatus = Status;
         Status = Status.Cancelled;
-        
+
         AddDomainEvent(new AuctionStatusChangedDomainEvent
         {
             AuctionId = Id,

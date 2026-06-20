@@ -7,44 +7,44 @@ public static class ElasticsearchFields
     public const string TitleKeyword = "title.keyword";
     public const string TitleAutocomplete = "title.autocomplete";
     public const string Description = "description";
-    
+
     public const string CategoryId = "categoryId";
     public const string CategoryName = "categoryName";
     public const string CategoryPath = "categoryPath";
-    
+
     public const string BrandId = "brandId";
     public const string BrandName = "brandName";
-    
+
     public const string SellerId = "sellerId";
     public const string SellerUsername = "sellerUsername";
-    
+
     public const string CurrentPrice = "currentPrice";
     public const string StartPrice = "startPrice";
     public const string ReservePrice = "reservePrice";
     public const string BuyNowPrice = "buyNowPrice";
-    
+
     public const string Status = "status";
     public const string Condition = "condition";
-    
+
     public const string StartTime = "startTime";
     public const string EndTime = "endTime";
     public const string CreatedAt = "createdAt";
     public const string UpdatedAt = "updatedAt";
     public const string LastSyncedAt = "lastSyncedAt";
-    
+
     public const string BidCount = "bidCount";
     public const string ViewCount = "viewCount";
     public const string WatchCount = "watchCount";
-    
+
     public const string WinnerId = "winnerId";
     public const string WinnerUsername = "winnerUsername";
     public const string FinalPrice = "finalPrice";
-    
+
     public const string IsFeatured = "isFeatured";
     public const string Tags = "tags";
     public const string ThumbnailUrl = "thumbnailUrl";
     public const string ImageUrls = "imageUrls";
-    
+
     public const string ScoreField = "_score";
 }
 

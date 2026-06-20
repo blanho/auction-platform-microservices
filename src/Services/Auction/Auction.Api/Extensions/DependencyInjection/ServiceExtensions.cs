@@ -39,7 +39,7 @@ namespace Auctions.Api.Extensions.DependencyInjection
                     })
                     .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
+
             services.AddScoped<AuctionRepository>();
             services.AddScoped<CachedAuctionRepository>(sp =>
             {

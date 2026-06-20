@@ -34,7 +34,7 @@ public class GetOrdersBySellerQueryHandler : IQueryHandler<GetOrdersBySellerQuer
                 ToDate = request.ToDate
             }
         };
-        
+
         var orders = await _repository.GetBySellerUsernameAsync(queryParams);
 
         var result = new PaginatedResult<OrderDto>(

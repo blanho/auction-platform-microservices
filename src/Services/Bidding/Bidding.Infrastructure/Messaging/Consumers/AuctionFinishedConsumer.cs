@@ -52,7 +52,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
         try
         {
             var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(
-                auctionId, 
+                auctionId,
                 cancellationToken);
 
             if (activeAutoBids.Count == 0)

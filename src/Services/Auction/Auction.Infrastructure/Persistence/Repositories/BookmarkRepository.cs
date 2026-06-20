@@ -14,13 +14,13 @@ public class BookmarkRepository : IBookmarkRepository
     private readonly AuctionDbContext _context;
     private readonly IDateTimeProvider _dateTime;
 
-    private static readonly Dictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap = 
+    private static readonly Dictionary<string, Expression<Func<Bookmark, object>>> BookmarkSortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["addedat"] = x => x.AddedAt,
-        ["auctionend"] = x => x.Auction!.AuctionEnd,
-        ["currentbid"] = x => x.Auction!.CurrentHighBid
-    };
+        {
+            ["addedat"] = x => x.AddedAt,
+            ["auctionend"] = x => x.Auction!.AuctionEnd,
+            ["currentbid"] = x => x.Auction!.CurrentHighBid
+        };
 
     public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime)
     {
@@ -66,7 +66,7 @@ public class BookmarkRepository : IBookmarkRepository
     public async Task<PaginatedResult<Bookmark>> GetByUsernameAsync(string username, BookmarkType type, BookmarkQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<Bookmark>.Create()
             .When(true, x => !x.IsDeleted)
             .When(true, x => x.Username == username)
@@ -97,8 +97,8 @@ public class BookmarkRepository : IBookmarkRepository
     public async Task<List<string>> GetUsersWatchingAuctionAsync(Guid auctionId, bool notifyOnEnd = true, CancellationToken cancellationToken = default)
     {
         return await _context.Bookmarks
-            .Where(b => !b.IsDeleted 
-                && b.AuctionId == auctionId 
+            .Where(b => !b.IsDeleted
+                && b.AuctionId == auctionId
                 && b.Type == BookmarkType.Watchlist
                 && b.NotifyOnEnd == notifyOnEnd)
             .AsNoTracking()

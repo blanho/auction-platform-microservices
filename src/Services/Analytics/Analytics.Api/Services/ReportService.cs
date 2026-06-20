@@ -29,7 +29,7 @@ public sealed class ReportService : IReportService
     {
         var pagedResult = await _reportRepository.GetPagedAsync(queryParams, cancellationToken);
         var dtos = pagedResult.Items.ToDtoList();
-        
+
         return Result<PaginatedResult<ReportDto>>.Success(new PaginatedResult<ReportDto>(
             dtos,
             pagedResult.TotalCount,

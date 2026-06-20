@@ -24,14 +24,14 @@ public class RemoveFromWatchlistCommandHandler : ICommandHandler<RemoveFromWatch
     {
         var bookmark = await _bookmarkRepository.GetByUserAndAuctionAsync(
             request.UserId, request.AuctionId, BookmarkType.Watchlist, cancellationToken);
-        
+
         if (bookmark == null)
             return Result.Failure(AuctionErrors.Bookmark.NotFound);
 
         await _bookmarkRepository.DeleteAsync(bookmark.Id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("User {Username} removed auction {AuctionId} from watchlist", 
+        _logger.LogInformation("User {Username} removed auction {AuctionId} from watchlist",
             request.Username, request.AuctionId);
 
         return Result.Success();

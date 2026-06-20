@@ -39,7 +39,7 @@ namespace Bidding.Application.Services
         public async Task<AutoBidDto?> CreateAutoBidAsync(CreateAutoBidDto dto, Guid userId, string username, CancellationToken cancellationToken = default)
         {
             var auctionDetails = await _auctionGrpcClient.GetAuctionDetailsAsync(dto.AuctionId, cancellationToken);
-            
+
             if (!IsAuctionEligibleForAutoBid(auctionDetails, username, dto.AuctionId))
                 return null;
 
@@ -86,7 +86,7 @@ namespace Bidding.Application.Services
 
             await _autoBidRepository.UpdateAsync(autoBid!, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
+
             return MapToDto(autoBid!);
         }
 
@@ -100,7 +100,7 @@ namespace Bidding.Application.Services
             autoBid!.Deactivate();
             await _autoBidRepository.UpdateAsync(autoBid, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
+
             _logger.LogInformation("Auto-bid {Id} cancelled by user {UserId}", id, userId);
             return true;
         }
@@ -113,7 +113,7 @@ namespace Bidding.Application.Services
                 expiry: TimeSpan.FromSeconds(BidDefaults.AutoBidLockExpirySeconds),
                 wait: TimeSpan.FromSeconds(BidDefaults.AutoBidLockWaitSeconds),
                 cancellationToken);
-            
+
             if (lockHandle is null)
             {
                 _logger.LogWarning(
@@ -121,7 +121,7 @@ namespace Bidding.Application.Services
                     auctionId);
                 return;
             }
-            
+
             await ProcessAutoBidsWithLock(auctionId, currentHighBid, cancellationToken);
         }
 
@@ -201,7 +201,7 @@ namespace Bidding.Application.Services
         private static void UpdateAutoBidSettings(AutoBid autoBid, UpdateAutoBidDto dto)
         {
             autoBid.UpdateMaxAmount(dto.MaxAmount);
-            
+
             if (dto.IsActive.HasValue)
             {
                 if (dto.IsActive.Value)
@@ -242,7 +242,7 @@ namespace Bidding.Application.Services
         private async Task<List<AutoBid>> GetEligibleAutoBids(Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken)
         {
             var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(auctionId, cancellationToken);
-            
+
             return activeAutoBids
                 .Where(ab => ab.MaxAmount > currentHighBid)
                 .OrderByDescending(ab => ab.MaxAmount)

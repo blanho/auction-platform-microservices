@@ -42,7 +42,7 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
                 _logger.LogWarning(
                     "Auction not found for reservation release - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
                     message.CorrelationId, message.AuctionId);
-                
+
                 await context.Publish(new AuctionReservationReleased
                 {
                     CorrelationId = message.CorrelationId,

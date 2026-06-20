@@ -19,7 +19,7 @@ public class AuctionActivationJob : BaseJob
         IServiceProvider serviceProvider)
         : base(logger, serviceProvider)
     {
-        
+
     }
 
     protected override async Task ExecuteJobAsync(

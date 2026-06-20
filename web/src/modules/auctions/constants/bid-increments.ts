@@ -35,9 +35,9 @@ export function getSuggestedBids(currentBid: number, startingPrice: number): [nu
   const base = getMinimumNextBid(currentBid > 0 ? currentBid : startingPrice)
 
   const getSuggestedIncrement = (amount: number): number => {
-    if (amount < 100) return 5
-    if (amount < 1_000) return 25
-    if (amount < 5_000) return 100
+    if (amount < 100) {return 5}
+    if (amount < 1_000) {return 25}
+    if (amount < 5_000) {return 100}
     return 500
   }
 

@@ -78,7 +78,7 @@ public static class ExceptionHandlingMiddleware
     private static Task WriteDomainExceptionAsync(HttpContext context, DomainException ex)
     {
         var localizer = context.RequestServices.GetService<ILocalizationService>();
-        
+
         var (status, title) = ex switch
         {
             EntityNotFoundException => (HttpStatusCode.NotFound, localizer?[LocalizationKeys.Errors.NotFound] ?? "Resource not found"),

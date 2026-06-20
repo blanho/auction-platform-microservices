@@ -62,7 +62,7 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.NotFound);
 
         var balanceAfter = wallet.Balance + request.Amount;
-        
+
         var transaction = WalletTransaction.Create(
             userId: wallet.UserId,
             username: request.Username,
@@ -71,7 +71,7 @@ public class DepositCommandHandler : ICommandHandler<DepositCommand, WalletTrans
             balanceAfter: balanceAfter,
             description: request.Description ?? WalletTransactionDescriptions.Deposit,
             paymentMethod: request.PaymentMethod);
-        
+
         transaction.Complete();
         wallet.Deposit(request.Amount);
 

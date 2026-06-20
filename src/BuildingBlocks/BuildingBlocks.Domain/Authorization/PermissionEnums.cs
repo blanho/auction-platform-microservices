@@ -3,14 +3,14 @@ namespace BuildingBlocks.Domain.Authorization;
 [Flags]
 public enum Permission
 {
-    None             = 0,
-    Read             = 1 << 0,
-    Manage           = 1 << 1,
+    None = 0,
+    Read = 1 << 0,
+    Manage = 1 << 1,
     ManagePermission = 1 << 2,
-    Create           = 1 << 3,
-    Update           = 1 << 4,
-    Delete           = 1 << 5,
-    All              = 63
+    Create = 1 << 3,
+    Update = 1 << 4,
+    Delete = 1 << 5,
+    All = 63
 }
 
 public enum ResourceType

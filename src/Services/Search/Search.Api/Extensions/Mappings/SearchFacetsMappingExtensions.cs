@@ -22,7 +22,7 @@ public static class SearchFacetsMappingExtensions
     }
 
     private static List<FacetBucket> ExtractTermBuckets(
-        AggregateDictionary aggregations, 
+        AggregateDictionary aggregations,
         string aggregationName)
     {
         if (!aggregations.TryGetValue(aggregationName, out var aggregate))

@@ -45,7 +45,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
     public async Task<Result<WalletTransactionDto>> Handle(HoldFundsCommand request, CancellationToken cancellationToken)
     {
         var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
-        
+
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
             LockExpiry,
@@ -73,7 +73,7 @@ public class HoldFundsCommandHandler : ICommandHandler<HoldFundsCommand, WalletT
             description: string.Format(WalletTransactionDescriptions.FundsHeldForReferenceFormat, request.ReferenceType),
             referenceId: request.ReferenceId,
             referenceType: request.ReferenceType);
-        
+
         transaction.Complete();
         wallet.HoldFunds(request.Amount);
 

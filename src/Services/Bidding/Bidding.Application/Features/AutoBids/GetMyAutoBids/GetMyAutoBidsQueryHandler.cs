@@ -39,7 +39,7 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, Pagin
                 ToDate = request.ToDate
             }
         };
-        
+
         var result = await _repository.GetAutoBidsByUserAsync(request.UserId, queryParams, cancellationToken);
 
         var items = new List<MyAutoBidDto>();
@@ -50,7 +50,7 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, Pagin
         {
             highestBids.TryGetValue(autoBid.AuctionId, out var highestBid);
             var isWinning = highestBid?.BidderId == autoBid.UserId;
-            
+
             items.Add(new MyAutoBidDto
             {
                 Id = autoBid.Id,

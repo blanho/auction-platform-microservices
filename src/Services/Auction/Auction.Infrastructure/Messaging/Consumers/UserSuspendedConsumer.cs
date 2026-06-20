@@ -57,7 +57,7 @@ public class UserSuspendedConsumer : IConsumer<UserSuspendedEvent>
 
             auction.Cancel($"Seller account suspended: {message.Reason}");
             await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-            
+
             cancelledCount++;
 
             if (hadBids && !string.IsNullOrEmpty(currentWinner))

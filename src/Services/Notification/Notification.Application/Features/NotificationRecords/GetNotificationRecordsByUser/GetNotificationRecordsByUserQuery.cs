@@ -6,7 +6,7 @@ using Notification.Domain.Entities;
 namespace Notification.Application.Features.NotificationRecords.GetNotificationRecordsByUser;
 
 public record GetNotificationRecordsByUserQuery(
-    Guid UserId, 
+    Guid UserId,
     string? Channel = null,
     NotificationRecordStatus? Status = null,
     string? TemplateKey = null,

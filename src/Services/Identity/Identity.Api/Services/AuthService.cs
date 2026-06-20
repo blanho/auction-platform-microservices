@@ -281,9 +281,9 @@ public class AuthService(
 
         if (!result.IsSuccess)
         {
-            logger.LogWarning("Invalid refresh token attempt from {IpAddress}, reason: {Reason}", 
+            logger.LogWarning("Invalid refresh token attempt from {IpAddress}, reason: {Reason}",
                 ipAddress, result.FailureReason);
-            
+
             return result.FailureReason == RefreshTokenFailureReason.SecurityTermination
                 ? Result.Failure<TokenResponse>(IdentityErrors.Auth.SecurityTermination)
                 : Result.Failure<TokenResponse>(IdentityErrors.Auth.InvalidRefreshToken);
@@ -485,7 +485,7 @@ public class AuthService(
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userService.UpdateAsync(user);
-        
+
         var roles = await userService.GetRolesAsync(user);
 
         await mediator.Publish(new UserLoginDomainEvent

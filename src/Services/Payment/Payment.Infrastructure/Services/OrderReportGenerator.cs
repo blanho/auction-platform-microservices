@@ -42,14 +42,14 @@ public class OrderReportGenerator : IOrderReportGenerator
             };
 
             var orders = await _orderRepository.GetAllAsync(queryParams, cancellationToken);
-            
+
             var filteredOrders = orders.Items.AsEnumerable();
-            
+
             if (parameters.BuyerIdFilter.HasValue)
             {
                 filteredOrders = filteredOrders.Where(o => o.BuyerId == parameters.BuyerIdFilter.Value);
             }
-            
+
             if (parameters.SellerIdFilter.HasValue)
             {
                 filteredOrders = filteredOrders.Where(o => o.SellerId == parameters.SellerIdFilter.Value);

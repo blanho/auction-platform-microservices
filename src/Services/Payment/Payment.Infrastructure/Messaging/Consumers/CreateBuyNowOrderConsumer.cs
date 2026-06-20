@@ -39,7 +39,7 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 _logger.LogWarning(
                     "Order already exists for auction - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}, OrderId: {OrderId}",
                     message.CorrelationId, message.AuctionId, existingOrder.Id);
-                
+
                 await context.Publish(new BuyNowOrderCreated
                 {
                     CorrelationId = message.CorrelationId,

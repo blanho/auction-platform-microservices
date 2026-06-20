@@ -56,7 +56,7 @@ public class AuctionIndexService : IAuctionIndexService
     }
 
     public async Task<Result<BulkIndexResult>> BulkIndexAsync(
-        IEnumerable<AuctionDocument> documents, 
+        IEnumerable<AuctionDocument> documents,
         CancellationToken ct = default)
     {
         var indexName = _indexName;
@@ -106,8 +106,8 @@ public class AuctionIndexService : IAuctionIndexService
     }
 
     public async Task<Result> PartialUpdateAsync(
-        Guid auctionId, 
-        object partialDocument, 
+        Guid auctionId,
+        object partialDocument,
         CancellationToken ct = default)
     {
         var indexName = _indexName;
@@ -115,8 +115,8 @@ public class AuctionIndexService : IAuctionIndexService
         try
         {
             var response = await _client.UpdateAsync<AuctionDocument, object>(
-                indexName, 
-                auctionId.ToString(), 
+                indexName,
+                auctionId.ToString(),
                 u => u
                     .Doc(partialDocument)
                     .DocAsUpsert(false)
@@ -165,9 +165,9 @@ public class AuctionIndexService : IAuctionIndexService
     }
 
     public async Task<Result> UpdateBidInfoAsync(
-        Guid auctionId, 
-        decimal currentPrice, 
-        int bidCount, 
+        Guid auctionId,
+        decimal currentPrice,
+        int bidCount,
         CancellationToken ct = default)
     {
         var indexName = _indexName;
@@ -175,8 +175,8 @@ public class AuctionIndexService : IAuctionIndexService
         try
         {
             var response = await _client.UpdateAsync<AuctionDocument, object>(
-                indexName, 
-                auctionId.ToString(), 
+                indexName,
+                auctionId.ToString(),
                 u => u
                     .Script(s => s
                         .Source("ctx._source.currentPrice = params.price; ctx._source.bidCount = params.count; ctx._source.lastSyncedAt = params.syncedAt")

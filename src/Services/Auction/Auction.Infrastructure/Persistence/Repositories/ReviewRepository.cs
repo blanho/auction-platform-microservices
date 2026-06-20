@@ -15,13 +15,13 @@ public class ReviewRepository : IReviewRepository
     private readonly IDateTimeProvider _dateTime;
     private readonly IAuditContext _auditContext;
 
-    private static readonly Dictionary<string, Expression<Func<Review, object>>> ReviewSortMap = 
+    private static readonly Dictionary<string, Expression<Func<Review, object>>> ReviewSortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["createdat"] = x => x.CreatedAt,
-        ["rating"] = x => x.Rating,
-        ["title"] = x => x.Title
-    };
+        {
+            ["createdat"] = x => x.CreatedAt,
+            ["rating"] = x => x.Rating,
+            ["title"] = x => x.Title
+        };
 
     public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
@@ -70,7 +70,7 @@ public class ReviewRepository : IReviewRepository
     public async Task<PaginatedResult<Review>> GetByAuctionIdAsync(ReviewQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<Review>.Create()
             .When(true, x => !x.IsDeleted)
             .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
@@ -99,7 +99,7 @@ public class ReviewRepository : IReviewRepository
     public async Task<PaginatedResult<Review>> GetByReviewedUsernameAsync(ReviewQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<Review>.Create()
             .When(true, x => !x.IsDeleted)
             .WhenNotEmpty(filter.ReviewedUsername, x => x.ReviewedUsername == filter.ReviewedUsername)
@@ -129,7 +129,7 @@ public class ReviewRepository : IReviewRepository
     public async Task<PaginatedResult<Review>> GetByReviewerUsernameAsync(ReviewQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<Review>.Create()
             .When(true, x => !x.IsDeleted)
             .WhenNotEmpty(filter.ReviewerUsername, x => x.ReviewerUsername == filter.ReviewerUsername)

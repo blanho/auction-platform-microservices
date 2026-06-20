@@ -13,8 +13,8 @@ public record AuctionSnapshot(
 public interface IAuctionSnapshotRepository
 {
     Task<AuctionSnapshot?> GetAsync(Guid auctionId, CancellationToken cancellationToken = default);
-    
+
     Task UpsertAsync(AuctionSnapshot snapshot, CancellationToken cancellationToken = default);
-    
+
     Task DeleteAsync(Guid auctionId, CancellationToken cancellationToken = default);
 }

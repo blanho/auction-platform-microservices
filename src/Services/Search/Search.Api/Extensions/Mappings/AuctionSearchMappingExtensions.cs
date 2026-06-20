@@ -32,7 +32,7 @@ public static class AuctionSearchMappingExtensions
     }
 
     public static List<AuctionSearchResult> ToResultList(
-        this IEnumerable<AuctionDocument> documents, 
+        this IEnumerable<AuctionDocument> documents,
         IEnumerable<Hit<AuctionDocument>> hits)
     {
         return documents

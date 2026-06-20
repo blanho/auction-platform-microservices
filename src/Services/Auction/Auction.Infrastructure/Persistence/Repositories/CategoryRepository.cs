@@ -93,21 +93,21 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Categories.Where(x => !x.IsDeleted && x.Slug == slug);
-            
+
             if (excludeId.HasValue)
             {
                 query = query.Where(x => x.Id != excludeId.Value);
             }
-            
+
             return await query.AnyAsync(cancellationToken);
         }
 
         public async Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default)
         {
             category.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-            
+
             await _context.Categories.AddAsync(category, cancellationToken);
-            
+
             return category;
         }
 

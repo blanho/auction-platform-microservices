@@ -17,12 +17,12 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         private static readonly Dictionary<string, Expression<Func<Auction, object>>> AuctionSortMap =
             new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["price"] = x => x.CurrentHighBid ?? x.ReservePrice,
-            ["enddate"] = x => x.AuctionEnd,
-            ["createdat"] = x => x.CreatedAt,
-            ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
-        };
+            {
+                ["price"] = x => x.CurrentHighBid ?? x.ReservePrice,
+                ["enddate"] = x => x.AuctionEnd,
+                ["createdat"] = x => x.CreatedAt,
+                ["title"] = x => x.Item != null ? x.Item.Title : string.Empty
+            };
 
         private IQueryable<Auction> ActiveAuctionsWithItemDetails =>
             _context.Auctions

@@ -20,14 +20,14 @@ public class AutoBidRepository : IAutoBidRepository
     private readonly IDateTimeProvider _dateTime;
     private readonly IAuditContext _auditContext;
 
-    private static readonly Dictionary<string, Expression<Func<AutoBid, object>>> AutoBidSortMap = 
+    private static readonly Dictionary<string, Expression<Func<AutoBid, object>>> AutoBidSortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["createdat"] = x => x.CreatedAt,
-        ["maxamount"] = x => x.MaxAmount,
-        ["currentbidamount"] = x => x.CurrentBidAmount,
-        ["lastbidat"] = x => x.LastBidAt!
-    };
+        {
+            ["createdat"] = x => x.CreatedAt,
+            ["maxamount"] = x => x.MaxAmount,
+            ["currentbidamount"] = x => x.CurrentBidAmount,
+            ["lastbidat"] = x => x.LastBidAt!
+        };
 
     public AutoBidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
     {
@@ -117,7 +117,7 @@ public class AutoBidRepository : IAutoBidRepository
         var autoBid = await _context.AutoBids
             .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        
+
         if (autoBid != null)
         {
             autoBid.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
@@ -159,8 +159,8 @@ public class AutoBidRepository : IAutoBidRepository
         return await _context.AutoBids
             .AsNoTracking()
             .Where(x => !x.IsDeleted)
-            .FirstOrDefaultAsync(ab => ab.AuctionId == auctionId 
-                && ab.UserId == userId 
+            .FirstOrDefaultAsync(ab => ab.AuctionId == auctionId
+                && ab.UserId == userId
                 && ab.IsActive, cancellationToken);
     }
 
@@ -176,7 +176,7 @@ public class AutoBidRepository : IAutoBidRepository
     public async Task<PaginatedResult<AutoBid>> GetAutoBidsByUserAsync(Guid userId, AutoBidQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<AutoBid>.Create()
             .When(true, x => !x.IsDeleted)
             .When(true, x => x.UserId == userId)
@@ -206,7 +206,7 @@ public class AutoBidRepository : IAutoBidRepository
         var query = _context.AutoBids
             .AsNoTracking()
             .Where(ab => !ab.IsDeleted && ab.UserId == userId);
-        
+
         if (activeOnly.HasValue)
             query = query.Where(ab => ab.IsActive == activeOnly.Value);
 

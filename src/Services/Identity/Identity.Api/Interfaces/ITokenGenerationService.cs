@@ -9,8 +9,8 @@ public interface ITokenGenerationService
     Task<RefreshTokenResult> RefreshTokenAsync(string refreshToken, string clientId, string? ipAddress = null);
     Task<bool> RevokeTokenAsync(string refreshToken, string? ipAddress = null);
     Task RevokeAllUserTokensAsync(string userId, string? ipAddress = null);
-    
+
     string GenerateTwoFactorStateToken(string userId);
-    
+
     (bool IsValid, string? UserId) ValidateTwoFactorStateToken(string token);
 }

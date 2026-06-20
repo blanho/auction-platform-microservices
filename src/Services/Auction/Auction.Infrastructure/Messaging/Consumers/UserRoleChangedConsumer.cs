@@ -31,7 +31,7 @@ public class UserRoleChangedConsumer : IConsumer<UserRoleChangedEvent>
     {
         var message = context.Message;
         var userId = Guid.Parse(message.UserId);
-        
+
         _logger.LogInformation(
             "Processing UserRoleChangedEvent for user {UserId} ({Username}). New roles: {Roles}",
             message.UserId,

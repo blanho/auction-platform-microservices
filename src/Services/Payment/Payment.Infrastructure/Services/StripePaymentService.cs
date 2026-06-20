@@ -34,12 +34,12 @@ public class StripePaymentService : IStripePaymentService
 
         var secretKey = _configuration["Stripe:SecretKey"]
             ?? throw new ConfigurationException("Stripe:SecretKey is not configured");
-        _webhookSecret = _configuration["Stripe:WebhookSecret"] 
+        _webhookSecret = _configuration["Stripe:WebhookSecret"]
             ?? throw new ConfigurationException(
                 "Stripe:WebhookSecret must be configured. " +
                 "Get your webhook signing secret from the Stripe Dashboard: " +
                 "https://dashboard.stripe.com/webhooks");
-        
+
         if (_webhookSecret.Length < 20 || !_webhookSecret.StartsWith("whsec_"))
         {
             throw new ConfigurationException(
@@ -169,7 +169,7 @@ public class StripePaymentService : IStripePaymentService
         };
         var session = await service.CreateAsync(options, requestOptions, cancellationToken);
 
-        _logger.LogInformation("Created Checkout Session {SessionId} with idempotency key {IdempotencyKey}", 
+        _logger.LogInformation("Created Checkout Session {SessionId} with idempotency key {IdempotencyKey}",
             session.Id, idempotencyKey);
 
         return session;

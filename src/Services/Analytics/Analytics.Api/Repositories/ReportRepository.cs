@@ -49,7 +49,7 @@ public class ReportRepository : IReportRepository
         CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<Report>.Create()
             .WhenHasValue(filter.Status, r => r.Status == filter.Status!.Value)
             .WhenHasValue(filter.Type, r => r.Type == filter.Type!.Value)

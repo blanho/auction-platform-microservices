@@ -20,14 +20,14 @@ namespace Bidding.Infrastructure.Repositories
         private readonly IDateTimeProvider _dateTime;
         private readonly IAuditContext _auditContext;
 
-        private static readonly Dictionary<string, Expression<Func<Bid, object>>> BidSortMap = 
+        private static readonly Dictionary<string, Expression<Func<Bid, object>>> BidSortMap =
             new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["bidtime"] = x => x.BidTime,
-            ["amount"] = x => x.Amount,
-            ["createdat"] = x => x.CreatedAt,
-            ["status"] = x => x.Status
-        };
+            {
+                ["bidtime"] = x => x.BidTime,
+                ["amount"] = x => x.Amount,
+                ["createdat"] = x => x.CreatedAt,
+                ["status"] = x => x.Status
+            };
 
         public BidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
@@ -112,7 +112,7 @@ namespace Bidding.Infrastructure.Repositories
             var bid = await _context.Bids
                 .Where(x => !x.IsDeleted)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-            
+
             if (bid != null)
             {
                 bid.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
@@ -366,7 +366,7 @@ namespace Bidding.Infrastructure.Repositories
         public async Task<PaginatedResult<Bid>> GetBidsForAuctionPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             var filter = queryParams.Filter;
-            
+
             var filterBuilder = FilterBuilder<Bid>.Create()
                 .When(true, x => !x.IsDeleted)
                 .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)
@@ -393,7 +393,7 @@ namespace Bidding.Infrastructure.Repositories
         public async Task<PaginatedResult<Bid>> GetBidsForBidderPagedAsync(BidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             var filter = queryParams.Filter;
-            
+
             var filterBuilder = FilterBuilder<Bid>.Create()
                 .When(true, x => !x.IsDeleted)
                 .WhenNotEmpty(filter.BidderUsername, x => x.BidderUsername == filter.BidderUsername)
@@ -421,7 +421,7 @@ namespace Bidding.Infrastructure.Repositories
         public async Task<PaginatedResult<Bid>> GetWinningBidsForUserAsync(Guid userId, WinningBidQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             var filter = queryParams.Filter;
-            
+
             var baseQuery = _context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
@@ -460,7 +460,7 @@ namespace Bidding.Infrastructure.Repositories
         public async Task<PaginatedResult<Bid>> GetBidHistoryAsync(BidHistoryQueryParams queryParams, CancellationToken cancellationToken = default)
         {
             var filter = queryParams.Filter;
-            
+
             var filterBuilder = FilterBuilder<Bid>.Create()
                 .When(true, x => !x.IsDeleted)
                 .WhenHasValue(filter.AuctionId, x => x.AuctionId == filter.AuctionId!.Value)

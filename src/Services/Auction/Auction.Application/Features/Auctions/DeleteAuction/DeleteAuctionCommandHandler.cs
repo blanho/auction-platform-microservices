@@ -39,7 +39,7 @@ public class DeleteAuctionCommandHandler : ICommandHandler<DeleteAuctionCommand,
 
         if (auction.SellerId != request.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to delete auction {AuctionId} owned by {OwnerId}", 
+            _logger.LogWarning("User {UserId} attempted to delete auction {AuctionId} owned by {OwnerId}",
                 request.UserId, request.Id, auction.SellerId);
             return Result.Failure<bool>(AuctionErrors.Auction.Forbidden);
         }

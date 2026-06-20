@@ -20,7 +20,7 @@ public class BulkUpdateCategoriesCommandHandler : ICommandHandler<BulkUpdateCate
 
     public async Task<Result<int>> Handle(BulkUpdateCategoriesCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Bulk updating {Count} categories to IsActive={IsActive}", 
+        _logger.LogInformation("Bulk updating {Count} categories to IsActive={IsActive}",
             request.CategoryIds.Count, request.IsActive);
 
         var updatedCount = 0;

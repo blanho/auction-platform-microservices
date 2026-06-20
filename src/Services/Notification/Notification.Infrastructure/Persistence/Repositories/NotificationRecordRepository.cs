@@ -15,15 +15,15 @@ public class NotificationRecordRepository : INotificationRecordRepository
 {
     private readonly NotificationDbContext _context;
 
-    private static readonly Dictionary<string, Expression<Func<NotificationRecord, object>>> SortMap = 
+    private static readonly Dictionary<string, Expression<Func<NotificationRecord, object>>> SortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["createdat"] = r => r.CreatedAt,
-        ["sentat"] = r => r.SentAt!,
-        ["channel"] = r => r.Channel,
-        ["status"] = r => r.Status,
-        ["templatekey"] = r => r.TemplateKey
-    };
+        {
+            ["createdat"] = r => r.CreatedAt,
+            ["sentat"] = r => r.SentAt!,
+            ["channel"] = r => r.Channel,
+            ["status"] = r => r.Status,
+            ["templatekey"] = r => r.TemplateKey
+        };
 
     public NotificationRecordRepository(NotificationDbContext context)
     {
@@ -38,7 +38,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
     public async Task<PaginatedResult<NotificationRecord>> GetRecordsByUserIdAsync(NotificationRecordQueryParams queryParams, CancellationToken ct = default)
     {
         var query = _context.Records.AsNoTracking();
-        
+
         if (queryParams.Filter != null)
         {
             query = queryParams.Filter.Apply(query);
@@ -118,7 +118,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
         CancellationToken ct = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<NotificationRecord>.Create()
             .WhenHasValue(filter.UserId, r => r.UserId == filter.UserId!.Value)
             .WhenNotEmpty(filter.Channel, r => r.Channel == filter.Channel)

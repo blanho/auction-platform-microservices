@@ -21,7 +21,7 @@ public class UpdateBookmarkNotificationsCommandHandler : ICommandHandler<UpdateB
     {
         var bookmark = await _bookmarkRepository.GetByUserAndAuctionAsync(
             request.UserId, request.AuctionId, BookmarkType.Watchlist, cancellationToken);
-        
+
         if (bookmark == null)
             return Result.Failure(AuctionErrors.Bookmark.NotFound);
 

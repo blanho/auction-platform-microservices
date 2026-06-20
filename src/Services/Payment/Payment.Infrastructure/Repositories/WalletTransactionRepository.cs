@@ -16,12 +16,12 @@ public class WalletTransactionRepository : IWalletTransactionRepository
 
     private static readonly Dictionary<string, Expression<Func<WalletTransaction, object>>> TransactionSortMap =
         new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["createdat"] = t => t.CreatedAt,
-        ["amount"] = t => t.Amount,
-        ["type"] = t => t.Type,
-        ["status"] = t => t.Status
-    };
+        {
+            ["createdat"] = t => t.CreatedAt,
+            ["amount"] = t => t.Amount,
+            ["type"] = t => t.Type,
+            ["status"] = t => t.Status
+        };
 
     public WalletTransactionRepository(PaymentDbContext context)
     {
@@ -39,7 +39,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
     {
         if (!Guid.TryParse(referenceId, out var refGuid))
             return null;
-            
+
         return await _context.WalletTransactions
             .AsNoTracking()
             .Where(t => t.ReferenceId == refGuid && t.Type == type)
@@ -49,7 +49,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
     public async Task<PaginatedResult<WalletTransaction>> GetByUsernameAsync(WalletTransactionQueryParams queryParams, CancellationToken cancellationToken = default)
     {
         var query = _context.WalletTransactions.AsNoTracking();
-        
+
         if (queryParams.Filter != null)
         {
             query = queryParams.Filter.Apply(query);

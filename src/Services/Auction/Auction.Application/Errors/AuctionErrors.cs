@@ -60,13 +60,4 @@ public static class AuctionErrors
         public static Error UnsupportedFormat(string format) => Error.Create("Export.UnsupportedFormat", $"Unsupported export format: {format}");
     }
 
-    public static class Analytics
-    {
-        public static Error FetchFailed => Error.Create("Analytics.FetchFailed", "Failed to retrieve seller analytics");
-    }
-
-    public static class Dashboard
-    {
-        public static Error FetchFailed => Error.Create("Dashboard.FetchFailed", "Failed to retrieve dashboard statistics");
-    }
 }

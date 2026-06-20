@@ -41,8 +41,8 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
         };
 
         var result = await _repository.GetWinningBidsForUserAsync(
-            request.UserId, 
-            queryParams, 
+            request.UserId,
+            queryParams,
             cancellationToken);
 
         var enrichedBids = new List<WinningBidDto>();

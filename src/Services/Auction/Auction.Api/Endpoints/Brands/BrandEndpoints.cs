@@ -90,7 +90,7 @@ public class BrandEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.ToApiResult(brand => 
+        return result.ToApiResult(brand =>
             Results.CreatedAtRoute("GetBrandById", new { id = brand.Id }, brand));
     }
 

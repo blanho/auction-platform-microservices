@@ -55,7 +55,7 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
             return Result.Failure<OrderDto>(PaymentErrors.Order.CancelledById(request.OrderId));
         }
 
-        _logger.LogInformation("Shipping order {OrderId} via {Carrier} with tracking {TrackingNumber}", 
+        _logger.LogInformation("Shipping order {OrderId} via {Carrier} with tracking {TrackingNumber}",
             request.OrderId, request.ShippingCarrier, request.TrackingNumber);
 
         var oldOrderData = OrderAuditData.FromOrder(order);

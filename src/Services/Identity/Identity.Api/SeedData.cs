@@ -60,7 +60,7 @@ public static class SeedData
         {
             var appRole = await dbContext.AppRoles
                 .FirstOrDefaultAsync(r => r.Name == roleName);
-            
+
             if (appRole == null)
             {
                 Log.Warning("AppRole {RoleName} not found, skipping permission seeding", roleName);
@@ -184,7 +184,7 @@ public static class SeedData
     }
 
     private static async Task CreateBuyerUserAsync(
-        UserManager<ApplicationUser> userMgr, 
+        UserManager<ApplicationUser> userMgr,
         string seedPassword,
         string username,
         string email,

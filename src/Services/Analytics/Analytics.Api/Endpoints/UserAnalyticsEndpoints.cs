@@ -55,8 +55,8 @@ public class UserAnalyticsEndpoints : ICarterModule
         var username = UserHelper.GetUsername(httpContext.User);
 
         var analytics = await aggregator.GetSellerAnalyticsAsync(
-            username, 
-            timeRange ?? "30d", 
+            username,
+            timeRange ?? "30d",
             cancellationToken);
 
         return TypedResults.Ok(analytics);

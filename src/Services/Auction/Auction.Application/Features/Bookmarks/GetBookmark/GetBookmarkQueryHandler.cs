@@ -22,11 +22,11 @@ public class GetBookmarkQueryHandler : IQueryHandler<GetBookmarkQuery, BookmarkI
 
     public async Task<Result<BookmarkItemDto?>> Handle(GetBookmarkQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Fetching bookmark for user {UserId} and auction {AuctionId}", 
+        _logger.LogInformation("Fetching bookmark for user {UserId} and auction {AuctionId}",
             request.UserId, request.AuctionId);
 
         var bookmark = await _bookmarkRepository.GetByUserAndAuctionAsync(
-            request.UserId, 
+            request.UserId,
             request.AuctionId,
             BookmarkType.Watchlist,
             cancellationToken);

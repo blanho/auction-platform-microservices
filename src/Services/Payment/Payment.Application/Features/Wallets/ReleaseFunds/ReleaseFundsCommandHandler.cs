@@ -45,7 +45,7 @@ public class ReleaseFundsCommandHandler : ICommandHandler<ReleaseFundsCommand, W
     public async Task<Result<WalletTransactionDto>> Handle(ReleaseFundsCommand request, CancellationToken cancellationToken)
     {
         var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
-        
+
         await using var lockHandle = await _distributedLock.TryAcquireAsync(
             lockKey,
             LockExpiry,

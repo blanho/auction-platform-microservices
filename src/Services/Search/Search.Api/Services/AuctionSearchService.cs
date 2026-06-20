@@ -139,12 +139,12 @@ public class AuctionSearchService : IAuctionSearchService
                 .Size(maxSuggestions)
                 .Source(new SourceConfig(new SourceFilter
                 {
-                    Includes = new[] 
-                    { 
-                        ElasticsearchFields.Id, 
-                        ElasticsearchFields.Title, 
-                        ElasticsearchFields.CategoryName, 
-                        ElasticsearchFields.ThumbnailUrl 
+                    Includes = new[]
+                    {
+                        ElasticsearchFields.Id,
+                        ElasticsearchFields.Title,
+                        ElasticsearchFields.CategoryName,
+                        ElasticsearchFields.ThumbnailUrl
                     }
                 }))
                 .Query(q => q.Match(m => m
@@ -256,8 +256,8 @@ public class AuctionSearchService : IAuctionSearchService
     }
 
     private static void AddEndTimeFilter(
-        List<Query> filters, 
-        DateTimeOffset? endingAfter, 
+        List<Query> filters,
+        DateTimeOffset? endingAfter,
         DateTimeOffset? endingBefore)
     {
         if (!endingAfter.HasValue && !endingBefore.HasValue)
@@ -296,8 +296,8 @@ public class AuctionSearchService : IAuctionSearchService
     }
 
     private static SortOrder ParseSortDirection(string? sortDirection) =>
-        sortDirection?.ToLowerInvariant() == "asc" 
-            ? SortOrder.Asc 
+        sortDirection?.ToLowerInvariant() == "asc"
+            ? SortOrder.Asc
             : SortOrder.Desc;
 
     private static string MapSortFieldName(string? sortBy) =>

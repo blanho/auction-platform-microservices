@@ -11,7 +11,7 @@ public class MappingProfile : Profile
         CreateMap<Order, OrderDto>();
         CreateMap<CreateOrderDto, Order>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => 
+            .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src =>
                 src.WinningBid + (src.ShippingCost ?? 0) + (src.PlatformFee ?? 0)))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => OrderStatus.PaymentPending))
             .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(_ => PaymentStatus.Pending))
@@ -19,7 +19,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTimeOffset.UtcNow));
 
         CreateMap<Wallet, WalletDto>();
-        
+
         CreateMap<WalletTransaction, WalletTransactionDto>();
         CreateMap<CreateWalletTransactionDto, WalletTransaction>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))

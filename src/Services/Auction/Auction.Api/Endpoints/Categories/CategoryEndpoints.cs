@@ -106,7 +106,7 @@ public class CategoryEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.ToApiResult(category => 
+        return result.ToApiResult(category =>
             Results.CreatedAtRoute("GetCategories", new { id = category.Id }, category));
     }
 

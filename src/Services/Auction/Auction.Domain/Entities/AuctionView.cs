@@ -8,7 +8,7 @@ public class AuctionView : BaseEntity
     public string? UserId { get; private set; }
     public string? IpAddress { get; private set; }
     public DateTimeOffset ViewedAt { get; private set; }
-    
+
     public Auction? Auction { get; private set; }
 
     private AuctionView() { }

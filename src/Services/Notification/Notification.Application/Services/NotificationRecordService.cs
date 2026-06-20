@@ -35,7 +35,7 @@ public class NotificationRecordService : INotificationRecordService
     public async Task<PaginatedResult<NotificationRecordDto>> GetByUserIdAsync(NotificationRecordQueryParams queryParams, CancellationToken ct = default)
     {
         var result = await _repository.GetRecordsByUserIdAsync(queryParams, ct);
-        
+
         return new PaginatedResult<NotificationRecordDto>(
             result.Items.Select(r => r.ToDto()).ToList(),
             result.TotalCount,

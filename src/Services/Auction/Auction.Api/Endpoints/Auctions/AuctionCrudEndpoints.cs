@@ -127,7 +127,7 @@ public class AuctionCrudEndpoints : ICarterModule
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        
+
         var command = new UpdateAuctionCommand(
             id,
             dto.Title,
@@ -157,7 +157,7 @@ public class AuctionCrudEndpoints : ICarterModule
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        
+
         var command = new DeleteAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
@@ -173,7 +173,7 @@ public class AuctionCrudEndpoints : ICarterModule
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        
+
         var command = new ActivateAuctionCommand(id, userId);
         var result = await mediator.Send(command, ct);
 
@@ -189,7 +189,7 @@ public class AuctionCrudEndpoints : ICarterModule
         CancellationToken ct)
     {
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
-        
+
         var command = new DeactivateAuctionCommand(id, userId, null);
         var result = await mediator.Send(command, ct);
 

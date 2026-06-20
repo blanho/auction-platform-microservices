@@ -32,7 +32,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
 
     public async Task<Result<int>> Handle(BulkUpdateAuctionsCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Bulk updating {Count} auctions, Activate: {Activate}", 
+        _logger.LogInformation("Bulk updating {Count} auctions, Activate: {Activate}",
             request.AuctionIds.Count, request.Activate);
 
         var updatedCount = 0;

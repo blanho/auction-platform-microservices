@@ -26,10 +26,10 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
     public async Task Consume(ConsumeContext<AuctionFinishedEvent> context)
     {
         var message = context.Message;
-        
+
         if (!message.ItemSold || string.IsNullOrEmpty(message.WinnerUsername))
         {
-            _logger.LogInformation("Auction {AuctionId} ended without sale, skipping order creation", 
+            _logger.LogInformation("Auction {AuctionId} ended without sale, skipping order creation",
                 message.AuctionId);
             return;
         }

@@ -95,7 +95,7 @@ public class BidEndpoints : ICarterModule
 
         var result = await mediator.Send(command, ct);
 
-        return result.ToApiResult(bid => 
+        return result.ToApiResult(bid =>
             Results.Created($"/api/v1/bids/auction/{dto.AuctionId}", bid));
     }
 

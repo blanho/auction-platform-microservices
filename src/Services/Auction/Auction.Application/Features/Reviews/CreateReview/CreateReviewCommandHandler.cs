@@ -34,7 +34,7 @@ public class CreateReviewCommandHandler : ICommandHandler<CreateReviewCommand, R
     {
         var existingReview = await _reviewRepository.GetByAuctionAndReviewerAsync(
             request.AuctionId, request.ReviewerUsername, cancellationToken);
-        
+
         if (existingReview != null)
             return Result.Failure<ReviewDto>(AuctionErrors.Review.AlreadyExists);
 

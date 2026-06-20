@@ -20,7 +20,7 @@ public class GetNotificationRecordsByUserQueryHandler : IQueryHandler<GetNotific
 
     public async Task<Result<PaginatedResult<NotificationRecordDto>>> Handle(GetNotificationRecordsByUserQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting notification records for user: {UserId}, Page: {Page}, PageSize: {PageSize}", 
+        _logger.LogInformation("Getting notification records for user: {UserId}, Page: {Page}, PageSize: {PageSize}",
             request.UserId, request.Page, request.PageSize);
 
         var queryParams = new NotificationRecordQueryParams

@@ -14,7 +14,7 @@ public class Verify2FARequest
     [Required]
     [StringLength(7, MinimumLength = 6)]
     public string Code { get; set; } = string.Empty;
-    
+
     public bool RememberDevice { get; set; }
 }
 

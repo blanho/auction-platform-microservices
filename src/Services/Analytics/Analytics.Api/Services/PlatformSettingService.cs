@@ -132,7 +132,7 @@ public sealed class PlatformSettingService : IPlatformSettingService
         foreach (var item in settings)
         {
             var setting = await _settingRepository.GetByKeyAsync(item.Key, cancellationToken);
-            
+
             if (setting == null)
             {
                 setting = new PlatformSetting

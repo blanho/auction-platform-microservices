@@ -11,10 +11,10 @@ public class PlatformSetting
     public string? Description { get; set; }
     public SettingCategory Category { get; set; }
     public string? DataType { get; set; }
-    
+
     [Column(TypeName = "jsonb")]
     public string? ValidationRules { get; set; }
-    
+
     public bool IsSystem { get; set; }
     public string? LastModifiedBy { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

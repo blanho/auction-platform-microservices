@@ -36,7 +36,7 @@ export function useAuctionDetailActions(
   const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
 
   const handleToggleFavorite = useCallback(() => {
-    if (!auctionId) return
+    if (!auctionId) {return}
 
     toggleWatchlistMutation.mutate(
       { auctionId, isInWatchlist: auction?.isWatching ?? false },
@@ -60,7 +60,7 @@ export function useAuctionDetailActions(
 
   const handlePlaceBid = useCallback(
     async (amount: number) => {
-      if (!auctionId) return
+      if (!auctionId) {return}
 
       placeBidMutation.mutate(
         { auctionId, amount },
@@ -82,7 +82,7 @@ export function useAuctionDetailActions(
   }, [])
 
   const confirmBuyNow = useCallback(async () => {
-    if (!auctionId) return
+    if (!auctionId) {return}
 
     buyNowMutation.mutate(auctionId, {
       onSuccess: () => {

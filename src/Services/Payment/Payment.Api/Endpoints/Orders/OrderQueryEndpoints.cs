@@ -102,8 +102,8 @@ public class OrderQueryEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var query = new GetOrdersByBuyerQuery(
-            username, 
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            username,
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
@@ -123,8 +123,8 @@ public class OrderQueryEndpoints : ICarterModule
         CancellationToken cancellationToken)
     {
         var query = new GetOrdersBySellerQuery(
-            username, 
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            username,
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
@@ -145,8 +145,8 @@ public class OrderQueryEndpoints : ICarterModule
         var username = UserHelper.GetUsername(httpContext.User);
 
         var query = new GetOrdersByBuyerQuery(
-            username, 
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            username,
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
@@ -167,8 +167,8 @@ public class OrderQueryEndpoints : ICarterModule
         var username = UserHelper.GetUsername(httpContext.User);
 
         var query = new GetOrdersBySellerQuery(
-            username, 
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage, 
+            username,
+            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
             PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 

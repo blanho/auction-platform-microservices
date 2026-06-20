@@ -58,7 +58,7 @@ public class AuditLogRepository : IAuditLogRepository
         CancellationToken cancellationToken = default)
     {
         var filter = queryParams.Filter;
-        
+
         var filterBuilder = FilterBuilder<AuditLog>.Create()
             .WhenHasValue(filter.EntityId, x => x.EntityId == filter.EntityId!.Value)
             .WhenNotEmpty(filter.EntityType, x => x.EntityType == filter.EntityType)

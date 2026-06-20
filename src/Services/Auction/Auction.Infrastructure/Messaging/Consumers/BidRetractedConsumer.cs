@@ -41,7 +41,7 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
                 message.NewHighestAmount.Value,
                 message.NewHighestBidderId.Value,
                 message.NewHighestBidderUsername);
-            
+
             _logger.LogInformation(
                 "Updated auction {AuctionId} with new high bid {Amount} after retraction",
                 message.AuctionId, message.NewHighestAmount.Value);
@@ -49,7 +49,7 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
         else
         {
             auction.UpdateHighBid(0, null, null);
-            
+
             _logger.LogInformation(
                 "Cleared high bid for auction {AuctionId} after retraction (no remaining bids)",
                 message.AuctionId);

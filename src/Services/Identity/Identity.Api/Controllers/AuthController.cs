@@ -146,12 +146,12 @@ public class AuthController : ControllerBase
         if (!result.IsSuccess)
         {
             CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
-            
+
             if (result.Error == IdentityErrors.Auth.SecurityTermination)
                 return Results.Json(
                     new { code = "security_termination", message = "Session terminated due to suspicious activity" },
                     statusCode: StatusCodes.Status403Forbidden);
-            
+
             return Results.Unauthorized();
         }
 

@@ -112,7 +112,7 @@ public class RolePermissionService : IRolePermissionService
             return RolePermissions.GetPermissionsForRoles(roleNamesList);
         }
 
-        return [..permissions];
+        return [.. permissions];
     }
 
     public Task<IReadOnlyList<PermissionDefinition>> GetAllPermissionDefinitionsAsync()
