@@ -49,39 +49,29 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
 
     private async Task DeactivateAutoBidsForFinishedAuction(Guid auctionId, CancellationToken cancellationToken)
     {
-        try
+        var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(
+            auctionId,
+            cancellationToken);
+
+        if (activeAutoBids.Count == 0)
         {
-            var activeAutoBids = await _autoBidRepository.GetActiveAutoBidsForAuctionAsync(
-                auctionId,
-                cancellationToken);
-
-            if (activeAutoBids.Count == 0)
-            {
-                _logger.LogInformation(
-                    "No active auto-bids found for finished auction {AuctionId}",
-                    auctionId);
-                return;
-            }
-
-            foreach (var autoBid in activeAutoBids)
-            {
-                autoBid.Deactivate();
-            }
-
-            await _autoBidRepository.UpdateRangeAsync(activeAutoBids, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             _logger.LogInformation(
-                "Deactivated {Count} auto-bid(s) for finished auction {AuctionId}",
-                activeAutoBids.Count,
+                "No active auto-bids found for finished auction {AuctionId}",
                 auctionId);
+            return;
         }
-        catch (Exception ex)
+
+        foreach (var autoBid in activeAutoBids)
         {
-            _logger.LogWarning(
-                ex,
-                "Error deactivating auto-bids for finished auction {AuctionId}; auto-bids may remain active",
-                auctionId);
+            autoBid.Deactivate();
         }
+
+        await _autoBidRepository.UpdateRangeAsync(activeAutoBids, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Deactivated {Count} auto-bid(s) for finished auction {AuctionId}",
+            activeAutoBids.Count,
+            auctionId);
     }
 }

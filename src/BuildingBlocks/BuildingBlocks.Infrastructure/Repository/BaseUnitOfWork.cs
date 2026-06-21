@@ -34,6 +34,11 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
             entity.ClearDomainEvents();
         }
 
+        foreach (var domainEvent in domainEvents)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
         int result;
         try
         {
@@ -42,11 +47,6 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
         catch (DbUpdateConcurrencyException ex)
         {
             throw new BuildingBlocks.Domain.Exceptions.ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
-        }
-
-        foreach (var domainEvent in domainEvents)
-        {
-            await _mediator.Publish(domainEvent, cancellationToken);
         }
 
         return result;

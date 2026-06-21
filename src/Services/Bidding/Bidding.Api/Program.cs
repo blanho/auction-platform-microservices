@@ -62,10 +62,14 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (args.Contains("--migrate-only"))
 {
-    var db = scope.ServiceProvider.GetRequiredService<BidDbContext>();
-    await db.Database.MigrateAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BidDbContext>();
+        await db.Database.MigrateAsync();
+    }
+    return;
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];

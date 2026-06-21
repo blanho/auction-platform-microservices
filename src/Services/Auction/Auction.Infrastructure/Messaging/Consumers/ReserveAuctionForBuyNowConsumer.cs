@@ -49,6 +49,25 @@ public class ReserveAuctionForBuyNowConsumer : IConsumer<ReserveAuctionForBuyNow
                 return;
             }
 
+            if (auction.Status == Status.ReservedForBuyNow)
+            {
+                _logger.LogInformation(
+                    "Auction {AuctionId} was already reserved for Buy Now - CorrelationId: {CorrelationId} (idempotent path)",
+                    message.AuctionId, message.CorrelationId);
+
+                await context.Publish(new AuctionReservedForBuyNow
+                {
+                    CorrelationId = message.CorrelationId,
+                    AuctionId = auction.Id,
+                    SellerId = auction.SellerId,
+                    SellerUsername = auction.SellerUsername,
+                    BuyNowPrice = auction.BuyNowPrice ?? 0,
+                    ItemTitle = auction.Item.Title,
+                    ReservedAt = _dateTime.UtcNow
+                });
+                return;
+            }
+
             if (!auction.IsBuyNowAvailable)
             {
                 await context.Publish(new AuctionReservationFailed

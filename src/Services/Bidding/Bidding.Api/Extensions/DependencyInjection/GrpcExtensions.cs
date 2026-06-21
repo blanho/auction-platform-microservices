@@ -4,6 +4,8 @@ using Bidding.Infrastructure.Grpc;
 using GrpcCore = global::Grpc.Core;
 using GrpcConfig = global::Grpc.Net.Client.Configuration;
 
+using BuildingBlocks.Infrastructure.Resilience;
+
 namespace Bidding.Api.Extensions.DependencyInjection;
 
 public static class GrpcExtensions
@@ -19,6 +21,7 @@ public static class GrpcExtensions
                 ?? throw new InvalidOperationException("GrpcServices:AuctionService configuration is required");
             options.Address = new Uri(auctionGrpcUrl);
         })
+        .AddGrpcResilience()
         .ConfigurePrimaryHttpMessageHandler(() =>
         {
             var handler = new SocketsHttpHandler

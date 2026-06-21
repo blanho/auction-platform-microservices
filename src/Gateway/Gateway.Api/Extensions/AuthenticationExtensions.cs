@@ -52,25 +52,36 @@ public static class AuthenticationExtensions
 
     public static IServiceCollection AddGatewayCors(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment)
     {
         services.AddCors(options =>
         {
             var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                ?? throw new InvalidOperationException("Cors:AllowedOrigins configuration is required");
+                ?? Array.Empty<string>();
 
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.WithOrigins(allowedOrigins)
-                      .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                      .WithHeaders(
-                          "Authorization",
-                          "Content-Type",
-                          "X-Requested-With",
-                          "Accept",
-                          "X-Correlation-Id",
-                          "X-SignalR-User-Agent")
-                      .AllowCredentials();
+                if (environment.IsDevelopment() || environment.EnvironmentName == "Local")
+                {
+                    policy.SetIsOriginAllowed(_ => true)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                }
+                else
+                {
+                    policy.WithOrigins(allowedOrigins)
+                          .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                          .WithHeaders(
+                              "Authorization",
+                              "Content-Type",
+                              "X-Requested-With",
+                              "Accept",
+                              "X-Correlation-Id",
+                              "X-SignalR-User-Agent")
+                          .AllowCredentials();
+                }
             });
         });
 

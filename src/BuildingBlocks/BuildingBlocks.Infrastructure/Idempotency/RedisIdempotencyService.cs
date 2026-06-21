@@ -32,4 +32,23 @@ public sealed class RedisMessageDeduplicationService : IMessageDeduplicationServ
         await db.StringSetAsync($"{KeyPrefix}{idempotencyKey}", "1", effectiveExpiry);
         _logger.LogDebug("Marked {IdempotencyKey} as processed with expiry {Expiry}", idempotencyKey, effectiveExpiry);
     }
+
+    public async Task<bool> TryMarkAsProcessedAsync(string idempotencyKey, TimeSpan? expiry = null, CancellationToken cancellationToken = default)
+    {
+        var db = _redis.GetDatabase();
+        var effectiveExpiry = expiry ?? DefaultExpiry;
+        var wasSet = await db.StringSetAsync($"{KeyPrefix}{idempotencyKey}", "1", effectiveExpiry, When.NotExists);
+        if (wasSet)
+        {
+            _logger.LogDebug("Atomically marked {IdempotencyKey} as processed with expiry {Expiry}", idempotencyKey, effectiveExpiry);
+        }
+        return wasSet;
+    }
+
+    public async Task RemoveAsync(string idempotencyKey, CancellationToken cancellationToken = default)
+    {
+        var db = _redis.GetDatabase();
+        await db.KeyDeleteAsync($"{KeyPrefix}{idempotencyKey}");
+        _logger.LogDebug("Removed idempotency key {IdempotencyKey}", idempotencyKey);
+    }
 }

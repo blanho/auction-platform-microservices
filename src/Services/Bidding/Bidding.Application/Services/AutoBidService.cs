@@ -17,6 +17,7 @@ namespace Bidding.Application.Services
         private readonly ILogger<AutoBidService> _logger;
         private readonly IAuctionGrpcClient _auctionGrpcClient;
         private const string AuctionStatusActive = "Live";
+        private const int DefaultUserAutoBidsPageSize = 100;
 
         public AutoBidService(
             IAutoBidRepository autoBidRepository,
@@ -68,7 +69,7 @@ namespace Bidding.Application.Services
             var queryParams = new AutoBidQueryParams
             {
                 Page = 1,
-                PageSize = 100,
+                PageSize = DefaultUserAutoBidsPageSize,
                 Filter = new AutoBidFilter()
             };
             var result = await _autoBidRepository.GetAutoBidsByUserAsync(userId, queryParams, cancellationToken);

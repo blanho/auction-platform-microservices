@@ -89,7 +89,7 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             return new AuctionDetails(
                 response.Title,
                 response.Seller,
-                auctionEnd.DateTime,
+                auctionEnd,
                 response.Status,
                 response.ReservePriceCents > 0,
                 response.ReservePriceCents / 100m);
@@ -113,12 +113,12 @@ public class AuctionGrpcClient : IAuctionGrpcClient
 
     public async Task<ExtendAuctionResult> ExtendAuctionAsync(
         Guid auctionId,
-        DateTime newEndTime,
+        DateTimeOffset newEndTime,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var timeToExtend = (int)(newEndTime - DateTime.UtcNow).TotalMinutes;
+            var timeToExtend = (int)(newEndTime - DateTimeOffset.UtcNow).TotalMinutes;
             var request = new ExtendAuctionRequest
             {
                 AuctionId = auctionId.ToString(),
@@ -131,9 +131,9 @@ public class AuctionGrpcClient : IAuctionGrpcClient
                 deadline: DateTime.UtcNow.Add(ExtendedDeadline),
                 cancellationToken: cancellationToken);
 
-            DateTime? parsedEndTime = null;
+            DateTimeOffset? parsedEndTime = null;
             if (!string.IsNullOrEmpty(response.NewEndTime) &&
-                DateTime.TryParse(
+                DateTimeOffset.TryParse(
                     response.NewEndTime,
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.AssumeUniversal,

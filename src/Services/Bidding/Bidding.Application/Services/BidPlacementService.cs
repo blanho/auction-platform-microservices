@@ -1,3 +1,4 @@
+using Bidding.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Providers;
@@ -8,6 +9,7 @@ namespace Bidding.Application.Services
     public class BidPlacementService : IBidService
     {
         private readonly IBidRepository _repository;
+        private readonly IAuctionSnapshotRepository _snapshotRepository;
         private readonly ILogger<BidPlacementService> _logger;
         private readonly IDateTimeProvider _dateTime;
         private readonly IUnitOfWork _unitOfWork;
@@ -16,6 +18,7 @@ namespace Bidding.Application.Services
 
         public BidPlacementService(
             IBidRepository repository,
+            IAuctionSnapshotRepository snapshotRepository,
             ILogger<BidPlacementService> logger,
             IDateTimeProvider dateTime,
             IUnitOfWork unitOfWork,
@@ -23,6 +26,7 @@ namespace Bidding.Application.Services
             IAuctionGrpcClient auctionGrpcClient)
         {
             _repository = repository;
+            _snapshotRepository = snapshotRepository;
             _logger = logger;
             _dateTime = dateTime;
             _unitOfWork = unitOfWork;
@@ -86,8 +90,6 @@ namespace Bidding.Application.Services
             if (bid.Status == BidStatus.Rejected.ToString())
                 return bid;
 
-            await CheckAndExtendAuctionIfNeeded(dto.AuctionId, ct);
-
             _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
                 bid.Id, dto.AuctionId, bid.Status);
 
@@ -117,34 +119,7 @@ namespace Bidding.Application.Services
             return false;
         }
 
-        private async Task CheckAndExtendAuctionIfNeeded(Guid auctionId, CancellationToken ct)
-        {
-            try
-            {
-                var auctionDetails = await _auctionGrpcClient.GetAuctionDetailsAsync(auctionId, ct);
-                if (auctionDetails == null) return;
 
-                var timeRemaining = auctionDetails.EndTime - _dateTime.UtcNow;
-                if (timeRemaining <= TimeSpan.FromMinutes(BidDefaults.AntiSnipeThresholdMinutes) &&
-                    timeRemaining > TimeSpan.Zero)
-                {
-                    var newEndTime = auctionDetails.EndTime.AddMinutes(BidDefaults.AntiSnipeExtensionMinutes);
-                    var result = await _auctionGrpcClient.ExtendAuctionAsync(auctionId, newEndTime, ct);
-
-                    if (result.Success)
-                    {
-                        _logger.LogInformation(
-                            "Auction {AuctionId} extended to {NewEndTime} due to anti-snipe rule",
-                            auctionId,
-                            result.NewEndTime);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to check/extend auction {AuctionId} for anti-snipe", auctionId);
-            }
-        }
 
         private Bid CreateBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, Bid? highestBid, bool isAutoBid, decimal reservePrice)
         {
@@ -241,6 +216,39 @@ namespace Bidding.Application.Services
 
         private async Task<(BidDto? Error, decimal ReservePrice)> ValidateAuctionForBid(PlaceBidDto dto, string bidderUsername, Guid bidderId, CancellationToken ct)
         {
+            var snapshot = await _snapshotRepository.GetAsync(dto.AuctionId, ct);
+            if (snapshot != null)
+            {
+                if (!string.Equals(snapshot.Status, "Live", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(snapshot.Status, "Active", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(
+                        "Auction validation failed locally for {AuctionId}: Auction is not active. Current status: {Status}",
+                        dto.AuctionId,
+                        snapshot.Status);
+                    return (CreateRejectedBid(dto, bidderId, bidderUsername, $"Auction is not active. Current status: {snapshot.Status}"), 0m);
+                }
+
+                if (snapshot.EndTime < _dateTime.UtcNow)
+                {
+                    _logger.LogWarning(
+                        "Auction validation failed locally for {AuctionId}: Auction has ended",
+                        dto.AuctionId);
+                    return (CreateRejectedBid(dto, bidderId, bidderUsername, "Auction has ended"), 0m);
+                }
+
+                if (snapshot.SellerId == bidderId || string.Equals(snapshot.SellerUsername, bidderUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(
+                        "Auction validation failed locally for {AuctionId}: Seller cannot bid",
+                        dto.AuctionId);
+                    return (CreateRejectedBid(dto, bidderId, bidderUsername, "You cannot bid on your own auction"), 0m);
+                }
+
+                return (null, snapshot.ReservePrice);
+            }
+
+            _logger.LogInformation("Auction snapshot missing for {AuctionId}, falling back to gRPC validation", dto.AuctionId);
             var validationResult = await _auctionGrpcClient.ValidateAuctionForBidAsync(
                 dto.AuctionId,
                 bidderUsername,

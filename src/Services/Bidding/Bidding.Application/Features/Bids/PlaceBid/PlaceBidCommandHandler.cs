@@ -39,7 +39,12 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
             request.Amount);
 
         var deduplicationKey = BuildDeduplicationKey(request);
-        if (await _deduplicationService.IsProcessedAsync(deduplicationKey, cancellationToken))
+        var marked = await _deduplicationService.TryMarkAsProcessedAsync(
+            deduplicationKey,
+            TimeSpan.FromSeconds(BidDefaults.DeduplicationWindowSeconds),
+            cancellationToken);
+
+        if (!marked)
         {
             _logger.LogInformation(
                 "Duplicate bid request ignored for auction {AuctionId}, bidder {BidderId}, idempotency key {IdempotencyKey}",
@@ -49,33 +54,40 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
             return Result.Failure<BidDto>(BidErrors.DuplicateRequest);
         }
 
-        var bid = await _bidService.PlaceBidAsync(
-            new PlaceBidDto
+        try
+        {
+            var bid = await _bidService.PlaceBidAsync(
+                new PlaceBidDto
+                {
+                    AuctionId = request.AuctionId,
+                    Amount = request.Amount
+                },
+                request.BidderId,
+                request.BidderUsername,
+                isAutoBid: false,
+                cancellationToken);
+
+            var result = ToPlacementResult(bid);
+            if (result.IsFailure)
             {
-                AuctionId = request.AuctionId,
-                Amount = request.Amount
-            },
-            request.BidderId,
-            request.BidderUsername,
-            isAutoBid: false,
-            cancellationToken);
+                await _deduplicationService.RemoveAsync(deduplicationKey, cancellationToken);
+                return result;
+            }
 
-        var result = ToPlacementResult(bid);
-        if (result.IsFailure)
+            await _auditPublisher.PublishAsync(
+                bid.Id,
+                BidAuditData.FromDto(bid),
+                AuditAction.Created,
+                cancellationToken: cancellationToken);
+
             return result;
-
-        await _auditPublisher.PublishAsync(
-            bid.Id,
-            BidAuditData.FromDto(bid),
-            AuditAction.Created,
-            cancellationToken: cancellationToken);
-
-        await _deduplicationService.MarkAsProcessedAsync(
-            deduplicationKey,
-            TimeSpan.FromSeconds(BidDefaults.DeduplicationWindowSeconds),
-            cancellationToken);
-
-        return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to place bid for auction {AuctionId}, bidder {BidderId}. Removing idempotency key.", request.AuctionId, request.BidderId);
+            await _deduplicationService.RemoveAsync(deduplicationKey, cancellationToken);
+            throw;
+        }
     }
 
     private static string BuildDeduplicationKey(PlaceBidCommand request)

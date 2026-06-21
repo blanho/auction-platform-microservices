@@ -113,3 +113,13 @@ spec:
           annotations:
             summary: RabbitMQ queue backlog
             description: "Queue {{ $labels.queue }} has {{ $value }} pending messages"
+        
+        - alert: DeadLetterQueueMessages
+          expr: |
+            sum by (queue) (rabbitmq_queue_messages{queue=~".*_error"}) > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Messages detected in Dead Letter Queue (DLQ)
+            description: "Dead letter queue {{ $labels.queue }} has {{ $value }} failed messages"

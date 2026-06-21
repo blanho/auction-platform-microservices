@@ -9,7 +9,7 @@ public record AuctionValidationResult(
 public record AuctionDetails(
     string Title,
     string SellerUsername,
-    DateTime EndTime,
+    DateTimeOffset EndTime,
     string Status,
     bool IsReserved,
     decimal ReservePrice = 0);
@@ -17,7 +17,7 @@ public record AuctionDetails(
 public record ExtendAuctionResult(
     bool Success,
     string Message,
-    DateTime? NewEndTime = null);
+    DateTimeOffset? NewEndTime = null);
 
 public interface IAuctionGrpcClient
 {
@@ -33,6 +33,6 @@ public interface IAuctionGrpcClient
 
     Task<ExtendAuctionResult> ExtendAuctionAsync(
         Guid auctionId,
-        DateTime newEndTime,
+        DateTimeOffset newEndTime,
         CancellationToken cancellationToken = default);
 }

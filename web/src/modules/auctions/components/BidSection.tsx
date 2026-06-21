@@ -39,7 +39,7 @@ interface BidSectionProps {
     isActive: boolean
   }
   onPlaceBid: (amount: number) => Promise<void>
-  onBuyNow?: () => Promise<void>
+  onBuyNow?: () => void
 }
 
 export function BidSection({

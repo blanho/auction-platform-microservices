@@ -1,6 +1,8 @@
 using Auctions.Domain.Enums;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
+using OrchestrationService.Contracts.Events;
+using MassTransit;
 
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
@@ -42,6 +44,13 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
                 _logger.LogError(
                     "Auction not found for completion - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
                     message.CorrelationId, message.AuctionId);
+
+                await context.Publish(new BuyNowAuctionCompletionFailed
+                {
+                    CorrelationId = message.CorrelationId,
+                    AuctionId = message.AuctionId,
+                    Reason = "Auction not found"
+                });
                 return;
             }
 
@@ -66,7 +75,13 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
             _logger.LogError(ex,
                 "Failed to complete Buy Now auction - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
                 message.CorrelationId, message.AuctionId);
-            throw;
+
+            await context.Publish(new BuyNowAuctionCompletionFailed
+            {
+                CorrelationId = message.CorrelationId,
+                AuctionId = message.AuctionId,
+                Reason = $"Failed to complete Buy Now auction: {ex.Message}"
+            });
         }
     }
 }

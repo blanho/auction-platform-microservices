@@ -47,7 +47,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("GatewayService is running"),
         tags: new[] { "self", "ready" });
-builder.Services.AddGatewayCors(builder.Configuration);
+builder.Services.AddGatewayCors(builder.Configuration, builder.Environment);
 
 var supportedCultures = new[] { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -72,8 +72,8 @@ app.UseWebSockets();
 
 app.UseCors("AllowAll");
 
-app.UseAuthentication();
 app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();

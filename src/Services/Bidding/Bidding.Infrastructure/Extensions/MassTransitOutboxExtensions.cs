@@ -25,11 +25,12 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<AuctionHighBidSnapshotConsumer>();
             x.AddConsumer<AuctionDeletedSnapshotConsumer>();
             x.AddConsumer<AuctionFinishedSnapshotConsumer>();
+            x.AddConsumer<BidPlacedAntiSnipeConsumer>();
 
             x.AddEntityFrameworkOutbox<BidDbContext>(o =>
             {
                 o.UsePostgres();
-                o.QueryDelay = TimeSpan.FromSeconds(10);
+                o.QueryDelay = TimeSpan.FromSeconds(1);
                 o.UseBusOutbox();
             });
 

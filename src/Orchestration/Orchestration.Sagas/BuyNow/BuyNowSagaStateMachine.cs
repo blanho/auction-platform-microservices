@@ -18,6 +18,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
     public Event<BuyNowOrderCreated> OrderCreated { get; private set; } = null!;
     public Event<BuyNowOrderCreationFailed> OrderCreationFailed { get; private set; } = null!;
     public Event<BuyNowAuctionCompleted> AuctionCompleted { get; private set; } = null!;
+    public Event<BuyNowAuctionCompletionFailed> AuctionCompletionFailed { get; private set; } = null!;
     public Event<AuctionReservationReleased> ReservationReleased { get; private set; } = null!;
 
     public Schedule<BuyNowSagaState, BuyNowSagaTimedOut> SagaTimeout { get; private set; } = null!;
@@ -32,6 +33,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
         Event(() => OrderCreated, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => OrderCreationFailed, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => AuctionCompleted, e => e.CorrelateById(m => m.Message.CorrelationId));
+        Event(() => AuctionCompletionFailed, e => e.CorrelateById(m => m.Message.CorrelationId));
         Event(() => ReservationReleased, e => e.CorrelateById(m => m.Message.CorrelationId));
 
         Schedule(() => SagaTimeout, instance => instance.TimeoutTokenId, s =>
@@ -159,7 +161,20 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                     CompletedAt = context.Saga.CompletedAt ?? DateTimeOffset.UtcNow
                 })
                 .TransitionTo(Completed)
-                .Finalize()
+                .Finalize(),
+
+            When(AuctionCompletionFailed)
+                .Then(context =>
+                {
+                    context.Saga.FailureReason = context.Message.Reason;
+                })
+                .Publish(context => new ReleaseAuctionReservation
+                {
+                    CorrelationId = context.Saga.CorrelationId,
+                    AuctionId = context.Saga.AuctionId,
+                    Reason = $"Auction completion failed: {context.Message.Reason}"
+                })
+                .TransitionTo(Compensating)
         );
 
         During(Compensating,
