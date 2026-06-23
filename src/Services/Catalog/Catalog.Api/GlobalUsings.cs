@@ -1,0 +1,15 @@
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using BuildingBlocks.Application.Abstractions;
+global using BuildingBlocks.Web.Authorization;
+global using BuildingBlocks.Web.Extensions;
+global using BuildingBlocks.Infrastructure.Extensions;
+global using BuildingBlocks.Application.Extensions;
+global using BuildingBlocks.Web.Observability;
+global using BuildingBlocks.Web.OpenApi;
+global using BuildingBlocks.Web.Middleware;
+global using Catalog.Application.Interfaces;
+global using Catalog.Infrastructure.Extensions;
+global using Catalog.Infrastructure.Persistence.Repositories;
+global using MediatR;
+global using Carter;

@@ -2,12 +2,12 @@ using MassTransit;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Infrastructure.Scheduling;
-using Identity.Api.Data;
-using Identity.Api.Data.Repositories;
-using Identity.Api.Interfaces;
-using Identity.Api.Jobs;
-using Identity.Api.Mappings;
-using Identity.Api.Services;
+using Identity.Infrastructure.Persistence;
+using Identity.Infrastructure.Persistence.Repositories;
+using Identity.Application.Interfaces;
+using Identity.Infrastructure.Jobs;
+using Identity.Application.Mappings;
+using Identity.Application.Services;
 using BuildingBlocks.Infrastructure.Messaging;
 
 namespace Identity.Api.Extensions.DependencyInjection;
@@ -18,16 +18,21 @@ internal static class ServiceCollectionExtensions
     {
         services.AddMediatR(cfg =>
         {
-            cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+            cfg.RegisterServicesFromAssemblies(
+                typeof(ServiceCollectionExtensions).Assembly,
+                typeof(IUserService).Assembly);
         });
 
         services.AddScoped<ITokenGenerationService, TokenGenerationService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<ITwoFactorService, TwoFactorService>();
+
         services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
+        
+        // Helpers
+        services.AddScoped<Identity.Application.Features.Auth.Helpers.IAuthHelper, Identity.Application.Features.Auth.Helpers.AuthHelper>();
+        services.AddScoped<Identity.Application.Features.Users.Helpers.IUserHelper, Identity.Application.Features.Users.Helpers.UserHelper>();
+
         services.AddAutoMapper(typeof(UserMappingProfile));
 
         return services;

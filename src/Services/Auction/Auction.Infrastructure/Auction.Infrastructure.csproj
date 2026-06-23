@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\Notification\Notification.Contracts\NotificationService.Contracts.csproj" />
     <ProjectReference Include="..\..\Job\Job.Contracts\JobService.Contracts.csproj" />
     <ProjectReference Include="..\..\Storage\Storage.Contracts\StorageService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Catalog\Catalog.Contracts\Catalog.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

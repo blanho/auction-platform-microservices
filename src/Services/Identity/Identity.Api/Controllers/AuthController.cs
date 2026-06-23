@@ -1,18 +1,18 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Api.DTOs.Auth;
-using Identity.Api.DTOs.External;
-using Identity.Api.DTOs.TwoFactor;
-using Identity.Api.DTOs.Users;
-using Identity.Api.Errors;
-using Identity.Api.Interfaces;
+using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs.External;
+using Identity.Application.DTOs.TwoFactor;
+using Identity.Application.DTOs.Users;
+using Identity.Application.Errors;
+using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Web;
-using EnvironmentHelper = Identity.Api.Helpers.EnvironmentHelper;
-using CookieHelper = Identity.Api.Helpers.CookieHelper;
-using HttpContextHelper = Identity.Api.Helpers.HttpContextHelper;
+using EnvironmentHelper = Identity.Application.Helpers.EnvironmentHelper;
+using CookieHelper = Identity.Application.Helpers.CookieHelper;
+using HttpContextHelper = Identity.Application.Helpers.HttpContextHelper;
 
 namespace Identity.Api.Controllers;
 
@@ -21,16 +21,16 @@ namespace Identity.Api.Controllers;
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly MediatR.ISender _sender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
-        IAuthService authService,
+        MediatR.ISender sender,
         IConfiguration configuration,
         ILogger<AuthController> logger)
     {
-        _authService = authService;
+        _sender = sender;
         _configuration = configuration;
         _logger = logger;
     }
@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> Register([FromBody] RegisterRequest dto, CancellationToken cancellationToken)
     {
-        var result = await _authService.RegisterAsync(dto);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.Register.RegisterCommand(dto), cancellationToken);
         return result.IsSuccess
             ? Results.Created($"/api/auth/me", result.Value)
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -52,7 +52,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
     {
-        var result = await _authService.ConfirmEmailAsync(request);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.ConfirmEmail.ConfirmEmailCommand(request), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> ResendConfirmation([FromBody] ResendConfirmationRequest request, CancellationToken cancellationToken)
     {
-        var result = await _authService.ResendConfirmationAsync(request.Email);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.ResendConfirmation.ResendConfirmationCommand(request.Email), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -75,7 +75,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
     {
-        await _authService.ForgotPasswordAsync(request.Email);
+        await _sender.Send(new Identity.Application.Features.Auth.Commands.ForgotPassword.ForgotPasswordCommand(request.Email), cancellationToken);
         return Results.Ok();
     }
 
@@ -84,7 +84,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
     {
-        var result = await _authService.ResetPasswordAsync(request);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.ResetPassword.ResetPasswordCommand(request), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -97,7 +97,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> Login([FromBody] LoginRequest dto, CancellationToken cancellationToken)
     {
         var ipAddress = HttpContextHelper.GetIpAddress(HttpContext);
-        var result = await _authService.LoginAsync(dto, ipAddress!);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.Login.LoginCommand(dto, ipAddress!), cancellationToken);
 
         if (!result.IsSuccess)
             return Results.Unauthorized();
@@ -118,7 +118,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> LoginWith2FA([FromBody] TwoFactorLoginRequest request, CancellationToken cancellationToken)
     {
         var ipAddress = HttpContextHelper.GetIpAddress(HttpContext);
-        var result = await _authService.LoginWith2FAAsync(request, ipAddress!);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.LoginWith2FA.LoginWith2FACommand(request, ipAddress!), cancellationToken);
 
         if (!result.IsSuccess)
             return Results.Unauthorized();
@@ -141,7 +141,7 @@ public class AuthController : ControllerBase
             return Results.Unauthorized();
 
         var ipAddress = HttpContextHelper.GetIpAddress(HttpContext);
-        var result = await _authService.RefreshTokenAsync(refreshToken, ipAddress!);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.RefreshToken.RefreshTokenCommand(refreshToken, ipAddress!), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -169,7 +169,7 @@ public class AuthController : ControllerBase
         var userId = User.GetRequiredUserIdString();
         var refreshToken = CookieHelper.GetRefreshTokenFromCookie(Request) ?? string.Empty;
 
-        await _authService.LogoutAsync(userId, refreshToken);
+        await _sender.Send(new Identity.Application.Features.Auth.Commands.Logout.LogoutCommand(userId, refreshToken), cancellationToken);
         CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
         return Results.Ok();
     }
@@ -181,7 +181,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> LogoutAll(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        await _authService.LogoutAllAsync(userId);
+        await _sender.Send(new Identity.Application.Features.Auth.Commands.LogoutAll.LogoutAllCommand(userId), cancellationToken);
         CookieHelper.ClearRefreshTokenCookie(Response, EnvironmentHelper.IsProduction(_configuration));
         return Results.Ok();
     }
@@ -193,7 +193,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> GetCurrentUser(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _authService.GetCurrentUserAsync(userId);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Querys.GetCurrentUser.GetCurrentUserQuery(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Unauthorized();
@@ -238,14 +238,15 @@ public class AuthController : ControllerBase
             return Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(remoteError)}");
         }
 
-        var info = await _authService.GetExternalLoginInfoAsync();
+        var infoResult = await _sender.Send(new Identity.Application.Features.Auth.Queries.GetExternalLoginInfo.GetExternalLoginInfoQuery(), cancellationToken);
+        var info = infoResult.IsSuccess ? infoResult.Value : null;
         if (info == null)
         {
             _logger.LogError("External login info is null");
             return Redirect($"{frontendUrl}/auth/signin?error=External+login+failed");
         }
 
-        var result = await _authService.ProcessExternalLoginAsync(info);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.ProcessExternalLogin.ProcessExternalLoginCommand(info), cancellationToken);
 
         if (!result.IsSuccess)
             return Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(result.Error!.Message)}");
@@ -263,7 +264,7 @@ public class AuthController : ControllerBase
             return Results.BadRequest(ProblemDetailsHelper.ValidationError("Code", "Authorization code is required"));
 
         var ipAddress = HttpContextHelper.GetIpAddress(HttpContext);
-        var result = await _authService.ExchangeCodeForTokensAsync(request.Code, ipAddress!);
+        var result = await _sender.Send(new Identity.Application.Features.Auth.Commands.ExchangeCodeForTokens.ExchangeCodeForTokensCommand(request.Code, ipAddress!), cancellationToken);
 
         if (!result.IsSuccess)
             return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -282,7 +283,8 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(username))
             return Results.BadRequest(ProblemDetailsHelper.ValidationError("Username", "Username is required"));
 
-        var available = await _authService.IsUsernameAvailableAsync(username);
+        var availableResult = await _sender.Send(new Identity.Application.Features.Auth.Querys.CheckUsernameAvailability.CheckUsernameAvailabilityQuery(username), cancellationToken);
+        var available = availableResult.IsSuccess && availableResult.Value;
         return Results.Ok(available);
     }
 
@@ -294,7 +296,8 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(email))
             return Results.BadRequest(ProblemDetailsHelper.ValidationError("Email", "Email is required"));
 
-        var available = await _authService.IsEmailAvailableAsync(email);
+        var availableResult = await _sender.Send(new Identity.Application.Features.Auth.Querys.CheckEmailAvailability.CheckEmailAvailabilityQuery(email), cancellationToken);
+        var available = availableResult.IsSuccess && availableResult.Value;
         return Results.Ok(available);
     }
 }

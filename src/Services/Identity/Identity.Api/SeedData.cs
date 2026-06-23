@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Exceptions;
-using Identity.Api.Data;
-using Identity.Api.Models;
+using Identity.Infrastructure.Persistence;
+using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Serilog;
 

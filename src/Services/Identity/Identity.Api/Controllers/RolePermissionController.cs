@@ -1,6 +1,6 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Api.Interfaces;
+using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +12,11 @@ namespace Identity.Api.Controllers;
 [Produces("application/json")]
 public class RolePermissionController : ControllerBase
 {
-    private readonly IRolePermissionService _rolePermissionService;
+    private readonly MediatR.ISender _sender;
 
-    public RolePermissionController(IRolePermissionService rolePermissionService)
+    public RolePermissionController(MediatR.ISender sender)
     {
-        _rolePermissionService = rolePermissionService;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -24,8 +24,8 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<RoleDto>), StatusCodes.Status200OK)]
     public async Task<IResult> GetAllRoles(CancellationToken cancellationToken)
     {
-        var roles = await _rolePermissionService.GetAllRolesAsync(cancellationToken);
-        return Results.Ok(roles);
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Queries.GetAllRoles.GetAllRolesQuery(), cancellationToken);
+        return Results.Ok(result.Value);
     }
 
     [HttpGet("{roleId:guid}")]
@@ -34,10 +34,10 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetRole(Guid roleId, CancellationToken cancellationToken)
     {
-        var role = await _rolePermissionService.GetRoleByIdAsync(roleId, cancellationToken);
-        return role is null
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Queries.GetRoleById.GetRoleByIdQuery(roleId), cancellationToken);
+        return result.Value is null
             ? Results.NotFound(ProblemDetailsHelper.NotFound("Role", roleId.ToString()))
-            : Results.Ok(role);
+            : Results.Ok(result.Value);
     }
 
     [HttpGet("{roleId:guid}/permissions")]
@@ -46,17 +46,17 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetRolePermissions(Guid roleId, CancellationToken cancellationToken)
     {
-        var permissions = await _rolePermissionService.GetPermissionsForRoleAsync(roleId, cancellationToken);
-        return Results.Ok(permissions);
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Queries.GetPermissionsForRole.GetPermissionsForRoleQuery(roleId), cancellationToken);
+        return Results.Ok(result.Value);
     }
 
     [HttpGet("permissions/definitions")]
     [RequirePermission(Permissions.Users.ManageRoles)]
     [ProducesResponseType(typeof(IReadOnlyList<PermissionDefinition>), StatusCodes.Status200OK)]
-    public async Task<IResult> GetAllPermissionDefinitions()
+    public async Task<IResult> GetAllPermissionDefinitions(CancellationToken cancellationToken)
     {
-        var definitions = await _rolePermissionService.GetAllPermissionDefinitionsAsync();
-        return Results.Ok(definitions);
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Queries.GetAllPermissionDefinitions.GetAllPermissionDefinitionsQuery(), cancellationToken);
+        return Results.Ok(result.Value);
     }
 
     [HttpPost("{roleId:guid}/permissions/{permission}")]
@@ -65,8 +65,8 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GrantPermission(Guid roleId, string permission, CancellationToken cancellationToken)
     {
-        var result = await _rolePermissionService.GrantPermissionAsync(roleId, permission, cancellationToken);
-        return result
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Commands.GrantPermission.GrantPermissionCommand(roleId, permission), cancellationToken);
+        return result.Value
             ? Results.NoContent()
             : Results.NotFound(ProblemDetailsHelper.NotFound("Role", roleId.ToString()));
     }
@@ -76,8 +76,8 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IResult> RevokePermission(Guid roleId, string permission, CancellationToken cancellationToken)
     {
-        var result = await _rolePermissionService.RevokePermissionAsync(roleId, permission, cancellationToken);
-        return result
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Commands.RevokePermission.RevokePermissionCommand(roleId, permission), cancellationToken);
+        return result.Value
             ? Results.NoContent()
             : Results.NotFound(ProblemDetailsHelper.NotFound("Role", roleId.ToString()));
     }
@@ -88,8 +88,8 @@ public class RolePermissionController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> SetPermissions(Guid roleId, [FromBody] SetPermissionsRequest request, CancellationToken cancellationToken)
     {
-        var result = await _rolePermissionService.SetPermissionsAsync(roleId, request.Permissions, cancellationToken);
-        return result
+        var result = await _sender.Send(new Identity.Application.Features.RolePermissions.Commands.SetPermissions.SetPermissionsCommand(roleId, request.Permissions), cancellationToken);
+        return result.Value
             ? Results.NoContent()
             : Results.NotFound(ProblemDetailsHelper.NotFound("Role", roleId.ToString()));
     }
@@ -103,11 +103,13 @@ public class RolePermissionController : ControllerBase
         bool result;
         if (request.Enabled)
         {
-            result = await _rolePermissionService.GrantPermissionAsync(roleId, request.Permission, cancellationToken);
+            var r = await _sender.Send(new Identity.Application.Features.RolePermissions.Commands.GrantPermission.GrantPermissionCommand(roleId, request.Permission), cancellationToken);
+            result = r.Value;
         }
         else
         {
-            result = await _rolePermissionService.RevokePermissionAsync(roleId, request.Permission, cancellationToken);
+            var r = await _sender.Send(new Identity.Application.Features.RolePermissions.Commands.RevokePermission.RevokePermissionCommand(roleId, request.Permission), cancellationToken);
+            result = r.Value;
         }
 
         return result

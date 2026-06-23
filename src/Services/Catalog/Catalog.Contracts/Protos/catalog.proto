@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "Catalog.Contracts.Grpc";
+
+package catalog;
+
+service CatalogGrpc {
+  rpc GetBrandById (GetBrandRequest) returns (BrandResponse);
+  rpc GetCategoryById (GetCategoryRequest) returns (CategoryResponse);
+}
+
+message GetBrandRequest {
+  string id = 1;
+}
+
+message BrandResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+}
+
+message GetCategoryRequest {
+  string id = 1;
+}
+
+message CategoryResponse {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+}

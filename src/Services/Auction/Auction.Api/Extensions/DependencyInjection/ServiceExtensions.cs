@@ -51,16 +51,19 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
             services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
 
-            services.AddScoped<IAuctionViewRepository, AuctionViewRepository>();
-
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
-            services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IAuctionBulkRepository, AuctionBulkRepository>();
             services.AddScoped<IImportCheckpointRepository, ImportCheckpointRepository>();
 
             services.AddScoped<IPaginatedAuctionQueryService, PaginatedAuctionQueryService>();
+
+            services.AddGrpcClient<Catalog.Contracts.Grpc.CatalogGrpc.CatalogGrpcClient>((sp, o) =>
+            {
+                var cfg = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+                o.Address = new Uri(cfg["CatalogService:GrpcUrl"] ?? "http://localhost:5013");
+            });
+            services.AddScoped<ICatalogGrpcClient, CatalogGrpcClient>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

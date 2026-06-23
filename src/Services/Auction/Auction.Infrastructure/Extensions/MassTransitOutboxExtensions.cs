@@ -18,6 +18,9 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<BidPlacedConsumer>();
             x.AddConsumer<BidRetractedConsumer>();
 
+            x.AddConsumer<BrandUpdatedConsumer>();
+            x.AddConsumer<CategoryUpdatedConsumer>();
+
             x.AddConsumer<ReserveAuctionForBuyNowConsumer>();
             x.AddConsumer<CompleteBuyNowAuctionConsumer>();
             x.AddConsumer<ReleaseAuctionReservationConsumer>();
@@ -71,6 +74,17 @@ public static class MassTransitOutboxExtensions
                 {
                     e.ConfigureConsumer<FileUploadedConsumer>(context);
                     e.ConfigureConsumer<FileDeletedConsumer>(context);
+                    e.UseMessageRetry(r => r.Exponential(
+                        retryLimit: AuctionDefaults.Messaging.StandardRetryLimit,
+                        minInterval: TimeSpan.FromSeconds(AuctionDefaults.Messaging.StandardMinIntervalSeconds),
+                        maxInterval: TimeSpan.FromSeconds(AuctionDefaults.Messaging.MaxIntervalSeconds),
+                        intervalDelta: TimeSpan.FromSeconds(AuctionDefaults.Messaging.IntervalDeltaSeconds)));
+                });
+
+                cfg.ReceiveEndpoint("auction-catalog-events", e =>
+                {
+                    e.ConfigureConsumer<BrandUpdatedConsumer>(context);
+                    e.ConfigureConsumer<CategoryUpdatedConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: AuctionDefaults.Messaging.StandardRetryLimit,
                         minInterval: TimeSpan.FromSeconds(AuctionDefaults.Messaging.StandardMinIntervalSeconds),

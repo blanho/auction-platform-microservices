@@ -27,10 +27,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         private IQueryable<Auction> ActiveAuctionsWithItemDetails =>
             _context.Auctions
                 .Where(x => !x.IsDeleted)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Category)
-                .Include(x => x.Item)
-                    .ThenInclude(i => i!.Brand);
+                .Include(x => x.Item);
 
         public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
         {
@@ -95,7 +92,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             if (!string.IsNullOrEmpty(filterParams.Category))
             {
-                query = query.Where(x => x.Item != null && x.Item.Category != null && x.Item.Category.Name == filterParams.Category);
+                query = query.Where(x => x.Item != null && x.Item.CategoryName == filterParams.Category);
             }
 
             if (filterParams.IsFeatured.HasValue)

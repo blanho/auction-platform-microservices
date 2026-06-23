@@ -3,7 +3,7 @@ using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
-using Identity.Api.Data;
+using Identity.Infrastructure.Persistence;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
 using Serilog;

@@ -81,7 +81,7 @@ public class ExportAuctionsCommandHandler : ICommandHandler<ExportAuctionsComman
             SoldAmount: a.SoldAmount,
             CreatedAt: a.CreatedAt,
             AuctionEnd: a.AuctionEnd,
-            Category: a.Item.Category?.Name,
+            Category: a.Item.CategoryName,
             Condition: a.Item.Condition)).ToList();
     }
 }

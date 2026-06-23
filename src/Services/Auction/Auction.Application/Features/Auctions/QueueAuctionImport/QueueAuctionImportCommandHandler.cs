@@ -1,19 +1,21 @@
 using AuctionService.Contracts.Commands;
 using Auctions.Domain.Constants;
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Abstractions.Messaging;
+using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImportCommand, BackgroundJobResult>
 {
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<QueueAuctionImportCommandHandler> _logger;
 
     public QueueAuctionImportCommandHandler(
-        IPublishEndpoint publishEndpoint,
+        IEventPublisher eventPublisher,
         ILogger<QueueAuctionImportCommandHandler> logger)
     {
-        _publishEndpoint = publishEndpoint;
+        _eventPublisher = eventPublisher;
         _logger = logger;
     }
 
@@ -56,7 +58,7 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
                 Rows = batches[i]
             };
 
-            await _publishEndpoint.Publish(batchCommand, cancellationToken);
+            await _eventPublisher.PublishAsync(batchCommand, cancellationToken);
         }
 
         _logger.LogInformation(

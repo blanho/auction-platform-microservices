@@ -4,8 +4,10 @@ using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
+using Auctions.Application.Errors;
 using Auctions.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using Auctions.Application.Interfaces;
 
 namespace Auctions.Application.Features.Auctions.CreateAuction;
 
@@ -18,6 +20,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISanitizationService _sanitizationService;
     private readonly IAuditPublisher _auditPublisher;
+    private readonly ICatalogGrpcClient _catalogClient;
 
     public CreateAuctionCommandHandler(
         IAuctionWriteRepository repository,
@@ -26,7 +29,8 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         IDateTimeProvider dateTime,
         IUnitOfWork unitOfWork,
         ISanitizationService sanitizationService,
-        IAuditPublisher auditPublisher)
+        IAuditPublisher auditPublisher,
+        ICatalogGrpcClient catalogClient)
     {
         _repository = repository;
         _mapper = mapper;
@@ -35,13 +39,32 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         _unitOfWork = unitOfWork;
         _sanitizationService = sanitizationService;
         _auditPublisher = auditPublisher;
+        _catalogClient = catalogClient;
     }
 
     public async Task<Result<AuctionDto>> Handle(CreateAuctionCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Creating auction for seller {Seller} at {Timestamp}", request.SellerUsername, _dateTime.UtcNow);
 
-        var auction = CreateAuctionEntity(request);
+        string? brandName = null;
+        if (request.BrandId.HasValue)
+        {
+            var brandInfo = await _catalogClient.GetBrandAsync(request.BrandId.Value, cancellationToken);
+            if (brandInfo == null)
+                return Result.Failure<AuctionDto>(AuctionErrors.Brand.NotFoundById(request.BrandId.Value));
+            brandName = brandInfo.Value.Name;
+        }
+
+        string? categoryName = null;
+        if (request.CategoryId.HasValue)
+        {
+            var categoryInfo = await _catalogClient.GetCategoryAsync(request.CategoryId.Value, cancellationToken);
+            if (categoryInfo == null)
+                return Result.Failure<AuctionDto>(AuctionErrors.Category.NotFoundById(request.CategoryId.Value));
+            categoryName = categoryInfo.Value.Name;
+        }
+
+        var auction = CreateAuctionEntity(request, brandName, categoryName);
 
         var createdAuction = await _repository.CreateAsync(auction, cancellationToken);
 
@@ -59,7 +82,7 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
         return Result<AuctionDto>.Success(dto);
     }
 
-    private Auction CreateAuctionEntity(CreateAuctionCommand request)
+    private Auction CreateAuctionEntity(CreateAuctionCommand request, string? brandName, string? categoryName)
     {
         var item = Item.Create(
             title: _sanitizationService.SanitizeText(request.Title),
@@ -67,7 +90,9 @@ public class CreateAuctionCommandHandler : ICommandHandler<CreateAuctionCommand,
             condition: request.Condition,
             yearManufactured: request.YearManufactured,
             categoryId: request.CategoryId,
-            brandId: request.BrandId);
+            categoryName: categoryName,
+            brandId: request.BrandId,
+            brandName: brandName);
 
         if (request.Attributes != null)
         {

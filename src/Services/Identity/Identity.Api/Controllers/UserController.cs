@@ -1,10 +1,10 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Api.DTOs.Seller;
-using Identity.Api.DTOs.TwoFactor;
-using Identity.Api.DTOs.Users;
-using Identity.Api.Errors;
-using Identity.Api.Interfaces;
+using Identity.Application.DTOs.Seller;
+using Identity.Application.DTOs.TwoFactor;
+using Identity.Application.DTOs.Users;
+using Identity.Application.Errors;
+using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,24 +16,19 @@ namespace Identity.Api.Controllers;
 [Produces("application/json")]
 public class UserController : ControllerBase
 {
-    private readonly IUserService _userService;
-    private readonly ITwoFactorService _twoFactorService;
-
-    public UserController(
-        IUserService userService,
-        ITwoFactorService twoFactorService)
+    private readonly MediatR.ISender _sender;
+    public UserController(MediatR.ISender sender)
     {
-        _userService = userService;
-        _twoFactorService = twoFactorService;
+        _sender = sender;
     }
 
     [HttpGet]
     [Authorize]
     [ProducesResponseType(typeof(PaginatedResult<AdminUserDto>), StatusCodes.Status200OK)]
-    public async Task<IResult> GetUsers([FromQuery] GetUsersQuery query, CancellationToken cancellationToken = default)
+    public async Task<IResult> GetUsers([FromQuery] Identity.Application.DTOs.Users.GetUsersQuery query, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.GetUsersPagedAsync(query, cancellationToken);
-        return Results.Ok(result);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Queries.GetUsers.GetUsersListQuery(query), cancellationToken);
+        return Results.Ok(result.Value);
     }
 
     [HttpGet("{id}")]
@@ -42,7 +37,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetUser(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _userService.GetUserByIdAsync(id, cancellationToken);
+        var user = await _sender.Send(new Identity.Application.Features.Users.Queries.GetUserById.GetUserByIdQuery(id), cancellationToken);
         return user == null
             ? Results.NotFound(ProblemDetailsHelper.NotFound("User", id))
             : Results.Ok(user);
@@ -54,7 +49,7 @@ public class UserController : ControllerBase
     public async Task<IResult> GetSellerStatus(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _userService.GetSellerStatusAsync(userId, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Queries.GetSellerStatus.GetSellerStatusQuery(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Unauthorized();
@@ -67,7 +62,7 @@ public class UserController : ControllerBase
     public async Task<IResult> ApplyForSeller([FromBody] BecomeSellerRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _userService.ApplyForSellerAsync(userId, request.AcceptTerms, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.ApplyForSeller.ApplyForSellerCommand(userId, request.AcceptTerms), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -85,7 +80,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> SuspendUser(string id, [FromBody] SuspendUserRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.SuspendUserAsync(id, request.Reason, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.SuspendUser.SuspendUserCommand(id, request.Reason), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -97,7 +92,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> UnsuspendUser(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.UnsuspendUserAsync(id, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.UnsuspendUser.UnsuspendUserCommand(id), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -109,7 +104,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> ActivateUser(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.ActivateUserAsync(id, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.ActivateUser.ActivateUserCommand(id), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -121,7 +116,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> DeactivateUser(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.DeactivateUserAsync(id, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.DeactivateUser.DeactivateUserCommand(id), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -133,7 +128,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> UpdateUserRoles(string id, [FromBody] UpdateUserRolesRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.UpdateUserRolesAsync(id, request.Roles, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.UpdateUserRoles.UpdateUserRolesCommand(id, request.Roles), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -145,7 +140,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> DeleteUser(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _userService.DeleteUserAsync(id, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Users.Commands.DeleteUser.DeleteUserCommand(id), cancellationToken);
         return result.IsSuccess
             ? Results.NoContent()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -156,8 +151,8 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(AdminStatsResponse), StatusCodes.Status200OK)]
     public async Task<IResult> GetStats(CancellationToken cancellationToken = default)
     {
-        var stats = await _userService.GetStatsAsync(cancellationToken);
-        return Results.Ok(stats);
+        var statsResult = await _sender.Send(new Identity.Application.Features.Users.Queries.GetAdminStats.GetAdminStatsQuery(), cancellationToken);
+        return Results.Ok(statsResult.Value);
     }
 
     [HttpGet("{id}/2fa/status")]
@@ -166,7 +161,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> GetUser2FAStatus(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _twoFactorService.GetStatusByAdminAsync(id);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Queries.GetStatusByAdmin.GetStatusByAdminQuery(id), cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -178,7 +173,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IResult> Reset2FA(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _twoFactorService.ResetByAdminAsync(id);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.ResetByAdmin.ResetByAdminCommand(id), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", id));
@@ -191,7 +186,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> Disable2FA(string id, CancellationToken cancellationToken = default)
     {
-        var result = await _twoFactorService.DisableByAdminAsync(id);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.DisableByAdmin.DisableByAdminCommand(id), cancellationToken);
 
         if (!result.IsSuccess)
         {

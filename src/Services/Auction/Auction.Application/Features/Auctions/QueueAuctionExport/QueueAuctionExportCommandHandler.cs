@@ -1,15 +1,19 @@
 using AuctionService.Contracts.Commands;
+using Auctions.Application.Errors;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.CQRS;
+using MassTransit;
 
 namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 
 public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExportCommand, BackgroundJobResult>
 {
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IEventPublisher _publishEndpoint;
     private readonly ILogger<QueueAuctionExportCommandHandler> _logger;
 
     public QueueAuctionExportCommandHandler(
-        IPublishEndpoint publishEndpoint,
+        IEventPublisher publishEndpoint,
         ILogger<QueueAuctionExportCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
@@ -20,6 +24,11 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
         QueueAuctionExportCommand request,
         CancellationToken cancellationToken)
     {
+        if (request.Format.ToString().ToLower() != "csv" && request.Format.ToString().ToLower() != "json")
+        {
+            return Result.Failure<BackgroundJobResult>(AuctionErrors.Export.UnsupportedFormat(request.Format.ToString()));
+        }
+
         var correlationId = Guid.NewGuid();
 
         var command = new ProcessAuctionExportCommand
@@ -34,7 +43,7 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
             RequestedAt = DateTimeOffset.UtcNow
         };
 
-        await _publishEndpoint.Publish(command, cancellationToken);
+        await _publishEndpoint.PublishAsync(command, cancellationToken);
 
         _logger.LogInformation(
             "Queued auction export job {CorrelationId} in {Format} format for user {RequestedBy}",

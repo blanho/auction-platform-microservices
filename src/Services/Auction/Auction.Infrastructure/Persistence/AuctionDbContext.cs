@@ -10,13 +10,18 @@ namespace Auctions.Infrastructure.Persistence
         {
         }
 
+        // Core auction domain
         public DbSet<Auction> Auctions { get; set; }
         public DbSet<Item> Items { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Brand> Brands { get; set; }
+
+        // Bookmark — watchlist co-located with Auction DB (pragmatic), future Engagement service
         public DbSet<Bookmark> Bookmarks { get; set; }
+
+        // Review — post-transaction trust signal; future Trust & Safety service
         public DbSet<Review> Reviews { get; set; }
-        public DbSet<AuctionView> AuctionViews { get; set; }
+
+        // NOTE: Brand, Category → moved to Catalog service (CatalogDbContext)
+        // NOTE: AuctionView → delegated to Analytics service
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

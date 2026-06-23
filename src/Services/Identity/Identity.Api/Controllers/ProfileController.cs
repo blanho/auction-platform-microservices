@@ -1,9 +1,9 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Api.DTOs.Auth;
-using Identity.Api.DTOs.Profile;
-using Identity.Api.Errors;
-using Identity.Api.Interfaces;
+using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs.Profile;
+using Identity.Application.Errors;
+using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,11 +15,11 @@ namespace Identity.Api.Controllers;
 [Produces("application/json")]
 public class ProfileController : ControllerBase
 {
-    private readonly IProfileService _profileService;
+    private readonly MediatR.ISender _sender;
 
-    public ProfileController(IProfileService profileService)
+    public ProfileController(MediatR.ISender sender)
     {
-        _profileService = profileService;
+        _sender = sender;
     }
 
     [HttpGet]
@@ -28,7 +28,7 @@ public class ProfileController : ControllerBase
     public async Task<IResult> GetProfile(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _profileService.GetProfileAsync(userId, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Profile.Queries.GetProfile.GetProfileQuery(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.NotFound(ProblemDetailsHelper.NotFound("Profile", userId));
@@ -43,7 +43,7 @@ public class ProfileController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _profileService.UpdateProfileAsync(userId, request, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Profile.Commands.UpdateProfile.UpdateProfileCommand(userId, request), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -64,7 +64,7 @@ public class ProfileController : ControllerBase
         CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _profileService.ChangePasswordAsync(userId, request, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Profile.Commands.ChangePassword.ChangePasswordCommand(userId, request), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -82,7 +82,7 @@ public class ProfileController : ControllerBase
     public async Task<IResult> EnableTwoFactor(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _profileService.EnableTwoFactorAsync(userId, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Profile.Commands.EnableTwoFactor.EnableTwoFactorCommand(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));
@@ -94,7 +94,7 @@ public class ProfileController : ControllerBase
     public async Task<IResult> DisableTwoFactor(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _profileService.DisableTwoFactorAsync(userId, cancellationToken);
+        var result = await _sender.Send(new Identity.Application.Features.Profile.Commands.DisableTwoFactor.DisableTwoFactorCommand(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));

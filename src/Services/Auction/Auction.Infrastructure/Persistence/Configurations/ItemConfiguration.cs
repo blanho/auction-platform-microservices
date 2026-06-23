@@ -35,17 +35,15 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.AuctionId)
             .IsUnique();
 
-        builder.HasOne(x => x.Category)
-            .WithMany(x => x.Items)
-            .HasForeignKey(x => x.CategoryId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
+        // CategoryId / BrandId are FK references to the Catalog service — no navigation properties.
+        // CategoryName / BrandName are denormalized strings synced via integration events.
+        builder.Property(x => x.CategoryId);
+        builder.Property(x => x.CategoryName)
+            .HasMaxLength(AuctionDefaults.Persistence.CategoryNameMaxLength);
 
-        builder.HasOne(x => x.Brand)
-            .WithMany(x => x.Items)
-            .HasForeignKey(x => x.BrandId)
-            .OnDelete(DeleteBehavior.SetNull)
-            .IsRequired(false);
+        builder.Property(x => x.BrandId);
+        builder.Property(x => x.BrandName)
+            .HasMaxLength(AuctionDefaults.Persistence.BrandNameMaxLength);
 
         builder.HasIndex(x => x.CategoryId);
         builder.HasIndex(x => x.BrandId);
@@ -59,4 +57,3 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
             .HasColumnType("jsonb");
     }
 }
-

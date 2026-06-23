@@ -40,7 +40,8 @@ public class Auction : AggregateRoot
     public Item Item { get; private set; } = null!;
 
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
-    public ICollection<Bookmark> Bookmarks { get; private set; } = new List<Bookmark>();
+    // Note: Bookmarks (Watchlist) are NOT part of the Auction aggregate.
+    // Bookmark references AuctionId as a FK. Use IBookmarkRepository to query bookmarks by auction.
 
     public static Auction Create(CreateAuctionParams createParams)
     {

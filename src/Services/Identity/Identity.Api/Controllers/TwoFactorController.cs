@@ -1,8 +1,8 @@
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Api.DTOs.TwoFactor;
-using Identity.Api.Errors;
-using Identity.Api.Interfaces;
+using Identity.Application.DTOs.TwoFactor;
+using Identity.Application.Errors;
+using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +14,11 @@ namespace Identity.Api.Controllers;
 [Produces("application/json")]
 public class TwoFactorController : ControllerBase
 {
-    private readonly ITwoFactorService _twoFactorService;
+    private readonly MediatR.ISender _sender;
 
-    public TwoFactorController(ITwoFactorService twoFactorService)
+    public TwoFactorController(MediatR.ISender sender)
     {
-        _twoFactorService = twoFactorService;
+        _sender = sender;
     }
 
     [HttpGet("status")]
@@ -27,7 +27,7 @@ public class TwoFactorController : ControllerBase
     public async Task<IResult> GetStatus(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _twoFactorService.GetStatusAsync(userId);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Queries.GetStatus.GetStatusQuery(userId), cancellationToken);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));
@@ -40,7 +40,7 @@ public class TwoFactorController : ControllerBase
     public async Task<IResult> SetupAuthenticator(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _twoFactorService.SetupAuthenticatorAsync(userId);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.SetupAuthenticator.SetupAuthenticatorCommand(userId), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -59,7 +59,7 @@ public class TwoFactorController : ControllerBase
     public async Task<IResult> EnableAuthenticator([FromBody] Enable2FARequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _twoFactorService.EnableAuthenticatorAsync(userId, request.Code);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.EnableAuthenticator.EnableAuthenticatorCommand(userId, request.Code), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -78,7 +78,7 @@ public class TwoFactorController : ControllerBase
     public async Task<IResult> DisableAuthenticator([FromBody] Disable2FARequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _twoFactorService.DisableAuthenticatorAsync(userId, request.Password);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.DisableAuthenticator.DisableAuthenticatorCommand(userId, request.Password), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -96,7 +96,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> VerifyCode([FromBody] Verify2FARequest request, CancellationToken cancellationToken)
     {
-        var result = await _twoFactorService.VerifyCodeAsync(request.Code, request.RememberDevice);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.VerifyCode.VerifyCodeCommand(request.Code, request.RememberDevice), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -108,7 +108,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IResult> UseRecoveryCode([FromBody] UseRecoveryCodeRequest request, CancellationToken cancellationToken)
     {
-        var result = await _twoFactorService.UseRecoveryCodeAsync(request.RecoveryCode);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.UseRecoveryCode.UseRecoveryCodeCommand(request.RecoveryCode), cancellationToken);
         return result.IsSuccess
             ? Results.Ok()
             : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
@@ -121,7 +121,7 @@ public class TwoFactorController : ControllerBase
     public async Task<IResult> GenerateRecoveryCodes(CancellationToken cancellationToken)
     {
         var userId = User.GetRequiredUserIdString();
-        var result = await _twoFactorService.GenerateRecoveryCodesAsync(userId);
+        var result = await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.GenerateRecoveryCodes.GenerateRecoveryCodesCommand(userId), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -137,7 +137,7 @@ public class TwoFactorController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IResult> ForgetBrowser(CancellationToken cancellationToken)
     {
-        await _twoFactorService.ForgetBrowserAsync();
+        await _sender.Send(new Identity.Application.Features.TwoFactor.Commands.ForgetBrowser.ForgetBrowserCommand(), cancellationToken);
         return Results.Ok();
     }
 }

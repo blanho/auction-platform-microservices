@@ -1,15 +1,17 @@
 using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Abstractions.Messaging;
+using Microsoft.Extensions.Logging;
 
 namespace Auctions.Application.Features.Auctions.QueueBulkUpdateAuctions;
 
 public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUpdateAuctionsCommand, BackgroundJobResult>
 {
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IEventPublisher _publishEndpoint;
     private readonly ILogger<QueueBulkUpdateAuctionsCommandHandler> _logger;
 
     public QueueBulkUpdateAuctionsCommandHandler(
-        IPublishEndpoint publishEndpoint,
+        IEventPublisher publishEndpoint,
         ILogger<QueueBulkUpdateAuctionsCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
@@ -32,7 +34,7 @@ public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUp
             RequestedAt = DateTimeOffset.UtcNow
         };
 
-        await _publishEndpoint.Publish(command, cancellationToken);
+        await _publishEndpoint.PublishAsync(command, cancellationToken);
 
         _logger.LogInformation(
             "Queued bulk auction update job {CorrelationId} for {Count} auctions (Activate={Activate})",

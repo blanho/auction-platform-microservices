@@ -4,6 +4,7 @@ using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Microsoft.Extensions.Logging;
+using Auctions.Application.Interfaces;
 
 namespace Auctions.Application.Features.Auctions.UpdateAuction;
 
@@ -14,19 +15,22 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISanitizationService _sanitizationService;
     private readonly IAuditPublisher _auditPublisher;
+    private readonly ICatalogGrpcClient _catalogClient;
 
     public UpdateAuctionCommandHandler(
         IAuctionWriteRepository repository,
         ILogger<UpdateAuctionCommandHandler> logger,
         IUnitOfWork unitOfWork,
         ISanitizationService sanitizationService,
-        IAuditPublisher auditPublisher)
+        IAuditPublisher auditPublisher,
+        ICatalogGrpcClient catalogClient)
     {
         _repository = repository;
         _logger = logger;
         _unitOfWork = unitOfWork;
         _sanitizationService = sanitizationService;
         _auditPublisher = auditPublisher;
+        _catalogClient = catalogClient;
     }
 
     public async Task<Result<bool>> Handle(UpdateAuctionCommand request, CancellationToken cancellationToken)
@@ -99,13 +103,21 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
 
         if (request.CategoryId.HasValue && request.CategoryId != auction.Item.CategoryId)
         {
-            auction.Item.UpdateCategory(request.CategoryId);
+            var categoryInfo = await _catalogClient.GetCategoryAsync(request.CategoryId.Value, cancellationToken);
+            if (categoryInfo == null)
+                return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.CategoryId.Value));
+            
+            auction.Item.UpdateCategory(request.CategoryId, categoryInfo.Value.Name);
             modifiedFields.Add("CategoryId");
         }
 
         if (request.BrandId.HasValue && request.BrandId != auction.Item.BrandId)
         {
-            auction.Item.UpdateBrand(request.BrandId);
+            var brandInfo = await _catalogClient.GetBrandAsync(request.BrandId.Value, cancellationToken);
+            if (brandInfo == null)
+                return Result.Failure<bool>(AuctionErrors.Brand.NotFoundById(request.BrandId.Value));
+            
+            auction.Item.UpdateBrand(request.BrandId, brandInfo.Value.Name);
             modifiedFields.Add("BrandId");
         }
 

@@ -17,9 +17,9 @@ public class AuctionMappingProfile : Profile
             .ForMember(d => d.IsBuyNowAvailable, o => o.MapFrom(s => s.IsBuyNowAvailable));
 
         CreateMap<Item, AuctionDto>()
-            .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.Category != null ? s.Category.Name : null))
-            .ForMember(d => d.CategorySlug, o => o.MapFrom(s => s.Category != null ? s.Category.Slug : null))
-            .ForMember(d => d.CategoryIcon, o => o.MapFrom(s => s.Category != null ? s.Category.Icon : null));
+            .ForMember(d => d.CategoryName, o => o.MapFrom(s => s.CategoryName))
+            .ForMember(d => d.CategorySlug, o => o.Ignore())
+            .ForMember(d => d.CategoryIcon, o => o.Ignore());
 
         CreateMap<CreateAuctionWithFileIdsDto, Auction>()
             .ForMember(d => d.Item, o => o.MapFrom(s => s));

@@ -43,7 +43,7 @@ public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>
             .HasDefaultValue(false);
 
         builder.HasOne(x => x.Auction)
-            .WithMany(x => x.Bookmarks)
+            .WithMany()
             .HasForeignKey(x => x.AuctionId)
             .OnDelete(DeleteBehavior.Cascade);
 
