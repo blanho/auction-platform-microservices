@@ -2,7 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Domain.Constants;
 using Notification.Infrastructure.Configuration;
-using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Messaging.Consumers;
 using Notification.Infrastructure.Persistence;
 

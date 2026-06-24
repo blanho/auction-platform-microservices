@@ -4,7 +4,7 @@ using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 
-namespace Notification.Infrastructure.Consumers;
+namespace Notification.Infrastructure.Messaging.Consumers;
 
 public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
 {

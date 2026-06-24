@@ -3,7 +3,8 @@ using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
 using Carter;
-using Search.Api.Extensions.DependencyInjection;
+using Search.Application;
+using Search.Infrastructure.Extensions.DependencyInjection;
 using Search.Api.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.ValidateStandardConfiguration(
 
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCarter();
+builder.Services.AddApplicationServices();
 builder.Services.AddSearchServices(builder.Configuration);
 builder.Services.AddSearchMessaging(builder.Configuration);
 builder.Services.AddCommonUtilities();

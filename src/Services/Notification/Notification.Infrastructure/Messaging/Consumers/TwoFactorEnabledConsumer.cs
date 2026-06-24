@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 
-namespace Notification.Infrastructure.Consumers;
+namespace Notification.Infrastructure.Messaging.Consumers;
 
 public class TwoFactorEnabledConsumer : IConsumer<TwoFactorEnabledEvent>
 {

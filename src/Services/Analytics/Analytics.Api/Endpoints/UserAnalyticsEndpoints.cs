@@ -1,6 +1,8 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Analytics.Api.Interfaces;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.UserAnalytics;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 
@@ -36,48 +38,39 @@ public class UserAnalyticsEndpoints : ICarterModule
 
     private static async Task<Ok<UserDashboardStatsDto>> GetDashboardStats(
         HttpContext httpContext,
-        IUserAnalyticsAggregator aggregator,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-
-        var stats = await aggregator.GetUserDashboardStatsAsync(username, cancellationToken);
-
+        var stats = await sender.Send(new GetUserDashboardStatsQuery(username), cancellationToken);
         return TypedResults.Ok(stats);
     }
 
     private static async Task<Ok<SellerAnalyticsDto>> GetSellerAnalytics(
         string? timeRange,
         HttpContext httpContext,
-        IUserAnalyticsAggregator aggregator,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-
-        var analytics = await aggregator.GetSellerAnalyticsAsync(
-            username,
-            timeRange ?? "30d",
-            cancellationToken);
-
+        var analytics = await sender.Send(new GetSellerAnalyticsQuery(username, timeRange ?? "30d"), cancellationToken);
         return TypedResults.Ok(analytics);
     }
 
     private static async Task<Ok<QuickStatsDto>> GetQuickStats(
-        IUserAnalyticsAggregator aggregator,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var stats = await aggregator.GetQuickStatsAsync(cancellationToken);
-
+        var stats = await sender.Send(new GetQuickStatsQuery(), cancellationToken);
         return TypedResults.Ok(stats);
     }
 
     private static async Task<Ok<TrendingSearchesResponse>> GetTrendingSearches(
         int? limit,
-        IUserAnalyticsAggregator aggregator,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var searches = await aggregator.GetTrendingSearchesAsync(limit ?? 10, cancellationToken);
-
+        var searches = await sender.Send(new GetTrendingSearchesQuery(limit ?? 10), cancellationToken);
         return TypedResults.Ok(searches);
     }
 }

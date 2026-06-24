@@ -1,7 +1,8 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Analytics.Api.Models;
-using Analytics.Api.Interfaces;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.AuditLogs;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 
@@ -31,29 +32,29 @@ public class AuditLogsEndpoints : ICarterModule
 
     private static async Task<Ok<PaginatedResult<AuditLogDto>>> GetAuditLogs(
         [AsParameters] AuditLogQueryParams queryParams,
-        IAuditLogService auditLogService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await auditLogService.GetPagedAuditLogsAsync(queryParams, cancellationToken);
+        var result = await sender.Send(new GetPagedAuditLogsQuery(queryParams), cancellationToken);
         return TypedResults.Ok(result);
     }
 
     private static async Task<Ok<List<AuditLogDto>>> GetEntityAuditHistory(
         string entityType,
         Guid entityId,
-        IAuditLogService auditLogService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var logs = await auditLogService.GetEntityAuditHistoryAsync(entityType, entityId, cancellationToken);
+        var logs = await sender.Send(new GetEntityAuditHistoryQuery(entityType, entityId), cancellationToken);
         return TypedResults.Ok(logs);
     }
 
     private static async Task<Results<Ok<AuditLogDto>, NotFound>> GetAuditLog(
         Guid id,
-        IAuditLogService auditLogService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var dto = await auditLogService.GetByIdAsync(id, cancellationToken);
+        var dto = await sender.Send(new GetAuditLogByIdQuery(id), cancellationToken);
 
         if (dto == null)
             return TypedResults.NotFound();

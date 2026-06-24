@@ -6,7 +6,7 @@ using Notification.Domain.Entities;
 using NotificationService.Contracts.Events;
 using NotificationService.Contracts.Enums;
 
-namespace Notification.Infrastructure.Consumers;
+namespace Notification.Infrastructure.Messaging.Consumers;
 
 public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEvent>
 {

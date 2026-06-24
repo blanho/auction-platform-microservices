@@ -9,8 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Carter" />
-    <PackageReference Include="Elastic.Clients.Elasticsearch" />
-    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
@@ -18,8 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Web\BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
-    <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
+    <ProjectReference Include="..\Search.Application\Search.Application.csproj" />
+    <ProjectReference Include="..\Search.Infrastructure\Search.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

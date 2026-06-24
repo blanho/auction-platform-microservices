@@ -1,4 +1,4 @@
-using Analytics.Api.Data;
+
 using Analytics.Api.Endpoints;
 using Analytics.Api.Extensions.DependencyInjection;
 using Analytics.Api.Resources;

@@ -1,0 +1,62 @@
+using Microsoft.EntityFrameworkCore;
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using Analytics.Domain.Constants;
+using Analytics.Infrastructure.Persistence;
+using Analytics.Domain.Entities;
+using PaymentService.Contracts.Events;
+
+namespace Analytics.Infrastructure.Messaging.Consumers;
+
+public class OrderDeliveredAnalyticsConsumer : IConsumer<OrderDeliveredEvent>
+{
+    private readonly AnalyticsDbContext _context;
+    private readonly ILogger<OrderDeliveredAnalyticsConsumer> _logger;
+
+    public OrderDeliveredAnalyticsConsumer(
+        AnalyticsDbContext context,
+        ILogger<OrderDeliveredAnalyticsConsumer> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<OrderDeliveredEvent> context)
+    {
+        var @event = context.Message;
+
+        var now = DateTimeOffset.UtcNow;
+
+        var fact = new FactPayment
+        {
+            EventId = Guid.NewGuid(),
+            EventTime = @event.DeliveredAt,
+            IngestedAt = now,
+
+            OrderId = @event.OrderId,
+            AuctionId = @event.AuctionId,
+            BuyerId = @event.BuyerId,
+            SellerId = @event.SellerId,
+            DateKey = DateOnly.FromDateTime(@event.DeliveredAt.UtcDateTime),
+
+            BuyerUsername = @event.BuyerUsername,
+            SellerUsername = @event.SellerUsername,
+
+            Status = AnalyticsAuctionStatuses.Delivered,
+            DeliveredAt = @event.DeliveredAt,
+
+            IsPaid = true,
+            IsRefunded = false,
+
+            EventType = AnalyticsEventTypes.OrderDelivered,
+            EventVersion = 1
+        };
+
+        _context.FactPayments.Add(fact);
+        await _context.SaveChangesAsync(context.CancellationToken);
+
+        _logger.LogInformation(
+            "Recorded OrderDelivered fact: Order={OrderId}",
+            @event.OrderId);
+    }
+}

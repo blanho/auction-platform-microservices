@@ -1,4 +1,5 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Web.Authorization;
 
@@ -30,40 +31,40 @@ public class AdminEndpoints : ICarterModule
     }
 
     private static async Task<IResult> EnsureIndex(
-        [FromServices] IIndexManagementService indexService,
+        ISender sender,
         CancellationToken ct)
     {
-        var result = await indexService.EnsureIndexExistsAsync(ct);
+        var result = await sender.Send(new Search.Application.Features.Admin.Commands.EnsureIndex.EnsureIndexCommand(), ct);
         return result.IsSuccess
             ? Results.Ok(new { message = "Index ready" })
             : Results.Problem($"Failed to create index: {result.Error}");
     }
 
     private static async Task<IResult> RecreateIndex(
-        [FromServices] IIndexManagementService indexService,
+        ISender sender,
         CancellationToken ct)
     {
-        var result = await indexService.RecreateIndexAsync(ct);
+        var result = await sender.Send(new Search.Application.Features.Admin.Commands.RecreateIndex.RecreateIndexCommand(), ct);
         return result.IsSuccess
             ? Results.Ok(new { message = "Index recreated" })
             : Results.Problem($"Failed to recreate index: {result.Error}");
     }
 
     private static async Task<IResult> GetIndexStats(
-        [FromServices] IIndexManagementService indexService,
+        ISender sender,
         CancellationToken ct)
     {
-        var result = await indexService.GetIndexStatsAsync(ct);
+        var result = await sender.Send(new Search.Application.Features.Admin.Queries.GetIndexStats.GetIndexStatsQuery(), ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)
             : Results.Problem($"Failed to get index stats: {result.Error}");
     }
 
     private static async Task<IResult> GetHealth(
-        [FromServices] IIndexManagementService indexService,
+        ISender sender,
         CancellationToken ct)
     {
-        var result = await indexService.IsHealthyAsync(ct);
+        var result = await sender.Send(new Search.Application.Features.Admin.Queries.GetHealth.GetHealthQuery(), ct);
         return result.IsSuccess
             ? Results.Ok(new { status = "healthy", elasticsearch = "connected" })
             : Results.Problem("Elasticsearch not responding");

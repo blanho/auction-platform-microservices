@@ -1,0 +1,55 @@
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using Search.Application.Interfaces;
+
+using BidService.Contracts.Events;
+using BuildingBlocks.Application.Abstractions.Providers;
+using Search.Domain.Constants;
+using Search.Infrastructure.Services;
+
+namespace Search.Infrastructure.Consumers;
+
+public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
+{
+    private readonly IAuctionIndexService _indexService;
+    private readonly IDateTimeProvider _dateTime;
+    private readonly ILogger<BidRetractedConsumer> _logger;
+
+    public BidRetractedConsumer(
+        IAuctionIndexService indexService,
+        IDateTimeProvider dateTime,
+        ILogger<BidRetractedConsumer> logger)
+    {
+        _indexService = indexService;
+        _dateTime = dateTime;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<BidRetractedEvent> context)
+    {
+        var message = context.Message;
+
+        _logger.LogDebug(
+            "Processing BidRetracted event for auction {AuctionId}",
+            message.AuctionId);
+
+        var partialDocument = new Dictionary<string, object?>
+        {
+            [ElasticsearchFields.CurrentPrice] = message.NewHighestAmount ?? 0m,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
+        };
+
+        var result = await _indexService.PartialUpdateAsync(
+            message.AuctionId,
+            partialDocument,
+            context.CancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning(
+                "Failed to update search index after bid retraction for auction {AuctionId}: {Error}",
+                message.AuctionId,
+                result.Error);
+        }
+    }
+}

@@ -1,0 +1,60 @@
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using Search.Application.Interfaces;
+
+using BidService.Contracts.Events;
+using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Abstractions.Providers;
+using Search.Domain.Constants;
+using Search.Infrastructure.Services;
+
+namespace Search.Infrastructure.Consumers;
+
+public class HighestBidUpdatedConsumer : IConsumer<HighestBidUpdatedEvent>
+{
+    private readonly IAuctionIndexService _indexService;
+    private readonly IDateTimeProvider _dateTime;
+    private readonly ILogger<HighestBidUpdatedConsumer> _logger;
+
+    public HighestBidUpdatedConsumer(
+        IAuctionIndexService indexService,
+        IDateTimeProvider dateTime,
+        ILogger<HighestBidUpdatedConsumer> logger)
+    {
+        _indexService = indexService;
+        _dateTime = dateTime;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<HighestBidUpdatedEvent> context)
+    {
+        var message = context.Message;
+
+        if (message.BidStatus != BidStatuses.Accepted)
+        {
+            _logger.LogDebug("Skipping non-accepted highest bid update {BidId} with status {Status}",
+                message.Id, message.BidStatus);
+            return;
+        }
+
+        _logger.LogDebug("Processing HighestBidUpdatedEvent for auction {AuctionId}, amount {Amount}",
+            message.AuctionId, message.NewHighestAmount);
+
+        var partialDocument = new Dictionary<string, object?>
+        {
+            [ElasticsearchFields.CurrentPrice] = message.NewHighestAmount,
+            [ElasticsearchFields.LastSyncedAt] = _dateTime.UtcNowOffset.ToString(DateTimeFormats.Iso8601)
+        };
+
+        var result = await _indexService.PartialUpdateAsync(
+            message.AuctionId,
+            partialDocument,
+            context.CancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Failed to update bid info for auction {AuctionId}: {Error}",
+                message.AuctionId, result.Error);
+        }
+    }
+}

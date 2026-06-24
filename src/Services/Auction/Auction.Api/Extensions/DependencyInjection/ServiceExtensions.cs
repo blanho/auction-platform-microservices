@@ -9,6 +9,7 @@ using AutoMapper;
 using Npgsql;
 using Serilog;
 using System.Text.Json.Serialization;
+using Auctions.Infrastructure.Grpc;
 
 namespace Auctions.Api.Extensions.DependencyInjection
 {

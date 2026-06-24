@@ -4,7 +4,7 @@ using Notification.Application.Interfaces;
 using Notification.Domain.Constants;
 using NotificationService.Contracts.Events;
 
-namespace Notification.Infrastructure.Consumers;
+namespace Notification.Infrastructure.Messaging.Consumers;
 
 public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationRequestedEvent>
 {

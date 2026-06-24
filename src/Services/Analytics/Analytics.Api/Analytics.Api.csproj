@@ -29,6 +29,8 @@
     <ProjectReference Include="..\..\Identity\Identity.Contracts\IdentityService.Contracts.csproj" />
     <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\Payment\Payment.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\Analytics.Application\Analytics.Application.csproj" />
+    <ProjectReference Include="..\Analytics.Infrastructure\Analytics.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

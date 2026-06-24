@@ -2,8 +2,16 @@ using Carter;
 using Microsoft.AspNetCore.Mvc;
 using BuildingBlocks.Web.Authorization;
 using System.Security.Claims;
-using Search.Api.Constants;
-using Search.Api.Services;
+using MediatR;
+using Search.Domain.Constants;
+using Search.Domain.Documents;
+using Search.Domain.Models;
+using Search.Application.Features.Auctions.Queries.SearchAuctions;
+using Search.Application.Features.Auctions.Queries.Autocomplete;
+using Search.Application.Features.Auctions.Queries.GetAuction;
+using Search.Application.Features.RecentSearches.Queries.GetRecentSearches;
+using Search.Application.Features.RecentSearches.Commands.ClearRecentSearches;
+using Search.Application.Features.RecentSearches.Queries.GetPopularSearches;
 
 namespace Search.Api.Endpoints;
 
@@ -63,19 +71,19 @@ public class SearchEndpoints : ICarterModule
     }
 
     private static async Task<IResult> SearchAuctions(
-        [FromServices] IAuctionSearchService searchService,
+        ISender sender,
         [AsParameters] AuctionSearchRequest request,
         CancellationToken ct = default) =>
-        Results.Ok(await searchService.SearchAsync(request, ct));
+        Results.Ok(await sender.Send(new SearchAuctionsQuery(request), ct));
 
     private static async Task<IResult> SearchAuctionsAdvanced(
-        [FromServices] IAuctionSearchService searchService,
+        ISender sender,
         [FromBody] AuctionSearchRequest request,
         CancellationToken ct = default) =>
-        Results.Ok(await searchService.SearchAsync(request, ct));
+        Results.Ok(await sender.Send(new SearchAuctionsQuery(request), ct));
 
     private static async Task<IResult> Autocomplete(
-        [FromServices] IAuctionSearchService searchService,
+        ISender sender,
         [FromQuery] string q,
         [FromQuery] int limit = SearchDefaults.DefaultAutocompleteLimit,
         CancellationToken ct = default)
@@ -85,16 +93,16 @@ public class SearchEndpoints : ICarterModule
             return Results.Ok(new List<string>());
         }
 
-        var suggestions = await searchService.AutocompleteAsync(q, limit, ct);
+        var suggestions = await sender.Send(new AutocompleteQuery(q, limit), ct);
         return Results.Ok(suggestions);
     }
 
     private static async Task<IResult> GetAuction(
-        [FromServices] IAuctionSearchService searchService,
+        ISender sender,
         Guid id,
         CancellationToken ct = default)
     {
-        var document = await searchService.GetByIdAsync(id, ct);
+        var document = await sender.Send(new GetAuctionQuery(id), ct);
 
         if (document == null)
         {
@@ -104,37 +112,37 @@ public class SearchEndpoints : ICarterModule
         return Results.Ok(document);
     }
 
-    private static Task<IResult> GetRecentSearches(
+    private static async Task<IResult> GetRecentSearches(
         ClaimsPrincipal user,
-        [FromServices] IRecentSearchService recentSearchService)
+        ISender sender)
     {
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
-            return Task.FromResult(Results.Ok(new List<string>()));
+            return Results.Ok(new List<string>());
         }
 
-        var recentSearches = recentSearchService.GetRecentSearches(userId);
-        return Task.FromResult(Results.Ok(recentSearches));
+        var recentSearches = await sender.Send(new GetRecentSearchesQuery(userId));
+        return Results.Ok(recentSearches);
     }
 
-    private static Task<IResult> ClearRecentSearches(
+    private static async Task<IResult> ClearRecentSearches(
         ClaimsPrincipal user,
-        [FromServices] IRecentSearchService recentSearchService)
+        ISender sender)
     {
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrEmpty(userId))
         {
-            recentSearchService.ClearRecentSearches(userId);
+            await sender.Send(new ClearRecentSearchesCommand(userId));
         }
 
-        return Task.FromResult(Results.NoContent());
+        return Results.NoContent();
     }
 
-    private static Task<IResult> GetPopularSearches(
-        [FromServices] IRecentSearchService recentSearchService)
+    private static async Task<IResult> GetPopularSearches(
+        ISender sender)
     {
-        var popularSearches = recentSearchService.GetPopularSearches();
-        return Task.FromResult(Results.Ok(popularSearches));
+        var popularSearches = await sender.Send(new GetPopularSearchesQuery());
+        return Results.Ok(popularSearches);
     }
 }

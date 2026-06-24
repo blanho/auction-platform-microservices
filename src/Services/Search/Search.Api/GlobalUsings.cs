@@ -1,10 +1,9 @@
-global using Search.Api.Constants;
-global using Search.Api.Documents;
-global using Search.Api.Interfaces;
-global using Search.Api.Services;
-global using Search.Api.Models;
-global using Search.Api.Extensions;
-global using Search.Api.Extensions.Mappings;
+global using Search.Domain.Constants;
+global using Search.Domain.Documents;
+global using Search.Application.Interfaces;
+global using Search.Infrastructure.Services;
+global using Search.Domain.Models;
+global using Search.Infrastructure.Extensions.DependencyInjection;
 global using BuildingBlocks.Application.Abstractions;
 global using Result = BuildingBlocks.Application.Abstractions.Result;
 global using MassTransit;

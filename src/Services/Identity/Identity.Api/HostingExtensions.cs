@@ -3,6 +3,7 @@ using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
+using Carter;
 using Identity.Infrastructure.Persistence;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
@@ -29,7 +30,7 @@ internal static class HostingExtensions
             requiresRabbitMQ: true,
             requiresIdentity: false);
 
-        builder.Services.AddControllers();
+        builder.Services.AddCarter();
 
         builder.Services
             .AddIdentityInfrastructure(builder.Configuration)
@@ -90,7 +91,7 @@ internal static class HostingExtensions
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
+        app.MapCarter();
 
         app.MapCustomHealthChecks();
 

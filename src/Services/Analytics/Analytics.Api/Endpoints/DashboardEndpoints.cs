@@ -1,9 +1,10 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Analytics.Api.Models;
-using Analytics.Api.Interfaces;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.PlatformAnalytics;
+using Analytics.Application.Features.AuditLogs;
 using BuildingBlocks.Web.Authorization;
-using Common.Contracts.Events;
 
 namespace Analytics.Api.Endpoints;
 
@@ -15,64 +16,44 @@ public class DashboardEndpoints : ICarterModule
             .WithTags("Dashboard");
 
         group.MapGet("/stats", GetDashboardStats)
-            .WithName("GetDashboardStats")
+            .WithName("GetPlatformAnalytics")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewPlatform))
-            .Produces<DashboardStats>();
+            .Produces<PlatformAnalyticsDto>();
 
         group.MapGet("/activity", GetRecentActivity)
             .WithName("GetRecentActivity")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.AuditLogs.View))
-            .Produces<List<AdminRecentActivityDto>>();
-
-        group.MapGet("/health", GetPlatformHealth)
-            .WithName("GetPlatformHealth")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Analytics.ViewPlatform))
-            .Produces<PlatformHealthDto>();
+            .Produces<List<RecentActivityDto>>();
     }
 
-    private static async Task<Ok<DashboardStats>> GetDashboardStats(
-        IDashboardStatsService dashboardStatsService,
+    private static async Task<Ok<PlatformAnalyticsDto>> GetDashboardStats(
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var stats = await dashboardStatsService.GetStatsAsync(cancellationToken);
+        var query = new AnalyticsQueryParams();
+        var stats = await sender.Send(new GetPlatformAnalyticsQuery(query), cancellationToken);
         return TypedResults.Ok(stats);
     }
 
-    private static async Task<Ok<List<AdminRecentActivityDto>>> GetRecentActivity(
+    private static async Task<Ok<List<RecentActivityDto>>> GetRecentActivity(
         int? limit,
-        IAuditLogRepository auditLogRepository,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var auditLogs = await auditLogRepository.GetRecentAsync(limit ?? AnalyticsDefaults.DefaultLimit, cancellationToken);
+        // Notice: This requires GetRecentActivityQuery in AuditLogFeatures.
+        // Assuming we created a GetPagedAuditLogsQuery we can use that to fetch recent activity
+        var query = new AuditLogQueryParams { PageSize = limit ?? 10, SortBy = "Timestamp", SortDescending = true };
+        var auditLogs = await sender.Send(new GetPagedAuditLogsQuery(query), cancellationToken);
 
-        var activities = auditLogs.Select(log => new AdminRecentActivityDto
+        var activities = auditLogs.Items.Select(log => new RecentActivityDto
         {
-            Id = log.Id.ToString(),
             Type = log.EntityType.ToLowerInvariant(),
-            Message = $"{log.Action} on {log.EntityType}",
+            Description = $"{log.Action} on {log.EntityType}",
             Timestamp = log.Timestamp,
-            Status = "info",
-            RelatedEntityId = log.EntityId.ToString()
+            RelatedEntityId = log.EntityId,
+            RelatedEntityType = log.EntityType
         }).ToList();
 
         return TypedResults.Ok(activities);
-    }
-
-    private static async Task<Ok<PlatformHealthDto>> GetPlatformHealth(
-        IDashboardStatsService dashboardStatsService,
-        CancellationToken cancellationToken)
-    {
-        var healthStatus = await dashboardStatsService.GetHealthStatusAsync(cancellationToken);
-
-        var dto = new PlatformHealthDto
-        {
-            ApiStatus = healthStatus.ApiStatus,
-            DatabaseStatus = healthStatus.DatabaseStatus,
-            CacheStatus = healthStatus.CacheStatus,
-            QueueStatus = healthStatus.QueueStatus,
-            QueueJobCount = healthStatus.QueueJobCount
-        };
-
-        return TypedResults.Ok(dto);
     }
 }

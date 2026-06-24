@@ -1,10 +1,10 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Analytics.Api.Models;
-using Analytics.Api.Interfaces;
-using Analytics.Api.Enums;
-using Analytics.Api.Extensions.DependencyInjection;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.PlatformSettings;
+using Analytics.Domain.Enums;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
@@ -65,39 +65,39 @@ public class SettingsEndpoints : ICarterModule
 
     private static async Task<IResult> GetSettings(
         SettingCategory? category,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await settingService.GetSettingsAsync(category, cancellationToken);
+        var result = await sender.Send(new GetSettingsQuery(category), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> GetSetting(
         Guid id,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await settingService.GetSettingByIdAsync(id, cancellationToken);
+        var result = await sender.Send(new GetSettingByIdQuery(id), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> GetSettingByKey(
         string key,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await settingService.GetSettingByKeyAsync(key, cancellationToken);
+        var result = await sender.Send(new GetSettingByKeyQuery(key), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateSetting(
         CreateSettingDto dto,
         HttpContext httpContext,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-        var result = await settingService.CreateSettingAsync(dto, username, cancellationToken);
+        var result = await sender.Send(new CreateSettingCommand(dto, username), cancellationToken);
         return result.ToApiResult(value => Results.Created($"/api/v1/settings/{value!.Id}", value));
     }
 
@@ -105,31 +105,31 @@ public class SettingsEndpoints : ICarterModule
         Guid id,
         UpdateSettingDto dto,
         HttpContext httpContext,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-        var result = await settingService.UpdateSettingAsync(id, dto, username, cancellationToken);
+        var result = await sender.Send(new UpdateSettingCommand(id, dto, username), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> DeleteSetting(
         Guid id,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await settingService.DeleteSettingAsync(id, cancellationToken);
+        var result = await sender.Send(new DeleteSettingCommand(id), cancellationToken);
         return result.ToNoContentResult();
     }
 
     private static async Task<IResult> BulkUpdateSettings(
         BulkUpdateSettingsDto dto,
         HttpContext httpContext,
-        IPlatformSettingService settingService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-        var result = await settingService.BulkUpdateSettingsAsync(dto.Settings, username, cancellationToken);
+        var result = await sender.Send(new BulkUpdateSettingsCommand(dto.Settings, username), cancellationToken);
         return result.ToNoContentResult();
     }
 }

@@ -1,7 +1,8 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Analytics.Api.Models;
-using Analytics.Api.Interfaces;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.PlatformAnalytics;
 using BuildingBlocks.Web.Authorization;
 
 namespace Analytics.Api.Endpoints;
@@ -64,12 +65,12 @@ public class AnalyticsEndpoints : ICarterModule
     private static async Task<Ok<PlatformAnalyticsDto>> GetAnalytics(
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
-        string period,
+        string? period,
         Guid? categoryId,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new AnalyticsQueryParams
+        var queryParams = new AnalyticsQueryParams
         {
             StartDate = startDate,
             EndDate = endDate,
@@ -77,28 +78,27 @@ public class AnalyticsEndpoints : ICarterModule
             CategoryId = categoryId
         };
 
-        var analytics = await analyticsService.GetPlatformAnalyticsAsync(query, cancellationToken);
+        var query = new GetPlatformAnalyticsQuery(queryParams);
+        var analytics = await sender.Send(query, cancellationToken);
         return TypedResults.Ok(analytics);
     }
 
     private static async Task<Ok<RealTimeStatsDto>> GetRealTimeStats(
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var stats = await analyticsService.GetRealTimeStatsAsync(cancellationToken);
+        var stats = await sender.Send(new GetRealTimeStatsQuery(), cancellationToken);
         return TypedResults.Ok(stats);
     }
 
     private static async Task<Ok<TopPerformersDto>> GetTopPerformers(
         int? limit,
         string? period,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var performers = await analyticsService.GetTopPerformersAsync(
-            limit ?? AnalyticsDefaults.DefaultLimit,
-            period ?? AnalyticsDefaults.DefaultPeriod,
-            cancellationToken);
+        var query = new GetTopPerformersQuery(limit ?? AnalyticsDefaults.DefaultLimit, period ?? AnalyticsDefaults.DefaultPeriod);
+        var performers = await sender.Send(query, cancellationToken);
         return TypedResults.Ok(performers);
     }
 
@@ -106,14 +106,14 @@ public class AnalyticsEndpoints : ICarterModule
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
         string? granularity,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var end = endDate ?? DateTimeOffset.UtcNow;
 
-        var trend = await analyticsService.GetRevenueTrendAsync(
-            start, end, granularity ?? AnalyticsDefaults.DefaultGranularity, cancellationToken);
+        var query = new GetRevenueTrendQuery(start, end, granularity ?? AnalyticsDefaults.DefaultGranularity);
+        var trend = await sender.Send(query, cancellationToken);
         return TypedResults.Ok(trend);
     }
 
@@ -121,82 +121,83 @@ public class AnalyticsEndpoints : ICarterModule
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
         string? granularity,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var start = startDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var end = endDate ?? DateTimeOffset.UtcNow;
 
-        var trend = await analyticsService.GetAuctionTrendAsync(
-            start, end, granularity ?? AnalyticsDefaults.DefaultGranularity, cancellationToken);
+        var query = new GetAuctionTrendQuery(start, end, granularity ?? AnalyticsDefaults.DefaultGranularity);
+        var trend = await sender.Send(query, cancellationToken);
         return TypedResults.Ok(trend);
     }
 
     private static async Task<Ok<List<CategoryBreakdown>>> GetCategoryPerformance(
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var categories = await analyticsService.GetCategoryPerformanceAsync(startDate, endDate, cancellationToken);
+        var query = new GetCategoryPerformanceQuery(startDate, endDate);
+        var categories = await sender.Send(query, cancellationToken);
         return TypedResults.Ok(categories);
     }
 
     private static async Task<Ok<AuctionMetrics>> GetAuctionMetrics(
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new AnalyticsQueryParams
+        var queryParams = new AnalyticsQueryParams
         {
             StartDate = startDate,
             EndDate = endDate
         };
 
-        var metrics = await analyticsService.GetAuctionMetricsAsync(query, cancellationToken);
+        var metrics = await sender.Send(new GetAuctionMetricsQuery(queryParams), cancellationToken);
         return TypedResults.Ok(metrics);
     }
 
     private static async Task<Ok<BidMetrics>> GetBidMetrics(
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new AnalyticsQueryParams
+        var queryParams = new AnalyticsQueryParams
         {
             StartDate = startDate,
             EndDate = endDate
         };
 
-        var metrics = await analyticsService.GetBidMetricsAsync(query, cancellationToken);
+        var metrics = await sender.Send(new GetBidMetricsQuery(queryParams), cancellationToken);
         return TypedResults.Ok(metrics);
     }
 
     private static async Task<Ok<RevenueMetrics>> GetRevenueMetrics(
         DateTimeOffset? startDate,
         DateTimeOffset? endDate,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new AnalyticsQueryParams
+        var queryParams = new AnalyticsQueryParams
         {
             StartDate = startDate,
             EndDate = endDate
         };
 
-        var metrics = await analyticsService.GetRevenueMetricsAsync(query, cancellationToken);
+        var metrics = await sender.Send(new GetRevenueMetricsQuery(queryParams), cancellationToken);
         return TypedResults.Ok(metrics);
     }
 
     private static async Task<Ok<AggregatedDailyStatsDto>> GetAggregatedDailyStats(
         DateOnly? startDate,
         DateOnly? endDate,
-        IAnalyticsService analyticsService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var stats = await analyticsService.GetAggregatedDailyStatsAsync(startDate, endDate, cancellationToken);
+        var stats = await sender.Send(new GetAggregatedDailyStatsQuery(startDate, endDate), cancellationToken);
         return TypedResults.Ok(stats);
     }
 }

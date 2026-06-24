@@ -1,9 +1,9 @@
 using Carter;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Analytics.Api.Models;
-using Analytics.Api.Interfaces;
-using Analytics.Api.Extensions.DependencyInjection;
+using Analytics.Application.DTOs;
+using Analytics.Application.Features.Reports;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
@@ -58,30 +58,30 @@ public class ReportsEndpoints : ICarterModule
 
     private static async Task<IResult> GetReports(
         [AsParameters] ReportQueryParams queryParams,
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await reportService.GetReportsAsync(queryParams, cancellationToken);
+        var result = await sender.Send(new GetReportsQuery(queryParams), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> GetReport(
         Guid id,
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await reportService.GetReportByIdAsync(id, cancellationToken);
+        var result = await sender.Send(new GetReportByIdQuery(id), cancellationToken);
         return result.ToOkResult();
     }
 
     private static async Task<IResult> CreateReport(
         CreateReportDto dto,
         HttpContext httpContext,
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var username = UserHelper.GetUsername(httpContext.User);
-        var result = await reportService.CreateReportAsync(username, dto, cancellationToken);
+        var result = await sender.Send(new CreateReportCommand(username, dto), cancellationToken);
         return result.ToApiResult(value => Results.Created($"/api/v1/reports/{value!.Id}", value));
     }
 
@@ -89,28 +89,28 @@ public class ReportsEndpoints : ICarterModule
         Guid id,
         UpdateReportStatusDto dto,
         HttpContext httpContext,
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
         var adminUsername = UserHelper.GetUsername(httpContext.User);
-        var result = await reportService.UpdateReportStatusAsync(id, dto, adminUsername, cancellationToken);
+        var result = await sender.Send(new UpdateReportStatusCommand(id, dto, adminUsername), cancellationToken);
         return result.ToNoContentResult();
     }
 
     private static async Task<IResult> DeleteReport(
         Guid id,
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await reportService.DeleteReportAsync(id, cancellationToken);
+        var result = await sender.Send(new DeleteReportCommand(id), cancellationToken);
         return result.ToNoContentResult();
     }
 
     private static async Task<IResult> GetStats(
-        IReportService reportService,
+        ISender sender,
         CancellationToken cancellationToken)
     {
-        var result = await reportService.GetReportStatsAsync(cancellationToken);
+        var result = await sender.Send(new GetReportStatsQuery(), cancellationToken);
         return result.ToOkResult();
     }
 }

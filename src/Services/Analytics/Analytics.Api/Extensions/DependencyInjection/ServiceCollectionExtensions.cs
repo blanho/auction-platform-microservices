@@ -1,9 +1,9 @@
-using Analytics.Api.Consumers;
-using Analytics.Api.Data;
-using Analytics.Api.Interfaces;
-using Analytics.Api.Repositories;
-using Analytics.Api.Services;
-using Analytics.Api.Validators;
+using Analytics.Infrastructure.Messaging.Consumers;
+using Analytics.Infrastructure.Persistence;
+using Analytics.Application.Interfaces;
+using Analytics.Infrastructure.Repositories;
+using Analytics.Application.Validators;
+using Analytics.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Infrastructure.Messaging;
@@ -50,12 +50,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAnalyticsServices(this IServiceCollection services)
     {
-        services.AddScoped<IAuditLogService, AuditLogService>();
-        services.AddScoped<IReportService, ReportService>();
-        services.AddScoped<IPlatformSettingService, PlatformSettingService>();
-        services.AddScoped<IDashboardStatsService, DashboardStatsService>();
-        services.AddScoped<IAnalyticsService, PlatformAnalyticsService>();
-        services.AddScoped<IUserAnalyticsAggregator, UserAnalyticsAggregator>();
+        services.AddMediatR(cfg => {
+            cfg.RegisterServicesFromAssembly(typeof(Analytics.Application.Features.Reports.GetReportsQuery).Assembly);
+        });
 
         services.AddValidatorsFromAssemblyContaining<CreateReportDtoValidator>();
 

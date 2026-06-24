@@ -1,0 +1,17 @@
+using Analytics.Domain.Entities;
+using Analytics.Domain.Enums;
+using BuildingBlocks.Application.Abstractions;
+
+namespace Analytics.Application.Interfaces;
+
+public interface IPlatformSettingRepository
+{
+    Task<PlatformSetting?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<PlatformSetting?> GetByKeyAsync(string key, CancellationToken cancellationToken = default);
+    Task<PaginatedResult<PlatformSetting>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<List<PlatformSetting>> GetByCategoryAsync(SettingCategory category, CancellationToken cancellationToken = default);
+    Task<PlatformSetting> AddAsync(PlatformSetting setting, CancellationToken cancellationToken = default);
+    Task UpdateAsync(PlatformSetting setting, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default);
+}
