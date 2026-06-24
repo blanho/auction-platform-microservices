@@ -10,7 +10,7 @@ import type {
 } from '../types/backend-dto.types'
 import type { Auction, AuctionImage, AuctionListItem, AuctionStatus } from '../types/auction.types'
 
-const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/storage'
+const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/files'
 
 /**
  * Maps backend status string to frontend AuctionStatus
