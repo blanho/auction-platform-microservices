@@ -9,6 +9,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         builder.HasKey(x => x.Id);
 
+        // PostgreSQL maps this uint row version to its system xmin column, so
+        // concurrent webhook deliveries cannot both commit the same transition.
+        builder.Property(x => x.Version)
+            .IsRowVersion();
+
         builder.Property(x => x.BuyerUsername)
             .IsRequired()
             .HasMaxLength(WalletDefaults.Persistence.UsernameMaxLength);

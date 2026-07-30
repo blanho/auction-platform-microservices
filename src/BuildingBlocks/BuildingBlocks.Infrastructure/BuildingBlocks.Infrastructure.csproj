@@ -37,6 +37,7 @@
     <PackageReference Include="Quartz.Extensions.Hosting" />
     
     <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="Azure.Identity" />
     
     
     <PackageReference Include="Microsoft.Extensions.Localization" />

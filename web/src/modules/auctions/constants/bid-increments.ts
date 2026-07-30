@@ -23,7 +23,12 @@ export const BID_INCREMENT_TIERS: readonly BidIncrementTier[] = [
  * Mirrors the backend BidIncrementHelper.GetMinimumNextBid logic.
  */
 export function getMinimumNextBid(currentBid: number): number {
-  const tier = BID_INCREMENT_TIERS.find((t) => currentBid < t.threshold)!
+  const tier =
+    BID_INCREMENT_TIERS.find((candidate) => currentBid < candidate.threshold) ??
+    BID_INCREMENT_TIERS[BID_INCREMENT_TIERS.length - 1]
+  if (!tier) {
+    return currentBid
+  }
   return currentBid + tier.increment
 }
 
@@ -31,13 +36,22 @@ export function getMinimumNextBid(currentBid: number): number {
  * Returns three suggested bid amounts above the minimum bid,
  * spaced by progressively larger increments.
  */
-export function getSuggestedBids(currentBid: number, startingPrice: number): [number, number, number] {
+export function getSuggestedBids(
+  currentBid: number,
+  startingPrice: number
+): [number, number, number] {
   const base = getMinimumNextBid(currentBid > 0 ? currentBid : startingPrice)
 
   const getSuggestedIncrement = (amount: number): number => {
-    if (amount < 100) {return 5}
-    if (amount < 1_000) {return 25}
-    if (amount < 5_000) {return 100}
+    if (amount < 100) {
+      return 5
+    }
+    if (amount < 1_000) {
+      return 25
+    }
+    if (amount < 5_000) {
+      return 100
+    }
     return 500
   }
 

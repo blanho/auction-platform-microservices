@@ -11,6 +11,7 @@ public class JobDbContext : DbContext
 
     public DbSet<Job> Jobs { get; set; }
     public DbSet<JobItem> JobItems { get; set; }
+    public DbSet<JobExecutionLog> JobExecutionLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

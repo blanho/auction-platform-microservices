@@ -28,7 +28,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
     rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
-    elasticsearchUri: builder.Configuration["Elasticsearch:Uri"],
+    elasticsearchUri: builder.Configuration["Elasticsearch:Url"],
     serviceName: "SearchService");
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();

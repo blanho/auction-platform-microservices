@@ -24,6 +24,8 @@
     "condition": "状態",
     "status": "ステータス",
     "sortBy": "並べ替え",
+    "gridView": "グリッド表示",
+    "listView": "リスト表示",
     "minPrice": "最低価格",
     "maxPrice": "最高価格",
     "clearAll": "フィルターをクリア",

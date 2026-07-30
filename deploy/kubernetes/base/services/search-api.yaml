@@ -37,6 +37,23 @@ spec:
             - secretRef:
                 name: auction-platform-secrets
           env:
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: REDIS_CONNECTION
+            - name: Elasticsearch__Username
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: ELASTICSEARCH_USERNAME
+                  optional: true
+            - name: Elasticsearch__Password
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: ELASTICSEARCH_PASSWORD
+                  optional: true
             - name: ASPNETCORE_ENVIRONMENT
               value: "Production"
             - name: ASPNETCORE_URLS

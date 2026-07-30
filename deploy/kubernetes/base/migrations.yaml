@@ -1,0 +1,278 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: identity-api-migration
+  namespace: auction-platform
+  labels: { app: identity-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: identity-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/identity-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: IDENTITY_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: catalog-api-migration
+  namespace: auction-platform
+  labels: { app: catalog-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: catalog-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/catalog-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: CATALOG_DB_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: auction-api-migration
+  namespace: auction-platform
+  labels: { app: auction-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: auction-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/auction-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: AUCTION_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bidding-api-migration
+  namespace: auction-platform
+  labels: { app: bidding-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: bidding-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/bidding-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: BIDDING_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: payment-api-migration
+  namespace: auction-platform
+  labels: { app: payment-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: payment-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/payment-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: PAYMENT_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: notification-api-migration
+  namespace: auction-platform
+  labels: { app: notification-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: notification-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/notification-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: NOTIFICATION_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: analytics-api-migration
+  namespace: auction-platform
+  labels: { app: analytics-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: analytics-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/analytics-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: ANALYTICS_DB_CONNECTION }
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: REDIS_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: storage-api-migration
+  namespace: auction-platform
+  labels: { app: storage-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: storage-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/storage-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: STORAGE_DB_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-api-migration
+  namespace: auction-platform
+  labels: { app: job-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: job-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/job-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: JOB_DB_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }

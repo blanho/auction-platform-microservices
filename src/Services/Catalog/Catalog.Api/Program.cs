@@ -1,10 +1,12 @@
 using Catalog.Api.Extensions;
+using Catalog.Infrastructure.Persistence;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Web.Observability;
 using Carter;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,20 @@ builder.Services.AddCustomHealthChecks(
     serviceName: "CatalogService");
 
 var app = builder.Build();
+
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
+}
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))

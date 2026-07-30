@@ -96,11 +96,14 @@ export const storageApi = {
     onProgress?: (progress: number) => void
   ): Promise<void> {
     // Presigned URL uploads go to external storage (e.g. Azure Blob) — raw fetch is intentional here.
-    await fetch(uploadUrl, {
+    const response = await fetch(uploadUrl, {
       method: 'PUT',
       headers: { ...headers, 'Content-Type': file.type },
       body: file,
     })
+    if (!response.ok) {
+      throw new Error(`File upload failed with status ${response.status}`)
+    }
     onProgress?.(100)
   },
 

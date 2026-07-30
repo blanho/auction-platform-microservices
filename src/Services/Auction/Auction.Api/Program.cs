@@ -1,6 +1,7 @@
 using Auctions.Api.Extensions.DependencyInjection;
 using Auctions.Application.Resources;
 using Auctions.Infrastructure.Extensions;
+using Auctions.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
@@ -8,6 +9,7 @@ using BuildingBlocks.Infrastructure.Extensions;
 using BuildingBlocks.Application.Extensions;
 using BuildingBlocks.Web.Observability;
 using Carter;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +52,20 @@ builder.Services.AddCustomHealthChecks(
     serviceName: "AuctionService");
 
 var app = builder.Build();
+
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
+}
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))

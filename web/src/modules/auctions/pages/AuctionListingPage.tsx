@@ -1,256 +1,79 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
-  Container,
-  Typography,
-  Grid,
-  Button,
-  Drawer,
-  IconButton,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Slider,
-  Divider,
-  Select,
-  MenuItem,
-  Chip,
   Breadcrumbs,
+  Button,
+  Chip,
+  Container,
+  Drawer,
+  FormControl,
+  Grid,
+  IconButton,
   Link as MuiLink,
-  useMediaQuery,
-  useTheme,
+  MenuItem,
+  Pagination,
+  Select,
+  Typography,
 } from '@mui/material'
-import { FilterList, Close, KeyboardArrowDown, GridView, ViewList } from '@mui/icons-material'
+import { FilterList, GridView, KeyboardArrowDown, ViewList } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
-import { palette } from '@/shared/theme/tokens'
-import { componentStyles } from '@/shared/theme/component-styles'
+import { AuctionBrowseFilters } from '../components/AuctionBrowseFilters'
 import { AuctionProductCard, AuctionProductCardSkeleton } from '../components/AuctionProductCard'
-import { useAuctions, useActiveCategories, useToggleWatchlist } from '../hooks'
+import { AUCTION_SORT_CONFIG, type AuctionSortOption } from '../constants'
+import { useActiveCategories, useAuctions, useToggleWatchlist, useWatchlist } from '../hooks'
+import { componentStyles } from '@/shared/theme/component-styles'
+import { palette } from '@/shared/theme/tokens'
+import { ErrorState } from '@/shared/ui'
+
+const PAGE_SIZE = 24
+const SKELETON_COUNT = 12
 
 export const AuctionListingPage = () => {
   const { t } = useTranslation('auctions')
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>()
+  const [sortBy, setSortBy] = useState<AuctionSortOption>('ending-soon')
+  const [page, setPage] = useState(1)
 
-  const conditions = [
-    { value: 'new', label: t('condition.new') },
-    { value: 'like-new', label: t('condition.likeNew') },
-    { value: 'excellent', label: t('condition.excellent') },
-    { value: 'good', label: t('condition.good') },
-    { value: 'fair', label: t('condition.fair') },
-  ]
+  const { data: categories = [] } = useActiveCategories()
+  const selectedCategory = categories.find((category) => category.id === selectedCategoryId)
+  const sort = AUCTION_SORT_CONFIG[sortBy]
 
-  const sortOptions = [
+  const { data, isLoading, isError, refetch } = useAuctions({
+    category: selectedCategory?.name,
+    orderBy: sort.orderBy,
+    descending: sort.descending,
+    page,
+    pageSize: PAGE_SIZE,
+  })
+
+  const { data: watchlist = [] } = useWatchlist({ pageSize: 100, status: 'all' })
+  const watchedAuctionIds = useMemo(
+    () => new Set(watchlist.map((item) => item.auctionId)),
+    [watchlist]
+  )
+  const toggleWatchlistMutation = useToggleWatchlist()
+
+  const sortOptions: { value: AuctionSortOption; label: string }[] = [
     { value: 'ending-soon', label: t('sort.endingSoon') },
     { value: 'newly-listed', label: t('sort.newest') },
     { value: 'price-low', label: t('sort.priceLowToHigh') },
     { value: 'price-high', label: t('sort.priceHighToLow') },
-    { value: 'most-bids', label: t('sort.mostBids') },
   ]
 
-  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000])
-  const [sortBy, setSortBy] = useState('ending-soon')
-  const [verifiedOnly, setVerifiedOnly] = useState(false)
-
-  const { data: categoriesData } = useActiveCategories()
-  const categories = useMemo(() => categoriesData ?? [], [categoriesData])
-  const toggleWatchlistMutation = useToggleWatchlist()
-
-  const skeletonCount = 12
-
-  const { data, isLoading } = useAuctions({
-    categoryId: selectedCategories[0],
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1],
-    page: 1,
-    pageSize: 24,
-  })
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0
-    if (selectedCategories.length) {
-      count++
-    }
-    if (selectedConditions.length) {
-      count++
-    }
-    if (priceRange[0] > 0 || priceRange[1] < 20000) {
-      count++
-    }
-    if (verifiedOnly) {
-      count++
-    }
-    return count
-  }, [selectedCategories, selectedConditions, priceRange, verifiedOnly])
-
-  const clearAllFilters = () => {
-    setSelectedCategories([])
-    setSelectedConditions([])
-    setPriceRange([0, 20000])
-    setVerifiedOnly(false)
+  const handleCategoryChange = (categoryId?: string) => {
+    setSelectedCategoryId(categoryId)
+    setPage(1)
   }
 
-  const filterContent = (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 500, color: palette.neutral[900] }}>
-          {t('filter.title')}
-        </Typography>
-        {isMobile && (
-          <IconButton onClick={() => setFilterDrawerOpen(false)}>
-            <Close />
-          </IconButton>
-        )}
-      </Box>
-
-      {activeFiltersCount > 0 && (
-        <Button
-          size="small"
-          onClick={clearAllFilters}
-          sx={componentStyles.textBrandButton}
-        >
-          {t('filter.clearAll')}
-        </Button>
-      )}
-
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="subtitle2"
-          sx={componentStyles.sectionLabel}
-        >
-          {t('filter.category')}
-        </Typography>
-        <FormGroup>
-          {categories.map((category) => (
-            <FormControlLabel
-              key={category.id}
-              control={
-                <Checkbox
-                  size="small"
-                  checked={selectedCategories.includes(category.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedCategories([...selectedCategories, category.id])
-                    } else {
-                      setSelectedCategories(selectedCategories.filter((c) => c !== category.id))
-                    }
-                  }}
-                  sx={componentStyles.brandCheckbox}
-                />
-              }
-              label={
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
-                    {category.name}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: palette.neutral[500] }}>
-                    ({category.auctionCount ?? 0})
-                  </Typography>
-                </Box>
-              }
-              sx={{ width: '100%', mr: 0, '& .MuiFormControlLabel-label': { flex: 1 } }}
-            />
-          ))}
-        </FormGroup>
-      </Box>
-
-      <Divider sx={{ mb: 4, borderColor: 'rgba(68,64,60,0.1)' }} />
-
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="subtitle2"
-          sx={componentStyles.sectionLabel}
-        >
-          {t('filter.priceRange')}
-        </Typography>
-        <Slider
-          value={priceRange}
-          onChange={(_, value) => setPriceRange(value as [number, number])}
-          min={0}
-          max={20000}
-          step={100}
-          valueLabelDisplay="auto"
-          valueLabelFormat={(value) => `$${value.toLocaleString()}`}
-          sx={{
-            color: palette.brand.primary,
-            '& .MuiSlider-thumb': {
-              bgcolor: palette.neutral[50],
-              border: `2px solid ${palette.brand.primary}`,
-            },
-          }}
-        />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
-            ${priceRange[0].toLocaleString()}
-          </Typography>
-          <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
-            ${priceRange[1].toLocaleString()}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Divider sx={{ mb: 4, borderColor: 'rgba(68,64,60,0.1)' }} />
-
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="subtitle2"
-          sx={componentStyles.sectionLabel}
-        >
-          {t('filter.condition')}
-        </Typography>
-        <FormGroup>
-          {conditions.map((condition) => (
-            <FormControlLabel
-              key={condition.value}
-              control={
-                <Checkbox
-                  size="small"
-                  checked={selectedConditions.includes(condition.value)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedConditions([...selectedConditions, condition.value])
-                    } else {
-                      setSelectedConditions(selectedConditions.filter((c) => c !== condition.value))
-                    }
-                  }}
-                  sx={componentStyles.brandCheckbox}
-                />
-              }
-              label={
-                <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
-                  {condition.label}
-                </Typography>
-              }
-            />
-          ))}
-        </FormGroup>
-      </Box>
-
-      <Divider sx={{ mb: 4, borderColor: 'rgba(68,64,60,0.1)' }} />
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            size="small"
-            checked={verifiedOnly}
-            onChange={(e) => setVerifiedOnly(e.target.checked)}
-            sx={componentStyles.brandCheckbox}
-          />
-        }
-        label={
-          <Typography variant="body2" sx={{ color: palette.neutral[700] }}>
-            {t('filter.verifiedSellersOnly')}
-          </Typography>
-        }
-      />
-    </Box>
+  const filters = (
+    <AuctionBrowseFilters
+      categories={categories}
+      selectedCategoryId={selectedCategoryId}
+      onCategoryChange={handleCategoryChange}
+    />
   )
 
   return (
@@ -288,17 +111,12 @@ export const AuctionListingPage = () => {
             {t('browse')}
           </Typography>
           <Typography variant="body1" sx={{ color: palette.neutral[500] }}>
-            {t('itemsAvailable', { count: data?.totalCount || 0 })}
+            {t('itemsAvailable', { count: data?.totalCount ?? 0 })}
           </Typography>
         </Box>
 
         <Grid container spacing={4}>
-          <Grid
-            size={{ xs: 12, md: 3 }}
-            sx={{
-              display: { xs: 'none', md: 'block' },
-            }}
-          >
+          <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
             <Box
               sx={{
                 position: 'sticky',
@@ -307,7 +125,7 @@ export const AuctionListingPage = () => {
                 border: '1px solid rgba(68,64,60,0.1)',
               }}
             >
-              {filterContent}
+              {filters}
             </Box>
           </Grid>
 
@@ -317,6 +135,7 @@ export const AuctionListingPage = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                gap: 2,
                 mb: 4,
                 pb: 3,
                 borderBottom: '1px solid rgba(68,64,60,0.1)',
@@ -334,38 +153,15 @@ export const AuctionListingPage = () => {
                   }}
                   variant="outlined"
                 >
-                  {t('filter.title')} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                  {t('filter.title')}
                 </Button>
-
-                {activeFiltersCount > 0 && (
-                  <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, flexWrap: 'wrap' }}>
-                    {selectedCategories.map((catId) => {
-                      const cat = categories.find((c) => c.id === catId)
-                      return (
-                        <Chip
-                          key={catId}
-                          label={cat?.name}
-                          size="small"
-                          onDelete={() =>
-                            setSelectedCategories(selectedCategories.filter((c) => c !== catId))
-                          }
-                          sx={{
-                            bgcolor: palette.brand.muted,
-                            color: palette.brand.primary,
-                            '& .MuiChip-deleteIcon': { color: palette.brand.primary },
-                          }}
-                        />
-                      )
-                    })}
-                    {verifiedOnly && (
-                      <Chip
-                        label={t('filter.verifiedOnly')}
-                        size="small"
-                        onDelete={() => setVerifiedOnly(false)}
-                        sx={componentStyles.brandChip}
-                      />
-                    )}
-                  </Box>
+                {selectedCategory && (
+                  <Chip
+                    label={selectedCategory.name}
+                    size="small"
+                    onDelete={() => handleCategoryChange(undefined)}
+                    sx={componentStyles.brandChip}
+                  />
                 )}
               </Box>
 
@@ -374,6 +170,8 @@ export const AuctionListingPage = () => {
                   <IconButton
                     size="small"
                     onClick={() => setViewMode('grid')}
+                    aria-label={t('filter.gridView')}
+                    aria-pressed={viewMode === 'grid'}
                     sx={{
                       color: viewMode === 'grid' ? palette.neutral[900] : palette.neutral[500],
                     }}
@@ -383,6 +181,8 @@ export const AuctionListingPage = () => {
                   <IconButton
                     size="small"
                     onClick={() => setViewMode('list')}
+                    aria-label={t('filter.listView')}
+                    aria-pressed={viewMode === 'list'}
                     sx={{
                       color: viewMode === 'list' ? palette.neutral[900] : palette.neutral[500],
                     }}
@@ -394,17 +194,12 @@ export const AuctionListingPage = () => {
                 <FormControl size="small" sx={{ minWidth: 160 }}>
                   <Select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    IconComponent={KeyboardArrowDown}
-                    sx={{
-                      color: palette.neutral[900],
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(68,64,60,0.2)',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(68,64,60,0.4)',
-                      },
+                    onChange={(event) => {
+                      setSortBy(event.target.value as AuctionSortOption)
+                      setPage(1)
                     }}
+                    IconComponent={KeyboardArrowDown}
+                    inputProps={{ 'aria-label': t('filter.sortBy') }}
                   >
                     {sortOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -416,52 +211,55 @@ export const AuctionListingPage = () => {
               </Box>
             </Box>
 
-            <Grid container spacing={3}>
-              {isLoading
-                ? Array.from({ length: skeletonCount }, (_, i) => (
-                    <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={i}>
-                      <AuctionProductCardSkeleton />
-                    </Grid>
-                  ))
-                : data?.items.map((auction) => (
-                    <Grid
-                      size={{
-                        xs: 6,
-                        sm: viewMode === 'grid' ? 4 : 12,
-                        lg: viewMode === 'grid' ? 3 : 12,
-                      }}
-                      key={auction.id}
-                    >
-                      <AuctionProductCard
-                        id={auction.id}
-                        title={auction.title}
-                        currentBid={auction.currentBid}
-                        startingPrice={auction.startingPrice}
-                        images={[auction.primaryImageUrl || '/placeholder.jpg']}
-                        endTime={auction.endTime}
-                        bidCount={auction.bidCount}
-                        seller={{ name: auction.sellerName, verified: true }}
-                        isFavorited={auction.isWatching ?? false}
-                        onFavoriteToggle={() =>
-                          toggleWatchlistMutation.mutate({
-                            auctionId: auction.id,
-                            isInWatchlist: auction.isWatching ?? false,
-                          })
-                        }
-                      />
-                    </Grid>
-                  ))}
-            </Grid>
+            {isError ? (
+              <ErrorState onRetry={() => void refetch()} />
+            ) : (
+              <Grid container spacing={3}>
+                {isLoading
+                  ? Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                      <Grid size={{ xs: 6, sm: 4, lg: 3 }} key={index}>
+                        <AuctionProductCardSkeleton />
+                      </Grid>
+                    ))
+                  : data?.items.map((auction) => (
+                      <Grid
+                        size={{
+                          xs: 6,
+                          sm: viewMode === 'grid' ? 4 : 12,
+                          lg: viewMode === 'grid' ? 3 : 12,
+                        }}
+                        key={auction.id}
+                      >
+                        <AuctionProductCard
+                          id={auction.id}
+                          title={auction.title}
+                          currentBid={auction.currentBid}
+                          startingPrice={auction.startingPrice}
+                          images={[auction.primaryImageUrl || '/placeholder.jpg']}
+                          endTime={auction.endTime}
+                          bidCount={auction.bidCount}
+                          seller={{ name: auction.sellerName, verified: true }}
+                          isFavorited={watchedAuctionIds.has(auction.id)}
+                          onFavoriteToggle={() =>
+                            toggleWatchlistMutation.mutate({
+                              auctionId: auction.id,
+                              isInWatchlist: watchedAuctionIds.has(auction.id),
+                            })
+                          }
+                        />
+                      </Grid>
+                    ))}
+              </Grid>
+            )}
 
-            <Box sx={{ textAlign: 'center', mt: 8 }}>
-              <Button
-                variant="outlined"
-                size="large"
-                sx={componentStyles.outlinedDarkButton}
-              >
-                {t('common:actions.loadMore')}
-              </Button>
-            </Box>
+            {(data?.totalPages ?? 0) > 1 && (
+              <Pagination
+                page={page}
+                count={data?.totalPages ?? 1}
+                onChange={(_, nextPage) => setPage(nextPage)}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}
+              />
+            )}
           </Grid>
         </Grid>
       </Container>
@@ -470,21 +268,17 @@ export const AuctionListingPage = () => {
         anchor="left"
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
-        slotProps={{
-          paper: { sx: { width: 320, bgcolor: palette.neutral[50] } },
-        }}
+        slotProps={{ paper: { sx: { width: 320, bgcolor: palette.neutral[50] } } }}
       >
-        {filterContent}
-        <Box sx={{ p: 3, borderTop: '1px solid rgba(68,64,60,0.1)' }}>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => setFilterDrawerOpen(false)}
-            sx={componentStyles.darkButton}
-          >
-            {t('filter.apply')}
-          </Button>
-        </Box>
+        <AuctionBrowseFilters
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onCategoryChange={(categoryId) => {
+            handleCategoryChange(categoryId)
+            setFilterDrawerOpen(false)
+          }}
+          onClose={() => setFilterDrawerOpen(false)}
+        />
       </Drawer>
     </Box>
   )

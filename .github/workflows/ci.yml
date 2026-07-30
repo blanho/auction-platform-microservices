@@ -11,6 +11,31 @@ env:
   SOLUTION_PATH: 'auction.sln'
 
 jobs:
+  frontend:
+    name: Frontend Validate & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate
+        run: npm run validate
+
+      - name: Build
+        run: npm run build
+
   build:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -49,17 +74,41 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.SOLUTION_PATH }}
 
+      - name: Verify backend tests are present
+        shell: bash
+        run: |
+          mapfile -t TEST_PROJECTS < <(find src -type f -name '*Tests.csproj' | sort)
+          TEST_PROJECT_COUNT=${#TEST_PROJECTS[@]}
+          if [[ "$TEST_PROJECT_COUNT" -eq 0 ]]; then
+            echo "::error::No backend test projects were found; refusing a false-green test run."
+            exit 1
+          fi
+          printf 'Found backend test projects:\n%s\n' "${TEST_PROJECTS[@]}"
+
       - name: Build
         run: dotnet build ${{ env.SOLUTION_PATH }} -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
 
       - name: Test
         run: |
-          dotnet test ${{ env.SOLUTION_PATH }} \
-            --no-build -c Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./coverage \
-            --logger "trx;LogFileName=test-results.trx" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          while IFS= read -r test_project; do
+            dotnet test "$test_project" \
+              --no-restore -c Release \
+              --collect:"XPlat Code Coverage" \
+              --results-directory ./coverage \
+              --logger "trx;LogFileName=test-results.trx" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          done < <(find src -type f -name '*Tests.csproj' | sort)
+
+  infrastructure:
+    name: Infrastructure Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile Azure Bicep
+        uses: azure/cli@v2
+        with:
+          inlineScript: az bicep build --file deploy/azure/main.bicep
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -133,8 +182,12 @@ jobs:
             dockerfile: src/Services/Storage/Storage.Api/Dockerfile
           - name: job-api
             dockerfile: src/Services/Job/Job.Api/Dockerfile
+          - name: catalog-api
+            dockerfile: src/Services/Catalog/Catalog.Api/Dockerfile
           - name: gateway-api
             dockerfile: src/Gateway/Gateway.Api/Dockerfile
+          - name: web
+            dockerfile: web/Dockerfile
     steps:
       - uses: actions/checkout@v4
 

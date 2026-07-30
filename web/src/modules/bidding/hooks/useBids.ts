@@ -1,50 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { biddingApi } from '../api'
 import { BID_CONSTANTS } from '../constants'
-import { placeBidSchema, retractBidSchema } from '../schemas'
-import type { PlaceBidRequest, BidHistoryFilters } from '../types'
+import { retractBidSchema } from '../schemas'
+import type { BidHistoryFilters } from '../types'
 
 const QUERY_KEYS = BID_CONSTANTS.QUERY_KEYS
-
-export const usePlaceBid = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (data: PlaceBidRequest) => {
-      const result = placeBidSchema.safeParse(data)
-      if (!result.success) {
-        throw new Error(result.error.issues.map((e) => e.message).join(', '))
-      }
-      return biddingApi.placeBid(data)
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bidsForAuction(variables.auctionId) })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myBids })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.winningBids({}) })
-    },
-  })
-}
 
 export const useBidById = (bidId: string) => {
   return useQuery({
     queryKey: QUERY_KEYS.bidById(bidId),
     queryFn: () => biddingApi.getBidById(bidId),
     enabled: !!bidId,
-  })
-}
-
-export const useBidsForAuction = (auctionId: string) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.bidsForAuction(auctionId),
-    queryFn: () => biddingApi.getBidsForAuction(auctionId),
-    enabled: !!auctionId,
-  })
-}
-
-export const useMyBids = () => {
-  return useQuery({
-    queryKey: QUERY_KEYS.myBids,
-    queryFn: () => biddingApi.getMyBids(),
   })
 }
 

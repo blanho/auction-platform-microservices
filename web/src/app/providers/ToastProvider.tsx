@@ -1,23 +1,9 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { Snackbar, Alert } from '@mui/material'
 import type { AlertColor } from '@mui/material'
-
-interface Toast {
-  id: string
-  message: string
-  severity: AlertColor
-  duration?: number
-}
-
-interface ToastContextValue {
-  success: (message: string) => void
-  error: (message: string) => void
-  warning: (message: string) => void
-  info: (message: string) => void
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null)
+import { ToastContext } from '../context/ToastContext'
+import type { Toast, ToastContextValue } from '../context/ToastContext'
 
 interface ToastProviderProps {
   children: ReactNode
@@ -35,12 +21,15 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
-  const value: ToastContextValue = {
-    success: useCallback((message: string) => addToast(message, 'success'), [addToast]),
-    error: useCallback((message: string) => addToast(message, 'error', 6000), [addToast]),
-    warning: useCallback((message: string) => addToast(message, 'warning'), [addToast]),
-    info: useCallback((message: string) => addToast(message, 'info'), [addToast]),
-  }
+  const value = useMemo<ToastContextValue>(
+    () => ({
+      success: (message: string) => addToast(message, 'success'),
+      error: (message: string) => addToast(message, 'error', 6000),
+      warning: (message: string) => addToast(message, 'warning'),
+      info: (message: string) => addToast(message, 'info'),
+    }),
+    [addToast]
+  )
 
   return (
     <ToastContext.Provider value={value}>
@@ -67,12 +56,4 @@ export function ToastProvider({ children }: ToastProviderProps) {
       ))}
     </ToastContext.Provider>
   )
-}
-
-export function useToast(): ToastContextValue {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider')
-  }
-  return context
 }

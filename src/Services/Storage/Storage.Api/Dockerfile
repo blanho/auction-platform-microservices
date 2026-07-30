@@ -3,8 +3,11 @@
 # Multi-stage build for optimized production image
 # =============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
 
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
@@ -16,6 +19,7 @@ COPY ["src/Services/Storage/Storage.Domain/Storage.Domain.csproj", "src/Services
 COPY ["src/Services/Storage/Storage.Infrastructure/Storage.Infrastructure.csproj", "src/Services/Storage/Storage.Infrastructure/"]
 COPY ["src/Services/Storage/Storage.Contracts/StorageService.Contracts.csproj", "src/Services/Storage/Storage.Contracts/"]
 COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
+COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
 
 RUN dotnet restore "src/Services/Storage/Storage.Api/Storage.Api.csproj" --runtime linux-musl-x64
 
@@ -29,7 +33,7 @@ RUN dotnet publish "Storage.Api.csproj" \
     --runtime linux-musl-x64 \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 RUN addgroup -g 1000 appgroup && \

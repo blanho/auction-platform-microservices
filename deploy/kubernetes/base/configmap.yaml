@@ -5,6 +5,9 @@ metadata:
   namespace: auction-platform
 data:
   ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+  Database__AutoMigrate: "false"
   
   # Database
   POSTGRES_HOST: "postgres"
@@ -17,11 +20,18 @@ data:
   # RabbitMQ
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_PORT: "5672"
+  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__Port: "5672"
+  Identity__Authority: "http://identity-api:8080"
+  Identity__IssuerUri: "http://identity-api:8080"
+  GrpcServices__AuctionService: "http://auction-api:81"
+  Elasticsearch__Url: "http://elasticsearch:9200"
+  FileStorage__Provider: "AzureBlob"
+  FileStorage__AzureBlob__ServiceUri: "https://REPLACE_WITH_STORAGE_ACCOUNT.blob.core.windows.net"
+  FileStorage__AzureBlob__ContainerName: "uploads"
   
   # Logging & Observability
   ELASTICSEARCH_URL: "http://elasticsearch:9200"
-  OTLP_ENDPOINT: "http://jaeger:4317"
-  SEQ_URL: "http://seq:5341"
   
   # Logging Configuration
   Logging__MinimumLevel: "Warning"

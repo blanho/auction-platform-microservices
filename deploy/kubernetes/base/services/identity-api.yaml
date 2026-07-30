@@ -37,6 +37,16 @@ spec:
             - secretRef:
                 name: auction-platform-secrets
           env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: IDENTITY_DB_CONNECTION
+            - name: ConnectionStrings__Redis
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: REDIS_CONNECTION
             - name: ASPNETCORE_ENVIRONMENT
               value: "Production"
             - name: ASPNETCORE_URLS

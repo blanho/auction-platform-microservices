@@ -2,14 +2,18 @@
 # Bidding Service Dockerfile
 # ==============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
 
 # Copy project files for restore
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
+COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
 COPY ["src/Services/Bidding/Bidding.Domain/Bidding.Domain.csproj", "src/Services/Bidding/Bidding.Domain/"]
 COPY ["src/Services/Bidding/Bidding.Application/Bidding.Application.csproj", "src/Services/Bidding/Bidding.Application/"]
 COPY ["src/Services/Bidding/Bidding.Infrastructure/Bidding.Infrastructure.csproj", "src/Services/Bidding/Bidding.Infrastructure/"]
@@ -29,7 +33,7 @@ RUN dotnet publish "Bidding.Api.csproj" \
     --runtime linux-musl-x64 \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 RUN addgroup -g 1000 appgroup && \

@@ -48,13 +48,17 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-if (args.Contains("--migrate-only"))
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-        await db.Database.MigrateAsync();
-    }
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
     return;
 }
 

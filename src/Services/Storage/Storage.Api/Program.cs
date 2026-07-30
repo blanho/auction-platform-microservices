@@ -52,7 +52,7 @@ builder.Services.AddStorageInfrastructure();
 builder.Services.AddStorageMessaging(builder.Configuration);
 builder.Services.AddAuditServices(builder.Configuration, "storage-service");
 builder.Services.AddStorageJobs(builder.Configuration);
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddRbacAuthorization();
 builder.Services.AddCoreAuthorization();
 builder.Services.AddCustomHealthChecks(
@@ -67,6 +67,20 @@ builder.Services.AddControllers()
     });
 
 var app = builder.Build();
+
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<StorageDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
+}
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))
@@ -110,4 +124,4 @@ if (storageSettings?.Provider == "Local")
 app.MapCarter();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

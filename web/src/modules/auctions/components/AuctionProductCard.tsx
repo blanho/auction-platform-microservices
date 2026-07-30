@@ -51,7 +51,6 @@ export const AuctionProductCard = ({
     [currentImage, imageLoadedForUrl]
   )
 
-
   const handleImageLoad = () => {
     setImageLoadedForUrl(currentImage)
   }
@@ -299,7 +298,7 @@ export const AuctionProductCard = ({
                   fontFamily: '"Playfair Display", serif',
                 }}
               >
-              {formatCurrency(currentPrice)}
+                {formatCurrency(currentPrice)}
               </Typography>
             </Box>
             <Typography

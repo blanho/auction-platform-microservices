@@ -39,19 +39,6 @@ export interface BackendAuctionFileDto {
   isPrimary: boolean
 }
 
-export interface BackendAuctionListDto {
-  id: string
-  title: string
-  currentHighBid?: number
-  reservePrice: number
-  status: string
-  auctionEnd: string
-  bidCount?: number
-  categoryName?: string
-  seller?: string
-  primaryImageUrl?: string
-}
-
 export interface BackendBidDto {
   id: string
   auctionId: string

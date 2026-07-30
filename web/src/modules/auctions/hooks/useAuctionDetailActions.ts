@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import type { AuctionDetails } from '../types'
-import { useToggleWatchlist, useBuyNow } from './useAuctions'
+import { useBuyNow } from './useAuctions'
+import { useIsInWatchlist, useToggleWatchlist } from './useBookmarks'
 import { usePlaceBid } from '@/modules/bidding/hooks'
 import { useSnackbar } from '@/shared/hooks/useSnackbar'
 
@@ -11,11 +11,13 @@ interface UseAuctionDetailActionsReturn {
   buyNowDialogOpen: boolean
   setBuyNowDialogOpen: (open: boolean) => void
   buyNowMutation: ReturnType<typeof useBuyNow>
+  isInWatchlist: boolean
   handleToggleFavorite: () => void
   handleShare: () => void
   handlePlaceBid: (amount: number) => Promise<void>
   handleBuyNow: () => void
   confirmBuyNow: () => Promise<void>
+  handleSellerContact: () => void
 }
 
 /**
@@ -23,35 +25,35 @@ interface UseAuctionDetailActionsReturn {
  * Keeps the page component focused on layout and composition only.
  */
 export function useAuctionDetailActions(
-  auctionId: string | undefined,
-  auction: AuctionDetails | undefined
+  auctionId: string | undefined
 ): UseAuctionDetailActionsReturn {
   const { t } = useTranslation('auctions')
   const navigate = useNavigate()
   const snackbar = useSnackbar()
 
+  const { data: isInWatchlist = false } = useIsInWatchlist(auctionId ?? '')
   const toggleWatchlistMutation = useToggleWatchlist()
   const buyNowMutation = useBuyNow()
   const placeBidMutation = usePlaceBid()
   const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
 
   const handleToggleFavorite = useCallback(() => {
-    if (!auctionId) {return}
+    if (!auctionId) {
+      return
+    }
 
     toggleWatchlistMutation.mutate(
-      { auctionId, isInWatchlist: auction?.isWatching ?? false },
+      { auctionId, isInWatchlist },
       {
         onSuccess: () =>
           snackbar.show(
-            auction?.isWatching
-              ? t('messages.removedFromWatchlist')
-              : t('messages.addedToWatchlist'),
+            isInWatchlist ? t('messages.removedFromWatchlist') : t('messages.addedToWatchlist'),
             'success'
           ),
         onError: () => snackbar.show(t('watchlist.updateFailed'), 'error'),
       }
     )
-  }, [auctionId, auction?.isWatching, toggleWatchlistMutation, snackbar, t])
+  }, [auctionId, isInWatchlist, toggleWatchlistMutation, snackbar, t])
 
   const handleShare = useCallback(() => {
     navigator.clipboard.writeText(globalThis.location.href)
@@ -60,7 +62,9 @@ export function useAuctionDetailActions(
 
   const handlePlaceBid = useCallback(
     async (amount: number) => {
-      if (!auctionId) {return}
+      if (!auctionId) {
+        return
+      }
 
       placeBidMutation.mutate(
         { auctionId, amount },
@@ -82,7 +86,9 @@ export function useAuctionDetailActions(
   }, [])
 
   const confirmBuyNow = useCallback(async () => {
-    if (!auctionId) {return}
+    if (!auctionId) {
+      return
+    }
 
     buyNowMutation.mutate(auctionId, {
       onSuccess: () => {
@@ -106,12 +112,12 @@ export function useAuctionDetailActions(
     buyNowDialogOpen,
     setBuyNowDialogOpen,
     buyNowMutation,
+    isInWatchlist,
     handleToggleFavorite,
     handleShare,
     handlePlaceBid,
     handleBuyNow,
     confirmBuyNow,
-    // expose for SellerInfo contact button
     handleSellerContact,
-  } as UseAuctionDetailActionsReturn & { handleSellerContact: () => void }
+  }
 }

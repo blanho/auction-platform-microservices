@@ -70,10 +70,18 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AnalyticsDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
 }
 
 if (app.Environment.IsDevelopment())
@@ -94,4 +102,4 @@ app.MapCustomHealthChecks();
 app.MapCarter();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

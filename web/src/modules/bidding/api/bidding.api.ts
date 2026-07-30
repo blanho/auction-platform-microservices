@@ -30,8 +30,8 @@ export const biddingApi = {
     return response.data
   },
 
-  async getBidsForAuction(auctionId: string): Promise<Bid[]> {
-    const response = await http.get<Bid[]>(`/bids/auction/${auctionId}`)
+  async getBidsForAuction(auctionId: string): Promise<PaginatedResponse<Bid>> {
+    const response = await http.get<PaginatedResponse<Bid>>(`/bids/auction/${auctionId}`)
     return response.data
   },
 

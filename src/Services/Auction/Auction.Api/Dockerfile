@@ -4,7 +4,7 @@
 # ==============================================================================
 
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy centralized build files
@@ -27,6 +27,7 @@ COPY ["src/Services/Identity/Identity.Contracts/IdentityService.Contracts.csproj
 COPY ["src/Services/Notification/Notification.Contracts/NotificationService.Contracts.csproj", "src/Services/Notification/Notification.Contracts/"]
 COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
 COPY ["src/Services/Storage/Storage.Contracts/StorageService.Contracts.csproj", "src/Services/Storage/Storage.Contracts/"]
+COPY ["src/Services/Catalog/Catalog.Contracts/Catalog.Contracts.csproj", "src/Services/Catalog/Catalog.Contracts/"]
 COPY ["src/Orchestration/Orchestration.Contracts/OrchestrationService.Contracts.csproj", "src/Orchestration/Orchestration.Contracts/"]
 
 # Restore dependencies
@@ -45,7 +46,7 @@ RUN dotnet publish "Auction.Api.csproj" \
     --self-contained false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 # Security: Run as non-root user

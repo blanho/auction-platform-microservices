@@ -12,7 +12,7 @@ interface SellerInfoProps {
 
 export function SellerInfo({ seller, onContact }: SellerInfoProps) {
   const { t } = useTranslation('common')
-  const isVerified = seller.totalSales >= 10
+  const isVerified = (seller.totalSales ?? 0) >= 10
 
   return (
     <Box
@@ -77,69 +77,80 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
             @{seller.username}
           </Typography>
 
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
-            <Rating
-              value={seller.rating}
-              precision={0.1}
-              size="small"
-              readOnly
-              sx={{
-                color: palette.brand.primary,
-                '& .MuiRating-iconEmpty': {
-                  color: palette.neutral[100],
-                },
-              }}
-            />
-            <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}>
-              ({seller.rating.toFixed(1)}
-              {seller.reviewCount !== undefined &&
-                ` • ${t('seller.review_other', { count: seller.reviewCount })}`}
-              )
-            </Typography>
-          </Stack>
+          {seller.rating !== undefined && (
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+              <Rating
+                value={seller.rating}
+                precision={0.1}
+                size="small"
+                readOnly
+                sx={{
+                  color: palette.brand.primary,
+                  '& .MuiRating-iconEmpty': {
+                    color: palette.neutral[100],
+                  },
+                }}
+              />
+              <Typography
+                variant="body2"
+                sx={{ color: palette.neutral[500], fontSize: '0.8125rem' }}
+              >
+                ({seller.rating.toFixed(1)}
+                {seller.reviewCount !== undefined &&
+                  ` • ${t('seller.review_other', { count: seller.reviewCount })}`}
+                )
+              </Typography>
+            </Stack>
+          )}
         </Box>
       </Stack>
 
-      <Stack
-        direction="row"
-        spacing={3}
-        sx={{
-          mt: 2,
-          pt: 2,
-          borderTop: `1px solid ${palette.neutral[100]}`,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600,
-              color: palette.neutral[900],
-              fontSize: '1.125rem',
-            }}
-          >
-            {seller.totalSales.toLocaleString()}
-          </Typography>
-          <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
-            {t('seller.totalSales')}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600,
-              color: palette.neutral[900],
-              fontSize: '1.125rem',
-            }}
-          >
-            {Math.round(seller.rating * 20)}%
-          </Typography>
-          <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
-            {t('seller.positiveFeedback')}
-          </Typography>
-        </Box>
-      </Stack>
+      {(seller.totalSales !== undefined || seller.rating !== undefined) && (
+        <Stack
+          direction="row"
+          spacing={3}
+          sx={{
+            mt: 2,
+            pt: 2,
+            borderTop: `1px solid ${palette.neutral[100]}`,
+          }}
+        >
+          {seller.totalSales !== undefined && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  color: palette.neutral[900],
+                  fontSize: '1.125rem',
+                }}
+              >
+                {seller.totalSales.toLocaleString()}
+              </Typography>
+              <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
+                {t('seller.totalSales')}
+              </Typography>
+            </Box>
+          )}
+          {seller.rating !== undefined && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  color: palette.neutral[900],
+                  fontSize: '1.125rem',
+                }}
+              >
+                {Math.round(seller.rating * 20)}%
+              </Typography>
+              <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
+                {t('seller.positiveFeedback')}
+              </Typography>
+            </Box>
+          )}
+        </Stack>
+      )}
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
         <Button

@@ -8,8 +8,10 @@ resources:
 
 namePrefix: dev-
 
-commonLabels:
-  environment: development
+labels:
+  - pairs:
+      environment: development
+    includeSelectors: true
 
 patches:
   - patch: |-
@@ -52,6 +54,7 @@ patches:
 
 configMapGenerator:
   - name: auction-platform-config
+    namespace: auction-platform
     behavior: merge
     literals:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -59,6 +62,7 @@ configMapGenerator:
 
 secretGenerator:
   - name: auction-platform-secrets
+    namespace: auction-platform
     behavior: merge
     literals:
       - POSTGRES_USER=dev_user

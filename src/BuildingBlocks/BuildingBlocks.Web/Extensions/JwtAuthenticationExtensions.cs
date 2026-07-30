@@ -29,7 +29,7 @@ public static class JwtAuthenticationExtensions
             options.RequireHttpsMetadata = !isDevelopment;
             options.SaveToken = true;
 
-            if (!string.IsNullOrEmpty(identityAuthority))
+            if (!string.IsNullOrEmpty(identityAuthority) && string.IsNullOrEmpty(secretKey))
             {
                 options.Authority = identityAuthority;
             }
@@ -77,7 +77,7 @@ public static class JwtAuthenticationExtensions
             options.RequireHttpsMetadata = !isDevelopment;
             options.SaveToken = true;
 
-            if (!string.IsNullOrEmpty(identityAuthority))
+            if (!string.IsNullOrEmpty(identityAuthority) && string.IsNullOrEmpty(secretKey))
             {
                 options.Authority = identityAuthority;
             }

@@ -140,8 +140,19 @@ public class Order : AggregateRoot
         });
     }
 
-    public void CompletePayment(string? transactionId)
+    public bool CompletePayment(string? transactionId)
     {
+        if (PaymentStatus == PaymentStatus.Completed)
+        {
+            if (string.Equals(PaymentTransactionId, transactionId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            throw new DomainInvariantException(
+                "The order has already been paid with a different transaction");
+        }
+
         GuardTransition(OrderStatus.Paid);
 
         PaymentStatus = PaymentStatus.Completed;
@@ -160,6 +171,40 @@ public class Order : AggregateRoot
             Amount = TotalAmount,
             TransactionId = transactionId
         });
+
+        return true;
+    }
+
+    public bool MarkPaymentFailed()
+    {
+        // A delayed failure must never overwrite a payment that already succeeded.
+        if (PaymentStatus == PaymentStatus.Completed)
+        {
+            return false;
+        }
+
+        if (PaymentStatus == PaymentStatus.Failed && Status == OrderStatus.Cancelled)
+        {
+            return false;
+        }
+
+        GuardTransition(OrderStatus.Cancelled);
+
+        var oldStatus = Status;
+        PaymentStatus = PaymentStatus.Failed;
+        Status = OrderStatus.Cancelled;
+
+        AddDomainEvent(new OrderStatusChangedDomainEvent
+        {
+            OrderId = Id,
+            AuctionId = AuctionId,
+            BuyerId = BuyerId,
+            BuyerUsername = BuyerUsername,
+            OldStatus = oldStatus,
+            NewStatus = OrderStatus.Cancelled
+        });
+
+        return true;
     }
 
     public void MarkAsShipped(string? trackingNumber, string? carrier)

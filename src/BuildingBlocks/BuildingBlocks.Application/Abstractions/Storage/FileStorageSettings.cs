@@ -20,6 +20,7 @@ public class LocalStorageSettings
 public class AzureBlobSettings
 {
     public string ConnectionString { get; set; } = string.Empty;
+    public string ServiceUri { get; set; } = string.Empty;
     public string ContainerName { get; set; } = "uploads";
 }
 

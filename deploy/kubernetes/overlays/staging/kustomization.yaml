@@ -8,8 +8,10 @@ resources:
 
 namePrefix: staging-
 
-commonLabels:
-  environment: staging
+labels:
+  - pairs:
+      environment: staging
+    includeSelectors: true
 
 patches:
   - patch: |-
@@ -41,6 +43,7 @@ patches:
 
 configMapGenerator:
   - name: auction-platform-config
+    namespace: auction-platform
     behavior: merge
     literals:
       - ASPNETCORE_ENVIRONMENT=Staging
@@ -48,6 +51,7 @@ configMapGenerator:
 
 secretGenerator:
   - name: auction-platform-secrets
+    namespace: auction-platform
     behavior: merge
     literals:
       - POSTGRES_USER=staging_user
@@ -76,5 +80,9 @@ images:
     newTag: staging
   - name: auction-platform/job-api
     newTag: staging
+  - name: auction-platform/catalog-api
+    newTag: staging
   - name: auction-platform/gateway-api
+    newTag: staging
+  - name: auction-platform/web
     newTag: staging
