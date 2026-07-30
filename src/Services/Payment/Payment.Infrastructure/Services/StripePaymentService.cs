@@ -239,32 +239,27 @@ public class StripePaymentService : IStripePaymentService
         string stripeSignature,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, _webhookSecret);
+        var stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, _webhookSecret);
 
-            _logger.LogInformation("Processing Stripe webhook event: {EventType}", stripeEvent.Type);
+        _logger.LogInformation(
+            "Processing Stripe webhook event {StripeEventId} of type {EventType}",
+            stripeEvent.Id,
+            stripeEvent.Type);
 
-            switch (stripeEvent.Type)
-            {
-                case StripeEventTypes.PaymentIntentSucceeded:
-                    await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
-                    break;
-                case StripeEventTypes.PaymentIntentPaymentFailed:
-                    await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
-                    break;
-                case StripeEventTypes.CheckoutSessionCompleted:
-                    await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
-                    break;
-                default:
-                    _logger.LogInformation("Unhandled event type: {EventType}", stripeEvent.Type);
-                    break;
-            }
-        }
-        catch (StripeException ex)
+        switch (stripeEvent.Type)
         {
-            _logger.LogError(ex, "Stripe webhook error");
-            throw;
+            case StripeEventTypes.PaymentIntentSucceeded:
+                await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
+                break;
+            case StripeEventTypes.PaymentIntentPaymentFailed:
+                await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
+                break;
+            case StripeEventTypes.CheckoutSessionCompleted:
+                await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
+                break;
+            default:
+                _logger.LogInformation("Unhandled event type: {EventType}", stripeEvent.Type);
+                break;
         }
     }
 
@@ -287,7 +282,7 @@ public class StripePaymentService : IStripePaymentService
         _logger.LogWarning("PaymentIntent failed: {PaymentIntentId}", paymentIntent.Id);
         await UpdateOrderFromStripeEventAsync(
             paymentIntent.Metadata,
-            order => order.ChangeStatus(OrderStatus.Cancelled),
+            order => order.MarkPaymentFailed(),
             "payment failed",
             cancellationToken);
     }
@@ -306,7 +301,7 @@ public class StripePaymentService : IStripePaymentService
 
     private async Task UpdateOrderFromStripeEventAsync(
         IDictionary<string, string> metadata,
-        Action<Order> applyChange,
+        Func<Order, bool> applyChange,
         string outcomeDescription,
         CancellationToken cancellationToken)
     {
@@ -317,7 +312,15 @@ public class StripePaymentService : IStripePaymentService
         var order = await _orderRepository.GetByIdAsync(orderId);
         if (order == null) return;
 
-        applyChange(order);
+        if (!applyChange(order))
+        {
+            _logger.LogInformation(
+                "Ignoring duplicate or stale Stripe update for order {OrderId}: {Outcome}",
+                orderId,
+                outcomeDescription);
+            return;
+        }
+
         await _orderRepository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

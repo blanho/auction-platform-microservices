@@ -1,17 +1,78 @@
 ﻿using System;
+using System.Collections.Generic;
+using Catalog.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Identity.Api.Migrations
+namespace Catalog.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class PendingChanges : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Brands",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    IsFeatured = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Brands", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "fa-box"),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    ParentCategoryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateTable(
                 name: "InboxState",
                 columns: table => new
@@ -94,6 +155,38 @@ namespace Identity.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Brands_IsActive_DisplayOrder",
+                table: "Brands",
+                columns: new[] { "IsActive", "DisplayOrder" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_IsActive_IsFeatured",
+                table: "Brands",
+                columns: new[] { "IsActive", "IsFeatured" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_Slug",
+                table: "Brands",
+                column: "Slug",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_IsActive_DisplayOrder",
+                table: "Categories",
+                columns: new[] { "IsActive", "DisplayOrder" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentCategoryId",
+                table: "Categories",
+                column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_Slug",
+                table: "Categories",
+                column: "Slug",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InboxState_Delivered",
                 table: "InboxState",
                 column: "Delivered");
@@ -129,6 +222,12 @@ namespace Identity.Api.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Brands");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
             migrationBuilder.DropTable(
                 name: "OutboxMessage");
 

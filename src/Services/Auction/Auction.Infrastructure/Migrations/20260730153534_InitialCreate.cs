@@ -37,68 +37,12 @@ namespace Auctions.Infrastructure.Migrations
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Auctions", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Brands",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
-                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    IsFeatured = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Brands", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "fa-box"),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    ParentCategoryId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Categories_Categories_ParentCategoryId",
-                        column: x => x.ParentCategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -141,34 +85,6 @@ namespace Auctions.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AuctionViews",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    AuctionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: true),
-                    IpAddress = table.Column<string>(type: "text", nullable: true),
-                    ViewedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AuctionViews", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AuctionViews_Auctions_AuctionId",
-                        column: x => x.AuctionId,
-                        principalTable: "Auctions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Bookmarks",
                 columns: table => new
                 {
@@ -186,13 +102,49 @@ namespace Auctions.Infrastructure.Migrations
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Bookmarks", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Bookmarks_Auctions_AuctionId",
+                        column: x => x.AuctionId,
+                        principalTable: "Auctions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Items",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    Condition = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    YearManufactured = table.Column<int>(type: "integer", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CategoryName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    BrandId = table.Column<Guid>(type: "uuid", nullable: true),
+                    BrandName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    AuctionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
+                    Attributes = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Items", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Items_Auctions_AuctionId",
                         column: x => x.AuctionId,
                         principalTable: "Auctions",
                         principalColumn: "Id",
@@ -221,7 +173,8 @@ namespace Auctions.Infrastructure.Migrations
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -232,51 +185,6 @@ namespace Auctions.Infrastructure.Migrations
                         principalTable: "Auctions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Items",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
-                    Condition = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    YearManufactured = table.Column<int>(type: "integer", nullable: true),
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
-                    BrandId = table.Column<Guid>(type: "uuid", nullable: true),
-                    AuctionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Files = table.Column<List<MediaFile>>(type: "jsonb", nullable: false),
-                    Attributes = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Items", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Items_Auctions_AuctionId",
-                        column: x => x.AuctionId,
-                        principalTable: "Auctions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Items_Brands_BrandId",
-                        column: x => x.BrandId,
-                        principalTable: "Brands",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Items_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -372,11 +280,6 @@ namespace Auctions.Infrastructure.Migrations
                 column: "WinnerUsername");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuctionViews_AuctionId",
-                table: "AuctionViews",
-                column: "AuctionId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Bookmarks_AuctionId",
                 table: "Bookmarks",
                 column: "AuctionId");
@@ -401,38 +304,6 @@ namespace Auctions.Infrastructure.Migrations
                 name: "IX_Bookmarks_Username",
                 table: "Bookmarks",
                 column: "Username");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Brands_IsActive_DisplayOrder",
-                table: "Brands",
-                columns: new[] { "IsActive", "DisplayOrder" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Brands_IsActive_IsFeatured",
-                table: "Brands",
-                columns: new[] { "IsActive", "IsFeatured" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Brands_Slug",
-                table: "Brands",
-                column: "Slug",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Categories_IsActive_DisplayOrder",
-                table: "Categories",
-                columns: new[] { "IsActive", "DisplayOrder" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Categories_ParentCategoryId",
-                table: "Categories",
-                column: "ParentCategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Categories_Slug",
-                table: "Categories",
-                column: "Slug",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_InboxState_Delivered",
@@ -538,9 +409,6 @@ namespace Auctions.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AuctionViews");
-
-            migrationBuilder.DropTable(
                 name: "Bookmarks");
 
             migrationBuilder.DropTable(
@@ -551,12 +419,6 @@ namespace Auctions.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Reviews");
-
-            migrationBuilder.DropTable(
-                name: "Brands");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "InboxState");

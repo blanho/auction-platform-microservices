@@ -56,7 +56,7 @@ builder.Services.AddCoreAuthorization();
 builder.Services.AddBiddingRateLimiting();
 builder.Services.AddCustomHealthChecks(
     redisConnectionString: builder.Configuration.GetConnectionString("Redis"),
-    rabbitMqConnectionString: builder.Configuration.GetConnectionString("RabbitMQ"),
+    rabbitMqConnectionString: $"amqp://{builder.Configuration["RabbitMQ:Username"]}:{builder.Configuration["RabbitMQ:Password"]}@{builder.Configuration["RabbitMQ:Host"]}:5672",
     databaseConnectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
     serviceName: "BiddingService");
 
@@ -70,6 +70,12 @@ if (args.Contains("--migrate-only"))
         await db.Database.MigrateAsync();
     }
     return;
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BidDbContext>();
+    await db.Database.MigrateAsync();
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];

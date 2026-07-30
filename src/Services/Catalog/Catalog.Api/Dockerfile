@@ -4,7 +4,7 @@
 # ==============================================================================
 
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy centralized build files
@@ -39,7 +39,7 @@ RUN dotnet publish "Catalog.Api.csproj" \
     --self-contained false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 # Security: Run as non-root user

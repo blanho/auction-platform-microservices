@@ -3,8 +3,11 @@
 # Multi-stage build for optimized production image
 # =============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
 
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
@@ -29,7 +32,7 @@ RUN dotnet publish "Job.Api.csproj" \
     --runtime linux-musl-x64 \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 RUN addgroup -g 1000 appgroup && \

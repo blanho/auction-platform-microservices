@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Notification.Infrastructure.Persistence.Migrations
+namespace Payment.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -36,60 +36,43 @@ namespace Notification.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NotificationPreferences",
+                name: "Orders",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: false),
-                    EmailEnabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    PushEnabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    BidUpdates = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    AuctionUpdates = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    PromotionalEmails = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    SystemAlerts = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    AuctionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BuyerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BuyerUsername = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    SellerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SellerUsername = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    ItemTitle = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    WinningBid = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    ShippingCost = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    PlatformFee = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    PaymentStatus = table.Column<int>(type: "integer", nullable: false),
+                    PaymentTransactionId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ShippingAddress = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    TrackingNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ShippingCarrier = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PaidAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ShippedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeliveredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    BuyerNotes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    SellerNotes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationPreferences", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: false),
-                    Username = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Message = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
-                    HtmlContent = table.Column<string>(type: "text", nullable: true),
-                    Data = table.Column<string>(type: "text", nullable: false, defaultValue: ""),
-                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
-                    Channels = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    AuctionId = table.Column<Guid>(type: "uuid", nullable: true),
-                    BidId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OrderId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ReferenceId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.PrimaryKey("PK_Orders", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,74 +92,47 @@ namespace Notification.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Records",
+                name: "Wallets",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TemplateKey = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Channel = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Subject = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Recipient = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    ErrorMessage = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    SentAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ExternalId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Records", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Templates",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Key = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    Subject = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Body = table.Column<string>(type: "character varying(10000)", maxLength: 10000, nullable: false),
-                    SmsBody = table.Column<string>(type: "character varying(160)", maxLength: 160, nullable: true),
-                    PushTitle = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    PushBody = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Username = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    HeldAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false, defaultValue: "USD"),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Templates", x => x.Id);
+                    table.PrimaryKey("PK_Wallets", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserNotifications",
+                name: "WalletTransactions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: false),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Message = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
-                    Link = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    AuctionId = table.Column<Guid>(type: "uuid", nullable: true),
-                    BidId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OrderId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Balance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReferenceType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PaymentMethod = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ExternalTransactionId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ProcessedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -187,7 +143,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserNotifications", x => x.Id);
+                    table.PrimaryKey("PK_WalletTransactions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -238,30 +194,35 @@ namespace Notification.Infrastructure.Persistence.Migrations
                 column: "Delivered");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationPreferences_UserId",
-                table: "NotificationPreferences",
-                column: "UserId",
+                name: "IX_Orders_AuctionId",
+                table: "Orders",
+                column: "AuctionId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_CreatedAt",
-                table: "Notifications",
+                name: "IX_Orders_BuyerUsername",
+                table: "Orders",
+                column: "BuyerUsername");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_CreatedAt",
+                table: "Orders",
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_Status",
-                table: "Notifications",
+                name: "IX_Orders_PaymentStatus",
+                table: "Orders",
+                column: "PaymentStatus");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_SellerUsername",
+                table: "Orders",
+                column: "SellerUsername");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_Status",
+                table: "Orders",
                 column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId",
-                table: "Notifications",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId_Status",
-                table: "Notifications",
-                columns: new[] { "UserId", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_EnqueueTime",
@@ -291,82 +252,56 @@ namespace Notification.Infrastructure.Persistence.Migrations
                 column: "Created");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Records_CreatedAt",
-                table: "Records",
-                column: "CreatedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Records_Status",
-                table: "Records",
-                column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Records_TemplateKey",
-                table: "Records",
-                column: "TemplateKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Records_UserId",
-                table: "Records",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Records_UserId_Status",
-                table: "Records",
-                columns: new[] { "UserId", "Status" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Templates_IsActive",
-                table: "Templates",
+                name: "IX_Wallets_IsActive",
+                table: "Wallets",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Templates_Key",
-                table: "Templates",
-                column: "Key",
+                name: "IX_Wallets_Username",
+                table: "Wallets",
+                column: "Username",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserNotifications_CreatedAt",
-                table: "UserNotifications",
+                name: "IX_WalletTransactions_CreatedAt",
+                table: "WalletTransactions",
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserNotifications_IsRead",
-                table: "UserNotifications",
-                column: "IsRead");
+                name: "IX_WalletTransactions_ReferenceId",
+                table: "WalletTransactions",
+                column: "ReferenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserNotifications_UserId",
-                table: "UserNotifications",
-                column: "UserId");
+                name: "IX_WalletTransactions_Status",
+                table: "WalletTransactions",
+                column: "Status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserNotifications_UserId_IsRead",
-                table: "UserNotifications",
-                columns: new[] { "UserId", "IsRead" });
+                name: "IX_WalletTransactions_Type",
+                table: "WalletTransactions",
+                column: "Type");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WalletTransactions_Username",
+                table: "WalletTransactions",
+                column: "Username");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "NotificationPreferences");
-
-            migrationBuilder.DropTable(
-                name: "Notifications");
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "OutboxMessage");
 
             migrationBuilder.DropTable(
-                name: "Records");
+                name: "Wallets");
 
             migrationBuilder.DropTable(
-                name: "Templates");
-
-            migrationBuilder.DropTable(
-                name: "UserNotifications");
+                name: "WalletTransactions");
 
             migrationBuilder.DropTable(
                 name: "InboxState");

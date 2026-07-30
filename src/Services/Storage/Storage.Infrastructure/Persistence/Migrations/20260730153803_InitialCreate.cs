@@ -1,45 +1,20 @@
-using MassTransit;
-using Microsoft.Extensions.Logging;
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Analytics.Infrastructure.Persistence.Migrations
+namespace Storage.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddFactUserFact : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "fact_users",
-                schema: "analytics",
-                columns: table => new
-                {
-                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EventTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IngestedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    DateKey = table.Column<DateOnly>(type: "date", nullable: false),
-                    Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    EventType = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
-                    EventVersion = table.Column<short>(type: "smallint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_fact_users", x => x.EventId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "InboxState",
-                schema: "public",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -63,7 +38,6 @@ namespace Analytics.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateTable(
                 name: "OutboxState",
-                schema: "public",
                 columns: table => new
                 {
                     OutboxId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -79,8 +53,37 @@ namespace Analytics.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StoredFiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    StoredFileName = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ContentType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    Url = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    SubFolder = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Provider = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Checksum = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    Metadata = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoredFiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OutboxMessage",
-                schema: "public",
                 columns: table => new
                 {
                     SequenceNumber = table.Column<long>(type: "bigint", nullable: false)
@@ -112,92 +115,88 @@ namespace Analytics.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "FK_OutboxMessage_InboxState_InboxMessageId_InboxConsumerId",
                         columns: x => new { x.InboxMessageId, x.InboxConsumerId },
-                        principalSchema: "public",
                         principalTable: "InboxState",
                         principalColumns: new[] { "MessageId", "ConsumerId" });
                     table.ForeignKey(
                         name: "FK_OutboxMessage_OutboxState_OutboxId",
                         column: x => x.OutboxId,
-                        principalSchema: "public",
                         principalTable: "OutboxState",
                         principalColumn: "OutboxId");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_fact_users_DateKey",
-                schema: "analytics",
-                table: "fact_users",
-                column: "DateKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_fact_users_EventTime",
-                schema: "analytics",
-                table: "fact_users",
-                column: "EventTime");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_fact_users_UserId",
-                schema: "analytics",
-                table: "fact_users",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_InboxState_Delivered",
-                schema: "public",
                 table: "InboxState",
                 column: "Delivered");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_EnqueueTime",
-                schema: "public",
                 table: "OutboxMessage",
                 column: "EnqueueTime");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_ExpirationTime",
-                schema: "public",
                 table: "OutboxMessage",
                 column: "ExpirationTime");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_InboxMessageId_InboxConsumerId_SequenceNumber",
-                schema: "public",
                 table: "OutboxMessage",
                 columns: new[] { "InboxMessageId", "InboxConsumerId", "SequenceNumber" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_OutboxId_SequenceNumber",
-                schema: "public",
                 table: "OutboxMessage",
                 columns: new[] { "OutboxId", "SequenceNumber" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxState_Created",
-                schema: "public",
                 table: "OutboxState",
                 column: "Created");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoredFiles_CreatedAt",
+                table: "StoredFiles",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoredFiles_OwnerId",
+                table: "StoredFiles",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoredFiles_OwnerId_Status",
+                table: "StoredFiles",
+                columns: new[] { "OwnerId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoredFiles_Status",
+                table: "StoredFiles",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StoredFiles_StoredFileName",
+                table: "StoredFiles",
+                column: "StoredFileName",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "fact_users",
-                schema: "analytics");
+                name: "OutboxMessage");
 
             migrationBuilder.DropTable(
-                name: "OutboxMessage",
-                schema: "public");
+                name: "StoredFiles");
 
             migrationBuilder.DropTable(
-                name: "InboxState",
-                schema: "public");
+                name: "InboxState");
 
             migrationBuilder.DropTable(
-                name: "OutboxState",
-                schema: "public");
+                name: "OutboxState");
         }
     }
 }

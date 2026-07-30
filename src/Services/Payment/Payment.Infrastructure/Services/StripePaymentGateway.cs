@@ -196,32 +196,27 @@ public class StripePaymentGateway : IPaymentGateway
         string signature,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var stripeEvent = EventUtility.ConstructEvent(json, signature, _options.WebhookSecret);
+        var stripeEvent = EventUtility.ConstructEvent(json, signature, _options.WebhookSecret);
 
-            _logger.LogInformation("Processing Stripe webhook event: {EventType}", stripeEvent.Type);
+        _logger.LogInformation(
+            "Processing Stripe webhook event {StripeEventId} of type {EventType}",
+            stripeEvent.Id,
+            stripeEvent.Type);
 
-            switch (stripeEvent.Type)
-            {
-                case StripeEventTypes.PaymentIntentSucceeded:
-                    await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
-                    break;
-                case StripeEventTypes.PaymentIntentPaymentFailed:
-                    await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
-                    break;
-                case StripeEventTypes.CheckoutSessionCompleted:
-                    await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
-                    break;
-                default:
-                    _logger.LogInformation("Unhandled event type: {EventType}", stripeEvent.Type);
-                    break;
-            }
-        }
-        catch (StripeException ex)
+        switch (stripeEvent.Type)
         {
-            _logger.LogError(ex, "Stripe webhook error");
-            throw;
+            case StripeEventTypes.PaymentIntentSucceeded:
+                await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
+                break;
+            case StripeEventTypes.PaymentIntentPaymentFailed:
+                await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
+                break;
+            case StripeEventTypes.CheckoutSessionCompleted:
+                await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
+                break;
+            default:
+                _logger.LogInformation("Unhandled event type: {EventType}", stripeEvent.Type);
+                break;
         }
     }
 
@@ -234,7 +229,15 @@ public class StripePaymentGateway : IPaymentGateway
         var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
         if (order == null) return;
 
-        order.CompletePayment(paymentIntent.Id);
+        if (!order.CompletePayment(paymentIntent.Id))
+        {
+            _logger.LogInformation(
+                "Ignoring duplicate payment success for order {OrderId}, PaymentIntent {PaymentIntentId}",
+                order.Id,
+                paymentIntent.Id);
+            return;
+        }
+
         await _orderRepository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -250,7 +253,15 @@ public class StripePaymentGateway : IPaymentGateway
         var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
         if (order == null) return;
 
-        order.ChangeStatus(OrderStatus.Cancelled);
+        if (!order.MarkPaymentFailed())
+        {
+            _logger.LogInformation(
+                "Ignoring duplicate or stale payment failure for order {OrderId}, PaymentIntent {PaymentIntentId}",
+                order.Id,
+                paymentIntent.Id);
+            return;
+        }
+
         await _orderRepository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -266,7 +277,15 @@ public class StripePaymentGateway : IPaymentGateway
         var order = await ResolveOrderFromMetadata(session.Metadata, cancellationToken);
         if (order == null) return;
 
-        order.CompletePayment(session.PaymentIntentId);
+        if (!order.CompletePayment(session.PaymentIntentId))
+        {
+            _logger.LogInformation(
+                "Ignoring duplicate checkout completion for order {OrderId}, Session {SessionId}",
+                order.Id,
+                session.Id);
+            return;
+        }
+
         await _orderRepository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

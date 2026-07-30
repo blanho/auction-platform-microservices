@@ -58,6 +58,12 @@ if (args.Contains("--migrate-only"))
     return;
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))
 {

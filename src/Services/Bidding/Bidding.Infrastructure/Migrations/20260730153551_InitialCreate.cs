@@ -30,7 +30,8 @@ namespace Bidding.Infrastructure.Migrations
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,14 +49,14 @@ namespace Bidding.Infrastructure.Migrations
                     Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     BidTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -174,7 +175,7 @@ namespace Bidding.Infrastructure.Migrations
                 table: "Bids",
                 columns: new[] { "AuctionId", "Amount" },
                 unique: true,
-                filter: "\"IsDeleted\" = false AND \"Status\" = 1");
+                filter: "\"IsDeleted\" = false AND \"Status\" IN (1, 2)");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bids_AuctionId_BidTime",

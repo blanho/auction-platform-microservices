@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Gateway.Api.Extensions;
 
@@ -14,11 +15,16 @@ public static class AuthenticationExtensions
         if (string.IsNullOrEmpty(identityAuthority))
             return services;
 
+        var secretKey = configuration["Identity:SecretKey"];
         var isLocalDevelopment = environment.IsDevelopment() || environment.EnvironmentName == "Local";
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                options.Authority = identityAuthority;
+                if (string.IsNullOrEmpty(secretKey))
+                {
+                    options.Authority = identityAuthority;
+                }
+
                 options.RequireHttpsMetadata = !isLocalDevelopment;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -27,6 +33,10 @@ public static class AuthenticationExtensions
                     ValidateAudience = true,
                     ValidAudience = "auctionApp",
                     ValidateLifetime = true,
+                    ValidateIssuerSigningKey = !string.IsNullOrEmpty(secretKey),
+                    IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
+                        ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                        : null,
                     ClockSkew = TimeSpan.FromMinutes(1),
                     NameClaimType = "name",
                     RoleClaimType = "role"

@@ -1,6 +1,7 @@
 using Jobs.Api.Extensions.DependencyInjection;
 using Jobs.Application.Resources;
 using Jobs.Infrastructure.Extensions;
+using Jobs.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
@@ -9,6 +10,7 @@ using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
 using BuildingBlocks.Application.Extensions;
 using Carter;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,12 @@ builder.Services.AddCustomHealthChecks(
     serviceName: "JobService");
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<JobDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
 if (!string.IsNullOrWhiteSpace(pathBase))

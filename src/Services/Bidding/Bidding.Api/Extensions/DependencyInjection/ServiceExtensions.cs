@@ -34,6 +34,7 @@ namespace Bidding.Api.Extensions.DependencyInjection
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
             services.AddScoped<IBidService, BidPlacementService>();
+            services.AddScoped<IAuctionBidLock, PostgresAuctionBidLock>();
             services.AddScoped<IAutoBidService, AutoBidService>();
             services.AddScoped<IAuctionSnapshotRepository, CachedAuctionSnapshotRepository>();
 

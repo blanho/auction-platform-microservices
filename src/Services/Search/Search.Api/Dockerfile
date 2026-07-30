@@ -3,14 +3,21 @@
 # Multi-stage build for optimized production image
 # ==============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+COPY ["Directory.Build.props", "./"]
+COPY ["Directory.Packages.props", "./"]
 
 # Copy project files for restore
 COPY ["src/BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "src/BuildingBlocks/BuildingBlocks.Domain/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj", "src/BuildingBlocks/BuildingBlocks.Application/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj", "src/BuildingBlocks/BuildingBlocks.Infrastructure/"]
 COPY ["src/BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj", "src/BuildingBlocks/BuildingBlocks.Web/"]
+COPY ["src/Contracts/Common.Contracts/Common.Contracts.csproj", "src/Contracts/Common.Contracts/"]
+COPY ["src/Services/Search/Search.Domain/Search.Domain.csproj", "src/Services/Search/Search.Domain/"]
+COPY ["src/Services/Search/Search.Application/Search.Application.csproj", "src/Services/Search/Search.Application/"]
+COPY ["src/Services/Search/Search.Infrastructure/Search.Infrastructure.csproj", "src/Services/Search/Search.Infrastructure/"]
 COPY ["src/Services/Search/Search.Api/Search.Api.csproj", "src/Services/Search/Search.Api/"]
 COPY ["src/Services/Auction/Auction.Contracts/AuctionService.Contracts.csproj", "src/Services/Auction/Auction.Contracts/"]
 COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
@@ -32,7 +39,7 @@ RUN dotnet publish "Search.Api.csproj" \
     --self-contained false
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 
 # Security: Run as non-root user

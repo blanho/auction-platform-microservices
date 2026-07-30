@@ -27,20 +27,21 @@ public class PaymentWebhookEndpoints : ICarterModule
         var json = await new StreamReader(httpContext.Request.Body).ReadToEndAsync(cancellationToken);
         var stripeSignature = httpContext.Request.Headers["Stripe-Signature"].ToString();
 
+        if (string.IsNullOrWhiteSpace(stripeSignature))
+        {
+            logger.LogWarning("Rejected Stripe webhook without a signature");
+            return TypedResults.BadRequest();
+        }
+
         try
         {
             await stripePaymentService.HandleWebhookAsync(json, stripeSignature, cancellationToken);
             return TypedResults.Ok();
         }
-        catch (StripeException ex) when (ex.Message.Contains("signature") || ex.Message.Contains("Signature"))
-        {
-            logger.LogWarning(ex, "Invalid Stripe webhook signature - will not retry");
-            return TypedResults.BadRequest();
-        }
         catch (StripeException ex)
         {
-            logger.LogError(ex, "Stripe error processing webhook - will retry");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            logger.LogWarning(ex, "Rejected invalid Stripe webhook payload or signature");
+            return TypedResults.BadRequest();
         }
         catch (Exception ex)
         {

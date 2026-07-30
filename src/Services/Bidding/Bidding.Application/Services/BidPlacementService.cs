@@ -15,6 +15,7 @@ namespace Bidding.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedLock _distributedLock;
         private readonly IAuctionGrpcClient _auctionGrpcClient;
+        private readonly IAuctionBidLock _auctionBidLock;
 
         public BidPlacementService(
             IBidRepository repository,
@@ -23,7 +24,8 @@ namespace Bidding.Application.Services
             IDateTimeProvider dateTime,
             IUnitOfWork unitOfWork,
             IDistributedLock distributedLock,
-            IAuctionGrpcClient auctionGrpcClient)
+            IAuctionGrpcClient auctionGrpcClient,
+            IAuctionBidLock auctionBidLock)
         {
             _repository = repository;
             _snapshotRepository = snapshotRepository;
@@ -32,6 +34,7 @@ namespace Bidding.Application.Services
             _unitOfWork = unitOfWork;
             _distributedLock = distributedLock;
             _auctionGrpcClient = auctionGrpcClient;
+            _auctionBidLock = auctionBidLock;
         }
 
         public async Task<BidDto> PlaceBidAsync(PlaceBidDto dto, Guid bidderId, string bidderUsername, CancellationToken cancellationToken = default)
@@ -80,20 +83,26 @@ namespace Bidding.Application.Services
             if (auctionError != null)
                 return auctionError;
 
-            var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, ct);
-            var currentHighBid = highestBid?.Amount ?? 0;
+            return await _auctionBidLock.ExecuteAsync(
+                dto.AuctionId,
+                async lockCt =>
+                {
+                    var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, lockCt);
+                    var currentHighBid = highestBid?.Amount ?? 0;
 
-            if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
-                return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
+                    if (!IsValidBidIncrement(dto.Amount, currentHighBid, out var incrementError))
+                        return CreateBidTooLow(dto, bidderId, bidderUsername, incrementError);
 
-            var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, reservePrice, ct);
-            if (bid.Status == BidStatus.Rejected.ToString())
-                return bid;
+                    var bid = await CreateAndSaveBid(dto, bidderId, bidderUsername, isAutoBid, highestBid, reservePrice, lockCt);
+                    if (bid.Status == BidStatus.Rejected.ToString())
+                        return bid;
 
-            _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
-                bid.Id, dto.AuctionId, bid.Status);
+                    _logger.LogInformation("Bid {BidId} placed for auction {AuctionId} with status {Status}",
+                        bid.Id, dto.AuctionId, bid.Status);
 
-            return bid;
+                    return bid;
+                },
+                ct);
         }
 
         private bool IsValidBidIncrement(decimal amount, decimal currentHighBid, out string errorMessage)
