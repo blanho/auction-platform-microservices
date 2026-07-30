@@ -24,20 +24,25 @@ import { formatTimeLeft } from '../utils'
 import { useAuctions, useActiveCategories } from '../hooks'
 import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
 import { palette, typography } from '@/shared/theme/tokens'
+import { AUCTION_SORT_CONFIG, type AuctionSortOption } from '../constants'
 
 export const AuctionsListPage = () => {
   const { t } = useTranslation('auctions')
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const category = useMemo(() => searchParams.get('categoryId') ?? 'all', [searchParams])
-  const [sortBy, setSortBy] = useState('ending-soon')
+  const [sortBy, setSortBy] = useState<AuctionSortOption>('ending-soon')
   const [page, setPage] = useState(1)
   const { data: categoriesData } = useActiveCategories()
   const categories = useMemo(() => categoriesData ?? [], [categoriesData])
+  const selectedCategory = categories.find((item) => item.id === category)
+  const sort = AUCTION_SORT_CONFIG[sortBy]
 
   const { data, isLoading, isError, refetch } = useAuctions({
-    search: searchQuery || undefined,
-    categoryId: category === 'all' ? undefined : category,
+    searchTerm: searchQuery || undefined,
+    category: selectedCategory?.name,
+    orderBy: sort.orderBy,
+    descending: sort.descending,
     page,
     pageSize: 12,
   })
@@ -286,6 +291,7 @@ export const AuctionsListPage = () => {
                 searchParams.set('categoryId', value)
               }
               setSearchParams(searchParams)
+              setPage(1)
             }}
           >
             <MenuItem value="all">{t('filter.allCategories')}</MenuItem>
@@ -302,7 +308,10 @@ export const AuctionsListPage = () => {
           <Select
             value={sortBy}
             label={t('filter.sortBy')}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => {
+              setSortBy(e.target.value as AuctionSortOption)
+              setPage(1)
+            }}
           >
             <MenuItem value="ending-soon">{t('sort.endingSoon')}</MenuItem>
             <MenuItem value="newest">{t('sort.newest')}</MenuItem>

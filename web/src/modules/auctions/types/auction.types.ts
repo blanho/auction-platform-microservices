@@ -2,6 +2,8 @@ export interface Auction {
   id: string
   title: string
   description: string
+  condition?: string
+  yearManufactured?: number
   startingPrice: number
   currentBid: number
   reservePrice?: number
@@ -63,8 +65,8 @@ export interface AuctionSellerInfo {
   username: string
   displayName: string
   avatarUrl?: string
-  rating: number
-  totalSales: number
+  rating?: number
+  totalSales?: number
   reviewCount?: number
 }
 

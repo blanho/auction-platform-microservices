@@ -24,6 +24,8 @@
     "condition": "Condition",
     "status": "Status",
     "sortBy": "Sort By",
+    "gridView": "Grid view",
+    "listView": "List view",
     "minPrice": "Min Price",
     "maxPrice": "Max Price",
     "clearAll": "Clear All Filters",

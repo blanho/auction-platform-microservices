@@ -3,12 +3,13 @@
  * This layer prevents contract drift and provides a single place for field mapping
  */
 
+import type { BackendAuctionDto, BackendAuctionFileDto } from '../types/backend-dto.types'
 import type {
-  BackendAuctionDto,
-  BackendAuctionFileDto,
-  BackendAuctionListDto,
-} from '../types/backend-dto.types'
-import type { Auction, AuctionImage, AuctionListItem, AuctionStatus } from '../types/auction.types'
+  AuctionDetails,
+  AuctionImage,
+  AuctionListItem,
+  AuctionStatus,
+} from '../types/auction.types'
 
 const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/files'
 
@@ -53,7 +54,7 @@ function isEndingSoon(endTime: string, status: string): boolean {
 function mapAuctionFile(file: BackendAuctionFileDto): AuctionImage {
   return {
     id: file.fileId,
-    url: `${STORAGE_BASE_URL}/files/${file.fileId}`,
+    url: `${STORAGE_BASE_URL}/${file.fileId}`,
     alt: '',
     isPrimary: file.isPrimary,
     order: file.displayOrder,
@@ -63,13 +64,15 @@ function mapAuctionFile(file: BackendAuctionFileDto): AuctionImage {
 /**
  * Maps full BackendAuctionDto to frontend Auction type
  */
-export function mapAuctionDto(dto: BackendAuctionDto): Auction {
+export function mapAuctionDto(dto: BackendAuctionDto): AuctionDetails {
   const baseStatus = mapAuctionStatus(dto.status)
 
   return {
     id: dto.id,
     title: dto.title,
     description: dto.description,
+    condition: dto.condition,
+    yearManufactured: dto.yearManufactured,
     startingPrice: dto.reservePrice,
     currentBid: dto.currentHighBid ?? dto.reservePrice,
     reservePrice: dto.reservePrice,
@@ -86,14 +89,26 @@ export function mapAuctionDto(dto: BackendAuctionDto): Auction {
     watcherCount: 0, // Not in backend DTO
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
+    seller: {
+      id: dto.sellerId,
+      username: dto.seller,
+      displayName: dto.seller,
+    },
+    category: {
+      id: dto.categoryId ?? '',
+      name: dto.categoryName ?? '',
+    },
+    bids: [],
+    isWatching: false,
   }
 }
 
 /**
- * Maps BackendAuctionListDto to frontend AuctionListItem
+ * Maps the backend auction DTO to the compact card model.
  */
-export function mapAuctionListDto(dto: BackendAuctionListDto): AuctionListItem {
+export function mapAuctionListDto(dto: BackendAuctionDto): AuctionListItem {
   const baseStatus = mapAuctionStatus(dto.status)
+  const primaryFile = dto.files.find((file) => file.isPrimary) ?? dto.files[0]
 
   return {
     id: dto.id,
@@ -102,10 +117,10 @@ export function mapAuctionListDto(dto: BackendAuctionListDto): AuctionListItem {
     startingPrice: dto.reservePrice,
     status: isEndingSoon(dto.auctionEnd, dto.status) ? 'ending-soon' : baseStatus,
     endTime: dto.auctionEnd,
-    bidCount: dto.bidCount ?? 0,
+    bidCount: 0,
     categoryName: dto.categoryName ?? '',
     sellerName: dto.seller ?? '',
-    primaryImageUrl: dto.primaryImageUrl,
+    primaryImageUrl: primaryFile ? `${STORAGE_BASE_URL}/${primaryFile.fileId}` : undefined,
   }
 }
 
@@ -237,6 +252,6 @@ export function mapNotificationStatus(status: string | number): string {
 /**
  * Maps array of auction list DTOs
  */
-export function mapAuctionListDtos(dtos: BackendAuctionListDto[]): AuctionListItem[] {
+export function mapAuctionListDtos(dtos: BackendAuctionDto[]): AuctionListItem[] {
   return dtos.map(mapAuctionListDto)
 }

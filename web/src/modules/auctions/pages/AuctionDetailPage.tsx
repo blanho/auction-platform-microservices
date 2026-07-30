@@ -20,7 +20,7 @@ import {
   Button,
   CircularProgress,
 } from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
+import { ErrorState, InlineAlert } from '@/shared/ui'
 import {
   NavigateNext,
   Visibility,
@@ -39,15 +39,23 @@ import { useAuction } from '../hooks'
 import { useRecordView } from '../hooks/useViews'
 import { useAuctionSignalR } from '../hooks/useAuctionSignalR'
 import { useAuctionDetailActions } from '../hooks/useAuctionDetailActions'
-import { useAutoBidForAuction } from '@/modules/bidding/hooks'
+import { useAutoBidForAuction, useBidsForAuction } from '@/modules/bidding/hooks'
 import { useAuth } from '@/app/providers'
 
 export function AuctionDetailPage() {
   const { t } = useTranslation('auctions')
   const { id } = useParams<{ id: string }>()
-  const { data: auction, isLoading } = useAuction(id ?? '')
+  const { data: auction, isLoading, isError, refetch } = useAuction(id ?? '')
   const { isAuthenticated } = useAuth()
   const { data: autoBid } = useAutoBidForAuction(id, isAuthenticated && !isLoading)
+  const { data: bidsData } = useBidsForAuction(id ?? '')
+  const bids =
+    bidsData?.items.map((bid) => ({
+      id: bid.id,
+      amount: bid.amount,
+      bidderName: bid.bidderUsername,
+      createdAt: bid.bidTime,
+    })) ?? []
   const recordView = useRecordView()
   const hasRecordedView = useRef(false)
 
@@ -56,12 +64,13 @@ export function AuctionDetailPage() {
     buyNowDialogOpen,
     setBuyNowDialogOpen,
     buyNowMutation,
+    isInWatchlist,
     handleToggleFavorite,
     handleShare,
     handlePlaceBid,
     handleBuyNow,
     confirmBuyNow,
-  } = useAuctionDetailActions(id, auction)
+  } = useAuctionDetailActions(id)
 
   useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
 
@@ -73,6 +82,9 @@ export function AuctionDetailPage() {
   }, [id, isLoading, auction, recordView])
 
   if (isLoading || !auction) {
+    if (isError) {
+      return <ErrorState onRetry={() => void refetch()} showHomeButton />
+    }
     return <AuctionDetailPageSkeleton />
   }
 
@@ -112,7 +124,7 @@ export function AuctionDetailPage() {
             <ImageGallery
               images={auction.images}
               title={auction.title}
-              isFavorite={auction.isWatching}
+              isFavorite={isInWatchlist}
               onToggleFavorite={handleToggleFavorite}
               onShare={handleShare}
             />
@@ -215,7 +227,7 @@ export function AuctionDetailPage() {
                 currentBid={auction.currentBid}
                 startingPrice={auction.startingPrice}
                 buyNowPrice={auction.buyNowPrice}
-                bidCount={auction.bidCount}
+                bidCount={Math.max(auction.bidCount, bids.length)}
                 endTime={auction.endTime}
                 status={auction.status}
                 userBid={auction.userBid}
@@ -239,26 +251,12 @@ export function AuctionDetailPage() {
         <Box sx={{ mt: 6 }}>
           <ProductTabs
             description={auction.description}
-            bids={auction.bids}
+            bids={bids}
             specifications={{
-              Dimensions: '78"W x 18"D x 32"H',
-              Material: 'Solid Teak',
-              Era: '1960s',
-              Origin: 'Denmark',
-              Condition: 'Professionally Restored',
-              Style: 'Mid-Century Modern',
-            }}
-            shippingInfo={{
-              method: 'White Glove Delivery',
-              cost: 250,
-              estimatedDays: '7-14 business days',
-              locations: ['United States', 'Canada'],
-            }}
-            returnPolicy={{
-              accepted: true,
-              period: 14,
-              conditions:
-                'Item must be returned in original condition. Buyer responsible for return shipping costs. Refund will be processed within 5 business days of receiving the item.',
+              ...(auction.condition ? { Condition: auction.condition } : {}),
+              ...(auction.yearManufactured
+                ? { 'Year manufactured': String(auction.yearManufactured) }
+                : {}),
             }}
           />
         </Box>
@@ -310,7 +308,11 @@ export function AuctionDetailPage() {
                 color: palette.brand.primary,
               }}
             >
-              {auction?.buyNowPrice?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
+              {auction?.buyNowPrice?.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+              })}
             </Typography>
           </Box>
         </DialogContent>

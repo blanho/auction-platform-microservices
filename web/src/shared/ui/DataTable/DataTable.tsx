@@ -13,7 +13,8 @@ import {
 } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material'
 import { staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { TableSkeletonRows, TableEmptyStateRow } from '@/shared/ui'
+import { TableEmptyStateRow } from '../TableEmptyStateRow'
+import { TableSkeletonRows } from '../TableSkeletonRows'
 import { SortableTableHeader } from './SortableTableHeader'
 import { TablePagination } from './TablePagination'
 import type { ColumnConfig } from '@/shared/types/filter.types'
@@ -144,6 +145,17 @@ export function DataTable<T extends { id?: string }>({
     [onRowClick]
   )
 
+  const handleRowKeyDown = useCallback(
+    (row: T, index: number, event: React.KeyboardEvent) => {
+      if (!onRowClick || (event.key !== 'Enter' && event.key !== ' ')) {
+        return
+      }
+      event.preventDefault()
+      onRowClick(row, index)
+    },
+    [onRowClick]
+  )
+
   const getCellValue = useCallback((row: T, key: string): unknown => {
     const keys = key.split('.')
     let value: unknown = row
@@ -195,6 +207,8 @@ export function DataTable<T extends { id?: string }>({
         hover={rowHover}
         selected={selectable && selectedIds.includes(getId(row))}
         onClick={(e: React.MouseEvent) => handleRowClick(row, rowIndex, e)}
+        onKeyDown={(event: React.KeyboardEvent) => handleRowKeyDown(row, rowIndex, event)}
+        tabIndex={onRowClick ? 0 : undefined}
         sx={{
           cursor: onRowClick ? 'pointer' : 'default',
           '&:last-child td, &:last-child th': { border: 0 },
@@ -203,6 +217,7 @@ export function DataTable<T extends { id?: string }>({
         {selectable && (
           <TableCell padding="checkbox">
             <Checkbox
+              inputProps={{ 'aria-label': `Select row ${rowIndex + 1}` }}
               checked={selectedIds.includes(getId(row))}
               onChange={() => handleSelectRow(row)}
               onClick={(e) => e.stopPropagation()}
@@ -256,6 +271,7 @@ export function DataTable<T extends { id?: string }>({
               {selectable && (
                 <TableCell padding="checkbox">
                   <Checkbox
+                    inputProps={{ 'aria-label': 'Select all rows on this page' }}
                     indeterminate={someSelected}
                     checked={allSelected}
                     onChange={handleSelectAll}

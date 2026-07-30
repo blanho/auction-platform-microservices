@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Grid,
-  Chip,
   Rating,
   LinearProgress,
   Tabs,
@@ -18,16 +17,8 @@ import {
   Divider,
   Stack,
   Skeleton,
-  Button,
 } from '@mui/material'
-import {
-  Verified,
-  Star,
-  Storefront,
-  CalendarMonth,
-  LocalShipping,
-  ThumbUp,
-} from '@mui/icons-material'
+import { Star, Storefront } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { useReviewsForUser, useUserRatingSummary } from '../hooks/useReviews'
@@ -346,7 +337,7 @@ export function SellerProfilePage() {
   )
   const { data: reviews, isLoading: reviewsLoading } = useReviewsForUser(sellerId ?? '')
   const { data: auctionsData, isLoading: auctionsLoading } = useAuctions({
-    sellerId,
+    seller: sellerId,
     page: 1,
     pageSize: 12,
     status: 'active',
@@ -365,16 +356,6 @@ export function SellerProfilePage() {
         label: 'Active Listings',
         value: auctionsData?.totalCount ?? 0,
         icon: <Storefront />,
-      },
-      {
-        label: 'Response Rate',
-        value: '98%',
-        icon: <ThumbUp />,
-      },
-      {
-        label: 'Avg. Ship Time',
-        value: '2-3 days',
-        icon: <LocalShipping />,
       },
     ],
     [ratingSummary, auctionsData]
@@ -420,12 +401,6 @@ export function SellerProfilePage() {
                     <Typography variant="h4" fontWeight={700}>
                       {sellerId}
                     </Typography>
-                    <Chip
-                      icon={<Verified sx={{ fontSize: 16 }} />}
-                      label="Verified Seller"
-                      size="small"
-                      color="primary"
-                    />
                   </Stack>
 
                   <Stack
@@ -451,23 +426,7 @@ export function SellerProfilePage() {
                       </>
                     )}
                   </Stack>
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    mt={2}
-                    color="text.secondary"
-                    justifyContent={{ xs: 'center', md: 'flex-start' }}
-                  >
-                    <CalendarMonth sx={{ fontSize: 18 }} />
-                    <Typography variant="body2">Member since January 2024</Typography>
-                  </Stack>
                 </Box>
-
-                <Button variant="outlined" color="primary">
-                  Contact Seller
-                </Button>
               </Stack>
             </CardContent>
           </Card>
@@ -476,7 +435,7 @@ export function SellerProfilePage() {
         <motion.div variants={staggerItem}>
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {stats.map((stat) => (
-              <Grid size={{ xs: 6, md: 3 }} key={stat.label}>
+              <Grid size={{ xs: 6, md: 6 }} key={stat.label}>
                 <Card variant="outlined">
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Box

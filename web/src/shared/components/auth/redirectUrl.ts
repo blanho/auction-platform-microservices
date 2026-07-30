@@ -1,11 +1,18 @@
 const REDIRECT_KEY = 'auction_redirect_url'
 
+export function isSafeInternalRedirect(url: string | null): url is string {
+  return Boolean(url?.startsWith('/') && !url.startsWith('//') && !url.includes('\\'))
+}
+
 export function saveRedirectUrl(url: string) {
-  sessionStorage.setItem(REDIRECT_KEY, url)
+  if (isSafeInternalRedirect(url)) {
+    sessionStorage.setItem(REDIRECT_KEY, url)
+  }
 }
 
 export function getRedirectUrl(): string | null {
-  return sessionStorage.getItem(REDIRECT_KEY)
+  const url = sessionStorage.getItem(REDIRECT_KEY)
+  return isSafeInternalRedirect(url) ? url : null
 }
 
 export function clearRedirectUrl(): void {
@@ -15,5 +22,5 @@ export function clearRedirectUrl(): void {
 export function getAndClearRedirectUrl(): string | null {
   const url = sessionStorage.getItem(REDIRECT_KEY)
   sessionStorage.removeItem(REDIRECT_KEY)
-  return url
+  return isSafeInternalRedirect(url) ? url : null
 }

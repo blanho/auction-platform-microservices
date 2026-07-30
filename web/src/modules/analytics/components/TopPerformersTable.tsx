@@ -15,7 +15,7 @@ import { useState } from 'react'
 import { EmojiEvents, TrendingUp, Gavel, ShoppingCart } from '@mui/icons-material'
 import { motion } from 'framer-motion'
 import { useTopPerformers } from '../hooks/useAnalytics'
-import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
+import { formatCurrency } from '@/shared/utils/formatters'
 import { palette } from '@/shared/theme/tokens'
 
 interface TabPanelProps {
@@ -238,7 +238,7 @@ export function TopPerformersTable() {
                 name={seller.username ?? `Seller ${index + 1}`}
                 primaryValue={formatCurrency(seller.totalSales ?? 0)}
                 secondaryValue={t('analytics.order_other', {
-                  count: formatNumber(seller.orderCount ?? 0),
+                  count: seller.orderCount ?? 0,
                 })}
                 badge={index === 0 ? t('analytics.topSeller') : undefined}
               />
@@ -261,7 +261,7 @@ export function TopPerformersTable() {
                 name={buyer.username ?? `Buyer ${index + 1}`}
                 primaryValue={formatCurrency(buyer.totalSpent ?? 0)}
                 secondaryValue={t('analytics.auctionWon_other', {
-                  count: formatNumber(buyer.auctionsWon ?? 0),
+                  count: buyer.auctionsWon ?? 0,
                 })}
                 badge={index === 0 ? t('analytics.topBuyer') : undefined}
               />
@@ -284,7 +284,7 @@ export function TopPerformersTable() {
                 name={auction.title ?? `Auction ${index + 1}`}
                 primaryValue={formatCurrency(auction.finalPrice ?? 0)}
                 secondaryValue={t('analytics.bidCount_other', {
-                  count: formatNumber(auction.bidCount ?? 0),
+                  count: auction.bidCount ?? 0,
                 })}
                 badge={index === 0 ? t('analytics.mostPopular') : undefined}
               />

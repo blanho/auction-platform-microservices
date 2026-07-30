@@ -19,7 +19,7 @@ export function OAuthCallbackPage() {
   const urlError = useMemo(() => {
     const error = searchParams.get('error')
     if (error) {
-      return decodeURIComponent(error)
+      return error
     }
     const code = searchParams.get('code')
     if (!code) {
@@ -31,14 +31,16 @@ export function OAuthCallbackPage() {
   const errorMessage = mutationError ?? urlError
 
   useEffect(() => {
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined
+
     if (hasProcessedRef.current) {
       return
     }
 
     if (urlError) {
       hasProcessedRef.current = true
-      setTimeout(() => navigate('/login', { replace: true }), 3000)
-      return
+      redirectTimer = setTimeout(() => navigate('/login', { replace: true }), 3000)
+      return () => clearTimeout(redirectTimer)
     }
 
     const code = searchParams.get('code')
@@ -53,9 +55,15 @@ export function OAuthCallbackPage() {
       },
       onError: (err) => {
         setMutationError(getErrorMessage(err))
-        setTimeout(() => navigate('/login', { replace: true }), 3000)
+        redirectTimer = setTimeout(() => navigate('/login', { replace: true }), 3000)
       },
     })
+
+    return () => {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer)
+      }
+    }
   }, [searchParams, navigate, exchangeMutation, urlError])
 
   return (

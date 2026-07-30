@@ -16,17 +16,6 @@ interface CreateReviewFormProps {
   onCancel?: () => void
 }
 
-const getRatingLabel = (value: number) => {
-  const labels: Record<number, string> = {
-    1: t('review.ratingPoor'),
-    2: t('review.ratingFair'),
-    3: t('review.ratingGood'),
-    4: t('review.ratingVeryGood'),
-    5: t('review.ratingExcellent'),
-  }
-  return labels[value] ?? ''
-}
-
 export function CreateReviewForm({
   auctionId,
   reviewedUserId,
@@ -43,8 +32,16 @@ export function CreateReviewForm({
   const [error, setError] = useState<string | null>(null)
 
   const createReview = useCreateReview()
+  const ratingLabels: Record<number, string> = {
+    1: t('review.ratingPoor'),
+    2: t('review.ratingFair'),
+    3: t('review.ratingGood'),
+    4: t('review.ratingVeryGood'),
+    5: t('review.ratingExcellent'),
+  }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     if (!rating) {
       setError(t('review.selectRatingError'))
       return
@@ -76,6 +73,9 @@ export function CreateReviewForm({
 
   return (
     <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
       sx={{
         p: 3,
         bgcolor: palette.neutral[50],
@@ -106,6 +106,7 @@ export function CreateReviewForm({
         </Typography>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Rating
+            name="review-rating"
             value={rating}
             onChange={(_, value) => setRating(value)}
             onChangeActive={(_, value) => setHover(value)}
@@ -118,7 +119,7 @@ export function CreateReviewForm({
           />
           {(rating !== null || hover >= 0) && (
             <Typography sx={{ color: palette.brand.primary, fontWeight: 500 }}>
-              {getRatingLabel(hover >= 0 ? hover : (rating ?? 0))}
+              {ratingLabels[hover >= 0 ? hover : (rating ?? 0)] ?? ''}
             </Typography>
           )}
         </Stack>
@@ -150,18 +151,19 @@ export function CreateReviewForm({
       <Stack direction="row" spacing={2} justifyContent="flex-end">
         {onCancel && (
           <Button
+            type="button"
             onClick={onCancel}
             sx={{
               color: palette.neutral[500],
               textTransform: 'none',
             }}
           >
-            Cancel
+            {t('cancel')}
           </Button>
         )}
         <Button
+          type="submit"
           variant="contained"
-          onClick={handleSubmit}
           disabled={createReview.isPending}
           sx={{
             bgcolor: palette.brand.primary,
