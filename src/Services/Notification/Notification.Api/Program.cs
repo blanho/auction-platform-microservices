@@ -102,10 +102,18 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
@@ -135,4 +143,4 @@ app.MapCarter();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
 
-app.Run();
+await app.RunAsync();

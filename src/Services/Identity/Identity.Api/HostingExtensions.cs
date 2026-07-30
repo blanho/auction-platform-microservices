@@ -4,7 +4,6 @@ using BuildingBlocks.Web.Middleware;
 using BuildingBlocks.Web.Observability;
 using BuildingBlocks.Web.OpenApi;
 using Carter;
-using Identity.Infrastructure.Persistence;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
 using Serilog;
@@ -59,12 +58,6 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
-        using (var scope = app.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            db.Database.Migrate();
-        }
-
         app.UseCorrelationIdLogging();
         app.UseCorrelationId();
         app.UseSerilogRequestLogging();

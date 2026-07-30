@@ -1,36 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notification-api
+  name: catalog-api
   namespace: auction-platform
   labels:
-    app: notification-api
+    app: catalog-api
     tier: backend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: notification-api
+      app: catalog-api
   template:
     metadata:
       labels:
-        app: notification-api
+        app: catalog-api
         tier: backend
     spec:
       serviceAccountName: auction-service-account
-      priorityClassName: auction-low
+      priorityClassName: auction-normal
       terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
       containers:
-        - name: notification-api
-          image: auction-platform/notification-api:latest
+        - name: catalog-api
+          image: auction-platform/catalog-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               name: http
+            - containerPort: 8081
+              name: grpc
           envFrom:
             - configMapRef:
                 name: auction-platform-config
@@ -41,57 +43,35 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: auction-platform-secrets
-                  key: NOTIFICATION_DB_CONNECTION
-            - name: ConnectionStrings__Redis
-              valueFrom:
-                secretKeyRef:
-                  name: auction-platform-secrets
-                  key: REDIS_CONNECTION
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "Production"
-            - name: ASPNETCORE_URLS
-              value: "http://+:8080"
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh", "-c", "sleep 5"]
+                  key: CATALOG_DB_CONNECTION
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: 256Mi
+              cpu: 100m
             limits:
-              memory: "512Mi"
-              cpu: "500m"
-          livenessProbe:
-            httpGet:
-              path: /health/live
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /health/ready
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 3
+              memory: 512Mi
+              cpu: 500m
           startupProbe:
             httpGet:
               path: /health/live
               port: 8080
-            initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 5
             failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            periodSeconds: 5
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
-              drop:
-                - ALL
+              drop: [ALL]
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -102,30 +82,32 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: notification-api
+  name: catalog-api
   namespace: auction-platform
   labels:
-    app: notification-api
+    app: catalog-api
 spec:
   type: ClusterIP
-  ports:
-    - port: 80
-      targetPort: 8080
-      protocol: TCP
-      name: http
   selector:
-    app: notification-api
+    app: catalog-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: grpc
+      port: 81
+      targetPort: 8081
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: notification-api-hpa
+  name: catalog-api-hpa
   namespace: auction-platform
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: notification-api
+    name: catalog-api
   minReplicas: 2
   maxReplicas: 6
   metrics:

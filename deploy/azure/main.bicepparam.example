@@ -1,0 +1,8 @@
+using './main.bicep'
+
+param namePrefix = 'auction'
+param environment = 'prod'
+param location = 'southeastasia'
+param postgresqlAdministratorLogin = 'auctionadmin'
+param deployManagedRedis = true
+param githubRepository = 'your-github-owner/auction-platform-microservices'

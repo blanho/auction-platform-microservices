@@ -1,4 +1,5 @@
 #nullable enable
+using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -14,7 +15,7 @@ public class AzureBlobStorageService : IFileStorageService
 {
     private readonly BlobContainerClient _containerClient;
     private readonly BlobServiceClient _blobServiceClient;
-    private readonly string _connectionString;
+    private readonly StorageSharedKeyCredential? _sharedKeyCredential;
     private readonly RecyclableMemoryStreamManager _streamManager;
     private readonly ILogger<AzureBlobStorageService> _logger;
 
@@ -26,8 +27,22 @@ public class AzureBlobStorageService : IFileStorageService
         _logger = logger;
         _streamManager = streamManager;
         var blobSettings = settings.Value.AzureBlob;
-        _connectionString = blobSettings.ConnectionString;
-        _blobServiceClient = new BlobServiceClient(_connectionString);
+        if (!string.IsNullOrWhiteSpace(blobSettings.ConnectionString))
+        {
+            _blobServiceClient = new BlobServiceClient(blobSettings.ConnectionString);
+            _sharedKeyCredential = ParseStorageSharedKeyCredential(blobSettings.ConnectionString);
+        }
+        else if (Uri.TryCreate(blobSettings.ServiceUri, UriKind.Absolute, out var serviceUri))
+        {
+            _blobServiceClient = new BlobServiceClient(serviceUri, new DefaultAzureCredential());
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "Azure Blob storage requires FileStorage:AzureBlob:ConnectionString " +
+                "or FileStorage:AzureBlob:ServiceUri.");
+        }
+
         _containerClient = _blobServiceClient.GetBlobContainerClient(blobSettings.ContainerName);
     }
 
@@ -139,14 +154,6 @@ public class AzureBlobStorageService : IFileStorageService
         var blobPath = $"{subFolder}/{storedFileName}";
 
         var blobClient = _containerClient.GetBlobClient(blobPath);
-        var credential = ParseStorageSharedKeyCredential(_connectionString);
-
-        if (credential is null)
-        {
-            _logger.LogWarning("Cannot generate SAS token — connection string does not contain account key");
-            return null;
-        }
-
         var expiresAt = DateTimeOffset.UtcNow.AddMinutes(15);
         var sasBuilder = new BlobSasBuilder
         {
@@ -157,7 +164,7 @@ public class AzureBlobStorageService : IFileStorageService
         };
         sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
 
-        var sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
+        var sasToken = await GenerateSasQueryAsync(sasBuilder, expiresAt, cancellationToken);
         var uploadUrl = $"{blobClient.Uri}?{sasToken}";
 
         var headers = new Dictionary<string, string>
@@ -189,13 +196,6 @@ public class AzureBlobStorageService : IFileStorageService
             return null;
         }
 
-        var credential = ParseStorageSharedKeyCredential(_connectionString);
-        if (credential is null)
-        {
-            _logger.LogWarning("Cannot generate SAS token — connection string does not contain account key");
-            return null;
-        }
-
         var properties = await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
         var expiresAt = DateTimeOffset.UtcNow.Add(expiry ?? TimeSpan.FromHours(1));
 
@@ -208,7 +208,7 @@ public class AzureBlobStorageService : IFileStorageService
         };
         sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
-        var sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
+        var sasToken = await GenerateSasQueryAsync(sasBuilder, expiresAt, cancellationToken);
         var downloadUrl = $"{blobClient.Uri}?{sasToken}";
 
         var originalName = properties.Value.Metadata.TryGetValue("OriginalFileName", out var name)
@@ -239,6 +239,28 @@ public class AzureBlobStorageService : IFileStorageService
         }
 
         return null;
+    }
+
+    private async Task<string> GenerateSasQueryAsync(
+        BlobSasBuilder sasBuilder,
+        DateTimeOffset expiresAt,
+        CancellationToken cancellationToken)
+    {
+        if (_sharedKeyCredential is not null)
+        {
+            return sasBuilder.ToSasQueryParameters(_sharedKeyCredential).ToString();
+        }
+
+        var startsAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+        sasBuilder.StartsOn = startsAt;
+        var delegationKey = await _blobServiceClient.GetUserDelegationKeyAsync(
+            startsAt,
+            expiresAt,
+            cancellationToken);
+
+        return sasBuilder
+            .ToSasQueryParameters(delegationKey.Value, _blobServiceClient.AccountName)
+            .ToString();
     }
 
 }

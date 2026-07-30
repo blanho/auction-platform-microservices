@@ -1,4 +1,4 @@
-name: CD Pipeline
+name: Azure CD
 
 on:
   workflow_run:
@@ -7,253 +7,187 @@ on:
     types: [completed]
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
+      deploy:
+        description: 'Deploy the built images to production AKS'
         required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository_owner }}/auction-platform
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
+  ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
+  KEY_VAULT_NAME: ${{ vars.KEY_VAULT_NAME }}
+  SECRETS_IDENTITY_CLIENT_ID: ${{ vars.SECRETS_IDENTITY_CLIENT_ID }}
+  STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
+  STORAGE_IDENTITY_CLIENT_ID: ${{ vars.STORAGE_IDENTITY_CLIENT_ID }}
+  API_DOMAIN: ${{ vars.API_DOMAIN }}
+  WEB_DOMAIN: ${{ vars.WEB_DOMAIN }}
+  CERT_MANAGER_EMAIL: ${{ vars.CERT_MANAGER_EMAIL }}
 
 jobs:
   build-images:
-    name: Build Docker Images
+    name: Build ${{ matrix.service.name }}
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    permissions:
-      contents: read
-      packages: write
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
     strategy:
+      fail-fast: false
       matrix:
         service:
-          - name: identity-api
-            context: .
-            dockerfile: src/Services/Identity/Identity.Api/Dockerfile
-          - name: auction-api
-            context: .
-            dockerfile: src/Services/Auction/Auction.Api/Dockerfile
-          - name: bidding-api
-            context: .
-            dockerfile: src/Services/Bidding/Bidding.Api/Dockerfile
-          - name: payment-api
-            context: .
-            dockerfile: src/Services/Payment/Payment.Api/Dockerfile
-          - name: notification-api
-            context: .
-            dockerfile: src/Services/Notification/Notification.Api/Dockerfile
-          - name: analytics-api
-            context: .
-            dockerfile: src/Services/Analytics/Analytics.Api/Dockerfile
-          - name: search-api
-            context: .
-            dockerfile: src/Services/Search/Search.Api/Dockerfile
-          - name: storage-api
-            context: .
-            dockerfile: src/Services/Storage/Storage.Api/Dockerfile
-          - name: job-api
-            context: .
-            dockerfile: src/Services/Job/Job.Api/Dockerfile
-          - name: gateway-api
-            context: .
-            dockerfile: src/Gateway/Gateway.Api/Dockerfile
-    outputs:
-      image-tag: ${{ steps.meta.outputs.version }}
+          - { name: identity-api, dockerfile: src/Services/Identity/Identity.Api/Dockerfile }
+          - { name: catalog-api, dockerfile: src/Services/Catalog/Catalog.Api/Dockerfile }
+          - { name: auction-api, dockerfile: src/Services/Auction/Auction.Api/Dockerfile }
+          - { name: bidding-api, dockerfile: src/Services/Bidding/Bidding.Api/Dockerfile }
+          - { name: payment-api, dockerfile: src/Services/Payment/Payment.Api/Dockerfile }
+          - { name: notification-api, dockerfile: src/Services/Notification/Notification.Api/Dockerfile }
+          - { name: analytics-api, dockerfile: src/Services/Analytics/Analytics.Api/Dockerfile }
+          - { name: search-api, dockerfile: src/Services/Search/Search.Api/Dockerfile }
+          - { name: storage-api, dockerfile: src/Services/Storage/Storage.Api/Dockerfile }
+          - { name: job-api, dockerfile: src/Services/Job/Job.Api/Dockerfile }
+          - { name: gateway-api, dockerfile: src/Gateway/Gateway.Api/Dockerfile }
+          - { name: web, dockerfile: web/Dockerfile }
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Determine commit SHA
-        id: vars
+      - name: Determine source revision
+        id: revision
+        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
             SHA="${{ github.event.workflow_run.head_sha }}"
           else
             SHA="${{ github.sha }}"
           fi
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "tag=${SHA:0:12}" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ steps.revision.outputs.sha }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Azure login with OIDC
+        uses: azure/login@v2
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
-          tags: |
-            type=raw,value=${{ steps.vars.outputs.short_sha }}
-            type=ref,event=branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - name: Login to ACR
+        run: az acr login --name "${ACR_LOGIN_SERVER%%.*}"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push immutable image
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.service.dockerfile }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ env.ACR_LOGIN_SERVER }}/auction-platform/${{ matrix.service.name }}:${{ steps.revision.outputs.tag }}
           build-args: |
-            VERSION=${{ github.run_number }}
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: build-images
-    environment:
-      name: staging
-      url: https://staging.auction-platform.com
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.28.0'
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > ~/.kube/config
-
-      - name: Determine image tag
-        id: vars
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            SHA="${{ github.event.workflow_run.head_sha }}"
-          else
-            SHA="${{ github.sha }}"
-          fi
-          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
-
-      - name: Deploy to Kubernetes
-        run: |
-          IMAGE_TAG="${{ steps.vars.outputs.short_sha }}"
-          REGISTRY="${{ env.REGISTRY }}"
-          PREFIX="${{ env.IMAGE_PREFIX }}"
-
-          cd deploy/kubernetes
-
-          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
-          MANIFEST=$(kubectl kustomize overlays/staging)
-
-          for service in "${SERVICES[@]}"; do
-            MANIFEST=$(echo "$MANIFEST" | sed "s|image: auction-platform/${service}:.*|image: ${REGISTRY}/${PREFIX}/${service}:${IMAGE_TAG}|g")
-          done
-
-          echo "$MANIFEST" | kubectl apply -f -
-
-          kubectl rollout status deployment -n auction-platform-staging --timeout=300s
-
-      - name: Run smoke tests
-        run: |
-          SERVICES=(identity-api auction-api bidding-api payment-api gateway-api)
-          FAILED=0
-
-          for service in "${SERVICES[@]}"; do
-            READY=$(kubectl get deploy "staging-${service}" -n auction-platform-staging -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
-            if [[ "$READY" -lt 1 ]]; then
-              echo "❌ staging-${service} has no ready replicas"
-              FAILED=1
-            else
-              echo "✅ staging-${service} is ready (${READY} replicas)"
-            fi
-          done
-
-          if [[ $FAILED -eq 1 ]]; then
-            echo "::error::Smoke tests failed"
-            exit 1
-          fi
+            VITE_API_URL=/api
+          cache-from: type=gha,scope=${{ matrix.service.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
 
   deploy-production:
-    name: Deploy to Production
+    name: Deploy production AKS
     runs-on: ubuntu-latest
-    needs: deploy-staging
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    needs: build-images
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy
     environment:
       name: production
-      url: https://auction-platform.com
+      url: https://${{ vars.WEB_DOMAIN }}
     steps:
+      - name: Determine source revision
+        id: revision
+        shell: bash
+        run: |
+          SHA="${{ github.sha }}"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "tag=${SHA:0:12}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.28.0'
+          ref: ${{ steps.revision.outputs.sha }}
 
-      - name: Configure kubeconfig
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/setup-kubectl@v4
+
+      - uses: azure/setup-helm@v4
+
+      - name: Connect to AKS
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+          az aks get-credentials \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AKS_CLUSTER_NAME" \
+            --overwrite-existing
 
-      - name: Determine image tag
-        id: vars
+      - name: Install cluster prerequisites
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            SHA="${{ github.event.workflow_run.head_sha }}"
-          else
-            SHA="${{ github.sha }}"
-          fi
-          echo "short_sha=${SHA:0:7}" >> $GITHUB_OUTPUT
+          helm repo add external-secrets https://charts.external-secrets.io
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+          helm upgrade --install external-secrets external-secrets/external-secrets \
+            --namespace external-secrets \
+            --create-namespace \
+            --wait \
+            --timeout 5m
+          helm upgrade --install cert-manager jetstack/cert-manager \
+            --namespace cert-manager \
+            --create-namespace \
+            --set crds.enabled=true \
+            --wait \
+            --timeout 5m
 
-      - name: Deploy to Kubernetes
+      - name: Render production manifests
+        env:
+          IMAGE_TAG: ${{ steps.revision.outputs.tag }}
+        run: deploy/azure/render-kubernetes.sh > "$RUNNER_TEMP/auction-production.yaml"
+
+      - name: Apply, migrate, and roll out
         run: |
-          IMAGE_TAG="${{ steps.vars.outputs.short_sha }}"
-          REGISTRY="${{ env.REGISTRY }}"
-          PREFIX="${{ env.IMAGE_PREFIX }}"
+          kubectl delete jobs \
+            -n auction-platform \
+            -l app.kubernetes.io/part-of=auction-platform \
+            --ignore-not-found
 
-          cd deploy/kubernetes
+          kubectl apply -f "$RUNNER_TEMP/auction-production.yaml"
 
-          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
-          MANIFEST=$(kubectl kustomize overlays/production)
+          kubectl wait \
+            --namespace auction-platform \
+            --for=condition=Ready \
+            externalsecret/auction-platform-secrets \
+            --timeout=5m
 
-          for service in "${SERVICES[@]}"; do
-            MANIFEST=$(echo "$MANIFEST" | sed "s|image: .*/${service}:[^ ]*|image: ${REGISTRY}/${PREFIX}/${service}:${IMAGE_TAG}|g")
-          done
+          kubectl wait \
+            --namespace auction-platform \
+            --for=condition=complete \
+            jobs \
+            -l app.kubernetes.io/part-of=auction-platform \
+            --timeout=10m
 
-          echo "$MANIFEST" | kubectl apply -f -
+          kubectl rollout status deployment \
+            --all \
+            --namespace auction-platform \
+            --timeout=10m
 
-          for deployment in "${SERVICES[@]}"; do
-            echo "Rolling out $deployment..."
-            kubectl rollout status deployment/$deployment -n auction-platform --timeout=300s
-          done
-
-      - name: Verify deployment
+      - name: Smoke test
         run: |
-          SERVICES=(identity-api auction-api bidding-api payment-api gateway-api)
-
-          for service in "${SERVICES[@]}"; do
-            READY=$(kubectl get deploy "${service}" -n auction-platform -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
-            if [[ "$READY" -lt 1 ]]; then
-              echo "${service} has no ready replicas"
-              exit 1
-            fi
-            echo "${service} is ready (${READY} replicas)"
-          done
-
-      - name: Notify on success
-        if: success()
-        run: echo "Production deployment successful!"
-
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          echo "Deployment failed, initiating rollback..."
-          SERVICES=(identity-api auction-api bidding-api payment-api notification-api analytics-api search-api storage-api job-api gateway-api)
-          for deployment in "${SERVICES[@]}"; do
-            kubectl rollout undo deployment/$deployment -n auction-platform || true
-          done
+          curl --fail --retry 12 --retry-all-errors --retry-delay 10 \
+            "https://${API_DOMAIN}/health/ready"
+          curl --fail --retry 12 --retry-all-errors --retry-delay 10 \
+            "https://${WEB_DOMAIN}/"

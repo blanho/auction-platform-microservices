@@ -6,7 +6,6 @@ metadata:
   labels:
     app: auction-platform
   annotations:
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
@@ -14,10 +13,14 @@ metadata:
     nginx.ingress.kubernetes.io/websocket-services: "notification-api"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
   tls:
     - hosts:
         - api.auction-platform.com
       secretName: auction-platform-tls
+    - hosts:
+        - auction-platform.com
+      secretName: auction-platform-web-tls
   rules:
     - host: api.auction-platform.com
       http:
@@ -27,6 +30,16 @@ spec:
             backend:
               service:
                 name: gateway-api
+                port:
+                  number: 80
+    - host: auction-platform.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
                 port:
                   number: 80
 ---
@@ -44,6 +57,44 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: allow-web-traffic
+  namespace: auction-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: web
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from: []
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: gateway-api
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: allow-gateway-ingress
   namespace: auction-platform
 spec:
@@ -52,11 +103,34 @@ spec:
       app: gateway-api
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - from: []
       ports:
         - protocol: TCP
           port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

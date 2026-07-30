@@ -44,10 +44,18 @@ builder.Services.AddCustomHealthChecks(
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+var migrateOnly = args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase);
+var autoMigrate = builder.Configuration.GetValue("Database:AutoMigrate", !app.Environment.IsProduction());
+if (migrateOnly || autoMigrate)
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<JobDbContext>();
     await db.Database.MigrateAsync();
+}
+
+if (migrateOnly)
+{
+    return;
 }
 
 var pathBase = builder.Configuration["PathBase"] ?? builder.Configuration["ASPNETCORE_PATHBASE"];
@@ -74,6 +82,6 @@ if (app.Environment.IsDevelopment())
     app.UseCommonSwaggerUI("Job Service");
 }
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program { }

@@ -22,18 +22,19 @@ resources:
   - services/search-api.yaml
   - services/storage-api.yaml
   - services/job-api.yaml
+  - services/catalog-api.yaml
   - services/gateway-api.yaml
+  - services/web.yaml
   - services/pdb.yaml
+  - migrations.yaml
   - infrastructure/postgres.yaml
   - infrastructure/redis.yaml
   - infrastructure/rabbitmq.yaml
   - infrastructure/elasticsearch.yaml
-  - infrastructure/jaeger.yaml
-  - infrastructure/seq.yaml
-  - infrastructure/rate-limiting.yaml
-  - monitoring/service-monitors.yaml
   - ingress.yaml
 
-commonLabels:
-  app.kubernetes.io/part-of: auction-platform
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: auction-platform
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: true

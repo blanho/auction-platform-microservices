@@ -16,8 +16,9 @@ spec:
       labels:
         app: storage-api
         tier: backend
+        azure.workload.identity/use: "true"
     spec:
-      serviceAccountName: auction-service-account
+      serviceAccountName: storage-service-account
       priorityClassName: auction-low
       terminationGracePeriodSeconds: 30
       securityContext:
@@ -37,6 +38,11 @@ spec:
             - secretRef:
                 name: auction-platform-secrets
           env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: auction-platform-secrets
+                  key: STORAGE_DB_CONNECTION
             - name: ASPNETCORE_ENVIRONMENT
               value: "Production"
             - name: ASPNETCORE_URLS
@@ -85,28 +91,9 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-            - name: uploads
-              mountPath: /app/uploads
       volumes:
         - name: tmp
           emptyDir: {}
-        - name: uploads
-          persistentVolumeClaim:
-            claimName: storage-uploads-pvc
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: storage-uploads-pvc
-  namespace: auction-platform
-  labels:
-    app: storage-api
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
 ---
 apiVersion: v1
 kind: Service

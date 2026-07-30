@@ -6,11 +6,83 @@ namespace: auction-platform
 resources:
   - ../../base
   - external-secrets.yaml
+  - cluster-issuer.yaml
+  - azure-egress.yaml
 
-commonLabels:
-  environment: production
+labels:
+  - pairs:
+      environment: production
+    includeSelectors: true
 
 patches:
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: auction-platform-secrets
+        namespace: auction-platform
+    target:
+      kind: Secret
+      name: auction-platform-secrets
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: identity-signing-keys
+        namespace: auction-platform
+    target:
+      kind: Secret
+      name: identity-signing-keys
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: postgres
+        namespace: auction-platform
+    target:
+      kind: StatefulSet
+      name: postgres
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgres
+        namespace: auction-platform
+    target:
+      kind: Service
+      name: postgres
+  - patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: redis
+        namespace: auction-platform
+    target:
+      kind: StatefulSet
+      name: redis
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: redis
+        namespace: auction-platform
+    target:
+      kind: Service
+      name: redis
+  - patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          azure.workload.identity/client-id: REPLACE_WITH_STORAGE_IDENTITY_CLIENT_ID
+    target:
+      kind: ServiceAccount
+      name: storage-service-account
   - patch: |-
       - op: replace
         path: /spec/replicas
@@ -43,56 +115,64 @@ patches:
       labelSelector: tier=backend
   - patch: |-
       - op: replace
-        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
-        value: 100Gi
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/requests/memory
-        value: 2Gi
-      - op: replace
-        path: /spec/template/spec/containers/0/resources/limits/memory
-        value: 4Gi
-    target:
-      kind: StatefulSet
-      name: postgres
-  - patch: |-
-      - op: replace
         path: /data/ASPNETCORE_ENVIRONMENT
         value: Production
       - op: replace
         path: /data/Logging__MinimumLevel
         value: Warning
+      - op: replace
+        path: /data/Identity__Authority
+        value: https://REPLACE_WITH_API_DOMAIN/identity
+      - op: replace
+        path: /data/Identity__IssuerUri
+        value: https://REPLACE_WITH_API_DOMAIN/identity
+      - op: replace
+        path: /data/FileStorage__AzureBlob__ServiceUri
+        value: https://REPLACE_WITH_STORAGE_ACCOUNT.blob.core.windows.net
+      - op: add
+        path: /data/Cors__AllowedOrigins__0
+        value: https://REPLACE_WITH_WEB_DOMAIN
+      - op: add
+        path: /data/FrontendUrl
+        value: https://REPLACE_WITH_WEB_DOMAIN
     target:
       kind: ConfigMap
       name: auction-platform-config
 
 images:
   - name: auction-platform/auction-api
-    newName: ghcr.io/blanho/auction-platform/auction-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/auction-api
     newTag: v1.0.0
   - name: auction-platform/bidding-api
-    newName: ghcr.io/blanho/auction-platform/bidding-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/bidding-api
     newTag: v1.0.0
   - name: auction-platform/payment-api
-    newName: ghcr.io/blanho/auction-platform/payment-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/payment-api
     newTag: v1.0.0
   - name: auction-platform/notification-api
-    newName: ghcr.io/blanho/auction-platform/notification-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/notification-api
     newTag: v1.0.0
   - name: auction-platform/identity-api
-    newName: ghcr.io/blanho/auction-platform/identity-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/identity-api
     newTag: v1.0.0
   - name: auction-platform/analytics-api
-    newName: ghcr.io/blanho/auction-platform/analytics-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/analytics-api
     newTag: v1.0.0
   - name: auction-platform/search-api
-    newName: ghcr.io/blanho/auction-platform/search-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/search-api
     newTag: v1.0.0
   - name: auction-platform/storage-api
-    newName: ghcr.io/blanho/auction-platform/storage-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/storage-api
     newTag: v1.0.0
   - name: auction-platform/job-api
-    newName: ghcr.io/blanho/auction-platform/job-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/job-api
+    newTag: v1.0.0
+  - name: auction-platform/catalog-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/catalog-api
     newTag: v1.0.0
   - name: auction-platform/gateway-api
-    newName: ghcr.io/blanho/auction-platform/gateway-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/gateway-api
+    newTag: v1.0.0
+  - name: auction-platform/web
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/web
     newTag: v1.0.0
