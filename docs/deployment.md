@@ -51,7 +51,7 @@ The `deploy/docker/docker-compose.yml` file defines the complete local stack.
 
 The `deploy/docker/scripts/init-databases.sh` script runs on first PostgreSQL startup. It creates per-service databases:
 - `auction_db`, `bid_db`, `payment_db`, `notification_db`
-- `identity_db`, `analytics_db`, `storage_db`, `job_db`
+- `identity_db`, `analytics_db`, `storage_db`, `job_db`, `catalog_db`
 
 ### Commands
 
@@ -87,22 +87,26 @@ Stage 1: SDK image → restore, build, publish
 Stage 2: ASP.NET runtime image → copy published output, run
 ```
 
+Runtime images run as non-root users. Base images are pinned by digest, publish
+framework-dependent artifacts for the target architecture, and receive OCI
+version/revision labels from the CD workflow. The web image serves the Vite
+bundle from Nginx on port `8080` as UID `101`.
+
 ### Image Registry
 
-Production images are published to **GitHub Container Registry (GHCR)**:
+Production images are published to the Azure Container Registry configured by
+the `ACR_LOGIN_SERVER` GitHub variable:
 
 ```
-ghcr.io/blanho/auction-platform/auction-api:v1.0.0
-ghcr.io/blanho/auction-platform/bidding-api:v1.0.0
-ghcr.io/blanho/auction-platform/payment-api:v1.0.0
-ghcr.io/blanho/auction-platform/notification-api:v1.0.0
-ghcr.io/blanho/auction-platform/identity-api:v1.0.0
-ghcr.io/blanho/auction-platform/analytics-api:v1.0.0
-ghcr.io/blanho/auction-platform/search-api:v1.0.0
-ghcr.io/blanho/auction-platform/storage-api:v1.0.0
-ghcr.io/blanho/auction-platform/job-api:v1.0.0
-ghcr.io/blanho/auction-platform/gateway-api:v1.0.0
+<acr>.azurecr.io/auction-platform/auction-api:<12-char-git-sha>
+<acr>.azurecr.io/auction-platform/bidding-api:<12-char-git-sha>
+<acr>.azurecr.io/auction-platform/catalog-api:<12-char-git-sha>
+<acr>.azurecr.io/auction-platform/gateway-api:<12-char-git-sha>
+<acr>.azurecr.io/auction-platform/web:<12-char-git-sha>
 ```
+
+The same immutable tag format is used for Identity, Payment, Notification,
+Analytics, Search, Storage, and Job images.
 
 ### Building Images Locally
 
@@ -133,10 +137,12 @@ graph TB
                 PAY["payment-api"]
                 NOT["notification-api"]
                 IDN["identity-api"]
+                CAT["catalog-api"]
                 SRC["search-api"]
                 STR["storage-api"]
                 ANA["analytics-api"]
                 JOB["job-api"]
+                WEB["web"]
             end
 
             subgraph StatefulSets["StatefulSets"]
@@ -152,16 +158,12 @@ graph TB
                 PC["PriorityClasses"]
             end
 
-            subgraph Mon["Monitoring"]
-                SM["ServiceMonitors<br/>(Prometheus)"]
-            end
         end
     end
 
     ING --> GW
     GW --> Deployments
     Deployments --> StatefulSets
-    SM --> Deployments
 ```
 
 ---
@@ -184,22 +186,20 @@ deploy/kubernetes/
 │   │   ├── payment-api.yaml
 │   │   ├── notification-api.yaml
 │   │   ├── identity-api.yaml
+│   │   ├── catalog-api.yaml
 │   │   ├── analytics-api.yaml
 │   │   ├── search-api.yaml
 │   │   ├── storage-api.yaml
 │   │   ├── job-api.yaml
 │   │   ├── gateway-api.yaml
+│   │   ├── web.yaml
 │   │   └── pdb.yaml                   # PodDisruptionBudgets for all services
+│   ├── migrations.yaml                # One-shot EF Core migration Jobs
 │   ├── infrastructure/
 │   │   ├── postgres.yaml              # StatefulSet + PVC
 │   │   ├── redis.yaml                 # Deployment
 │   │   ├── rabbitmq.yaml              # StatefulSet
-│   │   ├── elasticsearch.yaml         # StatefulSet
-│   │   ├── jaeger.yaml                # Deployment (tracing)
-│   │   ├── seq.yaml                   # Deployment (logging)
-│   │   └── rate-limiting.yaml         # Rate limiting config
-│   └── monitoring/
-│       └── service-monitors.yaml      # Prometheus ServiceMonitor resources
+│   │   └── elasticsearch.yaml         # StatefulSet
 │
 └── overlays/
     ├── dev/
@@ -207,7 +207,7 @@ deploy/kubernetes/
     ├── staging/
     │   └── kustomization.yaml         # Moderate resources, staging config
     └── production/
-        ├── kustomization.yaml         # Full resources, GHCR images, replicas
+        ├── kustomization.yaml         # ACR images, production replicas and patches
         └── external-secrets.yaml      # ExternalSecrets for credential management
 ```
 
@@ -219,7 +219,7 @@ deploy/kubernetes/
 
 - `kubectl` configured with cluster access
 - Kustomize (built into kubectl v1.14+)
-- Container images pushed to GHCR
+- Container images pushed to the configured Azure Container Registry
 
 ### Deploy to Development
 
@@ -235,8 +235,15 @@ kubectl apply -k deploy/kubernetes/overlays/staging
 
 ### Deploy to Production
 
+Use the manually approved **Azure CD** workflow described in
+[`deploy/azure/README.md`](../deploy/azure/README.md). Do not deploy production
+with one undifferentiated `kubectl apply -k`: application Deployments must not
+roll out until the migration Jobs have completed.
+
+For inspection only, render the production overlay locally:
+
 ```bash
-kubectl apply -k deploy/kubernetes/overlays/production
+kubectl kustomize deploy/kubernetes/overlays/production > /tmp/auction-production.yaml
 ```
 
 ### Verify Deployment
@@ -259,7 +266,10 @@ kubectl describe pod -n auction-platform <pod-name>
 
 ## Production Configuration
 
-Production-specific settings are in `deploy/config/appsettings.Production.template.json`:
+Production defaults live in each service's tracked
+`appsettings.Production.json`. Shared Kubernetes values are supplied by
+`deploy/kubernetes/base/configmap.yaml`, while secrets come from the production
+ExternalSecret and Azure Key Vault.
 
 ### Logging
 - Minimum level: **Warning** (not Debug/Information)
@@ -300,9 +310,11 @@ graph TD
     CI --> SONAR["sonarcloud.yml<br/>Quality gate"]
     Test --> |Pass| CD["cd.yml"]
     SONAR --> |Pass| CD
-    CD --> Docker["Build Docker images"]
-    Docker --> Push["Push to GHCR"]
-    Push --> Deploy["Deploy to K8s"]
+    CD --> Docker["Build digest-pinned images"]
+    Docker --> Push["Push immutable SHA tags to ACR"]
+    Push --> Foundation["Apply foundation + wait for secrets"]
+    Foundation --> Migrate["Run and await migration Jobs"]
+    Migrate --> Deploy["Roll out applications"]
 ```
 
 ### Workflow Details
@@ -324,9 +336,10 @@ graph TD
 - Quality gate timeout: 300 seconds
 
 **cd.yml** (Continuous Deployment)
-- Triggered by: Successful CI
-- Steps: Build Docker images for all services, push to GHCR, deploy to Kubernetes
-- Tags images with commit SHA and version
+- Builds images after successful CI and supports a manually approved production deployment
+- Pushes all service and web images to ACR with immutable 12-character commit SHA tags
+- Applies foundation resources, waits for External Secrets, runs migration Jobs, and only then rolls out Deployments
+- Adds OCI image version and revision metadata during the build
 
 **scheduled.yml** (Security)
 - Triggered on: Cron schedule
@@ -346,7 +359,7 @@ graph TD
 
 ### Kubernetes Production
 - **ExternalSecrets** (`production/external-secrets.yaml`)
-- Credentials stored in external secret manager (e.g., Azure Key Vault, AWS Secrets Manager)
+- Credentials stored in Azure Key Vault
 - ExternalSecrets operator syncs them into Kubernetes Secrets
 
 ### Required Secrets
@@ -411,7 +424,14 @@ PostgreSQL is a StatefulSet with persistent storage. For production:
 
 ### Migrations
 
-EF Core migrations are applied automatically on service startup in development. For production, run migrations manually or as an init container:
+EF Core migrations are applied automatically on service startup in development.
+Production uses the one-shot Jobs in `deploy/kubernetes/base/migrations.yaml`.
+The CD workflow deletes completed migration Jobs from the preceding deployment,
+applies the newly rendered Jobs, and waits for every Job to complete before
+applying application Deployments. A failed or timed-out migration stops the
+rollout.
+
+For local migration work:
 
 ```bash
 # Apply migrations locally
@@ -440,20 +460,25 @@ Every service exposes:
 - `/health/ready` — readiness (Kubernetes readiness probe)
 - `/health/live` — liveness (Kubernetes liveness probe)
 
-### Prometheus Metrics
+### Metrics
 
-ServiceMonitors in `base/monitoring/service-monitors.yaml` configure Prometheus scraping for all services.
+The services expose application metrics through their observability setup, but
+the production overlay does not currently install Prometheus Operator
+`ServiceMonitor` resources. Connect these endpoints to the chosen managed
+monitoring backend before relying on the alert examples below.
 
 ### Logging
 
 | Environment | Log Sink | Access |
 |---|---|---|
 | Local | Seq | http://localhost:5341 |
-| Production | Elasticsearch | Kibana dashboard |
+| Production | Elasticsearch-compatible endpoint | Deployment-specific dashboard |
 
 ### Tracing
 
-OpenTelemetry traces are exported via OTLP to Jaeger (dev) or a managed tracing service (production).
+OpenTelemetry traces are exported through the configured OTLP endpoint. The
+production overlay does not install Jaeger; configure a managed collector or
+observability backend explicitly.
 
 ### Recommended Alerts
 

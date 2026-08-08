@@ -1,7 +1,7 @@
 # Auction Platform — Microservices
 
 A portfolio-focused, event-driven auction platform built with **.NET 9 microservices** and a **React 19 frontend**.
-The system supports real-time bidding, automated auction lifecycle sagas, buy-now flows, integrated payments, multi-channel notifications, full-text search, file storage, analytics, and scheduled jobs — all behind a unified API gateway.
+The system supports real-time bidding, authoritative auction closing, buy-now flows, integrated payments, multi-channel notifications, full-text search, file storage, analytics, and scheduled jobs — all behind a unified API gateway.
 
 [![CI](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml)
 [![CD](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/cd.yml)
@@ -18,7 +18,7 @@ The system supports real-time bidding, automated auction lifecycle sagas, buy-no
 - [Communication Patterns](#communication-patterns)
 - [Key Workflows](#key-workflows)
   - [Place a Bid](#1-place-a-bid)
-  - [Auction Completion Saga](#2-auction-completion-saga)
+  - [Authoritative Auction Close](#2-authoritative-auction-close)
   - [Buy-Now Flow](#3-buy-now-flow)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
@@ -34,7 +34,7 @@ The system supports real-time bidding, automated auction lifecycle sagas, buy-no
 
 ## Architecture Overview
 
-The platform follows a **domain-driven microservices** architecture with strict bounded contexts. Each service owns its data, communicates asynchronously through RabbitMQ (via MassTransit), and exposes REST endpoints through a centralized YARP API gateway. Multi-step business transactions are coordinated by saga state machines. The React frontend connects via REST and receives real-time updates through SignalR WebSockets.
+The platform follows a **domain-driven microservices** architecture with strict bounded contexts. Each service owns its data, communicates asynchronously through RabbitMQ (via MassTransit), and exposes REST endpoints through a centralized YARP API gateway. Immediate authoritative queries use internal gRPC. The React frontend connects via REST and receives real-time updates through SignalR WebSockets.
 
 **Core architectural patterns:**
 
@@ -42,8 +42,8 @@ The platform follows a **domain-driven microservices** architecture with strict 
 |---|---|
 | Domain-Driven Design | Bounded contexts per service, aggregates, value objects, domain events |
 | CQRS | Separate command/query models via MediatR |
-| Event Sourcing | Domain events as source of truth (where applicable) |
-| Saga Orchestration | MassTransit state machines with compensating actions |
+| Domain Events | Aggregate events published through transactional outboxes; current state remains in service databases |
+| Event-driven workflows | MassTransit consumers with idempotent event handling; saga definitions are retained but not deployed |
 | Transactional Outbox | Guaranteed message delivery via EF Core outbox |
 | API Gateway | YARP reverse proxy with JWT validation and rate limiting |
 
@@ -79,7 +79,7 @@ graph TB
         STR["Storage Service"]
         ANA["Analytics Service"]
         JOB["Job Service"]
-        ORC["Orchestration<br/>(Saga State Machines)"]
+        CAT["Catalog Service"]
     end
 
     subgraph Data["Data Stores"]
@@ -109,13 +109,14 @@ graph TB
 
     Browser -->|HTTPS| SPA
     SPA -->|REST / WebSocket| GW
-    GW -->|HTTP| IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB
+    GW -->|HTTP| IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & CAT
     GW -->|WebSocket| NOT
 
     AUC <-->|gRPC| BID
-    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & ORC <-->|AMQP| RMQ
+    AUC -->|gRPC| CAT
+    IDN & AUC & BID & PAY & NOT & SRC & STR & ANA & JOB & CAT <-->|AMQP| RMQ
 
-    IDN & AUC & BID & PAY & NOT & STR & ANA & JOB --> PG
+    IDN & AUC & BID & PAY & NOT & STR & ANA & JOB & CAT --> PG
     AUC & BID & NOT --> RD
     SRC --> ES
 
@@ -135,16 +136,17 @@ graph TB
 | Service | Port | gRPC | Database | Responsibilities |
 |---|---|---|---|---|
 | **Identity** | 5001 | — | `identity_db` | JWT issuance, OAuth (Google / Facebook), user management |
-| **Auction** | 5002 | 5011 | `auction_db` | Auction CRUD, categories, brands, bookmarks, reviews, media |
-| **Bidding** | 5003 | 5012 | `bid_db` | Place bids, auto-bids, bid history, retract bid |
+| **Auction** | 5002 | 5011 | `auction_db` | Auction lifecycle, bookmarks, reviews, media, authoritative close scheduling |
+| **Bidding** | 5003 | 5012 | `bid_db` | Bid placement, auto-bids, bid history, authoritative winner selection |
 | **Payment** | 5004 | — | `payment_db` | Stripe integration, wallets, order processing, refunds |
 | **Notification** | 5005 | — | `notification_db` | Email (SendGrid), SMS (Twilio), Push (Firebase), SignalR hub |
-| **Job** | 5006 | — | `job_db` | Scheduled background tasks (auction lifecycle, cleanup) |
+| **Job** | 5006 | — | `job_db` | General scheduled and operational jobs |
 | **Analytics** | 5007 | — | `analytics_db` | Event ingestion, reporting, dashboards |
+| **Catalog** | 5013 | 8081 internal | `catalog_db` | Categories, brands, catalog queries |
 | **Search** | 5008 | — | Elasticsearch | Full-text auction search, filtering, facets |
 | **Storage** | 5009 | — | `storage_db` | File upload, validation, Azure Blob / local storage |
 | **Gateway** | 6001 | — | — | YARP reverse proxy, JWT validation, rate limiting |
-| **Orchestration** | — | — | RMQ state | MassTransit sagas: AuctionCompletion, BuyNow |
+| **Orchestration libraries** | — | — | — | Inactive saga definitions; no deployed host or persistence |
 
 ---
 
@@ -161,18 +163,18 @@ graph TB
 | ORM | Entity Framework Core 9 |
 | Messaging | MassTransit + RabbitMQ |
 | Transactional Outbox | MassTransit Outbox (EF Core) |
-| Saga Orchestration | MassTransit StateMachine |
+| Workflow coordination | MassTransit consumers; inactive StateMachine definitions retained under `src/Orchestration` |
 | gRPC | Grpc.AspNetCore / Grpc.Net.Client |
 | API Gateway | YARP (Yet Another Reverse Proxy) |
 | Auth | Custom JWT (HS256 / RS256), OAuth2 (Google, Facebook) |
 | Caching | Redis (StackExchange.Redis) |
-| Distributed Lock | Redis (Redlock pattern) |
+| Concurrency control | Redis distributed locks + PostgreSQL advisory locks for bid/finalization serialization |
 | Search | Elasticsearch 8 (Elastic.Clients.Elasticsearch) |
 | Logging | Serilog → Seq / Elasticsearch |
 | Tracing | OpenTelemetry (OTLP-ready) |
 | Validation | FluentValidation |
 | Resilience | Polly (circuit breaker, retry, timeout, bulkhead) |
-| Scheduling | Hangfire / Quartz (Job Service) |
+| Scheduling | Quartz / Hangfire (service-local background jobs) |
 | Payment | Stripe .NET SDK |
 | Email / SMS / Push | SendGrid, Twilio, Firebase Admin SDK |
 | File Storage | Azure Blob Storage / Local |
@@ -211,7 +213,6 @@ graph LR
     subgraph Asynchronous
         OUTBOX["Transactional Outbox<br/>(at-least-once delivery)"]
         AMQP["RabbitMQ / AMQP<br/>(MassTransit)"]
-        SAGA["Saga State Machine<br/>(compensating txns)"]
     end
 
     subgraph Realtime
@@ -223,8 +224,7 @@ graph LR
     Backends --gRPC--> GRPC
     Backends --domain events--> OUTBOX
     OUTBOX --relay--> AMQP
-    AMQP --consume--> SAGA
-    AMQP --consume--> Subscribers["Search / Notification /<br/>Analytics / Orchestration"]
+    AMQP --consume--> Subscribers["Search / Notification /<br/>Analytics / Payment"]
     Subscribers --push--> WS
     WS --real-time--> Frontend
 ```
@@ -232,10 +232,10 @@ graph LR
 | Pattern | Where Used | Purpose |
 |---|---|---|
 | REST (HTTP/1.1) | Frontend → Gateway → Services | Standard CRUD operations and queries |
-| gRPC (HTTP/2) | Auction ↔ Bidding | Low-latency cross-service queries (validate auction before bid) |
+| gRPC (HTTP/2) | Auction ↔ Bidding; Auction → Catalog | Bid validation fallback, authoritative winner finalization, catalog queries |
 | MassTransit + RabbitMQ | All services | Async domain events, integration events, commands |
 | Transactional Outbox | Auction, Bidding, Payment | Guarantee message delivery after DB commit |
-| Saga (StateMachine) | Orchestration service | Multi-step transactions with compensating actions |
+| Event fan-out | Payment, Search, Analytics, Notification | Idempotent reactions to committed integration events |
 | SignalR | Notification → Browser | Real-time bid updates, auction status, notifications |
 | CQRS | All domain services | Separate read/write models via MediatR |
 
@@ -258,8 +258,13 @@ sequenceDiagram
 
     B->>GW: POST /bids {auctionId, amount}
     GW->>BID: Forward (JWT validated)
-    BID->>AUC: gRPC ValidateAuction(auctionId)
-    AUC-->>BID: AuctionDetails (status, reserve, endTime)
+    BID->>BID: Acquire Redis bid lock
+    BID->>DB: Acquire PostgreSQL advisory lock for auction
+    BID->>BID: Validate local auction snapshot
+    opt Snapshot missing
+        BID->>AUC: gRPC ValidateAuction(auctionId)
+        AUC-->>BID: AuctionDetails (status, reserve, endTime)
+    end
     BID->>BID: Apply domain rules (min increment, active status)
     BID->>DB: Save Bid + Outbox message (single transaction)
     DB-->>BID: OK
@@ -278,43 +283,32 @@ sequenceDiagram
     NOT->>B: SignalR push to auction group
 ```
 
-### 2. Auction Completion Saga
-
-```mermaid
-stateDiagram-v2
-    [*] --> CreatingOrder : AuctionCompletionSagaStarted
-    CreatingOrder --> SendingNotifications : OrderCreated
-    CreatingOrder --> Compensating : OrderFailed
-    CreatingOrder --> Failed : Timeout (10 min)
-    SendingNotifications --> Completed : NotificationsSent
-    SendingNotifications --> Failed : NotificationsFailed
-    Compensating --> [*] : Reverted
-    Completed --> [*]
-    Failed --> [*]
-```
+### 2. Authoritative Auction Close
 
 ```mermaid
 sequenceDiagram
-    participant JOB as Job Service
+    participant AUC as Auction Service scheduler
+    participant BID as Bidding Service
     participant MQ as RabbitMQ
-    participant ORC as Orchestration (Saga)
     participant PAY as Payment Service
-    participant NOT as Notification Service
-    participant AUC as Auction Service
+    participant READ as Search / Analytics / Bidding projections
 
-    JOB->>MQ: AuctionFinishedEvent (scheduled)
-    MQ->>ORC: Start AuctionCompletionSaga
-    ORC->>MQ: CreateAuctionWinnerOrder
-    MQ->>PAY: Create order record
-    PAY->>MQ: OrderCreated
-
-    ORC->>MQ: SendCompletionNotifications
-    MQ->>NOT: Email winner + seller
-    NOT->>MQ: NotificationsSent
-
-    ORC->>AUC: Mark auction Finished
-    Note over ORC: Saga Complete
+    AUC->>BID: gRPC FinalizeAuction(auctionId)
+    BID->>BID: Acquire auction advisory lock
+    BID-->>AUC: Authoritative winner and amount
+    AUC->>AUC: Persist final auction status
+    AUC->>MQ: AuctionFinishedEvent (via Outbox)
+    par Event fan-out
+        MQ->>PAY: Create winner order when sold
+        MQ->>READ: Update projections and analytics
+    end
 ```
+
+Bid placement and winner selection use the same per-auction PostgreSQL advisory
+lock. Once the auction end time has passed, this creates a single serialization
+boundary between the last acceptable bid and the winning-bid read. The scheduled
+close job itself also uses the shared Redis-backed job lock, so only one replica
+processes a given schedule at a time.
 
 ### 3. Buy-Now Flow
 
@@ -324,9 +318,8 @@ sequenceDiagram
     participant GW as Gateway
     participant AUC as Auction Service
     participant MQ as RabbitMQ
-    participant ORC as Orchestration (Saga)
     participant PAY as Payment Service
-    participant NOT as Notification Service
+    participant ANA as Analytics Service
 
     B->>GW: POST /auctions/{id}/buy-now
     GW->>AUC: Forward
@@ -334,11 +327,10 @@ sequenceDiagram
     AUC->>MQ: BuyNowExecutedEvent (via Outbox)
     AUC-->>B: 200 OK
 
-    MQ->>ORC: Start BuyNow Saga
-    ORC->>PAY: CreatePaymentIntent
-    PAY-->>ORC: PaymentIntentCreated
-    ORC->>NOT: Notify buyer + seller
-    ORC->>AUC: Finalize auction as sold
+    par Event fan-out
+        MQ->>PAY: Create idempotent buy-now order
+        MQ->>ANA: Record buy-now analytics
+    end
 ```
 
 ---
@@ -365,6 +357,7 @@ auction-platform-microservices/
 │   ├── Services/
 │   │   ├── Auction/                   # Domain / Application / Infrastructure / API / tests
 │   │   ├── Bidding/
+│   │   ├── Catalog/
 │   │   ├── Payment/
 │   │   ├── Notification/
 │   │   ├── Identity/
@@ -377,8 +370,8 @@ auction-platform-microservices/
 │   │   └── Gateway.Api/               # YARP config, JWT middleware, rate limiting
 │   │
 │   └── Orchestration/
-│       ├── Orchestration.Contracts/   # Saga event contracts
-│       └── Orchestration.Sagas/       # MassTransit saga state machines
+│       ├── Orchestration.Contracts/   # Inactive future orchestration contracts
+│       └── Orchestration.Sagas/       # State-machine definitions; no deployed host
 │
 ├── web/                               # React 19 SPA
 │   └── src/
@@ -461,6 +454,7 @@ cd web && npm install && npm run dev
 | Payment | http://localhost:5004 |
 | Notification | http://localhost:5005 |
 | Analytics | http://localhost:5007 |
+| Catalog | http://localhost:5013 |
 | Search | http://localhost:5008 |
 | Storage | http://localhost:5009 |
 | RabbitMQ Management | http://localhost:15672 |
@@ -514,8 +508,8 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 | Route | Upstream | Notes |
 |---|---|---|
 | `/auctions/**` | Auction Service | Rate limited |
-| `/categories/**` | Auction Service | |
-| `/brands/**` | Auction Service | |
+| `/categories/**` | Catalog Service | |
+| `/brands/**` | Catalog Service | |
 | `/bookmarks/**` | Auction Service | Auth required |
 | `/reviews/**` | Auction Service | |
 | `/bids/**` | Bidding Service | Rate limited |
@@ -538,6 +532,7 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 - **11 backend containers** — 10 microservices plus the gateway
 - **1 frontend container** — Nginx-served React SPA
 - Health checks on every container, named volumes, shared bridge network
+- Frontend available at **http://localhost:3000** when running the full Compose stack
 
 ### Azure AKS (Production)
 
@@ -672,11 +667,12 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The current suite contains Payment domain tests for idempotent payment and
-failure handling. CI discovers every `*Tests.csproj` under `src`; add tests next
-to each service as the project grows.
+The current suite contains Payment domain tests and Bidding infrastructure tests
+for authoritative finalization and per-auction serialization. CI discovers every
+`*Tests.csproj` under `src`; add tests next to each service as the project grows.
 
 ```bash
+dotnet test src/Services/Bidding/tests/Bidding.Infrastructure.Tests/Bidding.Infrastructure.Tests.csproj
 dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj
 cd web && npm run validate                         # Frontend
 ```

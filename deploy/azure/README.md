@@ -17,6 +17,17 @@ RabbitMQ with Azure Service Bus or Elasticsearch with another search engine
 requires application adapters and a data migration, so those changes are not
 hidden inside the infrastructure deployment.
 
+The current production path includes these deployment-readiness controls:
+
+- digest-pinned, non-root, architecture-neutral application images;
+- immutable commit-SHA image tags with OCI version/revision metadata;
+- Kubernetes service-port overrides for Gateway, Identity, Catalog gRPC, and
+  Bidding gRPC traffic;
+- External Secrets readiness before migrations;
+- migration Jobs that must complete before application Deployments roll out;
+- authoritative auction winner selection serialized with bid placement in the
+  Bidding database.
+
 ## Prerequisites
 
 - An Azure subscription and permission to create resources and role assignments.
@@ -149,7 +160,8 @@ Certificate issuance will remain pending until DNS resolves to the ingress.
 
 ```bash
 dotnet restore auction.sln
-dotnet build auction.sln --no-restore
+dotnet build auction.sln -c Release --no-restore --disable-build-servers -m:1 -nodeReuse:false
+dotnet test src/Services/Bidding/tests/Bidding.Infrastructure.Tests/Bidding.Infrastructure.Tests.csproj -c Release --no-restore
 dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj --no-restore
 (cd web && npm run validate && npm run build)
 docker compose -f deploy/docker/docker-compose.yml config --quiet
@@ -174,8 +186,9 @@ deploy/azure/render-kubernetes.sh >/tmp/auction-rendered.yaml
 
 ## Remaining production gates
 
-- Expand the restored Payment domain test suite with unit and integration tests
-  for every service. CI discovers and runs every `*Tests.csproj` under `src`.
+- Expand the Bidding finalization and Payment domain test suites with database
+  integration and end-to-end tests for every service. CI discovers and runs
+  every `*Tests.csproj` under `src`.
 - Triage all NuGet and npm advisories; do not waive high-severity findings
   without documenting exploitability.
 - Configure explicit egress destinations for Stripe, email, OAuth, Blob, and

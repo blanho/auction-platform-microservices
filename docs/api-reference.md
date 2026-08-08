@@ -10,6 +10,8 @@ This document describes the public API surface exposed through the YARP gateway.
 - [Common Patterns](#common-patterns)
 - [Identity Endpoints](#identity-endpoints)
 - [Auction Endpoints](#auction-endpoints)
+- [Catalog Endpoints](#catalog-endpoints)
+- [Auction Supporting Endpoints](#auction-supporting-endpoints)
 - [Bidding Endpoints](#bidding-endpoints)
 - [Payment Endpoints](#payment-endpoints)
 - [Notification Endpoints](#notification-endpoints)
@@ -156,21 +158,38 @@ All errors follow a consistent format:
 | POST | `/auctions/{id}/buy-now` | Yes | Execute buy-now on an auction |
 | GET | `/auctions/{id}/bids` | No | Get bid history for an auction |
 
+---
+
+## Catalog Endpoints
+
 ### Categories
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | GET | `/categories` | No | List all categories |
+| GET | `/categories/tree` | No | Get the category hierarchy |
 | GET | `/categories/{id}` | No | Get category details |
 | POST | `/categories` | Yes (Admin) | Create category |
 | PUT | `/categories/{id}` | Yes (Admin) | Update category |
+| DELETE | `/categories/{id}` | Yes (Admin) | Delete category |
 
 ### Brands
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | GET | `/brands` | No | List all brands |
+| GET | `/brands/{id}` | No | Get brand details |
 | POST | `/brands` | Yes (Admin) | Create brand |
+| PUT | `/brands/{id}` | Yes (Admin) | Update brand |
+| DELETE | `/brands/{id}` | Yes (Admin) | Delete brand |
+
+Catalog routes are forwarded by YARP to Catalog Service. Auction consumes the
+same catalog data through its internal gRPC client when it needs an immediate
+lookup.
+
+---
+
+## Auction Supporting Endpoints
 
 ### Bookmarks
 

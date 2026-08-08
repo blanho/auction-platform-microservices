@@ -12,8 +12,9 @@ This document explains how the auction platform is designed, how services intera
 - [Clean Architecture (Per Service)](#clean-architecture-per-service)
 - [Data Ownership](#data-ownership)
 - [Communication Patterns](#communication-patterns)
+- [Auction Close Consistency](#auction-close-consistency)
 - [CQRS and MediatR](#cqrs-and-mediatr)
-- [Event Sourcing](#event-sourcing)
+- [Domain Events](#domain-events)
 - [Saga Orchestration](#saga-orchestration)
 - [Transactional Outbox](#transactional-outbox)
 - [API Gateway (YARP)](#api-gateway-yarp)
@@ -52,6 +53,7 @@ graph TB
 
     subgraph Supporting["Supporting Services"]
         NOT["Notification"]
+        CAT["Catalog"]
         SRC["Search"]
         STR["Storage"]
         ANA["Analytics"]
@@ -59,7 +61,7 @@ graph TB
     end
 
     subgraph Orchestration
-        ORC["Saga State Machines"]
+        ORC["Saga definitions<br/>(not deployed)"]
     end
 
     subgraph Infra["Infrastructure"]
@@ -72,11 +74,11 @@ graph TB
     Browser --> SPA --> GW
     GW --> Core & Supporting
     Core & Supporting <--> RMQ
-    ORC <--> RMQ
     Core & Supporting --> PG
     AUC & BID & NOT --> RD
     SRC --> ES
     AUC <-->|gRPC| BID
+    AUC -->|gRPC| CAT
 ```
 
 ---
@@ -88,15 +90,16 @@ Each microservice maps to a single bounded context. Services never share databas
 | Bounded Context | Service | Core Domain Concepts |
 |---|---|---|
 | **Identity & Access** | Identity Service | Users, Roles, Tokens, OAuth Providers |
-| **Auction Management** | Auction Service | Auctions, Categories, Brands, Bookmarks, Reviews, Media |
+| **Auction Management** | Auction Service | Auctions, Bookmarks, Reviews, Media |
 | **Bidding** | Bidding Service | Bids, AutoBids, Bid History, Auction Snapshots |
+| **Catalog** | Catalog Service | Categories, Brands |
 | **Payment & Orders** | Payment Service | Wallets, Orders, Stripe Intents, Refunds |
 | **Notifications** | Notification Service | Notification Templates, Channels (Email/SMS/Push/SignalR) |
 | **Search & Discovery** | Search Service | Search Index, Filters, Facets |
 | **File Management** | Storage Service | Files, Upload Validation, Blob Storage |
 | **Analytics** | Analytics Service | Events, Reports, Dashboards |
 | **Scheduling** | Job Service | Scheduled Tasks, Auction Lifecycle Triggers |
-| **Transaction Coordination** | Orchestration | Saga State Machines (AuctionCompletion, BuyNow) |
+| **Transaction Coordination** | Orchestration libraries | Saga definitions retained in source but not registered by a deployed host |
 
 **Rules:**
 - Services communicate only through messages (RabbitMQ) or synchronous queries (REST/gRPC)
@@ -111,11 +114,13 @@ Each microservice maps to a single bounded context. Services never share databas
 
 **Identity Service** — Handles authentication and user management. Issues JWT tokens (HS256/RS256). Supports Google and Facebook OAuth. All other services validate tokens but never issue them.
 
-**Auction Service** — The central domain service. Manages the auction lifecycle (Draft → Active → Finishing → Finished/Sold/Cancelled). Handles categories, brands, bookmarks, reviews, and media. Exposes a gRPC endpoint for the Bidding Service to validate auction state before accepting bids.
+**Auction Service** — The central domain service. Manages the auction lifecycle (Draft → Active → Finishing → Finished/Sold/Cancelled), bookmarks, reviews, and media. Exposes a gRPC endpoint for Bidding validation and calls Bidding during scheduled close processing to obtain the authoritative winner.
 
-**Bidding Service** — Manages bid placement with domain rules (minimum increment, active auction, no self-bidding). Supports auto-bids (proxy bidding). Maintains auction snapshots (denormalized read models) for fast validation. Uses distributed locking (Redis) to prevent race conditions on concurrent bids.
+**Bidding Service** — Manages bid placement with domain rules (minimum increment, active auction, no self-bidding). Supports auto-bids (proxy bidding) and owns authoritative bid ordering. It uses a Redis request lock and a PostgreSQL advisory lock per auction; finalization takes the same advisory lock before selecting the winner. Auction snapshots provide fast validation, with Auction gRPC as the fallback when a snapshot is missing.
 
-**Payment Service** — Integrates with Stripe for payment processing. Manages user wallets and order records. Creates payment intents during buy-now and auction completion sagas.
+**Catalog Service** — Owns categories and brands. It exposes REST endpoints through the Gateway and an internal gRPC endpoint consumed by Auction.
+
+**Payment Service** — Integrates with Stripe for payment processing and manages wallets and orders. It consumes committed auction and buy-now events idempotently to create the corresponding order records.
 
 ### Supporting Services
 
@@ -127,16 +132,17 @@ Each microservice maps to a single bounded context. Services never share databas
 
 **Analytics Service** — Ingests domain events for reporting. Provides dashboard data for auction performance, user activity, and revenue metrics.
 
-**Job Service** — Scheduled background tasks using Hangfire/Quartz. Key job: checking for auctions that have reached their end time and publishing `AuctionFinishedEvent` to trigger the completion saga.
+**Job Service** — Owns general scheduled and operational jobs. Auction activation, ending-soon notifications, and authoritative close processing run inside Auction Service through Quartz because they mutate the Auction aggregate.
 
 ### Orchestration
 
-**Saga State Machines** — MassTransit state machines that coordinate multi-step transactions across services. Two primary sagas:
-
-1. **AuctionCompletionSaga** — Triggered when an auction ends. Creates an order (Payment), sends notifications (Notification), and marks the auction finished (Auction).
-2. **BuyNowSaga** — Triggered when a buyer uses the buy-now option. Creates a payment intent, notifies parties, and finalizes the auction.
-
-Each saga step has a compensating action for rollback on failure.
+The repository contains MassTransit state-machine definitions for auction
+completion and buy-now flows, but no deployed application currently registers
+or hosts them. The active auction-completion path publishes
+`AuctionFinishedEvent` after Auction persists the final state; Payment creates
+the winner order directly and the remaining consumers update their projections.
+Treat the orchestration assemblies as inactive design work until a host,
+persistence, start-event producer, health checks, and deployment are added.
 
 ---
 
@@ -197,6 +203,7 @@ graph LR
     ANA["Analytics Service"] --> ANDB[("analytics_db")]
     STR["Storage Service"] --> SDB[("storage_db")]
     JOB["Job Service"] --> JDB[("job_db")]
+    CAT["Catalog Service"] --> CDB[("catalog_db")]
     SRC["Search Service"] --> ES[("Elasticsearch")]
 ```
 
@@ -213,15 +220,15 @@ graph LR
 | Pattern | Use Case | Example |
 |---|---|---|
 | REST via Gateway | Frontend → Backend | `POST /bids`, `GET /auctions/{id}` |
-| gRPC (service-to-service) | Low-latency validation | Bidding calls Auction to validate auction state before accepting a bid |
+| gRPC (service-to-service) | Immediate internal query/finalization | Bidding calls Auction when its snapshot is missing; Auction calls Bidding for authoritative winner selection and Catalog for catalog queries |
 
 ### Asynchronous
 
 | Pattern | Use Case | Example |
 |---|---|---|
 | Domain Events (MassTransit) | Cross-service reactions | `BidPlacedEvent` → Search updates index, Notification sends alerts |
-| Integration Events | Bounded context communication | `AuctionFinishedEvent` → Orchestration starts completion saga |
-| Commands via Bus | Saga step execution | Saga publishes `CreateAuctionWinnerOrder` → Payment consumes it |
+| Integration Events | Bounded context communication | `AuctionFinishedEvent` → Payment creates an order and read models update |
+| Commands via Bus | Explicit workflow commands where registered | Consumers handle commands through MassTransit endpoints |
 
 ### Real-Time
 
@@ -229,7 +236,30 @@ graph LR
 |---|---|---|
 | SignalR WebSocket | Live updates to browser | New bid placed → push to all users watching that auction |
 
-**Decision: Async by default.** All cross-service state changes go through RabbitMQ. Synchronous calls (gRPC) are reserved for queries where the caller needs an immediate response to proceed (e.g., validating an auction exists before placing a bid).
+**Decision: Async by default.** Cross-service propagation normally goes through RabbitMQ. Synchronous gRPC is reserved for operations that need an immediate authoritative answer, including validation fallback and winner selection at the auction close boundary.
+
+---
+
+## Auction Close Consistency
+
+Bid placement first takes the Redis bid lock and then executes its validation,
+highest-bid read, and write while holding a PostgreSQL advisory lock derived from
+the auction ID. `FinalizeAuction` takes that same database lock before reading the
+highest accepted bid. This prevents bid placement and winner selection from
+crossing each other at the close boundary.
+
+The Auction Service's `CheckAuctionFinishedJob` is the single close path. It is
+protected by both Quartz's non-concurrent execution attribute and the shared
+Redis-backed job lock, then performs the following steps:
+
+1. Find auctions whose end time has passed.
+2. Request the authoritative winner from Bidding over internal gRPC.
+3. Apply reserve-price rules and persist the final Auction aggregate.
+4. Publish `AuctionFinishedEvent` through the outbox.
+5. Let Payment and read-model consumers process the event idempotently.
+
+Auto-bid lock contention raises a retryable timeout so the MassTransit consumer
+can retry instead of acknowledging work that was not processed.
 
 ---
 
@@ -267,51 +297,28 @@ Application/
 
 ---
 
-## Event Sourcing
+## Domain Events
 
-Where applicable, domain events are the source of truth rather than current state. Events are stored in an append-only event store and current state is rebuilt by replaying events.
-
-**Key rules:**
-- Event schemas are immutable — never modify a published event
-- Use event versioning (upcasting) when event structure needs to evolve
-- Projections rebuild read models from event streams
-- Snapshots can be used to optimize replay performance for aggregates with many events
+The platform is not event sourced. Current aggregate state is stored in each
+service's database. Aggregates raise domain events, and integration events are
+published through the transactional outbox after the database transaction
+commits. Consumers must tolerate duplicate delivery and use versioned contracts
+for compatible schema evolution.
 
 ---
 
 ## Saga Orchestration
 
-Multi-step transactions are coordinated by MassTransit saga state machines in the Orchestration project.
+`src/Orchestration` contains contracts and MassTransit state-machine classes for
+possible future orchestration. These projects compile as libraries, but they are
+not an active runtime component: there is no Orchestration API/worker,
+registration, saga repository, Kubernetes Deployment, or producer for
+`AuctionCompletionSagaStarted` in the current repository.
 
-### Auction Completion Saga
-
-```mermaid
-stateDiagram-v2
-    [*] --> CreatingOrder : AuctionCompletionSagaStarted
-    CreatingOrder --> SendingNotifications : OrderCreated
-    CreatingOrder --> Compensating : OrderFailed
-    CreatingOrder --> Failed : Timeout (10 min)
-    SendingNotifications --> Completed : NotificationsSent
-    SendingNotifications --> Failed : NotificationsFailed
-    Compensating --> [*] : Reverted
-    Completed --> [*]
-    Failed --> [*]
-```
-
-**Saga design rules:**
-- Every step has a compensating action (rollback)
-- Sagas are idempotent — handle duplicate messages gracefully
-- Correlation IDs track saga instances across services
-- Timeouts on all external calls (no unbounded waits)
-- State is persisted in RabbitMQ (MassTransit manages it)
-
-### Saga Contracts
-
-Saga events are defined in `src/Orchestration/Orchestration.Contracts/`. Each saga has:
-- **Start event** (e.g., `AuctionCompletionSagaStarted`)
-- **Step commands** (e.g., `CreateAuctionWinnerOrder`)
-- **Step responses** (e.g., `AuctionWinnerOrderCreated`, `AuctionWinnerOrderFailed`)
-- **Compensation events** (e.g., `AuctionCompletionReverted`)
+Do not depend on these sagas in production behavior. If orchestration is enabled
+later, add a dedicated host and durable saga persistence, make every consumer
+idempotent, define timeout/compensation behavior, and add deployment and failure
+tests before switching away from the current event fan-out.
 
 ---
 
@@ -437,10 +444,10 @@ graph LR
 |---|---|---|
 | Database-per-service | Strong isolation, independent scaling | No cross-service joins; eventual consistency |
 | Async messaging by default | Loose coupling, resilience to downstream failures | Eventual consistency; harder debugging |
-| gRPC for Auction ↔ Bidding | Low-latency validation needed before bid placement | Tighter coupling than async; requires both services to be healthy |
+| gRPC for Auction ↔ Bidding | Immediate validation fallback and an authoritative close boundary | Auction close waits for Bidding availability; retries and health monitoring are required |
 | MassTransit Outbox | Guarantees event delivery after DB commit | Slightly higher write latency; outbox table management |
 | YARP over Ocelot | Better performance, first-party Microsoft support | Less community middleware than Ocelot |
 | Carter for Minimal APIs | Clean endpoint organization without controllers | Less familiar to developers used to controllers |
-| Saga over Choreography | Explicit control flow, easier to reason about compensations | Single point of coordination; saga state management overhead |
+| Direct event fan-out for auction completion | Matches the currently deployed consumers and keeps the first release simpler | Cross-service progress is eventually consistent; inactive saga definitions must not be mistaken for runtime behavior |
 | Redis for caching + locking | Fast in-memory cache, built-in distributed lock support | Additional infrastructure dependency |
 | Elasticsearch for search | Purpose-built for full-text search and facets | Separate data sync pipeline; eventual consistency |

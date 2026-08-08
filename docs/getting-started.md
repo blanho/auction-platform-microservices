@@ -91,9 +91,9 @@ auction-platform-microservices/
 ├── src/
 │   ├── BuildingBlocks/        # Shared libraries used by all services
 │   ├── Contracts/             # Shared message contracts
-│   ├── Services/              # The 9 microservices (each with 4-5 layers)
+│   ├── Services/              # The 10 microservices (each with 4-5 layers)
 │   ├── Gateway/               # YARP API gateway
-│   └── Orchestration/         # Saga state machines
+│   └── Orchestration/         # Inactive future saga contracts/state-machine definitions
 ├── web/                       # React frontend
 ├── deploy/                    # Docker and Kubernetes configs
 └── docs/                      # You are here
@@ -159,6 +159,7 @@ Wait for all containers to show `healthy` status. The infrastructure services (P
 | `notification-api` | 5005 | Notification Service |
 | `job-api` | 5006 | Job Service |
 | `analytics-api` | 5007 | Analytics Service |
+| `catalog-api` | 5013 | Catalog Service |
 | `search-api` | 5008 | Search Service |
 | `storage-api` | 5009 | Storage Service |
 | `auction-gateway` | 6001 | YARP API Gateway |
