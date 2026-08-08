@@ -41,6 +41,24 @@ spec:
               value: "Production"
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
+            - name: ReverseProxy__Clusters__auction-cluster__Destinations__destination1__Address
+              value: "http://auction-api:80"
+            - name: ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address
+              value: "http://catalog-api:80"
+            - name: ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address
+              value: "http://identity-api:80"
+            - name: ReverseProxy__Clusters__bid-cluster__Destinations__destination1__Address
+              value: "http://bidding-api:80"
+            - name: ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address
+              value: "http://notification-api:80"
+            - name: ReverseProxy__Clusters__analytics-cluster__Destinations__destination1__Address
+              value: "http://analytics-api:80"
+            - name: ReverseProxy__Clusters__payment-cluster__Destinations__destination1__Address
+              value: "http://payment-api:80"
+            - name: ReverseProxy__Clusters__search-cluster__Destinations__destination1__Address
+              value: "http://search-api:80"
+            - name: ReverseProxy__Clusters__storage-cluster__Destinations__destination1__Address
+              value: "http://storage-api:80"
           lifecycle:
             preStop:
               exec:

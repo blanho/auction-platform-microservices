@@ -118,9 +118,9 @@ namespace Bidding.Application.Services
             if (lockHandle is null)
             {
                 _logger.LogWarning(
-                    "Failed to acquire auto-bid lock for auction {AuctionId}. Another process is handling auto-bids.",
+                    "Failed to acquire auto-bid lock for auction {AuctionId}. Requesting message retry.",
                     auctionId);
-                return;
+                throw new TimeoutException($"Timed out acquiring the auto-bid lock for auction {auctionId}.");
             }
 
             await ProcessAutoBidsWithLock(auctionId, currentHighBid, cancellationToken);

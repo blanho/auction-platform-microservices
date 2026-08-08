@@ -28,6 +28,7 @@ public class CheckAuctionFinishedJob : BaseJob
         var writeRepository = scopedProvider.GetRequiredService<IAuctionWriteRepository>();
         var unitOfWork = scopedProvider.GetRequiredService<IUnitOfWork>();
         var dbContext = scopedProvider.GetRequiredService<AuctionDbContext>();
+        var bidFinalizationClient = scopedProvider.GetRequiredService<IBidFinalizationClient>();
 
         var finishedAuctions = await readRepository.GetFinishedAuctionsAsync(cancellationToken);
 
@@ -50,8 +51,16 @@ public class CheckAuctionFinishedJob : BaseJob
                     continue;
                 }
 
-                var itemSold = auction.CurrentHighBid != null && auction.CurrentHighBid >= auction.ReservePrice;
-                auction.Finish(auction.WinnerId, auction.WinnerUsername, auction.CurrentHighBid, itemSold);
+                var winningBid = await bidFinalizationClient.FinalizeAuctionAsync(
+                    auction.Id,
+                    cancellationToken);
+                var itemSold = winningBid is not null && winningBid.Amount >= auction.ReservePrice;
+
+                auction.Finish(
+                    winningBid?.BidderId,
+                    winningBid?.BidderUsername,
+                    winningBid?.Amount,
+                    itemSold);
 
                 await writeRepository.UpdateAsync(auction, cancellationToken);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -75,4 +84,3 @@ public class CheckAuctionFinishedJob : BaseJob
         }
     }
 }
-

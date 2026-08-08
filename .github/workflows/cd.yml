@@ -94,6 +94,8 @@ jobs:
           tags: ${{ env.ACR_LOGIN_SERVER }}/auction-platform/${{ matrix.service.name }}:${{ steps.revision.outputs.tag }}
           build-args: |
             VITE_API_URL=/api
+            BUILD_VERSION=${{ steps.revision.outputs.tag }}
+            VCS_REF=${{ steps.revision.outputs.sha }}
           cache-from: type=gha,scope=${{ matrix.service.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
 
@@ -158,14 +160,41 @@ jobs:
           IMAGE_TAG: ${{ steps.revision.outputs.tag }}
         run: deploy/azure/render-kubernetes.sh > "$RUNNER_TEMP/auction-production.yaml"
 
-      - name: Apply, migrate, and roll out
+      - name: Split rendered manifests by deployment phase
+        shell: bash
         run: |
-          kubectl delete jobs \
-            -n auction-platform \
-            -l app.kubernetes.io/part-of=auction-platform \
-            --ignore-not-found
+          set -euo pipefail
+          MANIFEST_DIR="$RUNNER_TEMP/auction-manifests"
+          mkdir -p "$MANIFEST_DIR/resources"
+          csplit -s -f "$MANIFEST_DIR/resources/resource-" \
+            "$RUNNER_TEMP/auction-production.yaml" '/^---$/' '{*}'
 
-          kubectl apply -f "$RUNNER_TEMP/auction-production.yaml"
+          : > "$MANIFEST_DIR/foundation.yaml"
+          : > "$MANIFEST_DIR/migrations.yaml"
+          : > "$MANIFEST_DIR/applications.yaml"
+
+          for resource in "$MANIFEST_DIR"/resources/resource-*; do
+            kind="$(awk '$1 == "kind:" { print $2; exit }' "$resource")"
+            case "$kind" in
+              Job)
+                destination="$MANIFEST_DIR/migrations.yaml"
+                ;;
+              Deployment|HorizontalPodAutoscaler|PodDisruptionBudget|Ingress)
+                destination="$MANIFEST_DIR/applications.yaml"
+                ;;
+              *)
+                destination="$MANIFEST_DIR/foundation.yaml"
+                ;;
+            esac
+            cat "$resource" >> "$destination"
+            printf '\n---\n' >> "$destination"
+          done
+
+      - name: Apply foundation and wait for secrets
+        run: |
+          set -euo pipefail
+          MANIFEST_DIR="$RUNNER_TEMP/auction-manifests"
+          kubectl apply -f "$MANIFEST_DIR/foundation.yaml"
 
           kubectl wait \
             --namespace auction-platform \
@@ -173,12 +202,28 @@ jobs:
             externalsecret/auction-platform-secrets \
             --timeout=5m
 
+      - name: Run database migrations
+        run: |
+          set -euo pipefail
+          MANIFEST_DIR="$RUNNER_TEMP/auction-manifests"
+          kubectl delete jobs \
+            -n auction-platform \
+            -l app.kubernetes.io/part-of=auction-platform \
+            --ignore-not-found
+
+          kubectl apply -f "$MANIFEST_DIR/migrations.yaml"
+
           kubectl wait \
             --namespace auction-platform \
             --for=condition=complete \
             jobs \
             -l app.kubernetes.io/part-of=auction-platform \
             --timeout=10m
+
+      - name: Roll out applications
+        run: |
+          set -euo pipefail
+          kubectl apply -f "$RUNNER_TEMP/auction-manifests/applications.yaml"
 
           kubectl rollout status deployment \
             --all \

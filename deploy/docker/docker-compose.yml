@@ -117,14 +117,12 @@ services:
       - "6001:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ReverseProxy__Clusters__auction__Destinations__destination1__Address: http://auction-api:8080
-      ReverseProxy__Clusters__bidding__Destinations__destination1__Address: http://bidding-api:8080
-      ReverseProxy__Clusters__payment__Destinations__destination1__Address: http://payment-api:8080
-      ReverseProxy__Clusters__notification__Destinations__destination1__Address: http://notification-api:8080
-      ReverseProxy__Clusters__identity__Destinations__destination1__Address: http://identity-api:8080
-      ReverseProxy__Clusters__analytics__Destinations__destination1__Address: http://analytics-api:8080
-      ReverseProxy__Clusters__search__Destinations__destination1__Address: http://search-api:8080
-      ReverseProxy__Clusters__storage__Destinations__destination1__Address: http://storage-api:8080
+      ReverseProxy__Clusters__auction-cluster__Destinations__destination1__Address: http://auction-api:8080
+      ReverseProxy__Clusters__payment-cluster__Destinations__destination1__Address: http://payment-api:8080
+      ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address: http://notification-api:8080
+      ReverseProxy__Clusters__analytics-cluster__Destinations__destination1__Address: http://analytics-api:8080
+      ReverseProxy__Clusters__search-cluster__Destinations__destination1__Address: http://search-api:8080
+      ReverseProxy__Clusters__storage-cluster__Destinations__destination1__Address: http://storage-api:8080
       ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address: http://catalog-api:8080
       ReverseProxy__Clusters__bid-cluster__Destinations__destination1__Address: http://bidding-api:8080
       ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address: http://identity-api:8080
@@ -164,16 +162,16 @@ services:
       context: ../..
       dockerfile: web/Dockerfile
       args:
-        VITE_API_BASE_URL: /api
+        VITE_API_URL: /api
     container_name: auction-web-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3000:8080"
     depends_on:
       gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -195,6 +193,7 @@ services:
       Identity__Authority: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       CatalogService__GrpcUrl: http://catalog-api:8081
+      BidService__GrpcUrl: http://bidding-api:8081
       Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
       Kestrel__Endpoints__Http__Protocols: Http1
       Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081

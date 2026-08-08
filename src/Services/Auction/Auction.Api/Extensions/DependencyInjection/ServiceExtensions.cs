@@ -66,10 +66,17 @@ namespace Auctions.Api.Extensions.DependencyInjection
             });
             services.AddScoped<ICatalogGrpcClient, CatalogGrpcClient>();
 
+            services.AddGrpcClient<BidService.API.Grpc.BidGrpc.BidGrpcClient>((sp, o) =>
+            {
+                var cfg = sp.GetRequiredService<IConfiguration>();
+                o.Address = new Uri(cfg["BidService:GrpcUrl"]
+                    ?? throw new InvalidOperationException("BidService:GrpcUrl configuration is required"));
+            });
+            services.AddScoped<IBidFinalizationClient, BidFinalizationGrpcClient>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
     }
 }
-

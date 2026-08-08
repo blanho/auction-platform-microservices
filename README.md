@@ -1,6 +1,6 @@
 # Auction Platform — Microservices
 
-A production-grade, event-driven auction platform built with **.NET 9 microservices** and a **React 19 frontend**.
+A portfolio-focused, event-driven auction platform built with **.NET 9 microservices** and a **React 19 frontend**.
 The system supports real-time bidding, automated auction lifecycle sagas, buy-now flows, integrated payments, multi-channel notifications, full-text search, file storage, analytics, and scheduled jobs — all behind a unified API gateway.
 
 [![CI](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/blanho/auction-platform-microservices/actions/workflows/ci.yml)
@@ -169,7 +169,7 @@ graph TB
 | Distributed Lock | Redis (Redlock pattern) |
 | Search | Elasticsearch 8 (Elastic.Clients.Elasticsearch) |
 | Logging | Serilog → Seq / Elasticsearch |
-| Tracing | OpenTelemetry → Jaeger (OTLP) |
+| Tracing | OpenTelemetry (OTLP-ready) |
 | Validation | FluentValidation |
 | Resilience | Polly (circuit breaker, retry, timeout, bulkhead) |
 | Scheduling | Hangfire / Quartz (Job Service) |
@@ -396,9 +396,10 @@ auction-platform-microservices/
     │   └── scripts/init-databases.sh
     ├── config/
     │   └── appsettings.Production.template.json
-    └── kubernetes/
+    ├── kubernetes/
         ├── base/                      # Kustomize base manifests
         └── overlays/                  # dev / staging / production
+    └── azure/                         # Bicep, Key Vault bootstrap, AKS render script
 ```
 
 Each microservice follows **Clean Architecture** layering:
@@ -475,11 +476,8 @@ cd src/Services/Auction/Auction.Api && dotnet run
 # Frontend
 cd web && npm install && npm run dev
 
-# All tests
-dotnet test
-
-# Specific test project
-dotnet test src/Services/Auction/tests/Auction.Application.Tests
+# Current backend unit tests
+dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj
 
 # Frontend validation
 cd web && npm run validate
@@ -536,60 +534,39 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 ### Docker Compose (Local)
 
 `deploy/docker/docker-compose.yml` defines the complete local stack:
-- **6 infrastructure services** — PostgreSQL, Redis, RabbitMQ, Elasticsearch, Seq, Jaeger
-- **10 application containers** — all microservices + gateway
+- **5 infrastructure services** — PostgreSQL, Redis, RabbitMQ, Elasticsearch, Seq
+- **11 backend containers** — 10 microservices plus the gateway
 - **1 frontend container** — Nginx-served React SPA
 - Health checks on every container, named volumes, shared bridge network
 
-### Kubernetes (Production)
+### Azure AKS (Production)
 
-`deploy/kubernetes/` uses **Kustomize** with environment overlays:
+The supported production path is Azure. It uses Bicep for infrastructure and
+Kustomize for the application manifests:
 
 ```mermaid
 graph TB
-    subgraph Base["base/"]
-        NS["Namespace: auction-platform"]
-        CFG["ConfigMap + Secrets"]
-        ING["Ingress with TLS"]
-        RBAC["RBAC + PriorityClasses"]
-
-        subgraph SvcK8s["services/ (10 Deployments)"]
-            S["auction-api / bidding-api / payment-api<br/>notification-api / identity-api / analytics-api<br/>search-api / storage-api / job-api / gateway-api<br/>+ PodDisruptionBudgets"]
-        end
-
-        subgraph InfraK8s["infrastructure/ (7 resources)"]
-            I["PostgreSQL / Redis / RabbitMQ<br/>Elasticsearch / Jaeger / Seq / Rate Limiting"]
-        end
-
-        subgraph MonK8s["monitoring/"]
-            M["Prometheus ServiceMonitors"]
-        end
+    subgraph Azure
+        ACR["Azure Container Registry"]
+        AKS["AKS"]
+        KV["Key Vault"]
+        PG["PostgreSQL Flexible Server"]
+        REDIS["Azure Managed Redis"]
+        BLOB["Blob Storage"]
     end
 
-    subgraph Overlays["overlays/"]
-        DEV["dev<br/>Minimal resources, debug logging"]
-        STG["staging<br/>Moderate resources, staging config"]
-        PROD["production<br/>3 replicas (gateway, bidding)<br/>100Gi PG storage, resource limits<br/>GHCR images, ExternalSecrets"]
-    end
-
-    DEV --> Base
-    STG --> Base
-    PROD --> Base
+    GH["GitHub Actions (OIDC)"] --> ACR
+    GH --> AKS
+    KV --> AKS
+    AKS --> PG & REDIS & BLOB
 ```
 
-```bash
-kubectl apply -k deploy/kubernetes/overlays/dev         # Development
-kubectl apply -k deploy/kubernetes/overlays/staging      # Staging
-kubectl apply -k deploy/kubernetes/overlays/production   # Production
-```
+RabbitMQ and Elasticsearch remain in AKS because replacing either one requires
+application code and data-migration work. PostgreSQL, Redis, Blob Storage,
+container images, secrets, TLS, and workload identity are Azure-managed.
 
-**Production specifics:**
-- Gateway and Bidding: **3 replicas** for high availability
-- Resource limits: 512Mi–1Gi memory, 200m–1000m CPU per service
-- PostgreSQL: **100Gi** persistent storage, 2–4Gi memory
-- Container images: `ghcr.io/blanho/auction-platform/{service}:v1.0.0`
-- External Secrets for credential management
-- Pod Disruption Budgets for zero-downtime rolling updates
+For provisioning, required GitHub variables, DNS, and the manual production
+rollout, follow the [Azure deployment guide](deploy/azure/README.md).
 
 ### CI/CD Pipelines
 
@@ -600,14 +577,15 @@ graph LR
     PR["Pull Request"] --> PRC["pr-checks.yml<br/>Build + Test + Lint"]
     Push["Push to main"] --> CI["ci.yml<br/>Build + Test + Coverage"]
     CI --> SONAR["sonarcloud.yml<br/>Quality Gate"]
-    CI --> CD["cd.yml<br/>Docker Build + GHCR Push + K8s Deploy"]
+    CI --> CD["cd.yml<br/>Build images in ACR"]
+    CD --> DEPLOY["Manual Azure AKS deployment"]
     CRON["Cron Schedule"] --> SCHED["scheduled.yml<br/>Vulnerability Scans"]
 ```
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
-| `ci.yml` | Push to main | Build all services, run tests, collect coverage |
-| `cd.yml` | CI success | Build Docker images, push to GHCR, deploy to Kubernetes |
+| `ci.yml` | Push / pull request | Validate frontend, build and test backend, compile Bicep |
+| `cd.yml` | Successful main CI / manual run | Build immutable ACR images; deploy to AKS only when manually enabled |
 | `pr-checks.yml` | Pull request | Validate build, tests, and lint before merge |
 | `sonarcloud.yml` | CI pipeline | Static analysis, enforce quality gate |
 | `scheduled.yml` | Cron | Dependency vulnerability scans |
@@ -620,8 +598,8 @@ graph TB
         Users["Users"]
     end
 
-    subgraph K8s["Kubernetes Cluster"]
-        ING["Ingress Controller<br/>TLS Termination"]
+    subgraph AKS["Azure Kubernetes Service"]
+        ING["Managed ingress<br/>TLS termination"]
 
         subgraph App["Application Tier"]
             GW["Gateway x3"]
@@ -636,17 +614,15 @@ graph TB
             JOB["Job"]
         end
 
-        subgraph DataLayer["Data Tier"]
-            PG["PostgreSQL<br/>StatefulSet / 100Gi"]
-            RD["Redis"]
-            RMQ["RabbitMQ<br/>StatefulSet"]
-            ES["Elasticsearch<br/>StatefulSet"]
+        subgraph DataLayer["Azure-managed data"]
+            PG["PostgreSQL Flexible Server"]
+            RD["Azure Managed Redis"]
+            BLOB["Blob Storage"]
         end
 
-        subgraph Obs["Observability"]
-            SEQ["Seq"]
-            JAG["Jaeger"]
-            PROM["Prometheus"]
+        subgraph InCluster["In-cluster stateful services"]
+            RMQ["RabbitMQ<br/>StatefulSet"]
+            ES["Elasticsearch<br/>StatefulSet"]
         end
     end
 
@@ -655,7 +631,6 @@ graph TB
         SG["SendGrid"]
         TW["Twilio"]
         FB["Firebase"]
-        AZ["Azure Blob"]
     end
 
     Users -->|HTTPS| ING
@@ -667,9 +642,7 @@ graph TB
     App --> RMQ
     PAY --> STRIPE
     NOT --> SG & TW & FB
-    STR --> AZ
-    App --> SEQ & JAG
-    PROM --> App
+    STR --> BLOB
 ```
 
 ---
@@ -678,10 +651,10 @@ graph TB
 
 | Tool | Purpose | Access |
 |---|---|---|
-| Seq | Centralized structured log aggregation | http://localhost:5341 |
+| Seq (local only) | Centralized structured log aggregation | http://localhost:5341 |
 | Serilog | Structured logging with correlation IDs | Per-service config |
-| OpenTelemetry | Distributed tracing (OTLP) | Jaeger UI |
-| Prometheus | Metrics collection (K8s ServiceMonitors) | Grafana dashboards |
+| OpenTelemetry | Distributed tracing instrumentation | Configurable OTLP collector |
+| Azure Monitor / Log Analytics | AKS platform logs and metrics | Azure portal |
 | SonarCloud | Static code analysis and coverage | [Dashboard](https://sonarcloud.io/summary/overall?id=auction-platform-microservices) |
 
 **Health check endpoints** (every service):
@@ -692,27 +665,19 @@ GET /health/ready  # Readiness probe (K8s)
 GET /health/live   # Liveness probe (K8s)
 ```
 
-**Production logging** (`deploy/config/appsettings.Production.template.json`):
-- Console + Elasticsearch sinks (Seq disabled in production)
-- JSON format with service name enrichment
-- Minimum level: Warning
-- OpenTelemetry traces exported to configurable OTLP endpoint
+Production deployment does not install Jaeger, Seq, or Prometheus CRDs. Add a
+managed observability integration only when the project needs it.
 
 ---
 
 ## Testing
 
-```
-tests/
-├── Auction.Domain.Tests/         # Domain entity and value object unit tests
-├── Auction.Application.Tests/    # Command/query handler tests
-├── Bidding.Domain.Tests/         # Bid domain logic tests
-└── Bidding.Application.Tests/    # Bidding handler tests
-```
+The current suite contains Payment domain tests for idempotent payment and
+failure handling. CI discovers every `*Tests.csproj` under `src`; add tests next
+to each service as the project grows.
 
 ```bash
-dotnet test --logger "console;verbosity=normal"    # All tests
-dotnet test --collect:"XPlat Code Coverage"        # With coverage
+dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj
 cd web && npm run validate                         # Frontend
 ```
 
@@ -736,6 +701,7 @@ cd web && npm run validate                         # Frontend
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
+| [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 
 ---
 

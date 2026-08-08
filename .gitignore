@@ -488,6 +488,7 @@ web/.cache/
 # Backend — .NET Sensitive Config & Secrets
 # ============================================================
 **/appsettings.Production.json
+!src/Services/Catalog/Catalog.Api/appsettings.Production.json
 **/appsettings.Staging.json
 **/appsettings.Testing.json
 **/appsettings.Local.json
