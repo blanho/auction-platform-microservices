@@ -1,6 +1,4 @@
 using BuildingBlocks.Application.Abstractions;
-using Search.Domain.Models;
-
 using Search.Domain.Documents;
 using Search.Domain.Models;
 

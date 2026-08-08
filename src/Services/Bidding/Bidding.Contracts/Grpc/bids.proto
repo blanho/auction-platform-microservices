@@ -8,6 +8,7 @@ service BidGrpc {
   rpc GetHighestBid (GetHighestBidRequest) returns (BidResponse);
   rpc GetBidsForAuction (GetBidsForAuctionRequest) returns (BidListResponse);
   rpc HasUserBidOnAuction (HasUserBidRequest) returns (HasUserBidResponse);
+  rpc FinalizeAuction (FinalizeAuctionRequest) returns (FinalizeAuctionResponse);
 }
 
 message GetHighestBidRequest {
@@ -30,6 +31,16 @@ message BidResponse {
   int64 amount_cents = 4;
   string bid_time = 5;
   string status = 6;
+  string bidder_id = 7;
+}
+
+message FinalizeAuctionRequest {
+  string auction_id = 1;
+}
+
+message FinalizeAuctionResponse {
+  bool has_winning_bid = 1;
+  BidResponse winning_bid = 2;
 }
 
 message BidListResponse {
@@ -41,4 +52,3 @@ message HasUserBidResponse {
   bool has_bid = 1;
   BidResponse highest_bid = 2;
 }
-

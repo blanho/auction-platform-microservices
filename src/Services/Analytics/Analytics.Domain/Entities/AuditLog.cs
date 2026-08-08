@@ -1,8 +1,6 @@
 using Common.Contracts.Events;
 using System.ComponentModel.DataAnnotations.Schema;
 
-using Common.Contracts.Events;
-
 namespace Analytics.Domain.Entities;
 
 public class AuditLog

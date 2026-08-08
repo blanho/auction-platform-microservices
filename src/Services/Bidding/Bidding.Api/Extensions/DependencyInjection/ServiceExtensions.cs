@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using BuildingBlocks.Application.Abstractions.Providers;
 using System.Text.Json.Serialization;
+using Bidding.Infrastructure.Services;
 
 namespace Bidding.Api.Extensions.DependencyInjection
 {
@@ -30,6 +31,8 @@ namespace Bidding.Api.Extensions.DependencyInjection
             services.AddAutoMapper(typeof(Bidding.Application.Mappings.MappingProfiles).Assembly);
 
             services.AddScoped<IBidRepository, BidRepository>();
+            services.AddScoped<IAuthoritativeBidReader, AuthoritativeBidReader>();
+            services.AddScoped<IAuctionBidFinalizationService, AuctionBidFinalizationService>();
             services.AddScoped<IAutoBidRepository, AutoBidRepository>();
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());

@@ -12,10 +12,8 @@ using Elastic.Clients.Elasticsearch.Aggregations;
 using Elastic.Clients.Elasticsearch.Core.Search;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using Microsoft.Extensions.Options;
-using Search.Domain.Constants;
 using Search.Domain.Documents;
 using Search.Application.Interfaces;
-using Search.Domain.Models;
 namespace Search.Infrastructure.Services;
 
 public class AuctionSearchService : IAuctionSearchService

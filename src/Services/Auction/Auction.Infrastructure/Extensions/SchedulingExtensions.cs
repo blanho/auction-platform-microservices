@@ -18,12 +18,6 @@ public static class SchedulingExtensions
                 description: CheckAuctionFinishedJob.Description,
                 runOnStartup: true);
 
-            q.AddIntervalJob<AuctionDeactivationJob>(
-                interval: TimeSpan.FromMinutes(AuctionDefaults.Scheduling.DeactivationIntervalMinutes),
-                jobId: AuctionDeactivationJob.JobId,
-                description: AuctionDeactivationJob.Description,
-                runOnStartup: false);
-
             q.AddIntervalJob<AuctionActivationJob>(
                 interval: TimeSpan.FromSeconds(AuctionDefaults.Scheduling.ActivationIntervalSeconds),
                 jobId: AuctionActivationJob.JobId,
@@ -40,4 +34,3 @@ public static class SchedulingExtensions
         return services;
     }
 }
-

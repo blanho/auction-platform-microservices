@@ -1,8 +1,6 @@
 using BuildingBlocks.Application.Abstractions;
 using Search.Domain.Models;
 
-using Search.Domain.Models;
-
 namespace Search.Application.Interfaces;
 
 public interface IIndexManagementService

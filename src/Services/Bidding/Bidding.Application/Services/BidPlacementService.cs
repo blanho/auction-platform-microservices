@@ -79,14 +79,20 @@ namespace Bidding.Application.Services
             bool isAutoBid,
             CancellationToken ct)
         {
-            var (auctionError, reservePrice) = await ValidateAuctionForBid(dto, bidderUsername, bidderId, ct);
-            if (auctionError != null)
-                return auctionError;
-
             return await _auctionBidLock.ExecuteAsync(
                 dto.AuctionId,
                 async lockCt =>
                 {
+                    // Auction finalization acquires this same database lock. Revalidating
+                    // inside the lock creates one authoritative close/bid boundary.
+                    var (auctionError, reservePrice) = await ValidateAuctionForBid(
+                        dto,
+                        bidderUsername,
+                        bidderId,
+                        lockCt);
+                    if (auctionError != null)
+                        return auctionError;
+
                     var highestBid = await _repository.GetHighestBidForAuctionAsync(dto.AuctionId, lockCt);
                     var currentHighBid = highestBid?.Amount ?? 0;
 

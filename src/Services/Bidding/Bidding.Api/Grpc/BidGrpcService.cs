@@ -7,12 +7,32 @@ namespace Bidding.Api.Grpc;
 public class BidGrpcService : BidGrpc.BidGrpcBase
 {
     private readonly IBidRepository _bidRepository;
+    private readonly IAuctionBidFinalizationService _finalizationService;
     private readonly ILogger<BidGrpcService> _logger;
 
-    public BidGrpcService(IBidRepository bidRepository, ILogger<BidGrpcService> logger)
+    public BidGrpcService(
+        IBidRepository bidRepository,
+        IAuctionBidFinalizationService finalizationService,
+        ILogger<BidGrpcService> logger)
     {
         _bidRepository = bidRepository;
+        _finalizationService = finalizationService;
         _logger = logger;
+    }
+
+    public override async Task<FinalizeAuctionResponse> FinalizeAuction(
+        FinalizeAuctionRequest request,
+        ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.AuctionId, out var auctionId))
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid auction ID format"));
+
+        var bid = await _finalizationService.FinalizeAsync(auctionId, context.CancellationToken);
+        var response = new FinalizeAuctionResponse { HasWinningBid = bid is not null };
+        if (bid is not null)
+            response.WinningBid = MapToResponse(bid);
+
+        return response;
     }
 
     public override async Task<BidResponse> GetHighestBid(
@@ -77,10 +97,21 @@ public class BidGrpcService : BidGrpc.BidGrpcBase
         Bidder = bid.BidderUsername,
         AmountCents = DecimalToCents(bid.Amount),
         BidTime = bid.BidTime.ToString("O"),
-        Status = bid.Status.ToString()
+        Status = bid.Status.ToString(),
+        BidderId = bid.BidderId.ToString()
+    };
+
+    private static BidResponse MapToResponse(AuthoritativeWinningBid bid) => new()
+    {
+        Id = bid.BidId.ToString(),
+        AuctionId = bid.AuctionId.ToString(),
+        Bidder = bid.BidderUsername,
+        BidderId = bid.BidderId.ToString(),
+        AmountCents = DecimalToCents(bid.Amount),
+        BidTime = bid.BidTime.ToString("O"),
+        Status = bid.Status
     };
 
     private static long DecimalToCents(decimal amount) =>
         (long)decimal.Round(amount * 100, MidpointRounding.AwayFromZero);
 }
-
