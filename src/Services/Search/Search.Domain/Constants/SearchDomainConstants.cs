@@ -1,10 +1,5 @@
 namespace Search.Domain.Constants;
 
-public static class BidStatuses
-{
-    public const string Accepted = "Accepted";
-}
-
 public static class AuctionStatuses
 {
     public const string Sold = "Sold";

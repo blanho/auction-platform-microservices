@@ -17,6 +17,7 @@ global using Bidding.Application.Helpers;
 global using Bidding.Application.Interfaces;
 
 global using BidService.Contracts.Events;
+global using BidService.Contracts.Constants;
 
 global using MediatR;
 
