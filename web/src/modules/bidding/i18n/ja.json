@@ -5,6 +5,7 @@
   "outbid": "入札負け",
   "activeBids": "参加中の入札",
   "bidHistory": "入札履歴",
+  "bidHistoryDescription": "すべての入札履歴を確認・絞り込みできます",
 
   "placeBid": {
     "title": "入札する",
@@ -15,7 +16,8 @@
     "autoBid": "自動入札",
     "autoBidDescription": "上限まで自動で入札します",
     "submit": "入札する",
-    "confirm": "入札を確認"
+    "confirm": "入札を確認",
+    "cancel": "キャンセル"
   },
 
   "status": {
@@ -23,7 +25,10 @@
     "outbid": "入札負け",
     "won": "落札",
     "lost": "落札失敗",
-    "pending": "保留中"
+    "pending": "保留中",
+    "ended": "終了",
+    "active": "有効",
+    "inactive": "停止中"
   },
 
   "messages": {
@@ -31,18 +36,137 @@
     "bidFailed": "入札に失敗しました",
     "outbidAlert": "入札負けしました！",
     "wonAuction": "おめでとうございます！落札しました！",
-    "minimumNotMet": "入札額は{{amount}}以上である必要があります"
+    "minimumNotMet": "入札額は{{amount}}以上である必要があります",
+    "loadFailed": "入札データを読み込めませんでした。もう一度お試しください。"
   },
 
   "filter": {
     "all": "すべての入札",
     "active": "参加中",
+    "inactive": "停止中",
+    "show": "表示",
     "won": "落札",
     "lost": "落札失敗"
   },
 
   "empty": {
     "title": "入札履歴がありません",
-    "description": "気になるオークションに入札してみましょう"
+    "description": "気になるオークションに入札してみましょう",
+    "noBidHistory": "入札履歴が見つかりません"
+  },
+
+  "actions": {
+    "edit": "編集",
+    "delete": "削除",
+    "saveChanges": "変更を保存",
+    "browseAuctions": "オークションを見る"
+  },
+
+  "autoBid": {
+    "title": "自動入札管理",
+    "description": "オークションごとの自動入札上限を管理します",
+    "create": "自動入札を作成",
+    "auction": "オークション",
+    "auctionId": "オークションID",
+    "maxAmount": "上限額",
+    "maxAmountDesc": "入札可能な最大金額",
+    "currentBid": "現在の入札額",
+    "minimum": "最低額",
+    "minimumIncrement": "最低入札単位",
+    "bidIncrement": "入札単位",
+    "bidIncrementDesc": "自動入札ごとに加算する金額",
+    "lastBid": "最終入札",
+    "created": "作成日時",
+    "editTitle": "自動入札を編集",
+    "confirmDelete": "自動入札をキャンセルしますか？",
+    "deleteWarning": "選択した自動入札は完全にキャンセルされます。",
+    "cancelAutoBid": "自動入札をキャンセル",
+    "enable": "自動入札を有効化",
+    "stopOnOutbid": "入札負け時に停止",
+    "stopOnOutbidDesc": "他の入札者が上限額を超えた場合、自動入札を停止します",
+    "summary": "自動入札の概要",
+    "summaryDesc": "自動入札の設定内容を確認します",
+    "activated": "自動入札を有効にしました",
+    "activatedDesc": "設定した上限額まで自動的に入札します。",
+    "update": "自動入札を更新",
+    "setupFailed": "自動入札を設定できませんでした",
+    "empty": {
+      "title": "自動入札はありません",
+      "description": "オークションで上限額を設定すると、自動入札を開始できます"
+    }
+  },
+
+  "history": {
+    "auctionId": "オークションID",
+    "auctionIdPlaceholder": "オークションIDを入力...",
+    "auction": "オークション",
+    "bidAmount": "入札額",
+    "status": "ステータス",
+    "date": "日付",
+    "winning": "最高入札",
+    "bidTime": "入札日時",
+    "statuses": {
+      "Pending": "保留中",
+      "Accepted": "承認済み",
+      "Rejected": "拒否",
+      "Retracted": "撤回済み",
+      "Outbid": "入札負け"
+    }
+  },
+
+  "validation": {
+    "invalidAuctionId": "オークションIDが無効です",
+    "invalidAuction": "オークションが無効です",
+    "auctionIdRequired": "オークションIDが必要です",
+    "bidMinimum": "入札額は${{amount}}以上にしてください",
+    "bidMaximum": "入札額は$10,000,000以下にしてください",
+    "autoBidMinimum": "上限額は${{amount}}以上にしてください",
+    "incrementMinimum": "入札単位は${{amount}}以上にしてください",
+    "incrementLessThanMaximum": "入札単位は上限額より小さくしてください",
+    "reasonMin": "理由は10文字以上で入力してください",
+    "reasonMax": "理由は500文字以内で入力してください",
+    "maximumPositive": "上限額は0より大きい値にしてください",
+    "incrementPositive": "入札単位は0より大きい値にしてください"
+  },
+
+  "winning": {
+    "description": "現在あなたが最高額で入札しているオークション",
+    "loadFailed": "落札候補の読み込みに失敗しました。もう一度お試しください。",
+    "badge": "最高入札者",
+    "yourBid": "あなたの入札額",
+    "nextMinimum": "次の最低入札額: {{amount}}",
+    "ends": "終了 {{time}}",
+    "active": "開催中",
+    "bidCount": "{{count}}件の入札",
+    "bidCount_other": "{{count}}件の入札",
+    "emptyTitle": "最高入札中のオークションはありません",
+    "emptyDescription": "オークションに入札すると、最高入札中の商品がここに表示されます",
+    "browse": "オークションを見る"
+  },
+
+  "myBidsPage": {
+    "description": "入札状況を確認します",
+    "loadError": "入札を読み込めませんでした。もう一度お試しください。",
+    "activeAutoBids": "有効な自動入札",
+    "auctionNumber": "オークション #{{id}}",
+    "autoBidAmounts": "上限：{{maximum}} · 現在：{{current}}",
+    "editAutoBid": "自動入札を編集",
+    "cancelAutoBid": "自動入札をキャンセル",
+    "viewAuction": "オークションを見る",
+    "bidBy": "{{username}}による入札",
+    "editDescription": "自動入札の上限額を更新します。",
+    "cancel": "キャンセル",
+    "update": "更新",
+    "columns": {
+      "auction": "オークション",
+      "date": "日付",
+      "status": "ステータス",
+      "actions": "操作"
+    },
+    "empty": {
+      "all": "まだ入札していません",
+      "winning": "最高入札中の商品はありません",
+      "outbid": "入札負けしたオークションはありません"
+    }
   }
 }

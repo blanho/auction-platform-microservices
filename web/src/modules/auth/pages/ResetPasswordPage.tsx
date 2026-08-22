@@ -1,34 +1,36 @@
-import { useState, useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { FormField, InlineAlert } from '@/shared/ui'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Cancel, CheckCircle, East, Error as ErrorIcon, LockReset, West } from '@mui/icons-material'
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { motion } from 'framer-motion'
-import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
-import { InlineAlert, FormField } from '@/shared/ui'
-import { LockReset, West, East, CheckCircle, Cancel, Error as ErrorIcon } from '@mui/icons-material'
+import type { TFunction } from 'i18next'
+import { useEffect, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useResetPassword } from '../hooks'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
-const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Must contain at least one lowercase letter')
-      .regex(/\d/, 'Must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  })
+const createResetPasswordSchema = (t: TFunction<'auth'>) =>
+  z
+    .object({
+      password: z
+        .string()
+        .min(8, t('validation.passwordMin', { min: 8 }))
+        .regex(/[A-Z]/, t('validation.passwordUppercase'))
+        .regex(/[a-z]/, t('validation.passwordLowercase'))
+        .regex(/\d/, t('validation.passwordNumber'))
+        .regex(/[^A-Za-z0-9]/, t('validation.passwordSpecial')),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('validation.passwordMatch'),
+      path: ['confirmPassword'],
+    })
 
-type ResetPasswordForm = z.infer<typeof resetPasswordSchema>
+type ResetPasswordForm = z.infer<ReturnType<typeof createResetPasswordSchema>>
 
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
@@ -66,16 +68,16 @@ interface PasswordRequirement {
   test: (password: string) => boolean
 }
 
-const passwordRequirements: PasswordRequirement[] = [
-  { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-  { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
-  { label: 'One lowercase letter', test: (p) => /[a-z]/.test(p) },
-  { label: 'One number', test: (p) => /\d/.test(p) },
-  { label: 'One special character', test: (p) => /[^A-Za-z0-9]/.test(p) },
-]
-
 export function ResetPasswordPage() {
   const { t } = useTranslation('auth')
+  const resetPasswordSchema = createResetPasswordSchema(t)
+  const passwordRequirements: PasswordRequirement[] = [
+    { label: t('resetPassword.requirements.minLength'), test: (p) => p.length >= 8 },
+    { label: t('resetPassword.requirements.uppercase'), test: (p) => /[A-Z]/.test(p) },
+    { label: t('resetPassword.requirements.lowercase'), test: (p) => /[a-z]/.test(p) },
+    { label: t('resetPassword.requirements.number'), test: (p) => /\d/.test(p) },
+    { label: t('resetPassword.requirements.special'), test: (p) => /[^A-Za-z0-9]/.test(p) },
+  ]
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [resetSuccess, setResetSuccess] = useState(false)
@@ -400,7 +402,7 @@ export function ResetPasswordPage() {
                   mb: 3,
                 }}
               >
-                Create New Password
+                {t('resetPassword.heroTitle')}
               </Typography>
             </motion.div>
 
@@ -413,7 +415,7 @@ export function ResetPasswordPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Choose a strong password to keep your account secure.
+                {t('resetPassword.heroDescription')}
               </Typography>
             </motion.div>
           </motion.div>

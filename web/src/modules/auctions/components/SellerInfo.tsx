@@ -1,8 +1,9 @@
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, Avatar, Stack, Button, Rating, Skeleton } from '@mui/material'
-import { Verified, Storefront, Chat } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
+import { formatNumber } from '@/shared/utils/formatters'
+import { Chat, Storefront, Verified } from '@mui/icons-material'
+import { Avatar, Box, Button, Rating, Skeleton, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import type { AuctionSellerInfo } from '../types'
 
 interface SellerInfoProps {
@@ -125,7 +126,7 @@ export function SellerInfo({ seller, onContact }: SellerInfoProps) {
                   fontSize: '1.125rem',
                 }}
               >
-                {seller.totalSales.toLocaleString()}
+                {formatNumber(seller.totalSales)}
               </Typography>
               <Typography variant="body2" sx={{ color: palette.neutral[500], fontSize: '0.75rem' }}>
                 {t('seller.totalSales')}

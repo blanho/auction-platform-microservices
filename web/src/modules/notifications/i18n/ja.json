@@ -3,6 +3,17 @@
   "markAllRead": "すべて既読にする",
   "clearAll": "すべて消去",
   "settings": "通知設定",
+  "description": "オークションの動きをいつでも確認できます",
+  "loadFailed": "通知の読み込みに失敗しました。もう一度お試しください。",
+  "tabs": {
+    "all": "すべて",
+    "unread": "未読",
+    "archived": "アーカイブ済み"
+  },
+  "emptyUnread": "すべて確認済みです！",
+  "emptyArchived": "アーカイブされた通知はありません",
+  "emptyDefault": "通知はまだありません",
+  "emptyDefaultDescription": "入札やオークションに関する通知がここに表示されます",
   "empty": "通知はありません",
   "emptyDescription": "すべて確認済みです！",
 
@@ -37,5 +48,140 @@
     "priceDrops": "価格引き下げ",
     "newListings": "新規出品",
     "marketing": "マーケティング・プロモーション"
+  },
+
+  "stats": {
+    "title": "通知統計",
+    "description": "通知のパフォーマンスとエンゲージメントの概要",
+    "total": "通知総数",
+    "unread": "未読",
+    "today": "本日",
+    "engagementRate": "エンゲージメント率",
+    "byType": "タイプ別通知数",
+    "noData": "通知データがありません"
+  },
+
+  "broadcast": {
+    "title": "通知を一斉送信",
+    "description": "すべてのユーザーまたは特定のロールに通知を送信します",
+    "success": "通知を一斉送信しました！",
+    "type": "通知タイプ",
+    "targetRole": "対象ロール（任意）",
+    "targetRolePlaceholder": "例: admin、seller、buyer",
+    "targetRoleHelper": "すべてのユーザーに送信する場合は空欄にします",
+    "notificationTitle": "タイトル",
+    "titlePlaceholder": "通知タイトルを入力",
+    "message": "メッセージ",
+    "messagePlaceholder": "通知メッセージを入力",
+    "reset": "リセット",
+    "submitting": "送信中...",
+    "submit": "通知を一斉送信",
+    "preview": "プレビュー",
+    "previewTitle": "通知タイトルがここに表示されます",
+    "previewMessage": "通知メッセージがここに表示されます",
+    "types": {
+      "system": "システム",
+      "promotional": "プロモーション",
+      "auction_ending": "オークション終了間近",
+      "auction_ended": "オークション終了"
+    }
+  },
+
+  "admin": {
+    "title": "すべての通知",
+    "description": "プラットフォーム全体のユーザー通知を確認・管理します",
+    "userId": "ユーザーID",
+    "userIdPlaceholder": "ユーザーIDで絞り込み",
+    "type": "タイプ",
+    "status": "ステータス",
+    "allTypes": "すべてのタイプ",
+    "allStatuses": "すべてのステータス",
+    "user": "ユーザー",
+    "notificationTitle": "タイトル",
+    "message": "メッセージ",
+    "created": "作成日時",
+    "noNotifications": "通知が見つかりません",
+    "total": "通知総数",
+    "currentPage": "現在のページ",
+    "perPage": "1ページあたり",
+    "statuses": {
+      "unread": "未読",
+      "read": "既読",
+      "archived": "アーカイブ済み"
+    },
+    "types": {
+      "bid_placed": "入札受付",
+      "bid_outbid": "入札負け",
+      "auction_won": "落札",
+      "auction_lost": "落札失敗",
+      "auction_ending": "終了間近",
+      "auction_ended": "オークション終了",
+      "payment_received": "支払い受領",
+      "payment_failed": "支払い失敗",
+      "system": "システム",
+      "promotional": "プロモーション"
+    }
+  },
+
+  "templates": {
+    "title": "通知テンプレート",
+    "description": "メール、SMS、プッシュ通知のテンプレートを管理します",
+    "create": "テンプレートを作成",
+    "edit": "テンプレートを編集",
+    "loadFailed": "テンプレートの読み込みに失敗しました。もう一度お試しください。",
+    "template": "テンプレート",
+    "channel": "チャネル",
+    "subject": "件名",
+    "status": "ステータス",
+    "variables": "変数",
+    "actions": "操作",
+    "noTemplates": "テンプレートが見つかりません",
+    "active": "有効",
+    "inactive": "無効",
+    "variableCount": "{{count}}個の変数",
+    "variableCount_other": "{{count}}個の変数",
+    "key": "テンプレートキー",
+    "keyHelper": "一意の識別子（例: 'welcome-email'）",
+    "name": "テンプレート名",
+    "descriptionLabel": "説明",
+    "subjectHelper": "動的コンテンツには {variable} を使用します",
+    "body": "本文",
+    "bodyHelper": "{variables} を含むテンプレート本文",
+    "variablesHelper": "カンマ区切りの一覧（例: userName, orderNumber）",
+    "update": "更新",
+    "deleteTitle": "テンプレートを削除",
+    "deleteMessage": "「{{name}}」を削除してもよろしいですか？この操作は取り消せません。",
+    "channels": {
+      "email": "メール",
+      "sms": "SMS",
+      "push": "プッシュ通知",
+      "in_app": "アプリ内"
+    }
+  },
+
+  "records": {
+    "title": "通知送信履歴",
+    "description": "配信状況とパフォーマンス指標を追跡します",
+    "channel": "チャネル",
+    "status": "ステータス",
+    "templateKey": "テンプレートキー",
+    "templatePlaceholder": "テンプレートで検索...",
+    "fromDate": "開始日",
+    "recipient": "受信者",
+    "template": "テンプレート",
+    "subject": "件名",
+    "sentAt": "送信日時",
+    "totalSent": "送信総数",
+    "delivered": "配信済み",
+    "failed": "失敗",
+    "successRate": "成功率",
+    "empty": "通知送信履歴が見つかりません",
+    "statuses": {
+      "pending": "待機中",
+      "sent": "送信済み",
+      "delivered": "配信済み",
+      "failed": "失敗",
+      "bounced": "不達"
+    }
   }
 }

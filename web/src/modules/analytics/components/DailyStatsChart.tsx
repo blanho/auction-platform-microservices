@@ -1,18 +1,20 @@
-import { Box, Typography, Stack, Skeleton, useTheme } from '@mui/material'
+import { getCurrentLocale } from '@/i18n'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
+import { Box, Skeleton, Stack, Typography, useTheme } from '@mui/material'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts'
 import { useDailyStats } from '../hooks/useAnalytics'
-import { formatNumber, formatCurrency } from '@/shared/utils/formatters'
 import type { ChartDataPoint } from '../types'
-import { palette } from '@/shared/theme/tokens'
 
 interface CustomTooltipProps {
   active?: boolean
@@ -26,6 +28,7 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  const { t } = useTranslation('analytics')
   if (active && payload && payload.length) {
     const data = payload[0].payload
     return (
@@ -45,13 +48,13 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         </Typography>
         <Stack spacing={0.5}>
           <Typography variant="caption" sx={{ color: palette.semantic.info }}>
-            Auctions: {formatNumber(data.auctions)}
+            {t('charts.auctions')}: {formatNumber(data.auctions)}
           </Typography>
           <Typography variant="caption" sx={{ color: palette.semantic.success }}>
-            Bids: {formatNumber(data.bids)}
+            {t('charts.bids')}: {formatNumber(data.bids)}
           </Typography>
           <Typography variant="caption" sx={{ color: palette.semantic.warning }}>
-            Revenue: {formatCurrency(data.revenue)}
+            {t('charts.revenue')}: {formatCurrency(data.revenue)}
           </Typography>
         </Stack>
       </Box>
@@ -61,6 +64,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function DailyStatsChart() {
+  const { t } = useTranslation('analytics')
   const theme = useTheme()
   const { data: dailyStats, isLoading } = useDailyStats()
 
@@ -109,7 +113,7 @@ export function DailyStatsChart() {
       .slice(-14)
       .map((item) => ({
         ...item,
-        date: new Date(item.date).toLocaleDateString('en-US', {
+        date: new Date(item.date).toLocaleDateString(getCurrentLocale(), {
           month: 'short',
           day: 'numeric',
         }),
@@ -148,9 +152,9 @@ export function DailyStatsChart() {
         }}
       >
         <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-          Daily Activity
+          {t('charts.dailyActivity')}
         </Typography>
-        <Typography color="text.secondary">No daily stats available</Typography>
+        <Typography color="text.secondary">{t('charts.noDailyStats')}</Typography>
       </Box>
     )
   }
@@ -171,7 +175,7 @@ export function DailyStatsChart() {
         fontWeight={600}
         sx={{ mb: 3, fontFamily: '"Fira Sans", sans-serif' }}
       >
-        Daily Activity (Last 14 Days)
+        {t('charts.dailyActivityLast14Days')}
       </Typography>
 
       <Box sx={{ width: '100%', height: 280 }}>
@@ -225,7 +229,7 @@ export function DailyStatsChart() {
         <Stack direction="row" alignItems="center" spacing={1}>
           <Box sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: palette.semantic.info }} />
           <Typography variant="caption" color="text.secondary">
-            Auctions
+            {t('charts.auctions')}
           </Typography>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={1}>
@@ -233,7 +237,7 @@ export function DailyStatsChart() {
             sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: palette.semantic.success }}
           />
           <Typography variant="caption" color="text.secondary">
-            Bids
+            {t('charts.bids')}
           </Typography>
         </Stack>
       </Stack>

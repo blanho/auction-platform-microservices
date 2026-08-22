@@ -10,6 +10,9 @@ public class ShipOrderCommandValidator : AbstractValidator<ShipOrderCommand>
         RuleFor(x => x.OrderId)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Order ID"));
 
+        RuleFor(x => x.SellerId)
+            .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Seller ID"));
+
         RuleFor(x => x.TrackingNumber)
             .NotEmpty().WithMessage(ValidationConstants.Messages.Required("Tracking number"))
             .MaximumLength(ValidationConstants.StringLength.Standard)

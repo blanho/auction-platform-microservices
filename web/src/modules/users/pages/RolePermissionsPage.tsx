@@ -1,37 +1,37 @@
-import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import {
-  Container,
-  Typography,
-  Box,
-  Alert,
-  Snackbar,
-  Button,
-  Stack,
-  Breadcrumbs,
-  Link,
-  Grid,
-} from '@mui/material'
-import { Shield, Refresh, NavigateNext } from '@mui/icons-material'
-import { Link as RouterLink } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import {
-  useRoles,
-  usePermissionDefinitions,
-  useTogglePermission,
-  useSetPermissions,
-} from '../hooks'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { NavigateNext, Refresh, Shield } from '@mui/icons-material'
 import {
-  RoleCard,
-  RoleCardSkeleton,
+  Alert,
+  Box,
+  Breadcrumbs,
+  Button,
+  Container,
+  Grid,
+  Link,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material'
+import { motion } from 'framer-motion'
+import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link as RouterLink } from 'react-router-dom'
+import {
   PermissionsPanel,
   PermissionsPanelSkeleton,
+  RoleCard,
+  RoleCardSkeleton,
 } from '../components'
+import {
+  usePermissionDefinitions,
+  useRoles,
+  useSetPermissions,
+  useTogglePermission,
+} from '../hooks'
 import type { RoleDto } from '../types'
 
 export function RolePermissionsPage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const [selectedRole, setSelectedRole] = useState<RoleDto | null>(null)
   const [loadingPermission, setLoadingPermission] = useState<string | null>(null)
   const [snackbar, setSnackbar] = useState<{
@@ -77,16 +77,22 @@ export function RolePermissionsPage() {
         })
 
         showSnackbar(
-          `Permission "${permission}" ${enabled ? 'granted' : 'revoked'} for ${selectedRole.name}`,
+          t(enabled ? 'rolePermissions.permissionGranted' : 'rolePermissions.permissionRevoked', {
+            permission,
+            role: selectedRole.name,
+          }),
           'success'
         )
       } catch {
-        showSnackbar(`Failed to ${enabled ? 'grant' : 'revoke'} permission`, 'error')
+        showSnackbar(
+          t(enabled ? 'rolePermissions.grantError' : 'rolePermissions.revokeError'),
+          'error'
+        )
       } finally {
         setLoadingPermission(null)
       }
     },
-    [selectedRole, toggleMutation, showSnackbar]
+    [selectedRole, toggleMutation, showSnackbar, t]
   )
 
   const handleSelectAllCategory = useCallback(
@@ -112,13 +118,16 @@ export function RolePermissionsPage() {
         })
 
         setSelectedRole((prev) => (prev ? { ...prev, permissions: newPermissions } : null))
-        showSnackbar(`All permissions in category ${enabled ? 'granted' : 'revoked'}`, 'success')
+        showSnackbar(
+          t(enabled ? 'rolePermissions.categoryGranted' : 'rolePermissions.categoryRevoked'),
+          'success'
+        )
         refetchRoles()
       } catch {
-        showSnackbar('Failed to update permissions', 'error')
+        showSnackbar(t('rolePermissions.updateError'), 'error')
       }
     },
-    [selectedRole, setPermissionsMutation, showSnackbar, refetchRoles]
+    [selectedRole, setPermissionsMutation, showSnackbar, refetchRoles, t]
   )
 
   const handleRefresh = useCallback(() => {
@@ -139,12 +148,12 @@ export function RolePermissionsPage() {
         <motion.div variants={fadeInUp}>
           <Breadcrumbs separator={<NavigateNext fontSize="small" />} sx={{ mb: 3 }}>
             <Link component={RouterLink} to="/admin" color="inherit" underline="hover">
-              Admin
+              {t('rolePermissions.admin')}
             </Link>
             <Link component={RouterLink} to="/admin/users" color="inherit" underline="hover">
-              Users
+              {t('rolePermissions.users')}
             </Link>
-            <Typography color="text.primary">Role Permissions</Typography>
+            <Typography color="text.primary">{t('rolePermissions.title')}</Typography>
           </Breadcrumbs>
 
           <Stack
@@ -158,12 +167,10 @@ export function RolePermissionsPage() {
               <Stack direction="row" alignItems="center" spacing={1.5} mb={0.5}>
                 <Shield color="primary" />
                 <Typography variant="h4" fontWeight={700}>
-                  Role Permissions
+                  {t('rolePermissions.title')}
                 </Typography>
               </Stack>
-              <Typography color="text.secondary">
-                Manage permissions for each role. Toggle permissions on/off to control access.
-              </Typography>
+              <Typography color="text.secondary">{t('rolePermissions.description')}</Typography>
             </Box>
             <Button
               variant="outlined"
@@ -171,7 +178,7 @@ export function RolePermissionsPage() {
               onClick={handleRefresh}
               disabled={isLoading}
             >
-              Refresh
+              {t('rolePermissions.refresh')}
             </Button>
           </Stack>
         </motion.div>
@@ -180,7 +187,7 @@ export function RolePermissionsPage() {
           <Grid size={{ xs: 12, md: 4 }}>
             <motion.div variants={fadeInUp}>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                Roles
+                {t('rolePermissions.roles')}
               </Typography>
               <Stack spacing={2}>
                 {isLoading
@@ -205,7 +212,7 @@ export function RolePermissionsPage() {
           <Grid size={{ xs: 12, md: 8 }}>
             <motion.div variants={fadeInUp}>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                Permissions
+                {t('rolePermissions.permissions')}
               </Typography>
               {isLoading ? (
                 <PermissionsPanelSkeleton />

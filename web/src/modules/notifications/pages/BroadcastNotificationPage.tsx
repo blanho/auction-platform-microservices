@@ -1,32 +1,32 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { InlineAlert } from '@/shared/ui'
+import { Send } from '@mui/icons-material'
 import {
   Box,
-  Container,
-  Typography,
-  Card,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Button,
+  Card,
+  Container,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { Send } from '@mui/icons-material'
-import { InlineAlert } from '@/shared/ui'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useBroadcastNotification } from '../hooks'
-import type { NotificationType, BroadcastNotificationDto } from '../types/notification.types'
+import type { BroadcastNotificationDto, NotificationType } from '../types/notification.types'
 
-const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'promotional', label: 'Promotional' },
-  { value: 'auction_ending', label: 'Auction Ending' },
-  { value: 'auction_ended', label: 'Auction Ended' },
+const NOTIFICATION_TYPES: NotificationType[] = [
+  'system',
+  'promotional',
+  'auction_ending',
+  'auction_ended',
 ]
 
 export function BroadcastNotificationPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const [formData, setFormData] = useState<BroadcastNotificationDto>({
     type: 'system',
     title: '',
@@ -69,16 +69,16 @@ export function BroadcastNotificationPage() {
             mb: 1,
           }}
         >
-          Broadcast Notification
+          {t('broadcast.title')}
         </Typography>
         <Typography sx={{ color: '#78716C', fontFamily: '"Inter", sans-serif' }}>
-          Send a notification to all users or a specific role
+          {t('broadcast.description')}
         </Typography>
       </Box>
 
       {success && (
         <InlineAlert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-          Notification broadcast successfully!
+          {t('broadcast.success')}
         </InlineAlert>
       )}
 
@@ -87,16 +87,16 @@ export function BroadcastNotificationPage() {
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
-                <InputLabel>Notification Type</InputLabel>
+                <InputLabel>{t('broadcast.type')}</InputLabel>
                 <Select
                   value={formData.type}
-                  label="Notification Type"
+                  label={t('broadcast.type')}
                   onChange={(e) => handleChange('type', e.target.value)}
                   required
                 >
                   {NOTIFICATION_TYPES.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      {type.label}
+                    <MenuItem key={type} value={type}>
+                      {t(`broadcast.types.${type}`)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -106,22 +106,22 @@ export function BroadcastNotificationPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
-                label="Target Role (Optional)"
+                label={t('broadcast.targetRole')}
                 value={formData.targetRole || ''}
                 onChange={(e) => handleChange('targetRole', e.target.value)}
-                placeholder="e.g., admin, seller, buyer"
-                helperText="Leave empty to broadcast to all users"
+                placeholder={t('broadcast.targetRolePlaceholder')}
+                helperText={t('broadcast.targetRoleHelper')}
               />
             </Grid>
 
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
-                label="Title"
+                label={t('broadcast.notificationTitle')}
                 value={formData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
                 required
-                placeholder="Enter notification title"
+                placeholder={t('broadcast.titlePlaceholder')}
               />
             </Grid>
 
@@ -130,11 +130,11 @@ export function BroadcastNotificationPage() {
                 fullWidth
                 multiline
                 rows={6}
-                label="Message"
+                label={t('broadcast.message')}
                 value={formData.message}
                 onChange={(e) => handleChange('message', e.target.value)}
                 required
-                placeholder="Enter notification message"
+                placeholder={t('broadcast.messagePlaceholder')}
               />
             </Grid>
 
@@ -161,7 +161,7 @@ export function BroadcastNotificationPage() {
                     },
                   }}
                 >
-                  Reset
+                  {t('broadcast.reset')}
                 </Button>
                 <Button
                   type="submit"
@@ -176,7 +176,7 @@ export function BroadcastNotificationPage() {
                     transition: 'all 200ms',
                   }}
                 >
-                  {isPending ? 'Broadcasting...' : 'Broadcast Notification'}
+                  {isPending ? t('broadcast.submitting') : t('broadcast.submit')}
                 </Button>
               </Box>
             </Grid>
@@ -186,7 +186,7 @@ export function BroadcastNotificationPage() {
 
       <Card sx={{ mt: 3, p: 3, borderRadius: 2, bgcolor: '#FAF5FF' }}>
         <Typography variant="h6" sx={{ color: '#4C1D95', mb: 2, fontWeight: 600 }}>
-          Preview
+          {t('broadcast.preview')}
         </Typography>
         <Box
           sx={{
@@ -197,10 +197,10 @@ export function BroadcastNotificationPage() {
           }}
         >
           <Typography sx={{ fontWeight: 600, color: '#1C1917', mb: 1 }}>
-            {formData.title || 'Notification title will appear here'}
+            {formData.title || t('broadcast.previewTitle')}
           </Typography>
           <Typography sx={{ color: '#44403C', fontSize: '0.875rem' }}>
-            {formData.message || 'Notification message will appear here'}
+            {formData.message || t('broadcast.previewMessage')}
           </Typography>
         </Box>
       </Card>

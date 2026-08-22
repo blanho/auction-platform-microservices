@@ -1,16 +1,16 @@
 import { http } from '@/services/http'
-import type {
-  UserProfile,
-  SellerStatus,
-  AdminUser,
-  UserStats,
-  User2FAStatus,
-  UpdateProfileRequest,
-  ChangePasswordRequest,
-  UserFilters,
-  UpdateUserRolesRequest,
-} from '../types'
 import type { PaginatedResponse } from '@/shared/types'
+import type {
+  AdminUser,
+  ChangePasswordRequest,
+  SellerStatus,
+  UpdateProfileRequest,
+  UpdateUserRolesRequest,
+  User2FAStatus,
+  UserFilters,
+  UserProfile,
+  UserStats,
+} from '../types'
 
 export const usersApi = {
   async getProfile(): Promise<UserProfile> {
@@ -25,14 +25,6 @@ export const usersApi = {
 
   async changePassword(data: ChangePasswordRequest): Promise<void> {
     await http.post('/profile/change-password', data)
-  },
-
-  async enableTwoFactor(): Promise<void> {
-    await http.post('/profile/enable-2fa')
-  },
-
-  async disableTwoFactor(): Promise<void> {
-    await http.post('/profile/disable-2fa')
   },
 
   async getSellerStatus(): Promise<SellerStatus> {

@@ -1,10 +1,12 @@
+import i18n from '@/i18n'
+import { formatNumber } from '@/shared/utils/formatters'
 import type { JobStatus } from '../types'
 
 export function getJobProgressLabel(completed: number, total: number): string {
   if (total === 0) {
     return '0 / 0'
   }
-  return `${completed.toLocaleString()} / ${total.toLocaleString()}`
+  return `${formatNumber(completed)} / ${formatNumber(total)}`
 }
 
 export function isJobActive(status: JobStatus): boolean {
@@ -29,14 +31,14 @@ export function getJobDuration(startedAt?: string, completedAt?: string): string
   const seconds = Math.floor((end - start) / 1000)
 
   if (seconds < 60) {
-    return `${seconds}s`
+    return i18n.t('jobs:duration.seconds', { count: seconds })
   }
   if (seconds < 3600) {
     const minutes = Math.floor(seconds / 60)
     const remaining = seconds % 60
-    return `${minutes}m ${remaining}s`
+    return i18n.t('jobs:duration.minutesSeconds', { minutes, seconds: remaining })
   }
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
+  return i18n.t('jobs:duration.hoursMinutes', { hours, minutes })
 }

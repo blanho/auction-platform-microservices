@@ -37,7 +37,6 @@ public class GetAllPermissionDefinitionsQueryHandler : IQueryHandler<GetAllPermi
             new(Perm.OrderView, "Orders", "View All Orders", "View all orders"),
             new(Perm.OrderViewOwn, "Orders", "View Own Orders", "View own orders"),
             new(Perm.OrderCreate, "Orders", "Create Orders", "Create new orders"),
-            new(Perm.OrderCancel, "Orders", "Cancel Orders", "Cancel orders"),
             new(Perm.OrderRefund, "Orders", "Refund Orders", "Process order refunds"),
 
             new(Perm.PaymentView, "Payments", "View Payments", "View payment transactions"),
@@ -46,8 +45,6 @@ public class GetAllPermissionDefinitionsQueryHandler : IQueryHandler<GetAllPermi
 
             new(Perm.WalletView, "Wallets", "View All Wallets", "View all user wallets"),
             new(Perm.WalletViewOwn, "Wallets", "View Own Wallet", "View own wallet"),
-            new(Perm.WalletDeposit, "Wallets", "Deposit to Wallet", "Deposit funds to wallet"),
-            new(Perm.WalletWithdraw, "Wallets", "Withdraw from Wallet", "Withdraw funds from wallet"),
 
             new(Perm.AnalyticsViewPlatform, "Analytics", "View Platform Analytics", "View platform-wide analytics"),
             new(Perm.AnalyticsViewOwn, "Analytics", "View Own Analytics", "View personal analytics"),

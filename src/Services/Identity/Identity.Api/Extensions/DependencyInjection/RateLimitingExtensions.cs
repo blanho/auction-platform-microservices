@@ -12,35 +12,47 @@ internal static class RateLimitingExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.AddSlidingWindowLimiter("auth", opt =>
-            {
-                opt.PermitLimit = 5;
-                opt.Window = TimeSpan.FromMinutes(1);
-                opt.SegmentsPerWindow = 2;
-                opt.QueueLimit = 0;
-            });
+            options.AddPolicy("auth", context =>
+                RateLimitPartition.GetSlidingWindowLimiter(
+                    GetClientPartitionKey(context),
+                    _ => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1),
+                        SegmentsPerWindow = 2,
+                        QueueLimit = 0
+                    }));
 
-            options.AddFixedWindowLimiter(IdentityDefaults.RateLimits.PasswordReset, opt =>
-            {
-                opt.PermitLimit = 3;
-                opt.Window = TimeSpan.FromMinutes(15);
-                opt.QueueLimit = 0;
-            });
+            options.AddPolicy(IdentityDefaults.RateLimits.PasswordReset, context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    GetClientPartitionKey(context),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 3,
+                        Window = TimeSpan.FromMinutes(15),
+                        QueueLimit = 0
+                    }));
 
-            options.AddSlidingWindowLimiter("2fa", opt =>
-            {
-                opt.PermitLimit = 5;
-                opt.Window = TimeSpan.FromMinutes(5);
-                opt.SegmentsPerWindow = 5;
-                opt.QueueLimit = 0;
-            });
+            options.AddPolicy("2fa", context =>
+                RateLimitPartition.GetSlidingWindowLimiter(
+                    GetClientPartitionKey(context),
+                    _ => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(5),
+                        SegmentsPerWindow = 5,
+                        QueueLimit = 0
+                    }));
 
-            options.AddFixedWindowLimiter("registration", opt =>
-            {
-                opt.PermitLimit = 5;
-                opt.Window = TimeSpan.FromHours(1);
-                opt.QueueLimit = 0;
-            });
+            options.AddPolicy("registration", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    GetClientPartitionKey(context),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromHours(1),
+                        QueueLimit = 0
+                    }));
 
             options.OnRejected = async (context, cancellationToken) =>
             {
@@ -66,4 +78,7 @@ internal static class RateLimitingExtensions
 
         return services;
     }
+
+    private static string GetClientPartitionKey(HttpContext context)
+        => context.Connection.RemoteIpAddress?.MapToIPv6().ToString() ?? "unknown-client";
 }

@@ -1,25 +1,25 @@
-import { useState, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import type { FilterField, FilterPanelConfig } from '@/shared/types/filter.types'
+import { Close, ExpandLess, ExpandMore, FilterList, Refresh, Search } from '@mui/icons-material'
+import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
 import {
   Box,
+  Button,
+  Chip,
+  FormControl,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  IconButton,
   Typography,
-  InputAdornment,
-  Grid,
-  Chip,
 } from '@mui/material'
-import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
-import { Search, Close, FilterList, ExpandMore, ExpandLess, Refresh } from '@mui/icons-material'
-import { motion, AnimatePresence } from 'framer-motion'
-import type { FilterField, FilterPanelConfig } from '@/shared/types/filter.types'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export interface FilterPanelProps<TFilter extends object = Record<string, unknown>> {
   config: FilterPanelConfig

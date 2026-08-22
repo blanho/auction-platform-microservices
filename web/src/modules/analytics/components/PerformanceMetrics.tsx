@@ -1,4 +1,6 @@
-import { Box, Typography, Stack, LinearProgress, Skeleton } from '@mui/material'
+import { formatNumber } from '@/shared/utils/formatters'
+import { Box, LinearProgress, Skeleton, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import type { MetricItem } from '../types'
 
 interface PerformanceMetricsProps {
@@ -7,11 +9,8 @@ interface PerformanceMetricsProps {
   title?: string
 }
 
-export function PerformanceMetrics({
-  metrics,
-  isLoading,
-  title = 'Performance Breakdown',
-}: PerformanceMetricsProps) {
+export function PerformanceMetrics({ metrics, isLoading, title }: PerformanceMetricsProps) {
+  const { t } = useTranslation('analytics')
   if (isLoading) {
     return (
       <Box
@@ -54,7 +53,7 @@ export function PerformanceMetrics({
         gutterBottom
         sx={{ fontFamily: '"Fira Sans", sans-serif', mb: 2 }}
       >
-        {title}
+        {title ?? t('charts.performanceBreakdown')}
       </Typography>
 
       <Stack spacing={2.5}>
@@ -85,7 +84,7 @@ export function PerformanceMetrics({
                     fontFamily: '"Fira Code", monospace',
                   }}
                 >
-                  {metric.value.toLocaleString()} / {metric.total.toLocaleString()}
+                  {formatNumber(metric.value)} / {formatNumber(metric.total)}
                 </Typography>
               </Stack>
               <LinearProgress

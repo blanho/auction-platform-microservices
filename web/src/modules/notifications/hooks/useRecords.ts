@@ -18,22 +18,6 @@ export const useRecords = (filter: NotificationRecordFilterDto) => {
   })
 }
 
-export const useRecordById = (id: string) => {
-  return useQuery({
-    queryKey: recordKeys.byId(id),
-    queryFn: () => recordsApi.getRecordById(id),
-    enabled: !!id,
-  })
-}
-
-export const useRecordsByUser = (userId: string, limit = 50) => {
-  return useQuery({
-    queryKey: recordKeys.byUser(userId, limit),
-    queryFn: () => recordsApi.getRecordsByUser(userId, limit),
-    enabled: !!userId,
-  })
-}
-
 export const useRecordStats = () => {
   return useQuery({
     queryKey: recordKeys.stats(),

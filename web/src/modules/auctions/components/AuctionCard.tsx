@@ -1,12 +1,12 @@
+import { typography } from '@/shared/theme/tokens'
+import { StatusBadge } from '@/shared/ui'
+import { Gavel, Timer } from '@mui/icons-material'
+import { Box, Button, Card, CardContent, CardMedia, Typography } from '@mui/material'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom'
-import { Timer, Gavel } from '@mui/icons-material'
 import type { AuctionListItem } from '../types'
-import { StatusBadge } from '@/shared/ui'
-import { formatTimeLeft, capitalizeStatus, formatCurrency } from '../utils'
-import { typography } from '@/shared/theme/tokens'
+import { capitalizeStatus, formatCurrency, formatTimeLeft } from '../utils'
 
 interface AuctionCardProps {
   auction: AuctionListItem

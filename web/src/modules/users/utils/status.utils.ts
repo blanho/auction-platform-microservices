@@ -19,10 +19,6 @@ export function getUserStatus(user: AdminUser): UserStatus {
   return { label: 'Inactive', color: 'warning' }
 }
 
-export function get2FAStatusColor(enabled: boolean): ChipProps['color'] {
-  return enabled ? 'success' : 'default'
-}
-
 export function getRecoveryCodesColor(hasRecoveryCodes: boolean): ChipProps['color'] {
   return hasRecoveryCodes ? 'success' : 'warning'
 }

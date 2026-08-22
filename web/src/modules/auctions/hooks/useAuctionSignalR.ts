@@ -1,114 +1,138 @@
-import { useEffect, useRef, useCallback } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import type { AuctionStatusPayload, BidUpdatePayload } from '@/services/signalr'
 import { signalRService } from '@/services/signalr'
-import type { BidUpdatePayload, AuctionStatusPayload } from '@/services/signalr'
+import { useSignalRState } from '@/shared/hooks'
 import { signalRLogger } from '@/shared/lib/logger'
+import { HubConnectionState } from '@microsoft/signalr'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef } from 'react'
 
 interface UseAuctionSignalROptions {
   auctionId: string | undefined
   enabled?: boolean
 }
 
+interface AuctionRoomJoinRequest {
+  auctionId: string
+  promise: Promise<void>
+}
+
 export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSignalROptions) => {
   const queryClient = useQueryClient()
-  const hasJoined = useRef(false)
-  const isMountedRef = useRef(true)
-  const currentAuctionId = useRef(auctionId)
+  const connectionState = useSignalRState()
+  const desiredAuctionIdRef = useRef<string | null>(null)
+  const joinedAuctionIdRef = useRef<string | null>(null)
+  const joinRequestRef = useRef<AuctionRoomJoinRequest | null>(null)
+  const isConnected = connectionState === HubConnectionState.Connected
 
   const handleBidPlaced = useCallback(
     (bidUpdate: BidUpdatePayload) => {
-      if (!isMountedRef.current) {
+      if (bidUpdate.auctionId !== auctionId) {
         return
       }
-      if (bidUpdate.auctionId === currentAuctionId.current) {
-        signalRLogger.info('💰 New bid placed:', bidUpdate.bidId)
-        queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
-        queryClient.invalidateQueries({ queryKey: ['bids', currentAuctionId.current] })
-      }
+
+      signalRLogger.info('New bid placed:', bidUpdate.bidId)
+      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
+      void queryClient.invalidateQueries({ queryKey: ['bids', auctionId] })
     },
-    [queryClient]
+    [auctionId, queryClient]
   )
 
   const handleAuctionEnded = useCallback(
     (status: AuctionStatusPayload) => {
-      if (!isMountedRef.current) {
+      if (status.auctionId !== auctionId) {
         return
       }
-      if (status.auctionId === currentAuctionId.current) {
-        signalRLogger.info('🏁 Auction ended:', status.auctionId)
-        queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
-      }
+
+      signalRLogger.info('Auction ended:', status.auctionId)
+      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
     },
-    [queryClient]
+    [auctionId, queryClient]
   )
 
   const handleAuctionExtended = useCallback(
     (status: AuctionStatusPayload) => {
-      if (!isMountedRef.current) {
+      if (status.auctionId !== auctionId) {
         return
       }
-      if (status.auctionId === currentAuctionId.current) {
-        signalRLogger.info('⏰ Auction extended:', status.auctionId)
-        queryClient.invalidateQueries({ queryKey: ['auction', currentAuctionId.current] })
-      }
+
+      signalRLogger.info('Auction extended:', status.auctionId)
+      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
     },
-    [queryClient]
+    [auctionId, queryClient]
   )
 
   useEffect(() => {
-    currentAuctionId.current = auctionId
-  }, [auctionId])
-
-  useEffect(() => {
-    isMountedRef.current = true
-
-    if (!auctionId || !enabled || !signalRService.isConnected) {
+    if (!auctionId || !enabled || !isConnected) {
+      desiredAuctionIdRef.current = null
       return
     }
 
-    const joinRoomAndListen = async () => {
-      if (hasJoined.current) {
-        return
+    desiredAuctionIdRef.current = auctionId
+    let isActive = true
+
+    const joinRoomAndSubscribe = async (): Promise<void> => {
+      let joinRequest = joinRequestRef.current
+      if (!joinRequest || joinRequest.auctionId !== auctionId) {
+        joinRequest = {
+          auctionId,
+          promise: signalRService.joinAuctionRoom(auctionId),
+        }
+        joinRequestRef.current = joinRequest
       }
 
       try {
-        await signalRService.joinAuctionRoom(auctionId)
-
-        if (!isMountedRef.current) {
-          signalRService.leaveAuctionRoom(auctionId)
-          return
-        }
-
-        hasJoined.current = true
-        signalRLogger.info(`🏠 Joined auction room: ${auctionId}`)
-
-        signalRService.on('BidPlaced', handleBidPlaced)
-        signalRService.on('AuctionEnded', handleAuctionEnded)
-        signalRService.on('AuctionExtended', handleAuctionExtended)
+        await joinRequest.promise
       } catch (error) {
-        signalRLogger.error('Failed to join auction room:', error)
-        hasJoined.current = false
+        if (isActive) {
+          signalRLogger.error('Failed to subscribe to auction updates:', error)
+        }
+        return
+      } finally {
+        if (joinRequestRef.current === joinRequest) {
+          joinRequestRef.current = null
+        }
       }
+
+      if (!isActive) {
+        if (desiredAuctionIdRef.current !== auctionId) {
+          void signalRService.leaveAuctionRoom(auctionId)
+        }
+        return
+      }
+
+      if (desiredAuctionIdRef.current !== auctionId) {
+        void signalRService.leaveAuctionRoom(auctionId)
+        return
+      }
+
+      joinedAuctionIdRef.current = auctionId
+      signalRService.off('BidPlaced', handleBidPlaced)
+      signalRService.off('AuctionEnded', handleAuctionEnded)
+      signalRService.off('AuctionExtended', handleAuctionExtended)
+      signalRService.on('BidPlaced', handleBidPlaced)
+      signalRService.on('AuctionEnded', handleAuctionEnded)
+      signalRService.on('AuctionExtended', handleAuctionExtended)
     }
 
-    joinRoomAndListen()
+    void joinRoomAndSubscribe()
 
     return () => {
-      isMountedRef.current = false
-
-      if (hasJoined.current && auctionId) {
-        signalRService.leaveAuctionRoom(auctionId)
-        hasJoined.current = false
-        signalRLogger.info(`👋 Left auction room: ${auctionId}`)
-      }
+      isActive = false
 
       signalRService.off('BidPlaced', handleBidPlaced)
       signalRService.off('AuctionEnded', handleAuctionEnded)
       signalRService.off('AuctionExtended', handleAuctionExtended)
-    }
-  }, [auctionId, enabled, handleBidPlaced, handleAuctionEnded, handleAuctionExtended])
 
-  return {
-    isConnected: signalRService.isConnected,
-  }
+      if (joinedAuctionIdRef.current === auctionId) {
+        joinedAuctionIdRef.current = null
+        void signalRService.leaveAuctionRoom(auctionId)
+      }
+
+      if (desiredAuctionIdRef.current === auctionId) {
+        desiredAuctionIdRef.current = null
+      }
+    }
+  }, [auctionId, enabled, isConnected, handleBidPlaced, handleAuctionEnded, handleAuctionExtended])
+
+  return { isConnected }
 }

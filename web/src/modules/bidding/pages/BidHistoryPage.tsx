@@ -1,53 +1,54 @@
+import { usePagination } from '@/shared/hooks'
+import type { BidFilter, ColumnConfig, FilterPanelConfig } from '@/shared/types'
+import { DataTable, FilterPanel, StatusBadge } from '@/shared/ui'
+import { formatCurrency, formatDateTime } from '@/shared/utils'
+import { AccessTime } from '@mui/icons-material'
+import { Box, Chip, Container, Stack, Typography } from '@mui/material'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Box, Typography, Chip, Container, Stack } from '@mui/material'
-import { AccessTime } from '@mui/icons-material'
 import { useBidHistory } from '../hooks/useBids'
 import { BidStatus, type BidHistory } from '../types'
-import { formatCurrency, formatDateTime } from '@/shared/utils'
-import { StatusBadge, DataTable, FilterPanel } from '@/shared/ui'
-import { usePagination } from '@/shared/hooks'
-import type { ColumnConfig, FilterPanelConfig, BidFilter } from '@/shared/types'
-
-const BID_STATUS_OPTIONS = Object.values(BidStatus).map((status) => ({
-  value: status,
-  label: status,
-}))
-
-const filterConfig: FilterPanelConfig = {
-  fields: [
-    {
-      key: 'auctionId',
-      type: 'text',
-      label: 'Auction ID',
-      placeholder: 'Enter auction ID...',
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-    {
-      key: 'status',
-      type: 'select',
-      label: 'Status',
-      options: BID_STATUS_OPTIONS,
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-    {
-      key: 'dateRange',
-      type: 'dateRange',
-      label: 'Date',
-      startKey: 'dateFrom',
-      endKey: 'dateTo',
-      gridSize: { xs: 12, sm: 12, md: 6 },
-    },
-  ],
-  collapsible: true,
-  defaultExpanded: true,
-  showClearButton: true,
-}
 
 export function BidHistoryPage() {
   const { t } = useTranslation('bidding')
   const navigate = useNavigate()
+
+  const filterConfig: FilterPanelConfig = useMemo(
+    () => ({
+      fields: [
+        {
+          key: 'auctionId',
+          type: 'text',
+          label: t('history.auctionId'),
+          placeholder: t('history.auctionIdPlaceholder'),
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+        {
+          key: 'status',
+          type: 'select',
+          label: t('history.status'),
+          options: Object.values(BidStatus).map((status) => ({
+            value: status,
+            label: t(`history.statuses.${status}`, { defaultValue: status }),
+          })),
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+        {
+          key: 'dateRange',
+          type: 'dateRange',
+          label: t('history.date'),
+          startKey: 'dateFrom',
+          endKey: 'dateTo',
+          gridSize: { xs: 12, sm: 12, md: 6 },
+        },
+      ],
+      collapsible: true,
+      defaultExpanded: true,
+      showClearButton: true,
+    }),
+    [t]
+  )
 
   const pagination = usePagination<BidFilter>({
     defaultPageSize: 20,
@@ -68,7 +69,7 @@ export function BidHistoryPage() {
     () => [
       {
         key: 'auctionTitle',
-        header: 'Auction',
+        header: t('history.auction'),
         sortable: true,
         sortKey: 'auctionTitle',
         render: (value) => (
@@ -82,7 +83,7 @@ export function BidHistoryPage() {
       },
       {
         key: 'amount',
-        header: 'Bid Amount',
+        header: t('history.bidAmount'),
         sortable: true,
         align: 'right',
         render: (value) => (
@@ -96,22 +97,23 @@ export function BidHistoryPage() {
       },
       {
         key: 'status',
-        header: 'Status',
+        header: t('history.status'),
         sortable: true,
         render: (value) => (
           <StatusBadge
             status={String(value)}
+            label={t(`history.statuses.${String(value)}`, { defaultValue: String(value) })}
             sx={{ fontFamily: 'Chakra Petch', fontWeight: 600, fontSize: '0.7rem' }}
           />
         ),
       },
       {
         key: 'isWinning',
-        header: 'Winning',
+        header: t('history.winning'),
         render: (value) =>
           value ? (
             <Chip
-              label="WINNING"
+              label={t('winning.badge')}
               size="small"
               sx={{
                 background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)',
@@ -129,7 +131,7 @@ export function BidHistoryPage() {
       },
       {
         key: 'bidTime',
-        header: 'Bid Time',
+        header: t('history.bidTime'),
         sortable: true,
         render: (value) => (
           <Typography variant="body2" sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}>
@@ -138,7 +140,7 @@ export function BidHistoryPage() {
         ),
       },
     ],
-    []
+    [t]
   )
 
   return (

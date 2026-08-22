@@ -1,17 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { biddingApi } from '../api'
 import { BID_CONSTANTS } from '../constants'
-import { createAutoBidSchema, updateAutoBidSchema } from '../schemas'
+import { createAutoBidSchema, createUpdateAutoBidSchema } from '../schemas'
 import type { CreateAutoBidRequest, UpdateAutoBidRequest } from '../types'
 
 const QUERY_KEYS = BID_CONSTANTS.QUERY_KEYS
 
 export const useCreateAutoBid = () => {
+  const { t } = useTranslation('bidding')
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (data: CreateAutoBidRequest) => {
-      const result = createAutoBidSchema.safeParse(data)
+      const result = createAutoBidSchema(t).safeParse(data)
       if (!result.success) {
         throw new Error(result.error.issues.map((e) => e.message).join(', '))
       }
@@ -39,11 +41,12 @@ export const useMyAutoBids = (activeOnly?: boolean, page = 1, pageSize = 20) => 
 }
 
 export const useAutoBidForAuction = (auctionId: string | undefined, enabled = true) => {
+  const { t } = useTranslation('bidding')
   return useQuery({
     queryKey: ['autobid', 'auction', auctionId],
     queryFn: () => {
       if (!auctionId) {
-        throw new Error('Auction ID is required')
+        throw new Error(t('validation.auctionIdRequired'))
       }
       return biddingApi.getAutoBidForAuction(auctionId)
     },
@@ -52,11 +55,12 @@ export const useAutoBidForAuction = (auctionId: string | undefined, enabled = tr
 }
 
 export const useUpdateAutoBid = () => {
+  const { t } = useTranslation('bidding')
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ autoBidId, data }: { autoBidId: string; data: UpdateAutoBidRequest }) => {
-      const result = updateAutoBidSchema.safeParse(data)
+      const result = createUpdateAutoBidSchema(t).safeParse(data)
       if (!result.success) {
         throw new Error(result.error.issues.map((e) => e.message).join(', '))
       }

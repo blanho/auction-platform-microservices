@@ -1,64 +1,63 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { InlineAlert, TableEmptyStateRow } from '@/shared/ui'
 import {
-  Container,
+  Add,
+  Delete,
+  Edit,
+  Email,
+  Gavel,
+  Lock,
+  Notifications,
+  Refresh,
+  Security,
+  Settings,
+} from '@mui/icons-material'
+import {
+  Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Box,
-  TextField,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Skeleton,
+  Stack,
+  Switch,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Skeleton,
-  Tooltip,
   Tabs,
-  Tab,
-  Switch,
-  FormControlLabel,
+  TextField,
+  Tooltip,
+  Typography,
 } from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
-import {
-  Edit,
-  Add,
-  Delete,
-  Refresh,
-  Settings,
-  Gavel,
-  Notifications,
-  Security,
-  Email,
-  Lock,
-} from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { SETTING_CATEGORY, SETTING_DATA_TYPES } from '../constants'
 import { useSettings } from '../hooks/useAnalytics'
-import { useCreateSetting, useUpdateSetting, useDeleteSetting } from '../hooks/useSettingsMutations'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
-import { TableEmptyStateRow } from '@/shared/ui'
-import type { PlatformSetting, SettingCategory, CreateSettingRequest } from '../types'
+import { useCreateSetting, useDeleteSetting, useUpdateSetting } from '../hooks/useSettingsMutations'
+import type { CreateSettingRequest, PlatformSetting, SettingCategory } from '../types'
 import {
+  formatSettingTimestamp,
+  formatSettingValue,
   getSettingCategoryLabel,
   getSettingDataTypeLabel,
-  formatSettingValue,
-  formatSettingTimestamp,
   validateSettingValue,
 } from '../utils'
-import { SETTING_CATEGORY, SETTING_DATA_TYPES } from '../constants'
 
 const CATEGORY_ICONS: Record<SettingCategory, React.ReactElement> = {
   Platform: <Settings />,
@@ -71,7 +70,7 @@ const CATEGORY_ICONS: Record<SettingCategory, React.ReactElement> = {
 const CATEGORIES = Object.values(SETTING_CATEGORY) as SettingCategory[]
 
 export function PlatformSettingsPage() {
-  const { t: _t } = useTranslation('analytics')
+  const { t } = useTranslation('analytics')
   const [selectedCategory, setSelectedCategory] = useState<SettingCategory>('Platform')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -205,7 +204,7 @@ export function PlatformSettingsPage() {
               onChange={(e) => setEditValue(e.target.checked ? 'true' : 'false')}
             />
           }
-          label={editValue === 'true' ? 'Enabled' : 'Disabled'}
+          label={t(editValue === 'true' ? 'settings.enabled' : 'settings.disabled')}
         />
       )
     }
@@ -265,10 +264,10 @@ export function PlatformSettingsPage() {
                   color: 'text.primary',
                 }}
               >
-                Platform Settings
+                {t('settings.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Manage platform configuration and preferences
+                {t('settings.description')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -280,7 +279,7 @@ export function PlatformSettingsPage() {
                   setCreateDialogOpen(true)
                 }}
               >
-                Add Setting
+                {t('settings.addSetting')}
               </Button>
               <IconButton onClick={() => refetch()} color="primary">
                 <Refresh />
@@ -314,7 +313,7 @@ export function PlatformSettingsPage() {
         <motion.div variants={fadeInUp}>
           {isError && (
             <InlineAlert severity="error" sx={{ mb: 3 }}>
-              Failed to load settings. Please try again.
+              {t('settings.loadFailed')}
             </InlineAlert>
           )}
 
@@ -324,20 +323,20 @@ export function PlatformSettingsPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Lock sx={{ fontSize: 20, color: 'text.secondary' }} />
                   <Typography variant="subtitle1" fontWeight={600}>
-                    System Settings
+                    {t('settings.systemSettings')}
                   </Typography>
-                  <Chip label="Protected" size="small" color="warning" />
+                  <Chip label={t('settings.protected')} size="small" color="warning" />
                 </Box>
               </CardContent>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Key</TableCell>
-                      <TableCell>Value</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Updated</TableCell>
-                      <TableCell align="right">Actions</TableCell>
+                      <TableCell>{t('settings.key')}</TableCell>
+                      <TableCell>{t('settings.value')}</TableCell>
+                      <TableCell>{t('settings.type')}</TableCell>
+                      <TableCell>{t('settings.updated')}</TableCell>
+                      <TableCell align="right">{t('settings.actions')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -388,7 +387,7 @@ export function PlatformSettingsPage() {
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
-                              <Tooltip title="Edit">
+                              <Tooltip title={t('common:edit')}>
                                 <IconButton size="small" onClick={() => handleEditClick(setting)}>
                                   <Edit fontSize="small" />
                                 </IconButton>
@@ -405,19 +404,19 @@ export function PlatformSettingsPage() {
           <Card>
             <CardContent sx={{ pb: 0 }}>
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-                Custom Settings
+                {t('settings.customSettings')}
               </Typography>
             </CardContent>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Key</TableCell>
-                    <TableCell>Value</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Updated</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell>{t('settings.key')}</TableCell>
+                    <TableCell>{t('settings.value')}</TableCell>
+                    <TableCell>{t('settings.type')}</TableCell>
+                    <TableCell>{t('settings.descriptionLabel')}</TableCell>
+                    <TableCell>{t('settings.updated')}</TableCell>
+                    <TableCell align="right">{t('settings.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -447,8 +446,8 @@ export function PlatformSettingsPage() {
                   {!isLoading && groupedSettings.custom.length === 0 && (
                     <TableEmptyStateRow
                       colSpan={6}
-                      title="No custom settings"
-                      description='Click "Add Setting" to create a new configuration'
+                      title={t('settings.noCustomSettings')}
+                      description={t('settings.clickToCreate')}
                       icon={<Settings sx={{ fontSize: 48, color: 'text.secondary' }} />}
                       cellSx={{ py: 8 }}
                     />
@@ -490,12 +489,12 @@ export function PlatformSettingsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Tooltip title="Edit">
+                          <Tooltip title={t('common:edit')}>
                             <IconButton size="small" onClick={() => handleEditClick(setting)}>
                               <Edit fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete">
+                          <Tooltip title={t('common:delete')}>
                             <IconButton
                               size="small"
                               onClick={() => handleDeleteClick(setting)}
@@ -520,12 +519,12 @@ export function PlatformSettingsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Edit Setting</DialogTitle>
+        <DialogTitle>{t('settings.editSetting')}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <Box>
               <Typography variant="caption" color="text.secondary">
-                Key
+                {t('settings.key')}
               </Typography>
               <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
                 {selectedSetting?.key}
@@ -534,23 +533,23 @@ export function PlatformSettingsPage() {
             {selectedSetting?.description && (
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Description
+                  {t('settings.descriptionLabel')}
                 </Typography>
                 <Typography variant="body2">{selectedSetting.description}</Typography>
               </Box>
             )}
             <Box>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Value
+                {t('settings.value')}
               </Typography>
               {renderEditField()}
             </Box>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setEditDialogOpen(false)}>{t('common:cancel')}</Button>
           <Button variant="contained" onClick={handleEditSave} disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? 'Saving...' : 'Save'}
+            {updateMutation.isPending ? t('settings.saving') : t('common:save')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -561,23 +560,23 @@ export function PlatformSettingsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Create New Setting</DialogTitle>
+        <DialogTitle>{t('settings.createSetting')}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <TextField
-              label="Key"
+              label={t('settings.key')}
               fullWidth
               value={newSetting.key}
               onChange={(e) => setNewSetting((prev) => ({ ...prev, key: e.target.value }))}
-              placeholder="e.g., auction.max_duration_days"
-              helperText="Use lowercase with dots for namespacing"
+              placeholder={t('settings.keyPlaceholder')}
+              helperText={t('settings.keyHelperText')}
             />
             <FormControl fullWidth>
-              <InputLabel>Data Type</InputLabel>
+              <InputLabel>{t('settings.dataType')}</InputLabel>
               <Select
                 value={newSetting.dataType}
                 onChange={(e) => setNewSetting((prev) => ({ ...prev, dataType: e.target.value }))}
-                label="Data Type"
+                label={t('settings.dataType')}
               >
                 {SETTING_DATA_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -587,7 +586,7 @@ export function PlatformSettingsPage() {
               </Select>
             </FormControl>
             <TextField
-              label="Value"
+              label={t('settings.value')}
               fullWidth
               value={newSetting.value}
               onChange={(e) => setNewSetting((prev) => ({ ...prev, value: e.target.value }))}
@@ -595,7 +594,7 @@ export function PlatformSettingsPage() {
               rows={newSetting.dataType === 'json' ? 4 : 1}
             />
             <TextField
-              label="Description"
+              label={t('settings.descriptionLabel')}
               fullWidth
               value={newSetting.description}
               onChange={(e) => setNewSetting((prev) => ({ ...prev, description: e.target.value }))}
@@ -603,7 +602,7 @@ export function PlatformSettingsPage() {
               rows={2}
             />
             <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
+              <InputLabel>{t('seller.category')}</InputLabel>
               <Select
                 value={newSetting.category}
                 onChange={(e) =>
@@ -612,7 +611,7 @@ export function PlatformSettingsPage() {
                     category: e.target.value as SettingCategory,
                   }))
                 }
-                label="Category"
+                label={t('seller.category')}
               >
                 {CATEGORIES.map((cat) => (
                   <MenuItem key={cat} value={cat}>
@@ -624,36 +623,36 @@ export function PlatformSettingsPage() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setCreateDialogOpen(false)}>{t('common:cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleCreateSave}
             disabled={createMutation.isPending || !newSetting.key || !newSetting.value}
           >
-            {createMutation.isPending ? 'Creating...' : 'Create'}
+            {createMutation.isPending ? t('settings.creating') : t('common:create')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Setting</DialogTitle>
+        <DialogTitle>{t('settings.deleteSetting')}</DialogTitle>
         <DialogContent>
           <InlineAlert severity="warning" sx={{ mb: 2 }}>
-            This action cannot be undone.
+            {t('settings.deleteWarning')}
           </InlineAlert>
           <Typography>
-            Are you sure you want to delete the setting <strong>{selectedSetting?.key}</strong>?
+            {t('settings.deleteConfirm')} <strong>{selectedSetting?.key}</strong>?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('common:cancel')}</Button>
           <Button
             variant="contained"
             color="error"
             onClick={handleDeleteConfirm}
             disabled={deleteMutation.isPending}
           >
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            {deleteMutation.isPending ? t('settings.deleting') : t('common:delete')}
           </Button>
         </DialogActions>
       </Dialog>

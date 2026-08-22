@@ -9,8 +9,15 @@ namespace BuildingBlocks.Infrastructure.Storage;
 public class LocalFileStorageService : IFileStorageService
 {
     private readonly LocalStorageSettings _settings;
+    private readonly string _basePath;
+    private readonly string _basePathPrefix;
+    private readonly string _baseUrl;
     private readonly RecyclableMemoryStreamManager _streamManager;
     private readonly ILogger<LocalFileStorageService> _logger;
+
+    private static StringComparison PathComparison => OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
 
     public LocalFileStorageService(
         IOptions<FileStorageSettings> settings,
@@ -20,17 +27,38 @@ public class LocalFileStorageService : IFileStorageService
         _settings = settings.Value.Local;
         _streamManager = streamManager;
         _logger = logger;
-        EnsureDirectoryExists(_settings.BasePath);
+
+        if (string.IsNullOrWhiteSpace(_settings.BasePath))
+        {
+            throw new InvalidOperationException("The local file storage base path must be configured.");
+        }
+
+        _basePath = Path.GetFullPath(_settings.BasePath);
+        _basePathPrefix = Path.EndsInDirectorySeparator(_basePath)
+            ? _basePath
+            : _basePath + Path.DirectorySeparatorChar;
+        _baseUrl = _settings.BaseUrl.Replace('\\', '/').TrimEnd('/');
+
+        EnsureDirectoryExists(_basePath);
     }
 
     public async Task<FileUploadResult> UploadAsync(FileUploadRequest request, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var fileId = Guid.NewGuid().ToString("N");
-        var extension = Path.GetExtension(request.FileName).ToLowerInvariant();
+        var normalizedFileName = request.FileName.Replace('\\', '/');
+        var extension = Path.GetExtension(Path.GetFileName(normalizedFileName)).ToLowerInvariant();
         var storedFileName = $"{fileId}{extension}";
 
         var subFolder = request.SubFolder ?? DateTime.UtcNow.ToString("yyyy/MM");
-        var directoryPath = Path.Combine(_settings.BasePath, subFolder);
+        if (!TryResolvePath(subFolder, out var directoryPath, out var normalizedSubFolder))
+        {
+            throw new ArgumentException(
+                "The upload subfolder must be a relative path within the configured storage root.",
+                nameof(request.SubFolder));
+        }
+
         EnsureDirectoryExists(directoryPath);
 
         var filePath = Path.Combine(directoryPath, storedFileName);
@@ -38,9 +66,8 @@ public class LocalFileStorageService : IFileStorageService
         await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
         await request.Content.CopyToAsync(fileStream, cancellationToken);
 
-        var url = $"{_settings.BaseUrl}/{subFolder}/{storedFileName}";
-
-        var storedPath = $"{subFolder}/{storedFileName}";
+        var storedPath = $"{normalizedSubFolder}/{storedFileName}";
+        var url = BuildUrl(storedPath);
 
         _logger.LogInformation("File uploaded successfully: {FileId} -> {FilePath}", fileId, filePath);
 
@@ -82,13 +109,13 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<string?> GetUrlAsync(string storedFileName, CancellationToken cancellationToken = default)
     {
-        var filePath = ResolveFilePath(storedFileName);
-        if (filePath is null || !File.Exists(filePath))
+        if (!TryResolvePath(storedFileName, out var filePath, out var normalizedStoredFileName)
+            || !File.Exists(filePath))
         {
             return Task.FromResult<string?>(null);
         }
 
-        var url = $"{_settings.BaseUrl}/{storedFileName}";
+        var url = BuildUrl(normalizedStoredFileName);
         return Task.FromResult<string?>(url);
     }
 
@@ -124,13 +151,13 @@ public class LocalFileStorageService : IFileStorageService
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default)
     {
-        var filePath = ResolveFilePath(storedFileName);
-        if (filePath is null || !File.Exists(filePath))
+        if (!TryResolvePath(storedFileName, out var filePath, out var normalizedStoredFileName)
+            || !File.Exists(filePath))
         {
             return Task.FromResult<PresignedDownloadResult?>(null);
         }
 
-        var downloadUrl = $"{_settings.BaseUrl}/{storedFileName}";
+        var downloadUrl = BuildUrl(normalizedStoredFileName);
         var fileName = Path.GetFileName(filePath);
         var contentType = GetContentType(filePath);
 
@@ -144,15 +171,114 @@ public class LocalFileStorageService : IFileStorageService
 
     private string? ResolveFilePath(string storedFileName)
     {
-        if (string.IsNullOrWhiteSpace(storedFileName))
+        return TryResolvePath(storedFileName, out var fullPath, out _) ? fullPath : null;
+    }
+
+    private bool TryResolvePath(string relativePath, out string fullPath, out string normalizedRelativePath)
+    {
+        fullPath = string.Empty;
+        normalizedRelativePath = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(relativePath))
         {
-            return null;
+            return false;
         }
 
-        var fullPath = Path.Combine(_settings.BasePath, storedFileName.Replace('/', Path.DirectorySeparatorChar));
-        return Path.GetFullPath(fullPath).StartsWith(Path.GetFullPath(_settings.BasePath))
-            ? fullPath
-            : null;
+        string decodedPath;
+        try
+        {
+            decodedPath = Uri.UnescapeDataString(relativePath);
+        }
+        catch (UriFormatException)
+        {
+            return false;
+        }
+
+        var urlNormalizedPath = decodedPath.Replace('\\', '/');
+        if (urlNormalizedPath.IndexOf('\0') >= 0
+            || urlNormalizedPath.StartsWith('/')
+            || Path.IsPathRooted(urlNormalizedPath)
+            || LooksLikeWindowsDrivePath(urlNormalizedPath))
+        {
+            return false;
+        }
+
+        var segments = urlNormalizedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0 || segments.Any(segment => segment is "." or ".."))
+        {
+            return false;
+        }
+
+        normalizedRelativePath = string.Join('/', segments);
+
+        try
+        {
+            var nativeRelativePath = Path.Combine(segments);
+            fullPath = Path.GetFullPath(Path.Combine(_basePath, nativeRelativePath));
+        }
+        catch (Exception exception) when (exception is ArgumentException or IOException or NotSupportedException)
+        {
+            fullPath = string.Empty;
+            normalizedRelativePath = string.Empty;
+            return false;
+        }
+
+        if (!fullPath.StartsWith(_basePathPrefix, PathComparison) || ContainsReparsePoint(fullPath))
+        {
+            fullPath = string.Empty;
+            normalizedRelativePath = string.Empty;
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool ContainsReparsePoint(string fullPath)
+    {
+        var relativePath = Path.GetRelativePath(_basePath, fullPath);
+        var segments = relativePath.Split(
+            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+            StringSplitOptions.RemoveEmptyEntries);
+        var currentPath = _basePath;
+
+        foreach (var segment in segments)
+        {
+            currentPath = Path.Combine(currentPath, segment);
+            if (!Directory.Exists(currentPath) && !File.Exists(currentPath))
+            {
+                break;
+            }
+
+            try
+            {
+                if ((File.GetAttributes(currentPath) & FileAttributes.ReparsePoint) != 0)
+                {
+                    return true;
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private string BuildUrl(string normalizedRelativePath)
+    {
+        var escapedPath = string.Join(
+            '/',
+            normalizedRelativePath.Split('/').Select(Uri.EscapeDataString));
+
+        return string.IsNullOrEmpty(_baseUrl)
+            ? $"/{escapedPath}"
+            : $"{_baseUrl}/{escapedPath}";
+    }
+
+    private static bool LooksLikeWindowsDrivePath(string path)
+    {
+        return path.Length >= 2 && char.IsAsciiLetter(path[0]) && path[1] == ':';
     }
 
     private static void EnsureDirectoryExists(string path)

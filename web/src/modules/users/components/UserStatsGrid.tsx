@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next'
-import { Grid } from '@mui/material'
-import { Person, TrendingUp, VerifiedUser, Warning } from '@mui/icons-material'
 import { StatCard } from '@/shared/ui'
+import { Person, TrendingUp, VerifiedUser, Warning } from '@mui/icons-material'
+import { Grid } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { STAT_COLORS } from '../constants'
 import type { UserStats } from '../types'
 

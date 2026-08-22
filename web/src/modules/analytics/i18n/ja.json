@@ -2,7 +2,6 @@
   "title": "分析",
   "adminDashboard": "管理者ダッシュボード",
   "myDashboard": "マイダッシュボード",
-  "reports": "レポート管理",
   "trackActivity": "オークション活動とパフォーマンスを追跡",
   "reviewReports": "ユーザーレポートの確認と管理",
 
@@ -35,7 +34,8 @@
     "connected": "接続済み",
     "degraded": "低下",
     "unknown": "不明",
-    "disconnected": "切断"
+    "disconnected": "切断",
+    "unavailable": "稼働状況を読み込めません"
   },
 
   "categories": {
@@ -75,6 +75,21 @@
     "retentionRate": "継続率"
   },
 
+  "charts": {
+    "dailyActivity": "日次アクティビティ",
+    "dailyActivityLast14Days": "日次アクティビティ（過去14日間）",
+    "noDailyStats": "日次統計がありません",
+    "platformTrends": "プラットフォーム推移",
+    "auctions": "オークション",
+    "bids": "入札",
+    "revenue": "収益",
+    "combined": "両方",
+    "value": "値",
+    "categoryPerformance": "カテゴリーパフォーマンス",
+    "revenueTrend": "収益推移",
+    "performanceBreakdown": "パフォーマンス内訳"
+  },
+
   "user": {
     "title": "マイダッシュボード",
     "activeAuctions": "アクティブオークション",
@@ -93,7 +108,14 @@
     "totalBidsPlaced": "総入札数",
     "platformUsers": "プラットフォームユーザー",
     "browseAuctions": "オークションを探す",
-    "createAuction": "オークション作成"
+    "createAuction": "オークション作成",
+    "platformStats": "プラットフォーム統計",
+    "platformStatsUnavailable": "プラットフォーム統計を読み込めません",
+    "revenueOverTime": "収益の推移",
+    "revenueByCategory": "カテゴリー別収益",
+    "noSellerAnalytics": "出品者分析はまだありません。出品を開始するとパフォーマンス指標が表示されます。",
+    "createFirstAuction": "最初のオークションを作成",
+    "noCategoryData": "カテゴリーデータがありません"
   },
 
   "seller": {
@@ -113,6 +135,7 @@
   },
 
   "period": {
+    "timeRange": "期間",
     "day": "日",
     "week": "週",
     "month": "月",
@@ -147,10 +170,14 @@
     "noReports": "レポートが見つかりません",
     "reportDetails": "レポート詳細",
     "auctionId": "オークションID",
-    "description": "説明",
+    "descriptionLabel": "説明",
     "resolution": "解決内容",
     "resolutionNotes": "解決メモ",
+    "resolutionPlaceholder": "解決メモを入力（任意）",
     "resolvedBy": "解決者",
+    "at": "・",
+    "notAvailable": "該当なし",
+    "notFound": "レポートが見つかりません",
     "createdAt": "作成日時",
     "close": "閉じる",
     "cancel": "キャンセル",
@@ -200,6 +227,74 @@
     "refresh": "更新"
   },
 
+  "auditLogs": {
+    "title": "監査ログ",
+    "description": "システム上のすべての操作と変更を追跡します",
+    "searchPlaceholder": "対象、ユーザー、サービスで検索...",
+    "loadFailed": "監査ログの読み込みに失敗しました。もう一度お試しください。",
+    "timestamp": "日時",
+    "action": "操作",
+    "entity": "対象",
+    "user": "ユーザー",
+    "service": "サービス",
+    "changes": "変更内容",
+    "actions": "操作",
+    "noLogs": "監査ログが見つかりません",
+    "adjustFilters": "フィルター条件を変更してください",
+    "logsWillAppear": "監査ログはここに表示されます",
+    "viewDetails": "詳細を見る",
+    "clearFilters": "フィルターをクリア",
+    "entityType": "対象タイプ",
+    "entityId": "対象ID",
+    "userId": "ユーザーID",
+    "ipAddress": "IPアドレス",
+    "correlationId": "相関ID",
+    "changedProperties": "変更されたプロパティ",
+    "oldValues": "変更前の値",
+    "newValues": "変更後の値",
+    "details": "監査ログ詳細",
+    "close": "閉じる"
+  },
+
+  "auditActions": {
+    "Created": "作成",
+    "Updated": "更新",
+    "Deleted": "削除",
+    "StatusChanged": "ステータス変更",
+    "PriceChanged": "価格変更",
+    "BidPlaced": "入札",
+    "AuctionEnded": "オークション終了",
+    "PaymentProcessed": "決済処理",
+    "UserRegistered": "ユーザー登録",
+    "UserLoggedIn": "ログイン",
+    "UserLoggedOut": "ログアウト",
+    "PermissionChanged": "権限変更",
+    "SettingChanged": "設定変更"
+  },
+
+  "entityTypes": {
+    "Auction": "オークション",
+    "Bid": "入札",
+    "User": "ユーザー",
+    "Order": "注文",
+    "Payment": "決済",
+    "Category": "カテゴリー",
+    "Brand": "ブランド",
+    "Report": "レポート",
+    "Notification": "通知",
+    "Setting": "設定"
+  },
+
+  "serviceNames": {
+    "AuctionService": "オークションサービス",
+    "BidService": "入札サービス",
+    "IdentityService": "IDサービス",
+    "PaymentService": "決済サービス",
+    "NotificationService": "通知サービス",
+    "AnalyticsService": "分析サービス",
+    "SearchService": "検索サービス"
+  },
+
   "settings": {
     "title": "プラットフォーム設定",
     "description": "プラットフォームの構成と設定を管理",
@@ -220,6 +315,29 @@
     "deleteConfirm": "次の設定を削除してもよろしいですか",
     "keyPlaceholder": "例: auction.max_duration_days",
     "keyHelperText": "名前空間にはドットを使用した小文字",
+    "loadFailed": "設定の読み込みに失敗しました。もう一度お試しください。",
+    "enabled": "有効",
+    "disabled": "無効",
+    "descriptionLabel": "説明",
+    "dataType": "データタイプ",
+    "actions": "操作",
+    "saving": "保存中...",
+    "creating": "作成中...",
+    "deleting": "削除中...",
+    "categoryLabels": {
+      "Platform": "プラットフォーム設定",
+      "Auction": "オークション設定",
+      "Notification": "通知設定",
+      "Security": "セキュリティ設定",
+      "Email": "メール設定"
+    },
+    "categoryDescriptions": {
+      "Platform": "プラットフォーム全般の構成",
+      "Auction": "オークション関連の設定と手数料",
+      "Notification": "通知設定とテンプレート",
+      "Security": "セキュリティと認証の設定",
+      "Email": "メールサーバーとテンプレートの構成"
+    },
     "categories": {
       "Platform": "プラットフォーム",
       "Auction": "オークション",

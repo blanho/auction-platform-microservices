@@ -1,14 +1,15 @@
+import i18n from '@/i18n'
+import { palette } from '@/shared/theme/tokens'
 import {
-  ArrowUpward,
   ArrowDownward,
+  ArrowUpward,
+  Cancel,
+  CheckCircle,
   History,
   Pending,
-  CheckCircle,
-  Cancel,
   Receipt,
 } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import type { TransactionType, TransactionStatus } from '../types'
+import type { TransactionStatus, TransactionType } from '../types'
 
 export interface TransactionTypeConfig {
   label: string
@@ -36,22 +37,6 @@ export function getTransactionIcon(type: TransactionType): React.ReactElement {
     default:
       return <History sx={{ color: palette.neutral[500] }} />
   }
-}
-
-export function getTransactionStatusChipConfig(status: TransactionStatus): {
-  color: 'success' | 'warning' | 'error' | 'default'
-  label: string
-} {
-  const config: Record<
-    TransactionStatus,
-    { color: 'success' | 'warning' | 'error' | 'default'; label: string }
-  > = {
-    completed: { color: 'success', label: 'Completed' },
-    pending: { color: 'warning', label: 'Pending' },
-    failed: { color: 'error', label: 'Failed' },
-    cancelled: { color: 'default', label: 'Cancelled' },
-  }
-  return config[status] || { color: 'default', label: status }
 }
 
 export function getTransactionTypeConfig(type: TransactionType): TransactionTypeConfig {
@@ -111,14 +96,16 @@ export function getTransactionTypeConfig(type: TransactionType): TransactionType
       bgColor: palette.neutral[100],
     },
   }
-  return (
-    configs[type] || {
-      label: type,
-      icon: <Receipt />,
-      color: palette.neutral[500],
-      bgColor: palette.neutral[100],
-    }
-  )
+  const result = configs[type] || {
+    label: type,
+    icon: <Receipt />,
+    color: palette.neutral[500],
+    bgColor: palette.neutral[100],
+  }
+  return {
+    ...result,
+    label: i18n.t(`payments:transactionTypes.${type}`, { defaultValue: result.label }),
+  }
 }
 
 export function getTransactionStatusConfig(status: TransactionStatus): TransactionStatusConfig {
@@ -128,5 +115,9 @@ export function getTransactionStatusConfig(status: TransactionStatus): Transacti
     failed: { label: 'Failed', color: 'error', icon: <Cancel fontSize="small" /> },
     cancelled: { label: 'Cancelled', color: 'default', icon: <Cancel fontSize="small" /> },
   }
-  return configs[status]
+  const result = configs[status]
+  return {
+    ...result,
+    label: i18n.t(`payments:status.${status}`, { defaultValue: result.label }),
+  }
 }

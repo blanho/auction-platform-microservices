@@ -1,35 +1,37 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { getSafeHttpUrl } from '@/shared/utils'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowBack, LocalShipping, Lock, Payment } from '@mui/icons-material'
 import {
-  Container,
-  Typography,
   Box,
-  Card,
-  Grid,
   Button,
-  TextField,
-  Divider,
+  Card,
+  Chip,
   CircularProgress,
-  Skeleton,
-  Stepper,
+  Container,
+  Divider,
+  Grid,
+  Stack,
   Step,
   StepLabel,
-  Stack,
-  Chip,
+  Stepper,
+  TextField,
+  Typography,
 } from '@mui/material'
 import type { StepIconProps } from '@mui/material/StepIcon'
-import {
-  ArrowBack,
-  LocalShipping,
-  Payment,
-  CheckCircle,
-  ShoppingCart,
-  Lock,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import type { TFunction } from 'i18next'
+import { useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { z } from 'zod'
+import { ordersApi, paymentsApi } from '../api'
+import type { ShippingAddress } from '../types'
 function CheckoutStepIcon(props: Readonly<StepIconProps>) {
   const stepIndex = Number(props.icon) - 1
   const isActive = props.active || props.completed
@@ -49,58 +51,52 @@ function CheckoutStepIcon(props: Readonly<StepIconProps>) {
     >
       {stepIndex === 0 && <LocalShipping />}
       {stepIndex === 1 && <Payment />}
-      {stepIndex === 2 && <CheckCircle />}
     </Box>
   )
 }
-import { useForm, Controller } from 'react-hook-form'
-import { InlineAlert } from '@/shared/ui'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { ordersApi } from '../api'
-import type { ShippingAddress } from '../types'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
-const shippingSchema = z.object({
-  fullName: z.string().min(2, 'Full name is required'),
-  addressLine1: z.string().min(5, 'Address is required'),
-  addressLine2: z.string().optional(),
-  city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State is required'),
-  postalCode: z.string().min(3, 'Postal code is required'),
-  country: z.string().min(2, 'Country is required'),
-  phone: z.string().optional(),
-})
+const createShippingSchema = (t: TFunction) =>
+  z.object({
+    fullName: z.string().min(2, t('checkout.validation.fullName')),
+    addressLine1: z.string().min(5, t('checkout.validation.address')),
+    addressLine2: z.string().optional(),
+    city: z.string().min(2, t('checkout.validation.city')),
+    state: z.string().min(2, t('checkout.validation.state')),
+    postalCode: z.string().min(3, t('checkout.validation.postalCode')),
+    country: z.string().min(2, t('checkout.validation.country')),
+    phone: z.string().optional(),
+  })
 
-type ShippingFormData = z.infer<typeof shippingSchema>
-
-const steps = ['Shipping', 'Payment', 'Confirmation']
+type ShippingFormData = z.infer<ReturnType<typeof createShippingSchema>>
 
 export function CheckoutPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
   const { auctionId } = useParams<{ auctionId: string }>()
   const navigate = useNavigate()
   const [activeStep, setActiveStep] = useState(0)
   const [orderId, setOrderId] = useState<string | null>(null)
+  const shippingSchema = createShippingSchema(t)
+  const steps = [t('checkout.steps.shipping'), t('checkout.steps.payment')]
 
   const { data: existingOrder, isLoading: checkingOrder } = useQuery({
     queryKey: ['order', 'auction', auctionId],
     queryFn: () => {
       if (!auctionId) {
-        throw new Error('Auction ID is required')
+        throw new Error(t('checkout.auctionIdRequired'))
       }
       return ordersApi.getOrderByAuctionId(auctionId)
     },
     enabled: !!auctionId,
-    retry: false,
+    retry: 3,
+    retryDelay: 1000,
   })
 
-  const createOrderMutation = useMutation({
+  const prepareCheckoutMutation = useMutation({
     mutationFn: (shippingAddress: ShippingAddress) => {
-      if (!auctionId) {
-        throw new Error('Auction ID is required')
+      if (!existingOrder) {
+        throw new Error(t('checkout.orderUnavailable'))
       }
-      return ordersApi.createOrder({ auctionId, shippingAddress })
+      return ordersApi.prepareCheckout(existingOrder.id, { shippingAddress })
     },
     onSuccess: (order) => {
       setOrderId(order.id)
@@ -108,10 +104,14 @@ export function CheckoutPage() {
     },
   })
 
-  const processPaymentMutation = useMutation({
-    mutationFn: (id: string) => ordersApi.processPayment(id),
-    onSuccess: () => {
-      setActiveStep(2)
+  const checkoutSessionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const session = await paymentsApi.createOrderCheckoutSession(id)
+      const checkoutUrl = getSafeHttpUrl(session.url)
+      if (!checkoutUrl) {
+        throw new Error(t('checkout.invalidPaymentUrl'))
+      }
+      window.location.assign(checkoutUrl)
     },
   })
 
@@ -128,24 +128,28 @@ export function CheckoutPage() {
       city: '',
       state: '',
       postalCode: '',
-      country: 'United States',
+      country: t('checkout.defaultCountry'),
       phone: '',
     },
   })
 
   useEffect(() => {
-    if (existingOrder && existingOrder.status !== 'pending') {
+    if (
+      existingOrder &&
+      existingOrder.status !== 'pending' &&
+      existingOrder.status !== 'payment_pending'
+    ) {
       navigate(`/orders/${existingOrder.id}`)
     }
   }, [existingOrder, navigate])
 
   const onSubmitShipping = (data: ShippingFormData) => {
-    createOrderMutation.mutate(data as ShippingAddress)
+    prepareCheckoutMutation.mutate(data)
   }
 
   const handlePayment = () => {
     if (orderId) {
-      processPaymentMutation.mutate(orderId)
+      checkoutSessionMutation.mutate(orderId)
     }
   }
 
@@ -155,6 +159,19 @@ export function CheckoutPage() {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
+      </Container>
+    )
+  }
+
+  if (!existingOrder) {
+    return (
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
+          {t('checkout.orderUnavailable')}
+        </InlineAlert>
+        <Button startIcon={<ArrowBack />} component={Link} to={`/auctions/${auctionId}`}>
+          {t('checkout.backToAuction')}
+        </Button>
       </Container>
     )
   }
@@ -169,7 +186,7 @@ export function CheckoutPage() {
             to={`/auctions/${auctionId}`}
             sx={{ mb: 3, color: 'text.secondary' }}
           >
-            Back to Auction
+            {t('checkout.backToAuction')}
           </Button>
         </motion.div>
 
@@ -183,7 +200,7 @@ export function CheckoutPage() {
               mb: 4,
             }}
           >
-            Checkout
+            {t('checkout.title')}
           </Typography>
         </motion.div>
 
@@ -211,7 +228,7 @@ export function CheckoutPage() {
               <motion.div variants={staggerItem}>
                 <Card sx={{ p: 4 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Shipping Address
+                    {t('checkout.shippingAddress')}
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
@@ -224,7 +241,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="Full Name"
+                              label={t('checkout.fullName')}
                               fullWidth
                               error={!!errors.fullName}
                               helperText={errors.fullName?.message}
@@ -240,7 +257,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="Address Line 1"
+                              label={t('checkout.addressLine1')}
                               fullWidth
                               error={!!errors.addressLine1}
                               helperText={errors.addressLine1?.message}
@@ -254,7 +271,7 @@ export function CheckoutPage() {
                           name="addressLine2"
                           control={control}
                           render={({ field }) => (
-                            <TextField {...field} label="Address Line 2 (Optional)" fullWidth />
+                            <TextField {...field} label={t('checkout.addressLine2')} fullWidth />
                           )}
                         />
                       </Grid>
@@ -266,7 +283,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="City"
+                              label={t('checkout.city')}
                               fullWidth
                               error={!!errors.city}
                               helperText={errors.city?.message}
@@ -282,7 +299,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="State / Province"
+                              label={t('checkout.state')}
                               fullWidth
                               error={!!errors.state}
                               helperText={errors.state?.message}
@@ -298,7 +315,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="Postal Code"
+                              label={t('checkout.postalCode')}
                               fullWidth
                               error={!!errors.postalCode}
                               helperText={errors.postalCode?.message}
@@ -314,7 +331,7 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="Country"
+                              label={t('checkout.country')}
                               fullWidth
                               error={!!errors.country}
                               helperText={errors.country?.message}
@@ -330,18 +347,18 @@ export function CheckoutPage() {
                           render={({ field }) => (
                             <TextField
                               {...field}
-                              label="Phone (Optional)"
+                              label={t('checkout.phone')}
                               fullWidth
-                              helperText="For delivery notifications"
+                              helperText={t('checkout.phoneHelper')}
                             />
                           )}
                         />
                       </Grid>
                     </Grid>
 
-                    {createOrderMutation.error && (
+                    {prepareCheckoutMutation.error && (
                       <InlineAlert severity="error" sx={{ mt: 3 }}>
-                        Failed to create order. Please try again.
+                        {t('checkout.createFailed')}
                       </InlineAlert>
                     )}
 
@@ -350,17 +367,17 @@ export function CheckoutPage() {
                         type="submit"
                         variant="contained"
                         size="large"
-                        disabled={createOrderMutation.isPending}
+                        disabled={prepareCheckoutMutation.isPending}
                         sx={{
                           px: 4,
                           bgcolor: 'primary.main',
                           '&:hover': { bgcolor: 'primary.dark' },
                         }}
                       >
-                        {createOrderMutation.isPending ? (
+                        {prepareCheckoutMutation.isPending ? (
                           <CircularProgress size={24} />
                         ) : (
-                          'Continue to Payment'
+                          t('checkout.continueToPayment')
                         )}
                       </Button>
                     </Box>
@@ -373,12 +390,12 @@ export function CheckoutPage() {
               <motion.div variants={staggerItem}>
                 <Card sx={{ p: 4 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Payment
+                    {t('checkout.steps.payment')}
                   </Typography>
                   <Divider sx={{ mb: 3 }} />
 
                   <InlineAlert severity="info" sx={{ mb: 3 }}>
-                    You will be redirected to our secure payment provider to complete your purchase.
+                    {t('checkout.paymentRedirect')}
                   </InlineAlert>
 
                   <Box
@@ -391,15 +408,15 @@ export function CheckoutPage() {
                   >
                     <Lock sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                     <Typography variant="h6" gutterBottom>
-                      Secure Payment
+                      {t('checkout.securePayment')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                      Your payment information is encrypted and secure
+                      {t('checkout.secureDescription')}
                     </Typography>
 
-                    {processPaymentMutation.error && (
+                    {checkoutSessionMutation.error && (
                       <InlineAlert severity="error" sx={{ mb: 3 }}>
-                        Payment failed. Please try again.
+                        {t('messages.paymentFailed')}
                       </InlineAlert>
                     )}
 
@@ -407,7 +424,7 @@ export function CheckoutPage() {
                       variant="contained"
                       size="large"
                       onClick={handlePayment}
-                      disabled={processPaymentMutation.isPending}
+                      disabled={checkoutSessionMutation.isPending}
                       sx={{
                         px: 6,
                         py: 1.5,
@@ -415,69 +432,13 @@ export function CheckoutPage() {
                         '&:hover': { bgcolor: '#A16207' },
                       }}
                     >
-                      {processPaymentMutation.isPending ? (
+                      {checkoutSessionMutation.isPending ? (
                         <CircularProgress size={24} />
                       ) : (
-                        'Pay Now'
+                        t('checkout.payNow')
                       )}
                     </Button>
                   </Box>
-                </Card>
-              </motion.div>
-            )}
-
-            {activeStep === 2 && (
-              <motion.div
-                variants={staggerItem}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <Card sx={{ p: 6, textAlign: 'center' }}>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  >
-                    <Box
-                      sx={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: '50%',
-                        bgcolor: 'success.light',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mx: 'auto',
-                        mb: 3,
-                      }}
-                    >
-                      <CheckCircle sx={{ fontSize: 48, color: 'success.main' }} />
-                    </Box>
-                  </motion.div>
-
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontFamily: '"Playfair Display", serif',
-                      fontWeight: 700,
-                      color: 'primary.main',
-                      mb: 1,
-                    }}
-                  >
-                    Order Confirmed!
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                    Thank you for your purchase. You will receive a confirmation email shortly.
-                  </Typography>
-
-                  <Stack direction="row" spacing={2} justifyContent="center">
-                    <Button variant="outlined" component={Link} to="/orders">
-                      View Orders
-                    </Button>
-                    <Button variant="contained" component={Link} to="/auctions">
-                      Continue Shopping
-                    </Button>
-                  </Stack>
                 </Card>
               </motion.div>
             )}
@@ -487,90 +448,68 @@ export function CheckoutPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, position: 'sticky', top: 100 }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Order Summary
+                  {t('checkout.orderSummary')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
 
-                {checkingOrder && (
-                  <Stack spacing={2}>
-                    <Skeleton variant="rectangular" height={80} />
-                    <Skeleton width="60%" />
-                    <Skeleton width="40%" />
-                  </Stack>
-                )}
-                {!checkingOrder && existingOrder && (
-                  <>
-                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                      <Box
-                        component="img"
-                        src={existingOrder.auctionImageUrl || '/placeholder.jpg'}
-                        alt={existingOrder.auctionTitle}
-                        sx={{
-                          width: 80,
-                          height: 80,
-                          objectFit: 'cover',
-                          borderRadius: 1,
-                          bgcolor: 'grey.100',
-                        }}
-                      />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="subtitle2" fontWeight={600} noWrap>
-                          {existingOrder.auctionTitle}
-                        </Typography>
-                        <Chip label="Won" color="success" size="small" sx={{ mt: 1 }} />
-                      </Box>
-                    </Box>
+                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                  <Box
+                    component="img"
+                    src={existingOrder.auctionImageUrl || '/placeholder.jpg'}
+                    alt={existingOrder.auctionTitle || existingOrder.itemTitle}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      bgcolor: 'grey.100',
+                    }}
+                  />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={600} noWrap>
+                      {existingOrder.auctionTitle || existingOrder.itemTitle}
+                    </Typography>
+                    <Chip label={t('checkout.won')} color="success" size="small" sx={{ mt: 1 }} />
+                  </Box>
+                </Box>
 
-                    <Stack spacing={1.5}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Winning Bid
-                        </Typography>
-                        <Typography variant="body2">
-                          $
-                          {(
-                            existingOrder.winningBidAmount ||
-                            existingOrder.winningBid ||
-                            0
-                          ).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Platform Fee
-                        </Typography>
-                        <Typography variant="body2">
-                          ${(existingOrder.platformFee || 0).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Shipping
-                        </Typography>
-                        <Typography variant="body2">
-                          ${(existingOrder.shippingCost || 0).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Divider />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          Total
-                        </Typography>
-                        <Typography variant="subtitle1" fontWeight={700} color="primary.main">
-                          ${existingOrder.totalAmount.toLocaleString()}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </>
-                )}
-                {!checkingOrder && !existingOrder && (
-                  <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <ShoppingCart sx={{ fontSize: 48, color: 'grey.300', mb: 2 }} />
+                <Stack spacing={1.5}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2" color="text.secondary">
-                      Order details will appear here
+                      {t('checkout.winningBid')}
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatCurrency(
+                        existingOrder.winningBidAmount || existingOrder.winningBid || 0
+                      )}
                     </Typography>
                   </Box>
-                )}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('checkout.platformFee')}
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatCurrency(existingOrder.platformFee || 0)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {t('checkout.shipping')}
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatCurrency(existingOrder.shippingCost || 0)}
+                    </Typography>
+                  </Box>
+                  <Divider />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {t('checkout.total')}
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight={700} color="primary.main">
+                      {formatCurrency(existingOrder.totalAmount)}
+                    </Typography>
+                  </Box>
+                </Stack>
               </Card>
             </motion.div>
           </Grid>

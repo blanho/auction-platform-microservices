@@ -1,62 +1,62 @@
-import { useState, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { formatNumber, formatRelativeTime } from '@/shared/utils/formatters'
 import {
-  Container,
-  Card,
-  Typography,
+  ArrowBack as BackIcon,
+  Cancel as CancelIcon,
+  Cancel as CancelledIcon,
+  CheckCircle as CompletedIcon,
+  Error as FailedIcon,
+  HourglassEmpty as InitializingIcon,
+  WarningAmber as PartialIcon,
+  Schedule as PendingIcon,
+  PlayCircle as ProcessingIcon,
+  Refresh as RefreshIcon,
+  Replay as RetryIcon,
+} from '@mui/icons-material'
+import {
+  Alert,
   Box,
-  Stack,
-  LinearProgress,
+  Button,
+  Card,
   Chip,
+  Container,
+  Divider,
+  FormControl,
+  Grid,
   IconButton,
-  Tooltip,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-  Skeleton,
-  Alert,
-  Button,
-  Grid,
   TablePagination,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Divider,
+  TableRow,
+  Tooltip,
+  Typography,
 } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ArrowBack as BackIcon,
-  Cancel as CancelIcon,
-  Replay as RetryIcon,
-  Refresh as RefreshIcon,
-  HourglassEmpty as InitializingIcon,
-  Schedule as PendingIcon,
-  PlayCircle as ProcessingIcon,
-  CheckCircle as CompletedIcon,
-  WarningAmber as PartialIcon,
-  Error as FailedIcon,
-  Cancel as CancelledIcon,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { formatRelativeTime } from '@/shared/utils/formatters'
-import { useJob, useJobItems, useCancelJob, useRetryJob } from '../hooks'
-import {
-  JOB_STATUS_LABELS,
-  JOB_STATUS_COLORS,
-  JOB_TYPE_LABELS,
-  JOB_PRIORITY_LABELS,
-  JOB_PRIORITY_COLORS,
-  JOB_ITEM_STATUS_LABELS,
   JOB_ITEM_STATUS_COLORS,
+  JOB_ITEM_STATUS_LABELS,
+  JOB_PRIORITY_COLORS,
+  JOB_PRIORITY_LABELS,
+  JOB_STATUS_COLORS,
+  JOB_STATUS_LABELS,
+  JOB_TYPE_LABELS,
 } from '../constants'
-import { isJobActive, getJobDuration } from '../utils'
-import type { JobStatus, JobItemStatus, JobItemFilterParams } from '../types'
+import { useCancelJob, useJob, useJobItems, useRetryJob } from '../hooks'
+import type { JobItemFilterParams, JobItemStatus, JobStatus } from '../types'
+import { getJobDuration, isJobActive } from '../utils'
 
 const statusIcons: Record<JobStatus, React.ReactElement> = {
   Initializing: <InitializingIcon />,
@@ -113,7 +113,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50]
 const DEFAULT_PAGE_SIZE = 10
 
 export function JobDetailPage() {
-  const { t: _t } = useTranslation('jobs')
+  const { t } = useTranslation('jobs')
   const { jobId = '' } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
 
@@ -146,9 +146,9 @@ export function JobDetailPage() {
   if (error) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Alert severity="error">Failed to load job details. The job may not exist.</Alert>
+        <Alert severity="error">{t('jobs.detailLoadFailed')}</Alert>
         <Button startIcon={<BackIcon />} onClick={() => navigate('/admin/jobs')} sx={{ mt: 2 }}>
-          Back to Jobs
+          {t('jobs.backToJobs')}
         </Button>
       </Container>
     )
@@ -169,12 +169,18 @@ export function JobDetailPage() {
                 <Box>
                   <Stack direction="row" alignItems="center" spacing={1.5}>
                     <Typography variant="h5" fontWeight={700}>
-                      {job ? JOB_TYPE_LABELS[job.jobType] : ''}
+                      {job
+                        ? t(`types.${job.jobType}`, {
+                            defaultValue: JOB_TYPE_LABELS[job.jobType],
+                          })
+                        : ''}
                     </Typography>
                     {job && (
                       <Chip
                         icon={statusIcons[job.status]}
-                        label={JOB_STATUS_LABELS[job.status]}
+                        label={t(`statuses.${job.status}`, {
+                          defaultValue: JOB_STATUS_LABELS[job.status],
+                        })}
                         color={JOB_STATUS_COLORS[job.status]}
                         size="small"
                       />
@@ -200,7 +206,7 @@ export function JobDetailPage() {
                   disabled={cancelMutation.isPending}
                   size="small"
                 >
-                  Cancel
+                  {t('jobs.cancel')}
                 </Button>
               )}
               {canRetry && (
@@ -212,7 +218,7 @@ export function JobDetailPage() {
                   disabled={retryMutation.isPending}
                   size="small"
                 >
-                  Retry
+                  {t('jobs.retry')}
                 </Button>
               )}
               <IconButton onClick={() => refetch()} disabled={isLoading}>
@@ -232,55 +238,61 @@ export function JobDetailPage() {
                   <Grid size={{ xs: 12, md: 7 }}>
                     <Card sx={{ p: 3, height: '100%' }}>
                       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
-                        Details
+                        {t('jobs.details')}
                       </Typography>
                       <Divider sx={{ mb: 1 }} />
-                      <MetadataRow label="Type">
-                        <Typography variant="body2">{JOB_TYPE_LABELS[job.jobType]}</Typography>
+                      <MetadataRow label={t('jobs.type')}>
+                        <Typography variant="body2">
+                          {t(`types.${job.jobType}`, {
+                            defaultValue: JOB_TYPE_LABELS[job.jobType],
+                          })}
+                        </Typography>
                       </MetadataRow>
-                      <MetadataRow label="Priority">
+                      <MetadataRow label={t('jobs.priority')}>
                         <Chip
                           size="small"
-                          label={JOB_PRIORITY_LABELS[job.priority]}
+                          label={t(`priorities.${job.priority}`, {
+                            defaultValue: JOB_PRIORITY_LABELS[job.priority],
+                          })}
                           color={JOB_PRIORITY_COLORS[job.priority]}
                           variant="outlined"
                           sx={{ height: 24 }}
                         />
                       </MetadataRow>
-                      <MetadataRow label="Correlation ID">
+                      <MetadataRow label={t('jobs.correlationId')}>
                         <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                           {job.correlationId}
                         </Typography>
                       </MetadataRow>
                       {job.requestedBy && (
-                        <MetadataRow label="Requested By">
+                        <MetadataRow label={t('jobs.requestedBy')}>
                           <Typography variant="body2">{job.requestedBy}</Typography>
                         </MetadataRow>
                       )}
-                      <MetadataRow label="Created">
+                      <MetadataRow label={t('jobs.created')}>
                         <Typography variant="body2">{formatRelativeTime(job.createdAt)}</Typography>
                       </MetadataRow>
                       {job.startedAt && (
-                        <MetadataRow label="Started">
+                        <MetadataRow label={t('jobs.started')}>
                           <Typography variant="body2">
                             {formatRelativeTime(job.startedAt)}
                           </Typography>
                         </MetadataRow>
                       )}
                       {job.completedAt && (
-                        <MetadataRow label="Completed">
+                        <MetadataRow label={t('jobs.completed')}>
                           <Typography variant="body2">
                             {formatRelativeTime(job.completedAt)}
                           </Typography>
                         </MetadataRow>
                       )}
-                      <MetadataRow label="Duration">
+                      <MetadataRow label={t('jobs.duration')}>
                         <Typography variant="body2">
                           {getJobDuration(job.startedAt, job.completedAt)}
                         </Typography>
                       </MetadataRow>
                       {job.errorMessage && (
-                        <MetadataRow label="Error">
+                        <MetadataRow label={t('jobs.error')}>
                           <Alert severity="error" variant="outlined" sx={{ py: 0.5, px: 1.5 }}>
                             {job.errorMessage}
                           </Alert>
@@ -292,7 +304,7 @@ export function JobDetailPage() {
                   <Grid size={{ xs: 12, md: 5 }}>
                     <Card sx={{ p: 3, height: '100%' }}>
                       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-                        Progress
+                        {t('jobs.progress')}
                       </Typography>
                       <Box sx={{ textAlign: 'center', mb: 3 }}>
                         <Typography variant="h2" fontWeight={700} sx={{ color: progressColor }}>
@@ -314,30 +326,30 @@ export function JobDetailPage() {
                         <Grid size={4}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h5" fontWeight={700}>
-                              {job.totalItems.toLocaleString()}
+                              {formatNumber(job.totalItems)}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Total
+                              {t('jobs.total')}
                             </Typography>
                           </Box>
                         </Grid>
                         <Grid size={4}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h5" fontWeight={700} color="success.main">
-                              {job.completedItems.toLocaleString()}
+                              {formatNumber(job.completedItems)}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Completed
+                              {t('jobs.completed')}
                             </Typography>
                           </Box>
                         </Grid>
                         <Grid size={4}>
                           <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="h5" fontWeight={700} color="error.main">
-                              {job.failedItems.toLocaleString()}
+                              {formatNumber(job.failedItems)}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Failed
+                              {t('jobs.failed')}
                             </Typography>
                           </Box>
                         </Grid>
@@ -352,22 +364,22 @@ export function JobDetailPage() {
                   <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                       <Typography variant="h6" fontWeight={600}>
-                        Items
+                        {t('jobs.items')}
                       </Typography>
                       <FormControl size="small" sx={{ minWidth: 140 }}>
-                        <InputLabel>Status</InputLabel>
+                        <InputLabel>{t('jobs.status')}</InputLabel>
                         <Select
                           value={itemStatusFilter}
-                          label="Status"
+                          label={t('jobs.status')}
                           onChange={(e) => {
                             setItemStatusFilter(e.target.value as JobItemStatus | 'all')
                             setItemPage(0)
                           }}
                         >
-                          <MenuItem value="all">All Status</MenuItem>
+                          <MenuItem value="all">{t('jobs.allStatuses')}</MenuItem>
                           {Object.entries(JOB_ITEM_STATUS_LABELS).map(([key, label]) => (
                             <MenuItem key={key} value={key}>
-                              {label}
+                              {t(`itemStatuses.${key}`, { defaultValue: label })}
                             </MenuItem>
                           ))}
                         </Select>
@@ -380,11 +392,11 @@ export function JobDetailPage() {
                       <TableHead>
                         <TableRow>
                           <TableCell>#</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Retries</TableCell>
-                          <TableCell>Created</TableCell>
-                          <TableCell>Processed</TableCell>
-                          <TableCell>Error</TableCell>
+                          <TableCell>{t('jobs.status')}</TableCell>
+                          <TableCell>{t('jobs.retries')}</TableCell>
+                          <TableCell>{t('jobs.created')}</TableCell>
+                          <TableCell>{t('jobs.processed')}</TableCell>
+                          <TableCell>{t('jobs.error')}</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -402,7 +414,7 @@ export function JobDetailPage() {
                           <TableRow>
                             <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                               <Typography variant="body2" color="text.secondary">
-                                No items found
+                                {t('jobs.noItems')}
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -418,7 +430,9 @@ export function JobDetailPage() {
                               <TableCell>
                                 <Chip
                                   size="small"
-                                  label={JOB_ITEM_STATUS_LABELS[item.status]}
+                                  label={t(`itemStatuses.${item.status}`, {
+                                    defaultValue: JOB_ITEM_STATUS_LABELS[item.status],
+                                  })}
                                   color={JOB_ITEM_STATUS_COLORS[item.status]}
                                   sx={{ height: 22 }}
                                 />

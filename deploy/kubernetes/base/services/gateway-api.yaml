@@ -37,8 +37,6 @@ spec:
             - secretRef:
                 name: auction-platform-secrets
           env:
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "Production"
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
             - name: ReverseProxy__Clusters__auction-cluster__Destinations__destination1__Address

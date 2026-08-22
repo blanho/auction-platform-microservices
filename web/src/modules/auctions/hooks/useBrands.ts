@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { brandsApi } from '../api/brands.api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { BrandFilters, CreateBrandRequest, UpdateBrandRequest } from '../api/brands.api'
+import { brandsApi } from '../api/brands.api'
 
 export const brandKeys = {
   all: ['brands'] as const,
@@ -17,7 +17,7 @@ export function useBrands(filters?: BrandFilters) {
   })
 }
 
-export function useAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }) {
+function useAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }) {
   return useQuery({
     queryKey: brandKeys.allBrands(),
     queryFn: () => brandsApi.getAllBrands(filters),
@@ -27,14 +27,6 @@ export function useAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: bo
 
 export function useActiveBrands() {
   return useAllBrands({ activeOnly: true })
-}
-
-export function useBrand(id: string) {
-  return useQuery({
-    queryKey: brandKeys.detail(id),
-    queryFn: () => brandsApi.getBrandById(id),
-    enabled: !!id,
-  })
 }
 
 export function useCreateBrand() {

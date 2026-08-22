@@ -1,16 +1,18 @@
-import { Box, Typography, Skeleton, useTheme } from '@mui/material'
+import { getCurrentLocale } from '@/i18n'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { Box, Skeleton, Typography, useTheme } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts'
 import type { TrendDataPoint } from '../types'
-import { formatCurrency } from '@/shared/utils/formatters'
-import { palette } from '@/shared/theme/tokens'
 
 interface RevenueChartProps {
   data: TrendDataPoint[]
@@ -19,13 +21,9 @@ interface RevenueChartProps {
   height?: number
 }
 
-export function RevenueChart({
-  data,
-  isLoading,
-  title = 'Revenue Trend',
-  height = 300,
-}: RevenueChartProps) {
+export function RevenueChart({ data, isLoading, title, height = 300 }: RevenueChartProps) {
   const theme = useTheme()
+  const { t } = useTranslation('analytics')
   const isDark = theme.palette.mode === 'dark'
 
   if (isLoading) {
@@ -48,7 +46,7 @@ export function RevenueChart({
 
   const chartData = data.map((point) => ({
     ...point,
-    displayDate: new Date(point.date).toLocaleDateString('en-US', {
+    displayDate: new Date(point.date).toLocaleDateString(getCurrentLocale(), {
       month: 'short',
       day: 'numeric',
     }),
@@ -71,7 +69,7 @@ export function RevenueChart({
         gutterBottom
         sx={{ fontFamily: '"Fira Sans", sans-serif' }}
       >
-        {title}
+        {title ?? t('charts.revenueTrend')}
       </Typography>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -121,7 +119,7 @@ export function RevenueChart({
               fontWeight: 600,
               marginBottom: 4,
             }}
-            formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+            formatter={(value) => [formatCurrency(value as number), t('charts.revenue')]}
           />
           <Area
             type="monotone"

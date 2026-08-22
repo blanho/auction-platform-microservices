@@ -1,34 +1,34 @@
-import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useParams, Link } from 'react-router-dom'
+import { ACCEPTED_IMAGE_TYPES } from '@/shared/constants/storage.constants'
+import { useFileUpload } from '@/shared/hooks/useFileUpload'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { ArrowBack, ArrowForward, Save } from '@mui/icons-material'
 import {
-  Container,
-  Typography,
   Box,
-  Card,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  CircularProgress,
   Breadcrumbs,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  Grid,
   Link as MuiLink,
   Skeleton,
-  Grid,
+  Step,
+  StepLabel,
+  Stepper,
+  Typography,
 } from '@mui/material'
-import { ArrowBack, ArrowForward, Save } from '@mui/icons-material'
 import { motion } from 'framer-motion'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
-import { useActiveCategories, useActiveBrands } from '../hooks'
-import { useFileUpload } from '@/shared/hooks/useFileUpload'
-import { ACCEPTED_IMAGE_TYPES } from '@/shared/constants/storage.constants'
-import { addDays, formatDateTimeLocal } from '../utils/date.utils'
+import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router-dom'
 import { FORM_STEPS } from '../constants'
+import { BasicInfoStep, ItemDetailsStep, PricingStep, ReviewStep } from '../forms'
+import { useActiveBrands, useActiveCategories } from '../hooks'
 import { useAuctionForm } from '../hooks/useAuctionForm'
 import { useMultiStepForm } from '../hooks/useMultiStepForm'
 import type { CreateAuctionFormData } from '../schemas'
-import { BasicInfoStep, ItemDetailsStep, PricingStep, ReviewStep } from '../forms'
+import { addDays, formatDateTimeLocal } from '../utils/date.utils'
 
 const STEP_FIELDS: Record<number, (keyof CreateAuctionFormData)[]> = {
   0: ['title', 'description', 'categoryId'],
@@ -169,7 +169,7 @@ export function AuctionFormPage() {
           {t('common:nav.home')}
         </MuiLink>
         <MuiLink component={Link} to="/my-auctions" underline="hover" color="inherit">
-          {t('myAuctions.title')}
+          {t('myAuctions')}
         </MuiLink>
         <Typography color="text.primary">
           {isEditMode ? t('form.editAuction') : t('form.createAuction')}

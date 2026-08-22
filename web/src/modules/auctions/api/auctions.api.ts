@@ -1,13 +1,13 @@
 import { http } from '@/services/http'
-import type { AuctionDetails, AuctionListItem, AuctionStatus } from '../types/auction.types'
+import type { BackendPaginatedResponse, PaginatedResponse } from '@/shared/types'
+import { mapPaginatedResponse } from '@/shared/types'
 import type {
   AuctionFilters,
   CreateAuctionRequest,
   UpdateAuctionRequest,
 } from '../types/auction-requests.types'
+import type { AuctionDetails, AuctionListItem, AuctionStatus } from '../types/auction.types'
 import type { BackendAuctionDto } from '../types/backend-dto.types'
-import type { PaginatedResponse, BackendPaginatedResponse } from '@/shared/types'
-import { mapPaginatedResponse } from '@/shared/types'
 import { mapAuctionDto, mapAuctionListDtos } from '../utils/auction.mappers'
 
 const BACKEND_STATUS: Partial<Record<AuctionStatus, string>> = {

@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/shared/ui'
-import { getAdminUserDisplayName } from '../../utils'
+import { useTranslation } from 'react-i18next'
 import type { AdminUser } from '../../types'
+import { getAdminUserDisplayName } from '../../utils'
 
 interface ActivateUserDialogProps {
   open: boolean

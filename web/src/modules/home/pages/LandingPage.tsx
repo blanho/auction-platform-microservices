@@ -1,15 +1,15 @@
 import { Box } from '@mui/material'
 import {
-  HeroSection,
-  FeaturedAuctionsSection,
-  GiftGuideSection,
-  EditorialSection,
-  FreshArrivalsSection,
   CategoriesSection,
-  FeaturesSection,
-  TestimonialsSection,
   CTASection,
+  EditorialSection,
   ExclusiveOffersBar,
+  FeaturedAuctionsSection,
+  FeaturesSection,
+  FreshArrivalsSection,
+  GiftGuideSection,
+  HeroSection,
+  TestimonialsSection,
 } from '../components'
 
 export const LandingPage = () => {

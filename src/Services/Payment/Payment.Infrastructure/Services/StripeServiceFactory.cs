@@ -14,8 +14,5 @@ public class StripeServiceFactory : IStripeServiceFactory
         StripeConfiguration.ApiKey = options.Value.SecretKey;
     }
 
-    public PaymentIntentService CreatePaymentIntentService() => new();
     public SessionService CreateSessionService() => new();
-    public CustomerService CreateCustomerService() => new();
-    public RefundService CreateRefundService() => new();
 }

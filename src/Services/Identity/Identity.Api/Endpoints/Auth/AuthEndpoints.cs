@@ -29,6 +29,7 @@ using Identity.Application.Features.Auth.Commands.ProcessExternalLogin;
 using Identity.Application.Features.Auth.Commands.ExchangeCodeForTokens;
 using Identity.Application.Features.Auth.Queries.CheckUsernameAvailability;
 using Identity.Application.Features.Auth.Queries.CheckEmailAvailability;
+using Identity.Application.Interfaces;
 using EnvironmentHelper = Identity.Application.Helpers.EnvironmentHelper;
 using CookieHelper = Identity.Api.Helpers.CookieHelper;
 using HttpContextHelper = Identity.Api.Helpers.HttpContextHelper;
@@ -66,6 +67,7 @@ public class AuthEndpoints : ICarterModule
 
         group.MapPost("/reset-password", ResetPassword)
             .WithName("ResetPassword")
+            .RequireRateLimiting(IdentityDefaults.RateLimits.PasswordReset)
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
 
@@ -256,7 +258,10 @@ public class AuthEndpoints : ICarterModule
             : Results.Unauthorized();
     }
 
-    private static IResult ExternalLogin(string provider, [FromQuery] string? returnUrl, HttpContext httpContext, IConfiguration configuration)
+    private static IResult ExternalLogin(
+        string provider,
+        [FromQuery] string? returnUrl,
+        IOAuthReturnUrlValidator returnUrlValidator)
     {
         var allowedProviders = new[] { "Google", "Facebook" };
         if (!allowedProviders.Contains(provider, StringComparer.OrdinalIgnoreCase))
@@ -264,8 +269,13 @@ public class AuthEndpoints : ICarterModule
             return Results.BadRequest(ProblemDetailsHelper.ValidationError("provider", $"Provider '{provider}' is not supported"));
         }
 
-        var frontendUrl = configuration["FrontendUrl"] ?? "http://localhost:5173";
-        var callbackUrl = $"/api/v1/auth/external-login-callback?returnUrl={HttpUtility.UrlEncode(returnUrl ?? frontendUrl)}";
+        if (!returnUrlValidator.TryResolve(returnUrl, out var safeReturnUrl))
+        {
+            return Results.BadRequest(
+                ProblemDetailsHelper.ValidationError("returnUrl", "Return URL is not allowed"));
+        }
+
+        var callbackUrl = $"/api/v1/auth/external-login-callback?returnUrl={HttpUtility.UrlEncode(safeReturnUrl)}";
 
         var properties = new AuthenticationProperties
         {
@@ -276,15 +286,26 @@ public class AuthEndpoints : ICarterModule
         return Results.Challenge(properties, new[] { provider });
     }
 
-    private static async Task<IResult> ExternalLoginCallback([FromQuery] string? returnUrl, [FromQuery] string? remoteError, HttpContext httpContext, IConfiguration configuration, ILogger<AuthEndpoints> logger, ISender sender, CancellationToken cancellationToken)
+    private static async Task<IResult> ExternalLoginCallback(
+        [FromQuery] string? returnUrl,
+        [FromQuery] string? remoteError,
+        IOAuthReturnUrlValidator returnUrlValidator,
+        ILogger<AuthEndpoints> logger,
+        ISender sender,
+        CancellationToken cancellationToken)
     {
-        var frontendUrl = configuration["FrontendUrl"] ?? "http://localhost:3000";
-        returnUrl ??= frontendUrl;
+        returnUrlValidator.TryResolve("/login", out var signInUrl);
+
+        if (!returnUrlValidator.TryResolve(returnUrl, out var safeReturnUrl))
+        {
+            logger.LogWarning("Rejected untrusted external login return URL");
+            return Results.Redirect(AddQueryParameter(signInUrl, "error", "Invalid return URL"));
+        }
 
         if (remoteError != null)
         {
             logger.LogError("External login error: {Error}", remoteError);
-            return Results.Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(remoteError)}");
+            return Results.Redirect(AddQueryParameter(signInUrl, "error", remoteError));
         }
 
         var infoResult = await sender.Send(new GetExternalLoginInfoQuery(), cancellationToken);
@@ -292,15 +313,15 @@ public class AuthEndpoints : ICarterModule
         if (info == null)
         {
             logger.LogError("External login info is null");
-            return Results.Redirect($"{frontendUrl}/auth/signin?error=External+login+failed");
+            return Results.Redirect(AddQueryParameter(signInUrl, "error", "External login failed"));
         }
 
         var result = await sender.Send(new ProcessExternalLoginCommand(info), cancellationToken);
 
         if (!result.IsSuccess)
-            return Results.Redirect($"{frontendUrl}/auth/signin?error={HttpUtility.UrlEncode(result.Error!.Message)}");
+            return Results.Redirect(AddQueryParameter(signInUrl, "error", result.Error!.Message));
 
-        return Results.Redirect($"{returnUrl}?code={result.Value!.AuthCode}");
+        return Results.Redirect(AddQueryParameter(safeReturnUrl, "code", result.Value!.AuthCode));
     }
 
     private static async Task<IResult> ExchangeCodeForTokens([FromBody] ExchangeCodeRequest request, HttpContext httpContext, IConfiguration configuration, ISender sender, CancellationToken cancellationToken)
@@ -338,5 +359,14 @@ public class AuthEndpoints : ICarterModule
         var availableResult = await sender.Send(new CheckEmailAvailabilityQuery(email), cancellationToken);
         var available = availableResult.IsSuccess && availableResult.Value;
         return Results.Ok(available);
+    }
+
+    private static string AddQueryParameter(string url, string name, string value)
+    {
+        var builder = new UriBuilder(url);
+        var query = HttpUtility.ParseQueryString(builder.Query);
+        query[name] = value;
+        builder.Query = query.ToString();
+        return builder.Uri.AbsoluteUri;
     }
 }

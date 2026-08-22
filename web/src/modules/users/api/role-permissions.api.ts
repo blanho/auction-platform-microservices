@@ -1,7 +1,7 @@
 import { http } from '@/services/http'
 import type {
-  RoleDto,
   PermissionDefinition,
+  RoleDto,
   SetPermissionsRequest,
   TogglePermissionRequest,
 } from '../types'

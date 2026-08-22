@@ -11,7 +11,20 @@
     "signUp": "Create account",
     "orContinueWith": "or",
     "google": "Continue with Google",
-    "facebook": "Continue with Facebook"
+    "facebook": "Continue with Facebook",
+    "heroTitleLine1": "Discover Rare",
+    "heroTitleLine2": "& Exceptional Pieces",
+    "heroDescription": "Join thousands of collectors finding authenticated luxury items from trusted sellers worldwide.",
+    "stats": {
+      "itemsSold": "Items Sold",
+      "trustedSellers": "Trusted Sellers",
+      "authenticityRate": "Authenticity Rate"
+    },
+    "session": {
+      "expired": "Your session has expired. Please log in again.",
+      "security": "Your session was terminated due to suspicious activity. All devices have been logged out for your security. Please log in again and consider changing your password.",
+      "logout": "You have been logged out successfully."
+    }
   },
 
   "register": {
@@ -32,7 +45,15 @@
     "confirmationSent": "We've sent a confirmation link to",
     "verifyEmailInstruction": "Click the link in the email to verify your account and complete your registration.",
     "goToLogin": "Go to Login",
-    "didntReceiveEmail": "Didn't receive the email?"
+    "didntReceiveEmail": "Didn't receive the email?",
+    "heroTitleLine1": "Start Your",
+    "heroTitleLine2": "Collection Today",
+    "heroDescription": "Join our community of collectors and discover extraordinary pieces from around the world.",
+    "features": {
+      "exclusiveAuctions": "Access exclusive auctions",
+      "verifiedSellers": "Verified sellers & items",
+      "securePayments": "Secure payment protection"
+    }
   },
 
   "forgotPassword": {
@@ -45,7 +66,9 @@
     "resetInstructionsSent": "We've sent password reset instructions to",
     "checkSpam": "If you don't see the email, check your spam folder.",
     "tryDifferentEmail": "Try a different email",
-    "rememberPassword": "Remember your password?"
+    "rememberPassword": "Remember your password?",
+    "heroTitle": "Password Recovery",
+    "heroDescription": "No worries, we'll help you regain access to your account securely."
   },
 
   "resetPassword": {
@@ -61,7 +84,16 @@
     "invalidLink": "Invalid Reset Link",
     "invalidLinkMessage": "This password reset link is invalid or has expired. Please request a new one.",
     "requestNewLink": "Request New Link",
-    "backToLogin": "← Back to login"
+    "backToLogin": "← Back to login",
+    "heroTitle": "Create New Password",
+    "heroDescription": "Choose a strong password to keep your account secure.",
+    "requirements": {
+      "minLength": "At least 8 characters",
+      "uppercase": "One uppercase letter",
+      "lowercase": "One lowercase letter",
+      "number": "One number",
+      "special": "One special character"
+    }
   },
 
   "confirmEmail": {
@@ -76,7 +108,9 @@
     "resend": "Resend Verification Email",
     "resendSuccess": "Verification email sent! Check your inbox.",
     "goToLogin": "Go to Login",
-    "backToLogin": "Back to Login"
+    "backToLogin": "Back to Login",
+    "welcomeTo": "Welcome to",
+    "heroDescription": "Your account is now verified. Start exploring exclusive auctions and rare finds."
   },
 
   "twoFactor": {
@@ -102,7 +136,20 @@
     "passwordRequired": "Password is required",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMatch": "Passwords do not match",
-    "termsRequired": "You must agree to the terms and conditions"
+    "termsRequired": "You must agree to the terms and conditions",
+    "usernameOrEmailRequired": "Email or username is required",
+    "usernameMinLength": "Username must be at least {{min}} characters",
+    "usernameMaxLength": "Username must be less than {{max}} characters",
+    "usernameFormat": "Username can only contain letters, numbers, and underscores",
+    "usernameTaken": "Username is already taken",
+    "passwordMin": "Password must be at least {{min}} characters",
+    "passwordMax": "Password must be less than {{max}} characters",
+    "passwordUppercase": "Password must contain at least one uppercase letter",
+    "passwordLowercase": "Password must contain at least one lowercase letter",
+    "passwordNumber": "Password must contain at least one number",
+    "passwordSpecial": "Password must contain at least one special character",
+    "codeLength": "Code must be {{count}} digits",
+    "codeNumbersOnly": "Code must contain only numbers"
   },
 
   "errors": {

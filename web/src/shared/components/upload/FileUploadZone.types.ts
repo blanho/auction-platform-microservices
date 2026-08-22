@@ -1,5 +1,4 @@
 import type { FileAttachment, FileUploadProgress } from '@/shared/types/storage.types'
-import { MAX_FILES_PER_UPLOAD } from '@/shared/constants/storage.constants'
 
 export interface FileUploadZoneProps {
   attachments: FileAttachment[]
@@ -46,14 +45,4 @@ export function formatFileSize(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-export function resolveAcceptedTypes(
-  acceptedTypes: readonly string[] | undefined
-): readonly string[] {
-  return acceptedTypes ?? []
-}
-
-export function getMaxFiles(maxFiles: number | undefined): number {
-  return maxFiles ?? MAX_FILES_PER_UPLOAD
 }

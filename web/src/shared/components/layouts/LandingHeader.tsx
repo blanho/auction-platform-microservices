@@ -1,40 +1,40 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useAuth } from '@/app/providers'
+import { useWatchlistCount } from '@/modules/auctions/hooks'
+import { useNotificationSummary } from '@/modules/notifications/hooks'
+import { palette } from '@/shared/theme/tokens'
+import {
+  Close as CloseIcon,
+  FavoriteBorder,
+  Menu as MenuIcon,
+  NotificationsOutlined,
+  PersonOutline,
+  Search as SearchIcon,
+  ShoppingBagOutlined,
+} from '@mui/icons-material'
 import {
   AppBar,
+  Avatar,
+  Badge,
   Box,
-  IconButton,
-  Typography,
   Button,
   Container,
+  Divider,
   Drawer,
+  IconButton,
+  InputBase,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Divider,
-  Avatar,
   Menu,
   MenuItem,
-  Badge,
-  InputBase,
+  Typography,
 } from '@mui/material'
-import {
-  Menu as MenuIcon,
-  Close as CloseIcon,
-  Search as SearchIcon,
-  FavoriteBorder,
-  PersonOutline,
-  ShoppingBagOutlined,
-  NotificationsOutlined,
-} from '@mui/icons-material'
-import { useAuth } from '@/app/providers'
-import { useNotificationSummary } from '@/modules/notifications/hooks'
-import { useWatchlistCount } from '@/modules/auctions/hooks'
-import { palette } from '@/shared/theme/tokens'
-import { WishlistDrawer } from '../navigation/WishlistDrawer'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { LanguageSwitcher } from '../inputs'
+import { WishlistDrawer } from '../navigation/WishlistDrawer'
 
 export const LandingHeader = () => {
   const { user, isAuthenticated, logout } = useAuth()
@@ -120,7 +120,11 @@ export const LandingHeader = () => {
         >
           {t('brandNameItalic')}
         </Typography>
-        <IconButton onClick={() => setMobileOpen(false)} sx={{ color: palette.neutral[900] }}>
+        <IconButton
+          onClick={() => setMobileOpen(false)}
+          aria-label={t('actions.close')}
+          sx={{ color: palette.neutral[900] }}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -334,6 +338,7 @@ export const LandingHeader = () => {
             >
               <IconButton
                 onClick={() => setMobileOpen(true)}
+                aria-label={t('nav.openMenu')}
                 sx={{
                   display: { md: 'none' },
                   color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
@@ -399,7 +404,7 @@ export const LandingHeader = () => {
                     },
                   }}
                 />
-                <IconButton type="submit" sx={{ p: 0.5 }}>
+                <IconButton type="submit" aria-label={t('actions.search')} sx={{ p: 0.5 }}>
                   <SearchIcon
                     sx={{
                       color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
@@ -451,6 +456,7 @@ export const LandingHeader = () => {
                     <IconButton
                       component={Link}
                       to="/notifications"
+                      aria-label={t('nav.notifications')}
                       sx={{
                         color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                         p: 1,
@@ -477,6 +483,7 @@ export const LandingHeader = () => {
                   <>
                     <IconButton
                       onClick={handleUserMenuOpen}
+                      aria-label={t('nav.profile')}
                       sx={{
                         color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                         p: 1,
@@ -592,6 +599,7 @@ export const LandingHeader = () => {
                   <IconButton
                     component={Link}
                     to="/login"
+                    aria-label={t('nav.login')}
                     sx={{
                       color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                       p: 1,
@@ -603,6 +611,7 @@ export const LandingHeader = () => {
 
                 <IconButton
                   onClick={handleWishlistOpen}
+                  aria-label={t('nav.watchlist')}
                   sx={{
                     color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                     p: 1,
@@ -626,6 +635,7 @@ export const LandingHeader = () => {
                 <IconButton
                   component={Link}
                   to={isAuthenticated ? '/my-bids' : '/login'}
+                  aria-label={t('nav.myBids')}
                   sx={{
                     color: showSolidHeader ? palette.neutral[900] : palette.neutral[0],
                     p: 1,

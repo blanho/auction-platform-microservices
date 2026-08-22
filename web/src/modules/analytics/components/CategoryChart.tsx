@@ -1,17 +1,18 @@
-import { Box, Typography, Skeleton, useTheme } from '@mui/material'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
+import { Box, Skeleton, Typography, useTheme } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
 } from 'recharts'
 import type { CategoryBreakdown } from '../types'
-import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
-import { palette } from '@/shared/theme/tokens'
 
 interface CategoryChartProps {
   data: CategoryBreakdown[]
@@ -35,11 +36,12 @@ const COLORS = [
 export function CategoryChart({
   data,
   isLoading,
-  title = 'Category Performance',
+  title,
   height = 300,
   dataKey = 'revenue',
 }: CategoryChartProps) {
   const theme = useTheme()
+  const { t } = useTranslation('analytics')
   const isDark = theme.palette.mode === 'dark'
 
   if (isLoading) {
@@ -75,13 +77,13 @@ export function CategoryChart({
   const getLabel = () => {
     switch (dataKey) {
       case 'revenue':
-        return 'Revenue'
+        return t('charts.revenue')
       case 'auctionCount':
-        return 'Auctions'
+        return t('charts.auctions')
       case 'bidCount':
-        return 'Bids'
+        return t('charts.bids')
       default:
-        return 'Value'
+        return t('charts.value')
     }
   }
 
@@ -102,7 +104,7 @@ export function CategoryChart({
         gutterBottom
         sx={{ fontFamily: '"Fira Sans", sans-serif' }}
       >
-        {title}
+        {title ?? t('charts.categoryPerformance')}
       </Typography>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart

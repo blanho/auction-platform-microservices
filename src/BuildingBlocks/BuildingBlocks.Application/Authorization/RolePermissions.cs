@@ -10,7 +10,6 @@ public static class RolePermissions
         Perm.OrderViewOwn,
         Perm.OrderCreate,
         Perm.WalletViewOwn,
-        Perm.WalletDeposit,
         Perm.AnalyticsViewOwn,
         Perm.StorageView,
         Perm.NotificationView,
@@ -27,7 +26,6 @@ public static class RolePermissions
         Perm.AuctionCreate,
         Perm.AuctionEdit,
         Perm.StorageUpload,
-        Perm.WalletWithdraw,
     ];
 
     private static readonly HashSet<string> AdminPermissions =
@@ -46,7 +44,6 @@ public static class RolePermissions
         Perm.UserBan,
         Perm.UserManageRoles,
         Perm.OrderView,
-        Perm.OrderCancel,
         Perm.OrderRefund,
         Perm.PaymentView,
         Perm.PaymentProcess,

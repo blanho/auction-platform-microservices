@@ -1,117 +1,111 @@
-import { useState, useMemo } from 'react'
+import {
+  BulkImportDialog,
+  ExportAuctionsDialog,
+  ImportAuctionsDialog,
+} from '@/modules/auctions/components'
+import {
+  useActivateAuction,
+  useCancelAuction,
+  useDeactivateAuction,
+  useDeleteAuction,
+  useExtendAuction,
+  useMyAuctions,
+} from '@/modules/auctions/hooks'
+import type { AuctionListItem, AuctionStatus } from '@/modules/auctions/types'
 import { palette } from '@/shared/theme/tokens'
 import { TableEmptyStateRow } from '@/shared/ui'
+import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
 import {
-  Container,
-  Typography,
+  Add,
+  Cancel,
+  CheckCircle,
+  Delete,
+  DoNotDisturb,
+  Edit,
+  FileDownload,
+  FileUpload,
+  Gavel,
+  MoreTime,
+  MoreVert,
+  Pause,
+  PlayArrow,
+  Search,
+  Timer,
+  TrendingUp,
+  Visibility,
+} from '@mui/icons-material'
+import {
+  Alert,
+  Avatar,
   Box,
-  Grid,
-  Card,
-  Stack,
   Button,
+  Card,
   Chip,
-  Tabs,
-  Tab,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
   IconButton,
+  InputAdornment,
   Menu,
   MenuItem,
-  TextField,
-  InputAdornment,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow,
   TablePagination,
-  Avatar,
-  Skeleton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Snackbar,
-  Alert,
-  CircularProgress,
+  TableRow,
+  Tabs,
+  TextField,
+  Typography,
 } from '@mui/material'
-import {
-  Add,
-  Search,
-  MoreVert,
-  Edit,
-  Delete,
-  Visibility,
-  Timer,
-  Gavel,
-  TrendingUp,
-  CheckCircle,
-  Cancel,
-  Pause,
-  PlayArrow,
-  FileDownload,
-  FileUpload,
-  MoreTime,
-  DoNotDisturb,
-} from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  useMyAuctions,
-  useActivateAuction,
-  useDeactivateAuction,
-  useDeleteAuction,
-  useCancelAuction,
-  useExtendAuction,
-} from '@/modules/auctions/hooks'
-import {
-  ExportAuctionsDialog,
-  ImportAuctionsDialog,
-  BulkImportDialog,
-} from '@/modules/auctions/components'
-import type { AuctionStatus, AuctionListItem } from '@/modules/auctions/types'
+import { Link } from 'react-router-dom'
 import { formatTimeLeft } from '../utils'
 
 const statusConfig: Record<
   AuctionStatus,
-  { label: string; color: string; bgColor: string; icon: React.ReactElement }
+  { color: string; bgColor: string; icon: React.ReactElement }
 > = {
   active: {
-    label: 'Active',
     color: palette.semantic.success,
     bgColor: palette.semantic.successLight,
     icon: <PlayArrow sx={{ fontSize: 14 }} />,
   },
   'ending-soon': {
-    label: 'Ending Soon',
     color: palette.semantic.warning,
     bgColor: '#FED7AA',
     icon: <Timer sx={{ fontSize: 14 }} />,
   },
   ended: {
-    label: 'Ended',
     color: palette.neutral[500],
     bgColor: palette.neutral[100],
     icon: <CheckCircle sx={{ fontSize: 14 }} />,
   },
   draft: {
-    label: 'Draft',
     color: palette.brand.primary,
     bgColor: palette.brand.muted,
     icon: <Edit sx={{ fontSize: 14 }} />,
   },
   cancelled: {
-    label: 'Cancelled',
     color: palette.semantic.error,
     bgColor: palette.semantic.errorLight,
     icon: <Cancel sx={{ fontSize: 14 }} />,
   },
   pending: {
-    label: 'Pending Review',
     color: palette.semantic.info,
     bgColor: palette.semantic.infoLight,
     icon: <Pause sx={{ fontSize: 14 }} />,
   },
   sold: {
-    label: 'Sold',
     color: palette.semantic.success,
     bgColor: palette.semantic.successLight,
     icon: <CheckCircle sx={{ fontSize: 14 }} />,
@@ -127,7 +121,7 @@ const STATUS_TAB_MAP: (AuctionStatus | undefined)[] = [
 ]
 
 export function MyAuctionsPage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(0)
@@ -191,24 +185,44 @@ export function MyAuctionsPage() {
 
   const tabs = useMemo(
     () => [
-      { label: 'All', count: allAuctionsTotalCount },
-      { label: 'Active', count: allAuctions.filter((a) => a.status === 'active').length },
-      { label: 'Ended', count: allAuctions.filter((a) => a.status === 'ended').length },
-      { label: 'Drafts', count: allAuctions.filter((a) => a.status === 'draft').length },
-      { label: 'Pending', count: allAuctions.filter((a) => a.status === 'pending').length },
+      { label: t('myAuctions.tabs.all'), count: allAuctionsTotalCount },
+      {
+        label: t('myAuctions.tabs.active'),
+        count: allAuctions.filter((a) => a.status === 'active').length,
+      },
+      {
+        label: t('myAuctions.tabs.ended'),
+        count: allAuctions.filter((a) => a.status === 'ended').length,
+      },
+      {
+        label: t('myAuctions.tabs.drafts'),
+        count: allAuctions.filter((a) => a.status === 'draft').length,
+      },
+      {
+        label: t('myAuctions.tabs.pending'),
+        count: allAuctions.filter((a) => a.status === 'pending').length,
+      },
     ],
-    [allAuctions, allAuctionsTotalCount]
+    [allAuctions, allAuctionsTotalCount, t]
   )
 
   const handleDeleteAuction = () => {
     if (deleteDialog) {
       deleteAuctionMutation.mutate(deleteDialog, {
         onSuccess: () => {
-          setSnackbar({ open: true, message: 'Auction deleted successfully', severity: 'success' })
+          setSnackbar({
+            open: true,
+            message: t('myAuctions.messages.deleted'),
+            severity: 'success',
+          })
           setDeleteDialog(null)
         },
         onError: () => {
-          setSnackbar({ open: true, message: 'Failed to delete auction', severity: 'error' })
+          setSnackbar({
+            open: true,
+            message: t('myAuctions.messages.deleteError'),
+            severity: 'error',
+          })
         },
       })
     }
@@ -217,11 +231,19 @@ export function MyAuctionsPage() {
   const handleActivate = (id: string) => {
     activateAuction.mutate(id, {
       onSuccess: () => {
-        setSnackbar({ open: true, message: 'Auction activated successfully', severity: 'success' })
+        setSnackbar({
+          open: true,
+          message: t('myAuctions.messages.activated'),
+          severity: 'success',
+        })
         setMenuAnchor(null)
       },
       onError: () => {
-        setSnackbar({ open: true, message: 'Failed to activate auction', severity: 'error' })
+        setSnackbar({
+          open: true,
+          message: t('myAuctions.messages.activateError'),
+          severity: 'error',
+        })
       },
     })
   }
@@ -231,13 +253,17 @@ export function MyAuctionsPage() {
       onSuccess: () => {
         setSnackbar({
           open: true,
-          message: 'Auction deactivated successfully',
+          message: t('myAuctions.messages.deactivated'),
           severity: 'success',
         })
         setMenuAnchor(null)
       },
       onError: () => {
-        setSnackbar({ open: true, message: 'Failed to deactivate auction', severity: 'error' })
+        setSnackbar({
+          open: true,
+          message: t('myAuctions.messages.deactivateError'),
+          severity: 'error',
+        })
       },
     })
   }
@@ -250,14 +276,18 @@ export function MyAuctionsPage() {
           onSuccess: () => {
             setSnackbar({
               open: true,
-              message: 'Auction cancelled successfully',
+              message: t('myAuctions.messages.cancelled'),
               severity: 'success',
             })
             setCancelDialog(null)
             setCancelReason('')
           },
           onError: () => {
-            setSnackbar({ open: true, message: 'Failed to cancel auction', severity: 'error' })
+            setSnackbar({
+              open: true,
+              message: t('myAuctions.messages.cancelError'),
+              severity: 'error',
+            })
           },
         }
       )
@@ -272,14 +302,18 @@ export function MyAuctionsPage() {
           onSuccess: () => {
             setSnackbar({
               open: true,
-              message: 'Auction extended successfully',
+              message: t('myAuctions.messages.extended'),
               severity: 'success',
             })
             setExtendDialog(null)
             setNewEndTime('')
           },
           onError: () => {
-            setSnackbar({ open: true, message: 'Failed to extend auction', severity: 'error' })
+            setSnackbar({
+              open: true,
+              message: t('myAuctions.messages.extendError'),
+              severity: 'error',
+            })
           },
         }
       )
@@ -321,10 +355,10 @@ export function MyAuctionsPage() {
                 color: palette.neutral[900],
               }}
             >
-              My Auctions
+              {t('myAuctions.title')}
             </Typography>
             <Typography sx={{ color: palette.neutral[500] }}>
-              Manage your auction listings
+              {t('myAuctions.description')}
             </Typography>
           </Box>
           <Stack direction="row" spacing={1}>
@@ -340,7 +374,7 @@ export function MyAuctionsPage() {
                 '&:hover': { borderColor: palette.brand.primary, color: palette.brand.primary },
               }}
             >
-              Export
+              {t('myAuctions.export')}
             </Button>
             <Button
               variant="outlined"
@@ -354,7 +388,7 @@ export function MyAuctionsPage() {
                 '&:hover': { borderColor: palette.brand.primary, color: palette.brand.primary },
               }}
             >
-              Import
+              {t('myAuctions.import')}
             </Button>
             <Menu
               anchorEl={importMenuAnchor}
@@ -367,7 +401,7 @@ export function MyAuctionsPage() {
                   setImportDialogOpen(true)
                 }}
               >
-                Quick Import (small files)
+                {t('myAuctions.quickImport')}
               </MenuItem>
               <MenuItem
                 onClick={() => {
@@ -375,7 +409,7 @@ export function MyAuctionsPage() {
                   setBulkImportDialogOpen(true)
                 }}
               >
-                Bulk Import (large files, up to 1M records)
+                {t('myAuctions.bulkImport')}
               </MenuItem>
             </Menu>
             <Button
@@ -391,7 +425,7 @@ export function MyAuctionsPage() {
                 '&:hover': { bgcolor: '#A16207' },
               }}
             >
-              Create Auction
+              {t('myAuctions.createAuction')}
             </Button>
           </Stack>
         </Stack>
@@ -416,7 +450,7 @@ export function MyAuctionsPage() {
               </Box>
               <Box>
                 <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
-                  Total Auctions
+                  {t('myAuctions.totalAuctions')}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '1.5rem', fontWeight: 700, color: palette.neutral[900] }}
@@ -445,7 +479,7 @@ export function MyAuctionsPage() {
               </Box>
               <Box>
                 <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
-                  Active
+                  {t('myAuctions.active')}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '1.5rem', fontWeight: 700, color: palette.neutral[900] }}
@@ -474,7 +508,7 @@ export function MyAuctionsPage() {
               </Box>
               <Box>
                 <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
-                  Total Bids
+                  {t('myAuctions.totalBids')}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '1.5rem', fontWeight: 700, color: palette.neutral[900] }}
@@ -503,12 +537,12 @@ export function MyAuctionsPage() {
               </Box>
               <Box>
                 <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500] }}>
-                  Revenue
+                  {t('myAuctions.revenue')}
                 </Typography>
                 <Typography
                   sx={{ fontSize: '1.5rem', fontWeight: 700, color: palette.neutral[900] }}
                 >
-                  ${stats.totalRevenue.toLocaleString()}
+                  {formatCurrency(stats.totalRevenue)}
                 </Typography>
               </Box>
             </Stack>
@@ -562,7 +596,7 @@ export function MyAuctionsPage() {
             </Tabs>
             <TextField
               size="small"
-              placeholder="Search auctions..."
+              placeholder={t('myAuctions.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               slotProps={{
@@ -582,16 +616,26 @@ export function MyAuctionsPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>Auction</TableCell>
-              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>Status</TableCell>
               <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
-                Current Bid
+                {t('myAuctions.auction')}
               </TableCell>
-              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>Bids</TableCell>
-              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>Views</TableCell>
-              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>Time Left</TableCell>
+              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
+                {t('myAuctions.statusLabel')}
+              </TableCell>
+              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
+                {t('myAuctions.currentBid')}
+              </TableCell>
+              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
+                {t('myAuctions.bids')}
+              </TableCell>
+              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
+                {t('myAuctions.views')}
+              </TableCell>
+              <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }}>
+                {t('myAuctions.timeLeft')}
+              </TableCell>
               <TableCell sx={{ color: palette.neutral[500], fontWeight: 500 }} align="right">
-                Actions
+                {t('myAuctions.actions')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -599,7 +643,7 @@ export function MyAuctionsPage() {
             {auctions.length === 0 ? (
               <TableEmptyStateRow
                 colSpan={7}
-                title="No auctions found"
+                title={t('myAuctions.noAuctionsFound')}
                 icon={<Gavel sx={{ fontSize: 48, opacity: 0.5, color: palette.neutral[500] }} />}
                 actions={
                   <Button
@@ -612,7 +656,7 @@ export function MyAuctionsPage() {
                       textTransform: 'none',
                     }}
                   >
-                    Create your first auction
+                    {t('myAuctions.createFirst')}
                   </Button>
                 }
                 cellSx={{ py: 6 }}
@@ -645,7 +689,9 @@ export function MyAuctionsPage() {
                             {auction.title}
                           </Typography>
                           <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500] }}>
-                            Starting: ${auction.startingPrice.toLocaleString()}
+                            {t('myAuctions.startingPrice', {
+                              price: formatCurrency(auction.startingPrice),
+                            })}
                           </Typography>
                         </Box>
                       </Stack>
@@ -653,7 +699,9 @@ export function MyAuctionsPage() {
                     <TableCell>
                       <Chip
                         icon={status.icon}
-                        label={status.label}
+                        label={t(`myAuctions.status.${auction.status}`, {
+                          defaultValue: t('myAuctions.status.pending'),
+                        })}
                         size="small"
                         sx={{
                           bgcolor: status.bgColor,
@@ -665,7 +713,7 @@ export function MyAuctionsPage() {
                     </TableCell>
                     <TableCell>
                       <Typography sx={{ fontWeight: 600, color: palette.neutral[900] }}>
-                        {auction.currentBid > 0 ? `$${auction.currentBid.toLocaleString()}` : '--'}
+                        {auction.currentBid > 0 ? formatCurrency(auction.currentBid) : '--'}
                       </Typography>
                     </TableCell>
                     <TableCell>{auction.bidCount}</TableCell>
@@ -673,7 +721,7 @@ export function MyAuctionsPage() {
                     <TableCell>
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <Timer sx={{ fontSize: 16, color: palette.neutral[500] }} />
-                        <span>{formatTimeLeft(auction.endTime)}</span>
+                        <span>{formatTimeLeft(auction.endTime, t)}</span>
                       </Stack>
                     </TableCell>
                     <TableCell align="right">
@@ -715,14 +763,14 @@ export function MyAuctionsPage() {
           to={`/auctions/${menuAnchor?.auction.id}`}
           onClick={() => setMenuAnchor(null)}
         >
-          <Visibility sx={{ mr: 1.5, fontSize: 20 }} /> View
+          <Visibility sx={{ mr: 1.5, fontSize: 20 }} /> {t('myAuctions.view')}
         </MenuItem>
         <MenuItem
           component={Link}
           to={`/auctions/${menuAnchor?.auction.id}/edit`}
           onClick={() => setMenuAnchor(null)}
         >
-          <Edit sx={{ mr: 1.5, fontSize: 20 }} /> Edit
+          <Edit sx={{ mr: 1.5, fontSize: 20 }} /> {t('myAuctions.edit')}
         </MenuItem>
         {menuAnchor?.auction.status === 'active' && (
           <MenuItem
@@ -734,7 +782,7 @@ export function MyAuctionsPage() {
             ) : (
               <Pause sx={{ mr: 1.5, fontSize: 20, color: palette.brand.primary }} />
             )}
-            Deactivate
+            {t('myAuctions.deactivate')}
           </MenuItem>
         )}
         {menuAnchor?.auction.status === 'active' && (
@@ -748,7 +796,7 @@ export function MyAuctionsPage() {
             }}
           >
             <MoreTime sx={{ mr: 1.5, fontSize: 20, color: palette.semantic.info }} />
-            Extend Time
+            {t('myAuctions.extendTime')}
           </MenuItem>
         )}
         {menuAnchor?.auction.status === 'active' && (
@@ -760,7 +808,7 @@ export function MyAuctionsPage() {
             sx={{ color: palette.semantic.warning }}
           >
             <DoNotDisturb sx={{ mr: 1.5, fontSize: 20 }} />
-            Cancel Auction
+            {t('myAuctions.cancelAuction')}
           </MenuItem>
         )}
         {(menuAnchor?.auction.status === 'draft' || menuAnchor?.auction.status === 'pending') && (
@@ -774,7 +822,7 @@ export function MyAuctionsPage() {
             ) : (
               <PlayArrow sx={{ mr: 1.5, fontSize: 20 }} />
             )}
-            Activate
+            {t('myAuctions.activate')}
           </MenuItem>
         )}
         <MenuItem
@@ -784,7 +832,7 @@ export function MyAuctionsPage() {
           }}
           sx={{ color: palette.semantic.error }}
         >
-          <Delete sx={{ mr: 1.5, fontSize: 20 }} /> Delete
+          <Delete sx={{ mr: 1.5, fontSize: 20 }} /> {t('myAuctions.delete')}
         </MenuItem>
       </Menu>
 
@@ -794,11 +842,10 @@ export function MyAuctionsPage() {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Delete Auction?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.deleteTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: palette.neutral[500] }}>
-            This action cannot be undone. The auction and all associated data will be permanently
-            deleted.
+            {t('myAuctions.deleteDescription')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
@@ -806,7 +853,7 @@ export function MyAuctionsPage() {
             onClick={() => setDeleteDialog(null)}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Cancel
+            {t('profile.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -821,7 +868,7 @@ export function MyAuctionsPage() {
             {deleteAuctionMutation.isPending ? (
               <CircularProgress size={20} sx={{ color: 'white' }} />
             ) : (
-              'Delete'
+              t('myAuctions.delete')
             )}
           </Button>
         </DialogActions>
@@ -836,20 +883,19 @@ export function MyAuctionsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Cancel Auction</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.cancelAuction')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-            Are you sure you want to cancel this auction? This action cannot be undone and all
-            active bids will be voided.
+            {t('myAuctions.cancelDescription')}
           </Typography>
           <TextField
             fullWidth
-            label="Reason for cancellation (optional)"
+            label={t('myAuctions.cancelReason')}
             multiline
             rows={3}
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
-            placeholder="E.g., Item no longer available, Found damage on item..."
+            placeholder={t('myAuctions.cancelReasonPlaceholder')}
             sx={{ mt: 1 }}
           />
         </DialogContent>
@@ -861,7 +907,7 @@ export function MyAuctionsPage() {
             }}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Keep Auction
+            {t('myAuctions.keepAuction')}
           </Button>
           <Button
             variant="contained"
@@ -875,7 +921,11 @@ export function MyAuctionsPage() {
               '&:hover': { bgcolor: '#D97706' },
             }}
           >
-            {cancelAuctionMutation.isPending ? <CircularProgress size={20} /> : 'Cancel Auction'}
+            {cancelAuctionMutation.isPending ? (
+              <CircularProgress size={20} />
+            ) : (
+              t('myAuctions.cancelAuction')
+            )}
           </Button>
         </DialogActions>
       </Dialog>
@@ -889,21 +939,21 @@ export function MyAuctionsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Extend Auction</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.extendAuction')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-            Extend the end time for this auction. The new end time must be after the current end
-            time.
+            {t('myAuctions.extendDescription')}
           </Typography>
           {extendDialog && (
             <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600], mb: 2 }}>
-              Current end time:{' '}
-              <strong>{new Date(extendDialog.currentEndTime).toLocaleString()}</strong>
+              {t('myAuctions.currentEndTime', {
+                time: formatDateTime(extendDialog.currentEndTime),
+              })}
             </Typography>
           )}
           <TextField
             fullWidth
-            label="New End Time"
+            label={t('myAuctions.newEndTime')}
             type="datetime-local"
             value={newEndTime}
             onChange={(e) => setNewEndTime(e.target.value)}
@@ -926,7 +976,7 @@ export function MyAuctionsPage() {
             }}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Cancel
+            {t('profile.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -942,7 +992,7 @@ export function MyAuctionsPage() {
             {extendAuctionMutation.isPending ? (
               <CircularProgress size={20} sx={{ color: 'white' }} />
             ) : (
-              'Extend Auction'
+              t('myAuctions.extendAuction')
             )}
           </Button>
         </DialogActions>
@@ -970,7 +1020,7 @@ export function MyAuctionsPage() {
         onSuccess={() => {
           setSnackbar({
             open: true,
-            message: 'Auctions imported successfully!',
+            message: t('myAuctions.messages.imported'),
             severity: 'success',
           })
         }}
@@ -982,7 +1032,7 @@ export function MyAuctionsPage() {
         onComplete={() => {
           setSnackbar({
             open: true,
-            message: 'Bulk import completed! Check the results for details.',
+            message: t('myAuctions.messages.bulkImportCompleted'),
             severity: 'success',
           })
         }}

@@ -44,6 +44,14 @@
   "createAccount": "Create Account",
   "backToTop": "Back to Top",
   "backToSite": "Back to Site",
+  "language": {
+    "change": "Change language",
+    "en": "English",
+    "ja": "Japanese"
+  },
+  "theme": {
+    "toggle": "Toggle color theme"
+  },
   "nav": {
     "home": "Home",
     "auctions": "Auctions",
@@ -62,7 +70,8 @@
     "logout": "Logout",
     "categories": "Categories",
     "howItWorks": "How It Works",
-    "sell": "Sell"
+    "sell": "Sell",
+    "openMenu": "Open navigation menu"
   },
   "validation": {
     "required": "This field is required",
@@ -71,7 +80,12 @@
     "maxLength": "Must be no more than {{max}} characters",
     "passwordMatch": "Passwords do not match",
     "invalidFormat": "Invalid format",
-    "invalidEmail": "Please enter a valid email address"
+    "invalidEmail": "Please enter a valid email address",
+    "validNumber": "Must be a valid number",
+    "boolean": "Must be true or false",
+    "validEmail": "Must be a valid email address",
+    "validUrl": "Must be a valid URL",
+    "validJson": "Must be valid JSON"
   },
   "time": {
     "now": "Now",
@@ -150,7 +164,8 @@
     "defaultMessage": "We encountered an unexpected error. Please try again.",
     "loginFailed": "Login failed",
     "twoFactorFailed": "2FA verification failed",
-    "registrationFailed": "Registration failed"
+    "registrationFailed": "Registration failed",
+    "unexpected": "An unexpected error occurred"
   },
   "emptyState": {
     "default": {
@@ -222,21 +237,6 @@
     "home": "Home",
     "sale": "Sale"
   },
-  "megaMenu": {
-    "byCategory": "By Category",
-    "byStatus": "By Status",
-    "priceRange": "Price Range",
-    "endingToday": "Ending Today",
-    "endingThisWeek": "Ending This Week",
-    "newlyListed": "Newly Listed",
-    "noReserve": "No Reserve",
-    "buyNowAvailable": "Buy Now Available",
-    "under500": "Under $500",
-    "range500to2000": "$500 - $2,000",
-    "range2000to10000": "$2,000 - $10,000",
-    "over10000": "Over $10,000",
-    "viewAll": "View All {{label}} →"
-  },
   "actions": {
     "cancel": "Cancel",
     "save": "Save",
@@ -250,6 +250,8 @@
     "next": "Next",
     "close": "Close",
     "search": "Search",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "retry": "Retry",
     "remove": "Remove",
     "loadMore": "Load More",
@@ -266,15 +268,19 @@
     "endsIn": "Ends in {{time}}",
     "auctionEnded": "Auction ended",
     "yourBid": "Your Bid",
-    "minimumBidError": "Minimum bid is ${{amount}}",
+    "minimumBidError": "Minimum bid is {{amount}}",
     "placeBid": "Place Bid",
     "placingBid": "Placing Bid...",
-    "buyNow": "Buy Now — ${{amount}}",
-    "autoBidActive": "Auto-Bid Active (Max: ${{amount}})",
+    "buyNow": "Buy Now — {{amount}}",
+    "autoBidActive": "Auto-Bid Active (Max: {{amount}})",
     "setUpAutoBid": "Set Up Auto-Bid",
     "auctionEndedInfo": "This auction has ended.",
     "biddingTerms": "By placing a bid, you agree to our terms of service. All bids are binding.",
-    "orMore": "${{amount}} or more"
+    "orMore": "{{amount}} or more",
+    "bidPlacedSuccess": "Your bid of {{amount}} was placed successfully.",
+    "noBidsYet": "No bids yet",
+    "highestBidder": "You are the highest bidder at {{amount}}.",
+    "outbid": "You have been outbid. Your bid was {{amount}}."
   },
   "seller": {
     "information": "Seller Information",
@@ -360,8 +366,11 @@
   "twoFactor": {
     "title": "Two-Factor Authentication",
     "enabled": "Enabled",
+    "disabled": "Disabled",
     "disableWarning": "Disabling 2FA will make your account less secure. Make sure you have other security measures in place.",
     "enterCode": "Enter code from authenticator app",
+    "enterPassword": "Enter your current password",
+    "invalidPassword": "The password is incorrect. Please try again.",
     "invalidCode": "Invalid verification code. Please try again.",
     "disable": "Disable 2FA",
     "setupTitle": "Set Up Two-Factor Authentication",
@@ -377,8 +386,10 @@
     "enterVerificationCodeDesc": "Confirm setup with a code from your app",
     "continue": "Continue",
     "cantScan": "Can't scan? Enter this key manually:",
+    "manualSetupOnly": "Enter the setup key manually in your authenticator app.",
     "copied": "Copied!",
     "copy": "Copy",
+    "copyFailed": "Unable to copy. Please try again.",
     "scannedCode": "I've Scanned the Code",
     "verifyEnable": "Verify & Enable",
     "setupFailed": "Failed to generate 2FA setup. Please try again.",
@@ -391,7 +402,11 @@
     "reset": "Reset 2FA",
     "resetting": "Resetting...",
     "disabling": "Disabling...",
-    "notEnabled": "This user has not enabled two-factor authentication."
+    "notEnabled": "This user has not enabled two-factor authentication.",
+    "recoveryInstructions": "Save these recovery codes in a secure place. You can use them to access your account if you lose your device.",
+    "done": "Done",
+    "qrCodeAlt": "Two-factor authentication QR code",
+    "verificationCode": "Verification Code"
   },
   "autoBid": {
     "title": "Auto-Bid Setup",
@@ -421,6 +436,7 @@
     "emptyDesc": "You'll see notifications about your bids and auctions here"
   },
   "userManagement": {
+    "user": "User",
     "activateTitle": "Activate User",
     "activateMessage": "Are you sure you want to activate {{name}}? This will allow the user to access the platform again.",
     "activateButton": "Activate User",
@@ -442,7 +458,6 @@
     "suspending": "Suspending...",
     "suspendButton": "Suspend User",
     "twoFactorTitle": "Two-Factor Authentication",
-    "user": "User",
     "removeSuspension": "Remove Suspension",
     "suspendUser": "Suspend User",
     "deactivateUser": "Deactivate User",
@@ -457,7 +472,8 @@
     "noUsersTitle": "No users found",
     "noUsersDescription": "Try adjusting your search or filters",
     "editUser": "Edit User",
-    "sendEmail": "Send Email"
+    "sendEmail": "Send Email",
+    "status": { "suspended": "Suspended", "active": "Active", "inactive": "Inactive" }
   },
   "rolePermissions": {
     "noDescription": "No description",
@@ -528,12 +544,18 @@
     "maxSize": "Max {{size}}MB per file · {{remaining}} of {{max}} slots remaining",
     "uploadFailed": "Upload failed",
     "uploadedFiles_one": "Uploaded files ({{count}})",
-    "uploadedFiles_other": "Uploaded files ({{count}})"
-  },
-  "searchBar": {
-    "placeholder": "Search auctions, categories, sellers...",
-    "recentSearches": "Recent Searches",
-    "trending": "Trending"
+    "uploadedFiles_other": "Uploaded files ({{count}})",
+    "uploadedFile": "Uploaded file",
+    "cover": "Cover",
+    "image": "Image",
+    "document": "Document",
+    "coverPhoto": "Cover photo",
+    "setCoverPhoto": "Set as cover photo",
+    "currentCoverPhoto": "Current cover photo",
+    "setFileAsCover": "Set {{fileName}} as cover photo",
+    "file": "file",
+    "removeFile": "Remove file",
+    "removeNamedFile": "Remove {{fileName}}"
   },
   "promo": {
     "liveNow": "Live Now: {{title}}",

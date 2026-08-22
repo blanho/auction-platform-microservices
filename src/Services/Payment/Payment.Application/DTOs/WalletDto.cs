@@ -43,17 +43,3 @@ public class CreateWalletTransactionDto
     public string ReferenceType { get; set; } = null!;
     public string PaymentMethod { get; set; } = null!;
 }
-
-public class DepositDto
-{
-    public decimal Amount { get; set; }
-    public string PaymentMethod { get; set; } = null!;
-    public string Description { get; set; } = null!;
-}
-
-public class WithdrawDto
-{
-    public decimal Amount { get; set; }
-    public string PaymentMethod { get; set; } = null!;
-    public string Description { get; set; } = null!;
-}

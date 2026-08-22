@@ -32,61 +32,6 @@ public class StripePaymentGateway : IPaymentGateway
         _logger = logger;
     }
 
-    public async Task<PaymentIntentResult> CreatePaymentIntentAsync(
-        long amountInCents,
-        string currency,
-        string customerId,
-        Dictionary<string, string>? metadata = null,
-        CancellationToken cancellationToken = default)
-    {
-        var options = new PaymentIntentCreateOptions
-        {
-            Amount = amountInCents,
-            Currency = currency.ToLower(),
-            Customer = customerId,
-            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-            {
-                Enabled = true,
-            },
-            Metadata = metadata,
-        };
-
-        var service = _stripeFactory.CreatePaymentIntentService();
-        var paymentIntent = await service.CreateAsync(options, cancellationToken: cancellationToken);
-
-        _logger.LogInformation("Created PaymentIntent {PaymentIntentId} for {Amount} {Currency}",
-            paymentIntent.Id, amountInCents, currency);
-
-        return MapToPaymentIntentResult(paymentIntent);
-    }
-
-    public async Task<PaymentIntentResult?> GetPaymentIntentAsync(
-        string paymentIntentId,
-        CancellationToken cancellationToken = default)
-    {
-        var service = _stripeFactory.CreatePaymentIntentService();
-        var paymentIntent = await service.GetAsync(paymentIntentId, cancellationToken: cancellationToken);
-        return paymentIntent != null ? MapToPaymentIntentResult(paymentIntent) : null;
-    }
-
-    public async Task<PaymentIntentResult> ConfirmPaymentIntentAsync(
-        string paymentIntentId,
-        CancellationToken cancellationToken = default)
-    {
-        var service = _stripeFactory.CreatePaymentIntentService();
-        var paymentIntent = await service.ConfirmAsync(paymentIntentId, cancellationToken: cancellationToken);
-        return MapToPaymentIntentResult(paymentIntent);
-    }
-
-    public async Task<PaymentIntentResult> CancelPaymentIntentAsync(
-        string paymentIntentId,
-        CancellationToken cancellationToken = default)
-    {
-        var service = _stripeFactory.CreatePaymentIntentService();
-        var paymentIntent = await service.CancelAsync(paymentIntentId, cancellationToken: cancellationToken);
-        return MapToPaymentIntentResult(paymentIntent);
-    }
-
     public async Task<CheckoutSessionResult> CreateCheckoutSessionAsync(
         CreateCheckoutSessionRequest request,
         CancellationToken cancellationToken = default)
@@ -129,66 +74,16 @@ public class StripePaymentGateway : IPaymentGateway
         };
 
         var service = _stripeFactory.CreateSessionService();
-        var session = await service.CreateAsync(options, cancellationToken: cancellationToken);
+        var idempotencyKey = request.Metadata.GetValueOrDefault(StripeMetadataKeys.OrderId)
+            ?? Guid.NewGuid().ToString();
+        var session = await service.CreateAsync(
+            options,
+            new RequestOptions { IdempotencyKey = $"cs-{idempotencyKey}" },
+            cancellationToken);
 
         _logger.LogInformation("Created Checkout Session {SessionId}", session.Id);
 
         return MapToCheckoutSessionResult(session);
-    }
-
-    public async Task<CustomerResult> CreateCustomerAsync(
-        string email,
-        string name,
-        CancellationToken cancellationToken = default)
-    {
-        var options = new CustomerCreateOptions
-        {
-            Email = email,
-            Name = name,
-        };
-
-        var service = _stripeFactory.CreateCustomerService();
-        var customer = await service.CreateAsync(options, cancellationToken: cancellationToken);
-
-        _logger.LogInformation("Created Stripe Customer {CustomerId} for {Email}", customer.Id, email);
-
-        return MapToCustomerResult(customer);
-    }
-
-    public async Task<CustomerResult?> GetCustomerByEmailAsync(
-        string email,
-        CancellationToken cancellationToken = default)
-    {
-        var service = _stripeFactory.CreateCustomerService();
-        var options = new CustomerListOptions
-        {
-            Email = email,
-            Limit = 1,
-        };
-
-        var customers = await service.ListAsync(options, cancellationToken: cancellationToken);
-        var customer = customers.Data.FirstOrDefault();
-        return customer != null ? MapToCustomerResult(customer) : null;
-    }
-
-    public async Task<RefundResult> CreateRefundAsync(
-        string paymentIntentId,
-        long? amountInCents = null,
-        CancellationToken cancellationToken = default)
-    {
-        var options = new RefundCreateOptions
-        {
-            PaymentIntent = paymentIntentId,
-            Amount = amountInCents,
-        };
-
-        var service = _stripeFactory.CreateRefundService();
-        var refund = await service.CreateAsync(options, cancellationToken: cancellationToken);
-
-        _logger.LogInformation("Created Refund {RefundId} for PaymentIntent {PaymentIntentId}",
-            refund.Id, paymentIntentId);
-
-        return MapToRefundResult(refund);
     }
 
     public async Task HandleWebhookAsync(
@@ -209,7 +104,7 @@ public class StripePaymentGateway : IPaymentGateway
                 await HandlePaymentIntentSucceeded(stripeEvent, cancellationToken);
                 break;
             case StripeEventTypes.PaymentIntentPaymentFailed:
-                await HandlePaymentIntentFailed(stripeEvent, cancellationToken);
+                HandlePaymentIntentFailed(stripeEvent);
                 break;
             case StripeEventTypes.CheckoutSessionCompleted:
                 await HandleCheckoutSessionCompleted(stripeEvent, cancellationToken);
@@ -229,6 +124,15 @@ public class StripePaymentGateway : IPaymentGateway
         var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
         if (order == null) return;
 
+        if (!MatchesOrderAmount(order, paymentIntent.AmountReceived, paymentIntent.Currency))
+        {
+            _logger.LogError(
+                "Rejected Stripe payment amount mismatch for order {OrderId}, PaymentIntent {PaymentIntentId}",
+                order.Id,
+                paymentIntent.Id);
+            return;
+        }
+
         if (!order.CompletePayment(paymentIntent.Id))
         {
             _logger.LogInformation(
@@ -244,28 +148,13 @@ public class StripePaymentGateway : IPaymentGateway
         _logger.LogInformation("Order {OrderId} marked as paid", order.Id);
     }
 
-    private async Task HandlePaymentIntentFailed(Event stripeEvent, CancellationToken cancellationToken)
+    private void HandlePaymentIntentFailed(Event stripeEvent)
     {
         if (stripeEvent.Data.Object is not PaymentIntent paymentIntent) return;
 
-        _logger.LogWarning("PaymentIntent failed: {PaymentIntentId}", paymentIntent.Id);
-
-        var order = await ResolveOrderFromMetadata(paymentIntent.Metadata, cancellationToken);
-        if (order == null) return;
-
-        if (!order.MarkPaymentFailed())
-        {
-            _logger.LogInformation(
-                "Ignoring duplicate or stale payment failure for order {OrderId}, PaymentIntent {PaymentIntentId}",
-                order.Id,
-                paymentIntent.Id);
-            return;
-        }
-
-        await _orderRepository.UpdateAsync(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        _logger.LogInformation("Order {OrderId} marked as payment failed", order.Id);
+        _logger.LogWarning(
+            "PaymentIntent {PaymentIntentId} failed; the order remains payable for a retry",
+            paymentIntent.Id);
     }
 
     private async Task HandleCheckoutSessionCompleted(Event stripeEvent, CancellationToken cancellationToken)
@@ -274,8 +163,26 @@ public class StripePaymentGateway : IPaymentGateway
 
         _logger.LogInformation("Checkout session completed: {SessionId}", session.Id);
 
+        if (!string.Equals(session.PaymentStatus, StripePaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(
+                "Ignoring incomplete checkout session {SessionId} with payment status {PaymentStatus}",
+                session.Id,
+                session.PaymentStatus);
+            return;
+        }
+
         var order = await ResolveOrderFromMetadata(session.Metadata, cancellationToken);
         if (order == null) return;
+
+        if (!MatchesOrderAmount(order, session.AmountTotal, session.Currency))
+        {
+            _logger.LogError(
+                "Rejected Stripe checkout amount mismatch for order {OrderId}, Session {SessionId}",
+                order.Id,
+                session.Id);
+            return;
+        }
 
         if (!order.CompletePayment(session.PaymentIntentId))
         {
@@ -303,17 +210,22 @@ public class StripePaymentGateway : IPaymentGateway
         return await _orderRepository.GetByIdAsync(orderId);
     }
 
-    private static PaymentIntentResult MapToPaymentIntentResult(PaymentIntent pi) => new()
+    private static bool MatchesOrderAmount(Order order, long? amountInCents, string? currency)
     {
-        Id = pi.Id,
-        AmountInCents = pi.Amount,
-        Currency = pi.Currency,
-        Status = pi.Status,
-        ClientSecret = pi.ClientSecret,
-        CustomerId = pi.CustomerId,
-        Metadata = pi.Metadata?.ToDictionary(k => k.Key, v => v.Value) ?? new(),
-        CreatedAt = pi.Created
-    };
+        long expectedAmount;
+        try
+        {
+            expectedAmount = checked(decimal.ToInt64(
+                decimal.Round(order.TotalAmount * 100m, 0, MidpointRounding.AwayFromZero)));
+        }
+        catch (OverflowException)
+        {
+            return false;
+        }
+
+        return amountInCents == expectedAmount &&
+               string.Equals(currency, WalletDefaults.DefaultCurrency, StringComparison.OrdinalIgnoreCase);
+    }
 
     private static CheckoutSessionResult MapToCheckoutSessionResult(Session s) => new()
     {
@@ -327,21 +239,4 @@ public class StripePaymentGateway : IPaymentGateway
         Metadata = s.Metadata?.ToDictionary(k => k.Key, v => v.Value) ?? new()
     };
 
-    private static CustomerResult MapToCustomerResult(Customer c) => new()
-    {
-        Id = c.Id,
-        Email = c.Email,
-        Name = c.Name,
-        CreatedAt = c.Created
-    };
-
-    private static RefundResult MapToRefundResult(Refund r) => new()
-    {
-        Id = r.Id,
-        PaymentIntentId = r.PaymentIntentId,
-        AmountInCents = r.Amount,
-        Status = r.Status,
-        Reason = r.Reason,
-        CreatedAt = r.Created
-    };
 }

@@ -1,21 +1,21 @@
-import { useTranslation } from 'react-i18next'
+import { InlineAlert } from '@/shared/ui'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Stack,
   Box,
+  Button,
   Checkbox,
-  FormControlLabel,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Stack,
   Typography,
 } from '@mui/material'
-import { AVAILABLE_ROLES, ROLE_DESCRIPTIONS, ROLE_COLORS, type UserRole } from '../../constants'
-import { getAdminUserDisplayName } from '../../utils'
-import { InlineAlert } from '@/shared/ui'
+import { useTranslation } from 'react-i18next'
+import { AVAILABLE_ROLES, ROLE_COLORS, ROLE_DESCRIPTIONS, type UserRole } from '../../constants'
 import type { AdminUser } from '../../types'
+import { getAdminUserDisplayName } from '../../utils'
 
 interface ManageRolesDialogProps {
   open: boolean

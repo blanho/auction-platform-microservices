@@ -6,9 +6,14 @@
   "resultsCount": "{{count}} result found",
   "resultsCount_other": "{{count}} results found",
   "searchingFor": "Showing results for \"{{query}}\"",
+  "resultsFor": "{{count}} result for \"{{query}}\"",
+  "resultsFor_other": "{{count}} results for \"{{query}}\"",
+  "loadFailed": "Failed to load search results. Please try again.",
+  "trendingSearches": "Trending Searches",
 
   "filters": {
     "title": "Filters",
+    "type": "Type",
     "category": "Category",
     "priceRange": "Price Range",
     "condition": "Condition",
@@ -26,6 +31,12 @@
     "priceLowToHigh": "Price: Low to High",
     "priceHighToLow": "Price: High to Low",
     "mostBids": "Most Bids"
+  },
+
+  "types": {
+    "auction": "Auction",
+    "category": "Category",
+    "seller": "Seller"
   },
 
   "autocomplete": {

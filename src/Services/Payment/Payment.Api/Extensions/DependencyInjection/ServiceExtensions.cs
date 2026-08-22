@@ -51,7 +51,7 @@ public static class ServiceExtensions
                     })
                 .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        services.AddAutoMapper(_ => { }, AppDomain.CurrentDomain.GetAssemblies());
 
         var applicationAssembly = typeof(OrderDto).Assembly;
         services.AddCQRS(applicationAssembly);
@@ -72,8 +72,6 @@ public static class ServiceExtensions
             .ValidateOnStart();
         services.AddSingleton<IStripeServiceFactory, StripeServiceFactory>();
         services.AddScoped<IPaymentGateway, StripePaymentGateway>();
-
-        services.AddScoped<IStripePaymentService, StripePaymentService>();
 
         return services;
     }

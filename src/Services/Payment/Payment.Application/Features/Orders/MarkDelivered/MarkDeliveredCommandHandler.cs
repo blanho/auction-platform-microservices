@@ -40,6 +40,11 @@ public class MarkDeliveredCommandHandler : ICommandHandler<MarkDeliveredCommand,
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
+        if (order.BuyerId != request.BuyerId && !request.CanManageAll)
+        {
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
+        }
+
         if (order.Status == OrderStatus.Cancelled)
         {
             return Result.Failure<OrderDto>(PaymentErrors.Order.CancelledById(request.OrderId));
@@ -69,7 +74,7 @@ public class MarkDeliveredCommandHandler : ICommandHandler<MarkDeliveredCommand,
             OrderAuditData.FromOrder(updated),
             AuditAction.Updated,
             oldOrderData,
-            new Dictionary<string, object> { [AuditMetadataKeys.Action] = WalletDefaults.Audit.Delivered },
+            new Dictionary<string, object> { [AuditMetadataKeys.Action] = OrderAuditActions.Delivered },
             cancellationToken);
 
         _logger.LogInformation("Order {OrderId} marked as delivered", updated.Id);

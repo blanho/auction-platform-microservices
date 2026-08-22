@@ -73,12 +73,6 @@ export interface FilterPanelConfig {
   showApplyButton?: boolean
 }
 
-export interface SortField {
-  key: string
-  label: string
-  defaultOrder?: 'asc' | 'desc'
-}
-
 export interface ColumnConfig<T> {
   key: keyof T | string
   header: string
@@ -89,19 +83,6 @@ export interface ColumnConfig<T> {
   align?: 'left' | 'center' | 'right'
   render?: (value: unknown, row: T, index: number) => React.ReactNode
   hidden?: boolean
-}
-
-export interface AuctionFilter {
-  search?: string
-  status?: string
-  categoryId?: string
-  sellerId?: string
-  minPrice?: number
-  maxPrice?: number
-  startDateFrom?: string
-  startDateTo?: string
-  endDateFrom?: string
-  endDateTo?: string
 }
 
 export interface BidFilter {
@@ -126,40 +107,11 @@ export interface OrderFilter {
   dateTo?: string
 }
 
-export interface WalletTransactionFilter {
-  username?: string
-  transactionType?: string
-  status?: string
-  minAmount?: number
-  maxAmount?: number
-  dateFrom?: string
-  dateTo?: string
-}
-
 export interface NotificationRecordFilter {
   userId?: string
   channel?: string
   status?: string
   templateKey?: string
-  dateFrom?: string
-  dateTo?: string
-}
-
-export interface UserFilter {
-  search?: string
-  role?: string
-  status?: string
-  isEmailVerified?: boolean
-  createdFrom?: string
-  createdTo?: string
-}
-
-export interface ReviewFilter {
-  auctionId?: string
-  reviewerId?: string
-  revieweeId?: string
-  minRating?: number
-  maxRating?: number
   dateFrom?: string
   dateTo?: string
 }

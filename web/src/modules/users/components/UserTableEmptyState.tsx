@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next'
 import { TableEmptyStateRow } from '@/shared/ui'
 import { Person } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 
 export function UserTableEmptyState() {
   const { t } = useTranslation('common')

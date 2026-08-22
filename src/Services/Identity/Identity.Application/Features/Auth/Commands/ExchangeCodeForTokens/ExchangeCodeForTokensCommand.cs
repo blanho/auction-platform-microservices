@@ -14,7 +14,7 @@ public record ExchangeCodeForTokensCommand(string Code, string IpAddress) : ICom
 
 public class ExchangeCodeForTokensCommandHandler(
     IUserService userService,
-    ITokenGenerationService tokenService,
+    IAuthorizationCodeStore authorizationCodeStore,
     IAuthHelper authHelper,
     ILogger<ExchangeCodeForTokensCommandHandler> logger) : ICommandHandler<ExchangeCodeForTokensCommand, LoginResponse>
 {
@@ -24,14 +24,14 @@ public class ExchangeCodeForTokensCommandHandler(
         var ipAddress = command.IpAddress;
 
         if (string.IsNullOrEmpty(code))
-            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
+            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidAuthCode);
 
-        var (isValid, userId) = tokenService.ValidateTwoFactorStateToken(code);
+        var userId = await authorizationCodeStore.RedeemAsync(code, cancellationToken);
 
-        if (!isValid || string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(userId))
         {
             logger.LogWarning("Invalid or expired authorization code attempt");
-            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidRefreshToken);
+            return Result.Failure<LoginResponse>(IdentityErrors.Auth.InvalidAuthCode);
         }
 
         var (user, _) = await userService.GetByIdWithRolesAsync(userId);

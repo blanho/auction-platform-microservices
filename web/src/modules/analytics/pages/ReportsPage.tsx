@@ -1,84 +1,83 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import i18n, { getCurrentLocale } from '@/i18n'
+import { getErrorMessage } from '@/services/http'
+import type { FilterConfig } from '@/shared/ui'
+import { InlineAlert, StatusBadge, TableEmptyStateRow, TableToolbar } from '@/shared/ui'
+import { formatNumber } from '@/shared/utils/formatters'
+import { CheckCircle, Delete, Visibility } from '@mui/icons-material'
 import {
-  Container,
-  Typography,
   Box,
+  Button,
   Card,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
   Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
+  Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Skeleton,
-  Pagination,
   Tooltip,
-  Stack,
+  Typography,
 } from '@mui/material'
-import { InlineAlert, StatusBadge, TableEmptyStateRow, TableToolbar } from '@/shared/ui'
-import type { FilterConfig } from '@/shared/ui'
-import { Visibility, Delete, CheckCircle } from '@mui/icons-material'
-import { useReportList, useReportStats, useReportDetail } from '../hooks/useAnalytics'
-import { useUpdateReportStatus, useDeleteReport } from '../hooks/useReportMutations'
-import { formatNumber } from '@/shared/utils/formatters'
-import { getErrorMessage } from '@/services/http'
-import type { ReportStatus, ReportType, ReportPriority, ReportQueryParams, Report } from '../types'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useReportDetail, useReportList, useReportStats } from '../hooks/useAnalytics'
+import { useDeleteReport, useUpdateReportStatus } from '../hooks/useReportMutations'
+import type { Report, ReportPriority, ReportQueryParams, ReportStatus, ReportType } from '../types'
 
 const REPORT_STATUS_OPTIONS: {
   value: ReportStatus
-  label: string
   color: 'default' | 'warning' | 'success' | 'error'
 }[] = [
-  { value: 'Pending', label: 'Pending', color: 'warning' },
-  { value: 'UnderReview', label: 'Under Review', color: 'default' },
-  { value: 'Resolved', label: 'Resolved', color: 'success' },
-  { value: 'Dismissed', label: 'Dismissed', color: 'error' },
+  { value: 'Pending', color: 'warning' },
+  { value: 'UnderReview', color: 'default' },
+  { value: 'Resolved', color: 'success' },
+  { value: 'Dismissed', color: 'error' },
 ]
 
-const REPORT_TYPE_OPTIONS: { value: ReportType; label: string }[] = [
-  { value: 'Fraud', label: 'Fraud' },
-  { value: 'FakeItem', label: 'Fake Item' },
-  { value: 'NonPayment', label: 'Non-Payment' },
-  { value: 'Harassment', label: 'Harassment' },
-  { value: 'InappropriateContent', label: 'Inappropriate Content' },
-  { value: 'SuspiciousActivity', label: 'Suspicious Activity' },
-  { value: 'Other', label: 'Other' },
+const REPORT_TYPES: ReportType[] = [
+  'Fraud',
+  'FakeItem',
+  'NonPayment',
+  'Harassment',
+  'InappropriateContent',
+  'SuspiciousActivity',
+  'Other',
 ]
 
 const REPORT_PRIORITY_OPTIONS: {
   value: ReportPriority
-  label: string
   color: 'default' | 'info' | 'warning' | 'error'
 }[] = [
-  { value: 'Low', label: 'Low', color: 'default' },
-  { value: 'Medium', label: 'Medium', color: 'info' },
-  { value: 'High', label: 'High', color: 'warning' },
-  { value: 'Critical', label: 'Critical', color: 'error' },
+  { value: 'Low', color: 'default' },
+  { value: 'Medium', color: 'info' },
+  { value: 'High', color: 'warning' },
+  { value: 'Critical', color: 'error' },
 ]
 
 const getStatusChip = (status: ReportStatus) => {
-  return <StatusBadge status={status} />
+  return <StatusBadge status={status} label={i18n.t(`analytics:reportStatus.${status}`)} />
 }
 
 const getPriorityChip = (priority: ReportPriority) => {
   const option = REPORT_PRIORITY_OPTIONS.find((o) => o.value === priority)
   return (
     <Chip
-      label={option?.label ?? priority}
+      label={i18n.t(`analytics:reportPriority.${priority}`)}
       color={option?.color ?? 'default'}
       size="small"
       variant="outlined"
@@ -87,12 +86,11 @@ const getPriorityChip = (priority: ReportPriority) => {
 }
 
 const getTypeLabel = (type: ReportType) => {
-  const option = REPORT_TYPE_OPTIONS.find((o) => o.value === type)
-  return option?.label ?? type
+  return i18n.t(`analytics:reportTypes.${type}`)
 }
 
 export const ReportsPage = () => {
-  const { t: _t } = useTranslation('analytics')
+  const { t } = useTranslation('analytics')
   const [filters, setFilters] = useState<ReportQueryParams>({
     page: 1,
     pageSize: 10,
@@ -107,11 +105,34 @@ export const ReportsPage = () => {
 
   const toolbarFilters: FilterConfig[] = useMemo(
     () => [
-      { key: 'status', label: 'Status', options: REPORT_STATUS_OPTIONS, minWidth: 120 },
-      { key: 'type', label: 'Type', options: REPORT_TYPE_OPTIONS, minWidth: 150 },
-      { key: 'priority', label: 'Priority', options: REPORT_PRIORITY_OPTIONS, minWidth: 120 },
+      {
+        key: 'status',
+        label: t('filter.status'),
+        options: REPORT_STATUS_OPTIONS.map(({ value, color }) => ({
+          value,
+          color,
+          label: t(`reportStatus.${value}`),
+        })),
+        minWidth: 120,
+      },
+      {
+        key: 'type',
+        label: t('filter.type'),
+        options: REPORT_TYPES.map((value) => ({ value, label: t(`reportTypes.${value}`) })),
+        minWidth: 150,
+      },
+      {
+        key: 'priority',
+        label: t('filter.priority'),
+        options: REPORT_PRIORITY_OPTIONS.map(({ value, color }) => ({
+          value,
+          color,
+          label: t(`reportPriority.${value}`),
+        })),
+        minWidth: 120,
+      },
     ],
-    []
+    [t]
   )
 
   const toolbarFilterValues = useMemo(
@@ -212,9 +233,9 @@ export const ReportsPage = () => {
             mb: 1,
           }}
         >
-          Reports Management
+          {t('reports.title')}
         </Typography>
-        <Typography color="text.secondary">Review and manage user reports</Typography>
+        <Typography color="text.secondary">{t('reports.description')}</Typography>
       </Box>
 
       {(reportsError || actionError) && (
@@ -238,7 +259,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.totalReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Total
+                  {t('reports.total')}
                 </Typography>
               </Card>
             </Grid>
@@ -248,7 +269,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.pendingReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Pending
+                  {t('reports.pending')}
                 </Typography>
               </Card>
             </Grid>
@@ -258,7 +279,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.underReviewReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Under Review
+                  {t('reports.underReview')}
                 </Typography>
               </Card>
             </Grid>
@@ -268,7 +289,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.resolvedReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Resolved
+                  {t('reports.resolved')}
                 </Typography>
               </Card>
             </Grid>
@@ -278,7 +299,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.dismissedReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Dismissed
+                  {t('reports.dismissed')}
                 </Typography>
               </Card>
             </Grid>
@@ -288,7 +309,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.criticalReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Critical
+                  {t('reports.critical')}
                 </Typography>
               </Card>
             </Grid>
@@ -298,7 +319,7 @@ export const ReportsPage = () => {
                   {formatNumber(stats.highPriorityReports)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  High Priority
+                  {t('reports.highPriority')}
                 </Typography>
               </Card>
             </Grid>
@@ -306,7 +327,7 @@ export const ReportsPage = () => {
         )}
         {!statsLoading && !stats && (
           <Grid size={{ xs: 12 }}>
-            <InlineAlert severity="error">Failed to load report statistics</InlineAlert>
+            <InlineAlert severity="error">{t('reports.failedToLoad')}</InlineAlert>
           </Grid>
         )}
       </Grid>
@@ -321,7 +342,7 @@ export const ReportsPage = () => {
         >
           <TextField
             size="small"
-            placeholder="Reported Username"
+            placeholder={t('filter.reportedUsername')}
             value={filters.reportedUsername ?? ''}
             onChange={(e) => handleFilterChange('reportedUsername', e.target.value || undefined)}
             sx={{ minWidth: 180 }}
@@ -334,14 +355,14 @@ export const ReportsPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Reporter</TableCell>
-                <TableCell>Reported User</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Reason</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Created</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell>{t('reports.reporter')}</TableCell>
+                <TableCell>{t('reports.reportedUser')}</TableCell>
+                <TableCell>{t('reports.type')}</TableCell>
+                <TableCell>{t('reports.priority')}</TableCell>
+                <TableCell>{t('reports.reason')}</TableCell>
+                <TableCell>{t('reports.status')}</TableCell>
+                <TableCell>{t('reports.created')}</TableCell>
+                <TableCell align="right">{t('reports.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -368,15 +389,17 @@ export const ReportsPage = () => {
                       {report.reason}
                     </TableCell>
                     <TableCell>{getStatusChip(report.status)}</TableCell>
-                    <TableCell>{new Date(report.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(report.createdAt).toLocaleDateString(getCurrentLocale())}
+                    </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                        <Tooltip title="View Details">
+                        <Tooltip title={t('reports.viewDetails')}>
                           <IconButton size="small" onClick={() => handleViewReport(report.id)}>
                             <Visibility fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Update Status">
+                        <Tooltip title={t('reports.updateStatus')}>
                           <IconButton
                             size="small"
                             color="primary"
@@ -385,7 +408,7 @@ export const ReportsPage = () => {
                             <CheckCircle fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title={t('reports.delete')}>
                           <IconButton
                             size="small"
                             color="error"
@@ -399,7 +422,7 @@ export const ReportsPage = () => {
                   </TableRow>
                 ))}
               {!reportsLoading && (!reportsData?.items || reportsData.items.length === 0) && (
-                <TableEmptyStateRow colSpan={8} title="No reports found" cellSx={{ py: 4 }} />
+                <TableEmptyStateRow colSpan={8} title={t('reports.noReports')} cellSx={{ py: 4 }} />
               )}
             </TableBody>
           </Table>
@@ -422,7 +445,7 @@ export const ReportsPage = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Report Details</DialogTitle>
+        <DialogTitle>{t('reports.reportDetails')}</DialogTitle>
         <DialogContent>
           {reportDetailLoading && (
             <Stack spacing={2} sx={{ py: 2 }}>
@@ -435,52 +458,52 @@ export const ReportsPage = () => {
             <Stack spacing={2} sx={{ pt: 1 }}>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Reporter
+                  {t('reports.reporter')}
                 </Typography>
                 <Typography>{selectedReport.reporterUsername}</Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Reported User
+                  {t('reports.reportedUser')}
                 </Typography>
                 <Typography>{selectedReport.reportedUsername}</Typography>
               </Box>
               {selectedReport.auctionId && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Auction ID
+                    {t('reports.auctionId')}
                   </Typography>
                   <Typography>{selectedReport.auctionId}</Typography>
                 </Box>
               )}
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Type
+                  {t('reports.type')}
                 </Typography>
                 <Typography>{getTypeLabel(selectedReport.type)}</Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Priority
+                  {t('reports.priority')}
                 </Typography>
                 <Box>{getPriorityChip(selectedReport.priority)}</Box>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Status
+                  {t('reports.status')}
                 </Typography>
                 <Box>{getStatusChip(selectedReport.status)}</Box>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Reason
+                  {t('reports.reason')}
                 </Typography>
                 <Typography>{selectedReport.reason}</Typography>
               </Box>
               {selectedReport.description && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Description
+                    {t('reports.descriptionLabel')}
                   </Typography>
                   <Typography>{selectedReport.description}</Typography>
                 </Box>
@@ -488,7 +511,7 @@ export const ReportsPage = () => {
               {selectedReport.resolution && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Resolution
+                    {t('reports.resolution')}
                   </Typography>
                   <Typography>{selectedReport.resolution}</Typography>
                 </Box>
@@ -496,30 +519,32 @@ export const ReportsPage = () => {
               {selectedReport.resolvedBy && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Resolved By
+                    {t('reports.resolvedBy')}
                   </Typography>
                   <Typography>
-                    {selectedReport.resolvedBy} at{' '}
+                    {selectedReport.resolvedBy} {t('reports.at')}{' '}
                     {selectedReport.resolvedAt
-                      ? new Date(selectedReport.resolvedAt).toLocaleString()
-                      : 'N/A'}
+                      ? new Date(selectedReport.resolvedAt).toLocaleString(getCurrentLocale())
+                      : t('reports.notAvailable')}
                   </Typography>
                 </Box>
               )}
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Created At
+                  {t('reports.createdAt')}
                 </Typography>
-                <Typography>{new Date(selectedReport.createdAt).toLocaleString()}</Typography>
+                <Typography>
+                  {new Date(selectedReport.createdAt).toLocaleString(getCurrentLocale())}
+                </Typography>
               </Box>
             </Stack>
           )}
           {!reportDetailLoading && !selectedReport && (
-            <Typography color="text.secondary">Report not found</Typography>
+            <Typography color="text.secondary">{t('reports.notFound')}</Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+          <Button onClick={() => setViewDialogOpen(false)}>{t('reports.close')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -529,61 +554,59 @@ export const ReportsPage = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Update Report Status</DialogTitle>
+        <DialogTitle>{t('reports.updateStatus')}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+              <InputLabel>{t('reports.status')}</InputLabel>
               <Select
                 value={updateStatus}
-                label="Status"
+                label={t('reports.status')}
                 onChange={(e) => setUpdateStatus(e.target.value as ReportStatus)}
               >
                 {REPORT_STATUS_OPTIONS.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {t(`reportStatus.${opt.value}`)}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
             <TextField
-              label="Resolution Notes"
+              label={t('reports.resolutionNotes')}
               multiline
               rows={4}
               value={updateResolution}
               onChange={(e) => setUpdateResolution(e.target.value)}
-              placeholder="Enter resolution notes (optional)"
+              placeholder={t('reports.resolutionPlaceholder')}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUpdateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setUpdateDialogOpen(false)}>{t('reports.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleUpdateStatus}
             disabled={updateMutation.isPending}
           >
-            {updateMutation.isPending ? 'Updating...' : 'Update'}
+            {updateMutation.isPending ? t('reports.updating') : t('reports.update')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Report</DialogTitle>
+        <DialogTitle>{t('reports.deleteReport')}</DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete this report? This action cannot be undone.
-          </Typography>
+          <Typography>{t('reports.confirmDelete')}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('reports.cancel')}</Button>
           <Button
             color="error"
             variant="contained"
             onClick={handleDeleteReport}
             disabled={deleteMutation.isPending}
           >
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            {deleteMutation.isPending ? t('reports.deleting') : t('reports.delete')}
           </Button>
         </DialogActions>
       </Dialog>

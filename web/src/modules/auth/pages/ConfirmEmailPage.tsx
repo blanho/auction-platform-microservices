@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
-import { Error as ErrorIcon, East, Email, MarkEmailRead, CheckCircle } from '@mui/icons-material'
-import { useConfirmEmail, useResendConfirmation } from '../hooks'
-import { palette } from '@/shared/theme/tokens'
+import { getErrorMessage } from '@/services/http'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { CheckCircle, East, Email, Error as ErrorIcon, MarkEmailRead } from '@mui/icons-material'
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useConfirmEmail, useResendConfirmation } from '../hooks'
 
 export function ConfirmEmailPage() {
   const { t } = useTranslation('auth')
@@ -14,27 +15,37 @@ export function ConfirmEmailPage() {
   const [resendSuccess, setResendSuccess] = useState(false)
   const confirmEmail = useConfirmEmail()
   const resendConfirmation = useResendConfirmation()
+  const processedConfirmationRef = useRef<string | null>(null)
 
   const token = searchParams.get('token')
   const userId = searchParams.get('userId')
   const email = searchParams.get('email')
 
   useEffect(() => {
-    if (token && userId) {
-      confirmEmail.mutate({ token, userId })
+    if (!token || !userId) {
+      return
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, userId])
 
-  const handleResend = async () => {
-    if (email) {
-      try {
-        await resendConfirmation.mutateAsync(email)
-        setResendSuccess(true)
-      } catch {
-        return
-      }
+    const confirmationKey = `${userId}:${token}`
+    if (processedConfirmationRef.current === confirmationKey) {
+      return
     }
+
+    processedConfirmationRef.current = confirmationKey
+    confirmEmail.mutate({ token, userId })
+  }, [confirmEmail, token, userId])
+
+  const handleResend = () => {
+    if (!email) {
+      return
+    }
+
+    setResendSuccess(false)
+    resendConfirmation.mutate(email, {
+      onSuccess: () => {
+        setResendSuccess(true)
+      },
+    })
   }
 
   if (!token || !userId) {
@@ -159,6 +170,12 @@ export function ConfirmEmailPage() {
                     </Typography>
                   </Stack>
                 </Box>
+              )}
+
+              {resendConfirmation.isError && (
+                <Typography color="error" sx={{ mb: 3, fontSize: '0.875rem' }}>
+                  {getErrorMessage(resendConfirmation.error)}
+                </Typography>
               )}
 
               <Button
@@ -320,7 +337,7 @@ export function ConfirmEmailPage() {
                     mb: 3,
                   }}
                 >
-                  Welcome to
+                  {t('confirmEmail.welcomeTo')}
                   <br />
                   TheAuction
                 </Typography>
@@ -335,7 +352,7 @@ export function ConfirmEmailPage() {
                     lineHeight: 1.6,
                   }}
                 >
-                  Your account is now verified. Start exploring exclusive auctions and rare finds.
+                  {t('confirmEmail.heroDescription')}
                 </Typography>
               </motion.div>
             </motion.div>
@@ -544,6 +561,12 @@ export function ConfirmEmailPage() {
                     </Typography>
                   </Stack>
                 </Box>
+              )}
+
+              {resendConfirmation.isError && (
+                <Typography color="error" sx={{ mb: 3, fontSize: '0.875rem' }}>
+                  {getErrorMessage(resendConfirmation.error)}
+                </Typography>
               )}
 
               <Button

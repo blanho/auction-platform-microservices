@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Button, Grid } from '@mui/material'
-import { East } from '@mui/icons-material'
-import { useMemo } from 'react'
 import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
 import { typography } from '@/shared/theme/tokens'
+import { East } from '@mui/icons-material'
+import { Box, Button, Container, Grid, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 export const CategoriesSection = () => {
   const { data: categoriesData } = useActiveCategories()

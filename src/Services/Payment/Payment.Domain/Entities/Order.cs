@@ -12,8 +12,8 @@ public class Order : AggregateRoot
     {
         [OrderStatus.Pending] = [OrderStatus.PaymentPending, OrderStatus.Cancelled],
         [OrderStatus.PaymentPending] = [OrderStatus.Paid, OrderStatus.Cancelled],
-        [OrderStatus.Paid] = [OrderStatus.Processing, OrderStatus.Shipped, OrderStatus.Cancelled, OrderStatus.Disputed],
-        [OrderStatus.Processing] = [OrderStatus.Shipped, OrderStatus.Cancelled],
+        [OrderStatus.Paid] = [OrderStatus.Processing, OrderStatus.Shipped, OrderStatus.Disputed],
+        [OrderStatus.Processing] = [OrderStatus.Shipped],
         [OrderStatus.Shipped] = [OrderStatus.Delivered, OrderStatus.Disputed],
         [OrderStatus.Delivered] = [OrderStatus.Completed, OrderStatus.Disputed],
         [OrderStatus.Completed] = [OrderStatus.Disputed],
@@ -175,37 +175,6 @@ public class Order : AggregateRoot
         return true;
     }
 
-    public bool MarkPaymentFailed()
-    {
-        if (PaymentStatus == PaymentStatus.Completed)
-        {
-            return false;
-        }
-
-        if (PaymentStatus == PaymentStatus.Failed && Status == OrderStatus.Cancelled)
-        {
-            return false;
-        }
-
-        GuardTransition(OrderStatus.Cancelled);
-
-        var oldStatus = Status;
-        PaymentStatus = PaymentStatus.Failed;
-        Status = OrderStatus.Cancelled;
-
-        AddDomainEvent(new OrderStatusChangedDomainEvent
-        {
-            OrderId = Id,
-            AuctionId = AuctionId,
-            BuyerId = BuyerId,
-            BuyerUsername = BuyerUsername,
-            OldStatus = oldStatus,
-            NewStatus = OrderStatus.Cancelled
-        });
-
-        return true;
-    }
-
     public void MarkAsShipped(string? trackingNumber, string? carrier)
     {
         GuardTransition(OrderStatus.Shipped);
@@ -246,6 +215,14 @@ public class Order : AggregateRoot
 
     public void Cancel(string? reason = null)
     {
+        if (PaymentStatus != PaymentStatus.Pending)
+        {
+            throw new InvalidEntityStateException(
+                nameof(Order),
+                PaymentStatus.ToString(),
+                "A paid order cannot be cancelled without a refund");
+        }
+
         GuardTransition(OrderStatus.Cancelled);
 
         var oldStatus = Status;

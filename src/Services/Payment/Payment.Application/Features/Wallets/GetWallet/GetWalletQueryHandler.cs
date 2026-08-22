@@ -1,4 +1,5 @@
 using AutoMapper;
+using Payment.Application.Errors;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 
@@ -20,6 +21,8 @@ public class GetWalletQueryHandler : IQueryHandler<GetWalletQuery, WalletDto?>
     public async Task<Result<WalletDto?>> Handle(GetWalletQuery request, CancellationToken cancellationToken)
     {
         var wallet = await _walletRepository.GetByUsernameAsync(request.Username);
-        return wallet?.ToDto(_mapper);
+        return wallet is null
+            ? Result.Failure<WalletDto?>(PaymentErrors.Wallet.NotFound)
+            : wallet.ToDto(_mapper);
     }
 }

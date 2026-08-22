@@ -6,6 +6,7 @@ using BuildingBlocks.Web.OpenApi;
 using Carter;
 using Identity.Api.Resources;
 using Identity.Api.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 namespace Identity.Api;
@@ -30,6 +31,16 @@ internal static class HostingExtensions
             requiresIdentity: false);
 
         builder.Services.AddCarter();
+
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.ForwardLimit = 2;
+            options.KnownNetworks.Add(Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse("10.0.0.0/8"));
+            options.KnownNetworks.Add(Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse("172.16.0.0/12"));
+            options.KnownNetworks.Add(Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse("192.168.0.0/16"));
+            options.KnownNetworks.Add(Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse("fc00::/7"));
+        });
 
         builder.Services
             .AddIdentityInfrastructure(builder.Configuration)
@@ -58,6 +69,7 @@ internal static class HostingExtensions
 
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        app.UseForwardedHeaders();
         app.UseCorrelationIdLogging();
         app.UseCorrelationId();
         app.UseSerilogRequestLogging();

@@ -1,5 +1,6 @@
-import { createTheme } from '@mui/material/styles'
+import { enUS, jaJP } from '@mui/material/locale'
 import type { ThemeOptions } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles'
 
 const baseTheme: ThemeOptions = {
   typography: {
@@ -238,9 +239,14 @@ const darkPalette = {
   divider: '#292524',
 }
 
-export const createAppTheme = (mode: 'light' | 'dark') => {
-  return createTheme({
-    ...baseTheme,
-    palette: mode === 'light' ? lightPalette : darkPalette,
-  })
+export const createAppTheme = (mode: 'light' | 'dark', language = 'en') => {
+  const muiLocale = language.startsWith('ja') ? jaJP : enUS
+
+  return createTheme(
+    {
+      ...baseTheme,
+      palette: mode === 'light' ? lightPalette : darkPalette,
+    },
+    muiLocale
+  )
 }

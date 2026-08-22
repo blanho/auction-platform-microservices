@@ -43,31 +43,26 @@ public class OrderPaymentTests
     }
 
     [Fact]
-    public void MarkPaymentFailed_WhenDeliveredTwice_IsIdempotent()
+    public void Cancel_WhenPaymentIsPending_CancelsOrder()
     {
         var order = CreateOrder();
 
-        var firstDeliveryChangedOrder = order.MarkPaymentFailed();
-        var eventsAfterFirstDelivery = order.DomainEvents.Count;
-        var secondDeliveryChangedOrder = order.MarkPaymentFailed();
+        order.Cancel("Buyer changed their mind");
 
-        Assert.True(firstDeliveryChangedOrder);
-        Assert.False(secondDeliveryChangedOrder);
-        Assert.Equal(eventsAfterFirstDelivery, order.DomainEvents.Count);
         Assert.Equal(OrderStatus.Cancelled, order.Status);
-        Assert.Equal(PaymentStatus.Failed, order.PaymentStatus);
+        Assert.Equal(PaymentStatus.Pending, order.PaymentStatus);
     }
 
     [Fact]
-    public void MarkPaymentFailed_WhenPaymentAlreadySucceeded_DoesNotReverseSuccess()
+    public void Cancel_WhenPaymentAlreadySucceeded_RequiresRefund()
     {
         var order = CreateOrder();
         order.CompletePayment("pi_123");
         var eventsAfterSuccess = order.DomainEvents.Count;
 
-        var changedOrder = order.MarkPaymentFailed();
+        var exception = Assert.Throws<InvalidEntityStateException>(() => order.Cancel());
 
-        Assert.False(changedOrder);
+        Assert.Contains("refund", exception.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(eventsAfterSuccess, order.DomainEvents.Count);
         Assert.Equal(OrderStatus.Paid, order.Status);
         Assert.Equal(PaymentStatus.Completed, order.PaymentStatus);

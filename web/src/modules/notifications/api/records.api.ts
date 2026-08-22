@@ -1,10 +1,10 @@
 import { http } from '@/services/http'
+import type { PaginatedResponse } from '@/shared/types'
 import type {
   NotificationRecord,
   NotificationRecordFilterDto,
   NotificationRecordStatsDto,
 } from '../types/template.types'
-import type { PaginatedResponse } from '@/shared/types'
 
 export const recordsApi = {
   async getRecords(

@@ -5,10 +5,6 @@ export interface QueryParameters {
   sortOrder?: 'asc' | 'desc'
 }
 
-export interface QueryParametersWithFilter<TFilter> extends QueryParameters {
-  filter?: TFilter
-}
-
 export interface PaginatedResponse<T> {
   items: T[]
   page: number

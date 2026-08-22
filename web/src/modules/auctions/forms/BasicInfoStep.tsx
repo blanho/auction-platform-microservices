@@ -1,19 +1,19 @@
-import { Controller } from 'react-hook-form'
-import type { Control, FieldErrors } from 'react-hook-form'
 import {
-  Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
   Autocomplete,
+  FormControl,
+  FormHelperText,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
 } from '@mui/material'
+import type { Control, FieldErrors } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
-import type { Category } from '../api/categories.api'
 import type { Brand } from '../api/brands.api'
+import type { Category } from '../api/categories.api'
+import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
 
 interface BasicInfoStepProps {
   control: Control<CreateAuctionFormData | UpdateAuctionFormData>

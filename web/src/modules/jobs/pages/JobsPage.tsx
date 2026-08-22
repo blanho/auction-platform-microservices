@@ -1,60 +1,60 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { formatNumber, formatRelativeTime } from '@/shared/utils/formatters'
 import {
-  Container,
-  Grid,
-  Card,
-  Typography,
+  Close as CancelIcon,
+  Cancel as CancelledIcon,
+  CheckCircle as CompletedIcon,
+  OpenInNew as DetailIcon,
+  Error as FailedIcon,
+  HourglassEmpty as InitializingIcon,
+  Work as JobIcon,
+  WarningAmber as PartialIcon,
+  Schedule as PendingIcon,
+  PlayCircle as ProcessingIcon,
+  Refresh as RefreshIcon,
+  Replay as RetryIcon,
+} from '@mui/icons-material'
+import {
+  Alert,
   Box,
-  Stack,
-  LinearProgress,
+  Button,
+  Card,
   Chip,
+  Container,
+  FormControl,
+  Grid,
   IconButton,
-  Tooltip,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TableSortLabel,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Skeleton,
-  Alert,
-  Button,
-  TablePagination,
+  Tooltip,
+  Typography,
 } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import {
-  HourglassEmpty as InitializingIcon,
-  Schedule as PendingIcon,
-  PlayCircle as ProcessingIcon,
-  CheckCircle as CompletedIcon,
-  WarningAmber as PartialIcon,
-  Error as FailedIcon,
-  Cancel as CancelledIcon,
-  Close as CancelIcon,
-  Replay as RetryIcon,
-  Refresh as RefreshIcon,
-  Work as JobIcon,
-  OpenInNew as DetailIcon,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { formatRelativeTime } from '@/shared/utils/formatters'
-import { useJobs, useCancelJob, useRetryJob } from '../hooks'
-import {
-  JOB_STATUS_LABELS,
-  JOB_STATUS_COLORS,
-  JOB_TYPE_LABELS,
   JOB_PRIORITY_COLORS,
+  JOB_STATUS_COLORS,
+  JOB_STATUS_LABELS,
+  JOB_TYPE_LABELS,
 } from '../constants'
+import { useCancelJob, useJobs, useRetryJob } from '../hooks'
+import type { JobFilterParams, JobStatus, JobSummaryDto, SortDirection, SortField } from '../types'
 import { isJobActive } from '../utils'
-import type { JobSummaryDto, JobStatus, JobFilterParams, SortField, SortDirection } from '../types'
 
 const statusIcons: Record<JobStatus, React.ReactElement> = {
   Initializing: <InitializingIcon fontSize="small" />,
@@ -126,7 +126,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50]
 const DEFAULT_PAGE_SIZE = 10
 
 export function JobsPage() {
-  const { t: _t } = useTranslation('jobs')
+  const { t } = useTranslation('jobs')
   const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -226,17 +226,17 @@ export function JobsPage() {
                   color: 'primary.main',
                 }}
               >
-                Background Jobs
+                {t('jobs.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Monitor and manage background processing tasks
+                {t('jobs.subtitle')}
               </Typography>
             </Box>
             <Stack direction="row" spacing={1}>
               {hasActiveJobs && (
                 <Chip
                   size="small"
-                  label="Live"
+                  label={t('jobs.live')}
                   color="success"
                   variant="outlined"
                   sx={{
@@ -252,7 +252,7 @@ export function JobsPage() {
                 disabled={isLoading}
                 size="small"
               >
-                Refresh
+                {t('jobs.refresh')}
               </Button>
             </Stack>
           </Box>
@@ -260,38 +260,38 @@ export function JobsPage() {
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            Failed to load background jobs. Please try again later.
+            {t('jobs.loadFailed')}
           </Alert>
         )}
 
         <Grid container spacing={2.5} sx={{ mb: 4 }}>
           {[
             {
-              label: 'Processing',
+              label: t('jobs.processing'),
               value: jobStats.processing,
               icon: <ProcessingIcon />,
               color: palette.brand.primary,
             },
             {
-              label: 'Queued',
+              label: t('jobs.queued'),
               value: jobStats.pending,
               icon: <PendingIcon />,
               color: palette.brand.secondary,
             },
             {
-              label: 'Completed',
+              label: t('jobs.completed'),
               value: jobStats.completed,
               icon: <CompletedIcon />,
               color: palette.semantic.success,
             },
             {
-              label: 'Errors',
+              label: t('jobs.errors'),
               value: jobStats.failed,
               icon: <FailedIcon />,
               color: palette.semantic.error,
             },
             {
-              label: 'Total',
+              label: t('jobs.total'),
               value: jobStats.total,
               icon: <JobIcon />,
               color: palette.neutral[400],
@@ -316,41 +316,41 @@ export function JobsPage() {
                 gap={2}
               >
                 <Typography variant="h6" fontWeight={600}>
-                  Jobs
+                  {t('jobs.listTitle')}
                 </Typography>
                 <Stack direction="row" spacing={1.5}>
                   <FormControl size="small" sx={{ minWidth: 140 }}>
-                    <InputLabel>Status</InputLabel>
+                    <InputLabel>{t('jobs.status')}</InputLabel>
                     <Select
                       value={statusFilter}
-                      label="Status"
+                      label={t('jobs.status')}
                       onChange={(e) => {
                         setStatusFilter(e.target.value as JobStatus | 'all')
                         setPage(0)
                       }}
                     >
-                      <MenuItem value="all">All Status</MenuItem>
+                      <MenuItem value="all">{t('jobs.allStatuses')}</MenuItem>
                       {Object.entries(JOB_STATUS_LABELS).map(([key, label]) => (
                         <MenuItem key={key} value={key}>
-                          {label}
+                          {t(`statuses.${key}`, { defaultValue: label })}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                   <FormControl size="small" sx={{ minWidth: 160 }}>
-                    <InputLabel>Type</InputLabel>
+                    <InputLabel>{t('jobs.type')}</InputLabel>
                     <Select
                       value={typeFilter}
-                      label="Type"
+                      label={t('jobs.type')}
                       onChange={(e) => {
                         setTypeFilter(e.target.value)
                         setPage(0)
                       }}
                     >
-                      <MenuItem value="all">All Types</MenuItem>
+                      <MenuItem value="all">{t('jobs.allTypes')}</MenuItem>
                       {Object.entries(JOB_TYPE_LABELS).map(([key, label]) => (
                         <MenuItem key={key} value={key}>
-                          {label}
+                          {t(`types.${key}`, { defaultValue: label })}
                         </MenuItem>
                       ))}
                     </Select>
@@ -369,7 +369,7 @@ export function JobsPage() {
                         direction={sortField === 'jobType' ? sortDirection : 'asc'}
                         onClick={() => handleSort('jobType')}
                       >
-                        Type
+                        {t('jobs.type')}
                       </TableSortLabel>
                     </TableCell>
                     <TableCell>
@@ -378,7 +378,7 @@ export function JobsPage() {
                         direction={sortField === 'status' ? sortDirection : 'asc'}
                         onClick={() => handleSort('status')}
                       >
-                        Status
+                        {t('jobs.status')}
                       </TableSortLabel>
                     </TableCell>
                     <TableCell>
@@ -387,7 +387,7 @@ export function JobsPage() {
                         direction={sortField === 'priority' ? sortDirection : 'asc'}
                         onClick={() => handleSort('priority')}
                       >
-                        Priority
+                        {t('jobs.priority')}
                       </TableSortLabel>
                     </TableCell>
                     <TableCell>
@@ -396,20 +396,20 @@ export function JobsPage() {
                         direction={sortField === 'progress' ? sortDirection : 'asc'}
                         onClick={() => handleSort('progress')}
                       >
-                        Progress
+                        {t('jobs.progress')}
                       </TableSortLabel>
                     </TableCell>
-                    <TableCell>Items</TableCell>
+                    <TableCell>{t('jobs.items')}</TableCell>
                     <TableCell>
                       <TableSortLabel
                         active={sortField === 'createdAt'}
                         direction={sortField === 'createdAt' ? sortDirection : 'asc'}
                         onClick={() => handleSort('createdAt')}
                       >
-                        Created
+                        {t('jobs.created')}
                       </TableSortLabel>
                     </TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell align="right">{t('jobs.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -428,9 +428,9 @@ export function JobsPage() {
                       <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                         <Box sx={{ color: 'text.secondary' }}>
                           <JobIcon sx={{ fontSize: 48, opacity: 0.4, mb: 1 }} />
-                          <Typography variant="body1">No jobs found</Typography>
+                          <Typography variant="body1">{t('jobs.noJobs')}</Typography>
                           <Typography variant="body2" sx={{ mt: 0.5 }}>
-                            Background jobs will appear here when processing tasks are created
+                            {t('jobs.noJobsHint')}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -485,6 +485,7 @@ function JobRow({
   isCancelling,
   isRetrying,
 }: Readonly<JobRowProps>) {
+  const { t } = useTranslation('jobs')
   const active = isJobActive(job.status)
   const canRetry = job.status === 'Failed' || job.status === 'CompletedWithErrors'
   const progressColor = statusPaletteColors[job.status]
@@ -497,7 +498,7 @@ function JobRow({
     >
       <TableCell>
         <Typography variant="body2" fontWeight={500}>
-          {JOB_TYPE_LABELS[job.jobType]}
+          {t(`types.${job.jobType}`, { defaultValue: JOB_TYPE_LABELS[job.jobType] })}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
           {job.id.slice(0, 8)}
@@ -507,7 +508,7 @@ function JobRow({
         <Chip
           size="small"
           icon={statusIcons[job.status]}
-          label={JOB_STATUS_LABELS[job.status]}
+          label={t(`statuses.${job.status}`, { defaultValue: JOB_STATUS_LABELS[job.status] })}
           color={JOB_STATUS_COLORS[job.status]}
           sx={{ height: 26 }}
         />
@@ -515,7 +516,7 @@ function JobRow({
       <TableCell>
         <Chip
           size="small"
-          label={job.priority}
+          label={t(`priorities.${job.priority}`, { defaultValue: job.priority })}
           color={JOB_PRIORITY_COLORS[job.priority]}
           variant="outlined"
           sx={{ height: 24 }}
@@ -551,16 +552,16 @@ function JobRow({
       </TableCell>
       <TableCell>
         <Typography variant="body2">
-          {job.completedItems.toLocaleString()}
+          {formatNumber(job.completedItems)}
           {job.failedItems > 0 && (
             <Typography component="span" variant="body2" color="error.main">
               {' '}
-              ({job.failedItems.toLocaleString()} failed)
+              ({t('jobs.failedItems', { count: job.failedItems })})
             </Typography>
           )}
           <Typography component="span" variant="body2" color="text.secondary">
             {' '}
-            / {job.totalItems.toLocaleString()}
+            / {formatNumber(job.totalItems)}
           </Typography>
         </Typography>
       </TableCell>
@@ -575,20 +576,20 @@ function JobRow({
           onClick={(e) => e.stopPropagation()}
         >
           {active && (
-            <Tooltip title="Cancel">
+            <Tooltip title={t('jobs.cancel')}>
               <IconButton size="small" color="error" onClick={onCancel} disabled={isCancelling}>
                 <CancelIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
           {canRetry && (
-            <Tooltip title="Retry">
+            <Tooltip title={t('jobs.retry')}>
               <IconButton size="small" color="primary" onClick={onRetry} disabled={isRetrying}>
                 <RetryIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
-          <Tooltip title="View Details">
+          <Tooltip title={t('jobs.viewDetails')}>
             <IconButton size="small" onClick={onNavigate}>
               <DetailIcon fontSize="small" />
             </IconButton>

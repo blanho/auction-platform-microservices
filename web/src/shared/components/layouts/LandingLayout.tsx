@@ -1,13 +1,15 @@
-import { Outlet, useLocation } from 'react-router-dom'
-import { Box } from '@mui/material'
-import { LandingHeader } from './LandingHeader'
-import { Footer } from './Footer'
-import { PromoBanner } from '../navigation/PromoBanner'
+import { useSignalRNotifications } from '@/modules/notifications/hooks'
 import { palette } from '@/shared/theme/tokens'
+import { Box } from '@mui/material'
+import { Outlet, useLocation } from 'react-router-dom'
+import { PromoBanner } from '../navigation/PromoBanner'
+import { Footer } from './Footer'
+import { LandingHeader } from './LandingHeader'
 
 export const LandingLayout = () => {
   const location = useLocation()
   const isLandingPage = location.pathname === '/'
+  useSignalRNotifications()
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

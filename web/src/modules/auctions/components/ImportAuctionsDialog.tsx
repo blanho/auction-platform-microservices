@@ -1,15 +1,21 @@
-import { useState, useRef, type DragEvent } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useImportAuctionsFile } from '@/modules/auctions/hooks/useImportExport'
+import type {
+  ImportAuctionError,
+  ImportAuctionsResult,
+} from '@/modules/auctions/types/import-export.types'
+import { palette } from '@/shared/theme/tokens'
+import { CheckCircle, Error as ErrorIcon, FileUpload, InsertDriveFile } from '@mui/icons-material'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  CircularProgress,
   Alert,
-  Typography,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
   Stack,
   Table,
   TableBody,
@@ -17,16 +23,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  LinearProgress,
+  Typography,
 } from '@mui/material'
-import { FileUpload, CheckCircle, Error as ErrorIcon, InsertDriveFile } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import type {
-  ImportAuctionsResult,
-  ImportAuctionError,
-} from '@/modules/auctions/types/import-export.types'
-import { useImportAuctionsFile } from '@/modules/auctions/hooks/useImportExport'
+import { useRef, useState, type DragEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ImportAuctionsDialogProps {
   open: boolean

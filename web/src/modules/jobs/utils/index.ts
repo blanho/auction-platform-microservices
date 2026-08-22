@@ -1,1 +1,1 @@
-export { getJobProgressLabel, isJobActive, isJobTerminal, getJobDuration } from './jobs.utils'
+export { getJobDuration, getJobProgressLabel, isJobActive, isJobTerminal } from './jobs.utils'

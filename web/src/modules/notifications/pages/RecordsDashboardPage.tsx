@@ -1,23 +1,24 @@
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Box, Container, Typography, Card, Grid, Chip } from '@mui/material'
-import {
-  TrendingUp,
-  Email,
-  Sms,
-  PhoneIphone,
-  Notifications,
-  CheckCircle,
-  Error,
-  PendingActions,
-  Send,
-} from '@mui/icons-material'
-import { useRecords, useRecordStats } from '../hooks'
-import type { NotificationChannel, RecordStatus, NotificationRecord } from '../types/template.types'
-import { formatTimeAgo } from '../utils'
-import { DataTable, FilterPanel } from '@/shared/ui'
 import { usePagination } from '@/shared/hooks'
 import type { ColumnConfig, FilterPanelConfig, NotificationRecordFilter } from '@/shared/types'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import { formatNumber } from '@/shared/utils/formatters'
+import {
+  CheckCircle,
+  Email,
+  Error,
+  Notifications,
+  PendingActions,
+  PhoneIphone,
+  Send,
+  Sms,
+  TrendingUp,
+} from '@mui/icons-material'
+import { Box, Card, Chip, Container, Grid, Typography } from '@mui/material'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useRecords, useRecordStats } from '../hooks'
+import type { NotificationChannel, NotificationRecord, RecordStatus } from '../types/template.types'
+import { formatTimeAgo } from '../utils'
 
 const CHANNEL_ICONS: Record<NotificationChannel, React.ReactElement> = {
   email: <Email fontSize="small" />,
@@ -37,56 +38,8 @@ const STATUS_CONFIG: Record<
   bounced: { color: '#78716C', bgcolor: '#F5F5F5', icon: <Error fontSize="small" /> },
 }
 
-const FILTER_CONFIG: FilterPanelConfig = {
-  fields: [
-    {
-      key: 'channel',
-      label: 'Channel',
-      type: 'select',
-      options: [
-        { value: 'email', label: 'Email' },
-        { value: 'sms', label: 'SMS' },
-        { value: 'push', label: 'Push' },
-        { value: 'in_app', label: 'In-App' },
-      ],
-      clearable: true,
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select',
-      options: [
-        { value: 'pending', label: 'Pending' },
-        { value: 'sent', label: 'Sent' },
-        { value: 'delivered', label: 'Delivered' },
-        { value: 'failed', label: 'Failed' },
-        { value: 'bounced', label: 'Bounced' },
-      ],
-      clearable: true,
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-    {
-      key: 'templateKey',
-      label: 'Template Key',
-      type: 'text',
-      placeholder: 'Search by template...',
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-    {
-      key: 'dateFrom',
-      label: 'From Date',
-      type: 'date',
-      gridSize: { xs: 12, sm: 6, md: 3 },
-    },
-  ],
-  collapsible: true,
-  defaultExpanded: true,
-  showClearButton: true,
-}
-
 export function RecordsDashboardPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const pagination = usePagination<NotificationRecordFilter>({ defaultPageSize: 20 })
   const {
     data: recordsData,
@@ -101,11 +54,56 @@ export function RecordsDashboardPage() {
   })
   const { data: stats } = useRecordStats()
 
+  const filterConfig: FilterPanelConfig = useMemo(
+    () => ({
+      fields: [
+        {
+          key: 'channel',
+          label: t('records.channel'),
+          type: 'select',
+          options: (['email', 'sms', 'push', 'in_app'] as NotificationChannel[]).map((value) => ({
+            value,
+            label: t(`templates.channels.${value}`),
+          })),
+          clearable: true,
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+        {
+          key: 'status',
+          label: t('records.status'),
+          type: 'select',
+          options: (['pending', 'sent', 'delivered', 'failed', 'bounced'] as RecordStatus[]).map(
+            (value) => ({ value, label: t(`records.statuses.${value}`) })
+          ),
+          clearable: true,
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+        {
+          key: 'templateKey',
+          label: t('records.templateKey'),
+          type: 'text',
+          placeholder: t('records.templatePlaceholder'),
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+        {
+          key: 'dateFrom',
+          label: t('records.fromDate'),
+          type: 'date',
+          gridSize: { xs: 12, sm: 6, md: 3 },
+        },
+      ],
+      collapsible: true,
+      defaultExpanded: true,
+      showClearButton: true,
+    }),
+    [t]
+  )
+
   const columns: ColumnConfig<NotificationRecord>[] = useMemo(
     () => [
       {
         key: 'recipient',
-        header: 'Recipient',
+        header: t('records.recipient'),
         sortable: true,
         sortKey: 'recipient',
         render: (_, row) => (
@@ -121,13 +119,13 @@ export function RecordsDashboardPage() {
       },
       {
         key: 'channel',
-        header: 'Channel',
+        header: t('records.channel'),
         sortable: true,
         sortKey: 'channel',
         render: (_, row) => (
           <Chip
             icon={CHANNEL_ICONS[row.channel]}
-            label={row.channel.toUpperCase()}
+            label={t(`templates.channels.${row.channel}`)}
             size="small"
             sx={{ fontWeight: 600 }}
           />
@@ -135,7 +133,7 @@ export function RecordsDashboardPage() {
       },
       {
         key: 'templateKey',
-        header: 'Template',
+        header: t('records.template'),
         sortable: true,
         sortKey: 'templateKey',
         render: (_, row) => (
@@ -149,7 +147,7 @@ export function RecordsDashboardPage() {
       },
       {
         key: 'subject',
-        header: 'Subject',
+        header: t('records.subject'),
         render: (_, row) => (
           <Typography sx={{ fontSize: '0.875rem', color: '#44403C' }}>
             {row.subject || '-'}
@@ -158,7 +156,7 @@ export function RecordsDashboardPage() {
       },
       {
         key: 'status',
-        header: 'Status',
+        header: t('records.status'),
         sortable: true,
         sortKey: 'status',
         render: (_, row) => {
@@ -166,7 +164,7 @@ export function RecordsDashboardPage() {
           return (
             <Chip
               icon={config.icon}
-              label={row.status.toUpperCase()}
+              label={t(`records.statuses.${row.status}`)}
               size="small"
               sx={{ bgcolor: config.bgcolor, color: config.color, fontWeight: 600 }}
             />
@@ -175,7 +173,7 @@ export function RecordsDashboardPage() {
       },
       {
         key: 'sentAt',
-        header: 'Sent At',
+        header: t('records.sentAt'),
         sortable: true,
         sortKey: 'sentAt',
         render: (_, row) => (
@@ -185,33 +183,33 @@ export function RecordsDashboardPage() {
         ),
       },
     ],
-    []
+    [t]
   )
 
   const statCards = [
     {
-      title: 'Total Sent',
+      title: t('records.totalSent'),
       value: stats?.sentCount || 0,
       icon: <Send sx={{ fontSize: 32, color: '#7C3AED' }} />,
       color: '#7C3AED',
       bgcolor: '#F3E8FF',
     },
     {
-      title: 'Delivered',
+      title: t('records.delivered'),
       value: stats?.deliveredCount || 0,
       icon: <CheckCircle sx={{ fontSize: 32, color: '#10B981' }} />,
       color: '#10B981',
       bgcolor: '#D1FAE5',
     },
     {
-      title: 'Failed',
+      title: t('records.failed'),
       value: stats?.failedCount || 0,
       icon: <Error sx={{ fontSize: 32, color: '#EF4444' }} />,
       color: '#EF4444',
       bgcolor: '#FEE2E2',
     },
     {
-      title: 'Success Rate',
+      title: t('records.successRate'),
       value: stats?.sentCount
         ? `${((stats.deliveredCount / stats.sentCount) * 100).toFixed(1)}%`
         : '0%',
@@ -233,10 +231,10 @@ export function RecordsDashboardPage() {
             mb: 1,
           }}
         >
-          Notification Records
+          {t('records.title')}
         </Typography>
         <Typography sx={{ color: '#78716C', fontFamily: '"Fira Sans", sans-serif' }}>
-          Track delivery status and performance metrics
+          {t('records.description')}
         </Typography>
       </Box>
 
@@ -266,7 +264,7 @@ export function RecordsDashboardPage() {
                       color: stat.color,
                     }}
                   >
-                    {stat.value}
+                    {typeof stat.value === 'number' ? formatNumber(stat.value) : stat.value}
                   </Typography>
                 </Box>
                 <Box
@@ -289,7 +287,7 @@ export function RecordsDashboardPage() {
 
       <Card sx={{ borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', mb: 3 }}>
         <FilterPanel
-          config={FILTER_CONFIG}
+          config={filterConfig}
           value={pagination.filter}
           onChange={pagination.setFilter}
           onClear={pagination.clearFilter}
@@ -307,7 +305,7 @@ export function RecordsDashboardPage() {
           pageSize={pagination.pageSize}
           onPageChange={pagination.setPage}
           onPageSizeChange={pagination.setPageSize}
-          emptyMessage="No notification records found"
+          emptyMessage={t('records.empty')}
         />
       </Card>
     </Container>

@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react'
+import { usePlaceBid } from '@/modules/bidding/hooks/useBidding'
+import { useSnackbar } from '@/shared/hooks/useSnackbar'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useBuyNow } from './useAuctions'
 import { useIsInWatchlist, useToggleWatchlist } from './useBookmarks'
-import { usePlaceBid } from '@/modules/bidding/hooks'
-import { useSnackbar } from '@/shared/hooks/useSnackbar'
 
 interface UseAuctionDetailActionsReturn {
   snackbar: ReturnType<typeof useSnackbar>
@@ -13,7 +13,7 @@ interface UseAuctionDetailActionsReturn {
   buyNowMutation: ReturnType<typeof useBuyNow>
   isInWatchlist: boolean
   handleToggleFavorite: () => void
-  handleShare: () => void
+  handleShare: () => Promise<void>
   handlePlaceBid: (amount: number) => Promise<void>
   handleBuyNow: () => void
   confirmBuyNow: () => Promise<void>
@@ -32,6 +32,16 @@ export function useAuctionDetailActions(
   const buyNowMutation = useBuyNow()
   const placeBidMutation = usePlaceBid()
   const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
+  const orderRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(
+    () => () => {
+      if (orderRedirectTimerRef.current) {
+        clearTimeout(orderRedirectTimerRef.current)
+      }
+    },
+    []
+  )
 
   const handleToggleFavorite = useCallback(() => {
     if (!auctionId) {
@@ -51,9 +61,13 @@ export function useAuctionDetailActions(
     )
   }, [auctionId, isInWatchlist, toggleWatchlistMutation, snackbar, t])
 
-  const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(globalThis.location.href)
-    snackbar.show(t('messages.linkCopied'), 'success')
+  const handleShare = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(globalThis.location.href)
+      snackbar.show(t('messages.linkCopied'), 'success')
+    } catch {
+      snackbar.show(t('messages.shareFailed'), 'error')
+    }
   }, [snackbar, t])
 
   const handlePlaceBid = useCallback(
@@ -62,17 +76,13 @@ export function useAuctionDetailActions(
         return
       }
 
-      placeBidMutation.mutate(
-        { auctionId, amount },
-        {
-          onSuccess: () => snackbar.show(t('messages.bidPlaced'), 'success'),
-          onError: (error) =>
-            snackbar.show(
-              error instanceof Error ? error.message : t('messages.bidFailed'),
-              'error'
-            ),
-        }
-      )
+      try {
+        await placeBidMutation.mutateAsync({ auctionId, amount })
+        snackbar.show(t('messages.bidPlaced'), 'success')
+      } catch (error) {
+        snackbar.show(error instanceof Error ? error.message : t('messages.bidFailed'), 'error')
+        throw error
+      }
     },
     [auctionId, placeBidMutation, snackbar, t]
   )
@@ -86,17 +96,15 @@ export function useAuctionDetailActions(
       return
     }
 
-    buyNowMutation.mutate(auctionId, {
-      onSuccess: () => {
-        setBuyNowDialogOpen(false)
-        snackbar.show(t('messages.purchaseSuccess'), 'success')
-        setTimeout(() => navigate('/orders'), 2000)
-      },
-      onError: () => {
-        setBuyNowDialogOpen(false)
-        snackbar.show(t('messages.purchaseFailed'), 'error')
-      },
-    })
+    try {
+      await buyNowMutation.mutateAsync(auctionId)
+      setBuyNowDialogOpen(false)
+      snackbar.show(t('messages.purchaseSuccess'), 'success')
+      orderRedirectTimerRef.current = setTimeout(() => navigate('/orders'), 2000)
+    } catch {
+      setBuyNowDialogOpen(false)
+      snackbar.show(t('messages.purchaseFailed'), 'error')
+    }
   }, [auctionId, buyNowMutation, navigate, snackbar, t])
 
   const handleSellerContact = useCallback(() => {

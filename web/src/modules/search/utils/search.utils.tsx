@@ -1,5 +1,5 @@
-import { Gavel, Category, Store } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
+import { Category, Gavel, Store } from '@mui/icons-material'
 import type { SearchResultType } from '../types'
 
 export const getResultIcon = (type: SearchResultType) => {

@@ -1,16 +1,13 @@
 import { http } from '@/services/http'
+import type { PaginatedResponse } from '@/shared/types'
 import type {
   Order,
-  CreateOrderRequest,
-  UpdateOrderRequest,
-  ProcessPaymentRequest,
-  ShipOrderRequest,
-  CancelOrderRequest,
   OrderFilters,
   OrderStats,
   OrderStatus,
+  PrepareCheckoutRequest,
+  ShipOrderRequest,
 } from '../types'
-import type { PaginatedResponse } from '@/shared/types'
 
 interface GetAllOrdersParams {
   page?: number
@@ -90,28 +87,16 @@ export const ordersApi = {
     }
   },
 
-  async createOrder(data: CreateOrderRequest): Promise<Order> {
-    const response = await http.post<Order>('/orders', data)
-    return response.data
-  },
-
-  async updateOrder(id: string, data: UpdateOrderRequest): Promise<Order> {
-    const response = await http.put<Order>(`/orders/${id}`, data)
-    return response.data
-  },
-
-  async processPayment(id: string, data?: ProcessPaymentRequest): Promise<Order> {
-    const response = await http.post<Order>(`/orders/${id}/payment`, data || {})
+  async prepareCheckout(id: string, data: PrepareCheckoutRequest): Promise<Order> {
+    const response = await http.put<Order>(`/orders/${id}/checkout`, {
+      ...data,
+      shippingAddress: JSON.stringify(data.shippingAddress),
+    })
     return response.data
   },
 
   async shipOrder(id: string, data: ShipOrderRequest): Promise<Order> {
     const response = await http.post<Order>(`/orders/${id}/ship`, data)
-    return response.data
-  },
-
-  async cancelOrder(id: string, data?: CancelOrderRequest): Promise<Order> {
-    const response = await http.post<Order>(`/orders/${id}/cancel`, data || {})
     return response.data
   },
 

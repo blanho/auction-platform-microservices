@@ -92,10 +92,12 @@ public class AutoBidEndpoints : ICarterModule
 
     private static async Task<IResult> GetAutoBid(
         Guid autoBidId,
+        HttpContext context,
         IMediator mediator,
         CancellationToken ct)
     {
-        var query = new GetAutoBidQuery(autoBidId);
+        var userId = UserHelper.GetRequiredUserId(context.User);
+        var query = new GetAutoBidQuery(autoBidId, userId);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }

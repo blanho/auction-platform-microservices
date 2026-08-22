@@ -1,21 +1,21 @@
-import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
+import { Archive, Circle, Delete, MoreVert } from '@mui/icons-material'
 import {
   Box,
+  IconButton,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography,
-  IconButton,
   Menu,
   MenuItem,
+  Typography,
 } from '@mui/material'
-import { MoreVert, Delete, Archive, Circle } from '@mui/icons-material'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import type { Notification } from '../types'
 import { formatTimeAgo, getNotificationLink } from '../utils'
 import { NotificationIcon } from './NotificationIcon'
-import { palette } from '@/shared/theme/tokens'
 
 interface NotificationItemProps {
   notification: Notification

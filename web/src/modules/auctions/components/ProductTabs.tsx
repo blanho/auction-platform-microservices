@@ -1,26 +1,27 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { Description, Gavel, LocalShipping, Policy, Star } from '@mui/icons-material'
 import {
+  Avatar,
   Box,
-  Tabs,
-  Tab,
-  Typography,
+  Chip,
+  Divider,
+  Skeleton,
   Stack,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableRow,
-  Divider,
-  Skeleton,
-  Chip,
-  Avatar,
+  Tabs,
+  Typography,
 } from '@mui/material'
-import { Description, Gavel, LocalShipping, Policy, Star } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { BidSummary } from '../types'
-import { ReviewsList } from './ReviewsList'
-import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
 import { formatTimeAgo } from '../utils'
+import { ReviewsList } from './ReviewsList'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -72,7 +73,7 @@ export function ProductTabs({
   shippingInfo,
   returnPolicy,
 }: ProductTabsProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['auctions', 'common'])
   const [activeTab, setActiveTab] = useState(0)
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
@@ -112,19 +113,31 @@ export function ProductTabs({
             },
           }}
         >
-          <Tab icon={<Description fontSize="small" />} iconPosition="start" label="Description" />
+          <Tab
+            icon={<Description fontSize="small" />}
+            iconPosition="start"
+            label={t('detail.description')}
+          />
           <Tab
             icon={<Gavel fontSize="small" />}
             iconPosition="start"
-            label={`Bid History (${bids.length})`}
+            label={t('detail.bidHistoryCount', { count: bids.length })}
           />
           <Tab
             icon={<Star fontSize="small" />}
             iconPosition="start"
-            label={`Reviews (${reviews.length})`}
+            label={t('detail.reviewCount', { count: reviews.length })}
           />
-          <Tab icon={<LocalShipping fontSize="small" />} iconPosition="start" label="Shipping" />
-          <Tab icon={<Policy fontSize="small" />} iconPosition="start" label="Returns" />
+          <Tab
+            icon={<LocalShipping fontSize="small" />}
+            iconPosition="start"
+            label={t('detail.shipping')}
+          />
+          <Tab
+            icon={<Policy fontSize="small" />}
+            iconPosition="start"
+            label={t('detail.returns')}
+          />
         </Tabs>
       </Box>
 
@@ -153,7 +166,7 @@ export function ProductTabs({
                   mb: 2,
                 }}
               >
-                Specifications
+                {t('detail.specifications')}
               </Typography>
               <Table size="small">
                 <TableBody>
@@ -191,7 +204,7 @@ export function ProductTabs({
           {bids.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" sx={{ color: palette.neutral[500] }}>
-                No bids have been placed yet. Be the first to bid!
+                {t('detail.noBids')}
               </Typography>
             </Box>
           ) : (
@@ -232,7 +245,7 @@ export function ProductTabs({
                         </Typography>
                         {index === 0 && (
                           <Chip
-                            label="Highest"
+                            label={t('detail.highest')}
                             size="small"
                             sx={{
                               height: 20,
@@ -258,7 +271,7 @@ export function ProductTabs({
                       fontSize: '1rem',
                     }}
                   >
-                    ${bid.amount.toLocaleString()}
+                    {formatCurrency(bid.amount)}
                   </Typography>
                 </Box>
               ))}
@@ -283,7 +296,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  {t('shipping.method')}
+                  {t('shipping.method', { ns: 'common' })}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.method}
@@ -294,13 +307,17 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  {t('shipping.cost')}
+                  {t('shipping.cost', { ns: 'common' })}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.cost === 'free' ? (
-                    <Chip label={t('shipping.free')} size="small" color="success" />
+                    <Chip
+                      label={t('shipping.free', { ns: 'common' })}
+                      size="small"
+                      color="success"
+                    />
                   ) : (
-                    `$${shippingInfo.cost.toFixed(2)}`
+                    formatCurrency(shippingInfo.cost)
                   )}
                 </Typography>
               </Box>
@@ -309,7 +326,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  {t('shipping.estimatedDelivery')}
+                  {t('shipping.estimatedDelivery', { ns: 'common' })}
                 </Typography>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                   {shippingInfo.estimatedDays}
@@ -320,7 +337,7 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  {t('shipping.shipsTo')}
+                  {t('shipping.shipsTo', { ns: 'common' })}
                 </Typography>
                 <Stack direction="row" flexWrap="wrap" gap={0.5}>
                   {shippingInfo.locations.map((location) => (
@@ -337,7 +354,7 @@ export function ProductTabs({
             </Stack>
           ) : (
             <Typography sx={{ color: palette.neutral[500] }}>
-              {t('shipping.notAvailable')}
+              {t('shipping.notAvailable', { ns: 'common' })}
             </Typography>
           )}
         </TabPanel>
@@ -350,10 +367,14 @@ export function ProductTabs({
                   variant="subtitle2"
                   sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                 >
-                  {t('shipping.returnsAccepted')}
+                  {t('shipping.returnsAccepted', { ns: 'common' })}
                 </Typography>
                 <Chip
-                  label={returnPolicy.accepted ? t('yes') : t('shipping.noReturns')}
+                  label={
+                    returnPolicy.accepted
+                      ? t('yes', { ns: 'common' })
+                      : t('shipping.noReturns', { ns: 'common' })
+                  }
                   size="small"
                   color={returnPolicy.accepted ? 'success' : 'error'}
                 />
@@ -365,10 +386,13 @@ export function ProductTabs({
                       variant="subtitle2"
                       sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
-                      {t('shipping.returnPeriod')}
+                      {t('shipping.returnPeriod', { ns: 'common' })}
                     </Typography>
                     <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
-                      {t('shipping.returnDaysFromDelivery', { days: returnPolicy.period })}
+                      {t('shipping.returnDaysFromDelivery', {
+                        ns: 'common',
+                        days: returnPolicy.period,
+                      })}
                     </Typography>
                   </Box>
                   <Box>
@@ -376,7 +400,7 @@ export function ProductTabs({
                       variant="subtitle2"
                       sx={{ color: palette.neutral[500], mb: 0.5, fontSize: '0.8125rem' }}
                     >
-                      {t('shipping.returnConditions')}
+                      {t('shipping.returnConditions', { ns: 'common' })}
                     </Typography>
                     <Typography sx={{ color: palette.neutral[700], lineHeight: 1.6 }}>
                       {returnPolicy.conditions}
@@ -387,7 +411,7 @@ export function ProductTabs({
             </Stack>
           ) : (
             <Typography sx={{ color: palette.neutral[500] }}>
-              {t('shipping.returnPolicyNotSpecified')}
+              {t('shipping.returnPolicyNotSpecified', { ns: 'common' })}
             </Typography>
           )}
         </TabPanel>

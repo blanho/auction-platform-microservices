@@ -1,10 +1,11 @@
 using AutoMapper;
+using Payment.Application.Errors;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 
 namespace Payment.Application.Features.Wallets.GetTransactionById;
 
-public class GetTransactionByIdQueryHandler : IQueryHandler<GetTransactionByIdQuery, WalletTransactionDto?>
+public class GetTransactionByIdQueryHandler : IQueryHandler<GetTransactionByIdQuery, WalletTransactionDto>
 {
     private readonly IWalletTransactionRepository _transactionRepository;
     private readonly IMapper _mapper;
@@ -17,9 +18,11 @@ public class GetTransactionByIdQueryHandler : IQueryHandler<GetTransactionByIdQu
         _mapper = mapper;
     }
 
-    public async Task<Result<WalletTransactionDto?>> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<WalletTransactionDto>> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
     {
         var transaction = await _transactionRepository.GetByIdAsync(request.TransactionId);
-        return transaction?.ToDto(_mapper);
+        return transaction is null
+            ? Result.Failure<WalletTransactionDto>(PaymentErrors.Transaction.NotFound)
+            : transaction.ToDto(_mapper);
     }
 }

@@ -1,6 +1,6 @@
+import { Person, Settings, Shield, Store } from '@mui/icons-material'
+import { Box, Card, CardContent, Chip, Skeleton, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Box, Card, CardContent, Typography, Chip, Stack, Skeleton } from '@mui/material'
-import { Shield, Person, Store, Settings } from '@mui/icons-material'
 import type { RoleDto } from '../../types'
 
 interface RoleCardProps {

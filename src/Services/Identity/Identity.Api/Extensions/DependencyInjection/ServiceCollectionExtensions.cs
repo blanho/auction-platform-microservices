@@ -11,6 +11,8 @@ using Identity.Infrastructure.Jobs;
 using Identity.Application.Mappings;
 using Identity.Application.Services;
 using BuildingBlocks.Infrastructure.Messaging;
+using Identity.Infrastructure.Security;
+using StackExchange.Redis;
 
 namespace Identity.Api.Extensions.DependencyInjection;
 
@@ -28,21 +30,28 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<ITokenGenerationService, TokenGenerationService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddSingleton<IOAuthReturnUrlValidator, OAuthReturnUrlValidator>();
+        services.AddSingleton<IAuthorizationCodeStore, RedisAuthorizationCodeStore>();
 
         services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
         services.AddScoped<IAuthHelper, AuthHelper>();
         services.AddScoped<IUserHelper, UserHelper>();
 
-        services.AddAutoMapper(typeof(UserMappingProfile));
+        services.AddAutoMapper(_ => { }, typeof(UserMappingProfile).Assembly);
 
         return services;
     }
 
     public static IServiceCollection AddRedisCache(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+            ConnectionMultiplexer.Connect(connectionString));
+
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            options.Configuration = connectionString;
             options.InstanceName = "identity:";
         });
 

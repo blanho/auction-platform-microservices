@@ -1,55 +1,89 @@
-import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  Grid,
-  Button,
-  Chip,
-  Divider,
-  Skeleton,
-  Alert,
-  Snackbar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  CircularProgress,
-  Stack,
-  Avatar,
-  Stepper,
-  Step,
-  StepLabel,
-  StepConnector,
-  stepConnectorClasses,
-  styled,
-} from '@mui/material'
-import type { StepIconProps } from '@mui/material/StepIcon'
+import { useAuth } from '@/app/hooks/useAuth'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { getSafeHttpUrl } from '@/shared/utils'
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/utils/formatters'
 import {
   ArrowBack,
-  LocalShipping,
-  Payment,
   CheckCircle,
-  ShoppingBag,
-  Inventory,
-  Cancel,
   ContentCopy,
-  OpenInNew,
-  Person,
+  Inventory,
+  LocalShipping,
   LocationOn,
+  OpenInNew,
+  Payment,
   Pending,
+  Person,
+  ShoppingBag,
 } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { useOrderById, useShipOrder, useCancelOrder, useMarkDelivered } from '../hooks'
-import { InlineAlert } from '@/shared/ui'
-import { getOrderStatusConfig, getOrderActiveStep } from '../utils'
-import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Step,
+  StepConnector,
+  stepConnectorClasses,
+  StepLabel,
+  Stepper,
+  styled,
+  TextField,
+  Typography,
+} from '@mui/material'
+import type { StepIconProps } from '@mui/material/StepIcon'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMarkDelivered, useOrderById, useShipOrder } from '../hooks'
+import type { ShippingAddress } from '../types'
+import { getOrderActiveStep, getOrderStatusConfig } from '../utils'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isShippingAddress(value: unknown): value is ShippingAddress {
+  return (
+    isRecord(value) &&
+    typeof value.fullName === 'string' &&
+    typeof value.addressLine1 === 'string' &&
+    typeof value.city === 'string' &&
+    typeof value.state === 'string' &&
+    typeof value.postalCode === 'string' &&
+    typeof value.country === 'string' &&
+    (value.addressLine2 === undefined || typeof value.addressLine2 === 'string') &&
+    (value.phone === undefined || typeof value.phone === 'string')
+  )
+}
+
+function parseShippingAddress(value: string | ShippingAddress | undefined): ShippingAddress | null {
+  let address: unknown = value
+
+  if (typeof value === 'string') {
+    try {
+      address = JSON.parse(value)
+    } catch {
+      return null
+    }
+  }
+
+  return isShippingAddress(address) ? address : null
+}
 
 const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -136,14 +170,13 @@ function OrderStepIcon({ icon, ...props }: Readonly<OrderStepIconProps>) {
 }
 
 export function OrderDetailPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
+  const { user } = useAuth()
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
   const [showShipDialog, setShowShipDialog] = useState(false)
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [trackingNumber, setTrackingNumber] = useState('')
   const [shippingCarrier, setShippingCarrier] = useState('')
-  const [cancelReason, setCancelReason] = useState('')
   const [snackbar, setSnackbar] = useState<{
     open: boolean
     message: string
@@ -152,15 +185,19 @@ export function OrderDetailPage() {
 
   const { data: order, isLoading, error } = useOrderById(orderId ?? '')
   const shipOrder = useShipOrder()
-  const cancelOrder = useCancelOrder()
   const markDelivered = useMarkDelivered()
 
-  const handleCopyOrderId = () => {
+  const handleCopyOrderId = async () => {
     if (!orderId) {
       return
     }
-    navigator.clipboard.writeText(orderId)
-    setSnackbar({ open: true, message: 'Order ID copied to clipboard', severity: 'success' })
+
+    try {
+      await navigator.clipboard.writeText(orderId)
+      setSnackbar({ open: true, message: t('orderDetail.copied'), severity: 'success' })
+    } catch {
+      setSnackbar({ open: true, message: t('orderDetail.copyFailed'), severity: 'error' })
+    }
   }
 
   const handleShipOrder = async () => {
@@ -175,26 +212,9 @@ export function OrderDetailPage() {
       setShowShipDialog(false)
       setTrackingNumber('')
       setShippingCarrier('')
-      setSnackbar({ open: true, message: 'Order marked as shipped', severity: 'success' })
+      setSnackbar({ open: true, message: t('orderDetail.markedShipped'), severity: 'success' })
     } catch {
-      setSnackbar({ open: true, message: 'Failed to update order', severity: 'error' })
-    }
-  }
-
-  const handleCancelOrder = async () => {
-    if (!orderId) {
-      return
-    }
-    try {
-      await cancelOrder.mutateAsync({
-        id: orderId,
-        data: { reason: cancelReason },
-      })
-      setShowCancelDialog(false)
-      setCancelReason('')
-      setSnackbar({ open: true, message: 'Order cancelled', severity: 'success' })
-    } catch {
-      setSnackbar({ open: true, message: 'Failed to cancel order', severity: 'error' })
+      setSnackbar({ open: true, message: t('orderDetail.updateFailed'), severity: 'error' })
     }
   }
 
@@ -204,9 +224,9 @@ export function OrderDetailPage() {
     }
     try {
       await markDelivered.mutateAsync(orderId)
-      setSnackbar({ open: true, message: 'Order marked as delivered', severity: 'success' })
+      setSnackbar({ open: true, message: t('orderDetail.markedDelivered'), severity: 'success' })
     } catch {
-      setSnackbar({ open: true, message: 'Failed to update order', severity: 'error' })
+      setSnackbar({ open: true, message: t('orderDetail.updateFailed'), severity: 'error' })
     }
   }
 
@@ -218,34 +238,54 @@ export function OrderDetailPage() {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
         <InlineAlert severity="error" sx={{ mb: 3 }}>
-          Order not found or you don't have permission to view it.
+          {t('orderDetail.notFound')}
         </InlineAlert>
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/orders')}>
-          Back to Orders
+          {t('orderDetail.back')}
         </Button>
       </Container>
     )
   }
 
   const steps = [
-    { label: 'Order Placed', icon: <ShoppingBag fontSize="small" />, date: order.createdAt },
-    { label: 'Payment', icon: <Payment fontSize="small" />, date: order.paidAt },
-    { label: 'Shipped', icon: <LocalShipping fontSize="small" />, date: order.shippedAt },
-    { label: 'Delivered', icon: <Inventory fontSize="small" />, date: order.deliveredAt },
-    { label: 'Completed', icon: <CheckCircle fontSize="small" />, date: order.completedAt },
+    {
+      label: t('orderDetail.steps.placed'),
+      icon: <ShoppingBag fontSize="small" />,
+      date: order.createdAt,
+    },
+    {
+      label: t('orderDetail.steps.payment'),
+      icon: <Payment fontSize="small" />,
+      date: order.paidAt,
+    },
+    {
+      label: t('orderDetail.steps.shipped'),
+      icon: <LocalShipping fontSize="small" />,
+      date: order.shippedAt,
+    },
+    {
+      label: t('orderDetail.steps.delivered'),
+      icon: <Inventory fontSize="small" />,
+      date: order.deliveredAt,
+    },
+    {
+      label: t('orderDetail.steps.completed'),
+      icon: <CheckCircle fontSize="small" />,
+      date: order.completedAt,
+    },
   ]
 
   const activeStep = getOrderActiveStep(order.status)
   const isCancelled = order.status === 'cancelled' || order.status === 'refunded'
-  const canShip = order.status === 'paid'
-  const canMarkDelivered = order.status === 'shipped'
-  const canCancel =
-    order.status === 'pending' || order.status === 'payment_pending' || order.status === 'paid'
+  const currentUserId = (user?.userId || user?.id || '').toLowerCase()
+  const isAdmin = user?.roles.some((role) => role.toLowerCase() === 'admin') ?? false
+  const isBuyer = order.buyerId.toLowerCase() === currentUserId
+  const isSeller = order.sellerId.toLowerCase() === currentUserId
+  const canShip = order.status === 'paid' && (isSeller || isAdmin)
+  const trackingUrl = getSafeHttpUrl(order.trackingUrl)
+  const canMarkDelivered = order.status === 'shipped' && (isBuyer || isAdmin)
 
-  const shippingAddress =
-    typeof order.shippingAddress === 'string'
-      ? JSON.parse(order.shippingAddress || '{}')
-      : order.shippingAddress
+  const shippingAddress = parseShippingAddress(order.shippingAddress)
 
   return (
     <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
@@ -262,7 +302,7 @@ export function OrderDetailPage() {
                 '&:hover': { bgcolor: palette.neutral[100] },
               }}
             >
-              Back to Orders
+              {t('orderDetail.back')}
             </Button>
           </motion.div>
 
@@ -287,11 +327,13 @@ export function OrderDetailPage() {
                     mb: 1,
                   }}
                 >
-                  Order Details
+                  {t('orderDetail.title')}
                 </Typography>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Typography variant="body2" color="text.secondary">
-                    Order #{orderId?.slice(0, 8).toUpperCase()}
+                    {t('orderDetail.orderNumber', {
+                      number: orderId?.slice(0, 8).toUpperCase(),
+                    })}
                   </Typography>
                   <Button
                     size="small"
@@ -305,7 +347,7 @@ export function OrderDetailPage() {
                       fontSize: '0.75rem',
                     }}
                   >
-                    Copy
+                    {t('orderDetail.copy')}
                   </Button>
                 </Stack>
               </Box>
@@ -344,7 +386,7 @@ export function OrderDetailPage() {
                         </Typography>
                         {step.date && (
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(step.date).toLocaleDateString()}
+                            {formatDate(step.date)}
                           </Typography>
                         )}
                       </StepLabel>
@@ -358,7 +400,9 @@ export function OrderDetailPage() {
           {isCancelled && (
             <motion.div variants={staggerItem}>
               <InlineAlert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
-                This order has been {order.status === 'refunded' ? 'refunded' : 'cancelled'}.
+                {t('orderDetail.cancelledNotice', {
+                  status: t(`orderStatuses.${order.status}`),
+                })}
               </InlineAlert>
             </motion.div>
           )}
@@ -375,7 +419,7 @@ export function OrderDetailPage() {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600}>
-                      Item Details
+                      {t('orderDetail.itemDetails')}
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
@@ -406,7 +450,7 @@ export function OrderDetailPage() {
                           <OpenInNew sx={{ fontSize: 16 }} />
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                          Auction ID: {order.auctionId.slice(0, 8)}
+                          {t('orderDetail.auctionId', { id: order.auctionId.slice(0, 8) })}
                         </Typography>
                         <Typography
                           variant="h5"
@@ -415,7 +459,7 @@ export function OrderDetailPage() {
                           {formatCurrency(order.winningBid || order.winningBidAmount || 0)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Winning Bid
+                          {t('checkout.winningBid')}
                         </Typography>
                       </Box>
                     </Box>
@@ -433,7 +477,7 @@ export function OrderDetailPage() {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600}>
-                      Shipping Information
+                      {t('orderDetail.shippingInformation')}
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
@@ -444,7 +488,7 @@ export function OrderDetailPage() {
                             <LocationOn sx={{ color: palette.neutral[500], mt: 0.3 }} />
                             <Box>
                               <Typography variant="subtitle2" fontWeight={600}>
-                                Delivery Address
+                                {t('orderDetail.deliveryAddress')}
                               </Typography>
                               {shippingAddress ? (
                                 <>
@@ -471,7 +515,7 @@ export function OrderDetailPage() {
                                 </>
                               ) : (
                                 <Typography variant="body2" color="text.secondary">
-                                  No shipping address provided
+                                  {t('orderDetail.noAddress')}
                                 </Typography>
                               )}
                             </Box>
@@ -485,10 +529,10 @@ export function OrderDetailPage() {
                               <LocalShipping sx={{ color: palette.neutral[500], mt: 0.3 }} />
                               <Box>
                                 <Typography variant="subtitle2" fontWeight={600}>
-                                  Tracking Information
+                                  {t('orderDetail.trackingInformation')}
                                 </Typography>
                                 <Typography variant="body2">
-                                  Carrier: {order.shippingCarrier}
+                                  {t('orderDetail.carrier', { carrier: order.shippingCarrier })}
                                 </Typography>
                                 <Typography
                                   variant="body2"
@@ -501,12 +545,14 @@ export function OrderDetailPage() {
                                   }}
                                 >
                                   {order.trackingNumber}
-                                  {order.trackingUrl && (
+                                  {trackingUrl && (
                                     <Button
                                       size="small"
                                       component="a"
-                                      href={order.trackingUrl}
+                                      href={trackingUrl}
                                       target="_blank"
+                                      rel="noopener noreferrer"
+                                      aria-label={t('orderDetail.openTracking')}
                                       sx={{ minWidth: 'auto', p: 0.5 }}
                                     >
                                       <OpenInNew sx={{ fontSize: 16 }} />
@@ -521,10 +567,10 @@ export function OrderDetailPage() {
                             <Pending sx={{ color: palette.neutral[500], mt: 0.3 }} />
                             <Box>
                               <Typography variant="subtitle2" fontWeight={600}>
-                                Tracking Information
+                                {t('orderDetail.trackingInformation')}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Tracking info will be available once shipped
+                                {t('orderDetail.trackingPending')}
                               </Typography>
                             </Box>
                           </Box>
@@ -545,7 +591,7 @@ export function OrderDetailPage() {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600}>
-                      Order Timeline
+                      {t('orderDetail.timeline')}
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
@@ -553,35 +599,41 @@ export function OrderDetailPage() {
                       {order.completedAt && (
                         <TimelineItem
                           icon={<CheckCircle sx={{ color: palette.semantic.success }} />}
-                          title="Order Completed"
+                          title={t('orderDetail.timelineCompleted')}
                           date={order.completedAt}
                         />
                       )}
                       {order.deliveredAt && (
                         <TimelineItem
                           icon={<Inventory sx={{ color: palette.semantic.success }} />}
-                          title="Delivered"
+                          title={t('orderDetail.steps.delivered')}
                           date={order.deliveredAt}
                         />
                       )}
                       {order.shippedAt && (
                         <TimelineItem
                           icon={<LocalShipping sx={{ color: palette.semantic.info }} />}
-                          title={`Shipped via ${order.shippingCarrier || 'Carrier'}`}
+                          title={t('orderDetail.shippedVia', {
+                            carrier: order.shippingCarrier || t('orderDetail.carrierFallback'),
+                          })}
                           date={order.shippedAt}
-                          subtitle={order.trackingNumber && `Tracking: ${order.trackingNumber}`}
+                          subtitle={
+                            order.trackingNumber
+                              ? t('orderDetail.tracking', { number: order.trackingNumber })
+                              : undefined
+                          }
                         />
                       )}
                       {order.paidAt && (
                         <TimelineItem
                           icon={<Payment sx={{ color: palette.semantic.success }} />}
-                          title="Payment Confirmed"
+                          title={t('orderDetail.paymentConfirmed')}
                           date={order.paidAt}
                         />
                       )}
                       <TimelineItem
                         icon={<ShoppingBag sx={{ color: palette.brand.primary }} />}
-                        title="Order Created"
+                        title={t('orderDetail.orderCreated')}
                         date={order.createdAt}
                       />
                     </Stack>
@@ -601,20 +653,20 @@ export function OrderDetailPage() {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600}>
-                      Order Summary
+                      {t('orderDetail.summary')}
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={2}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography color="text.secondary">Winning Bid</Typography>
+                        <Typography color="text.secondary">{t('checkout.winningBid')}</Typography>
                         <Typography fontWeight={500}>
                           {formatCurrency(order.winningBid || order.winningBidAmount || 0)}
                         </Typography>
                       </Box>
                       {(order.shippingCost ?? 0) > 0 && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography color="text.secondary">Shipping</Typography>
+                          <Typography color="text.secondary">{t('checkout.shipping')}</Typography>
                           <Typography fontWeight={500}>
                             {formatCurrency(order.shippingCost || 0)}
                           </Typography>
@@ -622,7 +674,9 @@ export function OrderDetailPage() {
                       )}
                       {(order.platformFee ?? 0) > 0 && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography color="text.secondary">Platform Fee</Typography>
+                          <Typography color="text.secondary">
+                            {t('checkout.platformFee')}
+                          </Typography>
                           <Typography fontWeight={500}>
                             {formatCurrency(order.platformFee || 0)}
                           </Typography>
@@ -630,7 +684,7 @@ export function OrderDetailPage() {
                       )}
                       <Divider />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography fontWeight={600}>Total</Typography>
+                        <Typography fontWeight={600}>{t('checkout.total')}</Typography>
                         <Typography fontWeight={700} color={palette.brand.primary} variant="h6">
                           {formatCurrency(order.totalAmount)}
                         </Typography>
@@ -650,7 +704,7 @@ export function OrderDetailPage() {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600}>
-                      Parties
+                      {t('orderDetail.parties')}
                     </Typography>
                   </Box>
                   <Box sx={{ p: 3 }}>
@@ -661,7 +715,7 @@ export function OrderDetailPage() {
                         </Avatar>
                         <Box>
                           <Typography variant="caption" color="text.secondary">
-                            Buyer
+                            {t('orders.buyer')}
                           </Typography>
                           <Typography fontWeight={500}>
                             {order.buyerName || order.buyerUsername}
@@ -674,7 +728,7 @@ export function OrderDetailPage() {
                         </Avatar>
                         <Box>
                           <Typography variant="caption" color="text.secondary">
-                            Seller
+                            {t('orders.seller')}
                           </Typography>
                           <Typography fontWeight={500}>
                             {order.sellerName || order.sellerUsername}
@@ -686,7 +740,7 @@ export function OrderDetailPage() {
                 </Card>
               </motion.div>
 
-              {!isCancelled && (canShip || canMarkDelivered || canCancel) && (
+              {!isCancelled && (canShip || canMarkDelivered) && (
                 <motion.div variants={staggerItem}>
                   <Card sx={{ borderRadius: 2, overflow: 'hidden' }}>
                     <Box
@@ -697,7 +751,7 @@ export function OrderDetailPage() {
                       }}
                     >
                       <Typography variant="h6" fontWeight={600}>
-                        Actions
+                        {t('orderDetail.actions')}
                       </Typography>
                     </Box>
                     <Box sx={{ p: 3 }}>
@@ -715,7 +769,7 @@ export function OrderDetailPage() {
                               '&:hover': { bgcolor: '#A16207' },
                             }}
                           >
-                            Mark as Shipped
+                            {t('orderDetail.markShipped')}
                           </Button>
                         )}
                         {canMarkDelivered && (
@@ -735,28 +789,8 @@ export function OrderDetailPage() {
                             {markDelivered.isPending ? (
                               <CircularProgress size={20} color="inherit" />
                             ) : (
-                              'Mark as Delivered'
+                              t('orderDetail.markDelivered')
                             )}
-                          </Button>
-                        )}
-                        {canCancel && (
-                          <Button
-                            variant="outlined"
-                            fullWidth
-                            startIcon={<Cancel />}
-                            onClick={() => setShowCancelDialog(true)}
-                            sx={{
-                              borderColor: palette.semantic.error,
-                              color: palette.semantic.error,
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              '&:hover': {
-                                borderColor: palette.semantic.errorHover,
-                                bgcolor: palette.semantic.errorLight,
-                              },
-                            }}
-                          >
-                            Cancel Order
                           </Button>
                         )}
                       </Stack>
@@ -775,25 +809,25 @@ export function OrderDetailPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Ship Order</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t('orderDetail.shipOrder')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Enter the tracking information for this shipment.
+            {t('orderDetail.shipDescription')}
           </Typography>
           <TextField
             fullWidth
-            label="Shipping Carrier"
+            label={t('orderDetail.shippingCarrier')}
             value={shippingCarrier}
             onChange={(e) => setShippingCarrier(e.target.value)}
-            placeholder="e.g., UPS, FedEx, USPS"
+            placeholder={t('orderDetail.carrierPlaceholder')}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Tracking Number"
+            label={t('orderDetail.trackingNumber')}
             value={trackingNumber}
             onChange={(e) => setTrackingNumber(e.target.value)}
-            placeholder="Enter tracking number"
+            placeholder={t('orderDetail.trackingPlaceholder')}
           />
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
@@ -801,7 +835,7 @@ export function OrderDetailPage() {
             onClick={() => setShowShipDialog(false)}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Cancel
+            {t('common:cancel')}
           </Button>
           <Button
             variant="contained"
@@ -816,56 +850,7 @@ export function OrderDetailPage() {
             {shipOrder.isPending ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              'Confirm Shipment'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={showCancelDialog}
-        onClose={() => setShowCancelDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600, color: palette.semantic.error }}>
-          Cancel Order
-        </DialogTitle>
-        <DialogContent>
-          <InlineAlert severity="warning" sx={{ mb: 3 }}>
-            Are you sure you want to cancel this order? This action cannot be undone.
-          </InlineAlert>
-          <TextField
-            fullWidth
-            label="Reason for Cancellation (Optional)"
-            value={cancelReason}
-            onChange={(e) => setCancelReason(e.target.value)}
-            multiline
-            rows={3}
-            placeholder="Provide a reason for cancellation..."
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => setShowCancelDialog(false)}
-            sx={{ color: palette.neutral[500], textTransform: 'none' }}
-          >
-            Keep Order
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleCancelOrder}
-            disabled={cancelOrder.isPending}
-            sx={{
-              bgcolor: palette.semantic.error,
-              textTransform: 'none',
-              '&:hover': { bgcolor: palette.semantic.errorHover },
-            }}
-          >
-            {cancelOrder.isPending ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              'Cancel Order'
+              t('orderDetail.confirmShipment')
             )}
           </Button>
         </DialogActions>

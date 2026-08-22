@@ -18,6 +18,61 @@
     "progress": "進捗",
     "items": "アイテム",
     "duration": "所要時間",
-    "noItems": "アイテムが見つかりません"
+    "noItems": "アイテムが見つかりません",
+    "live": "稼働中",
+    "loadFailed": "バックグラウンドジョブの読み込みに失敗しました。後でもう一度お試しください。",
+    "listTitle": "ジョブ",
+    "status": "ステータス",
+    "type": "タイプ",
+    "priority": "優先度",
+    "allStatuses": "すべてのステータス",
+    "allTypes": "すべてのタイプ",
+    "created": "作成日時",
+    "actions": "操作",
+    "failedItems": "{{count}}件失敗",
+    "detailLoadFailed": "ジョブ詳細の読み込みに失敗しました。ジョブが存在しない可能性があります。",
+    "correlationId": "相関ID",
+    "requestedBy": "実行要求者",
+    "started": "開始日時",
+    "error": "エラー",
+    "failed": "失敗",
+    "retries": "再試行回数",
+    "processed": "処理日時"
+  },
+  "statuses": {
+    "Initializing": "初期化中",
+    "Pending": "待機中",
+    "Processing": "処理中",
+    "Completed": "完了",
+    "CompletedWithErrors": "エラーありで完了",
+    "Failed": "失敗",
+    "Cancelled": "キャンセル済み"
+  },
+  "types": {
+    "AuctionExport": "オークションのエクスポート",
+    "AuctionImport": "オークションのインポート",
+    "ReportGeneration": "レポート生成",
+    "DataMigration": "データ移行",
+    "BulkUpdate": "一括更新",
+    "BulkDelete": "一括削除",
+    "Cleanup": "クリーンアップ"
+  },
+  "priorities": {
+    "Low": "低",
+    "Normal": "通常",
+    "High": "高",
+    "Critical": "緊急"
+  },
+  "itemStatuses": {
+    "Pending": "待機中",
+    "Processing": "処理中",
+    "Completed": "完了",
+    "Failed": "失敗",
+    "Skipped": "スキップ"
+  },
+  "duration": {
+    "seconds": "{{count}}秒",
+    "minutesSeconds": "{{minutes}}分{{seconds}}秒",
+    "hoursMinutes": "{{hours}}時間{{minutes}}分"
   }
 }

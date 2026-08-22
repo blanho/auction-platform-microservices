@@ -6,8 +6,6 @@ namespace: auction-platform-staging
 resources:
   - ../../base
 
-namePrefix: staging-
-
 labels:
   - pairs:
       environment: staging
@@ -40,6 +38,67 @@ patches:
     target:
       kind: Deployment
       labelSelector: tier=backend
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: Kestrel__Endpoints__Grpc__Url
+          value: http://+:8081
+    target:
+      kind: Deployment
+      labelSelector: app in (auction-api,bidding-api,catalog-api)
+  - patch: |-
+      - op: replace
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1ssl-redirect
+        value: "false"
+      - op: remove
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      - op: remove
+        path: /spec/tls
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.staging.auction-platform.test
+      - op: replace
+        path: /spec/rules/1/host
+        value: staging.auction-platform.test
+    target:
+      kind: Ingress
+      name: auction-platform-ingress
+  # These placeholders make a disposable staging namespace self-consistent,
+  # but they are not credentials. Replace this Secret from the deployment
+  # environment before exposing staging outside an isolated test cluster.
+  - patch: |-
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: auction-platform-secrets
+      stringData:
+        POSTGRES_USER: staging_user
+        POSTGRES_PASSWORD: replace-before-shared-staging-postgres
+        REDIS_PASSWORD: replace-before-shared-staging-redis
+        RABBITMQ_USER: staging_rabbit
+        RABBITMQ_PASSWORD: replace-before-shared-staging-rabbitmq
+        JWT_SECRET: replace-before-shared-staging-jwt-signing-key-2026
+        Identity__SecretKey: replace-before-shared-staging-jwt-signing-key-2026
+        RabbitMQ__Username: staging_rabbit
+        RabbitMQ__Password: replace-before-shared-staging-rabbitmq
+        AUCTION_DB_CONNECTION: Host=postgres;Port=5432;Database=auction_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        BIDDING_DB_CONNECTION: Host=postgres;Port=5432;Database=bid_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        PAYMENT_DB_CONNECTION: Host=postgres;Port=5432;Database=payment_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        NOTIFICATION_DB_CONNECTION: Host=postgres;Port=5432;Database=notification_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        IDENTITY_DB_CONNECTION: Host=postgres;Port=5432;Database=identity_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        ANALYTICS_DB_CONNECTION: Host=postgres;Port=5432;Database=analytics_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        CATALOG_DB_CONNECTION: Host=postgres;Port=5432;Database=catalog_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        STORAGE_DB_CONNECTION: Host=postgres;Port=5432;Database=storage_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        JOB_DB_CONNECTION: Host=postgres;Port=5432;Database=job_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        REDIS_CONNECTION: redis:6379,password=replace-before-shared-staging-redis
+        STRIPE_SECRET_KEY: sk_test_replace_before_shared_staging
+        STRIPE_WEBHOOK_SECRET: whsec_replace_before_shared_staging
+        Stripe__SecretKey: sk_test_replace_before_shared_staging
+        Stripe__WebhookSecret: whsec_replace_before_shared_staging
+    target:
+      kind: Secret
+      name: auction-platform-secrets
 
 configMapGenerator:
   - name: auction-platform-config
@@ -47,19 +106,20 @@ configMapGenerator:
     behavior: merge
     literals:
       - ASPNETCORE_ENVIRONMENT=Staging
-      - LOG_LEVEL=Information
-
-secretGenerator:
-  - name: auction-platform-secrets
-    namespace: auction-platform
-    behavior: merge
-    literals:
-      - POSTGRES_USER=staging_user
-      - POSTGRES_PASSWORD=staging_password_change_me
-      - REDIS_PASSWORD=staging_redis_password
-      - RABBITMQ_USER=staging_rabbit
-      - RABBITMQ_PASSWORD=staging_rabbit_password
-      - JWT_SECRET=staging_jwt_secret_32_chars_minimum
+      - Logging__MinimumLevel=Information
+      - FileStorage__Provider=Local
+      - Kestrel__Endpoints__Http__Url=http://+:8080
+      - Cors__AllowedOrigins__0=http://staging.auction-platform.test
+      - FrontendUrl=http://staging.auction-platform.test
+      # Non-routable values satisfy startup validation without enabling delivery.
+      - SendGrid__ApiKey=staging-disabled-sendgrid-key
+      - SendGrid__FromEmail=noreply@staging.auction-platform.test
+      - SendGrid__FromName=Auction Platform Staging
+      - SendGrid__SandboxMode=true
+      - Twilio__AccountSid=staging-disabled-account
+      - Twilio__AuthToken=staging-disabled-auth-token
+      - Twilio__FromNumber=+10000000000
+      - Firebase__ProjectId=staging-disabled-project
 
 images:
   - name: auction-platform/auction-api

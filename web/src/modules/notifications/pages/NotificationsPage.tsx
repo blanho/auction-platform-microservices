@@ -1,37 +1,37 @@
-import { useState, useMemo, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  Tabs,
-  Tab,
-  Chip,
-  Button,
-  Pagination,
-  Tooltip,
-  IconButton,
-} from '@mui/material'
-import { Settings, DoneAll } from '@mui/icons-material'
-import {
-  useNotifications,
-  useNotificationSummary,
-  useMarkAsRead,
-  useMarkAllAsRead,
-  useDeleteNotification,
-  useArchiveNotification,
-} from '../hooks'
-import type { NotificationFilters } from '../types'
-import { NotificationList } from '../components'
-import { NOTIFICATION_CONFIG } from '../constants'
+import { getErrorMessage } from '@/services/http'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
-import { getErrorMessage } from '@/services/http'
+import { DoneAll, Settings } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Container,
+  IconButton,
+  Pagination,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { NotificationList } from '../components'
+import { NOTIFICATION_CONFIG } from '../constants'
+import {
+  useArchiveNotification,
+  useDeleteNotification,
+  useMarkAllAsRead,
+  useMarkAsRead,
+  useNotifications,
+  useNotificationSummary,
+} from '../hooks'
+import type { NotificationFilters } from '../types'
 
 export function NotificationsPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const [activeTab, setActiveTab] = useState(0)
   const [actionError, setActionError] = useState<string | null>(null)
   const [filters, setFilters] = useState<NotificationFilters>({
@@ -111,24 +111,22 @@ export function NotificationsPage() {
   const getEmptyMessage = () => {
     switch (activeTab) {
       case 1:
-        return 'All caught up!'
+        return t('emptyUnread')
       case 2:
-        return 'No archived notifications'
+        return t('emptyArchived')
       default:
-        return 'No notifications yet'
+        return t('emptyDefault')
     }
   }
 
   const getEmptyDescription = () => {
-    return activeTab === 0
-      ? "You'll see notifications about your bids and auctions here"
-      : undefined
+    return activeTab === 0 ? t('emptyDefaultDescription') : undefined
   }
 
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
-        <InlineAlert severity="error">Failed to load notifications. Please try again.</InlineAlert>
+        <InlineAlert severity="error">{t('loadFailed')}</InlineAlert>
       </Container>
     )
   }
@@ -147,11 +145,9 @@ export function NotificationsPage() {
               color: palette.neutral[900],
             }}
           >
-            Notifications
+            {t('title')}
           </Typography>
-          <Typography sx={{ color: palette.neutral[500] }}>
-            Stay updated with your auction activity
-          </Typography>
+          <Typography sx={{ color: palette.neutral[500] }}>{t('description')}</Typography>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -168,10 +164,10 @@ export function NotificationsPage() {
                 '&:hover': { borderColor: palette.neutral[900] },
               }}
             >
-              Mark all as read
+              {t('markAllRead')}
             </Button>
           )}
-          <Tooltip title="Notification Settings">
+          <Tooltip title={t('settings')}>
             <IconButton
               component={Link}
               to="/settings"
@@ -223,7 +219,7 @@ export function NotificationsPage() {
             <Tab
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  All
+                  {t('tabs.all')}
                   <Chip
                     label={summary?.totalCount || 0}
                     size="small"
@@ -235,7 +231,7 @@ export function NotificationsPage() {
             <Tab
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Unread
+                  {t('tabs.unread')}
                   {summary && summary.unreadCount > 0 && (
                     <Chip
                       label={summary.unreadCount}
@@ -247,7 +243,7 @@ export function NotificationsPage() {
                 </Box>
               }
             />
-            <Tab label="Archived" />
+            <Tab label={t('tabs.archived')} />
           </Tabs>
         </Box>
 

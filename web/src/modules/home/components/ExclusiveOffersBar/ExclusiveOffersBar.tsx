@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { Box, Typography, IconButton } from '@mui/material'
-import { KeyboardArrowUp, Close } from '@mui/icons-material'
-import { motion, AnimatePresence } from 'framer-motion'
 import { typography } from '@/shared/theme/tokens'
+import { Close, KeyboardArrowUp } from '@mui/icons-material'
+import { Box, IconButton, Typography } from '@mui/material'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface Offer {
@@ -52,7 +52,10 @@ export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarPro
       }}
     >
       <Box
+        component="button"
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
         sx={{
           bgcolor: '#1C1917',
           color: '#FFFFFF',
@@ -62,6 +65,9 @@ export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarPro
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
+          width: '100%',
+          border: 0,
+          textAlign: 'left',
           '&:hover': {
             bgcolor: '#292524',
           },
@@ -89,8 +95,8 @@ export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarPro
           >
             {t('exclusiveOffers.offerCount', { count: offers.length })}
           </Typography>
-          <IconButton
-            size="small"
+          <Box
+            aria-hidden="true"
             sx={{
               color: '#FFFFFF',
               transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -98,7 +104,7 @@ export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarPro
             }}
           >
             <KeyboardArrowUp fontSize="small" />
-          </IconButton>
+          </Box>
         </Box>
       </Box>
 
@@ -127,6 +133,7 @@ export const ExclusiveOffersBar = ({ offers: offersProp }: ExclusiveOffersBarPro
               >
                 <IconButton
                   size="small"
+                  aria-label={t('common:actions.close')}
                   onClick={(e) => {
                     e.stopPropagation()
                     setIsVisible(false)

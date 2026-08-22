@@ -1,30 +1,30 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import { Link, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { usePagination } from '@/shared/hooks'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import type { ColumnConfig, FilterPanelConfig, OrderFilter } from '@/shared/types'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import { formatCurrency, formatDate } from '@/shared/utils/formatters'
+import { ShoppingBag, Store, Visibility } from '@mui/icons-material'
 import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  Button,
-  Tabs,
-  Tab,
-  Chip,
   Avatar,
+  Box,
+  Button,
+  Card,
+  Chip,
+  Container,
   IconButton,
   Stack,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material'
-import { ShoppingBag, Store, Visibility } from '@mui/icons-material'
+import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ordersApi } from '../api'
 import type { Order, OrderStatus } from '../types'
 import { getOrderStatusConfig } from '../utils'
-import { formatDate } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { usePagination } from '@/shared/hooks'
-import { DataTable, FilterPanel } from '@/shared/ui'
-import type { ColumnConfig, FilterPanelConfig, OrderFilter } from '@/shared/types'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -40,33 +40,20 @@ function TabPanel({ children, value, index }: TabPanelProps) {
   )
 }
 
-const ORDER_STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'payment_pending', label: 'Payment Pending' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-  { value: 'refunded', label: 'Refunded' },
+const ORDER_STATUSES: OrderStatus[] = [
+  'pending',
+  'payment_pending',
+  'paid',
+  'processing',
+  'shipped',
+  'delivered',
+  'completed',
+  'cancelled',
+  'refunded',
 ]
 
-const filterConfig: FilterPanelConfig = {
-  fields: [
-    {
-      key: 'status',
-      type: 'select',
-      label: 'Status',
-      options: ORDER_STATUS_OPTIONS,
-      gridSize: { xs: 12, sm: 6, md: 4 },
-    },
-  ],
-  collapsible: false,
-  showClearButton: true,
-}
-
 function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
+  const { t } = useTranslation('payments')
   const pagination = usePagination<OrderFilter>({
     defaultPageSize: 10,
     defaultSortBy: 'createdAt',
@@ -89,11 +76,31 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
           }),
   })
 
+  const filterConfig: FilterPanelConfig = useMemo(
+    () => ({
+      fields: [
+        {
+          key: 'status',
+          type: 'select',
+          label: t('orders.status'),
+          options: ORDER_STATUSES.map((value) => ({
+            value,
+            label: t(`orderStatuses.${value}`),
+          })),
+          gridSize: { xs: 12, sm: 6, md: 4 },
+        },
+      ],
+      collapsible: false,
+      showClearButton: true,
+    }),
+    [t]
+  )
+
   const columns: ColumnConfig<Order>[] = useMemo(
     () => [
       {
         key: 'auctionTitle',
-        header: 'Item',
+        header: t('orders.item'),
         sortable: true,
         sortKey: 'title',
         render: (_value, order) => (
@@ -106,7 +113,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
                 {order.auctionTitle}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Order #{order.id.slice(0, 8)}
+                {t('orders.orderNumber', { number: order.id.slice(0, 8) })}
               </Typography>
             </Box>
           </Box>
@@ -114,32 +121,32 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
       },
       {
         key: role === 'buyer' ? 'sellerName' : 'buyerName',
-        header: role === 'buyer' ? 'Seller' : 'Buyer',
+        header: role === 'buyer' ? t('orders.seller') : t('orders.buyer'),
         sortable: true,
         sortKey: role === 'buyer' ? 'sellerName' : 'buyerName',
         render: (value) => <Typography variant="body2">{String(value)}</Typography>,
       },
       {
         key: 'totalAmount',
-        header: 'Amount',
+        header: t('orders.amount'),
         sortable: true,
         align: 'right',
         render: (value) => (
           <Typography variant="body2" fontWeight={600}>
-            ${Number(value).toLocaleString()}
+            {formatCurrency(Number(value))}
           </Typography>
         ),
       },
       {
         key: 'status',
-        header: 'Status',
+        header: t('orders.status'),
         sortable: true,
         render: (value) => {
           const config = getOrderStatusConfig(value as OrderStatus)
           return (
             <Chip
               icon={config.icon}
-              label={String(value).replace('_', ' ')}
+              label={t(`orderStatuses.${String(value)}`)}
               color={config.color}
               size="small"
               sx={{ textTransform: 'capitalize' }}
@@ -149,7 +156,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
       },
       {
         key: 'createdAt',
-        header: 'Date',
+        header: t('orders.date'),
         sortable: true,
         render: (value) => (
           <Typography variant="body2" color="text.secondary">
@@ -168,7 +175,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
         ),
       },
     ],
-    [role]
+    [role, t]
   )
 
   const emptyContent = (
@@ -179,15 +186,13 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
         <Store sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
       )}
       <Typography variant="h6" gutterBottom>
-        No {role === 'buyer' ? 'purchases' : 'sales'} yet
+        {t(role === 'buyer' ? 'orders.noPurchases' : 'orders.noSales')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        {role === 'buyer'
-          ? 'Win an auction to see your orders here'
-          : 'Sell items to see your orders here'}
+        {role === 'buyer' ? t('orders.purchaseHint') : t('orders.salesHint')}
       </Typography>
       <Button variant="contained" component={Link} to="/auctions">
-        Browse Auctions
+        {t('orders.browse')}
       </Button>
     </Card>
   )
@@ -222,7 +227,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
         pageSize={pagination.pageSize}
         onPageChange={pagination.setPage}
         onPageSizeChange={pagination.setPageSize}
-        emptyMessage={`No ${role === 'buyer' ? 'purchases' : 'sales'} found`}
+        emptyMessage={t(role === 'buyer' ? 'orders.noPurchasesFound' : 'orders.noSalesFound')}
         emptyIcon={role === 'buyer' ? <ShoppingBag /> : <Store />}
         rowHover
         animated
@@ -232,7 +237,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
 }
 
 export function OrdersPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [tabValue, setTabValue] = useState(tabParam === 'sales' ? 1 : 0)
@@ -256,10 +261,10 @@ export function OrdersPage() {
                 mb: 1,
               }}
             >
-              Orders
+              {t('orders.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Manage your purchases and sales
+              {t('orders.description')}
             </Typography>
           </Box>
         </motion.div>
@@ -268,8 +273,8 @@ export function OrdersPage() {
           <Card sx={{ mb: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={tabValue} onChange={handleTabChange}>
-                <Tab icon={<ShoppingBag />} iconPosition="start" label="My Purchases" />
-                <Tab icon={<Store />} iconPosition="start" label="My Sales" />
+                <Tab icon={<ShoppingBag />} iconPosition="start" label={t('orders.purchases')} />
+                <Tab icon={<Store />} iconPosition="start" label={t('orders.sales')} />
               </Tabs>
             </Box>
           </Card>

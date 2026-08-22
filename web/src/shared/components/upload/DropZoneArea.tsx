@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, Chip, Stack, alpha } from '@mui/material'
 import { palette } from '@/shared/theme/tokens'
-import type { DropZoneAreaProps } from './FileUploadZone.types'
+import { Box, Chip, Stack, Typography, alpha } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { getUploadIcon } from './FileIcons'
+import type { DropZoneAreaProps } from './FileUploadZone.types'
 
 export function DropZoneArea({
   isDragOver,

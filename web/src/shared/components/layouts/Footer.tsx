@@ -1,29 +1,29 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Container,
-  Grid,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  IconButton,
-  Divider,
-  Collapse,
-} from '@mui/material'
-import {
-  Facebook,
-  Twitter,
-  Instagram,
-  YouTube,
-  Pinterest,
-  ArrowForward,
-  KeyboardArrowUp,
-} from '@mui/icons-material'
-import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
+import {
+  ArrowForward,
+  Facebook,
+  Instagram,
+  KeyboardArrowUp,
+  Pinterest,
+  Twitter,
+  YouTube,
+} from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Collapse,
+  Container,
+  Divider,
+  Grid,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 const socialLinks = [
   { icon: <Facebook />, href: 'https://facebook.com', label: 'Facebook' },

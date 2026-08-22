@@ -1,16 +1,16 @@
-import { Box, Typography, Button } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { palette } from '@/shared/theme/tokens'
 import {
   Add,
-  Search,
+  FavoriteBorder,
   Gavel,
   Inbox,
-  ShoppingBag,
   Notifications,
-  FavoriteBorder,
+  Search,
+  ShoppingBag,
 } from '@mui/icons-material'
+import { Box, Button, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
-import { palette } from '@/shared/theme/tokens'
+import { useTranslation } from 'react-i18next'
 
 type EmptyStateVariant =
   | 'default'

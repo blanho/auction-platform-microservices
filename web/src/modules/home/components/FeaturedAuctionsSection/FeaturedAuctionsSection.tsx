@@ -1,21 +1,21 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { colors, typography } from '@/shared/theme/tokens'
+import { East, Favorite, FavoriteBorder, Refresh, Timer } from '@mui/icons-material'
 import {
+  Alert,
   Box,
-  Container,
-  Typography,
   Button,
-  Grid,
   Chip,
+  Container,
+  Grid,
   IconButton,
   Skeleton,
-  Alert,
+  Typography,
 } from '@mui/material'
-import { Timer, Favorite, FavoriteBorder, East, Refresh } from '@mui/icons-material'
-import { useFeaturedAuctions, useWatchlist, useToggleWatchlist } from '../../../auctions/hooks'
-import { formatTimeLeft, formatCurrency } from '../../../auctions/utils'
-import { colors, typography } from '@/shared/theme/tokens'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { useFeaturedAuctions, useToggleWatchlist, useWatchlist } from '../../../auctions/hooks'
+import { formatCurrency, formatTimeLeft } from '../../../auctions/utils'
 
 export const FeaturedAuctionsSection = () => {
   const {

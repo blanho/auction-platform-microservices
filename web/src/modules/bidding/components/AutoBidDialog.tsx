@@ -1,30 +1,30 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Typography,
-  Box,
-  Stack,
-  InputAdornment,
-  Slider,
-  Divider,
-  FormControlLabel,
-  Switch,
-  IconButton,
-} from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
-import { Close, AutoMode, TrendingUp } from '@mui/icons-material'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
 import { http } from '@/services/http'
-import { formatCurrency } from '@/shared/utils/formatters'
 import { scaleIn } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { AutoMode, Close, TrendingUp } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Slider,
+  Stack,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface AutoBidDialogProps {
   open: boolean

@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import type { UseFormTrigger, FieldValues, Path } from 'react-hook-form'
+import { useCallback, useState } from 'react'
+import type { FieldValues, Path, UseFormTrigger } from 'react-hook-form'
 
 type StepFieldMap<T extends FieldValues> = Record<number, Path<T>[]>
 

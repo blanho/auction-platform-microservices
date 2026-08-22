@@ -32,13 +32,11 @@ public class OrderQueryEndpoints : ICarterModule
 
         group.MapGet("/{id:guid}", GetById)
             .WithName("GetOrderById")
-            .WithSummary("Get order by ID")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.View));
+            .WithSummary("Get an order when the caller is a participant or order administrator");
 
         group.MapGet("/auction/{auctionId:guid}", GetByAuctionId)
             .WithName("GetOrderByAuctionId")
-            .WithSummary("Get order by auction ID")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.View));
+            .WithSummary("Get an auction order when the caller is a participant or order administrator");
 
         group.MapGet("/buyer/{username}", GetByBuyer)
             .WithName("GetOrdersByBuyer")
@@ -73,10 +71,14 @@ public class OrderQueryEndpoints : ICarterModule
 
     private static async Task<IResult> GetById(
         Guid id,
+        HttpContext httpContext,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrderByIdQuery(id);
+        var query = new GetOrderByIdQuery(
+            id,
+            UserHelper.GetRequiredUserId(httpContext.User),
+            CanViewAllOrders(httpContext.User));
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToOkResult();
@@ -84,10 +86,14 @@ public class OrderQueryEndpoints : ICarterModule
 
     private static async Task<IResult> GetByAuctionId(
         Guid auctionId,
+        HttpContext httpContext,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var query = new GetOrderByAuctionIdQuery(auctionId);
+        var query = new GetOrderByAuctionIdQuery(
+            auctionId,
+            UserHelper.GetRequiredUserId(httpContext.User),
+            CanViewAllOrders(httpContext.User));
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToOkResult();
@@ -218,4 +224,7 @@ public class OrderQueryEndpoints : ICarterModule
         httpContext.Response.Headers.Append(PageHeader, page.ToString());
         httpContext.Response.Headers.Append(PageSizeHeader, pageSize.ToString());
     }
+
+    private static bool CanViewAllOrders(System.Security.Claims.ClaimsPrincipal user) =>
+        user.IsAdmin() || user.HasPermission(Permissions.Orders.View);
 }

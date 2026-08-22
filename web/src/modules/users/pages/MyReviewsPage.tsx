@@ -1,39 +1,39 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Tabs,
-  Tab,
-  Stack,
-  Rating,
-  Avatar,
-  Chip,
-  Button,
-  Skeleton,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material'
-import { Star, RateReview, Reply } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import {
-  useReviewsForUser,
-  useReviewsByUser,
-  useUserRatingSummary,
-  useAddSellerResponse,
-} from '../hooks/useReviews'
 import { useAuth } from '@/app/hooks/useAuth'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
 import { formatRelativeTime } from '@/shared/utils/formatters'
-import { Link } from 'react-router-dom'
+import { RateReview, Reply, Star } from '@mui/icons-material'
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Rating,
+  Skeleton,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import {
+  useAddSellerResponse,
+  useReviewsByUser,
+  useReviewsForUser,
+  useUserRatingSummary,
+} from '../hooks/useReviews'
 
 interface TabPanelProps {
   readonly children?: React.ReactNode
@@ -69,6 +69,7 @@ interface ReviewItemProps {
 }
 
 function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
+  const { t } = useTranslation('users')
   const displayUsername = type === 'received' ? review.reviewerUsername : review.reviewedUsername
 
   return (
@@ -82,10 +83,10 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
             <Box>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="subtitle1" fontWeight={600}>
-                  {type === 'received' ? 'From' : 'To'}: {displayUsername}
+                  {t(type === 'received' ? 'reviews.from' : 'reviews.to')}: {displayUsername}
                 </Typography>
                 <Chip
-                  label={type === 'received' ? 'Received' : 'Given'}
+                  label={t(type === 'received' ? 'reviews.received' : 'reviews.given')}
                   size="small"
                   color={type === 'received' ? 'primary' : 'default'}
                   variant="outlined"
@@ -100,7 +101,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
             <Rating value={review.rating} readOnly size="small" />
             {type === 'received' && canRespond && !review.sellerResponse && (
               <Button size="small" startIcon={<Reply />} onClick={() => onRespond?.(review.id)}>
-                Respond
+                {t('reviews.respond')}
               </Button>
             )}
           </Stack>
@@ -118,7 +119,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
         </Box>
 
         <Button component={Link} to={`/auctions/${review.auctionId}`} size="small" sx={{ mt: 2 }}>
-          View Auction
+          {t('reviews.viewAuction')}
         </Button>
 
         {review.sellerResponse && (
@@ -132,7 +133,7 @@ function ReviewItem({ review, type, onRespond, canRespond }: ReviewItemProps) {
             }}
           >
             <Typography variant="caption" fontWeight={600} color="primary">
-              Your Response
+              {t('reviews.yourResponse')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
               {review.sellerResponse}
@@ -176,12 +177,14 @@ function ReceivedReviewsContent({
   reviews: ReviewData[] | undefined
   onRespond: (reviewId: string) => void
 }>) {
+  const { t } = useTranslation('users')
+
   if (isLoading) {
     return <ReviewsSkeleton />
   }
 
   if (!reviews || reviews.length === 0) {
-    return <EmptyState message="No reviews received yet" icon={<Star sx={{ fontSize: 64 }} />} />
+    return <EmptyState message={t('reviews.noReceived')} icon={<Star sx={{ fontSize: 64 }} />} />
   }
 
   return (
@@ -206,12 +209,14 @@ function GivenReviewsContent({
   isLoading: boolean
   reviews: ReviewData[] | undefined
 }>) {
+  const { t } = useTranslation('users')
+
   if (isLoading) {
     return <ReviewsSkeleton />
   }
 
   if (!reviews || reviews.length === 0) {
-    return <EmptyState message="No reviews given yet" icon={<RateReview sx={{ fontSize: 64 }} />} />
+    return <EmptyState message={t('reviews.noGiven')} icon={<RateReview sx={{ fontSize: 64 }} />} />
   }
 
   return (
@@ -224,7 +229,7 @@ function GivenReviewsContent({
 }
 
 export function MyReviewsPage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState(0)
   const [responseDialogOpen, setResponseDialogOpen] = useState(false)
@@ -262,7 +267,7 @@ export function MyReviewsPage() {
   if (!user) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
-        <InlineAlert severity="error">Please log in to view your reviews</InlineAlert>
+        <InlineAlert severity="error">{t('reviews.loginRequired')}</InlineAlert>
       </Container>
     )
   }
@@ -274,10 +279,10 @@ export function MyReviewsPage() {
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
             <Box>
               <Typography variant="h4" fontWeight={700}>
-                My Reviews
+                {t('reviews.title')}
               </Typography>
               <Typography variant="body1" color="text.secondary" mt={0.5}>
-                Manage reviews you&apos;ve received and given
+                {t('reviews.description')}
               </Typography>
             </Box>
           </Stack>
@@ -302,7 +307,7 @@ export function MyReviewsPage() {
                       </Typography>
                       <Rating value={ratingSummary?.averageRating ?? 0} precision={0.1} readOnly />
                       <Typography variant="body2" color="text.secondary" mt={1}>
-                        Average Rating
+                        {t('reviews.averageRating')}
                       </Typography>
                     </>
                   )}
@@ -314,7 +319,7 @@ export function MyReviewsPage() {
                       {reviewsReceived?.length ?? 0}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Reviews Received
+                      {t('reviews.reviewsReceived')}
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'center' }}>
@@ -322,7 +327,7 @@ export function MyReviewsPage() {
                       {reviewsGiven?.length ?? 0}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Reviews Given
+                      {t('reviews.reviewsGiven')}
                     </Typography>
                   </Box>
                 </Stack>
@@ -338,12 +343,12 @@ export function MyReviewsPage() {
                 <Tab
                   icon={<Star sx={{ fontSize: 20 }} />}
                   iconPosition="start"
-                  label={`Received (${reviewsReceived?.length ?? 0})`}
+                  label={t('reviews.receivedCount', { count: reviewsReceived?.length ?? 0 })}
                 />
                 <Tab
                   icon={<RateReview sx={{ fontSize: 20 }} />}
                   iconPosition="start"
-                  label={`Given (${reviewsGiven?.length ?? 0})`}
+                  label={t('reviews.givenCount', { count: reviewsGiven?.length ?? 0 })}
                 />
               </Tabs>
             </Box>
@@ -371,28 +376,28 @@ export function MyReviewsPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Respond to Review</DialogTitle>
+        <DialogTitle>{t('reviews.respondTitle')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Your response will be visible to everyone viewing this review.
+            {t('reviews.respondDescription')}
           </Typography>
           <TextField
             multiline
             rows={4}
             fullWidth
-            placeholder="Thank the reviewer or address their feedback..."
+            placeholder={t('reviews.responsePlaceholder')}
             value={responseText}
             onChange={(e) => setResponseText(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setResponseDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setResponseDialogOpen(false)}>{t('profile.cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleSubmitResponse}
             disabled={!responseText.trim() || addResponse.isPending}
           >
-            {addResponse.isPending ? 'Submitting...' : 'Submit Response'}
+            {t(addResponse.isPending ? 'reviews.submitting' : 'reviews.submitResponse')}
           </Button>
         </DialogActions>
       </Dialog>

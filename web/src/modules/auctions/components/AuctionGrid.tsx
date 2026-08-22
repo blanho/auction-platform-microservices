@@ -1,7 +1,7 @@
+import { Box, Grid, Skeleton } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Grid, Skeleton, Box } from '@mui/material'
-import { AuctionCard } from './AuctionCard'
 import type { AuctionListItem } from '../types'
+import { AuctionCard } from './AuctionCard'
 
 interface AuctionGridProps {
   auctions: AuctionListItem[]

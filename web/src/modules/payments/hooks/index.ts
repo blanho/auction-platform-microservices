@@ -1,23 +1,9 @@
+export { currentWalletKeys, useTransactions, useWallet } from './useCurrentWallet'
 export * from './useOrders'
 export {
-  walletKeys,
-  useWallet as useWalletByUsername,
   useCreateWallet,
-  useDeposit as useDepositByUsername,
-  useWithdraw as useWithdrawByUsername,
-  useWalletTransactions,
   useTransactionById,
+  useWallet as useWalletByUsername,
+  useWalletTransactions,
+  walletKeys,
 } from './useWallets'
-export * from './useStripe'
-export {
-  currentWalletKeys,
-  useWallet,
-  useTransactions,
-  useDeposit,
-  useWithdraw,
-  paymentMethodKeys,
-  usePaymentMethods,
-  useAddPaymentMethod,
-  useRemovePaymentMethod,
-  useSetDefaultPaymentMethod,
-} from './useCurrentWallet'

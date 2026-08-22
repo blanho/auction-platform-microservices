@@ -54,8 +54,6 @@ spec:
                   name: auction-platform-secrets
                   key: ELASTICSEARCH_PASSWORD
                   optional: true
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "Production"
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
           lifecycle:

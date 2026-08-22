@@ -10,6 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Identity.Application/Identity.Application.csproj" />
+    <ProjectReference Include="../../../../BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj" />
   </ItemGroup>
 </Project>
-

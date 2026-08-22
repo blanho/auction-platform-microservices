@@ -15,7 +15,7 @@ public record ProcessExternalLoginCommand(ExternalLoginInfo Info) : ICommand<Ext
 
 public class ProcessExternalLoginCommandHandler(
     IUserService userService,
-    ITokenGenerationService tokenService,
+    IAuthorizationCodeStore authorizationCodeStore,
     IAuthHelper authHelper,
     IMediator mediator,
     ILogger<ProcessExternalLoginCommandHandler> logger) : ICommandHandler<ProcessExternalLoginCommand, ExternalAuthResult>
@@ -86,7 +86,7 @@ public class ProcessExternalLoginCommandHandler(
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await userService.UpdateAsync(user);
 
-        var authCode = tokenService.GenerateTwoFactorStateToken(user.Id);
+        var authCode = await authorizationCodeStore.CreateAsync(user.Id, cancellationToken);
         logger.LogInformation("User {Username} logged in with {Provider}", user.UserName, info.LoginProvider);
 
         return Result.Success(new ExternalAuthResult(user.Id, authCode));

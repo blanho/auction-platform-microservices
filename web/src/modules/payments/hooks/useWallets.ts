@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { walletsApi } from '../api'
-import type { DepositRequest, WithdrawRequest } from '../types'
 
 export const walletKeys = {
   all: ['wallets'] as const,
@@ -25,32 +24,6 @@ export const useCreateWallet = () => {
     mutationFn: (username: string) => walletsApi.createWallet(username),
     onSuccess: (_, username) => {
       queryClient.invalidateQueries({ queryKey: walletKeys.byUsername(username) })
-    },
-  })
-}
-
-export const useDeposit = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ username, data }: { username: string; data: DepositRequest }) =>
-      walletsApi.deposit(username, data),
-    onSuccess: (_, { username }) => {
-      queryClient.invalidateQueries({ queryKey: walletKeys.byUsername(username) })
-      queryClient.invalidateQueries({ queryKey: walletKeys.all })
-    },
-  })
-}
-
-export const useWithdraw = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ username, data }: { username: string; data: WithdrawRequest }) =>
-      walletsApi.withdraw(username, data),
-    onSuccess: (_, { username }) => {
-      queryClient.invalidateQueries({ queryKey: walletKeys.byUsername(username) })
-      queryClient.invalidateQueries({ queryKey: walletKeys.all })
     },
   })
 }

@@ -12,18 +12,70 @@
     "changeAvatar": "Change Picture",
     "memberSince": "Member since {{date}}",
     "verified": "Verified",
-    "notVerified": "Not Verified"
+    "notVerified": "Not Verified",
+    "myProfile": "My Profile",
+    "description": "Manage your account information",
+    "fullName": "Full Name",
+    "verifiedSeller": "Verified Seller",
+    "sellerApplicationPending": "Seller Application Pending",
+    "becomeSeller": "Become a Seller",
+    "memberSinceLabel": "Member since",
+    "notAvailable": "N/A",
+    "personalInformation": "Personal Information",
+    "loadError": "Failed to load profile. Please try again.",
+    "updateError": "Failed to update profile. Please try again.",
+    "emailChangeHelp": "Contact support to change your email",
+    "characterCount": "{{count}}/{{max}} characters",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "sellerDialogDescription": "As a seller, you can list your own items for auction and reach thousands of collectors.",
+    "sellerTermsIntroduction": "By applying, you agree to our seller terms and conditions, including:",
+    "sellerTerms": {
+      "accurateDescriptions": "Maintain accurate item descriptions",
+      "timelyShipping": "Ship items within the specified timeframe",
+      "promptResponses": "Respond to buyer inquiries promptly",
+      "acceptReturns": "Accept returns for items not as described"
+    },
+    "applyNow": "Apply Now"
   },
 
   "settings": {
     "title": "Settings",
+    "description": "Manage your account security and preferences",
     "account": "Account Settings",
     "security": "Security",
+    "securityDescription": "Password and 2FA",
     "notifications": "Notification Preferences",
+    "notificationsDescription": "Email and push preferences",
     "privacy": "Privacy",
     "language": "Language",
     "theme": "Theme",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "appearance": "Appearance",
+    "appearanceDescription": "Theme and display",
+    "notificationPreferences": "Notification Preferences",
+    "notificationItems": {
+      "email": { "label": "Email Notifications", "description": "Receive notifications via email" },
+      "push": {
+        "label": "Push Notifications",
+        "description": "Receive push notifications in browser"
+      },
+      "bid": { "label": "Bid Updates", "description": "Get notified when someone outbids you" },
+      "auction": {
+        "label": "Auction Updates",
+        "description": "Reminders before auctions end and status changes"
+      },
+      "promotional": {
+        "label": "Promotional",
+        "description": "Special offers and platform updates"
+      },
+      "system": {
+        "label": "System Alerts",
+        "description": "Important account and security updates"
+      }
+    },
+    "themes": { "light": "Light", "dark": "Dark", "system": "System" },
+    "languages": { "en": "English (US)", "ja": "Japanese" }
   },
 
   "security": {
@@ -35,7 +87,19 @@
     "enableTwoFactor": "Enable 2FA",
     "disableTwoFactor": "Disable 2FA",
     "sessions": "Active Sessions",
-    "logoutAll": "Logout All Devices"
+    "logoutAll": "Logout All Devices",
+    "changePasswordError": "Failed to change password. Please check your current password.",
+    "updatePassword": "Update Password",
+    "twoFactorDescription": "Add an extra layer of security to your account by enabling two-factor authentication.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "protectedWithTwoFactor": "Your account is protected with 2FA",
+    "enableForSecurity": "Enable 2FA for enhanced security",
+    "manageTwoFactor": "Manage 2FA",
+    "manageTwoFactorTitle": "Manage Two-Factor Authentication",
+    "setupTwoFactorTitle": "Set Up Two-Factor Authentication",
+    "disableTwoFactorTitle": "Disable Two-Factor Authentication?",
+    "disableTwoFactorDescription": "Disabling 2FA will make your account less secure. Are you sure you want to continue?"
   },
 
   "seller": {
@@ -50,13 +114,178 @@
     "rating": "Seller Rating"
   },
 
+  "sellerApply": {
+    "successTitle": "Application Submitted!",
+    "successDescription": "Thank you for applying to become a seller. We'll review your application and get back to you within 2-3 business days.",
+    "goToDashboard": "Go to Dashboard",
+    "browseAuctions": "Browse Auctions",
+    "backToDashboard": "Back to Dashboard",
+    "heroDescription": "Join our marketplace and start selling your unique items to collectors worldwide",
+    "benefitsTitle": "Seller Benefits",
+    "benefits": {
+      "growth": {
+        "title": "Grow Your Business",
+        "description": "Reach thousands of collectors and buyers"
+      },
+      "security": {
+        "title": "Secure Transactions",
+        "description": "Protected payments and buyer verification"
+      },
+      "support": { "title": "Dedicated Support", "description": "24/7 seller support team" },
+      "tools": {
+        "title": "Professional Tools",
+        "description": "Analytics, inventory management, and more"
+      }
+    },
+    "formTitle": "Seller Application",
+    "formDescription": "Complete the form below to apply for a seller account",
+    "businessName": "Business / Store Name",
+    "businessType": "Business Type",
+    "businessTypeHelp": "e.g., Antique Dealer, Art Gallery, Individual Collector",
+    "taxId": "Tax ID / Business Registration (Optional)",
+    "taxIdHelp": "Required for business accounts",
+    "businessAddress": "Business Address",
+    "businessDescription": "Tell us about your business",
+    "businessDescriptionHelp": "Describe what you sell, your expertise, and why you want to join our marketplace",
+    "agreePrefix": "I agree to the",
+    "sellerTerms": "Seller Terms of Service",
+    "and": "and",
+    "feeSchedule": "Fee Schedule",
+    "submitError": "Failed to submit application. Please try again.",
+    "submit": "Submit Application",
+    "validation": {
+      "businessName": "Business name is required",
+      "businessType": "Business type is required",
+      "phoneNumber": "Valid phone number is required",
+      "address": "Address is required",
+      "description": "Tell us more about your business (min 50 characters)",
+      "terms": "You must agree to the terms"
+    }
+  },
+
+  "sellerProfile": {
+    "stars": "{{count}} star",
+    "stars_other": "{{count}} stars",
+    "sellerResponse": "Seller Response",
+    "bidCount": "{{count}} bid",
+    "bidCount_other": "{{count}} bids",
+    "noListings": "No active listings",
+    "basedOnReviews": "Based on {{count}} review",
+    "basedOnReviews_other": "Based on {{count}} reviews",
+    "noReviews": "No reviews yet",
+    "totalReviews": "Total Reviews",
+    "activeListings": "Active Listings",
+    "notFound": "Seller not found",
+    "reviewCount": "({{count}} review)",
+    "reviewCount_other": "({{count}} reviews)",
+    "listingsCount": "Listings ({{count}})",
+    "reviewsCount": "Reviews ({{count}})"
+  },
+
   "myAuctions": {
     "title": "My Auctions",
+    "description": "Manage your auction listings",
     "active": "Active",
     "ended": "Ended",
     "draft": "Draft",
     "createNew": "Create New Auction",
-    "noAuctions": "You haven't created any auctions yet"
+    "noAuctions": "You haven't created any auctions yet",
+    "export": "Export",
+    "import": "Import",
+    "quickImport": "Quick Import (small files)",
+    "bulkImport": "Bulk Import (large files, up to 1M records)",
+    "createAuction": "Create Auction",
+    "totalAuctions": "Total Auctions",
+    "totalBids": "Total Bids",
+    "revenue": "Revenue",
+    "search": "Search auctions...",
+    "auction": "Auction",
+    "statusLabel": "Status",
+    "currentBid": "Current Bid",
+    "bids": "Bids",
+    "views": "Views",
+    "timeLeft": "Time Left",
+    "actions": "Actions",
+    "noAuctionsFound": "No auctions found",
+    "createFirst": "Create your first auction",
+    "startingPrice": "Starting: {{price}}",
+    "view": "View",
+    "edit": "Edit",
+    "deactivate": "Deactivate",
+    "extendTime": "Extend Time",
+    "cancelAuction": "Cancel Auction",
+    "activate": "Activate",
+    "delete": "Delete",
+    "deleteTitle": "Delete Auction?",
+    "deleteDescription": "This action cannot be undone. The auction and all associated data will be permanently deleted.",
+    "cancelDescription": "Are you sure you want to cancel this auction? This action cannot be undone and all active bids will be voided.",
+    "cancelReason": "Reason for cancellation (optional)",
+    "cancelReasonPlaceholder": "E.g., Item no longer available, found damage on item...",
+    "keepAuction": "Keep Auction",
+    "extendAuction": "Extend Auction",
+    "extendDescription": "Extend the end time for this auction. The new end time must be after the current end time.",
+    "currentEndTime": "Current end time: {{time}}",
+    "newEndTime": "New End Time",
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "ended": "Ended",
+      "drafts": "Drafts",
+      "pending": "Pending"
+    },
+    "status": {
+      "active": "Active",
+      "ending-soon": "Ending Soon",
+      "ended": "Ended",
+      "draft": "Draft",
+      "cancelled": "Cancelled",
+      "pending": "Pending Review",
+      "sold": "Sold"
+    },
+    "time": {
+      "ended": "Ended",
+      "daysHours": "{{days}}d {{hours}}h",
+      "hoursMinutes": "{{hours}}h {{minutes}}m"
+    },
+    "messages": {
+      "deleted": "Auction deleted successfully",
+      "deleteError": "Failed to delete auction",
+      "activated": "Auction activated successfully",
+      "activateError": "Failed to activate auction",
+      "deactivated": "Auction deactivated successfully",
+      "deactivateError": "Failed to deactivate auction",
+      "cancelled": "Auction cancelled successfully",
+      "cancelError": "Failed to cancel auction",
+      "extended": "Auction extended successfully",
+      "extendError": "Failed to extend auction",
+      "imported": "Auctions imported successfully!",
+      "bulkImportCompleted": "Bulk import completed! Check the results for details."
+    }
+  },
+
+  "reviews": {
+    "title": "My Reviews",
+    "description": "Manage reviews you've received and given",
+    "from": "From",
+    "to": "To",
+    "received": "Received",
+    "given": "Given",
+    "respond": "Respond",
+    "viewAuction": "View Auction",
+    "yourResponse": "Your Response",
+    "noReceived": "No reviews received yet",
+    "noGiven": "No reviews given yet",
+    "loginRequired": "Please log in to view your reviews",
+    "averageRating": "Average Rating",
+    "reviewsReceived": "Reviews Received",
+    "reviewsGiven": "Reviews Given",
+    "receivedCount": "Received ({{count}})",
+    "givenCount": "Given ({{count}})",
+    "respondTitle": "Respond to Review",
+    "respondDescription": "Your response will be visible to everyone viewing this review.",
+    "responsePlaceholder": "Thank the reviewer or address their feedback...",
+    "submitting": "Submitting...",
+    "submitResponse": "Submit Response"
   },
 
   "admin": {
@@ -72,10 +301,63 @@
     "removeAdmin": "Remove Admin"
   },
 
+  "userManagement": {
+    "description": "Manage user accounts, roles, and security settings",
+    "refresh": "Refresh",
+    "addUser": "Add User",
+    "search": "Search users by name or email...",
+    "defaultSuspendReason": "Suspended by admin",
+    "tabs": { "all": "All Users", "buyers": "Buyers", "sellers": "Sellers", "admins": "Admins" },
+    "columns": {
+      "user": "User",
+      "roles": "Roles",
+      "status": "Status",
+      "twoFactor": "2FA",
+      "emailVerified": "Email Verified",
+      "joined": "Joined",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    }
+  },
+
+  "rolePermissions": {
+    "title": "Role Permissions",
+    "description": "Manage permissions for each role. Toggle permissions on/off to control access.",
+    "admin": "Admin",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "refresh": "Refresh",
+    "permissionGranted": "Permission \"{{permission}}\" granted for {{role}}",
+    "permissionRevoked": "Permission \"{{permission}}\" revoked for {{role}}",
+    "grantError": "Failed to grant permission",
+    "revokeError": "Failed to revoke permission",
+    "categoryGranted": "All permissions in category granted",
+    "categoryRevoked": "All permissions in category revoked",
+    "updateError": "Failed to update permissions",
+    "grantPermission": "Grant permission",
+    "revokePermission": "Revoke permission"
+  },
+
   "messages": {
     "profileUpdated": "Profile updated successfully",
     "passwordChanged": "Password changed successfully",
     "settingsSaved": "Settings saved",
     "avatarUpdated": "Profile picture updated"
+  },
+
+  "validation": {
+    "fullNameMin": "Full name must be at least 2 characters",
+    "phoneInvalid": "Invalid phone number",
+    "bioMax": "Bio must be 500 characters or less",
+    "locationMax": "Location must be 100 characters or less",
+    "currentPasswordRequired": "Current password is required",
+    "passwordMin": "Password must be at least 12 characters",
+    "passwordMax": "Password must be less than 100 characters",
+    "passwordUppercase": "Password must contain at least one uppercase letter",
+    "passwordLowercase": "Password must contain at least one lowercase letter",
+    "passwordNumber": "Password must contain at least one number",
+    "passwordSpecial": "Password must contain at least one special character",
+    "passwordMatch": "Passwords do not match"
   }
 }

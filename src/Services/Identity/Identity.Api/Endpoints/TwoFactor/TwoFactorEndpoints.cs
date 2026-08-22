@@ -3,6 +3,7 @@ using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
 using Identity.Application.DTOs.TwoFactor;
@@ -11,8 +12,6 @@ using Identity.Application.Features.TwoFactor.Queries.GetStatus;
 using Identity.Application.Features.TwoFactor.Commands.SetupAuthenticator;
 using Identity.Application.Features.TwoFactor.Commands.EnableAuthenticator;
 using Identity.Application.Features.TwoFactor.Commands.DisableAuthenticator;
-using Identity.Application.Features.TwoFactor.Commands.VerifyCode;
-using Identity.Application.Features.TwoFactor.Commands.UseRecoveryCode;
 using Identity.Application.Features.TwoFactor.Commands.GenerateRecoveryCodes;
 using Identity.Application.Features.TwoFactor.Commands.ForgetBrowser;
 
@@ -33,36 +32,35 @@ public class TwoFactorEndpoints : ICarterModule
 
         group.MapPost("/setup", SetupAuthenticator)
             .WithName("SetupAuthenticator")
+            .RequireRateLimiting("2fa")
             .Produces<TwoFactorSetupResponse>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/enable", EnableAuthenticator)
             .WithName("EnableAuthenticator")
+            .RequireRateLimiting("2fa")
             .Produces<RecoveryCodesResponse>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/disable", DisableAuthenticator)
             .WithName("DisableAuthenticator")
+            .RequireRateLimiting("2fa")
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
-        group.MapPost("/verify", VerifyCode)
+        group.MapPost("/verify", VerifyAndEnableAuthenticator)
             .WithName("Verify2FACode")
-            .AllowAnonymous()
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
-
-        group.MapPost("/recovery", UseRecoveryCode)
-            .WithName("UseRecoveryCode")
-            .AllowAnonymous()
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .RequireRateLimiting("2fa")
+            .Produces<RecoveryCodesResponse>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/generate-codes", GenerateRecoveryCodes)
             .WithName("GenerateRecoveryCodes")
+            .RequireRateLimiting("2fa")
             .Produces<RecoveryCodesResponse>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
@@ -126,20 +124,25 @@ public class TwoFactorEndpoints : ICarterModule
         return Results.Ok();
     }
 
-    private static async Task<IResult> VerifyCode([FromBody] Verify2FARequest request, ISender sender, CancellationToken cancellationToken)
+    private static async Task<IResult> VerifyAndEnableAuthenticator(
+        [FromBody] Verify2FARequest request,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new VerifyCodeCommand(request.Code, request.RememberDevice), cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
-    }
+        var userId = user.GetRequiredUserIdString();
+        var result = await sender.Send(
+            new EnableAuthenticatorCommand(userId, request.Code),
+            cancellationToken);
 
-    private static async Task<IResult> UseRecoveryCode([FromBody] UseRecoveryCodeRequest request, ISender sender, CancellationToken cancellationToken)
-    {
-        var result = await sender.Send(new UseRecoveryCodeCommand(request.RecoveryCode), cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        if (!result.IsSuccess)
+        {
+            if (result.Error == IdentityErrors.User.NotFound)
+                return Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
+        }
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> GenerateRecoveryCodes(ClaimsPrincipal user, ISender sender, CancellationToken cancellationToken)

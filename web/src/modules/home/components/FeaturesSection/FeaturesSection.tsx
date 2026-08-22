@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Grid } from '@mui/material'
-import { VerifiedUser, Speed, Visibility, AccountBalanceWallet } from '@mui/icons-material'
-import { useMemo } from 'react'
 import { typography } from '@/shared/theme/tokens'
+import { AccountBalanceWallet, Speed, VerifiedUser, Visibility } from '@mui/icons-material'
+import { Box, Container, Grid, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const featureItems = [

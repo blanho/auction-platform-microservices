@@ -35,6 +35,11 @@ if [[ ! "$KEY_VAULT_NAME" =~ ^[A-Za-z0-9-]{3,24}$ ]]; then
   exit 1
 fi
 
+if [[ ! "$STORAGE_ACCOUNT_NAME" =~ ^[a-z0-9]{3,24}$ ]]; then
+  echo "STORAGE_ACCOUNT_NAME must be 3-24 lowercase alphanumeric characters." >&2
+  exit 1
+fi
+
 if [[ ! "$SECRETS_IDENTITY_CLIENT_ID" =~ ^[0-9a-fA-F-]{36}$ ]] ||
    [[ ! "$STORAGE_IDENTITY_CLIENT_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
   echo "Workload identity client IDs must be GUIDs." >&2
@@ -47,12 +52,13 @@ if [[ ! "$API_DOMAIN" =~ $domain_pattern ]] || [[ ! "$WEB_DOMAIN" =~ $domain_pat
   exit 1
 fi
 
-if [[ ! "$CERT_MANAGER_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]]; then
+if [[ ! "$CERT_MANAGER_EMAIL" =~ ^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$ ]]; then
   echo "CERT_MANAGER_EMAIL must be a valid email address." >&2
   exit 1
 fi
 
-kubectl kustomize deploy/kubernetes/overlays/production |
+rendered_manifest="$(
+  kubectl kustomize deploy/kubernetes/overlays/production |
   sed \
     -e "s|REPLACE_WITH_ACR_LOGIN_SERVER|${ACR_LOGIN_SERVER}|g" \
     -e "s|:v1\\.0\\.0|:${IMAGE_TAG}|g" \
@@ -65,3 +71,11 @@ kubectl kustomize deploy/kubernetes/overlays/production |
     -e "s|REPLACE_WITH_API_DOMAIN|${API_DOMAIN}|g" \
     -e "s|REPLACE_WITH_WEB_DOMAIN|${WEB_DOMAIN}|g" \
     -e "s|REPLACE_WITH_CERT_EMAIL|${CERT_MANAGER_EMAIL}|g"
+)"
+
+if [[ "$rendered_manifest" =~ (REPLACE_WITH_|CHANGE_ME_IN_OVERLAY) ]]; then
+  echo "Rendered manifest still contains an unresolved deployment placeholder." >&2
+  exit 1
+fi
+
+printf '%s\n' "$rendered_manifest"

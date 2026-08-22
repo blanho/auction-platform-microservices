@@ -1,18 +1,11 @@
 using Carter;
-using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
 using BuildingBlocks.Web.Helpers;
-using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Payment.Application.Features.Orders.CancelOrder;
-using Payment.Application.Features.Orders.CreateOrder;
 using Payment.Application.Features.Orders.MarkDelivered;
-using Payment.Application.Features.Orders.ProcessPayment;
+using Payment.Application.Features.Orders.PrepareCheckout;
 using Payment.Application.Features.Orders.ShipOrder;
-using Payment.Application.Features.Orders.UpdateOrderStatus;
 using Payment.Application.DTOs;
 
 namespace Payment.Api.Endpoints.Orders;
@@ -25,116 +18,43 @@ public class OrderCommandEndpoints : ICarterModule
             .WithTags("Orders")
             .RequireAuthorization();
 
-        group.MapPost("/", Create)
-            .WithName("CreateOrder")
-            .WithSummary("Create a new order")
+        group.MapPut("/{id:guid}/checkout", PrepareCheckout)
+            .WithName("PrepareOrderCheckout")
+            .WithSummary("Save buyer-provided checkout details for an existing order")
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Create));
-
-        group.MapPut("/{id:guid}", Update)
-            .WithName("UpdateOrder")
-            .WithSummary("Update an order")
-            .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
-
-        group.MapPost("/{id:guid}/payment", ProcessPayment)
-            .WithName("ProcessOrderPayment")
-            .WithSummary("Process payment for an order")
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Process));
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/ship", ShipOrder)
             .WithName("ShipOrder")
             .WithSummary("Mark order as shipped")
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Ship));
-
-        group.MapPost("/{id:guid}/cancel", CancelOrder)
-            .WithName("CancelOrder")
-            .WithSummary("Cancel an order")
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Cancel));
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id:guid}/deliver", MarkDelivered)
             .WithName("MarkOrderDelivered")
             .WithSummary("Mark order as delivered")
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Orders.Deliver));
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
-    private static async Task<IResult> Create(
-        CreateOrderDto dto,
-        IMediator mediator,
-        ILogger<OrderCommandEndpoints> logger,
-        CancellationToken cancellationToken)
-    {
-        var command = new CreateOrderCommand(
-            dto.AuctionId,
-            dto.BuyerId!.Value,
-            dto.BuyerUsername!,
-            dto.SellerId!.Value,
-            dto.SellerUsername!,
-            dto.ItemTitle!,
-            dto.WinningBid!.Value,
-            dto.ShippingCost,
-            dto.PlatformFee,
-            dto.ShippingAddress,
-            dto.BuyerNotes
-        );
-
-        var result = await mediator.Send(command, cancellationToken);
-
-        return result.ToApiResult(order =>
-        {
-            logger.LogInformation("Order created: {OrderId} for auction {AuctionId}", order.Id, order.AuctionId);
-            return Results.Created($"/api/v1/orders/{order.Id}", order);
-        });
-    }
-
-    private static async Task<IResult> Update(
+    private static async Task<IResult> PrepareCheckout(
         Guid id,
-        UpdateOrderDto dto,
+        PrepareCheckoutDto dto,
+        HttpContext httpContext,
         IMediator mediator,
         ILogger<OrderCommandEndpoints> logger,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateOrderStatusCommand(
+        var command = new PrepareCheckoutCommand(
             id,
-            dto.Status,
-            dto.PaymentStatus,
-            dto.PaymentTransactionId,
+            UserHelper.GetRequiredUserId(httpContext.User),
             dto.ShippingAddress,
-            dto.TrackingNumber,
-            dto.ShippingCarrier,
-            dto.BuyerNotes,
-            dto.SellerNotes
-        );
+            dto.BuyerNotes);
 
         var result = await mediator.Send(command, cancellationToken);
 
         return result.ToApiResult(order =>
         {
-            logger.LogInformation("Order updated: {OrderId}", order.Id);
-            return Results.Ok(order);
-        });
-    }
-
-    private static async Task<IResult> ProcessPayment(
-        Guid id,
-        ProcessPaymentDto dto,
-        IMediator mediator,
-        ILogger<OrderCommandEndpoints> logger,
-        CancellationToken cancellationToken)
-    {
-        var command = new ProcessPaymentCommand(id, dto.PaymentMethod, dto.ExternalTransactionId);
-        var result = await mediator.Send(command, cancellationToken);
-
-        return result.ToApiResult(order =>
-        {
-            logger.LogInformation("Payment processed for order: {OrderId}", order.Id);
+            logger.LogInformation("Checkout details saved for order {OrderId}", order.Id);
             return Results.Ok(order);
         });
     }
@@ -142,11 +62,21 @@ public class OrderCommandEndpoints : ICarterModule
     private static async Task<IResult> ShipOrder(
         Guid id,
         UpdateShippingDto dto,
+        HttpContext httpContext,
         IMediator mediator,
         ILogger<OrderCommandEndpoints> logger,
         CancellationToken cancellationToken)
     {
-        var command = new ShipOrderCommand(id, dto.TrackingNumber, dto.ShippingCarrier, dto.SellerNotes);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+        var canManageAll = httpContext.User.IsAdmin() ||
+                           httpContext.User.HasPermission(Permissions.Orders.Ship);
+        var command = new ShipOrderCommand(
+            id,
+            userId,
+            canManageAll,
+            dto.TrackingNumber,
+            dto.ShippingCarrier,
+            dto.SellerNotes);
         var result = await mediator.Send(command, cancellationToken);
 
         return result.ToApiResult(order =>
@@ -156,30 +86,17 @@ public class OrderCommandEndpoints : ICarterModule
         });
     }
 
-    private static async Task<IResult> CancelOrder(
-        Guid id,
-        CancelOrderDto dto,
-        IMediator mediator,
-        ILogger<OrderCommandEndpoints> logger,
-        CancellationToken cancellationToken)
-    {
-        var command = new CancelOrderCommand(id, dto.Reason);
-        var result = await mediator.Send(command, cancellationToken);
-
-        return result.ToApiResult(order =>
-        {
-            logger.LogInformation("Order cancelled: {OrderId}", order.Id);
-            return Results.Ok(order);
-        });
-    }
-
     private static async Task<IResult> MarkDelivered(
         Guid id,
+        HttpContext httpContext,
         IMediator mediator,
         ILogger<OrderCommandEndpoints> logger,
         CancellationToken cancellationToken)
     {
-        var command = new MarkDeliveredCommand(id);
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+        var canManageAll = httpContext.User.IsAdmin() ||
+                           httpContext.User.HasPermission(Permissions.Orders.Deliver);
+        var command = new MarkDeliveredCommand(id, userId, canManageAll);
         var result = await mediator.Send(command, cancellationToken);
 
         return result.ToApiResult(order =>

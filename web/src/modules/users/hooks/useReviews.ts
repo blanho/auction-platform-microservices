@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { reviewsApi } from '../api/reviews.api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CreateReviewRequest, SellerResponseRequest } from '../api/reviews.api'
+import { reviewsApi } from '../api/reviews.api'
 
 export const reviewKeys = {
   all: ['reviews'] as const,
@@ -9,22 +9,6 @@ export const reviewKeys = {
   forUser: (username: string) => [...reviewKeys.all, 'for-user', username] as const,
   byUser: (username: string) => [...reviewKeys.all, 'by-user', username] as const,
   userRating: (username: string) => [...reviewKeys.all, 'user-rating', username] as const,
-}
-
-export const useReview = (id: string) => {
-  return useQuery({
-    queryKey: reviewKeys.detail(id),
-    queryFn: () => reviewsApi.getReviewById(id),
-    enabled: !!id,
-  })
-}
-
-export const useAuctionReviews = (auctionId: string) => {
-  return useQuery({
-    queryKey: reviewKeys.auction(auctionId),
-    queryFn: () => reviewsApi.getReviewsForAuction(auctionId),
-    enabled: !!auctionId,
-  })
 }
 
 export const useReviewsForUser = (username: string) => {

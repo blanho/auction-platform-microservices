@@ -1,12 +1,12 @@
-import { useMemo, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { Box, Container, Typography, Button, Stack } from '@mui/material'
-import { East } from '@mui/icons-material'
-import { HeroStats } from './HeroStats'
-import { useHomeMetrics } from '../../hooks/useHomeMetrics'
 import { typography } from '@/shared/theme/tokens'
+import { East } from '@mui/icons-material'
+import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { useHomeMetrics } from '../../hooks/useHomeMetrics'
+import { HeroStats } from './HeroStats'
 
 export const HeroSection = () => {
   const heroRef = useRef<HTMLDivElement>(null)

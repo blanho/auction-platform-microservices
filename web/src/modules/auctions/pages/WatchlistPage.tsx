@@ -1,43 +1,44 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Container,
-  Typography,
-  Box,
-  Grid,
-  Card,
-  Button,
-  IconButton,
-  Skeleton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  FormControl,
-  InputLabel,
-  Select,
-  Divider,
-} from '@mui/material'
+import { cardHover, fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { InlineAlert, StatusBadge } from '@/shared/ui'
+import { formatCurrency } from '@/shared/utils/formatters'
 import {
+  Delete,
   Favorite,
   FavoriteBorder,
-  Timer,
   Gavel,
+  GridView,
   MoreVert,
-  Delete,
-  Visibility,
   NotificationsActive,
   NotificationsOff,
-  GridView,
-  ViewList,
   Sort,
+  Timer,
+  ViewList,
+  Visibility,
 } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Card,
+  Container,
+  Divider,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Select,
+  Skeleton,
+  Typography,
+} from '@mui/material'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useWatchlist, useRemoveFromWatchlist } from '../hooks'
 import type { WatchlistItem } from '../api/bookmarks.api'
-import { fadeInUp, staggerContainer, staggerItem, cardHover } from '@/shared/lib/animations'
+import { useRemoveFromWatchlist, useWatchlist } from '../hooks'
 import { formatTimeLeft } from '../utils'
 
 interface WatchlistCardProps {
@@ -181,7 +182,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
 
           <Box sx={{ mt: 'auto' }}>
             <Typography variant="h6" fontWeight={700} color="primary.main">
-              ${auction.currentPrice.toLocaleString()}
+              {formatCurrency(auction.currentPrice)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {t('detail.bidCount', { count: auction.bidCount })}

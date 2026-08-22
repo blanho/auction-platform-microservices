@@ -1,10 +1,10 @@
-import { Box, Typography, LinearProgress, alpha } from '@mui/material'
-import { motion } from 'framer-motion'
-import { palette } from '@/shared/theme/tokens'
 import { fadeInUp } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { Box, LinearProgress, Typography, alpha } from '@mui/material'
+import { motion } from 'framer-motion'
+import { getFileIcon } from './FileIcons'
 import type { UploadProgressItemProps } from './FileUploadZone.types'
 import { formatFileSize } from './FileUploadZone.types'
-import { getFileIcon } from './FileIcons'
 
 export function UploadProgressItem({ upload }: Readonly<UploadProgressItemProps>) {
   return (

@@ -56,10 +56,6 @@ export interface PlaceBidRequest {
   amount: number
 }
 
-export interface RetractBidRequest {
-  reason: string
-}
-
 export interface RetractBidResult {
   success: boolean
   message: string

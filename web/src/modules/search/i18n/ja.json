@@ -6,9 +6,14 @@
   "resultsCount": "{{count}}件の結果",
   "resultsCount_other": "{{count}}件の結果",
   "searchingFor": "「{{query}}」の検索結果",
+  "resultsFor": "「{{query}}」の検索結果 {{count}}件",
+  "resultsFor_other": "「{{query}}」の検索結果 {{count}}件",
+  "loadFailed": "検索結果の読み込みに失敗しました。もう一度お試しください。",
+  "trendingSearches": "人気の検索",
 
   "filters": {
     "title": "フィルター",
+    "type": "タイプ",
     "category": "カテゴリー",
     "priceRange": "価格帯",
     "condition": "状態",
@@ -26,6 +31,12 @@
     "priceLowToHigh": "価格: 安い順",
     "priceHighToLow": "価格: 高い順",
     "mostBids": "入札数順"
+  },
+
+  "types": {
+    "auction": "オークション",
+    "category": "カテゴリー",
+    "seller": "出品者"
   },
 
   "autocomplete": {

@@ -1,28 +1,28 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useAuth } from '@/app/hooks/useAuth'
+import { http } from '@/services/http'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { formatRelativeTime } from '@/shared/utils/formatters'
+import { Flag, MoreVert, Sort, ThumbDown, ThumbUp, VerifiedUser } from '@mui/icons-material'
 import {
-  Box,
-  Typography,
-  Card,
   Avatar,
-  Rating,
-  Stack,
+  Box,
   Button,
-  Divider,
+  Card,
   Chip,
+  Divider,
   IconButton,
+  LinearProgress,
   Menu,
   MenuItem,
-  LinearProgress,
   Pagination,
+  Rating,
+  Stack,
+  Typography,
 } from '@mui/material'
-import { ThumbUp, ThumbDown, MoreVert, Flag, VerifiedUser, Sort } from '@mui/icons-material'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
-import { http } from '@/services/http'
-import { formatRelativeTime } from '@/shared/utils/formatters'
-import { useAuth } from '@/app/hooks/useAuth'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Review, ReviewsResponse, SortOption } from '../types'
 
 interface ReviewsSectionProps {

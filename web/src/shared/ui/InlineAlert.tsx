@@ -1,5 +1,5 @@
-import { Alert, AlertTitle } from '@mui/material'
 import type { AlertColor, SxProps, Theme } from '@mui/material'
+import { Alert, AlertTitle } from '@mui/material'
 import type { ReactNode } from 'react'
 
 interface InlineAlertProps {

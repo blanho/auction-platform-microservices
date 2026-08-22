@@ -18,6 +18,61 @@
     "progress": "Progress",
     "items": "Items",
     "duration": "Duration",
-    "noItems": "No items found"
+    "noItems": "No items found",
+    "live": "Live",
+    "loadFailed": "Failed to load background jobs. Please try again later.",
+    "listTitle": "Jobs",
+    "status": "Status",
+    "type": "Type",
+    "priority": "Priority",
+    "allStatuses": "All Statuses",
+    "allTypes": "All Types",
+    "created": "Created",
+    "actions": "Actions",
+    "failedItems": "{{count}} failed",
+    "detailLoadFailed": "Failed to load job details. The job may not exist.",
+    "correlationId": "Correlation ID",
+    "requestedBy": "Requested By",
+    "started": "Started",
+    "error": "Error",
+    "failed": "Failed",
+    "retries": "Retries",
+    "processed": "Processed"
+  },
+  "statuses": {
+    "Initializing": "Initializing",
+    "Pending": "Pending",
+    "Processing": "Processing",
+    "Completed": "Completed",
+    "CompletedWithErrors": "Completed with Errors",
+    "Failed": "Failed",
+    "Cancelled": "Cancelled"
+  },
+  "types": {
+    "AuctionExport": "Auction Export",
+    "AuctionImport": "Auction Import",
+    "ReportGeneration": "Report Generation",
+    "DataMigration": "Data Migration",
+    "BulkUpdate": "Bulk Update",
+    "BulkDelete": "Bulk Delete",
+    "Cleanup": "Cleanup"
+  },
+  "priorities": {
+    "Low": "Low",
+    "Normal": "Normal",
+    "High": "High",
+    "Critical": "Critical"
+  },
+  "itemStatuses": {
+    "Pending": "Pending",
+    "Processing": "Processing",
+    "Completed": "Completed",
+    "Failed": "Failed",
+    "Skipped": "Skipped"
+  },
+  "duration": {
+    "seconds": "{{count}}s",
+    "minutesSeconds": "{{minutes}}m {{seconds}}s",
+    "hoursMinutes": "{{hours}}h {{minutes}}m"
   }
 }

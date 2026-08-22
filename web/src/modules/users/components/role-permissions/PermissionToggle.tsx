@@ -1,5 +1,6 @@
-import { Box, Switch, Typography, Stack, Tooltip, CircularProgress } from '@mui/material'
 import { Check, Close } from '@mui/icons-material'
+import { Box, CircularProgress, Stack, Switch, Tooltip, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import type { PermissionDefinition } from '../../types'
 
 interface PermissionToggleProps {
@@ -15,6 +16,7 @@ export function PermissionToggle({
   loading,
   onToggle,
 }: PermissionToggleProps) {
+  const { t } = useTranslation('users')
   const handleChange = () => {
     onToggle(permission.code, !enabled)
   }
@@ -62,7 +64,9 @@ export function PermissionToggle({
           {permission.code}
         </Typography>
       </Stack>
-      <Tooltip title={enabled ? 'Revoke permission' : 'Grant permission'}>
+      <Tooltip
+        title={t(enabled ? 'rolePermissions.revokePermission' : 'rolePermissions.grantPermission')}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {loading ? (
             <CircularProgress

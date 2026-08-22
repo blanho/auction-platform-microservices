@@ -93,6 +93,15 @@ Provide the remaining values and run the bootstrap:
 export KEY_VAULT_NAME='<keyVaultName output>'
 export POSTGRES_HOST='<postgresqlHost output>'
 export POSTGRES_ADMIN_USER=auctionadmin
+export ELASTICSEARCH_USERNAME=elastic
+export ELASTICSEARCH_PASSWORD='<strong-random-password>'
+export SENDGRID_API_KEY='<sendgrid-api-key>'
+export SENDGRID_FROM_EMAIL='noreply@example.com'
+export TWILIO_ACCOUNT_SID='<twilio-account-sid>'
+export TWILIO_AUTH_TOKEN='<twilio-auth-token>'
+export TWILIO_FROM_NUMBER='<twilio-e164-number>'
+export FIREBASE_PROJECT_ID='<firebase-project-id>'
+export FIREBASE_SERVICE_ACCOUNT_JSON='<single-line-service-account-json>'
 export RABBITMQ_USER=auction
 export RABBITMQ_PASSWORD='<strong-random-password>'
 export JWT_SECRET='<at-least-32-random-characters>'
@@ -164,6 +173,8 @@ dotnet build auction.sln -c Release --no-restore --disable-build-servers -m:1 -n
 dotnet test auction.sln -c Release --no-build --disable-build-servers -m:1 -nodeReuse:false
 (cd web && npm run validate && npm run build)
 docker compose -f deploy/docker/docker-compose.yml config --quiet
+kubectl kustomize deploy/kubernetes/overlays/dev >/tmp/auction-dev.yaml
+kubectl kustomize deploy/kubernetes/overlays/staging >/tmp/auction-staging.yaml
 kubectl kustomize deploy/kubernetes/overlays/production >/tmp/auction-production.yaml
 az bicep build --file deploy/azure/main.bicep
 ```
@@ -183,6 +194,12 @@ CERT_MANAGER_EMAIL=ops@example.com \
 deploy/azure/render-kubernetes.sh >/tmp/auction-rendered.yaml
 ```
 
+The development and staging overlays use reserved `.test` ingress names with
+TLS disabled, so they cannot request production certificates or claim the
+production hosts. Their committed Secret values are deliberately recognizable,
+self-consistent placeholders for isolated clusters only; replace the Secret at
+deployment time before exposing either environment.
+
 ## Remaining production gates
 
 - Expand the Bidding finalization and Payment domain test suites with database
@@ -190,9 +207,11 @@ deploy/azure/render-kubernetes.sh >/tmp/auction-rendered.yaml
   every `*Tests.csproj` under `src`.
 - Triage all NuGet and npm advisories; do not waive high-severity findings
   without documenting exploitability.
-- Configure explicit egress destinations for Stripe, email, OAuth, Blob, and
-  other external integrations. The current default-deny policy intentionally
-  blocks unspecified egress.
+- Replace public endpoint access for managed Redis and third-party integrations
+  with private endpoints, an egress gateway, or provider IP allowlists where
+  available. Kubernetes NetworkPolicy cannot restrict public traffic by DNS
+  name, so current production rules scope those ports to only the workloads
+  that require them.
 - Load-test bid placement, SignalR, RabbitMQ consumers, Redis, PostgreSQL
   connection pools, and migration duration.
 - Plan migration from the managed NGINX application-routing add-on to Gateway

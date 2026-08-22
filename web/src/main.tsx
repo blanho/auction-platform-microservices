@@ -1,15 +1,15 @@
+import {
+  AuthProvider,
+  PermissionProvider,
+  QueryProvider,
+  ThemeProvider,
+  ToastProvider,
+} from '@/app/providers'
+import { router } from '@/app/router'
+import { ErrorBoundary } from '@/shared/components/errors'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
-import {
-  QueryProvider,
-  ThemeProvider,
-  AuthProvider,
-  PermissionProvider,
-  ToastProvider,
-} from '@/app/providers'
-import { ErrorBoundary } from '@/shared/components/errors'
-import { router } from '@/app/router'
 import './i18n'
 import './index.css'
 

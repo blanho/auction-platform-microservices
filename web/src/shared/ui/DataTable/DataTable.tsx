@@ -1,24 +1,24 @@
-import { useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/shared/lib/animations'
+import type { PaginatedResponse } from '@/shared/types/api'
+import type { ColumnConfig } from '@/shared/types/filter.types'
+import type { SxProps, Theme } from '@mui/material'
 import {
   Box,
+  Checkbox,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Checkbox,
-  Paper,
 } from '@mui/material'
-import type { SxProps, Theme } from '@mui/material'
-import { staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { motion } from 'framer-motion'
+import { useCallback, useMemo } from 'react'
 import { TableEmptyStateRow } from '../TableEmptyStateRow'
 import { TableSkeletonRows } from '../TableSkeletonRows'
 import { SortableTableHeader } from './SortableTableHeader'
 import { TablePagination } from './TablePagination'
-import type { ColumnConfig } from '@/shared/types/filter.types'
-import type { PaginatedResponse } from '@/shared/types/api'
 
 export interface DataTableProps<T extends { id?: string }> {
   columns: ColumnConfig<T>[]

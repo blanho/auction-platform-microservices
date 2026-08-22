@@ -35,7 +35,7 @@ public static class ServiceExtensions
             })
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
-        services.AddAutoMapper(typeof(CatalogMappingProfile).Assembly);
+        services.AddAutoMapper(_ => { }, typeof(CatalogMappingProfile).Assembly);
 
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();

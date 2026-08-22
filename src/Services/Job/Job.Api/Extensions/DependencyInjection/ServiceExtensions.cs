@@ -40,7 +40,7 @@ public static class ServiceExtensions
                 })
                 .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        services.AddAutoMapper(_ => { }, AppDomain.CurrentDomain.GetAssemblies());
 
         services.AddScoped<IJobRepository, JobRepository>();
         services.AddScoped<IJobItemRepository, JobItemRepository>();

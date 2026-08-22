@@ -1,5 +1,5 @@
 import { http } from '@/services/http'
-import type { Wallet, WalletTransaction, DepositRequest, WithdrawRequest } from '../types'
+import type { Wallet, WalletTransaction } from '../types'
 
 export const walletsApi = {
   async getWallet(username: string): Promise<Wallet> {
@@ -9,16 +9,6 @@ export const walletsApi = {
 
   async createWallet(username: string): Promise<Wallet> {
     const response = await http.post<Wallet>(`/wallets/${username}/create`)
-    return response.data
-  },
-
-  async deposit(username: string, data: DepositRequest): Promise<WalletTransaction> {
-    const response = await http.post<WalletTransaction>(`/wallets/${username}/deposit`, data)
-    return response.data
-  },
-
-  async withdraw(username: string, data: WithdrawRequest): Promise<WalletTransaction> {
-    const response = await http.post<WalletTransaction>(`/wallets/${username}/withdraw`, data)
     return response.data
   },
 

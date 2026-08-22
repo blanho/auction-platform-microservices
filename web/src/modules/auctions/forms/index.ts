@@ -1,5 +1,5 @@
-export { CreateAuctionForm } from './CreateAuctionForm'
 export { BasicInfoStep } from './BasicInfoStep'
+export { CreateAuctionForm } from './CreateAuctionForm'
 export { ItemDetailsStep } from './ItemDetailsStep'
 export { PricingStep } from './PricingStep'
 export { ReviewStep } from './ReviewStep'

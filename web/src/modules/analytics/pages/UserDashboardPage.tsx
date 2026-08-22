@@ -1,47 +1,47 @@
-import { useState } from 'react'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { InlineAlert, StatCard, StatCardSkeleton } from '@/shared/ui'
+import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
 import {
-  Container,
-  Typography,
+  AccountBalanceWallet,
+  Add,
+  ArrowForward,
+  EmojiEvents,
+  Gavel,
+  ShoppingCart,
+  Timer,
+  TrendingUp,
+  Visibility,
+} from '@mui/icons-material'
+import {
   Box,
-  Grid,
-  Stack,
   Button,
-  ToggleButton,
-  ToggleButtonGroup,
   Card,
-  Divider,
   Chip,
+  Container,
+  Divider,
+  Grid,
+  Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  Skeleton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from '@mui/material'
-import { InlineAlert, StatCard, StatCardSkeleton } from '@/shared/ui'
-import {
-  Gavel,
-  AccountBalanceWallet,
-  EmojiEvents,
-  Visibility,
-  ArrowForward,
-  TrendingUp,
-  Timer,
-  ShoppingCart,
-  Add,
-} from '@mui/icons-material'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { RevenueChart, CategoryChart, PerformanceMetrics } from '../components'
-import { useUserDashboard, useSellerAnalytics, useQuickStats } from '../hooks/useAnalytics'
-import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { CategoryChart, PerformanceMetrics, RevenueChart } from '../components'
+import { useQuickStats, useSellerAnalytics, useUserDashboard } from '../hooks/useAnalytics'
+import type { CategoryBreakdown, TrendDataPoint } from '../types'
 import type { TimeRange } from '../utils/date.utils'
-import type { TrendDataPoint, CategoryBreakdown } from '../types'
 
 export function UserDashboardPage() {
-  const { t: _t } = useTranslation('analytics')
+  const { t } = useTranslation('analytics')
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
   const { data: userStats, isLoading: userLoading, error: userError } = useUserDashboard()
   const { data: sellerAnalytics, isLoading: sellerLoading } = useSellerAnalytics(timeRange)
@@ -79,19 +79,19 @@ export function UserDashboardPage() {
   const performanceMetrics = sellerAnalytics
     ? [
         {
-          label: 'Active Auctions',
+          label: t('seller.active'),
           value: sellerAnalytics.activeAuctions,
           total: sellerAnalytics.totalAuctions,
           color: 'warning' as const,
         },
         {
-          label: 'Completed',
+          label: t('seller.completed'),
           value: sellerAnalytics.completedAuctions,
           total: sellerAnalytics.totalAuctions,
           color: 'success' as const,
         },
         {
-          label: 'Cancelled',
+          label: t('seller.cancelled'),
           value: sellerAnalytics.cancelledAuctions,
           total: sellerAnalytics.totalAuctions,
           color: 'error' as const,
@@ -126,10 +126,10 @@ export function UserDashboardPage() {
                   mb: 0.5,
                 }}
               >
-                My Dashboard
+                {t('user.title')}
               </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: '0.9375rem' }}>
-                Track your auction activity and performance metrics
+                {t('trackActivity')}
               </Typography>
             </Box>
             <Button
@@ -145,14 +145,14 @@ export function UserDashboardPage() {
                 px: 3,
               }}
             >
-              Create Auction
+              {t('user.createAuction')}
             </Button>
           </Stack>
         </motion.div>
 
         {userError && (
           <InlineAlert severity="error" sx={{ mb: 3 }}>
-            Failed to load dashboard data. Please try again later.
+            {t('errors.loadFailed')}
           </InlineAlert>
         )}
 
@@ -163,7 +163,7 @@ export function UserDashboardPage() {
                 <StatCardSkeleton />
               ) : (
                 <StatCard
-                  title="Active Auctions"
+                  title={t('user.activeAuctions')}
                   value={formatNumber(userStats?.activeAuctions ?? 0)}
                   icon={<Gavel />}
                   iconBg="rgba(202, 138, 4, 0.12)"
@@ -178,7 +178,7 @@ export function UserDashboardPage() {
                 <StatCardSkeleton />
               ) : (
                 <StatCard
-                  title="Auctions Won"
+                  title={t('user.auctionsWon')}
                   value={formatNumber(userStats?.wonAuctions ?? 0)}
                   icon={<EmojiEvents />}
                   iconBg="rgba(22, 163, 74, 0.12)"
@@ -193,7 +193,7 @@ export function UserDashboardPage() {
                 <StatCardSkeleton />
               ) : (
                 <StatCard
-                  title="Total Spent"
+                  title={t('user.totalSpent')}
                   value={formatCurrency(userStats?.totalSpent ?? 0)}
                   icon={<ShoppingCart />}
                   iconBg="rgba(59, 130, 246, 0.12)"
@@ -208,7 +208,7 @@ export function UserDashboardPage() {
                 <StatCardSkeleton />
               ) : (
                 <StatCard
-                  title="Total Earned"
+                  title={t('user.totalEarned')}
                   value={formatCurrency(userStats?.totalEarned ?? 0)}
                   icon={<AccountBalanceWallet />}
                   iconBg="rgba(16, 185, 129, 0.12)"
@@ -233,7 +233,7 @@ export function UserDashboardPage() {
                 }}
               >
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Bidding Summary
+                  {t('user.biddingSummary')}
                 </Typography>
                 {userLoading ? (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -245,14 +245,14 @@ export function UserDashboardPage() {
                   <Stack spacing={0} sx={{ mt: 2 }}>
                     <SummaryRow
                       icon={<Timer sx={{ color: 'warning.main' }} />}
-                      label="Active Bids"
+                      label={t('user.activeBids')}
                       value={userStats?.activeBids ?? 0}
                       chipColor="warning"
                     />
                     <Divider />
                     <SummaryRow
                       icon={<EmojiEvents sx={{ color: 'success.main' }} />}
-                      label="Won Auctions"
+                      label={t('user.wonAuctions')}
                       value={userStats?.wonAuctions ?? 0}
                       chipColor="success"
                     />
@@ -261,14 +261,14 @@ export function UserDashboardPage() {
                       icon={
                         <TrendingUp sx={{ color: 'error.main', transform: 'rotate(180deg)' }} />
                       }
-                      label="Lost Auctions"
+                      label={t('user.lostAuctions')}
                       value={userStats?.lostAuctions ?? 0}
                       chipColor="error"
                     />
                     <Divider />
                     <SummaryRow
                       icon={<Visibility sx={{ color: 'info.main' }} />}
-                      label="Watching"
+                      label={t('user.watching')}
                       value={userStats?.watchingCount ?? 0}
                       chipColor="info"
                     />
@@ -281,7 +281,7 @@ export function UserDashboardPage() {
                   endIcon={<ArrowForward />}
                   sx={{ mt: 3, textTransform: 'none' }}
                 >
-                  View All Bids
+                  {t('user.viewAllBids')}
                 </Button>
               </Card>
             </motion.div>
@@ -300,7 +300,7 @@ export function UserDashboardPage() {
                 }}
               >
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Platform Stats
+                  {t('user.platformStats')}
                 </Typography>
                 {quickLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -312,26 +312,26 @@ export function UserDashboardPage() {
                 {!quickLoading && quickStats && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     <QuickStatRow
-                      label="Total Platform Auctions"
+                      label={t('user.platformAuctions')}
                       value={formatNumber(quickStats.totalAuctions)}
                     />
                     <QuickStatRow
-                      label="Active Auctions"
+                      label={t('user.activeAuctionsLabel')}
                       value={formatNumber(quickStats.activeAuctions)}
                     />
                     <QuickStatRow
-                      label="Total Bids Placed"
+                      label={t('user.totalBidsPlaced')}
                       value={formatNumber(quickStats.totalBids)}
                     />
                     <QuickStatRow
-                      label="Platform Users"
+                      label={t('user.platformUsers')}
                       value={formatNumber(quickStats.totalUsers)}
                     />
                   </Stack>
                 )}
                 {!quickLoading && !quickStats && (
                   <Typography color="text.secondary" sx={{ mt: 2 }}>
-                    Unable to load platform stats
+                    {t('user.platformStatsUnavailable')}
                   </Typography>
                 )}
                 <Button
@@ -341,7 +341,7 @@ export function UserDashboardPage() {
                   endIcon={<ArrowForward />}
                   sx={{ mt: 3, textTransform: 'none' }}
                 >
-                  Browse Auctions
+                  {t('user.browseAuctions')}
                 </Button>
               </Card>
             </motion.div>
@@ -366,19 +366,19 @@ export function UserDashboardPage() {
               sx={{ mb: 3 }}
             >
               <Typography variant="h6" fontWeight={600}>
-                Seller Analytics
+                {t('seller.title')}
               </Typography>
               <ToggleButtonGroup
                 value={timeRange}
                 exclusive
                 onChange={handleTimeRangeChange}
                 size="small"
-                aria-label="time range"
+                aria-label={t('period.timeRange')}
               >
-                <ToggleButton value="7d">7D</ToggleButton>
-                <ToggleButton value="30d">30D</ToggleButton>
-                <ToggleButton value="90d">90D</ToggleButton>
-                <ToggleButton value="1y">1Y</ToggleButton>
+                <ToggleButton value="7d">{t('period.7d')}</ToggleButton>
+                <ToggleButton value="30d">{t('period.30d')}</ToggleButton>
+                <ToggleButton value="90d">{t('period.90d')}</ToggleButton>
+                <ToggleButton value="1y">{t('period.1y')}</ToggleButton>
               </ToggleButtonGroup>
             </Stack>
 
@@ -404,28 +404,28 @@ export function UserDashboardPage() {
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricBox
                       value={formatNumber(sellerAnalytics.totalAuctions)}
-                      label="Total Auctions"
+                      label={t('seller.totalAuctions')}
                       color="primary.main"
                     />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricBox
                       value={formatCurrency(sellerAnalytics.totalRevenue)}
-                      label="Total Revenue"
+                      label={t('seller.totalRevenue')}
                       color="success.main"
                     />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricBox
                       value={formatPercentage(sellerAnalytics.successRate)}
-                      label="Success Rate"
+                      label={t('seller.successRate')}
                       color="warning.main"
                     />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <MetricBox
                       value={formatCurrency(sellerAnalytics.averageFinalPrice)}
-                      label="Avg. Final Price"
+                      label={t('seller.avgFinalPrice')}
                       color="info.main"
                     />
                   </Grid>
@@ -436,7 +436,7 @@ export function UserDashboardPage() {
                     <RevenueChart
                       data={revenueChartData}
                       isLoading={sellerLoading}
-                      title="Revenue Over Time"
+                      title={t('user.revenueOverTime')}
                       height={280}
                     />
                   </Grid>
@@ -444,14 +444,14 @@ export function UserDashboardPage() {
                     <PerformanceMetrics
                       metrics={performanceMetrics}
                       isLoading={sellerLoading}
-                      title="Auction Status"
+                      title={t('seller.auctionStatus')}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <CategoryChart
                       data={categoryData}
                       isLoading={sellerLoading}
-                      title="Revenue by Category"
+                      title={t('user.revenueByCategory')}
                       dataKey="revenue"
                       height={250}
                     />
@@ -464,16 +464,14 @@ export function UserDashboardPage() {
             )}
             {!sellerLoading && !hasSellerData && (
               <Box sx={{ py: 6, textAlign: 'center' }}>
-                <Typography color="text.secondary">
-                  No seller analytics available. Start selling to see your performance metrics.
-                </Typography>
+                <Typography color="text.secondary">{t('user.noSellerAnalytics')}</Typography>
                 <Button
                   component={Link}
                   to="/auctions/create"
                   variant="outlined"
                   sx={{ mt: 2, textTransform: 'none' }}
                 >
-                  Create Your First Auction
+                  {t('user.createFirstAuction')}
                 </Button>
               </Box>
             )}
@@ -579,6 +577,7 @@ function MetricBox({ value, label, color }: { value: string; label: string; colo
 }
 
 function CategoryTable({ data, isLoading }: { data: CategoryBreakdown[]; isLoading?: boolean }) {
+  const { t } = useTranslation('analytics')
   if (isLoading) {
     return (
       <Box
@@ -616,18 +615,18 @@ function CategoryTable({ data, isLoading }: { data: CategoryBreakdown[]; isLoadi
         gutterBottom
         sx={{ fontFamily: '"Fira Sans", sans-serif' }}
       >
-        Category Breakdown
+        {t('seller.categoryBreakdown')}
       </Typography>
       {data.length > 0 ? (
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>{t('seller.category')}</TableCell>
               <TableCell align="right" sx={{ fontWeight: 600 }}>
-                Auctions
+                {t('seller.auctions')}
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600 }}>
-                Revenue
+                {t('seller.revenue')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -653,7 +652,7 @@ function CategoryTable({ data, isLoading }: { data: CategoryBreakdown[]; isLoadi
         </Table>
       ) : (
         <Typography color="text.secondary" sx={{ py: 2 }}>
-          No category data available
+          {t('user.noCategoryData')}
         </Typography>
       )}
     </Box>

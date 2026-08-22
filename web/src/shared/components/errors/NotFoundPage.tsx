@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Box, Container, Typography, Button, Stack } from '@mui/material'
-import { Home, Search, ArrowBack } from '@mui/icons-material'
 import { palette } from '@/shared/theme/tokens'
+import { ArrowBack, Home, Search } from '@mui/icons-material'
+import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 export const NotFoundPage = () => {
   const { t } = useTranslation()

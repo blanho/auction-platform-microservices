@@ -5,7 +5,7 @@ namespace: auction-platform
 
 resources:
   - ../../base
-  - external-secrets.yaml
+  - external-secret-resources.yaml
   - cluster-issuer.yaml
   - azure-egress.yaml
 

@@ -1,10 +1,10 @@
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, Stack, Skeleton, useTheme, alpha } from '@mui/material'
-import { People, Gavel, TrendingUp, AttachMoney } from '@mui/icons-material'
-import { motion } from 'framer-motion'
-import { useRealTimeStats } from '../hooks/useAnalytics'
-import { formatNumber, formatCurrency } from '@/shared/utils/formatters'
 import { palette } from '@/shared/theme/tokens'
+import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
+import { AttachMoney, Gavel, People, TrendingUp } from '@mui/icons-material'
+import { alpha, Box, Skeleton, Stack, Typography, useTheme } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { useRealTimeStats } from '../hooks/useAnalytics'
 
 interface StatItemProps {
   icon: React.ReactNode

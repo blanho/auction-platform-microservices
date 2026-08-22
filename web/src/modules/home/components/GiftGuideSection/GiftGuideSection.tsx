@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Button, Grid } from '@mui/material'
 import { typography } from '@/shared/theme/tokens'
+import { Box, Button, Container, Grid, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 const giftCategories = [
   {

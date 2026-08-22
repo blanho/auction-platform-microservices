@@ -1,17 +1,17 @@
+import { palette } from '@/shared/theme/tokens'
+import { CheckCircle, Error, Info, Warning } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Box,
-  CircularProgress,
-} from '@mui/material'
-import { Warning, CheckCircle, Info, Error } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
 
 type ConfirmDialogVariant = 'warning' | 'danger' | 'info' | 'success'
 

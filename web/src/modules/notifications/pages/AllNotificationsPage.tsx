@@ -1,36 +1,37 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { palette } from '@/shared/theme/tokens'
+import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
+import { formatNumber } from '@/shared/utils/formatters'
+import { Archive, CheckCircle, MailOutline, Person } from '@mui/icons-material'
 import {
   Box,
-  Container,
-  Typography,
   Card,
+  Chip,
+  Container,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Pagination,
-  Grid,
+  Typography,
 } from '@mui/material'
-import { Person, CheckCircle, MailOutline, Archive } from '@mui/icons-material'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAllNotifications } from '../hooks'
 import type {
-  Notification,
-  NotificationType,
-  NotificationStatus,
   AdminNotificationFilters,
+  Notification,
+  NotificationStatus,
+  NotificationType,
 } from '../types/notification.types'
 import { formatTimeAgo, getNotificationColor, getNotificationLabel } from '../utils'
-import { palette } from '@/shared/theme/tokens'
-import { TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 
 const STATUS_CONFIG: Record<
   NotificationStatus,
@@ -42,7 +43,7 @@ const STATUS_CONFIG: Record<
 }
 
 export function AllNotificationsPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const [filters, setFilters] = useState<
     AdminNotificationFilters & { page: number; pageSize: number }
   >({
@@ -68,10 +69,10 @@ export function AllNotificationsPage() {
             mb: 1,
           }}
         >
-          All Notifications
+          {t('admin.title')}
         </Typography>
         <Typography sx={{ color: palette.neutral[500], fontFamily: '"Inter", sans-serif' }}>
-          View and manage all user notifications across the platform
+          {t('admin.description')}
         </Typography>
       </Box>
 
@@ -82,46 +83,54 @@ export function AllNotificationsPage() {
               <TextField
                 fullWidth
                 size="small"
-                label="User ID"
+                label={t('admin.userId')}
                 value={filters.userId || ''}
                 onChange={(e) => handleFilterChange('userId', e.target.value)}
-                placeholder="Filter by user ID"
+                placeholder={t('admin.userIdPlaceholder')}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Type</InputLabel>
+                <InputLabel>{t('admin.type')}</InputLabel>
                 <Select
                   value={filters.type || ''}
-                  label="Type"
+                  label={t('admin.type')}
                   onChange={(e) => handleFilterChange('type', e.target.value)}
                 >
-                  <MenuItem value="">All Types</MenuItem>
-                  <MenuItem value="bid_placed">Bid Placed</MenuItem>
-                  <MenuItem value="bid_outbid">Bid Outbid</MenuItem>
-                  <MenuItem value="auction_won">Auction Won</MenuItem>
-                  <MenuItem value="auction_lost">Auction Lost</MenuItem>
-                  <MenuItem value="auction_ending">Auction Ending</MenuItem>
-                  <MenuItem value="auction_ended">Auction Ended</MenuItem>
-                  <MenuItem value="payment_received">Payment Received</MenuItem>
-                  <MenuItem value="payment_failed">Payment Failed</MenuItem>
-                  <MenuItem value="system">System</MenuItem>
-                  <MenuItem value="promotional">Promotional</MenuItem>
+                  <MenuItem value="">{t('admin.allTypes')}</MenuItem>
+                  {[
+                    'bid_placed',
+                    'bid_outbid',
+                    'auction_won',
+                    'auction_lost',
+                    'auction_ending',
+                    'auction_ended',
+                    'payment_received',
+                    'payment_failed',
+                    'system',
+                    'promotional',
+                  ].map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {t(`admin.types.${type}`)}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
+                <InputLabel>{t('admin.status')}</InputLabel>
                 <Select
                   value={filters.status || ''}
-                  label="Status"
+                  label={t('admin.status')}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                 >
-                  <MenuItem value="">All Statuses</MenuItem>
-                  <MenuItem value="unread">Unread</MenuItem>
-                  <MenuItem value="read">Read</MenuItem>
-                  <MenuItem value="archived">Archived</MenuItem>
+                  <MenuItem value="">{t('admin.allStatuses')}</MenuItem>
+                  {['unread', 'read', 'archived'].map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {t(`admin.statuses.${status}`)}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -133,29 +142,33 @@ export function AllNotificationsPage() {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  User
+                  {t('admin.user')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Type
+                  {t('admin.type')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Title
+                  {t('admin.notificationTitle')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Message
+                  {t('admin.message')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Status
+                  {t('admin.status')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4C1D95', bgcolor: '#FAF5FF' }}>
-                  Created
+                  {t('admin.created')}
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading && <TableSkeletonRows rows={10} columns={6} />}
               {!isLoading && (data?.items?.length ?? 0) === 0 && (
-                <TableEmptyStateRow colSpan={6} title="No notifications found" cellSx={{ py: 8 }} />
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title={t('admin.noNotifications')}
+                  cellSx={{ py: 8 }}
+                />
               )}
               {!isLoading &&
                 (data?.items?.length ?? 0) > 0 &&
@@ -183,7 +196,9 @@ export function AllNotificationsPage() {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={getNotificationLabel(notification.type as NotificationType)}
+                        label={t(`admin.types.${notification.type}`, {
+                          defaultValue: getNotificationLabel(notification.type as NotificationType),
+                        })}
                         size="small"
                         sx={{
                           bgcolor: `${getNotificationColor(notification.type as NotificationType)}20`,
@@ -215,7 +230,7 @@ export function AllNotificationsPage() {
                     <TableCell>
                       <Chip
                         icon={STATUS_CONFIG[notification.status as NotificationStatus].icon}
-                        label={notification.status.toUpperCase()}
+                        label={t(`admin.statuses.${notification.status}`)}
                         size="small"
                         sx={{
                           bgcolor: STATUS_CONFIG[notification.status as NotificationStatus].bgcolor,
@@ -254,15 +269,15 @@ export function AllNotificationsPage() {
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
-                Total Notifications
+                {t('admin.total')}
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>
-                {data.totalCount}
+                {formatNumber(data.totalCount)}
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
-                Current Page
+                {t('admin.currentPage')}
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>
                 {data.page} / {data.totalPages}
@@ -270,10 +285,10 @@ export function AllNotificationsPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
               <Typography variant="caption" sx={{ color: palette.neutral[500] }}>
-                Per Page
+                {t('admin.perPage')}
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, color: '#7C3AED' }}>
-                {data.pageSize}
+                {formatNumber(data.pageSize)}
               </Typography>
             </Grid>
           </Grid>

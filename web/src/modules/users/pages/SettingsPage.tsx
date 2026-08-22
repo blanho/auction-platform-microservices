@@ -1,51 +1,50 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { palette } from '@/shared/theme/tokens'
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Card,
-  Grid,
-  CircularProgress,
-  Switch,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-} from '@mui/material'
-import { InlineAlert, FormField } from '@/shared/ui'
-import {
-  Lock,
-  Security,
-  Notifications,
-  Palette,
-  Language,
-  ChevronRight,
-  Shield,
-  Close,
-} from '@mui/icons-material'
-import { useProfile, useChangePassword, useDisableTwoFactor } from '../hooks'
+import { TwoFactorSetup } from '@/modules/auth/components/TwoFactorSetup'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from '@/modules/notifications/hooks'
-import { changePasswordSchema } from '../schemas'
+import { palette } from '@/shared/theme/tokens'
+import { FormField, InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  ChevronRight,
+  Close,
+  Language,
+  Lock,
+  Notifications,
+  Palette,
+  Security,
+  Shield,
+} from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Switch,
+  Typography,
+} from '@mui/material'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { useChangePassword, useProfile } from '../hooks'
+import { createChangePasswordSchema } from '../schemas'
 import type { ChangePasswordRequest } from '../types'
-import { TwoFactorSetup } from '@/modules/auth/components/TwoFactorSetup'
-import { getErrorMessage } from '@/services/http'
 
 export function SettingsPage() {
-  const { t: _t } = useTranslation('users')
+  const { t, i18n } = useTranslation('users')
+  const changePasswordSchema = createChangePasswordSchema(t)
   const [activeSection, setActiveSection] = useState<'security' | 'notifications' | 'appearance'>(
     'security'
   )
@@ -54,7 +53,6 @@ export function SettingsPage() {
 
   const { data: profile } = useProfile()
   const changePassword = useChangePassword()
-  const disableTwoFactor = useDisableTwoFactor()
   const { data: notificationPreferences, isLoading: prefsLoading } = useNotificationPreferences()
   const updatePreferences = useUpdateNotificationPreferences()
 
@@ -83,24 +81,25 @@ export function SettingsPage() {
     }
   }
 
-  const handleDisable2FA = async () => {
-    try {
-      await disableTwoFactor.mutateAsync()
-      setShow2FADialog(false)
-    } catch {
-      return
-    }
-  }
-
   const menuItems = [
-    { id: 'security', icon: <Security />, label: 'Security', description: 'Password and 2FA' },
+    {
+      id: 'security',
+      icon: <Security />,
+      label: t('settings.security'),
+      description: t('settings.securityDescription'),
+    },
     {
       id: 'notifications',
       icon: <Notifications />,
-      label: 'Notifications',
-      description: 'Email and push preferences',
+      label: t('settings.notifications'),
+      description: t('settings.notificationsDescription'),
     },
-    { id: 'appearance', icon: <Palette />, label: 'Appearance', description: 'Theme and display' },
+    {
+      id: 'appearance',
+      icon: <Palette />,
+      label: t('settings.appearance'),
+      description: t('settings.appearanceDescription'),
+    },
   ]
 
   return (
@@ -114,11 +113,9 @@ export function SettingsPage() {
             color: palette.neutral[900],
           }}
         >
-          Settings
+          {t('settings.title')}
         </Typography>
-        <Typography sx={{ color: palette.neutral[500] }}>
-          Manage your account security and preferences
-        </Typography>
+        <Typography sx={{ color: palette.neutral[500] }}>{t('settings.description')}</Typography>
       </Box>
 
       <Grid container spacing={4}>
@@ -181,19 +178,19 @@ export function SettingsPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                   <Lock sx={{ color: palette.brand.primary }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
-                    Change Password
+                    {t('security.changePassword')}
                   </Typography>
                 </Box>
 
                 {passwordChangeSuccess && (
                   <InlineAlert severity="success" sx={{ mb: 3 }}>
-                    Password changed successfully!
+                    {t('messages.passwordChanged')}
                   </InlineAlert>
                 )}
 
                 {changePassword.isError && (
                   <InlineAlert severity="error" sx={{ mb: 3 }}>
-                    Failed to change password. Please check your current password.
+                    {t('security.changePasswordError')}
                   </InlineAlert>
                 )}
 
@@ -203,7 +200,7 @@ export function SettingsPage() {
                     register={register}
                     errors={errors}
                     fullWidth
-                    label="Current Password"
+                    label={t('security.currentPassword')}
                     type="password"
                     showPasswordToggle
                     sx={{ mb: 2.5 }}
@@ -214,7 +211,7 @@ export function SettingsPage() {
                     register={register}
                     errors={errors}
                     fullWidth
-                    label="New Password"
+                    label={t('security.newPassword')}
                     type="password"
                     showPasswordToggle
                     sx={{ mb: 2.5 }}
@@ -225,7 +222,7 @@ export function SettingsPage() {
                     register={register}
                     errors={errors}
                     fullWidth
-                    label="Confirm New Password"
+                    label={t('security.confirmPassword')}
                     type="password"
                     showPasswordToggle
                     sx={{ mb: 3 }}
@@ -246,7 +243,7 @@ export function SettingsPage() {
                     {isSubmitting || changePassword.isPending ? (
                       <CircularProgress size={20} color="inherit" />
                     ) : (
-                      'Update Password'
+                      t('security.updatePassword')
                     )}
                   </Button>
                 </form>
@@ -262,13 +259,12 @@ export function SettingsPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
                   <Shield sx={{ color: palette.brand.primary }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
-                    Two-Factor Authentication
+                    {t('security.twoFactor')}
                   </Typography>
                 </Box>
 
                 <Typography sx={{ color: palette.neutral[500], mb: 3, fontSize: '0.9375rem' }}>
-                  Add an extra layer of security to your account by enabling two-factor
-                  authentication.
+                  {t('security.twoFactorDescription')}
                 </Typography>
 
                 <Box
@@ -284,12 +280,12 @@ export function SettingsPage() {
                 >
                   <Box>
                     <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
-                      {profile?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                      {t(profile?.twoFactorEnabled ? 'security.enabled' : 'security.disabled')}
                     </Typography>
                     <Typography sx={{ fontSize: '0.8125rem', color: palette.neutral[500] }}>
                       {profile?.twoFactorEnabled
-                        ? 'Your account is protected with 2FA'
-                        : 'Enable 2FA for enhanced security'}
+                        ? t('security.protectedWithTwoFactor')
+                        : t('security.enableForSecurity')}
                     </Typography>
                   </Box>
                   <Button
@@ -313,7 +309,11 @@ export function SettingsPage() {
                           }),
                     }}
                   >
-                    {profile?.twoFactorEnabled ? 'Manage 2FA' : 'Enable 2FA'}
+                    {t(
+                      profile?.twoFactorEnabled
+                        ? 'security.manageTwoFactor'
+                        : 'security.enableTwoFactor'
+                    )}
                   </Button>
                 </Box>
               </Card>
@@ -336,8 +336,8 @@ export function SettingsPage() {
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
                 {profile?.twoFactorEnabled
-                  ? 'Manage Two-Factor Authentication'
-                  : 'Set Up Two-Factor Authentication'}
+                  ? t('security.manageTwoFactorTitle')
+                  : t('security.setupTwoFactorTitle')}
               </Typography>
               <IconButton onClick={() => setShow2FADialog(false)} size="small">
                 <Close />
@@ -360,7 +360,7 @@ export function SettingsPage() {
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900], mb: 3 }}>
-                Notification Preferences
+                {t('settings.notificationPreferences')}
               </Typography>
 
               {prefsLoading ? (
@@ -370,33 +370,33 @@ export function SettingsPage() {
                   {[
                     {
                       key: 'emailEnabled',
-                      label: 'Email Notifications',
-                      description: 'Receive notifications via email',
+                      label: t('settings.notificationItems.email.label'),
+                      description: t('settings.notificationItems.email.description'),
                     },
                     {
                       key: 'pushEnabled',
-                      label: 'Push Notifications',
-                      description: 'Receive push notifications in browser',
+                      label: t('settings.notificationItems.push.label'),
+                      description: t('settings.notificationItems.push.description'),
                     },
                     {
                       key: 'bidUpdates',
-                      label: 'Bid Updates',
-                      description: 'Get notified when someone outbids you',
+                      label: t('settings.notificationItems.bid.label'),
+                      description: t('settings.notificationItems.bid.description'),
                     },
                     {
                       key: 'auctionUpdates',
-                      label: 'Auction Updates',
-                      description: 'Reminders before auctions end and status changes',
+                      label: t('settings.notificationItems.auction.label'),
+                      description: t('settings.notificationItems.auction.description'),
                     },
                     {
                       key: 'promotionalEmails',
-                      label: 'Promotional',
-                      description: 'Special offers and platform updates',
+                      label: t('settings.notificationItems.promotional.label'),
+                      description: t('settings.notificationItems.promotional.description'),
                     },
                     {
                       key: 'systemAlerts',
-                      label: 'System Alerts',
-                      description: 'Important account and security updates',
+                      label: t('settings.notificationItems.system.label'),
+                      description: t('settings.notificationItems.system.description'),
                     },
                   ].map((item, index) => (
                     <Box key={item.key}>
@@ -452,23 +452,23 @@ export function SettingsPage() {
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900], mb: 3 }}>
-                Appearance
+                {t('settings.appearance')}
               </Typography>
 
               <Box sx={{ mb: 4 }}>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900], mb: 1.5 }}>
-                  Theme
+                  {t('settings.theme')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                  {['Light', 'Dark', 'System'].map((theme) => (
+                  {(['light', 'dark', 'system'] as const).map((theme) => (
                     <Button
                       key={theme}
-                      variant={theme === 'Light' ? 'contained' : 'outlined'}
+                      variant={theme === 'light' ? 'contained' : 'outlined'}
                       sx={{
                         px: 3,
                         py: 1,
                         textTransform: 'none',
-                        ...(theme === 'Light'
+                        ...(theme === 'light'
                           ? {
                               bgcolor: palette.neutral[900],
                               '&:hover': { bgcolor: palette.neutral[700] },
@@ -480,7 +480,7 @@ export function SettingsPage() {
                             }),
                       }}
                     >
-                      {theme}
+                      {t(`settings.themes.${theme}`)}
                     </Button>
                   ))}
                 </Box>
@@ -488,55 +488,23 @@ export function SettingsPage() {
 
               <Box>
                 <Typography sx={{ fontWeight: 500, color: palette.neutral[900], mb: 1.5 }}>
-                  Language
+                  {t('settings.language')}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Language sx={{ color: palette.neutral[500] }} />
-                  <Typography>English (US)</Typography>
+                  <Typography>
+                    {t(
+                      i18n.resolvedLanguage?.startsWith('ja')
+                        ? 'settings.languages.ja'
+                        : 'settings.languages.en'
+                    )}
+                  </Typography>
                 </Box>
               </Box>
             </Card>
           )}
         </Grid>
       </Grid>
-
-      <Dialog open={show2FADialog} onClose={() => setShow2FADialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600 }}>Disable Two-Factor Authentication?</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: palette.neutral[500] }}>
-            Disabling 2FA will make your account less secure. Are you sure you want to continue?
-          </Typography>
-          {disableTwoFactor.isError && (
-            <InlineAlert severity="error" sx={{ mt: 2 }}>
-              {getErrorMessage(disableTwoFactor.error)}
-            </InlineAlert>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => setShow2FADialog(false)}
-            sx={{ color: palette.neutral[500], textTransform: 'none' }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleDisable2FA}
-            disabled={disableTwoFactor.isPending}
-            sx={{
-              bgcolor: palette.semantic.error,
-              textTransform: 'none',
-              '&:hover': { bgcolor: palette.semantic.errorHover },
-            }}
-          >
-            {disableTwoFactor.isPending ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              'Disable 2FA'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   )
 }

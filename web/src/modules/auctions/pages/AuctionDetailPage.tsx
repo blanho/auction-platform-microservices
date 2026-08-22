@@ -1,46 +1,47 @@
+import { useAuth } from '@/app/providers'
+import { getCurrentLocale } from '@/i18n'
+import { useAutoBidForAuction, useBidsForAuction } from '@/modules/bidding/hooks'
+import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
+import { palette } from '@/shared/theme/tokens'
+import { ErrorState, InlineAlert } from '@/shared/ui'
+import {
+  ContentCopy,
+  Facebook,
+  NavigateNext,
+  Pinterest,
+  Twitter,
+  Visibility,
+} from '@mui/icons-material'
+import {
+  Box,
+  Breadcrumbs,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
-import {
-  Box,
-  Container,
-  Grid,
-  Typography,
-  Breadcrumbs,
-  Chip,
-  Stack,
-  Skeleton,
-  Snackbar,
-  IconButton,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  CircularProgress,
-} from '@mui/material'
-import { ErrorState, InlineAlert } from '@/shared/ui'
-import {
-  NavigateNext,
-  Visibility,
-  ContentCopy,
-  Facebook,
-  Twitter,
-  Pinterest,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { ImageGallery, ImageGallerySkeleton } from '../components/ImageGallery'
 import { BidSection, BidSectionSkeleton } from '../components/BidSection'
-import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
+import { ImageGallery, ImageGallerySkeleton } from '../components/ImageGallery'
 import { ProductTabs, ProductTabsSkeleton } from '../components/ProductTabs'
-import { ReviewsSection } from '@/modules/users/components/ReviewsSection'
+import { SellerInfo, SellerInfoSkeleton } from '../components/SellerInfo'
 import { useAuction } from '../hooks'
-import { useRecordView } from '../hooks/useViews'
-import { useAuctionSignalR } from '../hooks/useAuctionSignalR'
 import { useAuctionDetailActions } from '../hooks/useAuctionDetailActions'
-import { useAutoBidForAuction, useBidsForAuction } from '@/modules/bidding/hooks'
-import { useAuth } from '@/app/providers'
+import { useAuctionSignalR } from '../hooks/useAuctionSignalR'
+import { useRecordView } from '../hooks/useViews'
 
 export function AuctionDetailPage() {
   const { t } = useTranslation('auctions')
@@ -57,7 +58,7 @@ export function AuctionDetailPage() {
       createdAt: bid.bidTime,
     })) ?? []
   const recordView = useRecordView()
-  const hasRecordedView = useRef(false)
+  const recordedAuctionIdRef = useRef<string | null>(null)
 
   const {
     snackbar,
@@ -75,8 +76,8 @@ export function AuctionDetailPage() {
   useAuctionSignalR({ auctionId: id ?? '', enabled: !isLoading && !!id })
 
   useEffect(() => {
-    if (id && !isLoading && auction && !hasRecordedView.current) {
-      hasRecordedView.current = true
+    if (id && !isLoading && auction && recordedAuctionIdRef.current !== id) {
+      recordedAuctionIdRef.current = id
       recordView.mutate(id)
     }
   }, [id, isLoading, auction, recordView])
@@ -87,6 +88,10 @@ export function AuctionDetailPage() {
     }
     return <AuctionDetailPageSkeleton />
   }
+
+  const encodedShareUrl = encodeURIComponent(globalThis.location.href)
+  const encodedShareTitle = encodeURIComponent(auction.title)
+  const encodedShareImage = encodeURIComponent(auction.images[0]?.url ?? '')
 
   return (
     <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
@@ -184,6 +189,11 @@ export function AuctionDetailPage() {
                 <Stack direction="row" spacing={0.5}>
                   <Tooltip title={t('actions.shareOnFacebook')}>
                     <IconButton
+                      component="a"
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t('actions.shareOnFacebook')}
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#1877F2' } }}
                     >
@@ -192,6 +202,11 @@ export function AuctionDetailPage() {
                   </Tooltip>
                   <Tooltip title={t('actions.shareOnTwitter')}>
                     <IconButton
+                      component="a"
+                      href={`https://twitter.com/intent/tweet?url=${encodedShareUrl}&text=${encodedShareTitle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t('actions.shareOnTwitter')}
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#1DA1F2' } }}
                     >
@@ -200,6 +215,11 @@ export function AuctionDetailPage() {
                   </Tooltip>
                   <Tooltip title={t('actions.pinOnPinterest')}>
                     <IconButton
+                      component="a"
+                      href={`https://pinterest.com/pin/create/button/?url=${encodedShareUrl}&media=${encodedShareImage}&description=${encodedShareTitle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t('actions.pinOnPinterest')}
                       size="small"
                       sx={{ color: palette.neutral[500], '&:hover': { color: '#E60023' } }}
                     >
@@ -210,6 +230,7 @@ export function AuctionDetailPage() {
                     <IconButton
                       size="small"
                       onClick={handleShare}
+                      aria-label={t('actions.copyLink')}
                       sx={{
                         color: palette.neutral[500],
                         '&:hover': { color: palette.neutral[900] },
@@ -308,7 +329,7 @@ export function AuctionDetailPage() {
                 color: palette.brand.primary,
               }}
             >
-              {auction?.buyNowPrice?.toLocaleString('en-US', {
+              {auction?.buyNowPrice?.toLocaleString(getCurrentLocale(), {
                 style: 'currency',
                 currency: 'USD',
                 minimumFractionDigits: 0,

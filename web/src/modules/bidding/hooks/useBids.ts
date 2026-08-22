@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { biddingApi } from '../api'
 import { BID_CONSTANTS } from '../constants'
-import { retractBidSchema } from '../schemas'
+import { createRetractBidSchema } from '../schemas'
 import type { BidHistoryFilters } from '../types'
 
 const QUERY_KEYS = BID_CONSTANTS.QUERY_KEYS
@@ -29,11 +30,12 @@ export const useBidHistory = (filters: BidHistoryFilters) => {
 }
 
 export const useRetractBid = () => {
+  const { t } = useTranslation('bidding')
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ bidId, reason }: { bidId: string; reason: string }) => {
-      const result = retractBidSchema.safeParse({ reason })
+      const result = createRetractBidSchema(t).safeParse({ reason })
       if (!result.success) {
         throw new Error(result.error.issues.map((e) => e.message).join(', '))
       }

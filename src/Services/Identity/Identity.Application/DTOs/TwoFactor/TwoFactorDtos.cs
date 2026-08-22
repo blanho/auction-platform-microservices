@@ -24,12 +24,6 @@ public class Disable2FARequest
     public string Password { get; set; } = string.Empty;
 }
 
-public class UseRecoveryCodeRequest
-{
-    [Required]
-    public string RecoveryCode { get; set; } = string.Empty;
-}
-
 public class TwoFactorLoginRequest
 {
     [Required]

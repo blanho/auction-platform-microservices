@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const MS_PER_SECOND = 1_000
 const MS_PER_MINUTE = 60 * MS_PER_SECOND
@@ -14,7 +14,12 @@ interface CountdownState {
 }
 
 function computeCountdown(endTime: string): CountdownState {
-  const diff = new Date(endTime).getTime() - Date.now()
+  const endTimestamp = new Date(endTime).getTime()
+  if (!Number.isFinite(endTimestamp)) {
+    return { timeLeft: '', isExpired: true, isUrgent: false }
+  }
+
+  const diff = endTimestamp - Date.now()
 
   if (diff <= 0) {
     return { timeLeft: '', isExpired: true, isUrgent: false }
@@ -46,7 +51,7 @@ export function useCountdown(endTime: string, intervalMs = MS_PER_SECOND): Count
   useEffect(() => {
     const tick = () => setState(computeCountdown(endTime))
     tick()
-    const timerId = setInterval(tick, intervalMs)
+    const timerId = setInterval(tick, Math.max(1, intervalMs))
     return () => clearInterval(timerId)
   }, [endTime, intervalMs])
 

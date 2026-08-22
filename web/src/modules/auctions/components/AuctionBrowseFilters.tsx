@@ -1,3 +1,6 @@
+import { componentStyles } from '@/shared/theme/component-styles'
+import { palette } from '@/shared/theme/tokens'
+import { Close } from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -7,11 +10,8 @@ import {
   IconButton,
   Typography,
 } from '@mui/material'
-import { Close } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import type { Category } from '../api/categories.api'
-import { componentStyles } from '@/shared/theme/component-styles'
-import { palette } from '@/shared/theme/tokens'
 
 interface AuctionBrowseFiltersProps {
   categories: Category[]

@@ -1,4 +1,4 @@
-import { CheckCircle, Warning, Error as ErrorIcon } from '@mui/icons-material'
+import { CheckCircle, Error as ErrorIcon, Warning } from '@mui/icons-material'
 
 export const getHealthIcon = (status: string) => {
   switch (status.toLowerCase()) {

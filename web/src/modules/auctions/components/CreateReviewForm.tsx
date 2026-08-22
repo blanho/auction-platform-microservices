@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, TextField, Rating, Button, Stack, CircularProgress } from '@mui/material'
+import type { CreateReviewRequest } from '@/modules/users/api/reviews.api'
+import { useCreateReview } from '@/modules/users/hooks'
+import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
 import { Star } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { useCreateReview } from '@/modules/users/hooks'
-import type { CreateReviewRequest } from '@/modules/users/api/reviews.api'
+import { Box, Button, CircularProgress, Rating, Stack, TextField, Typography } from '@mui/material'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface CreateReviewFormProps {
   auctionId: string

@@ -1,15 +1,16 @@
-import { Box, Typography, IconButton, Chip, Stack, alpha, Tooltip } from '@mui/material'
-import {
-  Close as CloseIcon,
-  Star as StarIcon,
-  StarBorder as StarBorderIcon,
-  CheckCircle as CheckIcon,
-} from '@mui/icons-material'
-import { motion } from 'framer-motion'
-import { palette } from '@/shared/theme/tokens'
 import { scaleIn } from '@/shared/lib/animations'
-import type { AttachmentItemProps } from './FileUploadZone.types'
+import { palette } from '@/shared/theme/tokens'
+import {
+  CheckCircle as CheckIcon,
+  Close as CloseIcon,
+  StarBorder as StarBorderIcon,
+  Star as StarIcon,
+} from '@mui/icons-material'
+import { alpha, Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { getFileIcon } from './FileIcons'
+import type { AttachmentItemProps } from './FileUploadZone.types'
 
 export function AttachmentItem({
   attachment,
@@ -17,6 +18,7 @@ export function AttachmentItem({
   onRemove,
   onSetPrimary,
 }: Readonly<AttachmentItemProps>) {
+  const { t } = useTranslation('common')
   const isImage = attachment.fileType === 'image'
 
   return (
@@ -46,7 +48,7 @@ export function AttachmentItem({
           <Box
             component="img"
             src={attachment.previewUrl}
-            alt={attachment.fileName ?? 'Uploaded file'}
+            alt={attachment.fileName ?? t('upload.uploadedFile')}
             loading="lazy"
             sx={{
               width: 48,
@@ -82,7 +84,7 @@ export function AttachmentItem({
             {attachment.isPrimary && (
               <Chip
                 icon={<StarIcon sx={{ fontSize: 14 }} />}
-                label="Cover"
+                label={t('upload.cover')}
                 size="small"
                 sx={{
                   height: 22,
@@ -95,7 +97,7 @@ export function AttachmentItem({
               />
             )}
             <Chip
-              label={isImage ? 'Image' : 'Document'}
+              label={t(isImage ? 'upload.image' : 'upload.document')}
               size="small"
               variant="outlined"
               sx={{ height: 22, fontSize: '0.7rem' }}
@@ -104,14 +106,16 @@ export function AttachmentItem({
           </Stack>
         </Box>
 
-        <Tooltip title={attachment.isPrimary ? 'Cover photo' : 'Set as cover photo'}>
+        <Tooltip title={t(attachment.isPrimary ? 'upload.coverPhoto' : 'upload.setCoverPhoto')}>
           <IconButton
             size="small"
             onClick={() => onSetPrimary(attachment.fileId)}
             aria-label={
               attachment.isPrimary
-                ? 'Current cover photo'
-                : `Set ${attachment.fileName ?? 'file'} as cover photo`
+                ? t('upload.currentCoverPhoto')
+                : t('upload.setFileAsCover', {
+                    fileName: attachment.fileName ?? t('upload.file'),
+                  })
             }
             sx={{
               color: attachment.isPrimary ? palette.brand.primary : palette.neutral[400],
@@ -127,13 +131,15 @@ export function AttachmentItem({
           </IconButton>
         </Tooltip>
 
-        <Tooltip title="Remove file">
+        <Tooltip title={t('upload.removeFile')}>
           <span>
             <IconButton
               size="small"
               onClick={() => onRemove(attachment.fileId)}
               disabled={isUploading}
-              aria-label={`Remove ${attachment.fileName ?? 'file'}`}
+              aria-label={t('upload.removeNamedFile', {
+                fileName: attachment.fileName ?? t('upload.file'),
+              })}
               sx={{
                 color: palette.neutral[400],
                 transition: 'color 0.15s ease-out',

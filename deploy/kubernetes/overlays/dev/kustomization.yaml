@@ -6,8 +6,6 @@ namespace: auction-platform-dev
 resources:
   - ../../base
 
-namePrefix: dev-
-
 labels:
   - pairs:
       environment: development
@@ -51,6 +49,66 @@ patches:
     target:
       kind: StatefulSet
       name: rabbitmq
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: Kestrel__Endpoints__Grpc__Url
+          value: http://+:8081
+    target:
+      kind: Deployment
+      labelSelector: app in (auction-api,bidding-api,catalog-api)
+  - patch: |-
+      - op: replace
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1ssl-redirect
+        value: "false"
+      - op: remove
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      - op: remove
+        path: /spec/tls
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.dev.auction-platform.test
+      - op: replace
+        path: /spec/rules/1/host
+        value: dev.auction-platform.test
+    target:
+      kind: Ingress
+      name: auction-platform-ingress
+  # These values are intentionally non-secret and suitable only for an isolated
+  # local development namespace. Override the Secret before any shared use.
+  - patch: |-
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: auction-platform-secrets
+      stringData:
+        POSTGRES_USER: dev_user
+        POSTGRES_PASSWORD: dev-only-postgres-password
+        REDIS_PASSWORD: dev-only-redis-password
+        RABBITMQ_USER: dev_rabbit
+        RABBITMQ_PASSWORD: dev-only-rabbitmq-password
+        JWT_SECRET: dev-only-jwt-signing-key-not-for-shared-environments-2026
+        Identity__SecretKey: dev-only-jwt-signing-key-not-for-shared-environments-2026
+        RabbitMQ__Username: dev_rabbit
+        RabbitMQ__Password: dev-only-rabbitmq-password
+        AUCTION_DB_CONNECTION: Host=postgres;Port=5432;Database=auction_db;Username=dev_user;Password=dev-only-postgres-password
+        BIDDING_DB_CONNECTION: Host=postgres;Port=5432;Database=bid_db;Username=dev_user;Password=dev-only-postgres-password
+        PAYMENT_DB_CONNECTION: Host=postgres;Port=5432;Database=payment_db;Username=dev_user;Password=dev-only-postgres-password
+        NOTIFICATION_DB_CONNECTION: Host=postgres;Port=5432;Database=notification_db;Username=dev_user;Password=dev-only-postgres-password
+        IDENTITY_DB_CONNECTION: Host=postgres;Port=5432;Database=identity_db;Username=dev_user;Password=dev-only-postgres-password
+        ANALYTICS_DB_CONNECTION: Host=postgres;Port=5432;Database=analytics_db;Username=dev_user;Password=dev-only-postgres-password
+        CATALOG_DB_CONNECTION: Host=postgres;Port=5432;Database=catalog_db;Username=dev_user;Password=dev-only-postgres-password
+        STORAGE_DB_CONNECTION: Host=postgres;Port=5432;Database=storage_db;Username=dev_user;Password=dev-only-postgres-password
+        JOB_DB_CONNECTION: Host=postgres;Port=5432;Database=job_db;Username=dev_user;Password=dev-only-postgres-password
+        REDIS_CONNECTION: redis:6379,password=dev-only-redis-password
+        STRIPE_SECRET_KEY: sk_test_dev_only_placeholder
+        STRIPE_WEBHOOK_SECRET: whsec_dev_only_placeholder
+        Stripe__SecretKey: sk_test_dev_only_placeholder
+        Stripe__WebhookSecret: whsec_dev_only_placeholder
+    target:
+      kind: Secret
+      name: auction-platform-secrets
 
 configMapGenerator:
   - name: auction-platform-config
@@ -58,16 +116,8 @@ configMapGenerator:
     behavior: merge
     literals:
       - ASPNETCORE_ENVIRONMENT=Development
-      - LOG_LEVEL=Debug
-
-secretGenerator:
-  - name: auction-platform-secrets
-    namespace: auction-platform
-    behavior: merge
-    literals:
-      - POSTGRES_USER=dev_user
-      - POSTGRES_PASSWORD=dev_password_change_me
-      - REDIS_PASSWORD=dev_redis_password
-      - RABBITMQ_USER=dev_rabbit
-      - RABBITMQ_PASSWORD=dev_rabbit_password
-      - JWT_SECRET=dev_jwt_secret_32_chars_minimum
+      - Logging__MinimumLevel=Debug
+      - FileStorage__Provider=Local
+      - Kestrel__Endpoints__Http__Url=http://+:8080
+      - Cors__AllowedOrigins__0=http://dev.auction-platform.test
+      - FrontendUrl=http://dev.auction-platform.test

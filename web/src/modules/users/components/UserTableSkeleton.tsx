@@ -1,4 +1,4 @@
-import { TableRow, TableCell, Skeleton, Box } from '@mui/material'
+import { Box, Skeleton, TableCell, TableRow } from '@mui/material'
 
 interface UserTableSkeletonProps {
   rows?: number

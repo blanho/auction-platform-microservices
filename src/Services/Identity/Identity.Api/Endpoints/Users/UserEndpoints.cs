@@ -36,10 +36,12 @@ public class UserEndpoints : ICarterModule
 
         group.MapGet("", GetUsers)
             .WithName("GetUsers")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.View))
             .Produces<PaginatedResult<AdminUserDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id}", GetUser)
             .WithName("GetUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.View))
             .Produces<AdminUserDto>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
@@ -56,50 +58,60 @@ public class UserEndpoints : ICarterModule
 
         group.MapPost("/{id}/suspend", SuspendUser)
             .WithName("SuspendUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Ban))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id}/unsuspend", UnsuspendUser)
             .WithName("UnsuspendUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Ban))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id}/activate", ActivateUser)
             .WithName("ActivateUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Edit))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id}/deactivate", DeactivateUser)
             .WithName("DeactivateUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Edit))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPut("/{id}/roles", UpdateUserRoles)
             .WithName("UpdateUserRoles")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.ManageRoles))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapDelete("/{id}", DeleteUser)
             .WithName("DeleteUser")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Delete))
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapGet("/stats", GetStats)
             .WithName("GetAdminStats")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.View))
             .Produces<AdminStatsResponse>(StatusCodes.Status200OK);
 
         group.MapGet("/{id}/2fa/status", GetUser2FAStatus)
             .WithName("GetUser2FAStatus")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.View))
             .Produces<TwoFactorStatusResponse>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id}/2fa/reset", Reset2FA)
             .WithName("Reset2FA")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Edit))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
         group.MapPost("/{id}/2fa/disable", Disable2FA)
             .WithName("Disable2FA")
+            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Users.Edit))
             .Produces(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);

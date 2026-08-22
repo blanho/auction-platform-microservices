@@ -2,10 +2,10 @@ import { http } from '@/services/http'
 import type { PaginatedResponse } from '@/shared/types'
 import type {
   JobDto,
-  JobSummaryDto,
-  JobItemDto,
   JobFilterParams,
+  JobItemDto,
   JobItemFilterParams,
+  JobSummaryDto,
 } from '../types'
 
 export const jobsApi = {

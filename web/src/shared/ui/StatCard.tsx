@@ -1,6 +1,6 @@
+import { TrendingDown, TrendingUp } from '@mui/icons-material'
+import { Box, Card, CardContent, Skeleton, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Box, Typography, Stack, Skeleton, Card, CardContent } from '@mui/material'
-import { TrendingUp, TrendingDown } from '@mui/icons-material'
 
 export interface StatCardProps {
   title: string
