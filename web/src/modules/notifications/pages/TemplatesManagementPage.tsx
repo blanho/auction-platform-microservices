@@ -1,48 +1,48 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { ConfirmDialog, InlineAlert, TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
+import {
+  Add,
+  Cancel,
+  CheckCircle,
+  Delete,
+  Edit,
+  Email,
+  Notifications,
+  PhoneIphone,
+  Sms,
+} from '@mui/icons-material'
 import {
   Box,
-  Container,
-  Typography,
-  Card,
   Button,
+  Card,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Tooltip,
-  Pagination,
+  Typography,
 } from '@mui/material'
-import {
-  Add,
-  Edit,
-  Delete,
-  Email,
-  Sms,
-  Notifications,
-  PhoneIphone,
-  CheckCircle,
-  Cancel,
-} from '@mui/icons-material'
-import { ConfirmDialog, InlineAlert, TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
-import { useTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from '../hooks'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useCreateTemplate, useDeleteTemplate, useTemplates, useUpdateTemplate } from '../hooks'
 import type {
-  NotificationTemplate,
-  NotificationChannel,
   CreateTemplateDto,
+  NotificationChannel,
+  NotificationTemplate,
   UpdateTemplateDto,
 } from '../types/template.types'
 
@@ -61,7 +61,7 @@ const CHANNEL_COLORS: Record<NotificationChannel, string> = {
 }
 
 export function TemplatesManagementPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const [page, setPage] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<NotificationTemplate | null>(null)
@@ -162,10 +162,10 @@ export function TemplatesManagementPage() {
               color: '#4C1D95',
             }}
           >
-            Notification Templates
+            {t('templates.title')}
           </Typography>
           <Typography sx={{ color: '#78716C', fontFamily: '"Fira Sans", sans-serif' }}>
-            Manage email, SMS, and push notification templates
+            {t('templates.description')}
           </Typography>
         </Box>
 
@@ -180,13 +180,13 @@ export function TemplatesManagementPage() {
             fontWeight: 600,
           }}
         >
-          Create Template
+          {t('templates.create')}
         </Button>
       </Box>
 
       {error && (
         <InlineAlert severity="error" sx={{ mb: 3 }}>
-          Failed to load templates. Please try again.
+          {t('templates.loadFailed')}
         </InlineAlert>
       )}
 
@@ -195,20 +195,34 @@ export function TemplatesManagementPage() {
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: '#FAF5FF' }}>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Template</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Channel</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Subject</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>Variables</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  {t('templates.template')}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  {t('templates.channel')}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  {t('templates.subject')}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  {t('templates.status')}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4C1D95' }}>
+                  {t('templates.variables')}
+                </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 600, color: '#4C1D95' }}>
-                  Actions
+                  {t('templates.actions')}
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {isLoading && <TableSkeletonRows rows={5} columns={6} />}
               {!isLoading && templateCount === 0 && (
-                <TableEmptyStateRow colSpan={6} title="No templates found" cellSx={{ py: 8 }} />
+                <TableEmptyStateRow
+                  colSpan={6}
+                  title={t('templates.noTemplates')}
+                  cellSx={{ py: 8 }}
+                />
               )}
               {!isLoading &&
                 templateCount > 0 &&
@@ -236,7 +250,7 @@ export function TemplatesManagementPage() {
                     <TableCell>
                       <Chip
                         icon={CHANNEL_ICONS[template.channel]}
-                        label={template.channel.toUpperCase()}
+                        label={t(`templates.channels.${template.channel}`)}
                         size="small"
                         sx={{
                           bgcolor: `${CHANNEL_COLORS[template.channel]}15`,
@@ -254,14 +268,14 @@ export function TemplatesManagementPage() {
                       {template.isActive ? (
                         <Chip
                           icon={<CheckCircle />}
-                          label="Active"
+                          label={t('templates.active')}
                           size="small"
                           sx={{ bgcolor: '#DCFCE7', color: '#166534', fontWeight: 600 }}
                         />
                       ) : (
                         <Chip
                           icon={<Cancel />}
-                          label="Inactive"
+                          label={t('templates.inactive')}
                           size="small"
                           sx={{ bgcolor: '#FEE2E2', color: '#991B1B', fontWeight: 600 }}
                         />
@@ -269,11 +283,13 @@ export function TemplatesManagementPage() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="caption" sx={{ color: '#78716C' }}>
-                        {template.variables?.length || 0} variables
+                        {t('templates.variableCount', {
+                          count: template.variables?.length || 0,
+                        })}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Edit">
+                      <Tooltip title={t('common:edit')}>
                         <IconButton
                           size="small"
                           onClick={() => handleOpenEdit(template)}
@@ -282,7 +298,7 @@ export function TemplatesManagementPage() {
                           <Edit />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
+                      <Tooltip title={t('common:delete')}>
                         <IconButton
                           size="small"
                           onClick={() => handleDelete(template)}
@@ -314,28 +330,28 @@ export function TemplatesManagementPage() {
 
       <Dialog open={dialogOpen} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontFamily: '"Fira Code", monospace', fontWeight: 600 }}>
-          {editingTemplate ? 'Edit Template' : 'Create Template'}
+          {editingTemplate ? t('templates.edit') : t('templates.create')}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             <TextField
-              label="Template Key"
+              label={t('templates.key')}
               value={formData.key}
               onChange={(e) => setFormData({ ...formData, key: e.target.value })}
               disabled={!!editingTemplate}
               fullWidth
               required
-              helperText="Unique identifier (e.g., 'welcome-email')"
+              helperText={t('templates.keyHelper')}
             />
             <TextField
-              label="Template Name"
+              label={t('templates.name')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               fullWidth
               required
             />
             <TextField
-              label="Description"
+              label={t('templates.descriptionLabel')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               fullWidth
@@ -343,40 +359,41 @@ export function TemplatesManagementPage() {
               rows={2}
             />
             <FormControl fullWidth required>
-              <InputLabel>Channel</InputLabel>
+              <InputLabel>{t('templates.channel')}</InputLabel>
               <Select
                 value={formData.channel}
-                label="Channel"
+                label={t('templates.channel')}
                 onChange={(e) =>
                   setFormData({ ...formData, channel: e.target.value as NotificationChannel })
                 }
               >
-                <MenuItem value="email">Email</MenuItem>
-                <MenuItem value="sms">SMS</MenuItem>
-                <MenuItem value="push">Push Notification</MenuItem>
-                <MenuItem value="in_app">In-App</MenuItem>
+                {(['email', 'sms', 'push', 'in_app'] as NotificationChannel[]).map((channel) => (
+                  <MenuItem key={channel} value={channel}>
+                    {t(`templates.channels.${channel}`)}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <TextField
-              label="Subject"
+              label={t('templates.subject')}
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               fullWidth
               required
-              helperText="Use {{variable}} for dynamic content"
+              helperText={t('templates.subjectHelper')}
             />
             <TextField
-              label="Body"
+              label={t('templates.body')}
               value={formData.body}
               onChange={(e) => setFormData({ ...formData, body: e.target.value })}
               fullWidth
               required
               multiline
               rows={6}
-              helperText="Template content with {{variables}}"
+              helperText={t('templates.bodyHelper')}
             />
             <TextField
-              label="Variables"
+              label={t('templates.variables')}
               value={formData.variables?.join(', ')}
               onChange={(e) =>
                 setFormData({
@@ -388,12 +405,12 @@ export function TemplatesManagementPage() {
                 })
               }
               fullWidth
-              helperText="Comma-separated list (e.g., userName, orderNumber)"
+              helperText={t('templates.variablesHelper')}
             />
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose}>{t('common:cancel')}</Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
@@ -403,7 +420,7 @@ export function TemplatesManagementPage() {
               '&:hover': { bgcolor: '#6D28D9' },
             }}
           >
-            {editingTemplate ? 'Update' : 'Create'}
+            {editingTemplate ? t('templates.update') : t('common:create')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -412,10 +429,10 @@ export function TemplatesManagementPage() {
         open={!!deleteTarget}
         onClose={handleCloseDeleteDialog}
         onConfirm={handleConfirmDelete}
-        title="Delete Template"
-        message={`Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title={t('templates.deleteTitle')}
+        message={t('templates.deleteMessage', { name: deleteTarget?.name ?? '' })}
+        confirmLabel={t('common:delete')}
+        cancelLabel={t('common:cancel')}
         variant="danger"
         loading={deleteTemplate.isPending}
       />

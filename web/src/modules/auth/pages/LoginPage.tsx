@@ -1,48 +1,29 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { useAuth } from '@/app/providers'
+import { getApiUrl, getErrorMessage } from '@/services/http'
+import { getAndClearRedirectUrl } from '@/shared/components/auth'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { FormField, InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { East, Google } from '@mui/icons-material'
 import {
   Box,
-  Typography,
   Button,
-  Divider,
   Checkbox,
-  FormControlLabel,
   CircularProgress,
+  Divider,
+  FormControlLabel,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material'
-import { Google, East } from '@mui/icons-material'
-import { loginSchema } from '../schemas'
-import { useAuth } from '@/app/providers'
+import { motion } from 'framer-motion'
+import { useEffect, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { createLoginSchema } from '../schemas'
 import type { LoginRequest } from '../types'
-import { palette } from '@/shared/theme/tokens'
-import { InlineAlert, FormField } from '@/shared/ui'
-import { getErrorMessage } from '@/services/http'
-import { getAndClearRedirectUrl } from '@/shared/components/auth'
-
-const SESSION_MESSAGES: Record<
-  string,
-  { severity: 'warning' | 'error' | 'info'; message: string }
-> = {
-  expired: {
-    severity: 'warning',
-    message: 'Your session has expired. Please log in again.',
-  },
-  security: {
-    severity: 'error',
-    message:
-      'Your session was terminated due to suspicious activity. All devices have been logged out for your security. Please log in again and consider changing your password.',
-  },
-  logout: {
-    severity: 'info',
-    message: 'You have been logged out successfully.',
-  },
-}
 
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
@@ -77,6 +58,7 @@ const inputStyles = {
 
 export function LoginPage() {
   const { t } = useTranslation('auth')
+  const loginSchema = createLoginSchema(t)
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -85,10 +67,17 @@ export function LoginPage() {
   const from = savedRedirect || stateFrom || '/'
 
   const sessionParam = searchParams.get('session')
-  const sessionMessage = useMemo(
-    () => (sessionParam && SESSION_MESSAGES[sessionParam] ? SESSION_MESSAGES[sessionParam] : null),
-    [sessionParam]
+  const sessionMessages = useMemo<
+    Record<string, { severity: 'warning' | 'error' | 'info'; message: string }>
+  >(
+    () => ({
+      expired: { severity: 'warning', message: t('login.session.expired') },
+      security: { severity: 'error', message: t('login.session.security') },
+      logout: { severity: 'info', message: t('login.session.logout') },
+    }),
+    [t]
   )
+  const sessionMessage = sessionParam ? (sessionMessages[sessionParam] ?? null) : null
 
   const [rememberMe, setRememberMe] = useState(false)
   const [requires2FA, setRequires2FA] = useState(false)
@@ -100,11 +89,12 @@ export function LoginPage() {
   const { login: authLogin, loginWith2FA: authLoginWith2FA } = useAuth()
 
   useEffect(() => {
-    if (sessionParam && SESSION_MESSAGES[sessionParam]) {
-      searchParams.delete('session')
-      setSearchParams(searchParams, { replace: true })
+    if (sessionParam && sessionMessages[sessionParam]) {
+      const nextSearchParams = new URLSearchParams(searchParams)
+      nextSearchParams.delete('session')
+      setSearchParams(nextSearchParams, { replace: true })
     }
-  }, [sessionParam, searchParams, setSearchParams])
+  }, [sessionParam, sessionMessages, searchParams, setSearchParams])
 
   const {
     register,
@@ -154,9 +144,8 @@ export function LoginPage() {
   }
 
   const handleGoogleLogin = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || ''
     const returnUrl = encodeURIComponent(`${globalThis.location.origin}/auth/callback`)
-    globalThis.location.href = `${baseUrl}/api/auth/external-login/Google?returnUrl=${returnUrl}`
+    globalThis.location.href = getApiUrl(`/auth/external-login/Google?returnUrl=${returnUrl}`)
   }
 
   if (requires2FA) {
@@ -375,8 +364,9 @@ export function LoginPage() {
                   mb: 3,
                 }}
               >
-                Discover Rare
-                <br />& Exceptional Pieces
+                {t('login.heroTitleLine1')}
+                <br />
+                {t('login.heroTitleLine2')}
               </Typography>
             </motion.div>
 
@@ -389,17 +379,16 @@ export function LoginPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Join thousands of collectors finding authenticated luxury items from trusted sellers
-                worldwide.
+                {t('login.heroDescription')}
               </Typography>
             </motion.div>
 
             <motion.div variants={staggerItem}>
               <Stack direction="row" spacing={6} sx={{ mt: 5 }}>
                 {[
-                  { value: '50K+', label: 'Items Sold' },
-                  { value: '10K+', label: 'Trusted Sellers' },
-                  { value: '99%', label: 'Authenticity Rate' },
+                  { value: '50K+', label: t('login.stats.itemsSold') },
+                  { value: '10K+', label: t('login.stats.trustedSellers') },
+                  { value: '99%', label: t('login.stats.authenticityRate') },
                 ].map((stat) => (
                   <Box key={stat.label}>
                     <Typography
@@ -607,7 +596,7 @@ export function LoginPage() {
                 }}
               >
                 <Typography sx={{ color: palette.neutral[400], fontSize: '0.8125rem' }}>
-                  or
+                  {t('login.orContinueWith')}
                 </Typography>
               </Divider>
 
@@ -629,7 +618,7 @@ export function LoginPage() {
                   },
                 }}
               >
-                Continue with Google
+                {t('login.google')}
               </Button>
             </motion.div>
 

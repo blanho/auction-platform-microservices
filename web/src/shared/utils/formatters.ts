@@ -1,5 +1,7 @@
+import { getCurrentLocale } from '@/i18n'
+
 export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(getCurrentLocale(), {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
@@ -10,49 +12,49 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
 export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const deltaInSeconds = Math.round((date.getTime() - now.getTime()) / 1000)
+  const absoluteSeconds = Math.abs(deltaInSeconds)
 
-  if (diffInSeconds < 60) {
-    return 'just now'
+  const formatter = new Intl.RelativeTimeFormat(getCurrentLocale(), {
+    numeric: 'auto',
+    style: 'short',
+  })
+
+  if (absoluteSeconds < 60) {
+    return formatter.format(deltaInSeconds, 'second')
   }
 
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`
+  if (absoluteSeconds < 60 * 60) {
+    return formatter.format(Math.round(deltaInSeconds / 60), 'minute')
   }
 
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) {
-    return `${diffInHours}h ago`
+  if (absoluteSeconds < 60 * 60 * 24) {
+    return formatter.format(Math.round(deltaInSeconds / (60 * 60)), 'hour')
   }
 
-  const diffInDays = Math.floor(diffInHours / 24)
-  if (diffInDays < 7) {
-    return `${diffInDays}d ago`
+  if (absoluteSeconds < 60 * 60 * 24 * 7) {
+    return formatter.format(Math.round(deltaInSeconds / (60 * 60 * 24)), 'day')
   }
 
-  const diffInWeeks = Math.floor(diffInDays / 7)
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks}w ago`
+  if (absoluteSeconds < 60 * 60 * 24 * 30) {
+    return formatter.format(Math.round(deltaInSeconds / (60 * 60 * 24 * 7)), 'week')
   }
 
-  const diffInMonths = Math.floor(diffInDays / 30)
-  if (diffInMonths < 12) {
-    return `${diffInMonths}mo ago`
+  if (absoluteSeconds < 60 * 60 * 24 * 365) {
+    return formatter.format(Math.round(deltaInSeconds / (60 * 60 * 24 * 30)), 'month')
   }
 
-  const diffInYears = Math.floor(diffInDays / 365)
-  return `${diffInYears}y ago`
+  return formatter.format(Math.round(deltaInSeconds / (60 * 60 * 24 * 365)), 'year')
 }
 
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num)
+  return new Intl.NumberFormat(getCurrentLocale()).format(num)
 }
 
 export function formatDate(dateString: string, options?: Intl.DateTimeFormatOptions): string {
   const date = new Date(dateString)
   return date.toLocaleDateString(
-    'en-US',
+    getCurrentLocale(),
     options ?? {
       year: 'numeric',
       month: 'short',
@@ -63,10 +65,17 @@ export function formatDate(dateString: string, options?: Intl.DateTimeFormatOpti
 
 export function formatDateTime(dateString: string): string {
   const date = new Date(dateString)
-  return date.toLocaleString('en-US', {
+  return date.toLocaleString(getCurrentLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+export function formatTime(dateString: string): string {
+  return new Date(dateString).toLocaleTimeString(getCurrentLocale(), {
     hour: '2-digit',
     minute: '2-digit',
   })

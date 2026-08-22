@@ -110,22 +110,14 @@ metadata:
   namespace: auction-platform
 data:
   init-databases.sql: |
-    -- Create databases for each microservice
+    -- These commands run as POSTGRES_USER, so that configured role owns each
+    -- database without a hard-coded GRANT target.
     CREATE DATABASE auction_db;
-    CREATE DATABASE bidding_db;
+    CREATE DATABASE bid_db;
     CREATE DATABASE payment_db;
     CREATE DATABASE notification_db;
     CREATE DATABASE identity_db;
     CREATE DATABASE analytics_db;
+    CREATE DATABASE catalog_db;
     CREATE DATABASE storage_db;
     CREATE DATABASE job_db;
-
-    -- Grant privileges
-    GRANT ALL PRIVILEGES ON DATABASE auction_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE bidding_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE payment_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE notification_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE identity_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE analytics_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE storage_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE job_db TO postgres;

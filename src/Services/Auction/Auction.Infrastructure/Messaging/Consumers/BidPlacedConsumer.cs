@@ -34,7 +34,9 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
             return;
         }
 
-        if (!message.BidStatus.Contains("Accepted"))
+        if (message.BidStatus is not (
+                BidEventStatusNames.Accepted or
+                BidEventStatusNames.AcceptedBelowReserve))
         {
             _logger.LogDebug(
                 "Bid {EventId} not accepted (Status: {Status}), skipping update",
@@ -59,4 +61,3 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
             message.AuctionId, message.BidAmount, message.Bidder);
     }
 }
-

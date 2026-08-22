@@ -42,60 +42,76 @@ public static class RateLimiterExtensions
 
     private static void ConfigureNamedLimiters(RateLimiterOptions options)
     {
-        options.AddFixedWindowLimiter("auth", limiterOptions =>
-        {
-            limiterOptions.AutoReplenishment = true;
-            limiterOptions.PermitLimit = 10;
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-        });
+        options.AddPolicy("auth", context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                $"auth:{GetClientIp(context)}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1)
+                }));
 
-        options.AddTokenBucketLimiter("bid", limiterOptions =>
-        {
-            limiterOptions.TokenLimit = 20;
-            limiterOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
-            limiterOptions.TokensPerPeriod = 5;
-            limiterOptions.AutoReplenishment = true;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            limiterOptions.QueueLimit = 10;
-        });
+        options.AddPolicy("bid", context =>
+            RateLimitPartition.GetTokenBucketLimiter(
+                $"bid:{GetPartitionKey(context)}",
+                _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 20,
+                    ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+                    TokensPerPeriod = 5,
+                    AutoReplenishment = true,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 10
+                }));
 
-        options.AddSlidingWindowLimiter("buy-now", limiterOptions =>
-        {
-            limiterOptions.PermitLimit = 5;
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-            limiterOptions.SegmentsPerWindow = 6;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            limiterOptions.QueueLimit = 2;
-        });
+        options.AddPolicy("buy-now", context =>
+            RateLimitPartition.GetSlidingWindowLimiter(
+                $"buy-now:{GetPartitionKey(context)}",
+                _ => new SlidingWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(1),
+                    SegmentsPerWindow = 6,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 2
+                }));
 
-        options.AddFixedWindowLimiter("search", limiterOptions =>
-        {
-            limiterOptions.AutoReplenishment = true;
-            limiterOptions.PermitLimit = 60;
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-        });
+        options.AddPolicy("search", context =>
+            CreateFixedWindowPartition(context, "search", permitLimit: 60));
 
-        options.AddFixedWindowLimiter("create", limiterOptions =>
-        {
-            limiterOptions.AutoReplenishment = true;
-            limiterOptions.PermitLimit = 20;
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-        });
+        options.AddPolicy("create", context =>
+            CreateFixedWindowPartition(context, "create", permitLimit: 20));
 
-        options.AddConcurrencyLimiter("upload", limiterOptions =>
-        {
-            limiterOptions.PermitLimit = 5;
-            limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            limiterOptions.QueueLimit = 10;
-        });
+        options.AddPolicy("upload", context =>
+            RateLimitPartition.GetConcurrencyLimiter(
+                $"upload:{GetPartitionKey(context)}",
+                _ => new ConcurrencyLimiterOptions
+                {
+                    PermitLimit = 5,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 10
+                }));
 
-        options.AddFixedWindowLimiter("notification", limiterOptions =>
-        {
-            limiterOptions.AutoReplenishment = true;
-            limiterOptions.PermitLimit = 100;
-            limiterOptions.Window = TimeSpan.FromMinutes(1);
-        });
+        options.AddPolicy("notification", context =>
+            CreateFixedWindowPartition(context, "notification", permitLimit: 100));
     }
+
+    private static RateLimitPartition<string> CreateFixedWindowPartition(
+        HttpContext context,
+        string policyName,
+        int permitLimit) =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            $"{policyName}:{GetPartitionKey(context)}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromMinutes(1)
+            });
+
+    private static string GetClientIp(HttpContext context) =>
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
     private static async ValueTask HandleRateLimitRejection(OnRejectedContext context, CancellationToken token)
     {

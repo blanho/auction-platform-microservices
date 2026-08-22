@@ -35,8 +35,7 @@ public class BidPlacedDomainEventHandler : INotificationHandler<BidPlacedDomainE
             Bidder = notification.BidderUsername,
             BidTime = notification.BidTime,
             BidAmount = notification.Amount,
-            BidStatus = BidEventStatuses.Placed
+            BidStatus = BidEventStatusNames.Placed
         }, cancellationToken);
     }
 }
-

@@ -33,18 +33,3 @@ export interface BackendAuctionFileDto {
   displayOrder: number
   isPrimary: boolean
 }
-
-export interface BackendBidDto {
-  id: string
-  auctionId: string
-  bidderId: string
-  bidderUsername: string
-  amount: number
-  bidTime: string
-  status: string
-  errorMessage?: string
-  minimumNextBid: number
-  minimumIncrement: number
-  createdAt: string
-  updatedAt?: string
-}

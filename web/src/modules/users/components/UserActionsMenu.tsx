@@ -1,16 +1,16 @@
-import { useTranslation } from 'react-i18next'
-import { Menu, MenuItem, Divider } from '@mui/material'
 import {
   AdminPanelSettings,
-  Security,
+  Block,
+  CheckCircle,
+  Delete,
   Edit,
   Email,
-  CheckCircle,
-  Block,
-  PersonOff,
   Person,
-  Delete,
+  PersonOff,
+  Security,
 } from '@mui/icons-material'
+import { Divider, Menu, MenuItem } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import type { AdminUser } from '../types'
 
 interface UserActionsMenuProps {

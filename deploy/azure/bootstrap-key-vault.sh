@@ -7,6 +7,15 @@ required_variables=(
   POSTGRES_ADMIN_USER
   POSTGRES_ADMIN_PASSWORD
   REDIS_CONNECTION
+  ELASTICSEARCH_USERNAME
+  ELASTICSEARCH_PASSWORD
+  SENDGRID_API_KEY
+  SENDGRID_FROM_EMAIL
+  TWILIO_ACCOUNT_SID
+  TWILIO_AUTH_TOKEN
+  TWILIO_FROM_NUMBER
+  FIREBASE_PROJECT_ID
+  FIREBASE_SERVICE_ACCOUNT_JSON
   RABBITMQ_USER
   RABBITMQ_PASSWORD
   JWT_SECRET
@@ -55,6 +64,15 @@ set_secret auction-platform-catalog-db-connection "$(postgres_connection catalog
 set_secret auction-platform-storage-db-connection "$(postgres_connection storage_db)"
 set_secret auction-platform-job-db-connection "$(postgres_connection job_db)"
 set_secret auction-platform-redis-connection "$REDIS_CONNECTION"
+set_secret auction-platform-elasticsearch-username "$ELASTICSEARCH_USERNAME"
+set_secret auction-platform-elasticsearch-password "$ELASTICSEARCH_PASSWORD"
+set_secret auction-platform-sendgrid-api-key "$SENDGRID_API_KEY"
+set_secret auction-platform-sendgrid-from-email "$SENDGRID_FROM_EMAIL"
+set_secret auction-platform-twilio-account-sid "$TWILIO_ACCOUNT_SID"
+set_secret auction-platform-twilio-auth-token "$TWILIO_AUTH_TOKEN"
+set_secret auction-platform-twilio-from-number "$TWILIO_FROM_NUMBER"
+set_secret auction-platform-firebase-project-id "$FIREBASE_PROJECT_ID"
+set_secret auction-platform-firebase-service-account-json "$FIREBASE_SERVICE_ACCOUNT_JSON"
 set_secret auction-platform-rabbitmq-user "$RABBITMQ_USER"
 set_secret auction-platform-rabbitmq-password "$RABBITMQ_PASSWORD"
 set_secret auction-platform-jwt-secret "$JWT_SECRET"

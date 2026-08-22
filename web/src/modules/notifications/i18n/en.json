@@ -3,6 +3,17 @@
   "markAllRead": "Mark All as Read",
   "clearAll": "Clear All",
   "settings": "Notification Settings",
+  "description": "Stay updated with your auction activity",
+  "loadFailed": "Failed to load notifications. Please try again.",
+  "tabs": {
+    "all": "All",
+    "unread": "Unread",
+    "archived": "Archived"
+  },
+  "emptyUnread": "All caught up!",
+  "emptyArchived": "No archived notifications",
+  "emptyDefault": "No notifications yet",
+  "emptyDefaultDescription": "You'll see notifications about your bids and auctions here",
   "empty": "No notifications",
   "emptyDescription": "You're all caught up!",
 
@@ -37,5 +48,140 @@
     "priceDrops": "Price Drops",
     "newListings": "New Listings",
     "marketing": "Marketing & Promotions"
+  },
+
+  "stats": {
+    "title": "Notification Statistics",
+    "description": "Overview of notification performance and engagement",
+    "total": "Total Notifications",
+    "unread": "Unread",
+    "today": "Today",
+    "engagementRate": "Engagement Rate",
+    "byType": "Notifications by Type",
+    "noData": "No notification data available"
+  },
+
+  "broadcast": {
+    "title": "Broadcast Notification",
+    "description": "Send a notification to all users or a specific role",
+    "success": "Notification broadcast successfully!",
+    "type": "Notification Type",
+    "targetRole": "Target Role (Optional)",
+    "targetRolePlaceholder": "e.g., admin, seller, buyer",
+    "targetRoleHelper": "Leave empty to broadcast to all users",
+    "notificationTitle": "Title",
+    "titlePlaceholder": "Enter notification title",
+    "message": "Message",
+    "messagePlaceholder": "Enter notification message",
+    "reset": "Reset",
+    "submitting": "Broadcasting...",
+    "submit": "Broadcast Notification",
+    "preview": "Preview",
+    "previewTitle": "Notification title will appear here",
+    "previewMessage": "Notification message will appear here",
+    "types": {
+      "system": "System",
+      "promotional": "Promotional",
+      "auction_ending": "Auction Ending",
+      "auction_ended": "Auction Ended"
+    }
+  },
+
+  "admin": {
+    "title": "All Notifications",
+    "description": "View and manage all user notifications across the platform",
+    "userId": "User ID",
+    "userIdPlaceholder": "Filter by user ID",
+    "type": "Type",
+    "status": "Status",
+    "allTypes": "All Types",
+    "allStatuses": "All Statuses",
+    "user": "User",
+    "notificationTitle": "Title",
+    "message": "Message",
+    "created": "Created",
+    "noNotifications": "No notifications found",
+    "total": "Total Notifications",
+    "currentPage": "Current Page",
+    "perPage": "Per Page",
+    "statuses": {
+      "unread": "Unread",
+      "read": "Read",
+      "archived": "Archived"
+    },
+    "types": {
+      "bid_placed": "Bid Placed",
+      "bid_outbid": "Bid Outbid",
+      "auction_won": "Auction Won",
+      "auction_lost": "Auction Lost",
+      "auction_ending": "Auction Ending",
+      "auction_ended": "Auction Ended",
+      "payment_received": "Payment Received",
+      "payment_failed": "Payment Failed",
+      "system": "System",
+      "promotional": "Promotional"
+    }
+  },
+
+  "templates": {
+    "title": "Notification Templates",
+    "description": "Manage email, SMS, and push notification templates",
+    "create": "Create Template",
+    "edit": "Edit Template",
+    "loadFailed": "Failed to load templates. Please try again.",
+    "template": "Template",
+    "channel": "Channel",
+    "subject": "Subject",
+    "status": "Status",
+    "variables": "Variables",
+    "actions": "Actions",
+    "noTemplates": "No templates found",
+    "active": "Active",
+    "inactive": "Inactive",
+    "variableCount": "{{count}} variable",
+    "variableCount_other": "{{count}} variables",
+    "key": "Template Key",
+    "keyHelper": "Unique identifier (e.g., 'welcome-email')",
+    "name": "Template Name",
+    "descriptionLabel": "Description",
+    "subjectHelper": "Use {variable} for dynamic content",
+    "body": "Body",
+    "bodyHelper": "Template content with {variables}",
+    "variablesHelper": "Comma-separated list (e.g., userName, orderNumber)",
+    "update": "Update",
+    "deleteTitle": "Delete Template",
+    "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "push": "Push Notification",
+      "in_app": "In-App"
+    }
+  },
+
+  "records": {
+    "title": "Notification Records",
+    "description": "Track delivery status and performance metrics",
+    "channel": "Channel",
+    "status": "Status",
+    "templateKey": "Template Key",
+    "templatePlaceholder": "Search by template...",
+    "fromDate": "From Date",
+    "recipient": "Recipient",
+    "template": "Template",
+    "subject": "Subject",
+    "sentAt": "Sent At",
+    "totalSent": "Total Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "successRate": "Success Rate",
+    "empty": "No notification records found",
+    "statuses": {
+      "pending": "Pending",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "failed": "Failed",
+      "bounced": "Bounced"
+    }
   }
 }

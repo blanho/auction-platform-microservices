@@ -1,32 +1,33 @@
-import { useState, useMemo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { usePagination } from '@/shared/hooks'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import type { ColumnConfig, FilterPanelConfig } from '@/shared/types'
+import { DataTable, FilterPanel } from '@/shared/ui'
+import { getSafeHttpUrl } from '@/shared/utils'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Add, Delete, Edit, Image as ImageIcon } from '@mui/icons-material'
 import {
-  Container,
-  Card,
-  Typography,
+  Avatar,
   Box,
   Button,
-  IconButton,
+  Card,
+  Container,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  TextField,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   Stack,
-  Avatar,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { Add, Edit, Delete, Image as ImageIcon } from '@mui/icons-material'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { palette } from '@/shared/theme/tokens'
-import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand } from '../hooks'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { motion } from 'framer-motion'
+import { useCallback, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import type { Brand } from '../api/brands.api'
-import { brandSchema, type BrandFormData } from '../schemas'
-import { DataTable, FilterPanel } from '@/shared/ui'
-import { usePagination } from '@/shared/hooks'
-import type { ColumnConfig, FilterPanelConfig } from '@/shared/types'
+import { useBrands, useCreateBrand, useDeleteBrand, useUpdateBrand } from '../hooks'
+import { createBrandSchema, type BrandFormData } from '../schemas'
 
 interface BrandFilter {
   search?: string
@@ -34,6 +35,7 @@ interface BrandFilter {
 
 export function BrandsManagementPage() {
   const { t } = useTranslation('auctions')
+  const brandSchema = createBrandSchema(t)
   const pagination = usePagination<BrandFilter>({ defaultPageSize: 10 })
 
   const FILTER_CONFIG: FilterPanelConfig = {
@@ -96,7 +98,7 @@ export function BrandsManagementPage() {
       }
       setDialogOpen(true)
     },
-    [reset]
+    [reset, setEditingBrand, setDialogOpen]
   )
 
   const columns: ColumnConfig<Brand>[] = useMemo(
@@ -154,22 +156,24 @@ export function BrandsManagementPage() {
       {
         key: 'websiteUrl',
         header: t('brands.websiteUrl'),
-        render: (_, row) =>
-          row.websiteUrl ? (
+        render: (_, row) => {
+          const websiteUrl = getSafeHttpUrl(row.websiteUrl)
+          return websiteUrl ? (
             <Typography
               variant="body2"
               component="a"
-              href={row.websiteUrl}
+              href={websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
               sx={{ color: 'primary.main', textDecoration: 'none' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {row.websiteUrl.replace(/^https?:\/\//, '')}
+              {websiteUrl.replace(/^https?:\/\//, '')}
             </Typography>
           ) : (
             '-'
-          ),
+          )
+        },
       },
       {
         key: 'actions',
@@ -200,7 +204,7 @@ export function BrandsManagementPage() {
         ),
       },
     ],
-    [handleOpenDialog, t]
+    [handleOpenDialog, setDeleteDialog, t]
   )
 
   const onSubmit = (data: BrandFormData) => {

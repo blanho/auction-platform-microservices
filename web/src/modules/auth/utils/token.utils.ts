@@ -3,6 +3,44 @@ import type { AuthUser } from '../types'
 let inMemoryAccessToken: string | null = null
 let tokenExpiresAt: number | null = null
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const encodedPayload = token.split('.')[1]
+  if (!encodedPayload) {
+    return null
+  }
+
+  try {
+    const normalizedPayload = encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
+    const paddedPayload = normalizedPayload.padEnd(Math.ceil(normalizedPayload.length / 4) * 4, '=')
+    const payload: unknown = JSON.parse(atob(paddedPayload))
+    return isRecord(payload) ? payload : null
+  } catch {
+    return null
+  }
+}
+
+function isAuthUser(value: unknown): value is AuthUser {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  return (
+    typeof value.id === 'string' &&
+    typeof value.userId === 'string' &&
+    typeof value.email === 'string' &&
+    typeof value.username === 'string' &&
+    typeof value.displayName === 'string' &&
+    (value.fullName === undefined || typeof value.fullName === 'string') &&
+    (value.avatarUrl === undefined || typeof value.avatarUrl === 'string') &&
+    Array.isArray(value.roles) &&
+    value.roles.every((role) => typeof role === 'string')
+  )
+}
+
 export function getAccessToken(): string | null {
   return inMemoryAccessToken
 }
@@ -22,13 +60,6 @@ export function clearAccessToken(): void {
   tokenExpiresAt = null
 }
 
-export function isAccessTokenExpired(): boolean {
-  if (!inMemoryAccessToken || !tokenExpiresAt) {
-    return true
-  }
-  return Date.now() >= tokenExpiresAt
-}
-
 export function shouldRefreshToken(thresholdMs = 60 * 1000): boolean {
   if (!inMemoryAccessToken || !tokenExpiresAt) {
     return true
@@ -37,28 +68,10 @@ export function shouldRefreshToken(thresholdMs = 60 * 1000): boolean {
 }
 
 export function getTokenExpirationTime(token: string): number | null {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.exp * 1000
-  } catch {
-    return null
-  }
-}
-
-export function isTokenExpired(token: string): boolean {
-  const exp = getTokenExpirationTime(token)
-  if (!exp) {
-    return true
-  }
-  return Date.now() >= exp
-}
-
-export function getTokenPayload<T = Record<string, unknown>>(token: string): T | null {
-  try {
-    return JSON.parse(atob(token.split('.')[1])) as T
-  } catch {
-    return null
-  }
+  const payload = decodeJwtPayload(token)
+  return typeof payload?.exp === 'number' && Number.isFinite(payload.exp)
+    ? payload.exp * 1000
+    : null
 }
 
 const AUTH_USER_KEY = 'auction_user'
@@ -72,7 +85,8 @@ export function getStoredUser(): AuthUser | null {
     return null
   }
   try {
-    return JSON.parse(userJson) as AuthUser
+    const storedUser: unknown = JSON.parse(userJson)
+    return isAuthUser(storedUser) ? storedUser : null
   } catch {
     return null
   }

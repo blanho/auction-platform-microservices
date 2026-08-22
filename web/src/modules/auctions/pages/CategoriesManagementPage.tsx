@@ -1,39 +1,40 @@
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Add, Delete, DragIndicator, Edit, ExpandLess, ExpandMore } from '@mui/icons-material'
 import {
-  Container,
-  Card,
-  Typography,
+  Avatar,
   Box,
   Button,
+  Card,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  Stack,
-  Chip,
-  Avatar,
+  Typography,
 } from '@mui/material'
-import { Add, Edit, Delete, DragIndicator, ExpandMore, ExpandLess } from '@mui/icons-material'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { palette } from '@/shared/theme/tokens'
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../hooks'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { motion } from 'framer-motion'
+import React, { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import type { Category } from '../api/categories.api'
-import { categorySchema, type CategoryFormData } from '../schemas'
+import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '../hooks'
+import { createCategorySchema, type CategoryFormData } from '../schemas'
 
 export function CategoriesManagementPage() {
   const { t } = useTranslation('auctions')
+  const categorySchema = createCategorySchema(t)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())

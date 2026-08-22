@@ -11,8 +11,6 @@ using Identity.Application.Errors;
 using Identity.Application.Features.Profile.Queries.GetProfile;
 using Identity.Application.Features.Profile.Commands.UpdateProfile;
 using Identity.Application.Features.Profile.Commands.ChangePassword;
-using Identity.Application.Features.Profile.Commands.EnableTwoFactor;
-using Identity.Application.Features.Profile.Commands.DisableTwoFactor;
 
 namespace Identity.Api.Endpoints.Profile;
 
@@ -41,15 +39,6 @@ public class ProfileEndpoints : ICarterModule
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
-        group.MapPost("/enable-2fa", EnableTwoFactor)
-            .WithName("EnableTwoFactor")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
-
-        group.MapPost("/disable-2fa", DisableTwoFactor)
-            .WithName("DisableTwoFactor")
-            .Produces(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> GetProfile(
@@ -102,27 +91,4 @@ public class ProfileEndpoints : ICarterModule
         return Results.Ok();
     }
 
-    private static async Task<IResult> EnableTwoFactor(
-        ClaimsPrincipal user,
-        ISender sender,
-        CancellationToken cancellationToken)
-    {
-        var userId = user.GetRequiredUserIdString();
-        var result = await sender.Send(new EnableTwoFactorCommand(userId), cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));
-    }
-
-    private static async Task<IResult> DisableTwoFactor(
-        ClaimsPrincipal user,
-        ISender sender,
-        CancellationToken cancellationToken)
-    {
-        var userId = user.GetRequiredUserIdString();
-        var result = await sender.Send(new DisableTwoFactorCommand(userId), cancellationToken);
-        return result.IsSuccess
-            ? Results.Ok()
-            : Results.NotFound(ProblemDetailsHelper.NotFound("User", userId));
-    }
 }

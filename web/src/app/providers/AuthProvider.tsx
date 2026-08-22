@@ -1,24 +1,24 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import type { ReactNode } from 'react'
-import { AuthContext } from '../context/AuthContext'
+import { authApi } from '@/modules/auth/api'
 import type {
-  AuthUser,
-  AuthStatus,
   AuthResponse,
+  AuthStatus,
+  AuthUser,
   LoginRequest,
   RegisterRequest,
   TwoFactorLoginRequest,
 } from '@/modules/auth/types'
-import { authApi } from '@/modules/auth/api'
 import {
-  setAccessToken,
   clearAuthStorage,
   getStoredUser,
-  setStoredUser,
   removeStoredUser,
+  setAccessToken,
+  setStoredUser,
   shouldRefreshToken,
 } from '@/modules/auth/utils/token.utils'
 import { signalRService } from '@/services/signalr'
+import type { ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { AuthContext } from '../context/AuthContext'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -43,6 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null)
 
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null)
   const isMountedRef = useRef(true)
 
   const clearError = useCallback(() => setError(null), [])
@@ -52,25 +53,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearInterval(refreshTimerRef.current)
       refreshTimerRef.current = null
     }
-    signalRService.disconnect()
+    void signalRService.disconnect()
     clearAuthStorage()
     setUser(null)
     setStatus('unauthenticated')
   }, [])
 
   const silentRefresh = useCallback(async (): Promise<boolean> => {
-    try {
-      const response = await authApi.refreshToken()
-      if (!isMountedRef.current) {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current
+    }
+
+    const refreshPromise = (async (): Promise<boolean> => {
+      try {
+        const response = await authApi.refreshToken()
+        if (!isMountedRef.current) {
+          return false
+        }
+        setAccessToken(response.accessToken, response.expiresIn)
+        return true
+      } catch {
+        if (isMountedRef.current) {
+          handleLogout()
+        }
         return false
       }
-      setAccessToken(response.accessToken, response.expiresIn)
-      return true
-    } catch {
-      if (isMountedRef.current) {
-        handleLogout()
+    })()
+
+    refreshPromiseRef.current = refreshPromise
+    try {
+      return await refreshPromise
+    } finally {
+      if (refreshPromiseRef.current === refreshPromise) {
+        refreshPromiseRef.current = null
       }
-      return false
     }
   }, [handleLogout])
 
@@ -81,7 +97,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     refreshTimerRef.current = setInterval(() => {
       if (shouldRefreshToken()) {
-        silentRefresh()
+        void silentRefresh()
       }
     }, REFRESH_INTERVAL_MS)
   }, [silentRefresh])
@@ -144,7 +160,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     isMountedRef.current = true
-    initializeAuth()
+    void initializeAuth()
 
     return () => {
       isMountedRef.current = false

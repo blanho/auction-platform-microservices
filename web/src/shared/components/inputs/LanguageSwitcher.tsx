@@ -1,11 +1,11 @@
+import { supportedLanguages } from '@/i18n'
+import { Language } from '@mui/icons-material'
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
-import { Language } from '@mui/icons-material'
-import { supportedLanguages } from '@/i18n'
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation('common')
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
       <IconButton
         onClick={handleClick}
         size="small"
-        aria-label="Change language"
+        aria-label={t('language.change')}
         aria-controls={open ? 'language-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
@@ -63,7 +63,7 @@ export function LanguageSwitcher() {
             <ListItemIcon>
               <Typography variant="body1">{lang.flag}</Typography>
             </ListItemIcon>
-            <ListItemText>{lang.label}</ListItemText>
+            <ListItemText>{t(`language.${lang.code}`)}</ListItemText>
           </MenuItem>
         ))}
       </Menu>

@@ -1,27 +1,29 @@
+import { getCurrentLocale } from '@/i18n'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
 import {
   Box,
-  Typography,
-  Stack,
   Skeleton,
-  ToggleButtonGroup,
+  Stack,
   ToggleButton,
+  ToggleButtonGroup,
+  Typography,
   useTheme,
 } from '@mui/material'
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts'
 import { useAuctionTrends, useRevenueTrends } from '../hooks/useAnalytics'
-import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
 import { getDateRange, type TimeRange } from '../utils/date.utils'
-import { palette } from '@/shared/theme/tokens'
 
 interface CustomTooltipProps {
   active?: boolean
@@ -34,6 +36,7 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  const { t } = useTranslation('analytics')
   if (active && payload && payload.length) {
     return (
       <Box
@@ -52,7 +55,9 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         {payload.map((entry, index) => (
           <Typography key={index} variant="caption" sx={{ display: 'block', color: entry.color }}>
             {entry.name}:{' '}
-            {entry.name === 'Revenue' ? formatCurrency(entry.value) : formatNumber(entry.value)}
+            {entry.name === t('charts.revenue')
+              ? formatCurrency(entry.value)
+              : formatNumber(entry.value)}
           </Typography>
         ))}
       </Box>
@@ -62,6 +67,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function TrendChart() {
+  const { t } = useTranslation('analytics')
   const theme = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>('30d')
   const [chartType, setChartType] = useState<'auctions' | 'revenue' | 'combined'>('combined')
@@ -115,7 +121,7 @@ export function TrendChart() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map((item) => ({
         ...item,
-        date: new Date(item.date).toLocaleDateString('en-US', {
+        date: new Date(item.date).toLocaleDateString(getCurrentLocale(), {
           month: 'short',
           day: 'numeric',
         }),
@@ -162,7 +168,7 @@ export function TrendChart() {
         sx={{ mb: 3 }}
       >
         <Typography variant="h6" fontWeight={600} sx={{ fontFamily: '"Fira Sans", sans-serif' }}>
-          Platform Trends
+          {t('charts.platformTrends')}
         </Typography>
         <Stack direction="row" spacing={1}>
           <ToggleButtonGroup
@@ -173,13 +179,13 @@ export function TrendChart() {
             sx={{ mr: 1 }}
           >
             <ToggleButton value="auctions" sx={{ textTransform: 'none' }}>
-              Auctions
+              {t('charts.auctions')}
             </ToggleButton>
             <ToggleButton value="revenue" sx={{ textTransform: 'none' }}>
-              Revenue
+              {t('charts.revenue')}
             </ToggleButton>
             <ToggleButton value="combined" sx={{ textTransform: 'none' }}>
-              Combined
+              {t('charts.combined')}
             </ToggleButton>
           </ToggleButtonGroup>
           <ToggleButtonGroup
@@ -189,13 +195,13 @@ export function TrendChart() {
             size="small"
           >
             <ToggleButton value="7d" sx={{ textTransform: 'none' }}>
-              7D
+              {t('period.7d')}
             </ToggleButton>
             <ToggleButton value="30d" sx={{ textTransform: 'none' }}>
-              30D
+              {t('period.30d')}
             </ToggleButton>
             <ToggleButton value="90d" sx={{ textTransform: 'none' }}>
-              90D
+              {t('period.90d')}
             </ToggleButton>
           </ToggleButtonGroup>
         </Stack>
@@ -238,7 +244,7 @@ export function TrendChart() {
                 yAxisId="left"
                 type="monotone"
                 dataKey="auctions"
-                name="Auctions"
+                name={t('charts.auctions')}
                 stroke={primaryColor}
                 strokeWidth={2}
                 dot={false}
@@ -250,7 +256,7 @@ export function TrendChart() {
                 yAxisId="right"
                 type="monotone"
                 dataKey="revenue"
-                name="Revenue"
+                name={t('charts.revenue')}
                 stroke={tertiaryColor}
                 strokeWidth={2}
                 dot={false}

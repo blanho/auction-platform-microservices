@@ -1,3 +1,5 @@
+using Bidding.Application.Errors;
+
 namespace Bidding.Application.Features.AutoBids.GetAutoBid;
 
 public class GetAutoBidQueryHandler : IQueryHandler<GetAutoBidQuery, AutoBidDetailDto?>
@@ -21,9 +23,9 @@ public class GetAutoBidQueryHandler : IQueryHandler<GetAutoBidQuery, AutoBidDeta
         _logger.LogDebug("Getting auto-bid details for {AutoBidId}", request.AutoBidId);
 
         var autoBid = await _repository.GetByIdAsync(request.AutoBidId, cancellationToken);
-        if (autoBid == null)
+        if (autoBid == null || autoBid.UserId != request.UserId)
         {
-            return Result.Success<AutoBidDetailDto?>(null);
+            return Result.Failure<AutoBidDetailDto?>(BiddingErrors.AutoBid.NotFound);
         }
 
         var userBids = await _bidRepository.GetBidsByAuctionIdAsync(autoBid.AuctionId, cancellationToken);

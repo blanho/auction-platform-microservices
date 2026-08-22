@@ -30,7 +30,7 @@ namespace Bidding.Api.Extensions.DependencyInjection
                             npgsqlOptions.CommandTimeout(BidDefaults.Database.CommandTimeoutSeconds);
                         })
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
-            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+            services.AddAutoMapper(_ => { }, typeof(MappingProfiles).Assembly);
 
             services.AddScoped<IBidRepository, BidRepository>();
             services.AddScoped<IAuthoritativeBidReader, AuthoritativeBidReader>();

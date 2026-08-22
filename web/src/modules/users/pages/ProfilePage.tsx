@@ -1,38 +1,40 @@
-import { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { getCurrentLocale } from '@/i18n'
+import { getErrorMessage } from '@/services/http'
 import { palette } from '@/shared/theme/tokens'
-import { InlineAlert, FormField } from '@/shared/ui'
+import { FormField, InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { CameraAlt, Cancel, CheckCircle, Pending, Store, Verified } from '@mui/icons-material'
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
   Avatar,
+  Box,
+  Button,
   Card,
-  Grid,
-  CircularProgress,
   Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  Grid,
   IconButton,
   Skeleton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Stack,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { CameraAlt, Verified, Store, CheckCircle, Pending, Cancel } from '@mui/icons-material'
-import { useProfile, useUpdateProfile, useSellerStatus, useApplyForSeller } from '../hooks'
-import { updateProfileSchema } from '../schemas'
-import type { UpdateProfileRequest } from '../types'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { usersApi } from '../api'
-import { getErrorMessage } from '@/services/http'
+import { useApplyForSeller, useProfile, useSellerStatus, useUpdateProfile } from '../hooks'
+import { createUpdateProfileSchema } from '../schemas'
+import type { UpdateProfileRequest } from '../types'
 
 export function ProfilePage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
+  const updateProfileSchema = createUpdateProfileSchema(t)
   const [isEditing, setIsEditing] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
@@ -120,7 +122,9 @@ export function ProfilePage() {
     }
 
     if (sellerStatus.isSeller) {
-      return <Chip icon={<Store />} label="Verified Seller" color="success" size="small" />
+      return (
+        <Chip icon={<Store />} label={t('profile.verifiedSeller')} color="success" size="small" />
+      )
     }
 
     switch (sellerStatus.applicationStatus) {
@@ -128,13 +132,13 @@ export function ProfilePage() {
         return (
           <Chip
             icon={<Pending />}
-            label="Seller Application Pending"
+            label={t('profile.sellerApplicationPending')}
             color="warning"
             size="small"
           />
         )
       case 'rejected':
-        return <Chip icon={<Cancel />} label="Application Rejected" color="error" size="small" />
+        return <Chip icon={<Cancel />} label={t('seller.rejected')} color="error" size="small" />
       default:
         return null
     }
@@ -165,7 +169,7 @@ export function ProfilePage() {
   if (profileError) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
-        <InlineAlert severity="error">Failed to load profile. Please try again.</InlineAlert>
+        <InlineAlert severity="error">{t('profile.loadError')}</InlineAlert>
       </Container>
     )
   }
@@ -181,11 +185,9 @@ export function ProfilePage() {
             color: palette.neutral[900],
           }}
         >
-          My Profile
+          {t('profile.myProfile')}
         </Typography>
-        <Typography sx={{ color: palette.neutral[500] }}>
-          Manage your account information
-        </Typography>
+        <Typography sx={{ color: palette.neutral[500] }}>{t('profile.description')}</Typography>
       </Box>
 
       {avatarError && (
@@ -257,7 +259,7 @@ export function ProfilePage() {
               {profile?.emailConfirmed && (
                 <Chip
                   icon={<Verified />}
-                  label="Verified"
+                  label={t('profile.verified')}
                   size="small"
                   sx={{ bgcolor: palette.semantic.infoLight, color: '#1D4ED8' }}
                 />
@@ -282,7 +284,7 @@ export function ProfilePage() {
                     },
                   }}
                 >
-                  Become a Seller
+                  {t('profile.becomeSeller')}
                 </Button>
               </>
             )}
@@ -291,15 +293,15 @@ export function ProfilePage() {
 
             <Box sx={{ textAlign: 'left' }}>
               <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[500], mb: 0.5 }}>
-                Member since
+                {t('profile.memberSinceLabel')}
               </Typography>
               <Typography sx={{ fontWeight: 500, color: palette.neutral[900] }}>
                 {profile?.createdAt
-                  ? new Date(profile.createdAt).toLocaleDateString('en-US', {
+                  ? new Date(profile.createdAt).toLocaleDateString(getCurrentLocale(), {
                       month: 'long',
                       year: 'numeric',
                     })
-                  : 'N/A'}
+                  : t('profile.notAvailable')}
               </Typography>
             </Box>
           </Card>
@@ -317,7 +319,7 @@ export function ProfilePage() {
               sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: palette.neutral[900] }}>
-                Personal Information
+                {t('profile.personalInformation')}
               </Typography>
               {!isEditing && (
                 <Button
@@ -336,20 +338,20 @@ export function ProfilePage() {
                     fontWeight: 600,
                   }}
                 >
-                  Edit Profile
+                  {t('profile.editProfile')}
                 </Button>
               )}
             </Box>
 
             {updateProfile.isSuccess && (
               <InlineAlert severity="success" sx={{ mb: 3 }}>
-                Profile updated successfully!
+                {t('messages.profileUpdated')}
               </InlineAlert>
             )}
 
             {updateProfile.isError && (
               <InlineAlert severity="error" sx={{ mb: 3 }}>
-                Failed to update profile. Please try again.
+                {t('profile.updateError')}
               </InlineAlert>
             )}
 
@@ -360,24 +362,24 @@ export function ProfilePage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Full Name"
+                  label={t('profile.fullName')}
                   disabled={!isEditing}
                   slotProps={{ inputLabel: { shrink: true } }}
                 />
                 <TextField
                   fullWidth
-                  label="Email"
+                  label={t('profile.email')}
                   value={profile?.email || ''}
                   disabled
                   slotProps={{ inputLabel: { shrink: true } }}
-                  helperText="Contact support to change your email"
+                  helperText={t('profile.emailChangeHelp')}
                 />
                 <FormField
                   name="phoneNumber"
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Phone Number"
+                  label={t('profile.phone')}
                   disabled={!isEditing}
                   slotProps={{ inputLabel: { shrink: true } }}
                 />
@@ -386,7 +388,7 @@ export function ProfilePage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Location"
+                  label={t('profile.location')}
                   disabled={!isEditing}
                   slotProps={{ inputLabel: { shrink: true } }}
                 />
@@ -395,10 +397,13 @@ export function ProfilePage() {
                   register={register}
                   errors={errors}
                   fullWidth
-                  label="Bio"
+                  label={t('profile.bio')}
                   multiline
                   rows={4}
-                  helperText={`${profile?.bio?.length || 0}/500 characters`}
+                  helperText={t('profile.characterCount', {
+                    count: profile?.bio?.length || 0,
+                    max: 500,
+                  })}
                   disabled={!isEditing}
                   slotProps={{ inputLabel: { shrink: true } }}
                 />
@@ -421,7 +426,7 @@ export function ProfilePage() {
                     {updateProfile.isPending ? (
                       <CircularProgress size={20} color="inherit" />
                     ) : (
-                      'Save Changes'
+                      t('profile.saveChanges')
                     )}
                   </Button>
                   <Button
@@ -437,7 +442,7 @@ export function ProfilePage() {
                       '&:hover': { borderColor: palette.neutral[900] },
                     }}
                   >
-                    Cancel
+                    {t('profile.cancel')}
                   </Button>
                 </Box>
               )}
@@ -452,19 +457,17 @@ export function ProfilePage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Become a Seller</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>{t('profile.becomeSeller')}</DialogTitle>
         <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            As a seller, you can list your own items for auction and reach thousands of collectors.
-          </Typography>
+          <Typography sx={{ mb: 2 }}>{t('profile.sellerDialogDescription')}</Typography>
           <Typography sx={{ color: palette.neutral[500], fontSize: '0.875rem' }}>
-            By applying, you agree to our seller terms and conditions, including:
+            {t('profile.sellerTermsIntroduction')}
           </Typography>
           <Box component="ul" sx={{ color: palette.neutral[500], fontSize: '0.875rem', pl: 3 }}>
-            <li>Maintain accurate item descriptions</li>
-            <li>Ship items within the specified timeframe</li>
-            <li>Respond to buyer inquiries promptly</li>
-            <li>Accept returns for items not as described</li>
+            <li>{t('profile.sellerTerms.accurateDescriptions')}</li>
+            <li>{t('profile.sellerTerms.timelyShipping')}</li>
+            <li>{t('profile.sellerTerms.promptResponses')}</li>
+            <li>{t('profile.sellerTerms.acceptReturns')}</li>
           </Box>
           {applyForSeller.isError && (
             <InlineAlert severity="error" sx={{ mt: 2 }}>
@@ -477,7 +480,7 @@ export function ProfilePage() {
             onClick={() => setShowSellerDialog(false)}
             sx={{ color: palette.neutral[500], textTransform: 'none' }}
           >
-            Cancel
+            {t('profile.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -496,7 +499,7 @@ export function ProfilePage() {
               '&:hover': { bgcolor: '#A16207' },
             }}
           >
-            Apply Now
+            {t('profile.applyNow')}
           </Button>
         </DialogActions>
       </Dialog>

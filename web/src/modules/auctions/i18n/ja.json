@@ -60,6 +60,14 @@
     "fair": "可"
   },
 
+  "conditionDescription": {
+    "new": "新品・未使用",
+    "likeNew": "使用感がほとんどなく、非常に良好な状態",
+    "excellent": "軽微な使用感のみで、とても良好な状態",
+    "good": "通常の使用感はあるが、完全に機能する状態",
+    "fair": "目立つ使用感や一部不具合がある状態"
+  },
+
   "detail": {
     "currentBid": "現在の入札額",
     "startingPrice": "開始価格",
@@ -77,6 +85,13 @@
     "yearManufactured": "製造年",
     "description": "商品説明",
     "reviews": "レビュー",
+    "shipping": "配送",
+    "returns": "返品",
+    "specifications": "仕様",
+    "bidHistoryCount": "入札履歴（{{count}}）",
+    "reviewCount": "レビュー（{{count}}）",
+    "noBids": "まだ入札はありません。最初の入札者になりましょう！",
+    "highest": "最高額",
     "watching": "人がウォッチ中",
     "bidCount": "{{count}}件の入札",
     "bidCount_one": "{{count}}件の入札"
@@ -100,8 +115,10 @@
     "yearManufacturedOptional": "製造年（任意）",
     "selectYear": "年を選択",
     "startingPrice": "開始価格",
+    "reservePrice": "開始価格（最低落札価格）",
     "startingPriceHelper": "最低入札額",
     "buyNowPrice": "即決価格",
+    "buyNowPriceOptional": "即決価格（任意）",
     "buyNowPriceHelper": "即時購入価格（開始価格より高い必要があります）",
     "enableBuyNow": "即決価格を有効にする",
     "currency": "通貨",
@@ -123,7 +140,15 @@
     "editDescription": "以下のオークション詳細を更新してください",
     "createDescription": "以下の詳細を入力して商品を出品してください",
     "reviewUpdateDescription": "更新する前にすべての詳細を確認してください。",
-    "reviewCreateDescription": "作成する前にすべての詳細を確認してください。"
+    "reviewCreateDescription": "作成する前にすべての詳細を確認してください。",
+    "fileCount": "{{count}}件のファイル",
+    "fileCount_other": "{{count}}件のファイル",
+    "fetchError": "オークションデータを読み込めませんでした。もう一度お試しください。",
+    "publishAuction": "オークションを公開",
+    "saving": "保存中...",
+    "saveChanges": "変更を保存",
+    "editAuction": "オークションを編集",
+    "createAuction": "オークションを作成"
   },
 
   "formSteps": {
@@ -152,7 +177,8 @@
     "shareOnFacebook": "Facebookで共有",
     "shareOnTwitter": "Twitterで共有",
     "pinOnPinterest": "Pinterestにピン",
-    "copyLink": "リンクをコピー"
+    "copyLink": "リンクをコピー",
+    "openImageViewer": "画像ビューアーを開く"
   },
 
   "messages": {
@@ -162,6 +188,7 @@
     "addedToWatchlist": "ウォッチリストに追加しました",
     "removedFromWatchlist": "ウォッチリストから削除しました",
     "linkCopied": "リンクをクリップボードにコピーしました",
+    "shareFailed": "リンクをコピーできませんでした。アドレスバーからコピーしてください。",
     "bidPlaced": "入札が成功しました！",
     "bidFailed": "入札に失敗しました",
     "purchaseSuccess": "購入が完了しました！注文ページにリダイレクトしています...",
@@ -203,6 +230,25 @@
     "failedToLoadAuctions": "オークションの読み込みに失敗しました",
     "couldntLoadAuctions": "オークションを読み込めませんでした。もう一度お試しください。",
     "failedToLoadWatchlist": "ウォッチリストの読み込みに失敗しました。もう一度お試しください。"
+  },
+
+  "validation": {
+    "nameRequired": "名前を入力してください",
+    "slugRequired": "スラッグを入力してください",
+    "invalidUrl": "有効なURLを入力してください",
+    "titleMin": "タイトルは3文字以上で入力してください",
+    "titleMinUpdate": "タイトルは10文字以上で入力してください",
+    "titleMax": "タイトルは200文字以内で入力してください",
+    "descriptionMinCreate": "説明は10文字以上で入力してください",
+    "descriptionMinUpdate": "説明は50文字以上で入力してください",
+    "descriptionMax": "説明は2,000文字以内で入力してください",
+    "categoryRequired": "カテゴリーを選択してください",
+    "conditionMax": "状態は50文字以内で入力してください",
+    "reservePriceMin": "最低落札価格は0以上にしてください",
+    "auctionEndRequired": "オークション終了日時を入力してください",
+    "currencyCode": "通貨は有効な3文字コードで指定してください",
+    "buyNowGreater": "即決価格は最低落札価格より高く設定してください",
+    "auctionEndFuture": "終了日時は現在から1時間以上後に設定してください"
   },
 
   "explore": "探す",

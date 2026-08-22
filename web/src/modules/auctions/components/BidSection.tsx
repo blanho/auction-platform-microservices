@@ -1,24 +1,24 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  Stack,
-  Chip,
-  Collapse,
-  CircularProgress,
-  Skeleton,
-} from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
-import { Gavel, Timer, LocalOffer, AutoMode } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
 import { AutoBidDialog } from '@/modules/bidding/components/AutoBidDialog'
 import { useCountdown } from '@/shared/hooks/useCountdown'
-import { formatCurrency } from '../utils'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { AutoMode, Gavel, LocalOffer, Timer } from '@mui/icons-material'
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Collapse,
+  InputAdornment,
+  Skeleton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getMinimumNextBid, getSuggestedBids } from '../constants/bid-increments'
+import { formatCurrency } from '../utils'
 
 interface BidSectionProps {
   auctionId: string
@@ -78,7 +78,7 @@ export function BidSection({
   const handleSubmitBid = async () => {
     const amount = Number.parseFloat(bidAmount)
     if (Number.isNaN(amount) || amount < minimumBid) {
-      setError(t('auctionCard.minimumBidError', { amount: minimumBid.toLocaleString() }))
+      setError(t('auctionCard.minimumBidError', { amount: formatCurrency(minimumBid) }))
       return
     }
 
@@ -146,7 +146,7 @@ export function BidSection({
           mb: 0.5,
         }}
       >
-        ${currentBid > 0 ? currentBid.toLocaleString() : startingPrice.toLocaleString()}
+        {formatCurrency(currentBid > 0 ? currentBid : startingPrice)}
       </Typography>
 
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -194,7 +194,7 @@ export function BidSection({
             label={t('auctionCard.yourBid')}
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
-            placeholder={t('auctionCard.orMore', { amount: minimumBid.toLocaleString() })}
+            placeholder={t('auctionCard.orMore', { amount: formatCurrency(minimumBid) })}
             slotProps={{
               input: {
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
@@ -217,7 +217,7 @@ export function BidSection({
             {suggestedBids.map((amount) => (
               <Chip
                 key={amount}
-                label={`$${amount.toLocaleString()}`}
+                label={formatCurrency(amount)}
                 onClick={() => handleQuickBid(amount)}
                 variant={bidAmount === amount.toString() ? 'filled' : 'outlined'}
                 sx={{
@@ -288,7 +288,7 @@ export function BidSection({
                 },
               }}
             >
-              {t('auctionCard.buyNow', { amount: buyNowPrice.toLocaleString() })}
+              {t('auctionCard.buyNow', { amount: formatCurrency(buyNowPrice) })}
             </Button>
           )}
 
@@ -318,7 +318,7 @@ export function BidSection({
           >
             {existingAutoBid?.isActive
               ? t('auctionCard.autoBidActive', {
-                  amount: existingAutoBid.maxAmount.toLocaleString(),
+                  amount: formatCurrency(existingAutoBid.maxAmount),
                 })
               : t('auctionCard.setUpAutoBid')}
           </Button>

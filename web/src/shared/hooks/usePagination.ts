@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
-import type { QueryParameters, PaginatedResponse } from '../types/api'
+import { useCallback, useMemo, useState } from 'react'
+import type { PaginatedResponse, QueryParameters } from '../types/api'
 
 export interface UsePaginationOptions<TFilter = Record<string, unknown>> {
   defaultPage?: number

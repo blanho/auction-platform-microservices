@@ -1,6 +1,6 @@
+import { palette } from '@/shared/theme/tokens'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { palette } from '@/shared/theme/tokens'
 
 interface LoadingScreenProps {
   message?: string

@@ -1,22 +1,22 @@
-import { Controller } from 'react-hook-form'
-import type { Control } from 'react-hook-form'
-import {
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-  Autocomplete,
-  TextField,
-} from '@mui/material'
-import { useTranslation } from 'react-i18next'
-import { InlineAlert } from '@/shared/ui'
 import { FileUploadZone } from '@/shared/components/upload'
 import { ACCEPTED_IMAGE_TYPES } from '@/shared/constants/storage.constants'
+import type { FileAttachment, FileUploadProgress } from '@/shared/types/storage.types'
+import { InlineAlert } from '@/shared/ui'
+import {
+  Autocomplete,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from '@mui/material'
+import type { Control } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { ITEM_CONDITIONS, YEAR_OPTIONS } from '../constants'
 import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
-import type { FileAttachment, FileUploadProgress } from '@/shared/types/storage.types'
 
 interface ItemDetailsStepProps {
   control: Control<CreateAuctionFormData | UpdateAuctionFormData>
@@ -53,9 +53,13 @@ export function ItemDetailsStep({
               <Select {...field} labelId="condition-label" label={t('form.condition')}>
                 {ITEM_CONDITIONS.map((cond) => (
                   <MenuItem key={cond.value} value={cond.value}>
-                    <Typography variant="body1">{cond.label}</Typography>
+                    <Typography variant="body1">
+                      {t(`condition.${cond.value === 'like-new' ? 'likeNew' : cond.value}`)}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {cond.description}
+                      {t(
+                        `conditionDescription.${cond.value === 'like-new' ? 'likeNew' : cond.value}`
+                      )}
                     </Typography>
                   </MenuItem>
                 ))}

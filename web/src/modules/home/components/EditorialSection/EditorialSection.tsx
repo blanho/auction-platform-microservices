@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Button } from '@mui/material'
 import { typography } from '@/shared/theme/tokens'
+import { Box, Button, Container, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 const editorialImages = [
   'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80',

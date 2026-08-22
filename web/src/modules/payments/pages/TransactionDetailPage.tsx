@@ -1,35 +1,37 @@
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import {
-  Container,
-  Card,
-  Typography,
-  Box,
-  Button,
-  Chip,
-  Skeleton,
-  Stack,
-  Divider,
-  Grid,
-} from '@mui/material'
+import { useToast } from '@/app/providers'
+import { getCurrentLocale } from '@/i18n'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
+import { formatCurrency } from '@/shared/utils/formatters'
 import {
-  ArrowBack,
-  Receipt,
   AccessTime,
   AccountBalanceWallet,
+  ArrowBack,
   ContentCopy,
+  Receipt,
 } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Container,
+  Divider,
+  Grid,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { walletsApi } from '../api'
-import { getTransactionTypeConfig, getTransactionStatusConfig } from '../utils'
-import { formatCurrency } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { getTransactionStatusConfig, getTransactionTypeConfig } from '../utils'
 
 const formatDateLong = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString(getCurrentLocale(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -40,9 +42,10 @@ const formatDateLong = (dateString: string) => {
 }
 
 export function TransactionDetailPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
   const { transactionId } = useParams<{ transactionId: string }>()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const {
     data: transaction,
@@ -52,18 +55,24 @@ export function TransactionDetailPage() {
     queryKey: ['transaction', transactionId],
     queryFn: () => {
       if (!transactionId) {
-        throw new Error('Transaction ID is required')
+        throw new Error(t('transaction.idRequired'))
       }
       return walletsApi.getTransactionById(transactionId)
     },
     enabled: !!transactionId,
   })
 
-  const handleCopyId = () => {
+  const handleCopyId = async () => {
     if (!transactionId) {
       return
     }
-    navigator.clipboard.writeText(transactionId)
+
+    try {
+      await navigator.clipboard.writeText(transactionId)
+      toast.success(t('transaction.copied'))
+    } catch {
+      toast.error(t('transaction.copyFailed'))
+    }
   }
 
   if (isLoading) {
@@ -88,10 +97,10 @@ export function TransactionDetailPage() {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <InlineAlert severity="error" sx={{ mb: 3 }}>
-          Transaction not found or you don't have permission to view it.
+          {t('transaction.notFound')}
         </InlineAlert>
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/wallet')}>
-          Back to Wallet
+          {t('transaction.backToWallet')}
         </Button>
       </Container>
     )
@@ -116,7 +125,7 @@ export function TransactionDetailPage() {
                 '&:hover': { bgcolor: palette.neutral[100] },
               }}
             >
-              Back to Wallet
+              {t('transaction.backToWallet')}
             </Button>
           </motion.div>
 
@@ -151,11 +160,12 @@ export function TransactionDetailPage() {
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
                       <Typography variant="body2" color="text.secondary">
-                        ID: {transactionId?.slice(0, 12)}...
+                        {t('transaction.id', { id: transactionId?.slice(0, 12) })}
                       </Typography>
                       <Button
                         size="small"
                         onClick={handleCopyId}
+                        aria-label={t('transaction.copy')}
                         sx={{ minWidth: 'auto', p: 0.5, color: palette.neutral[500] }}
                       >
                         <ContentCopy sx={{ fontSize: 16 }} />
@@ -184,7 +194,9 @@ export function TransactionDetailPage() {
                     {formatCurrency(transaction.amount)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Balance after: {formatCurrency(transaction.balance)}
+                    {t('transaction.balanceAfter', {
+                      amount: formatCurrency(transaction.balance),
+                    })}
                   </Typography>
                 </Box>
 
@@ -194,14 +206,14 @@ export function TransactionDetailPage() {
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <DetailItem
                       icon={<AccessTime sx={{ color: palette.neutral[500] }} />}
-                      label="Date & Time"
+                      label={t('transaction.dateTime')}
                       value={formatDateLong(transaction.createdAt)}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <DetailItem
                       icon={<AccountBalanceWallet sx={{ color: palette.neutral[500] }} />}
-                      label="Wallet Balance"
+                      label={t('transaction.walletBalance')}
                       value={formatCurrency(transaction.balance)}
                     />
                   </Grid>
@@ -209,7 +221,7 @@ export function TransactionDetailPage() {
                     <Grid size={{ xs: 12 }}>
                       <DetailItem
                         icon={<Receipt sx={{ color: palette.neutral[500] }} />}
-                        label="Description"
+                        label={t('transaction.description')}
                         value={transaction.description}
                       />
                     </Grid>
@@ -218,7 +230,7 @@ export function TransactionDetailPage() {
                     <Grid size={{ xs: 12 }}>
                       <DetailItem
                         icon={<Receipt sx={{ color: palette.neutral[500] }} />}
-                        label="Reference"
+                        label={t('transaction.reference')}
                         value={transaction.reference}
                       />
                     </Grid>
@@ -232,7 +244,7 @@ export function TransactionDetailPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ mt: 3, p: 3, borderRadius: 2 }}>
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Related Order
+                  {t('transaction.relatedOrder')}
                 </Typography>
                 <Box
                   sx={{
@@ -245,7 +257,9 @@ export function TransactionDetailPage() {
                   }}
                 >
                   <Typography variant="body2">
-                    Order #{transaction.relatedOrderId.slice(0, 8).toUpperCase()}
+                    {t('transaction.orderNumber', {
+                      number: transaction.relatedOrderId.slice(0, 8).toUpperCase(),
+                    })}
                   </Typography>
                   <Button
                     component={Link}
@@ -253,7 +267,7 @@ export function TransactionDetailPage() {
                     size="small"
                     sx={{ color: palette.brand.primary, fontWeight: 600 }}
                   >
-                    View Order
+                    {t('transaction.viewOrder')}
                   </Button>
                 </Box>
               </Card>

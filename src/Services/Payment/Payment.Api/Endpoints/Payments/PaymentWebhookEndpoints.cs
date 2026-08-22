@@ -20,7 +20,7 @@ public class PaymentWebhookEndpoints : ICarterModule
 
     private static async Task<IResult> HandleWebhook(
         HttpContext httpContext,
-        IStripePaymentService stripePaymentService,
+        IPaymentGateway paymentGateway,
         ILogger<PaymentWebhookEndpoints> logger,
         CancellationToken cancellationToken)
     {
@@ -35,7 +35,7 @@ public class PaymentWebhookEndpoints : ICarterModule
 
         try
         {
-            await stripePaymentService.HandleWebhookAsync(json, stripeSignature, cancellationToken);
+            await paymentGateway.HandleWebhookAsync(json, stripeSignature, cancellationToken);
             return TypedResults.Ok();
         }
         catch (StripeException ex)

@@ -1,20 +1,20 @@
-import { useTranslation } from 'react-i18next'
+import { StatusBadge } from '@/shared/ui'
+import { formatDate } from '@/shared/utils/formatters'
+import { Block, CheckCircle, MoreVert, Security } from '@mui/icons-material'
 import {
-  TableRow,
-  TableCell,
-  Box,
   Avatar,
-  Typography,
+  Box,
   Chip,
   IconButton,
+  TableCell,
+  TableRow,
   Tooltip,
+  Typography,
 } from '@mui/material'
-import { MoreVert, Security, CheckCircle, Block } from '@mui/icons-material'
-import { formatDate } from '@/shared/utils/formatters'
+import { useTranslation } from 'react-i18next'
 import { ROLE_COLORS } from '../constants'
-import { getUserStatus, getAdminUserInitial } from '../utils'
-import { StatusBadge } from '@/shared/ui'
 import type { AdminUser } from '../types'
+import { getAdminUserInitial, getUserStatus } from '../utils'
 
 interface UserTableRowProps {
   user: AdminUser
@@ -54,7 +54,10 @@ export function UserTableRow({ user, onMenuOpen }: UserTableRowProps) {
         </Box>
       </TableCell>
       <TableCell>
-        <StatusBadge status={status.label} />
+        <StatusBadge
+          status={status.label}
+          label={t(`userManagement.status.${status.label.toLowerCase()}`)}
+        />
       </TableCell>
       <TableCell>
         {user.twoFactorEnabled ? (

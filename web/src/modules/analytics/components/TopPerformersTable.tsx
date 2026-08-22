@@ -1,22 +1,22 @@
-import { useTranslation } from 'react-i18next'
+import { palette } from '@/shared/theme/tokens'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { EmojiEvents, Gavel, ShoppingCart, TrendingUp } from '@mui/icons-material'
 import {
-  Box,
-  Typography,
-  Stack,
-  Skeleton,
-  Avatar,
-  Chip,
-  useTheme,
   alpha,
+  Avatar,
+  Box,
+  Chip,
+  Skeleton,
+  Stack,
   Tab,
   Tabs,
+  Typography,
+  useTheme,
 } from '@mui/material'
-import { useState } from 'react'
-import { EmojiEvents, TrendingUp, Gavel, ShoppingCart } from '@mui/icons-material'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useTopPerformers } from '../hooks/useAnalytics'
-import { formatCurrency } from '@/shared/utils/formatters'
-import { palette } from '@/shared/theme/tokens'
 
 interface TabPanelProps {
   children?: React.ReactNode

@@ -1,16 +1,16 @@
-import { Box, Container, Typography, Grid, Button, Stack } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { palette } from '@/shared/theme/tokens'
 import {
+  ArrowForward,
+  EmojiEvents,
+  Gavel,
+  LocalShipping,
+  Payment,
   PersonAdd,
   Search,
-  Gavel,
-  EmojiEvents,
-  Payment,
-  LocalShipping,
-  ArrowForward,
 } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
+import { Box, Button, Container, Grid, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 const steps = [
   { icon: <PersonAdd sx={{ fontSize: 48 }} />, step: '01', key: '1' },

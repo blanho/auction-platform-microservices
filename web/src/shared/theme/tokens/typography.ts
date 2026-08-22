@@ -149,8 +149,3 @@ export const textStyle = {
     lineHeight: lineHeight.relaxed,
   },
 } as const
-
-export type FontFamily = typeof fontFamily
-export type FontSize = typeof fontSize
-export type FontWeight = typeof fontWeight
-export type TextStyle = typeof textStyle

@@ -1,13 +1,13 @@
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import i18next from 'i18next'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Drawer, Box, Typography, IconButton, Button, Skeleton } from '@mui/material'
-import { Close, FavoriteBorder, Favorite, Timer, East } from '@mui/icons-material'
-import { useWatchlist, useRemoveFromWatchlist, useWatchlistCount } from '@/modules/auctions/hooks'
 import type { WatchlistItem } from '@/modules/auctions/api/bookmarks.api'
+import { useRemoveFromWatchlist, useWatchlist, useWatchlistCount } from '@/modules/auctions/hooks'
 import { palette } from '@/shared/theme/tokens'
 import { formatCurrency } from '@/shared/utils/formatters'
+import { Close, East, Favorite, FavoriteBorder, Timer } from '@mui/icons-material'
+import { Box, Button, Drawer, IconButton, Skeleton, Typography } from '@mui/material'
+import { AnimatePresence, motion } from 'framer-motion'
+import i18next from 'i18next'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 interface WishlistDrawerProps {
   open: boolean
@@ -153,6 +153,7 @@ function WishlistItemCard({
           size="small"
           onClick={() => onRemove(auction.id)}
           disabled={isRemoving}
+          aria-label={`${t('actions.remove')} ${auction.title}`}
           sx={{
             alignSelf: 'flex-start',
             mt: 0.5,
@@ -245,6 +246,7 @@ export function WishlistDrawer({ open, onClose }: Readonly<WishlistDrawerProps>)
           </Box>
           <IconButton
             onClick={onClose}
+            aria-label={t('actions.close')}
             sx={{
               color: palette.neutral[900],
               '&:hover': { bgcolor: palette.neutral[50] },

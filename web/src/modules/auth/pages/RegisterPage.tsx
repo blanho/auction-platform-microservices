@@ -1,30 +1,30 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { debounce } from 'lodash-es'
-import { motion } from 'framer-motion'
+import { getApiUrl, getErrorMessage } from '@/services/http'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { FormField, InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { CheckCircle, East, Google } from '@mui/icons-material'
 import {
   Box,
-  Typography,
-  TextField,
   Button,
-  Divider,
-  InputAdornment,
   Checkbox,
-  FormControlLabel,
   CircularProgress,
-  Stack,
+  Divider,
+  FormControlLabel,
   FormHelperText,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { InlineAlert, FormField } from '@/shared/ui'
-import { Google, CheckCircle, East } from '@mui/icons-material'
-import { registerSchema } from '../schemas'
-import { useRegister, useCheckUsername } from '../hooks'
-import { palette } from '@/shared/theme/tokens'
-import { getErrorMessage } from '@/services/http'
+import { motion } from 'framer-motion'
+import { debounce } from 'lodash-es'
+import { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router-dom'
+import { useCheckUsername, useRegister } from '../hooks'
+import { createRegisterSchema } from '../schemas'
 
 interface RegisterFormData {
   email: string
@@ -66,6 +66,7 @@ const inputStyles = {
 
 export function RegisterPage() {
   const { t } = useTranslation('auth')
+  const registerSchema = createRegisterSchema(t)
   const navigate = useNavigate()
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
@@ -80,9 +81,7 @@ export function RegisterPage() {
   const debouncedSetUsername = useMemo(
     () =>
       debounce((value: string) => {
-        if (value.length >= 3) {
-          setDebouncedUsername(value)
-        }
+        setDebouncedUsername(value.length >= 3 ? value : '')
       }, 500),
     []
   )
@@ -115,14 +114,14 @@ export function RegisterPage() {
   }, [usernameValue, debouncedSetUsername])
 
   useEffect(() => {
-    if (usernameQuery.data !== undefined) {
+    if (debouncedUsername === usernameValue && usernameQuery.data !== undefined) {
       if (usernameQuery.data === false) {
-        setError('username', { type: 'manual', message: 'Username is already taken' })
+        setError('username', { type: 'manual', message: t('validation.usernameTaken') })
       } else {
         clearErrors('username')
       }
     }
-  }, [usernameQuery.data, setError, clearErrors])
+  }, [usernameQuery.data, debouncedUsername, usernameValue, setError, clearErrors, t])
 
   const usernameEndAdornment = useMemo(() => {
     if (usernameQuery.isLoading) {
@@ -157,9 +156,8 @@ export function RegisterPage() {
   }
 
   const handleGoogleLogin = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || ''
     const returnUrl = encodeURIComponent(`${globalThis.location.origin}/auth/callback`)
-    globalThis.location.href = `${baseUrl}/api/auth/external-login/Google?returnUrl=${returnUrl}`
+    globalThis.location.href = getApiUrl(`/auth/external-login/Google?returnUrl=${returnUrl}`)
   }
 
   if (registrationSuccess) {
@@ -365,9 +363,9 @@ export function RegisterPage() {
                   mb: 3,
                 }}
               >
-                Start Your
+                {t('register.heroTitleLine1')}
                 <br />
-                Collection Today
+                {t('register.heroTitleLine2')}
               </Typography>
             </motion.div>
 
@@ -380,17 +378,16 @@ export function RegisterPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Join our community of collectors and discover extraordinary pieces from around the
-                world.
+                {t('register.heroDescription')}
               </Typography>
             </motion.div>
 
             <motion.div variants={staggerItem}>
               <Stack spacing={2} sx={{ mt: 5 }}>
                 {[
-                  'Access exclusive auctions',
-                  'Verified sellers & items',
-                  'Secure payment protection',
+                  t('register.features.exclusiveAuctions'),
+                  t('register.features.verifiedSellers'),
+                  t('register.features.securePayments'),
                 ].map((feature) => (
                   <Box key={feature} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <CheckCircle sx={{ color: palette.neutral[0], fontSize: 18 }} />
@@ -488,7 +485,7 @@ export function RegisterPage() {
                   },
                 }}
               >
-                Continue with Google
+                {t('login.google')}
               </Button>
 
               <Divider

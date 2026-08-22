@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { templatesApi } from '../api'
 import type { CreateTemplateDto, UpdateTemplateDto } from '../types/template.types'
 
@@ -15,29 +15,6 @@ export const useTemplates = (page = 1, pageSize = 20) => {
   return useQuery({
     queryKey: templateKeys.list(page, pageSize),
     queryFn: () => templatesApi.getTemplates(page, pageSize),
-  })
-}
-
-export const useActiveTemplates = () => {
-  return useQuery({
-    queryKey: templateKeys.active(),
-    queryFn: () => templatesApi.getActiveTemplates(),
-  })
-}
-
-export const useTemplateByKey = (key: string) => {
-  return useQuery({
-    queryKey: templateKeys.byKey(key),
-    queryFn: () => templatesApi.getTemplateByKey(key),
-    enabled: !!key,
-  })
-}
-
-export const useTemplateById = (id: string) => {
-  return useQuery({
-    queryKey: templateKeys.byId(id),
-    queryFn: () => templatesApi.getTemplateById(id),
-    enabled: !!id,
   })
 }
 
@@ -72,13 +49,5 @@ export const useDeleteTemplate = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: templateKeys.all })
     },
-  })
-}
-
-export const useCheckTemplateExists = (key: string) => {
-  return useQuery({
-    queryKey: [...templateKeys.all, 'exists', key],
-    queryFn: () => templatesApi.checkTemplateExists(key),
-    enabled: !!key,
   })
 }

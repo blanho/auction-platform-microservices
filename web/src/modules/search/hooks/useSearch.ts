@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/hooks/useAuth'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { searchApi } from '../api'
 import type { SearchFilters } from '../types'
 

@@ -29,18 +29,20 @@ public class GetPermissionsForRolesQueryHandler(
             return Result.Success(DefaultRolePermissions.GetPermissionsForRoles(roleNamesList));
         }
 
-        var permissions = await context.RolePermissionStrings
+        var configuredPermissions = await context.RolePermissionStrings
             .AsNoTracking()
-            .Where(p => roleIds.Contains(p.RoleId) && p.IsEnabled)
-            .Select(p => p.PermissionCode)
-            .Distinct()
+            .Where(p => roleIds.Contains(p.RoleId))
+            .Select(p => new { p.PermissionCode, p.IsEnabled })
             .ToListAsync(cancellationToken);
 
-        if (permissions.Count == 0)
+        if (configuredPermissions.Count == 0)
         {
             return Result.Success(DefaultRolePermissions.GetPermissionsForRoles(roleNamesList));
         }
 
-        return Result.Success<HashSet<string>>([.. permissions]);
+        return Result.Success(configuredPermissions
+            .Where(permission => permission.IsEnabled)
+            .Select(permission => permission.PermissionCode)
+            .ToHashSet());
     }
 }

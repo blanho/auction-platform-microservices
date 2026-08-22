@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Button, Grid } from '@mui/material'
-import { East } from '@mui/icons-material'
 import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
 import { typography } from '@/shared/theme/tokens'
 import { formatCurrency } from '@/shared/utils/formatters'
+import { East } from '@mui/icons-material'
+import { Box, Button, Container, Grid, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 export const FreshArrivalsSection = () => {
   const { data: auctionsData } = useFeaturedAuctions(6)

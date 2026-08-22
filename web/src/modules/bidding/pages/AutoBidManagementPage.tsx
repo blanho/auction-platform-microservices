@@ -1,40 +1,40 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { getErrorMessage } from '@/services/http'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency, formatDateTime } from '@/shared/utils'
+import { Add, Delete, Edit, FlashOn } from '@mui/icons-material'
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Grid,
   Chip,
-  Button,
-  Stack,
   Container,
-  Switch,
-  IconButton,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  TextField,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
   Pagination,
   Skeleton,
+  Stack,
+  Switch,
+  TextField,
   Tooltip,
+  Typography,
 } from '@mui/material'
-import { FlashOn, Edit, Delete, Add } from '@mui/icons-material'
-import { InlineAlert } from '@/shared/ui'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { BID_CONSTANTS } from '../constants'
 import {
+  useCancelAutoBid,
   useMyAutoBids,
   useToggleAutoBid,
-  useCancelAutoBid,
   useUpdateAutoBid,
 } from '../hooks/useAutoBids'
-import { BID_CONSTANTS } from '../constants'
-import { formatCurrency, formatDateTime } from '@/shared/utils'
-import { getErrorMessage } from '@/services/http'
 import type { AutoBid, UpdateAutoBidRequest } from '../types'
-import { palette } from '@/shared/theme/tokens'
 
 export const AutoBidManagementPage = () => {
   const { t } = useTranslation('bidding')
@@ -378,7 +378,7 @@ export const AutoBidManagementPage = () => {
                             variant="caption"
                             sx={{ color: '#94A3B8', fontFamily: 'Chakra Petch' }}
                           >
-                            Created
+                            {t('autoBid.created')}
                           </Typography>
                           <Typography
                             variant="body2"

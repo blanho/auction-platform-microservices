@@ -1,8 +1,8 @@
-import { Box, Typography, Button, Stack } from '@mui/material'
-import { useTranslation } from 'react-i18next'
-import { Warning, Refresh, Home } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
 import { palette } from '@/shared/theme/tokens'
+import { Home, Refresh, Warning } from '@mui/icons-material'
+import { Box, Button, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 interface ErrorStateProps {
   title?: string

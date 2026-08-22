@@ -1,18 +1,18 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
-import { useMutation } from '@tanstack/react-query'
 import { storageApi } from '@/services/storage'
-import type {
-  FileUploadProgress,
-  FileAttachment,
-  StoredFileDto,
-  FileValidationConfig,
-  FileValidationError,
-} from '@/shared/types/storage.types'
 import {
+  ALL_ACCEPTED_TYPES,
   MAX_FILE_SIZE_BYTES,
   MAX_FILES_PER_UPLOAD,
-  ALL_ACCEPTED_TYPES,
 } from '@/shared/constants/storage.constants'
+import type {
+  FileAttachment,
+  FileUploadProgress,
+  FileValidationConfig,
+  FileValidationError,
+  StoredFileDto,
+} from '@/shared/types/storage.types'
+import { useMutation } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface UseFileUploadOptions {
   maxFileSize?: number
@@ -197,10 +197,12 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
           setAttachments((prev) => {
             const updated = [...prev, attachment]
+            const primaryAttachmentId =
+              prev.find((item) => item.isPrimary)?.fileId ?? updated[0]?.fileId
             return updated.map((a, idx) => ({
               ...a,
               displayOrder: idx,
-              isPrimary: idx === 0 && !prev.some((p) => p.isPrimary),
+              isPrimary: a.fileId === primaryAttachmentId,
             }))
           })
 
@@ -278,7 +280,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
   const isUploading = uploads.some((u) => u.status === 'uploading')
   const hasErrors = uploads.some((u) => u.status === 'error')
-  const remainingSlots = maxFiles - attachments.length
+  const remainingSlots = Math.max(0, maxFiles - attachments.length)
   const totalProgress =
     uploads.length > 0
       ? Math.round(uploads.reduce((sum, u) => sum + u.progress, 0) / uploads.length)

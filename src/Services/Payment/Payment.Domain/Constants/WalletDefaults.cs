@@ -24,11 +24,6 @@ public static class WalletDefaults
         public const string HoldFunds = "HoldFunds";
         public const string ReleaseFunds = "ReleaseFunds";
         public const string ProcessWalletPayment = "ProcessWalletPayment";
-        public const string StatusUpdated = "StatusUpdated";
-        public const string Delivered = "Delivered";
-        public const string Shipped = "Shipped";
-        public const string Cancelled = "Cancelled";
-        public const string PaymentCompleted = "PaymentCompleted";
     }
 
     public static class Messaging

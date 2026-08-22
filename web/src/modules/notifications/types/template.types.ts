@@ -55,15 +55,6 @@ export interface NotificationRecord {
 
 export type RecordStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
 
-export interface NotificationRecordFilter {
-  userId?: string
-  channel?: string
-  status?: string
-  templateKey?: string
-  fromDate?: string
-  toDate?: string
-}
-
 export interface NotificationRecordFilterDto extends QueryParameters {
   userId?: string
   channel?: string

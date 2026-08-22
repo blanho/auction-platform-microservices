@@ -1,17 +1,17 @@
-import { useTranslation } from 'react-i18next'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Stack,
-  Typography,
-  TextField,
-} from '@mui/material'
 import { InlineAlert } from '@/shared/ui'
-import { getAdminUserDisplayName } from '../../utils'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import type { AdminUser } from '../../types'
+import { getAdminUserDisplayName } from '../../utils'
 
 interface SuspendUserDialogProps {
   open: boolean

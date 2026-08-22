@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { jobsApi } from '../api'
 import type { JobFilterParams, JobItemFilterParams } from '../types'
 
@@ -14,7 +14,6 @@ export const jobKeys = {
 }
 
 const ACTIVE_POLL_INTERVAL = 3000
-const IDLE_POLL_INTERVAL = 30000
 
 const ACTIVE_STATUSES = new Set(['Initializing', 'Pending', 'Processing'])
 
@@ -23,15 +22,6 @@ export const useJobs = (params?: JobFilterParams) => {
     queryKey: jobKeys.list(params),
     queryFn: () => jobsApi.getJobs(params),
     staleTime: 10000,
-  })
-}
-
-export const useJobsPolling = (params?: JobFilterParams, hasActiveJobs = false) => {
-  return useQuery({
-    queryKey: jobKeys.list(params),
-    queryFn: () => jobsApi.getJobs(params),
-    refetchInterval: hasActiveJobs ? ACTIVE_POLL_INTERVAL : IDLE_POLL_INTERVAL,
-    staleTime: 5000,
   })
 }
 

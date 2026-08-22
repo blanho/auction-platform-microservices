@@ -1,13 +1,16 @@
-import type { AuditAction } from '../types'
+import i18n, { getCurrentLocale } from '@/i18n'
 import {
-  AUDIT_ACTION_LABELS,
   AUDIT_ACTION_COLORS,
+  AUDIT_ACTION_LABELS,
   ENTITY_TYPE_LABELS,
   SERVICE_NAME_LABELS,
 } from '../constants'
+import type { AuditAction } from '../types'
 
 export function getAuditActionLabel(action: AuditAction): string {
-  return AUDIT_ACTION_LABELS[action] || action
+  return i18n.t(`analytics:auditActions.${action}`, {
+    defaultValue: AUDIT_ACTION_LABELS[action] || action,
+  })
 }
 
 export function getAuditActionColor(
@@ -17,16 +20,20 @@ export function getAuditActionColor(
 }
 
 export function getEntityTypeLabel(entityType: string): string {
-  return ENTITY_TYPE_LABELS[entityType] || entityType
+  return i18n.t(`analytics:entityTypes.${entityType}`, {
+    defaultValue: ENTITY_TYPE_LABELS[entityType] || entityType,
+  })
 }
 
 export function getServiceNameLabel(serviceName: string): string {
-  return SERVICE_NAME_LABELS[serviceName] || serviceName
+  return i18n.t(`analytics:serviceNames.${serviceName}`, {
+    defaultValue: SERVICE_NAME_LABELS[serviceName] || serviceName,
+  })
 }
 
 export function formatAuditTimestamp(timestamp: string): string {
   const date = new Date(timestamp)
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(getCurrentLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

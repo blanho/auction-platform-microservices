@@ -1,30 +1,31 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router-dom'
+import { palette, typography } from '@/shared/theme/tokens'
+import { EmptyState, ErrorState, StatusBadge } from '@/shared/ui'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { Search, Timer } from '@mui/icons-material'
 import {
-  Container,
-  Typography,
   Box,
-  Grid,
+  Button,
   Card,
   CardContent,
   CardMedia,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Pagination,
-  InputAdornment,
-  Button,
   CircularProgress,
+  Container,
+  FormControl,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { Search, Timer } from '@mui/icons-material'
-import { formatTimeLeft } from '../utils'
-import { useAuctions, useActiveCategories } from '../hooks'
-import { ErrorState, EmptyState, StatusBadge } from '@/shared/ui'
-import { palette, typography } from '@/shared/theme/tokens'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
 import { AUCTION_SORT_CONFIG, type AuctionSortOption } from '../constants'
+import { useActiveCategories, useAuctions } from '../hooks'
+import { formatTimeLeft } from '../utils'
 
 export const AuctionsListPage = () => {
   const { t } = useTranslation('auctions')
@@ -174,7 +175,7 @@ export const AuctionsListPage = () => {
                         color: palette.neutral[900],
                       }}
                     >
-                      ${auction.currentBid.toLocaleString()}
+                      {formatCurrency(auction.currentBid)}
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: palette.neutral[400] }}>
                       {t('detail.bidCount', { count: auction.bidCount })}

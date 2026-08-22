@@ -1,11 +1,11 @@
-import { createContext } from 'react'
 import type {
-  AuthUser,
   AuthStatus,
+  AuthUser,
   LoginRequest,
   RegisterRequest,
   TwoFactorLoginRequest,
 } from '@/modules/auth/types'
+import { createContext } from 'react'
 
 export interface AuthContextType {
   user: AuthUser | null

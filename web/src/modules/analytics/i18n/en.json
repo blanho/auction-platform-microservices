@@ -2,7 +2,6 @@
   "title": "Analytics",
   "adminDashboard": "Admin Dashboard",
   "myDashboard": "My Dashboard",
-  "reports": "Reports Management",
   "trackActivity": "Track your auction activity and performance",
   "reviewReports": "Review and manage user reports",
 
@@ -35,7 +34,8 @@
     "connected": "connected",
     "degraded": "degraded",
     "unknown": "unknown",
-    "disconnected": "disconnected"
+    "disconnected": "disconnected",
+    "unavailable": "Unable to load health status"
   },
 
   "categories": {
@@ -75,6 +75,21 @@
     "retentionRate": "Retention Rate"
   },
 
+  "charts": {
+    "dailyActivity": "Daily Activity",
+    "dailyActivityLast14Days": "Daily Activity (Last 14 Days)",
+    "noDailyStats": "No daily stats available",
+    "platformTrends": "Platform Trends",
+    "auctions": "Auctions",
+    "bids": "Bids",
+    "revenue": "Revenue",
+    "combined": "Combined",
+    "value": "Value",
+    "categoryPerformance": "Category Performance",
+    "revenueTrend": "Revenue Trend",
+    "performanceBreakdown": "Performance Breakdown"
+  },
+
   "user": {
     "title": "My Dashboard",
     "activeAuctions": "Active Auctions",
@@ -93,7 +108,14 @@
     "totalBidsPlaced": "Total Bids Placed",
     "platformUsers": "Platform Users",
     "browseAuctions": "Browse Auctions",
-    "createAuction": "Create Auction"
+    "createAuction": "Create Auction",
+    "platformStats": "Platform Stats",
+    "platformStatsUnavailable": "Unable to load platform stats",
+    "revenueOverTime": "Revenue Over Time",
+    "revenueByCategory": "Revenue by Category",
+    "noSellerAnalytics": "No seller analytics available. Start selling to see your performance metrics.",
+    "createFirstAuction": "Create Your First Auction",
+    "noCategoryData": "No category data available"
   },
 
   "seller": {
@@ -113,6 +135,7 @@
   },
 
   "period": {
+    "timeRange": "Time range",
     "day": "Day",
     "week": "Week",
     "month": "Month",
@@ -147,10 +170,14 @@
     "noReports": "No reports found",
     "reportDetails": "Report Details",
     "auctionId": "Auction ID",
-    "description": "Description",
+    "descriptionLabel": "Description",
     "resolution": "Resolution",
     "resolutionNotes": "Resolution Notes",
+    "resolutionPlaceholder": "Enter resolution notes (optional)",
     "resolvedBy": "Resolved By",
+    "at": "at",
+    "notAvailable": "N/A",
+    "notFound": "Report not found",
     "createdAt": "Created At",
     "close": "Close",
     "cancel": "Cancel",
@@ -203,12 +230,15 @@
   "auditLogs": {
     "title": "Audit Logs",
     "description": "Track all system activities and changes",
+    "searchPlaceholder": "Search by entity, user, or service...",
+    "loadFailed": "Failed to load audit logs. Please try again.",
     "timestamp": "Timestamp",
     "action": "Action",
     "entity": "Entity",
     "user": "User",
     "service": "Service",
     "changes": "Changes",
+    "actions": "Actions",
     "noLogs": "No audit logs found",
     "adjustFilters": "Try adjusting your filters",
     "logsWillAppear": "Audit logs will appear here",
@@ -285,6 +315,29 @@
     "deleteConfirm": "Are you sure you want to delete the setting",
     "keyPlaceholder": "e.g., auction.max_duration_days",
     "keyHelperText": "Use lowercase with dots for namespacing",
+    "loadFailed": "Failed to load settings. Please try again.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "descriptionLabel": "Description",
+    "dataType": "Data Type",
+    "actions": "Actions",
+    "saving": "Saving...",
+    "creating": "Creating...",
+    "deleting": "Deleting...",
+    "categoryLabels": {
+      "Platform": "Platform Settings",
+      "Auction": "Auction Settings",
+      "Notification": "Notification Settings",
+      "Security": "Security Settings",
+      "Email": "Email Settings"
+    },
+    "categoryDescriptions": {
+      "Platform": "General platform configuration",
+      "Auction": "Auction-related settings and fees",
+      "Notification": "Notification preferences and templates",
+      "Security": "Security and authentication settings",
+      "Email": "Email server and template configuration"
+    },
     "categories": {
       "Platform": "Platform",
       "Auction": "Auction",

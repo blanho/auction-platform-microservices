@@ -46,67 +46,6 @@ export const palette = {
   },
 } as const
 
-export const colors = {
-  light: {
-    bg: {
-      primary: palette.neutral[0],
-      secondary: palette.neutral[50],
-      tertiary: palette.neutral[100],
-      elevated: palette.neutral[0],
-      glass: 'rgba(0, 0, 0, 0.02)',
-      overlay: 'rgba(0, 0, 0, 0.5)',
-    },
-    text: {
-      primary: palette.neutral[900],
-      secondary: palette.neutral[600],
-      muted: palette.neutral[500],
-      disabled: palette.neutral[400],
-      inverse: palette.neutral[50],
-    },
-    border: {
-      subtle: palette.neutral[100],
-      default: palette.neutral[200],
-      strong: palette.neutral[300],
-      focus: palette.neutral[900],
-    },
-    brand: {
-      primary: palette.brand.primary,
-      secondary: palette.brand.secondary,
-      accent: palette.brand.accent,
-      muted: palette.brand.muted,
-    },
-  },
-  dark: {
-    bg: {
-      primary: palette.neutral[950],
-      secondary: palette.neutral[900],
-      tertiary: palette.neutral[800],
-      elevated: palette.neutral[800],
-      glass: 'rgba(255, 255, 255, 0.05)',
-      overlay: 'rgba(0, 0, 0, 0.7)',
-    },
-    text: {
-      primary: palette.neutral[50],
-      secondary: palette.neutral[400],
-      muted: palette.neutral[500],
-      disabled: palette.neutral[600],
-      inverse: palette.neutral[900],
-    },
-    border: {
-      subtle: 'rgba(255, 255, 255, 0.05)',
-      default: 'rgba(255, 255, 255, 0.1)',
-      strong: 'rgba(255, 255, 255, 0.2)',
-      focus: palette.brand.accent,
-    },
-    brand: {
-      primary: palette.brand.primary,
-      secondary: palette.brand.secondary,
-      accent: palette.brand.accent,
-      muted: palette.brand.muted,
-    },
-  },
-} as const
-
 export const gradients = {
   brand: `linear-gradient(135deg, ${palette.neutral[900]} 0%, ${palette.neutral[700]} 100%)`,
   brandHover: `linear-gradient(135deg, ${palette.neutral[800]} 0%, ${palette.neutral[600]} 100%)`,
@@ -118,8 +57,3 @@ export const gradients = {
     'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
   divider: `linear-gradient(90deg, transparent, ${palette.neutral[200]}, transparent)`,
 } as const
-
-export type ThemeMode = 'light' | 'dark'
-export type ColorTokens = typeof colors.light
-export type Palette = typeof palette
-export type Gradients = typeof gradients

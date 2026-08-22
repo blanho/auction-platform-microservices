@@ -43,18 +43,6 @@ export interface WalletTransaction {
   processedAt?: string
 }
 
-export interface DepositRequest {
-  amount: number
-  paymentMethod: string
-  description?: string
-}
-
-export interface WithdrawRequest {
-  amount: number
-  paymentMethod: string
-  description?: string
-}
-
 export interface TransactionFilters extends QueryParameters {
   type?: TransactionType
   status?: TransactionStatus

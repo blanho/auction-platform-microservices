@@ -1,8 +1,8 @@
 import type { QueryParameters } from '@/shared/types'
 import type {
-  OverviewMetrics,
   AuctionMetrics,
   BidMetrics,
+  OverviewMetrics,
   RevenueMetrics,
   UserMetrics,
 } from './metrics.types'

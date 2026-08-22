@@ -1,58 +1,58 @@
-import { useState, useMemo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
 import {
-  Container,
-  Card,
-  Typography,
+  useActivateUser,
+  useDeactivateUser,
+  useDeleteUser,
+  useDisableUser2FA,
+  useResetUser2FA,
+  useSuspendUser,
+  useUnsuspendUser,
+  useUpdateUserRoles,
+  useUser2FAStatus,
+  useUsers,
+  useUserStats,
+} from '@/modules/users/hooks'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import { PersonAdd, Refresh, Search } from '@mui/icons-material'
+import {
   Box,
-  TextField,
+  Button,
+  Card,
+  Container,
   InputAdornment,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Button,
+  TableRow,
   Tabs,
-  Tab,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { Search, PersonAdd, Refresh } from '@mui/icons-material'
 import { useQueryClient } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  useUsers,
-  useSuspendUser,
-  useUnsuspendUser,
-  useActivateUser,
-  useDeactivateUser,
-  useUpdateUserRoles,
-  useDeleteUser,
-  useUserStats,
-  useUser2FAStatus,
-  useResetUser2FA,
-  useDisableUser2FA,
-} from '@/modules/users/hooks'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
-import { getRoleFilterFromTab } from '../utils'
-import {
-  UserStatsGrid,
-  UserTableRow,
-  UserTableSkeleton,
-  UserTableEmptyState,
-  UserActionsMenu,
-  SuspendUserDialog,
   ActivateUserDialog,
   DeactivateUserDialog,
   DeleteUserDialog,
   ManageRolesDialog,
+  SuspendUserDialog,
   TwoFactorDialog,
+  UserActionsMenu,
+  UserStatsGrid,
+  UserTableEmptyState,
+  UserTableRow,
+  UserTableSkeleton,
 } from '../components'
-import type { AdminUser, UserFilters, UserActionDialog } from '../types'
+import type { AdminUser, UserActionDialog, UserFilters } from '../types'
+import { getRoleFilterFromTab } from '../utils'
 
 export function UsersManagementPage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -126,7 +126,7 @@ export function UsersManagementPage() {
       return
     }
     suspendMutation.mutate(
-      { id: selectedUser.id, reason: suspendReason || 'Suspended by admin' },
+      { id: selectedUser.id, reason: suspendReason || t('userManagement.defaultSuspendReason') },
       {
         onSuccess: () => {
           invalidateUsers()
@@ -134,7 +134,7 @@ export function UsersManagementPage() {
         },
       }
     )
-  }, [selectedUser, suspendReason, suspendMutation, invalidateUsers, closeDialogAndReset])
+  }, [selectedUser, suspendReason, suspendMutation, invalidateUsers, closeDialogAndReset, t])
 
   const handleUnsuspend = useCallback(() => {
     if (!selectedUser) {
@@ -261,15 +261,15 @@ export function UsersManagementPage() {
                   color: 'text.primary',
                 }}
               >
-                User Management
+                {t('admin.users')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Manage user accounts, roles, and security settings
+                {t('userManagement.description')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant="outlined" startIcon={<Refresh />} onClick={() => refetch()}>
-                Refresh
+                {t('userManagement.refresh')}
               </Button>
               <Button
                 variant="contained"
@@ -279,7 +279,7 @@ export function UsersManagementPage() {
                   '&:hover': { bgcolor: 'primary.dark' },
                 }}
               >
-                Add User
+                {t('userManagement.addUser')}
               </Button>
             </Box>
           </Box>
@@ -293,16 +293,16 @@ export function UsersManagementPage() {
           <Card sx={{ mb: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={tabValue} onChange={handleTabChange}>
-                <Tab label="All Users" />
-                <Tab label="Buyers" />
-                <Tab label="Sellers" />
-                <Tab label="Admins" />
+                <Tab label={t('userManagement.tabs.all')} />
+                <Tab label={t('userManagement.tabs.buyers')} />
+                <Tab label={t('userManagement.tabs.sellers')} />
+                <Tab label={t('userManagement.tabs.admins')} />
               </Tabs>
             </Box>
 
             <Box sx={{ p: 2 }}>
               <TextField
-                placeholder="Search users by name or email..."
+                placeholder={t('userManagement.search')}
                 size="small"
                 value={search}
                 onChange={handleSearchChange}
@@ -323,14 +323,14 @@ export function UsersManagementPage() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>User</TableCell>
-                    <TableCell>Roles</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>2FA</TableCell>
-                    <TableCell>Email Verified</TableCell>
-                    <TableCell>Joined</TableCell>
-                    <TableCell>Last Login</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell>{t('userManagement.columns.user')}</TableCell>
+                    <TableCell>{t('userManagement.columns.roles')}</TableCell>
+                    <TableCell>{t('userManagement.columns.status')}</TableCell>
+                    <TableCell>{t('userManagement.columns.twoFactor')}</TableCell>
+                    <TableCell>{t('userManagement.columns.emailVerified')}</TableCell>
+                    <TableCell>{t('userManagement.columns.joined')}</TableCell>
+                    <TableCell>{t('userManagement.columns.lastLogin')}</TableCell>
+                    <TableCell align="right">{t('userManagement.columns.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

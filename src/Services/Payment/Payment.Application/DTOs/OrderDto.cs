@@ -30,31 +30,10 @@ public class OrderDto
     public DateTimeOffset? UpdatedAt { get; set; }
 }
 
-public class CreateOrderDto
+public class PrepareCheckoutDto
 {
-    public Guid AuctionId { get; set; }
-    public Guid? BuyerId { get; set; }
-    public string? BuyerUsername { get; set; }
-    public Guid? SellerId { get; set; }
-    public string? SellerUsername { get; set; }
-    public string? ItemTitle { get; set; }
-    public decimal? WinningBid { get; set; }
-    public decimal? ShippingCost { get; set; }
-    public decimal? PlatformFee { get; set; }
-    public string? ShippingAddress { get; set; }
+    public string ShippingAddress { get; set; } = string.Empty;
     public string? BuyerNotes { get; set; }
-}
-
-public class UpdateOrderDto
-{
-    public OrderStatus? Status { get; set; }
-    public PaymentStatus? PaymentStatus { get; set; }
-    public string? PaymentTransactionId { get; set; }
-    public string? ShippingAddress { get; set; }
-    public string? TrackingNumber { get; set; }
-    public string? ShippingCarrier { get; set; }
-    public string? BuyerNotes { get; set; }
-    public string? SellerNotes { get; set; }
 }
 
 public class UpdateShippingDto
@@ -62,12 +41,6 @@ public class UpdateShippingDto
     public string TrackingNumber { get; set; } = string.Empty;
     public string ShippingCarrier { get; set; } = string.Empty;
     public string? SellerNotes { get; set; }
-}
-
-public class ProcessPaymentDto
-{
-    public string PaymentMethod { get; set; } = string.Empty;
-    public string? ExternalTransactionId { get; set; }
 }
 
 public record RevenueStatsDto(
@@ -103,8 +76,3 @@ public record OrderStatsDto(
     decimal TotalRevenue,
     decimal AverageOrderValue
 );
-
-public class CancelOrderDto
-{
-    public string? Reason { get; set; }
-}

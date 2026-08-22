@@ -1,14 +1,14 @@
-import { useMemo } from 'react'
-import type { ReactNode } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import {
   type Permission,
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
   getPermissionsForRoles,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasPermission,
 } from '@/shared/permissions'
+import type { ReactNode } from 'react'
+import { useMemo } from 'react'
 import { PermissionContext } from '../context/PermissionContext'
+import { useAuth } from '../hooks/useAuth'
 
 interface PermissionProviderProps {
   children: ReactNode

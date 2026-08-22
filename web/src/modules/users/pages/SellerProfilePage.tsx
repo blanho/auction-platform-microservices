@@ -1,30 +1,30 @@
-import { useState, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { useAuctions } from '@/modules/auctions/hooks'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency, formatRelativeTime } from '@/shared/utils/formatters'
+import { Star, Storefront } from '@mui/icons-material'
 import {
-  Box,
-  Container,
-  Typography,
   Avatar,
+  Box,
   Card,
   CardContent,
-  Grid,
-  Rating,
-  LinearProgress,
-  Tabs,
-  Tab,
+  Container,
   Divider,
-  Stack,
+  Grid,
+  LinearProgress,
+  Rating,
   Skeleton,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material'
-import { Star, Storefront } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router-dom'
 import { useReviewsForUser, useUserRatingSummary } from '../hooks/useReviews'
-import { useAuctions } from '@/modules/auctions/hooks'
-import { InlineAlert } from '@/shared/ui'
-import { formatRelativeTime } from '@/shared/utils/formatters'
 
 interface TabPanelProps {
   readonly children?: React.ReactNode
@@ -45,12 +45,13 @@ function RatingDistributionBar({
   count,
   total,
 }: Readonly<{ rating: number; count: number; total: number }>) {
+  const { t } = useTranslation('users')
   const percentage = total > 0 ? (count / total) * 100 : 0
 
   return (
     <Stack direction="row" alignItems="center" spacing={1.5}>
       <Typography variant="body2" sx={{ minWidth: 60 }}>
-        {rating} stars
+        {t('sellerProfile.stars', { count: rating })}
       </Typography>
       <Box sx={{ flex: 1 }}>
         <LinearProgress
@@ -87,6 +88,8 @@ function ReviewCard({
     sellerResponse?: string
   }
 }>) {
+  const { t } = useTranslation('users')
+
   return (
     <Card variant="outlined" sx={{ mb: 2 }}>
       <CardContent>
@@ -117,7 +120,7 @@ function ReviewCard({
         {review.sellerResponse && (
           <Box sx={{ mt: 2, pl: 2, borderLeft: `3px solid ${palette.brand.primary}` }}>
             <Typography variant="caption" fontWeight={600} color="primary">
-              Seller Response
+              {t('sellerProfile.sellerResponse')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {review.sellerResponse}
@@ -141,6 +144,8 @@ function AuctionCard({
     bidCount: number
   }
 }>) {
+  const { t } = useTranslation('users')
+
   return (
     <Card
       component={Link}
@@ -176,10 +181,10 @@ function AuctionCard({
         </Typography>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mt={1}>
           <Typography variant="body2" color="primary" fontWeight={600}>
-            ${auction.currentBid.toLocaleString()}
+            {formatCurrency(auction.currentBid)}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {auction.bidCount} bids
+            {t('sellerProfile.bidCount', { count: auction.bidCount })}
           </Typography>
         </Stack>
       </CardContent>
@@ -203,6 +208,7 @@ function ListingsTabContent({
   isLoading: boolean
   auctions: AuctionListingItem[]
 }>) {
+  const { t } = useTranslation('users')
   const skeletonKeys = useMemo(() => Array.from({ length: 4 }, () => crypto.randomUUID()), [])
 
   if (isLoading) {
@@ -222,7 +228,7 @@ function ListingsTabContent({
       <Box sx={{ textAlign: 'center', py: 6 }}>
         <Storefront sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
         <Typography variant="h6" color="text.secondary">
-          No active listings
+          {t('sellerProfile.noListings')}
         </Typography>
       </Box>
     )
@@ -264,6 +270,7 @@ function ReviewsTabContent({
       }
     | undefined
 }>) {
+  const { t } = useTranslation('users')
   const skeletonKeys = useMemo(() => Array.from({ length: 3 }, () => crypto.randomUUID()), [])
 
   return (
@@ -278,7 +285,7 @@ function ReviewsTabContent({
                 </Typography>
                 <Rating value={ratingSummary.averageRating} precision={0.1} readOnly size="large" />
                 <Typography variant="body2" color="text.secondary" mt={1}>
-                  Based on {ratingSummary.totalReviews} reviews
+                  {t('sellerProfile.basedOnReviews', { count: ratingSummary.totalReviews })}
                 </Typography>
               </Box>
             </Grid>
@@ -311,7 +318,7 @@ function ReviewsTabContent({
         <Box sx={{ textAlign: 'center', py: 6 }}>
           <Star sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
-            No reviews yet
+            {t('sellerProfile.noReviews')}
           </Typography>
         </Box>
       )}
@@ -328,7 +335,7 @@ function ReviewsTabContent({
 }
 
 export function SellerProfilePage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const { sellerId } = useParams<{ sellerId: string }>()
   const [activeTab, setActiveTab] = useState(0)
 
@@ -348,23 +355,23 @@ export function SellerProfilePage() {
   const stats = useMemo(
     () => [
       {
-        label: 'Total Reviews',
+        label: t('sellerProfile.totalReviews'),
         value: ratingSummary?.totalReviews ?? 0,
         icon: <Star />,
       },
       {
-        label: 'Active Listings',
+        label: t('sellerProfile.activeListings'),
         value: auctionsData?.totalCount ?? 0,
         icon: <Storefront />,
       },
     ],
-    [ratingSummary, auctionsData]
+    [ratingSummary, auctionsData, t]
   )
 
   if (!sellerId) {
     return (
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 }, minHeight: '60vh' }}>
-        <InlineAlert severity="error">Seller not found</InlineAlert>
+        <InlineAlert severity="error">{t('sellerProfile.notFound')}</InlineAlert>
       </Container>
     )
   }
@@ -421,7 +428,9 @@ export function SellerProfilePage() {
                           size="small"
                         />
                         <Typography variant="body2" color="text.secondary">
-                          ({ratingSummary?.totalReviews ?? 0} reviews)
+                          {t('sellerProfile.reviewCount', {
+                            count: ratingSummary?.totalReviews ?? 0,
+                          })}
                         </Typography>
                       </>
                     )}
@@ -471,8 +480,14 @@ export function SellerProfilePage() {
           <Card>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-                <Tab label={`Listings (${auctionsData?.totalCount ?? 0})`} />
-                <Tab label={`Reviews (${ratingSummary?.totalReviews ?? 0})`} />
+                <Tab
+                  label={t('sellerProfile.listingsCount', { count: auctionsData?.totalCount ?? 0 })}
+                />
+                <Tab
+                  label={t('sellerProfile.reviewsCount', {
+                    count: ratingSummary?.totalReviews ?? 0,
+                  })}
+                />
               </Tabs>
             </Box>
 

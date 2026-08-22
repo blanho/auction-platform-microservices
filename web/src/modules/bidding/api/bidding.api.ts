@@ -1,23 +1,23 @@
 import { http } from '@/services/http'
+import type { PaginatedResponse } from '@/shared/types'
 import type {
+  AutoBidDetail,
+  AutoBidsResult,
   Bid,
-  PlaceBidRequest,
   BidDetail,
   BidHistory,
-  BidIncrementInfo,
-  RetractBidResult,
-  WinningBid,
   BidHistoryFilters,
-  AutoBidDetail,
-  CreateAutoBidRequest,
-  UpdateAutoBidRequest,
-  AutoBidsResult,
-  CreateAutoBidResult,
-  UpdateAutoBidResult,
-  ToggleAutoBidResult,
+  BidIncrementInfo,
   CancelAutoBidResult,
+  CreateAutoBidRequest,
+  CreateAutoBidResult,
+  PlaceBidRequest,
+  RetractBidResult,
+  ToggleAutoBidResult,
+  UpdateAutoBidRequest,
+  UpdateAutoBidResult,
+  WinningBid,
 } from '../types'
-import type { PaginatedResponse } from '@/shared/types'
 
 export const biddingApi = {
   async placeBid(data: PlaceBidRequest): Promise<Bid> {

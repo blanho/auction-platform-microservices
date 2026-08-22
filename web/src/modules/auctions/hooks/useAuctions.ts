@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { auctionsApi } from '../api'
 import type { AuctionFilters, CreateAuctionRequest, UpdateAuctionRequest } from '../types'
 
@@ -32,14 +32,6 @@ export const useAuction = (id: string) => {
     queryKey: auctionKeys.detail(id),
     queryFn: () => auctionsApi.getAuctionById(id),
     enabled: !!id,
-  })
-}
-
-export const useAuctionsByIds = (ids: string[]) => {
-  return useQuery({
-    queryKey: auctionKeys.batch(ids),
-    queryFn: () => auctionsApi.getAuctionsByIds(ids),
-    enabled: ids.length > 0,
   })
 }
 

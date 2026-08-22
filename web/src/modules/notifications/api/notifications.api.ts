@@ -1,15 +1,15 @@
 import { http } from '@/services/http'
+import type { PaginatedResponse } from '@/shared/types'
 import type {
+  AdminNotificationFilters,
+  BroadcastNotificationDto,
+  CreateNotificationDto,
   Notification,
-  NotificationSummary,
   NotificationFilters,
   NotificationPreferences,
-  CreateNotificationDto,
-  BroadcastNotificationDto,
-  AdminNotificationFilters,
   NotificationStatsDto,
+  NotificationSummary,
 } from '../types/notification.types'
-import type { PaginatedResponse } from '@/shared/types'
 
 export const notificationsApi = {
   async getNotifications(filters: NotificationFilters): Promise<PaginatedResponse<Notification>> {

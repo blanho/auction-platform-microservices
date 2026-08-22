@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
-import { useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { Alert, Container, Card, Typography, Box, Button, Stack } from '@mui/material'
-import { Cancel, Refresh, SupportAgent, Home, ShoppingCart } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { Cancel, Home, Refresh, ShoppingCart, SupportAgent } from '@mui/icons-material'
+import { Alert, Box, Button, Card, Container, Stack, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 export function PaymentCancelPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const orderId = searchParams.get('order_id')
@@ -67,11 +67,11 @@ export function PaymentCancelPage() {
                   mb: 1,
                 }}
               >
-                Payment Cancelled
+                {t('cancelled.title')}
               </Typography>
 
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Your payment was not completed. No charges have been made to your account.
+                {t('cancelled.description')}
               </Typography>
 
               <motion.div variants={staggerItem}>
@@ -84,22 +84,18 @@ export function PaymentCancelPage() {
                   }}
                 >
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                    Why was my payment cancelled?
+                    {t('cancelled.why')}
                   </Typography>
-                  <Typography variant="body2">This could happen if you:</Typography>
+                  <Typography variant="body2">{t('cancelled.possibleReasons')}</Typography>
                   <Box component="ul" sx={{ mt: 1, mb: 0, pl: 2 }}>
                     <li>
-                      <Typography variant="body2">
-                        Clicked the back button or closed the payment page
-                      </Typography>
+                      <Typography variant="body2">{t('cancelled.reasonNavigation')}</Typography>
                     </li>
                     <li>
-                      <Typography variant="body2">
-                        The payment session expired (usually after 30 minutes)
-                      </Typography>
+                      <Typography variant="body2">{t('cancelled.reasonExpired')}</Typography>
                     </li>
                     <li>
-                      <Typography variant="body2">Your bank declined the transaction</Typography>
+                      <Typography variant="body2">{t('cancelled.reasonDeclined')}</Typography>
                     </li>
                   </Box>
                 </Alert>
@@ -115,11 +111,10 @@ export function PaymentCancelPage() {
                   }}
                 >
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                    Your item is still available!
+                    {t('cancelled.availableTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Don't worry - your winning bid is still valid. You can try the payment again at
-                    any time.
+                    {t('cancelled.availableDescription')}
                   </Typography>
                 </Box>
               </motion.div>
@@ -139,7 +134,7 @@ export function PaymentCancelPage() {
                       '&:hover': { bgcolor: '#A16207' },
                     }}
                   >
-                    Try Again
+                    {t('cancelled.tryAgain')}
                   </Button>
                 )}
                 <Button
@@ -156,7 +151,7 @@ export function PaymentCancelPage() {
                     '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[100] },
                   }}
                 >
-                  Browse Auctions
+                  {t('cancelled.browseAuctions')}
                 </Button>
               </Stack>
             </Card>
@@ -176,14 +171,14 @@ export function PaymentCancelPage() {
               <SupportAgent sx={{ color: palette.brand.primary, fontSize: 32 }} />
               <Box sx={{ flex: 1 }}>
                 <Typography variant="subtitle2" fontWeight={600}>
-                  Need help?
+                  {t('cancelled.helpTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  If you're experiencing issues with payments, our support team is here to help.
+                  {t('cancelled.helpDescription')}
                 </Typography>
               </Box>
               <Button variant="text" sx={{ color: palette.brand.primary, fontWeight: 600 }}>
-                Contact Support
+                {t('cancelled.contactSupport')}
               </Button>
             </Card>
           </motion.div>
@@ -196,7 +191,7 @@ export function PaymentCancelPage() {
                 startIcon={<Home />}
                 sx={{ color: palette.neutral[500] }}
               >
-                Back to Home
+                {t('cancelled.backHome')}
               </Button>
             </Box>
           </motion.div>

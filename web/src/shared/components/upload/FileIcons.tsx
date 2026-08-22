@@ -1,9 +1,9 @@
 import {
   CloudUpload as CloudUploadIcon,
-  Image as ImageIcon,
-  PictureAsPdf as PdfIcon,
   Description as DocIcon,
   InsertDriveFile as FileIcon,
+  Image as ImageIcon,
+  PictureAsPdf as PdfIcon,
 } from '@mui/icons-material'
 
 export function getFileIcon(contentType: string) {

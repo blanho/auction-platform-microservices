@@ -1,11 +1,11 @@
 import { http } from '@/services/http'
 import type {
-  StoredFileDto,
   BatchUploadResponse,
   FileUrlDto,
-  PresignedUploadRequest,
-  PresignedUploadDto,
   PresignedDownloadDto,
+  PresignedUploadDto,
+  PresignedUploadRequest,
+  StoredFileDto,
 } from '@/shared/types/storage.types'
 
 function createProgressHandler(onProgress?: (progress: number) => void) {

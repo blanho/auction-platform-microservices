@@ -12,18 +12,67 @@
     "changeAvatar": "画像を変更",
     "memberSince": "{{date}}から利用",
     "verified": "認証済み",
-    "notVerified": "未認証"
+    "notVerified": "未認証",
+    "myProfile": "マイプロフィール",
+    "description": "アカウント情報を管理します",
+    "fullName": "氏名",
+    "verifiedSeller": "認証済み出品者",
+    "sellerApplicationPending": "出品者申請の承認待ち",
+    "becomeSeller": "出品者になる",
+    "memberSinceLabel": "登録時期",
+    "notAvailable": "該当なし",
+    "personalInformation": "個人情報",
+    "loadError": "プロフィールを読み込めませんでした。もう一度お試しください。",
+    "updateError": "プロフィールを更新できませんでした。もう一度お試しください。",
+    "emailChangeHelp": "メールアドレスの変更はサポートへお問い合わせください",
+    "characterCount": "{{count}}/{{max}}文字",
+    "saveChanges": "変更を保存",
+    "cancel": "キャンセル",
+    "sellerDialogDescription": "出品者になると、ご自身の商品をオークションに出品し、多くのコレクターへ届けられます。",
+    "sellerTermsIntroduction": "申請すると、以下を含む出品者利用規約に同意したものとみなされます。",
+    "sellerTerms": {
+      "accurateDescriptions": "正確な商品説明を記載する",
+      "timelyShipping": "指定期間内に商品を発送する",
+      "promptResponses": "購入者からの問い合わせに速やかに対応する",
+      "acceptReturns": "説明と異なる商品について返品を受け付ける"
+    },
+    "applyNow": "今すぐ申請"
   },
 
   "settings": {
     "title": "設定",
+    "description": "アカウントのセキュリティと各種設定を管理します",
     "account": "アカウント設定",
     "security": "セキュリティ",
+    "securityDescription": "パスワードと2FA",
     "notifications": "通知設定",
+    "notificationsDescription": "メールとプッシュ通知の設定",
     "privacy": "プライバシー",
     "language": "言語",
     "theme": "テーマ",
-    "deleteAccount": "アカウント削除"
+    "deleteAccount": "アカウント削除",
+    "appearance": "表示設定",
+    "appearanceDescription": "テーマと表示",
+    "notificationPreferences": "通知設定",
+    "notificationItems": {
+      "email": { "label": "メール通知", "description": "メールで通知を受け取ります" },
+      "push": { "label": "プッシュ通知", "description": "ブラウザでプッシュ通知を受け取ります" },
+      "bid": { "label": "入札更新", "description": "他のユーザーが高値を付けたときに通知します" },
+      "auction": {
+        "label": "オークション更新",
+        "description": "終了前のリマインダーやステータス変更を通知します"
+      },
+      "promotional": {
+        "label": "プロモーション",
+        "description": "特別オファーやプラットフォームの更新を通知します"
+      },
+      "system": {
+        "label": "システム通知",
+        "description": "アカウントやセキュリティに関する重要な更新を通知します"
+      }
+    },
+    "themes": { "light": "ライト", "dark": "ダーク", "system": "システム設定" },
+    "languages": { "en": "英語（米国）", "ja": "日本語" }
   },
 
   "security": {
@@ -35,7 +84,19 @@
     "enableTwoFactor": "2FAを有効化",
     "disableTwoFactor": "2FAを無効化",
     "sessions": "アクティブセッション",
-    "logoutAll": "すべてのデバイスからログアウト"
+    "logoutAll": "すべてのデバイスからログアウト",
+    "changePasswordError": "パスワードを変更できませんでした。現在のパスワードをご確認ください。",
+    "updatePassword": "パスワードを更新",
+    "twoFactorDescription": "二要素認証を有効にして、アカウントのセキュリティを強化します。",
+    "enabled": "有効",
+    "disabled": "無効",
+    "protectedWithTwoFactor": "アカウントは2FAで保護されています",
+    "enableForSecurity": "セキュリティ強化のため2FAを有効にしてください",
+    "manageTwoFactor": "2FAを管理",
+    "manageTwoFactorTitle": "二要素認証を管理",
+    "setupTwoFactorTitle": "二要素認証を設定",
+    "disableTwoFactorTitle": "二要素認証を無効にしますか？",
+    "disableTwoFactorDescription": "2FAを無効にすると、アカウントの安全性が低下します。続行してもよろしいですか？"
   },
 
   "seller": {
@@ -50,13 +111,178 @@
     "rating": "出品者評価"
   },
 
+  "sellerApply": {
+    "successTitle": "申請を送信しました",
+    "successDescription": "出品者への申請ありがとうございます。内容を確認し、2～3営業日以内にご連絡します。",
+    "goToDashboard": "ダッシュボードへ",
+    "browseAuctions": "オークションを見る",
+    "backToDashboard": "ダッシュボードに戻る",
+    "heroDescription": "マーケットプレイスに参加して、世界中のコレクターへ特別な商品を販売しましょう",
+    "benefitsTitle": "出品者のメリット",
+    "benefits": {
+      "growth": {
+        "title": "ビジネスを成長",
+        "description": "多くのコレクターや購入者に商品を届けられます"
+      },
+      "security": {
+        "title": "安全な取引",
+        "description": "保護された決済と購入者確認を利用できます"
+      },
+      "support": {
+        "title": "充実したサポート",
+        "description": "出品者向けサポートチームが24時間対応します"
+      },
+      "tools": { "title": "専門ツール", "description": "分析、在庫管理などの機能を利用できます" }
+    },
+    "formTitle": "出品者申請",
+    "formDescription": "以下のフォームに入力して出品者アカウントを申請してください",
+    "businessName": "会社名／店舗名",
+    "businessType": "事業形態",
+    "businessTypeHelp": "例：アンティーク販売店、画廊、個人コレクター",
+    "taxId": "納税者番号／事業者登録番号（任意）",
+    "taxIdHelp": "法人アカウントでは必須です",
+    "businessAddress": "事業所住所",
+    "businessDescription": "事業内容について",
+    "businessDescriptionHelp": "取扱商品、専門分野、このマーケットプレイスへの参加理由を記載してください",
+    "agreePrefix": "以下に同意します：",
+    "sellerTerms": "出品者利用規約",
+    "and": "および",
+    "feeSchedule": "手数料一覧",
+    "submitError": "申請を送信できませんでした。もう一度お試しください。",
+    "submit": "申請を送信",
+    "validation": {
+      "businessName": "会社名または店舗名を入力してください",
+      "businessType": "事業形態を入力してください",
+      "phoneNumber": "有効な電話番号を入力してください",
+      "address": "住所を入力してください",
+      "description": "事業内容を50文字以上で入力してください",
+      "terms": "利用規約への同意が必要です"
+    }
+  },
+
+  "sellerProfile": {
+    "stars": "星{{count}}つ",
+    "stars_other": "星{{count}}つ",
+    "sellerResponse": "出品者からの返信",
+    "bidCount": "入札{{count}}件",
+    "bidCount_other": "入札{{count}}件",
+    "noListings": "開催中の出品はありません",
+    "basedOnReviews": "{{count}}件のレビューに基づく",
+    "basedOnReviews_other": "{{count}}件のレビューに基づく",
+    "noReviews": "レビューはまだありません",
+    "totalReviews": "レビュー総数",
+    "activeListings": "開催中の出品",
+    "notFound": "出品者が見つかりません",
+    "reviewCount": "（レビュー{{count}}件）",
+    "reviewCount_other": "（レビュー{{count}}件）",
+    "listingsCount": "出品（{{count}}）",
+    "reviewsCount": "レビュー（{{count}}）"
+  },
+
   "myAuctions": {
     "title": "マイオークション",
+    "description": "出品中のオークションを管理します",
     "active": "開催中",
     "ended": "終了",
     "draft": "下書き",
     "createNew": "新規オークション作成",
-    "noAuctions": "まだオークションを作成していません"
+    "noAuctions": "まだオークションを作成していません",
+    "export": "エクスポート",
+    "import": "インポート",
+    "quickImport": "クイックインポート（小規模ファイル）",
+    "bulkImport": "一括インポート（大規模ファイル、最大100万件）",
+    "createAuction": "オークションを作成",
+    "totalAuctions": "オークション総数",
+    "totalBids": "入札総数",
+    "revenue": "売上",
+    "search": "オークションを検索...",
+    "auction": "オークション",
+    "statusLabel": "ステータス",
+    "currentBid": "現在の入札額",
+    "bids": "入札",
+    "views": "閲覧数",
+    "timeLeft": "残り時間",
+    "actions": "操作",
+    "noAuctionsFound": "オークションが見つかりません",
+    "createFirst": "最初のオークションを作成",
+    "startingPrice": "開始価格：{{price}}",
+    "view": "表示",
+    "edit": "編集",
+    "deactivate": "停止",
+    "extendTime": "時間を延長",
+    "cancelAuction": "オークションをキャンセル",
+    "activate": "公開",
+    "delete": "削除",
+    "deleteTitle": "オークションを削除しますか？",
+    "deleteDescription": "この操作は取り消せません。オークションと関連するすべてのデータが完全に削除されます。",
+    "cancelDescription": "このオークションをキャンセルしますか？この操作は取り消せず、すべての有効な入札は無効になります。",
+    "cancelReason": "キャンセル理由（任意）",
+    "cancelReasonPlaceholder": "例：商品を用意できなくなった、商品に破損が見つかった...",
+    "keepAuction": "オークションを継続",
+    "extendAuction": "オークションを延長",
+    "extendDescription": "オークションの終了時刻を延長します。新しい終了時刻は現在の終了時刻より後に設定してください。",
+    "currentEndTime": "現在の終了時刻：{{time}}",
+    "newEndTime": "新しい終了時刻",
+    "tabs": {
+      "all": "すべて",
+      "active": "開催中",
+      "ended": "終了",
+      "drafts": "下書き",
+      "pending": "審査待ち"
+    },
+    "status": {
+      "active": "開催中",
+      "ending-soon": "まもなく終了",
+      "ended": "終了",
+      "draft": "下書き",
+      "cancelled": "キャンセル済み",
+      "pending": "審査待ち",
+      "sold": "落札済み"
+    },
+    "time": {
+      "ended": "終了",
+      "daysHours": "{{days}}日 {{hours}}時間",
+      "hoursMinutes": "{{hours}}時間 {{minutes}}分"
+    },
+    "messages": {
+      "deleted": "オークションを削除しました",
+      "deleteError": "オークションを削除できませんでした",
+      "activated": "オークションを公開しました",
+      "activateError": "オークションを公開できませんでした",
+      "deactivated": "オークションを停止しました",
+      "deactivateError": "オークションを停止できませんでした",
+      "cancelled": "オークションをキャンセルしました",
+      "cancelError": "オークションをキャンセルできませんでした",
+      "extended": "オークションを延長しました",
+      "extendError": "オークションを延長できませんでした",
+      "imported": "オークションをインポートしました！",
+      "bulkImportCompleted": "一括インポートが完了しました。詳細は結果をご確認ください。"
+    }
+  },
+
+  "reviews": {
+    "title": "マイレビュー",
+    "description": "受け取ったレビューと投稿したレビューを管理します",
+    "from": "投稿者",
+    "to": "送信先",
+    "received": "受信済み",
+    "given": "投稿済み",
+    "respond": "返信",
+    "viewAuction": "オークションを見る",
+    "yourResponse": "あなたの返信",
+    "noReceived": "受け取ったレビューはまだありません",
+    "noGiven": "投稿したレビューはまだありません",
+    "loginRequired": "レビューを表示するにはログインしてください",
+    "averageRating": "平均評価",
+    "reviewsReceived": "受け取ったレビュー",
+    "reviewsGiven": "投稿したレビュー",
+    "receivedCount": "受信済み（{{count}}）",
+    "givenCount": "投稿済み（{{count}}）",
+    "respondTitle": "レビューに返信",
+    "respondDescription": "返信はこのレビューを閲覧するすべてのユーザーに表示されます。",
+    "responsePlaceholder": "レビューへのお礼やフィードバックへの回答を入力してください...",
+    "submitting": "送信中...",
+    "submitResponse": "返信を送信"
   },
 
   "admin": {
@@ -72,10 +298,63 @@
     "removeAdmin": "管理者権限を削除"
   },
 
+  "userManagement": {
+    "description": "ユーザーアカウント、役割、セキュリティ設定を管理します",
+    "refresh": "更新",
+    "addUser": "ユーザーを追加",
+    "search": "名前またはメールアドレスでユーザーを検索...",
+    "defaultSuspendReason": "管理者による利用停止",
+    "tabs": { "all": "全ユーザー", "buyers": "購入者", "sellers": "出品者", "admins": "管理者" },
+    "columns": {
+      "user": "ユーザー",
+      "roles": "役割",
+      "status": "ステータス",
+      "twoFactor": "2FA",
+      "emailVerified": "メール認証",
+      "joined": "登録日",
+      "lastLogin": "最終ログイン",
+      "actions": "操作"
+    }
+  },
+
+  "rolePermissions": {
+    "title": "役割の権限",
+    "description": "役割ごとの権限を管理します。権限のオン／オフを切り替えてアクセスを制御できます。",
+    "admin": "管理者",
+    "users": "ユーザー",
+    "roles": "役割",
+    "permissions": "権限",
+    "refresh": "更新",
+    "permissionGranted": "{{role}}に権限「{{permission}}」を付与しました",
+    "permissionRevoked": "{{role}}から権限「{{permission}}」を取り消しました",
+    "grantError": "権限を付与できませんでした",
+    "revokeError": "権限を取り消せませんでした",
+    "categoryGranted": "カテゴリ内のすべての権限を付与しました",
+    "categoryRevoked": "カテゴリ内のすべての権限を取り消しました",
+    "updateError": "権限を更新できませんでした",
+    "grantPermission": "権限を付与",
+    "revokePermission": "権限を取り消す"
+  },
+
   "messages": {
     "profileUpdated": "プロフィールを更新しました",
     "passwordChanged": "パスワードを変更しました",
     "settingsSaved": "設定を保存しました",
     "avatarUpdated": "プロフィール画像を更新しました"
+  },
+
+  "validation": {
+    "fullNameMin": "氏名は2文字以上で入力してください",
+    "phoneInvalid": "有効な電話番号を入力してください",
+    "bioMax": "自己紹介は500文字以内で入力してください",
+    "locationMax": "所在地は100文字以内で入力してください",
+    "currentPasswordRequired": "現在のパスワードを入力してください",
+    "passwordMin": "パスワードは12文字以上で入力してください",
+    "passwordMax": "パスワードは100文字未満で入力してください",
+    "passwordUppercase": "パスワードに英大文字を1文字以上含めてください",
+    "passwordLowercase": "パスワードに英小文字を1文字以上含めてください",
+    "passwordNumber": "パスワードに数字を1文字以上含めてください",
+    "passwordSpecial": "パスワードに特殊文字を1文字以上含めてください",
+    "passwordMatch": "パスワードが一致しません"
   }
 }

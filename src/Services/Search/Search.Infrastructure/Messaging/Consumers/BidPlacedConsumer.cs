@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Search.Application.Interfaces;
 
 using BidService.Contracts.Events;
+using BidService.Contracts.Constants;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
 using Search.Domain.Constants;
@@ -30,7 +31,7 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>
     {
         var message = context.Message;
 
-        if (message.BidStatus != BidStatuses.Accepted)
+        if (message.BidStatus != BidEventStatusNames.Accepted)
         {
             _logger.LogDebug("Skipping non-accepted bid {BidId} with status {Status}",
                 message.Id, message.BidStatus);

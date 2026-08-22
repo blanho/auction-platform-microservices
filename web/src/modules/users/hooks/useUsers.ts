@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../api'
 import type {
-  UpdateProfileRequest,
   ChangePasswordRequest,
-  UserFilters,
+  UpdateProfileRequest,
   UpdateUserRolesRequest,
+  UserFilters,
 } from '../types'
 
 export const userKeys = {
@@ -42,28 +42,6 @@ export const useChangePassword = () => {
   })
 }
 
-export const useEnableTwoFactor = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: () => usersApi.enableTwoFactor(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.profile() })
-    },
-  })
-}
-
-export const useDisableTwoFactor = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: () => usersApi.disableTwoFactor(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.profile() })
-    },
-  })
-}
-
 export const useSellerStatus = () => {
   return useQuery({
     queryKey: userKeys.sellerStatus(),
@@ -89,14 +67,6 @@ export const useUsers = (filters: UserFilters) => {
   })
 }
 
-export const useUser = (id: string) => {
-  return useQuery({
-    queryKey: userKeys.detail(id),
-    queryFn: () => usersApi.getUserById(id),
-    enabled: !!id,
-  })
-}
-
 export const useSuspendUser = () => {
   const queryClient = useQueryClient()
 
@@ -116,17 +86,6 @@ export const useUnsuspendUser = () => {
     mutationFn: (id: string) => usersApi.unsuspendUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
-    },
-  })
-}
-
-export const useUploadAvatar = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (file: File) => usersApi.uploadAvatar(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userKeys.profile() })
     },
   })
 }

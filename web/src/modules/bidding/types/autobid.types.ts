@@ -32,10 +32,6 @@ export interface UpdateAutoBidRequest {
   isActive?: boolean
 }
 
-export interface ToggleAutoBidRequest {
-  activate: boolean
-}
-
 export interface AutoBidsResult {
   autoBids: AutoBid[]
   totalCount: number

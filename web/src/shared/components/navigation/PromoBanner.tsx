@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, IconButton, Container } from '@mui/material'
-import { Close, ChevronLeft, ChevronRight } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
-import { palette } from '@/shared/theme/tokens'
 import { useFeaturedAuctions } from '@/modules/auctions/hooks/useAuctions'
+import { palette } from '@/shared/theme/tokens'
+import { ChevronLeft, ChevronRight, Close } from '@mui/icons-material'
+import { Box, Container, IconButton, Typography } from '@mui/material'
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 interface Promotion {
   id: string
@@ -113,6 +113,7 @@ export const PromoBanner = ({
             <IconButton
               size="small"
               onClick={handlePrev}
+              aria-label={t('actions.back')}
               sx={{
                 color: palette.neutral[50],
                 opacity: 0.6,
@@ -170,6 +171,7 @@ export const PromoBanner = ({
             <IconButton
               size="small"
               onClick={handleNext}
+              aria-label={t('actions.next')}
               sx={{
                 color: palette.neutral[50],
                 opacity: 0.6,
@@ -184,6 +186,7 @@ export const PromoBanner = ({
           <IconButton
             size="small"
             onClick={() => setIsVisible(false)}
+            aria-label={t('actions.close')}
             sx={{
               position: 'absolute',
               right: 0,

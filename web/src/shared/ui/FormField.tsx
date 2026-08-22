@@ -1,14 +1,15 @@
-import { TextField, InputAdornment, IconButton } from '@mui/material'
-import type { TextFieldProps } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import type {
-  FieldValues,
-  FieldPath,
-  UseFormRegister,
-  FieldErrors,
-  RegisterOptions,
-} from 'react-hook-form'
+import type { TextFieldProps } from '@mui/material'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { useState } from 'react'
+import type {
+  FieldErrors,
+  FieldPath,
+  FieldValues,
+  RegisterOptions,
+  UseFormRegister,
+} from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 type FormFieldProps<T extends FieldValues> = Omit<
   TextFieldProps,
@@ -33,10 +34,11 @@ export function FormField<T extends FieldValues>({
   InputProps,
   ...textFieldProps
 }: FormFieldProps<T>) {
+  const { t } = useTranslation('common')
   const [showPassword, setShowPassword] = useState(false)
 
   const error = errors[name]
-  const errorMessage = error?.message as string | undefined
+  const errorMessage = typeof error?.message === 'string' ? error.message : undefined
   const hasError = !!error
 
   const isPasswordField = type === 'password' || showPasswordToggle
@@ -51,6 +53,7 @@ export function FormField<T extends FieldValues>({
               edge="end"
               size="small"
               tabIndex={-1}
+              aria-label={t(showPassword ? 'actions.hidePassword' : 'actions.showPassword')}
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>

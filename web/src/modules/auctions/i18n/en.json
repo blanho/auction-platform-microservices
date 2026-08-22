@@ -60,6 +60,14 @@
     "fair": "Fair"
   },
 
+  "conditionDescription": {
+    "new": "Brand new, never used",
+    "likeNew": "Barely used, excellent condition",
+    "excellent": "Very good condition, minor wear",
+    "good": "Normal wear, fully functional",
+    "fair": "Visible wear, some defects"
+  },
+
   "detail": {
     "currentBid": "Current Bid",
     "startingPrice": "Starting Price",
@@ -77,6 +85,13 @@
     "yearManufactured": "Year Manufactured",
     "description": "Description",
     "reviews": "Reviews",
+    "shipping": "Shipping",
+    "returns": "Returns",
+    "specifications": "Specifications",
+    "bidHistoryCount": "Bid History ({{count}})",
+    "reviewCount": "Reviews ({{count}})",
+    "noBids": "No bids have been placed yet. Be the first to bid!",
+    "highest": "Highest",
     "watching": "watching",
     "bidCount": "{{count}} bids",
     "bidCount_one": "{{count}} bid"
@@ -100,8 +115,10 @@
     "yearManufacturedOptional": "Year Manufactured (Optional)",
     "selectYear": "Select year",
     "startingPrice": "Starting Price",
+    "reservePrice": "Starting Price (Reserve)",
     "startingPriceHelper": "Minimum bid amount",
     "buyNowPrice": "Buy Now Price",
+    "buyNowPriceOptional": "Buy Now Price (Optional)",
     "buyNowPriceHelper": "Price for immediate purchase (must be higher than starting price)",
     "enableBuyNow": "Enable Buy Now Price",
     "currency": "Currency",
@@ -123,7 +140,15 @@
     "editDescription": "Update your auction details below",
     "createDescription": "Fill in the details below to list your item for auction",
     "reviewUpdateDescription": "Please review all the details before updating your auction.",
-    "reviewCreateDescription": "Please review all the details before creating your auction."
+    "reviewCreateDescription": "Please review all the details before creating your auction.",
+    "fileCount": "{{count}} file",
+    "fileCount_other": "{{count}} files",
+    "fetchError": "Failed to load auction data. Please try again.",
+    "publishAuction": "Publish Auction",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "editAuction": "Edit Auction",
+    "createAuction": "Create Auction"
   },
 
   "formSteps": {
@@ -152,7 +177,8 @@
     "shareOnFacebook": "Share on Facebook",
     "shareOnTwitter": "Share on Twitter",
     "pinOnPinterest": "Pin on Pinterest",
-    "copyLink": "Copy Link"
+    "copyLink": "Copy Link",
+    "openImageViewer": "Open image viewer"
   },
 
   "messages": {
@@ -162,6 +188,7 @@
     "addedToWatchlist": "Added to watchlist",
     "removedFromWatchlist": "Removed from watchlist",
     "linkCopied": "Link copied to clipboard",
+    "shareFailed": "Unable to copy the link. Please copy it from the address bar.",
     "bidPlaced": "Bid placed successfully!",
     "bidFailed": "Failed to place bid",
     "purchaseSuccess": "Purchase successful! Redirecting to order...",
@@ -203,6 +230,25 @@
     "failedToLoadAuctions": "Failed to load auctions",
     "couldntLoadAuctions": "We couldn't load the auctions. Please try again.",
     "failedToLoadWatchlist": "Failed to load watchlist. Please try again."
+  },
+
+  "validation": {
+    "nameRequired": "Name is required",
+    "slugRequired": "Slug is required",
+    "invalidUrl": "Invalid URL",
+    "titleMin": "Title must be at least 3 characters",
+    "titleMinUpdate": "Title must be at least 10 characters",
+    "titleMax": "Title must be 200 characters or less",
+    "descriptionMinCreate": "Description must be at least 10 characters",
+    "descriptionMinUpdate": "Description must be at least 50 characters",
+    "descriptionMax": "Description must be 2,000 characters or less",
+    "categoryRequired": "Please select a category",
+    "conditionMax": "Condition must be 50 characters or less",
+    "reservePriceMin": "Reserve price must be at least $0",
+    "auctionEndRequired": "Auction end time is required",
+    "currencyCode": "Currency must be a valid 3-letter code",
+    "buyNowGreater": "Buy now price must be greater than reserve price",
+    "auctionEndFuture": "Auction end time must be at least 1 hour in the future"
   },
 
   "explore": "Explore",

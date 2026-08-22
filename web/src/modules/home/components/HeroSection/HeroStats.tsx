@@ -1,7 +1,7 @@
-import { Box, Typography } from '@mui/material'
-import { motion } from 'framer-motion'
 import { AnimatedCounter } from '@/shared/components/motion'
 import { typography } from '@/shared/theme/tokens'
+import { Box, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 
 interface HeroStat {
   label: string

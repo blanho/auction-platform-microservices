@@ -1,5 +1,5 @@
-import { createContext } from 'react'
 import type { Permission } from '@/shared/permissions'
+import { createContext } from 'react'
 
 export interface PermissionContextType {
   permissions: Permission[]

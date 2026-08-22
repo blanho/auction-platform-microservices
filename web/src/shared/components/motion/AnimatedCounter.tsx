@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { formatNumber } from '@/shared/utils/formatters'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface AnimatedCounterProps {
   value: number
@@ -14,34 +15,39 @@ export const AnimatedCounter = ({
   duration = 2000,
 }: AnimatedCounterProps) => {
   const [displayValue, setDisplayValue] = useState(0)
-  const [hasAnimated, setHasAnimated] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
+  const animationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const animateValue = useCallback(() => {
     const steps = 60
     const increment = value / steps
     let current = 0
 
-    const timer = setInterval(() => {
-      current += increment
-      if (current >= value) {
-        setDisplayValue(value)
-        clearInterval(timer)
-      } else {
-        setDisplayValue(Math.floor(current))
-      }
-    }, duration / steps)
+    animationTimerRef.current = setInterval(
+      () => {
+        current += increment
+        if (current >= value) {
+          setDisplayValue(value)
+          if (animationTimerRef.current) {
+            clearInterval(animationTimerRef.current)
+            animationTimerRef.current = null
+          }
+        } else {
+          setDisplayValue(Math.floor(current))
+        }
+      },
+      Math.max(1, duration / steps)
+    )
   }, [value, duration])
 
   useEffect(() => {
-    if (hasAnimated || !ref.current) {
+    if (!ref.current) {
       return
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true)
+        if (entry.isIntersecting) {
           animateValue()
           observer.disconnect()
         }
@@ -50,13 +56,19 @@ export const AnimatedCounter = ({
     )
 
     observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [hasAnimated, animateValue])
+    return () => {
+      observer.disconnect()
+      if (animationTimerRef.current) {
+        clearInterval(animationTimerRef.current)
+        animationTimerRef.current = null
+      }
+    }
+  }, [animateValue])
 
   return (
     <span ref={ref}>
       {prefix}
-      {displayValue.toLocaleString()}
+      {formatNumber(displayValue)}
       {suffix}
     </span>
   )

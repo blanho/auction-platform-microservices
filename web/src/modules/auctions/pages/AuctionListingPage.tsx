@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { componentStyles } from '@/shared/theme/component-styles'
+import { palette } from '@/shared/theme/tokens'
+import { ErrorState } from '@/shared/ui'
+import { FilterList, GridView, KeyboardArrowDown, ViewList } from '@mui/icons-material'
 import {
   Box,
   Breadcrumbs,
@@ -10,21 +12,19 @@ import {
   FormControl,
   Grid,
   IconButton,
-  Link as MuiLink,
   MenuItem,
+  Link as MuiLink,
   Pagination,
   Select,
   Typography,
 } from '@mui/material'
-import { FilterList, GridView, KeyboardArrowDown, ViewList } from '@mui/icons-material'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AuctionBrowseFilters } from '../components/AuctionBrowseFilters'
 import { AuctionProductCard, AuctionProductCardSkeleton } from '../components/AuctionProductCard'
 import { AUCTION_SORT_CONFIG, type AuctionSortOption } from '../constants'
 import { useActiveCategories, useAuctions, useToggleWatchlist, useWatchlist } from '../hooks'
-import { componentStyles } from '@/shared/theme/component-styles'
-import { palette } from '@/shared/theme/tokens'
-import { ErrorState } from '@/shared/ui'
 
 const PAGE_SIZE = 24
 const SKELETON_COUNT = 12

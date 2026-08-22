@@ -1,11 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/hooks/useAuth'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { WatchlistFilters } from '../api/bookmarks.api'
 import { bookmarksApi } from '../api/bookmarks.api'
-import type {
-  AddToWatchlistRequest,
-  UpdateWatchlistRequest,
-  WatchlistFilters,
-} from '../api/bookmarks.api'
 
 export const bookmarkKeys = {
   all: ['bookmarks'] as const,
@@ -42,19 +38,6 @@ export const useIsInWatchlist = (auctionId: string) => {
   })
 }
 
-export const useAddToWatchlist = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (data: AddToWatchlistRequest) => bookmarksApi.addToWatchlist(data),
-    onSuccess: (_, { auctionId }) => {
-      queryClient.invalidateQueries({ queryKey: bookmarkKeys.watchlist() })
-      queryClient.invalidateQueries({ queryKey: bookmarkKeys.count() })
-      queryClient.setQueryData(bookmarkKeys.check(auctionId), true)
-    },
-  })
-}
-
 export const useRemoveFromWatchlist = () => {
   const queryClient = useQueryClient()
 
@@ -88,18 +71,6 @@ export const useToggleWatchlist = () => {
       queryClient.invalidateQueries({ queryKey: bookmarkKeys.watchlist() })
       queryClient.invalidateQueries({ queryKey: bookmarkKeys.count() })
       queryClient.setQueryData(bookmarkKeys.check(auctionId), !isInWatchlist)
-    },
-  })
-}
-
-export const useUpdateWatchlistNotifications = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ auctionId, data }: { auctionId: string; data: UpdateWatchlistRequest }) =>
-      bookmarksApi.updateNotificationSettings(auctionId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bookmarkKeys.watchlist() })
     },
   })
 }

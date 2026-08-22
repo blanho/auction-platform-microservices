@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useCountdown } from '@/shared/hooks/useCountdown'
+import { palette } from '@/shared/theme/tokens'
+import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
+import { Box, Chip, IconButton, Skeleton, Typography } from '@mui/material'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Box, Typography, IconButton, Chip, Skeleton } from '@mui/material'
-import { Favorite, FavoriteBorder, Timer, Verified } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
 import { formatCurrency } from '../utils'
-import { useCountdown } from '@/shared/hooks/useCountdown'
 
 interface AuctionProductCardProps {
   id: string

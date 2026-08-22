@@ -1,10 +1,10 @@
-import type { BackendAuctionDto, BackendAuctionFileDto } from '../types/backend-dto.types'
 import type {
   AuctionDetails,
   AuctionImage,
   AuctionListItem,
   AuctionStatus,
 } from '../types/auction.types'
+import type { BackendAuctionDto, BackendAuctionFileDto } from '../types/backend-dto.types'
 
 const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/files'
 
@@ -101,111 +101,6 @@ export function mapAuctionListDto(dto: BackendAuctionDto): AuctionListItem {
     sellerName: dto.seller ?? '',
     primaryImageUrl: primaryFile ? `${STORAGE_BASE_URL}/${primaryFile.fileId}` : undefined,
   }
-}
-
-export function mapOrderStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    Pending: 'pending',
-    PaymentPending: 'payment_pending',
-    Paid: 'paid',
-    Processing: 'processing',
-    Shipped: 'shipped',
-    Delivered: 'delivered',
-    Completed: 'completed',
-    Cancelled: 'cancelled',
-    Disputed: 'disputed',
-    Refunded: 'refunded',
-  }
-  return statusMap[status] || status.toLowerCase()
-}
-
-export function mapPaymentStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    Pending: 'pending',
-    Processing: 'processing',
-    Completed: 'completed',
-    Failed: 'failed',
-    Refunded: 'refunded',
-    Cancelled: 'cancelled',
-  }
-  return statusMap[status] || status.toLowerCase()
-}
-
-export function mapBidStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    Pending: 'Pending',
-    Accepted: 'Accepted',
-    AcceptedBelowReserve: 'Accepted',
-    TooLow: 'Rejected',
-    Rejected: 'Rejected',
-    Retracted: 'Retracted',
-    Outbid: 'Outbid',
-  }
-  return statusMap[status] || status
-}
-
-export function mapNotificationType(type: string | number): string {
-  const typeMap: Record<string | number, string> = {
-    0: 'system',
-    General: 'system',
-    10: 'auction_created',
-    AuctionCreated: 'auction_created',
-    11: 'auction_updated',
-    AuctionUpdated: 'auction_updated',
-    12: 'auction_started',
-    AuctionStarted: 'auction_started',
-    13: 'auction_ending',
-    AuctionEndingSoon: 'auction_ending',
-    14: 'auction_ended',
-    AuctionFinished: 'auction_ended',
-    15: 'auction_cancelled',
-    AuctionCancelled: 'auction_cancelled',
-    20: 'bid_placed',
-    BidPlaced: 'bid_placed',
-    21: 'bid_outbid',
-    BidOutbid: 'bid_outbid',
-    22: 'auction_won',
-    BidWon: 'auction_won',
-    23: 'auction_lost',
-    BidLost: 'auction_lost',
-    24: 'bid_accepted',
-    BidAccepted: 'bid_accepted',
-    25: 'bid_rejected',
-    BidRejected: 'bid_rejected',
-    30: 'payment_received',
-    PaymentReceived: 'payment_received',
-    31: 'payment_failed',
-    PaymentFailed: 'payment_failed',
-    32: 'payment_refunded',
-    PaymentRefunded: 'payment_refunded',
-    40: 'welcome',
-    WelcomeMessage: 'welcome',
-    41: 'account_verified',
-    AccountVerified: 'account_verified',
-    42: 'password_changed',
-    PasswordChanged: 'password_changed',
-    50: 'system',
-    SystemAlert: 'system',
-    51: 'maintenance',
-    Maintenance: 'maintenance',
-  }
-  return typeMap[type] || 'system'
-}
-
-export function mapNotificationStatus(status: string | number): string {
-  const statusMap: Record<string | number, string> = {
-    0: 'unread',
-    Pending: 'unread',
-    1: 'unread',
-    Unread: 'unread',
-    2: 'read',
-    Read: 'read',
-    3: 'read',
-    Dismissed: 'read',
-    4: 'archived',
-    Archived: 'archived',
-  }
-  return statusMap[status] || 'unread'
 }
 
 export function mapAuctionListDtos(dtos: BackendAuctionDto[]): AuctionListItem[] {

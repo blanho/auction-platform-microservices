@@ -1,24 +1,25 @@
-import { useState, useCallback, useEffect } from 'react'
-import {
-  Box,
-  IconButton,
-  Stack,
-  Skeleton,
-  Modal,
-  Fade,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material'
+import { palette } from '@/shared/theme/tokens'
 import {
   ChevronLeft,
   ChevronRight,
   Close,
-  ZoomIn,
   Favorite,
   FavoriteBorder,
   Share,
+  ZoomIn,
 } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
+import {
+  Box,
+  Fade,
+  IconButton,
+  Modal,
+  Skeleton,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AuctionImage } from '../types'
 
 interface ImageGalleryProps {
@@ -36,6 +37,7 @@ export function ImageGallery({
   onToggleFavorite,
   onShare,
 }: ImageGalleryProps) {
+  const { t } = useTranslation('auctions')
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -104,7 +106,6 @@ export function ImageGallery({
             bgcolor: palette.neutral[50],
             cursor: isZoomed ? 'zoom-out' : 'zoom-in',
           }}
-          onClick={handleMainImageClick}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => !isMobile && setIsZoomed(true)}
           onMouseLeave={() => setIsZoomed(false)}
@@ -113,6 +114,16 @@ export function ImageGallery({
             component="img"
             src={selectedImage?.url}
             alt={selectedImage?.alt || title}
+            role="button"
+            tabIndex={0}
+            aria-label={t('actions.openImageViewer')}
+            onClick={handleMainImageClick}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                handleMainImageClick()
+              }
+            }}
             sx={{
               width: '100%',
               height: '100%',
@@ -126,6 +137,7 @@ export function ImageGallery({
           {images.length > 1 && (
             <>
               <IconButton
+                aria-label={t('common:actions.back')}
                 onClick={(e) => {
                   e.stopPropagation()
                   handlePrevious()
@@ -144,6 +156,7 @@ export function ImageGallery({
                 <ChevronLeft />
               </IconButton>
               <IconButton
+                aria-label={t('common:actions.next')}
                 onClick={(e) => {
                   e.stopPropagation()
                   handleNext()
@@ -189,6 +202,7 @@ export function ImageGallery({
           </Box>
 
           <IconButton
+            aria-label={t('actions.openImageViewer')}
             onClick={(e) => {
               e.stopPropagation()
               handleMainImageClick()
@@ -216,6 +230,7 @@ export function ImageGallery({
         >
           {onToggleFavorite && (
             <IconButton
+              aria-label={t(isFavorite ? 'actions.removeFromWatchlist' : 'actions.addToWatchlist')}
               onClick={(e) => {
                 e.stopPropagation()
                 onToggleFavorite()
@@ -234,6 +249,7 @@ export function ImageGallery({
           )}
           {onShare && (
             <IconButton
+              aria-label={t('actions.share')}
               onClick={(e) => {
                 e.stopPropagation()
                 onShare()
@@ -266,6 +282,10 @@ export function ImageGallery({
         >
           {images.map((image, idx) => (
             <Box
+              component="button"
+              type="button"
+              aria-label={`${title} ${idx + 1}`}
+              aria-pressed={idx === selectedIndex}
               key={image.id}
               onClick={() => handleThumbnailClick(idx)}
               sx={{
@@ -281,6 +301,8 @@ export function ImageGallery({
                     : '2px solid transparent',
                 opacity: idx === selectedIndex ? 1 : 0.7,
                 transition: 'all 0.2s ease',
+                p: 0,
+                bgcolor: 'transparent',
                 '&:hover': {
                   opacity: 1,
                   borderColor: palette.neutral[700],
@@ -316,6 +338,7 @@ export function ImageGallery({
             }}
           >
             <IconButton
+              aria-label={t('common:actions.close')}
               onClick={() => setIsLightboxOpen(false)}
               sx={{
                 position: 'absolute',
@@ -328,6 +351,7 @@ export function ImageGallery({
             </IconButton>
 
             <IconButton
+              aria-label={t('common:actions.back')}
               onClick={handlePrevious}
               sx={{
                 position: 'absolute',
@@ -342,7 +366,7 @@ export function ImageGallery({
             <Box
               component="img"
               src={selectedImage?.url}
-              alt={selectedImage?.alt}
+              alt={selectedImage?.alt || title}
               sx={{
                 maxWidth: '90vw',
                 maxHeight: '90vh',
@@ -351,6 +375,7 @@ export function ImageGallery({
             />
 
             <IconButton
+              aria-label={t('common:actions.next')}
               onClick={handleNext}
               sx={{
                 position: 'absolute',
@@ -374,6 +399,10 @@ export function ImageGallery({
             >
               {images.map((_, idx) => (
                 <Box
+                  component="button"
+                  type="button"
+                  aria-label={`${title} ${idx + 1}`}
+                  aria-pressed={idx === selectedIndex}
                   key={idx}
                   onClick={() => setSelectedIndex(idx)}
                   sx={{
@@ -383,6 +412,8 @@ export function ImageGallery({
                     bgcolor: idx === selectedIndex ? 'white' : 'rgba(255,255,255,0.4)',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
+                    border: 0,
+                    p: 0,
                     '&:hover': {
                       bgcolor: 'rgba(255,255,255,0.8)',
                     },

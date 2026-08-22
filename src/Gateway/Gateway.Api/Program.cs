@@ -74,8 +74,8 @@ app.UseWebSockets();
 
 app.UseCors("AllowAll");
 
-app.UseRateLimiter();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapReverseProxy();

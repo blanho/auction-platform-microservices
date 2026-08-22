@@ -12,6 +12,11 @@ public static class StripePaymentModes
     public const string Payment = "payment";
 }
 
+public static class StripePaymentStatuses
+{
+    public const string Paid = "paid";
+}
+
 public static class StripePaymentMethodTypes
 {
     public const string Card = "card";

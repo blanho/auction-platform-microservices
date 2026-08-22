@@ -1,15 +1,16 @@
-import { useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { formatNumber } from '@/shared/utils/formatters'
+import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
 import {
-  Pagination as MuiPagination,
-  Select,
-  MenuItem,
-  Typography,
-  Stack,
   FormControl,
   InputLabel,
+  MenuItem,
+  Pagination as MuiPagination,
+  Select,
+  Stack,
+  Typography,
 } from '@mui/material'
-import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
+import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export interface TablePaginationProps {
   page: number
@@ -118,7 +119,7 @@ export function TablePagination({
             {t('table.itemRange', {
               start: startItem,
               end: endItem,
-              total: totalCount.toLocaleString(),
+              total: formatNumber(totalCount),
             })}
           </Typography>
         )}

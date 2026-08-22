@@ -1,48 +1,48 @@
-import { useState, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
+import type { FilterConfig } from '@/shared/ui'
+import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, TableToolbar } from '@/shared/ui'
+import { History, Visibility } from '@mui/icons-material'
 import {
-  Container,
+  Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Box,
+  Chip,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  TableRow,
   Tooltip,
-  Paper,
-  Stack,
+  Typography,
 } from '@mui/material'
-import { InlineAlert, TableEmptyStateRow, TableSkeletonRows, TableToolbar } from '@/shared/ui'
-import type { FilterConfig } from '@/shared/ui'
-import { Visibility, History } from '@mui/icons-material'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { AUDIT_ACTION } from '../constants'
 import { useAuditLogs } from '../hooks/useAnalytics'
-import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
-import type { AuditLog, AuditAction, AuditLogQueryParams } from '../types'
+import type { AuditAction, AuditLog, AuditLogQueryParams } from '../types'
 import {
-  getAuditActionLabel,
+  formatAuditTimestamp,
+  formatChangedProperties,
   getAuditActionColor,
+  getAuditActionLabel,
   getEntityTypeLabel,
   getServiceNameLabel,
-  formatAuditTimestamp,
   parseJsonSafely,
-  formatChangedProperties,
 } from '../utils'
-import { AUDIT_ACTION } from '../constants'
 
-const ENTITY_TYPE_OPTIONS = [
+const ENTITY_TYPES = [
   'Auction',
   'Bid',
   'User',
@@ -52,24 +52,21 @@ const ENTITY_TYPE_OPTIONS = [
   'Brand',
   'Report',
   'Notification',
-].map((type) => ({ value: type, label: type }))
+]
 
-const SERVICE_NAME_OPTIONS = [
+const SERVICE_NAMES = [
   'AuctionService',
   'BidService',
   'IdentityService',
   'PaymentService',
   'NotificationService',
   'AnalyticsService',
-].map((name) => ({ value: name, label: name.replace('Service', '') }))
+]
 
-const ACTION_OPTIONS = Object.values(AUDIT_ACTION).map((act) => ({
-  value: act,
-  label: act.replaceAll(/([A-Z])/g, ' $1').trim(),
-}))
+const ACTIONS = Object.values(AUDIT_ACTION)
 
 export function AuditLogsPage() {
-  const { t: _t } = useTranslation('analytics')
+  const { t } = useTranslation('analytics')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(20)
   const [search, setSearch] = useState('')
@@ -81,11 +78,26 @@ export function AuditLogsPage() {
 
   const filters: FilterConfig[] = useMemo(
     () => [
-      { key: 'entityType', label: 'Entity Type', options: ENTITY_TYPE_OPTIONS, minWidth: 160 },
-      { key: 'serviceName', label: 'Service', options: SERVICE_NAME_OPTIONS, minWidth: 160 },
-      { key: 'action', label: 'Action', options: ACTION_OPTIONS, minWidth: 160 },
+      {
+        key: 'entityType',
+        label: t('auditLogs.entityType'),
+        options: ENTITY_TYPES.map((value) => ({ value, label: getEntityTypeLabel(value) })),
+        minWidth: 160,
+      },
+      {
+        key: 'serviceName',
+        label: t('auditLogs.service'),
+        options: SERVICE_NAMES.map((value) => ({ value, label: getServiceNameLabel(value) })),
+        minWidth: 160,
+      },
+      {
+        key: 'action',
+        label: t('auditLogs.action'),
+        options: ACTIONS.map((value) => ({ value, label: getAuditActionLabel(value) })),
+        minWidth: 160,
+      },
     ],
-    []
+    [t]
   )
 
   const filterValues = useMemo(
@@ -179,10 +191,10 @@ export function AuditLogsPage() {
                   color: 'text.primary',
                 }}
               >
-                Audit Logs
+                {t('auditLogs.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Track all system activities and changes
+                {t('auditLogs.description')}
               </Typography>
             </Box>
           </Box>
@@ -193,7 +205,7 @@ export function AuditLogsPage() {
             <CardContent>
               <TableToolbar
                 searchValue={search}
-                searchPlaceholder="Search by entity, user, service..."
+                searchPlaceholder={t('auditLogs.searchPlaceholder')}
                 onSearchChange={setSearch}
                 filters={filters}
                 filterValues={filterValues}
@@ -209,7 +221,7 @@ export function AuditLogsPage() {
           <Card>
             {isError && (
               <InlineAlert severity="error" sx={{ m: 2 }}>
-                Failed to load audit logs. Please try again.
+                {t('auditLogs.loadFailed')}
               </InlineAlert>
             )}
 
@@ -217,13 +229,13 @@ export function AuditLogsPage() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Timestamp</TableCell>
-                    <TableCell>Action</TableCell>
-                    <TableCell>Entity</TableCell>
-                    <TableCell>User</TableCell>
-                    <TableCell>Service</TableCell>
-                    <TableCell>Changes</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell>{t('auditLogs.timestamp')}</TableCell>
+                    <TableCell>{t('auditLogs.action')}</TableCell>
+                    <TableCell>{t('auditLogs.entity')}</TableCell>
+                    <TableCell>{t('auditLogs.user')}</TableCell>
+                    <TableCell>{t('auditLogs.service')}</TableCell>
+                    <TableCell>{t('auditLogs.changes')}</TableCell>
+                    <TableCell align="right">{t('auditLogs.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -231,9 +243,9 @@ export function AuditLogsPage() {
                   {!isLoading && filteredItems.length === 0 && (
                     <TableEmptyStateRow
                       colSpan={7}
-                      title="No audit logs found"
+                      title={t('auditLogs.noLogs')}
                       description={
-                        hasFilters ? 'Try adjusting your filters' : 'Audit logs will appear here'
+                        hasFilters ? t('auditLogs.adjustFilters') : t('auditLogs.logsWillAppear')
                       }
                       icon={<History sx={{ fontSize: 48, color: 'text.secondary' }} />}
                       cellSx={{ py: 8 }}
@@ -286,7 +298,7 @@ export function AuditLogsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Tooltip title="View Details">
+                          <Tooltip title={t('auditLogs.viewDetails')}>
                             <IconButton
                               size="small"
                               onClick={(e) => {
@@ -326,7 +338,7 @@ export function AuditLogsPage() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <History />
-            Audit Log Details
+            {t('auditLogs.details')}
           </Box>
           <Chip
             label={selectedLog ? getAuditActionLabel(selectedLog.action) : ''}
@@ -342,7 +354,7 @@ export function AuditLogsPage() {
               >
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Timestamp
+                    {t('auditLogs.timestamp')}
                   </Typography>
                   <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                     {formatAuditTimestamp(selectedLog.timestamp)}
@@ -350,7 +362,7 @@ export function AuditLogsPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Entity Type
+                    {t('auditLogs.entityType')}
                   </Typography>
                   <Typography variant="body2">
                     {getEntityTypeLabel(selectedLog.entityType)}
@@ -358,7 +370,7 @@ export function AuditLogsPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Entity ID
+                    {t('auditLogs.entityId')}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -369,7 +381,7 @@ export function AuditLogsPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Service
+                    {t('auditLogs.service')}
                   </Typography>
                   <Typography variant="body2">
                     {getServiceNameLabel(selectedLog.serviceName)}
@@ -377,13 +389,13 @@ export function AuditLogsPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    User
+                    {t('auditLogs.user')}
                   </Typography>
                   <Typography variant="body2">{selectedLog.username || '-'}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    User ID
+                    {t('auditLogs.userId')}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -395,7 +407,7 @@ export function AuditLogsPage() {
                 {selectedLog.ipAddress && (
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      IP Address
+                      {t('auditLogs.ipAddress')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {selectedLog.ipAddress}
@@ -405,7 +417,7 @@ export function AuditLogsPage() {
                 {selectedLog.correlationId && (
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Correlation ID
+                      {t('auditLogs.correlationId')}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -424,7 +436,7 @@ export function AuditLogsPage() {
                     color="text.secondary"
                     sx={{ display: 'block', mb: 1 }}
                   >
-                    Changed Properties
+                    {t('auditLogs.changedProperties')}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selectedLog.changedProperties.map((prop) => (
@@ -441,7 +453,7 @@ export function AuditLogsPage() {
                     color="text.secondary"
                     sx={{ display: 'block', mb: 1 }}
                   >
-                    Old Values
+                    {t('auditLogs.oldValues')}
                   </Typography>
                   <Paper
                     variant="outlined"
@@ -470,7 +482,7 @@ export function AuditLogsPage() {
                     color="text.secondary"
                     sx={{ display: 'block', mb: 1 }}
                   >
-                    New Values
+                    {t('auditLogs.newValues')}
                   </Typography>
                   <Paper
                     variant="outlined"
@@ -495,7 +507,7 @@ export function AuditLogsPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDetails}>Close</Button>
+          <Button onClick={handleCloseDetails}>{t('auditLogs.close')}</Button>
         </DialogActions>
       </Dialog>
     </Container>

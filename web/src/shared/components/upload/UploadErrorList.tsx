@@ -1,10 +1,10 @@
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, alpha } from '@mui/material'
-import { motion, AnimatePresence } from 'framer-motion'
-import { palette } from '@/shared/theme/tokens'
 import { fadeInUp } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
 import type { FileUploadProgress } from '@/shared/types/storage.types'
 import { ErrorOutline as ErrorIcon } from '@mui/icons-material'
+import { Box, Typography, alpha } from '@mui/material'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface UploadErrorListProps {
   errors: FileUploadProgress[]

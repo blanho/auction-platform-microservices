@@ -1,23 +1,23 @@
-import { Controller } from 'react-hook-form'
-import type { Control, FieldErrors } from 'react-hook-form'
+import { InlineAlert } from '@/shared/ui'
 import {
-  Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Switch,
-  Divider,
-  Typography,
   Box,
   Button,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  Grid,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Typography,
 } from '@mui/material'
+import type { Control, FieldErrors } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { InlineAlert } from '@/shared/ui'
-import { CURRENCIES, AUCTION_DURATIONS } from '../constants'
+import { AUCTION_DURATIONS, CURRENCIES } from '../constants'
 import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
 
 interface PricingStepProps {
@@ -136,7 +136,7 @@ export function PricingStep({
               onClick={() => onSetDuration(duration.value)}
               sx={{ minWidth: 80 }}
             >
-              {duration.label}
+              {t(`duration.${duration.value}day${duration.value === 1 ? '' : 's'}`)}
             </Button>
           ))}
         </Box>

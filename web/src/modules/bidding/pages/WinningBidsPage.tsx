@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency, formatRelativeTime } from '@/shared/utils'
+import { AccessTime, AttachMoney, EmojiEvents, Whatshot } from '@mui/icons-material'
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Grid,
   Chip,
-  Button,
-  Skeleton,
-  Pagination,
-  Stack,
   Container,
+  Grid,
+  Pagination,
+  Skeleton,
+  Stack,
+  Typography,
 } from '@mui/material'
-import { EmojiEvents, AccessTime, AttachMoney, Whatshot } from '@mui/icons-material'
-import { useWinningBids } from '../hooks/useBids'
-import { InlineAlert } from '@/shared/ui'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { BID_CONSTANTS } from '../constants'
-import { formatCurrency, formatRelativeTime } from '@/shared/utils'
+import { useWinningBids } from '../hooks/useBids'
 
 export const WinningBidsPage = () => {
-  const { t: _t } = useTranslation('bidding')
+  const { t } = useTranslation('bidding')
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const pageSize = BID_CONSTANTS.PAGE_SIZE
@@ -30,7 +30,7 @@ export const WinningBidsPage = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <InlineAlert severity="error">Failed to load winning bids. Please try again.</InlineAlert>
+        <InlineAlert severity="error">{t('winning.loadFailed')}</InlineAlert>
       </Container>
     )
   }
@@ -62,11 +62,11 @@ export const WinningBidsPage = () => {
               variant="h3"
               sx={{ fontFamily: 'Russo One', fontWeight: 700, color: '#1E293B' }}
             >
-              Winning Bids
+              {t('winningBids')}
             </Typography>
           </Stack>
           <Typography variant="body1" color="text.secondary">
-            Auctions where you currently have the highest bid
+            {t('winning.description')}
           </Typography>
         </Box>
 
@@ -127,7 +127,7 @@ export const WinningBidsPage = () => {
                               fontSize: '0.75rem',
                             }}
                           >
-                            WINNING
+                            {t('winning.badge')}
                           </Typography>
                         </Stack>
                       </Box>
@@ -157,7 +157,7 @@ export const WinningBidsPage = () => {
                               variant="caption"
                               sx={{ color: '#64748B', fontFamily: 'Chakra Petch', fontWeight: 500 }}
                             >
-                              Your Bid
+                              {t('winning.yourBid')}
                             </Typography>
                           </Stack>
                           <Typography
@@ -171,7 +171,9 @@ export const WinningBidsPage = () => {
                             {formatCurrency(bid.currentBid)}
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#94A3B8' }}>
-                            Next min: {formatCurrency(bid.minimumNextBid)}
+                            {t('winning.nextMinimum', {
+                              amount: formatCurrency(bid.minimumNextBid),
+                            })}
                           </Typography>
                         </Box>
 
@@ -181,14 +183,16 @@ export const WinningBidsPage = () => {
                             variant="body2"
                             sx={{ color: '#64748B', fontFamily: 'Chakra Petch' }}
                           >
-                            Ends {formatRelativeTime(bid.auctionEndTime)}
+                            {t('winning.ends', {
+                              time: formatRelativeTime(bid.auctionEndTime),
+                            })}
                           </Typography>
                         </Stack>
 
                         <Stack direction="row" spacing={1} flexWrap="wrap">
                           {bid.isActive && (
                             <Chip
-                              label="ACTIVE"
+                              label={t('winning.active')}
                               size="small"
                               sx={{
                                 background: 'rgba(34, 197, 94, 0.1)',
@@ -200,7 +204,7 @@ export const WinningBidsPage = () => {
                             />
                           )}
                           <Chip
-                            label={`${bid.bidCount} BIDS`}
+                            label={t('winning.bidCount', { count: bid.bidCount })}
                             size="small"
                             sx={{
                               background: 'rgba(37, 99, 235, 0.1)',
@@ -258,10 +262,10 @@ export const WinningBidsPage = () => {
           >
             <EmojiEvents sx={{ width: 80, height: 80, color: '#CBD5E1', margin: '0 auto 16px' }} />
             <Typography variant="h6" sx={{ fontFamily: 'Russo One', color: '#64748B', mb: 2 }}>
-              No Winning Bids Yet
+              {t('winning.emptyTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={3}>
-              Start bidding on auctions to see your winning positions here
+              {t('winning.emptyDescription')}
             </Typography>
             <Button
               variant="contained"
@@ -277,7 +281,7 @@ export const WinningBidsPage = () => {
                 },
               }}
             >
-              Browse Auctions
+              {t('winning.browse')}
             </Button>
           </Card>
         )}

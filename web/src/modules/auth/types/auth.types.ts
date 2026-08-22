@@ -1,12 +1,5 @@
 export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated'
 
-export interface AuthState {
-  status: AuthStatus
-  user: AuthUser | null
-  accessToken: string | null
-  error: AuthError | null
-}
-
 export interface AuthUser {
   id: string
   userId: string
@@ -16,11 +9,6 @@ export interface AuthUser {
   fullName?: string
   avatarUrl?: string
   roles: string[]
-}
-
-export interface AuthError {
-  code: string
-  message: string
 }
 
 export interface AuthResponse {

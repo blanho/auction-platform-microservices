@@ -1,11 +1,12 @@
+import type { FileAttachment } from '@/shared/types/storage.types'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
 import { Box, Grid, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { InlineAlert } from '@/shared/ui'
-import { ITEM_CONDITIONS, CURRENCIES } from '../constants'
-import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
-import type { Category } from '../api/categories.api'
 import type { Brand } from '../api/brands.api'
-import type { FileAttachment } from '@/shared/types/storage.types'
+import type { Category } from '../api/categories.api'
+import { CURRENCIES, ITEM_CONDITIONS } from '../constants'
+import type { CreateAuctionFormData, UpdateAuctionFormData } from '../schemas'
 
 interface ReviewStepProps {
   formValues: Partial<CreateAuctionFormData & UpdateAuctionFormData>
@@ -45,7 +46,10 @@ export function ReviewStep({
 
   const categoryName = categories.find((c) => c.id === formValues.categoryId)?.name
   const brandName = brands.find((b) => b.id === formValues.brandId)?.name
-  const conditionLabel = ITEM_CONDITIONS.find((c) => c.value === formValues.condition)?.label
+  const condition = ITEM_CONDITIONS.find((c) => c.value === formValues.condition)?.value
+  const conditionLabel = condition
+    ? t(`condition.${condition === 'like-new' ? 'likeNew' : condition}`)
+    : undefined
   const currencyLabel = CURRENCIES.find((c) => c.value === formValues.currency)?.label
 
   const isCreateMode = !isEditMode && 'reservePrice' in formValues
@@ -100,7 +104,7 @@ export function ReviewStep({
               label={t('form.startingPrice')}
               value={
                 <Typography sx={{ fontWeight: 600, color: 'primary.main' }}>
-                  ${formValues.reservePrice}
+                  {formatCurrency(Number(formValues.reservePrice), formValues.currency)}
                 </Typography>
               }
               size={{ xs: 12, md: 6 }}
@@ -111,7 +115,7 @@ export function ReviewStep({
                 label={t('form.buyNowPrice')}
                 value={
                   <Typography sx={{ fontWeight: 600, color: 'success.main' }}>
-                    ${formValues.buyNowPrice}
+                    {formatCurrency(Number(formValues.buyNowPrice), formValues.currency)}
                   </Typography>
                 }
                 size={{ xs: 12, md: 6 }}
@@ -120,7 +124,7 @@ export function ReviewStep({
 
             <ReviewField
               label={t('form.auctionEnd')}
-              value={formValues.auctionEnd ? new Date(formValues.auctionEnd).toLocaleString() : '-'}
+              value={formValues.auctionEnd ? formatDateTime(formValues.auctionEnd) : '-'}
               size={{ xs: 12, md: 6 }}
             />
 

@@ -1,43 +1,43 @@
-import { useMemo, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
+  AccountBalanceWallet,
+  Assessment,
+  BarChart,
+  Business,
+  Category,
+  CheckCircle,
+  CloudUpload,
+  CreditCard,
+  DeselectOutlined,
+  ExpandMore,
+  Gavel,
+  HistoryEdu,
+  Inventory,
+  LocalOffer,
+  Notifications,
+  People,
+  RadioButtonUnchecked,
+  SelectAll,
+  Settings,
+  Star,
+} from '@mui/icons-material'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Card,
   CardContent,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Stack,
   Chip,
-  Skeleton,
   IconButton,
+  Skeleton,
+  Stack,
   Tooltip,
+  Typography,
 } from '@mui/material'
-import {
-  ExpandMore,
-  CheckCircle,
-  RadioButtonUnchecked,
-  SelectAll,
-  DeselectOutlined,
-  LocalOffer,
-  Gavel,
-  People,
-  Inventory,
-  CreditCard,
-  AccountBalanceWallet,
-  BarChart,
-  CloudUpload,
-  Notifications,
-  Star,
-  Assessment,
-  Category,
-  Business,
-  HistoryEdu,
-  Settings,
-} from '@mui/icons-material'
+import { useMemo, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { PermissionCategory, PermissionDefinition, RoleDto } from '../../types'
 import { PermissionToggle } from './PermissionToggle'
-import type { PermissionDefinition, RoleDto, PermissionCategory } from '../../types'
 
 interface PermissionsPanelProps {
   readonly role: RoleDto | null

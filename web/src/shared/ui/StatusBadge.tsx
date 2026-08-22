@@ -1,9 +1,10 @@
-import { Chip } from '@mui/material'
 import type { ChipProps } from '@mui/material'
+import { Chip } from '@mui/material'
 import type { ReactElement } from 'react'
 
 interface StatusBadgeProps extends Omit<ChipProps, 'label' | 'icon'> {
   status: string
+  label?: ChipProps['label']
   icon?: ReactElement
   colorMap?: Record<string, { bg: string; color: string }>
   fallbackColor?: { bg: string; color: string }
@@ -42,6 +43,7 @@ const defaultColorMap: Record<string, { bg: string; color: string }> = {
 
 export function StatusBadge({
   status,
+  label,
   icon,
   colorMap = defaultColorMap,
   fallbackColor = { bg: '#F3F4F6', color: '#6B7280' },
@@ -54,7 +56,7 @@ export function StatusBadge({
   return (
     <Chip
       icon={icon}
-      label={status}
+      label={label ?? status}
       size={size}
       sx={{
         bgcolor: colors.bg,

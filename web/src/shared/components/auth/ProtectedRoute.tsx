@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { useAuth, usePermissions } from '@/app/providers'
 import type { Permission } from '@/shared/permissions'
 import { LoadingScreen } from '@/shared/ui'
+import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Navigate, useLocation } from 'react-router-dom'
 import { saveRedirectUrl } from './redirectUrl'
 
 interface ProtectedRouteProps {

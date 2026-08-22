@@ -1,8 +1,10 @@
 using Carter;
-using BuildingBlocks.Web.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
+using BuildingBlocks.Web.Helpers;
 using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
+using Payment.Domain.Constants;
+using Payment.Domain.Enums;
+using Payment.Infrastructure.Constants;
 using Stripe;
 
 namespace Payment.Api.Endpoints.Payments;
@@ -15,104 +17,101 @@ public class PaymentEndpoints : ICarterModule
             .WithTags("Payments")
             .RequireAuthorization();
 
-        group.MapPost("/payment-intent", CreatePaymentIntent)
-            .WithName("CreatePaymentIntent")
-            .WithSummary("Create a Stripe payment intent (idempotent with Idempotency-Key header)")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Process));
-
-        group.MapGet("/payment-intent/{paymentIntentId}", GetPaymentIntent)
-            .WithName("GetPaymentIntent")
-            .WithSummary("Get a payment intent by ID")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.View));
-
-        group.MapPost("/checkout-session", CreateCheckoutSession)
-            .WithName("CreateCheckoutSession")
-            .WithSummary("Create a Stripe checkout session (idempotent with Idempotency-Key header)")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Process));
-
-        group.MapPost("/customer", CreateCustomer)
-            .WithName("CreateStripeCustomer")
-            .WithSummary("Create or get existing Stripe customer")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Process));
-
-        group.MapPost("/refund", CreateRefund)
-            .WithName("CreateRefund")
-            .WithSummary("Create a refund for a payment (idempotent with Idempotency-Key header)")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Payments.Refund));
+        group.MapPost("/orders/{orderId:guid}/checkout-session", CreateOrderCheckoutSession)
+            .WithName("CreateOrderCheckoutSession")
+            .WithSummary("Create a Stripe checkout session from a buyer-owned order");
     }
 
-    private static async Task<Results<Ok<CreatePaymentIntentResponseDto>, BadRequest<object>>> CreatePaymentIntent(
-        CreatePaymentIntentRequestDto request,
-        IStripePaymentService stripePaymentService,
+    private static async Task<IResult> CreateOrderCheckoutSession(
+        Guid orderId,
+        HttpContext httpContext,
+        IOrderRepository orderRepository,
+        IPaymentGateway paymentGateway,
+        IConfiguration configuration,
+        ILogger<PaymentEndpoints> logger,
         CancellationToken cancellationToken)
     {
+        var order = await orderRepository.GetByIdAsync(orderId, cancellationToken);
+        if (order is null)
+        {
+            return Results.NotFound(ProblemDetailsHelper.NotFound("Order", orderId));
+        }
+
+        var userId = UserHelper.GetRequiredUserId(httpContext.User);
+        if (order.BuyerId != userId)
+        {
+            return Results.Forbid();
+        }
+
+        if (order.PaymentStatus != PaymentStatus.Pending ||
+            order.Status is not (OrderStatus.Pending or OrderStatus.PaymentPending))
+        {
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(
+                $"Order cannot be paid while it is in {order.Status} status"));
+        }
+
+        if (string.IsNullOrWhiteSpace(order.ShippingAddress))
+        {
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(
+                "A shipping address is required before payment"));
+        }
+
+        var email = UserHelper.GetEmail(httpContext.User);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(
+                "An email address is required before payment"));
+        }
+
+        if (!TryGetFrontendBaseUrl(configuration["FrontendUrl"], out var frontendBaseUrl))
+        {
+            logger.LogError("FrontendUrl is missing or is not a valid HTTP(S) URL");
+            return Results.Problem(
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: "Payment configuration error");
+        }
+
+        long amountInCents;
         try
         {
-            var paymentIntent = await stripePaymentService.CreatePaymentIntentAsync(
-                request.AmountInCents, request.Currency, request.CustomerId, request.Metadata, cancellationToken);
-
-            var response = new CreatePaymentIntentResponseDto
-            {
-                PaymentIntentId = paymentIntent.Id,
-                ClientSecret = paymentIntent.ClientSecret,
-                Status = paymentIntent.Status,
-            };
-
-            return TypedResults.Ok(response);
+            amountInCents = checked(decimal.ToInt64(
+                decimal.Round(order.TotalAmount * 100m, 0, MidpointRounding.AwayFromZero)));
         }
-        catch (StripeException ex)
+        catch (OverflowException)
         {
-            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+            logger.LogError("Order {OrderId} amount is outside the supported Stripe range", order.Id);
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(
+                "The order amount cannot be processed"));
         }
-    }
 
-    private static async Task<Results<Ok<PaymentIntentResponseDto>, BadRequest<object>>> GetPaymentIntent(
-        string paymentIntentId,
-        IStripePaymentService stripePaymentService,
-        CancellationToken cancellationToken)
-    {
+        if (amountInCents <= 0)
+        {
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(
+                "The order amount must be greater than zero"));
+        }
+
         try
         {
-            var paymentIntent = await stripePaymentService.GetPaymentIntentAsync(paymentIntentId, cancellationToken);
-
-            return TypedResults.Ok(new PaymentIntentResponseDto
-            {
-                PaymentIntentId = paymentIntent.Id,
-                Status = paymentIntent.Status,
-                Amount = paymentIntent.Amount,
-                Currency = paymentIntent.Currency,
-            });
-        }
-        catch (StripeException ex)
-        {
-            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
-        }
-    }
-
-    private static async Task<Results<Ok<CheckoutSessionResponseDto>, BadRequest<object>>> CreateCheckoutSession(
-        CheckoutSessionRequestDto request,
-        IStripePaymentService stripePaymentService,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var session = await stripePaymentService.CreateCheckoutSessionAsync(
+            var session = await paymentGateway.CreateCheckoutSessionAsync(
                 new CreateCheckoutSessionRequest
                 {
-                    CustomerId = request.CustomerId,
-                    CustomerEmail = request.CustomerEmail,
-                    AmountInCents = request.AmountInCents,
-                    Currency = request.Currency,
-                    ProductName = request.ProductName,
-                    ProductDescription = request.ProductDescription,
-                    ProductImageUrl = request.ProductImageUrl,
-                    SuccessUrl = request.SuccessUrl,
-                    CancelUrl = request.CancelUrl,
-                    Metadata = request.Metadata,
+                    CustomerEmail = email,
+                    AmountInCents = amountInCents,
+                    Currency = WalletDefaults.DefaultCurrency,
+                    ProductName = order.ItemTitle,
+                    ProductDescription = $"Auction order {order.Id}",
+                    SuccessUrl = $"{frontendBaseUrl}/payment/success?order_id={order.Id}&session_id={{CHECKOUT_SESSION_ID}}",
+                    CancelUrl = $"{frontendBaseUrl}/payment/cancel?order_id={order.Id}&auction_id={order.AuctionId}",
+                    Metadata = new Dictionary<string, string>
+                    {
+                        [StripeMetadataKeys.OrderId] = order.Id.ToString(),
+                        [StripeMetadataKeys.UserId] = userId.ToString(),
+                        [StripeMetadataKeys.Username] = order.BuyerUsername
+                    },
                 },
                 cancellationToken);
 
-            return TypedResults.Ok(new CheckoutSessionResponseDto
+            return Results.Ok(new CheckoutSessionResponseDto
             {
                 SessionId = session.Id,
                 Url = session.Url,
@@ -120,66 +119,21 @@ public class PaymentEndpoints : ICarterModule
         }
         catch (StripeException ex)
         {
-            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
+            logger.LogWarning(ex, "Stripe rejected checkout creation for order {OrderId}", order.Id);
+            return Results.BadRequest(new { error = ex.StripeError?.Message ?? ex.Message });
         }
     }
 
-    private static async Task<Results<Ok<CustomerResponseDto>, BadRequest<object>>> CreateCustomer(
-        CreateCustomerRequestDto request,
-        IStripePaymentService stripePaymentService,
-        CancellationToken cancellationToken)
+    private static bool TryGetFrontendBaseUrl(string? value, out string baseUrl)
     {
-        try
+        baseUrl = string.Empty;
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            var existingCustomer = await stripePaymentService.GetCustomerByEmailAsync(request.Email, cancellationToken);
-
-            if (existingCustomer != null)
-            {
-                return TypedResults.Ok(new CustomerResponseDto
-                {
-                    CustomerId = existingCustomer.Id,
-                    Email = existingCustomer.Email,
-                    Name = existingCustomer.Name,
-                });
-            }
-
-            var customer = await stripePaymentService.CreateCustomerAsync(request.Email, request.Name, cancellationToken);
-
-            return TypedResults.Ok(new CustomerResponseDto
-            {
-                CustomerId = customer.Id,
-                Email = customer.Email,
-                Name = customer.Name,
-            });
+            return false;
         }
-        catch (StripeException ex)
-        {
-            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
-        }
-    }
 
-    private static async Task<Results<Ok<RefundResponseDto>, BadRequest<object>>> CreateRefund(
-        CreateRefundRequestDto request,
-        IStripePaymentService stripePaymentService,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var refund = await stripePaymentService.CreateRefundAsync(
-                request.PaymentIntentId,
-                request.AmountInCents,
-                cancellationToken);
-
-            return TypedResults.Ok(new RefundResponseDto
-            {
-                RefundId = refund.Id,
-                Status = refund.Status,
-                Amount = refund.Amount,
-            });
-        }
-        catch (StripeException ex)
-        {
-            return TypedResults.BadRequest<object>(new { error = ex.StripeError?.Message ?? ex.Message });
-        }
+        baseUrl = uri.GetLeftPart(UriPartial.Authority).TrimEnd('/');
+        return true;
     }
 }

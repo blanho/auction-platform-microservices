@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Box, CircularProgress, Typography } from '@mui/material'
-import { motion } from 'framer-motion'
-import { useOAuthExchange } from '../hooks'
-import { palette } from '@/shared/theme/tokens'
 import { getErrorMessage } from '@/services/http'
 import { fadeInUp } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { Box, CircularProgress, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useOAuthExchange } from '../hooks'
 
 export function OAuthCallbackPage() {
   const { t } = useTranslation('auth')

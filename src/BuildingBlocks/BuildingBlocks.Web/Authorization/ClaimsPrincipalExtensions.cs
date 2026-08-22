@@ -39,7 +39,8 @@ public static class ClaimsPrincipalExtensions
         => user.HasRole(Roles.Seller) || user.IsAdmin();
 
     public static bool HasPermission(this ClaimsPrincipal user, string permission)
-        => RolePermissions.HasPermission(user.GetRoles(), permission);
+        => user.FindAll(AuthClaimTypes.Permission)
+            .Any(claim => string.Equals(claim.Value, permission, StringComparison.Ordinal));
 
     public static bool IsOwner(this ClaimsPrincipal user, string? ownerId)
         => !string.IsNullOrEmpty(ownerId) && user.GetUserId()?.Equals(ownerId, StringComparison.OrdinalIgnoreCase) == true;

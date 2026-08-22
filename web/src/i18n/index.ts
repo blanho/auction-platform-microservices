@@ -1,10 +1,12 @@
 import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import { initReactI18next } from 'react-i18next'
 
 import commonEn from './locales/en/common.json'
 import commonJa from './locales/ja/common.json'
 
+import analyticsEn from '../modules/analytics/i18n/en.json'
+import analyticsJa from '../modules/analytics/i18n/ja.json'
 import auctionsEn from '../modules/auctions/i18n/en.json'
 import auctionsJa from '../modules/auctions/i18n/ja.json'
 import authEn from '../modules/auth/i18n/en.json'
@@ -13,40 +15,35 @@ import biddingEn from '../modules/bidding/i18n/en.json'
 import biddingJa from '../modules/bidding/i18n/ja.json'
 import homeEn from '../modules/home/i18n/en.json'
 import homeJa from '../modules/home/i18n/ja.json'
-import usersEn from '../modules/users/i18n/en.json'
-import usersJa from '../modules/users/i18n/ja.json'
+import jobsEn from '../modules/jobs/i18n/en.json'
+import jobsJa from '../modules/jobs/i18n/ja.json'
 import notificationsEn from '../modules/notifications/i18n/en.json'
 import notificationsJa from '../modules/notifications/i18n/ja.json'
 import paymentsEn from '../modules/payments/i18n/en.json'
 import paymentsJa from '../modules/payments/i18n/ja.json'
-import analyticsEn from '../modules/analytics/i18n/en.json'
-import analyticsJa from '../modules/analytics/i18n/ja.json'
-import jobsEn from '../modules/jobs/i18n/en.json'
-import jobsJa from '../modules/jobs/i18n/ja.json'
 import searchEn from '../modules/search/i18n/en.json'
 import searchJa from '../modules/search/i18n/ja.json'
-
-export async function preloadNamespaces(_namespaces: string[]): Promise<void> {
-  return Promise.resolve()
-}
-
-export const moduleNamespaces = [
-  'auctions',
-  'auth',
-  'bidding',
-  'home',
-  'users',
-  'notifications',
-  'payments',
-  'analytics',
-  'jobs',
-  'search',
-] as const
+import usersEn from '../modules/users/i18n/en.json'
+import usersJa from '../modules/users/i18n/ja.json'
 
 export const supportedLanguages = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
 ] as const
+
+const localeByLanguage: Record<string, string> = {
+  en: 'en-US',
+  ja: 'ja-JP',
+}
+
+export function getCurrentLocale(): string {
+  const language = i18n.resolvedLanguage ?? i18n.language ?? 'en'
+  return localeByLanguage[language.split('-')[0]] ?? 'en-US'
+}
+
+export function getBackendCulture(): string {
+  return getCurrentLocale()
+}
 
 i18n
   .use(LanguageDetector)
@@ -107,5 +104,15 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
   })
+
+function updateDocumentLanguage(): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = (i18n.resolvedLanguage ?? i18n.language ?? 'en').split('-')[0]
+  }
+}
+
+i18n.on('initialized', updateDocumentLanguage)
+i18n.on('languageChanged', updateDocumentLanguage)
+updateDocumentLanguage()
 
 export default i18n

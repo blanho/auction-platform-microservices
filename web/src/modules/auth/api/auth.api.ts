@@ -1,14 +1,14 @@
 import { http } from '@/services/http'
 import type {
+  AuthResponse,
+  AuthUser,
+  ConfirmEmailRequest,
+  ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
-  AuthResponse,
-  TwoFactorLoginRequest,
-  ForgotPasswordRequest,
   ResetPasswordRequest,
-  ConfirmEmailRequest,
   TokenResponse,
-  AuthUser,
+  TwoFactorLoginRequest,
   TwoFactorSetupResponse,
   TwoFactorStatusResponse,
 } from '../types'

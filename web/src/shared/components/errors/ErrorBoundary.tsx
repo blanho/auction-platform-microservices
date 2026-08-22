@@ -1,8 +1,8 @@
-import { Component } from 'react'
-import type { ReactNode, ErrorInfo } from 'react'
-import i18next from 'i18next'
-import { ErrorState } from '@/shared/ui'
 import { createLogger } from '@/shared/lib/logger'
+import { ErrorState } from '@/shared/ui'
+import i18next from 'i18next'
+import type { ErrorInfo, ReactNode } from 'react'
+import { Component } from 'react'
 
 const errorBoundaryLogger = createLogger({ prefix: 'ErrorBoundary' })
 

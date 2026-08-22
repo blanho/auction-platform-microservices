@@ -1,18 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  dashboardApi,
   analyticsApi,
-  userAnalyticsApi,
-  reportsApi,
   auditLogsApi,
+  dashboardApi,
+  reportsApi,
   settingsApi,
+  userAnalyticsApi,
 } from '../api'
 import type {
   AnalyticsQueryParams,
-  TrendsQueryParams,
-  ReportQueryParams,
   AuditLogQueryParams,
+  ReportQueryParams,
   SettingCategory,
+  TrendsQueryParams,
 } from '../types'
 
 export const analyticsKeys = {
@@ -136,26 +136,10 @@ export const useCategoryPerformance = (startDate?: string, endDate?: string) => 
   })
 }
 
-export const useAuctionMetrics = (params?: AnalyticsQueryParams) => {
-  return useQuery({
-    queryKey: analyticsKeys.auctionMetrics(params),
-    queryFn: () => analyticsApi.getAuctionMetrics(params),
-    staleTime: 60000,
-  })
-}
-
 export const useBidMetrics = (params?: AnalyticsQueryParams) => {
   return useQuery({
     queryKey: analyticsKeys.bidMetrics(params),
     queryFn: () => analyticsApi.getBidMetrics(params),
-    staleTime: 60000,
-  })
-}
-
-export const useRevenueMetrics = (params?: AnalyticsQueryParams) => {
-  return useQuery({
-    queryKey: analyticsKeys.revenueMetrics(params),
-    queryFn: () => analyticsApi.getRevenueMetrics(params),
     staleTime: 60000,
   })
 }
@@ -192,14 +176,6 @@ export const useQuickStats = () => {
   })
 }
 
-export const useTrendingSearches = (limit?: number) => {
-  return useQuery({
-    queryKey: analyticsKeys.trendingSearches(limit),
-    queryFn: () => userAnalyticsApi.getTrendingSearches(limit),
-    staleTime: 60000,
-  })
-}
-
 export const useReportList = (params?: ReportQueryParams) => {
   return useQuery({
     queryKey: analyticsKeys.reportList(params),
@@ -232,42 +208,10 @@ export const useAuditLogs = (params?: AuditLogQueryParams) => {
   })
 }
 
-export const useAuditLogDetail = (id: string) => {
-  return useQuery({
-    queryKey: analyticsKeys.auditLogDetail(id),
-    queryFn: () => auditLogsApi.getAuditLog(id),
-    enabled: !!id,
-  })
-}
-
-export const useEntityAuditHistory = (entityType: string, entityId: string) => {
-  return useQuery({
-    queryKey: analyticsKeys.auditLogEntity(entityType, entityId),
-    queryFn: () => auditLogsApi.getEntityAuditHistory(entityType, entityId),
-    enabled: !!entityType && !!entityId,
-  })
-}
-
 export const useSettings = (category?: SettingCategory) => {
   return useQuery({
     queryKey: analyticsKeys.settingsList(category),
     queryFn: () => settingsApi.getSettings(category),
     staleTime: 60000,
-  })
-}
-
-export const useSettingDetail = (id: string) => {
-  return useQuery({
-    queryKey: analyticsKeys.settingDetail(id),
-    queryFn: () => settingsApi.getSetting(id),
-    enabled: !!id,
-  })
-}
-
-export const useSettingByKey = (key: string) => {
-  return useQuery({
-    queryKey: analyticsKeys.settingByKey(key),
-    queryFn: () => settingsApi.getSettingByKey(key),
-    enabled: !!key,
   })
 }

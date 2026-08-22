@@ -1,33 +1,33 @@
+import type { TFunction } from 'i18next'
 import { z } from 'zod'
 
-export const updateProfileSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100).optional(),
-  phoneNumber: z
-    .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
-    .optional()
-    .or(z.literal('')),
-  bio: z.string().max(500, 'Bio must be 500 characters or less').optional(),
-  location: z.string().max(100, 'Location must be 100 characters or less').optional(),
-})
-
-export const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
+export const createUpdateProfileSchema = (t: TFunction<'users'>) =>
+  z.object({
+    fullName: z.string().min(2, t('validation.fullNameMin')).max(100).optional(),
+    phoneNumber: z
       .string()
-      .min(12, 'Password must be at least 12 characters')
-      .max(100, 'Password must be less than 100 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/\d/, 'Password must contain at least one number')
-      .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
+      .regex(/^\+?[1-9]\d{1,14}$/, t('validation.phoneInvalid'))
+      .optional()
+      .or(z.literal('')),
+    bio: z.string().max(500, t('validation.bioMax')).optional(),
+    location: z.string().max(100, t('validation.locationMax')).optional(),
   })
 
-export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>
-export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
+export const createChangePasswordSchema = (t: TFunction<'users'>) =>
+  z
+    .object({
+      currentPassword: z.string().min(1, t('validation.currentPasswordRequired')),
+      newPassword: z
+        .string()
+        .min(12, t('validation.passwordMin'))
+        .max(100, t('validation.passwordMax'))
+        .regex(/[A-Z]/, t('validation.passwordUppercase'))
+        .regex(/[a-z]/, t('validation.passwordLowercase'))
+        .regex(/\d/, t('validation.passwordNumber'))
+        .regex(/[!@#$%^&*(),.?":{}|<>]/, t('validation.passwordSpecial')),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t('validation.passwordMatch'),
+      path: ['confirmPassword'],
+    })

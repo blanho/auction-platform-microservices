@@ -1,9 +1,5 @@
-import type { BidStatus } from './bid.types'
 import type { QueryParameters } from '@/shared/types'
-
-export interface BidFilters extends QueryParameters {
-  status?: BidStatus
-}
+import type { BidStatus } from './bid.types'
 
 export type WinningBidsFilters = QueryParameters
 
@@ -12,8 +8,4 @@ export interface BidHistoryFilters extends QueryParameters {
   status?: BidStatus
   fromDate?: string
   toDate?: string
-}
-
-export interface AutoBidFilters extends QueryParameters {
-  activeOnly?: boolean
 }

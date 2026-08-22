@@ -1,20 +1,20 @@
-import { useState, useCallback, useRef, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, Stack } from '@mui/material'
-import { AnimatePresence } from 'framer-motion'
-import { palette } from '@/shared/theme/tokens'
 import {
+  ACCEPTED_DOCUMENT_TYPES,
+  ACCEPTED_IMAGE_TYPES,
   ALL_ACCEPTED_TYPES,
   MAX_FILE_SIZE_BYTES,
   MAX_FILES_PER_UPLOAD,
-  ACCEPTED_IMAGE_TYPES,
-  ACCEPTED_DOCUMENT_TYPES,
 } from '@/shared/constants/storage.constants'
-import type { FileUploadZoneProps } from './FileUploadZone.types'
-import { DropZoneArea } from './DropZoneArea'
-import { UploadProgressItem } from './UploadProgressItem'
+import { palette } from '@/shared/theme/tokens'
+import { Box, Stack, Typography } from '@mui/material'
+import { AnimatePresence } from 'framer-motion'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AttachmentItem } from './AttachmentItem'
+import { DropZoneArea } from './DropZoneArea'
+import type { FileUploadZoneProps } from './FileUploadZone.types'
 import { UploadErrorList } from './UploadErrorList'
+import { UploadProgressItem } from './UploadProgressItem'
 
 export function FileUploadZone({
   attachments,

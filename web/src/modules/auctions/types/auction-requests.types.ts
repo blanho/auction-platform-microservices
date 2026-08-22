@@ -1,5 +1,5 @@
-import type { AuctionStatus } from './auction.types'
 import type { QueryParameters } from '@/shared/types'
+import type { AuctionStatus } from './auction.types'
 
 export interface AuctionFilters extends QueryParameters {
   searchTerm?: string

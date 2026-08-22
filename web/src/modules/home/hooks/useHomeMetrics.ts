@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
 import { useAuctions } from '@/modules/auctions/hooks/useAuctions'
-import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
 import { useBrands } from '@/modules/auctions/hooks/useBrands'
+import { useActiveCategories } from '@/modules/auctions/hooks/useCategories'
+import { useMemo } from 'react'
 
 export interface HomeMetrics {
   activeAuctionsCount: number

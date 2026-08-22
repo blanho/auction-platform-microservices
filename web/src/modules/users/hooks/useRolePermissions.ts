@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { rolePermissionsApi } from '../api'
 import type { SetPermissionsRequest, TogglePermissionRequest } from '../types'
 
@@ -17,55 +17,11 @@ export const useRoles = () => {
   })
 }
 
-export const useRole = (roleId: string) => {
-  return useQuery({
-    queryKey: rolePermissionKeys.role(roleId),
-    queryFn: () => rolePermissionsApi.getRole(roleId),
-    enabled: !!roleId,
-  })
-}
-
-export const useRolePermissions = (roleId: string) => {
-  return useQuery({
-    queryKey: rolePermissionKeys.permissions(roleId),
-    queryFn: () => rolePermissionsApi.getRolePermissions(roleId),
-    enabled: !!roleId,
-  })
-}
-
 export const usePermissionDefinitions = () => {
   return useQuery({
     queryKey: rolePermissionKeys.definitions(),
     queryFn: () => rolePermissionsApi.getPermissionDefinitions(),
     staleTime: 1000 * 60 * 10,
-  })
-}
-
-export const useGrantPermission = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ roleId, permission }: { roleId: string; permission: string }) =>
-      rolePermissionsApi.grantPermission(roleId, permission),
-    onSuccess: (_, { roleId }) => {
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.role(roleId) })
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.permissions(roleId) })
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.roles() })
-    },
-  })
-}
-
-export const useRevokePermission = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ roleId, permission }: { roleId: string; permission: string }) =>
-      rolePermissionsApi.revokePermission(roleId, permission),
-    onSuccess: (_, { roleId }) => {
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.role(roleId) })
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.permissions(roleId) })
-      queryClient.invalidateQueries({ queryKey: rolePermissionKeys.roles() })
-    },
   })
 }
 

@@ -1,14 +1,14 @@
-import { useTranslation } from 'react-i18next'
+import { NotificationsOff } from '@mui/icons-material'
 import {
   Box,
   List,
-  Typography,
-  Skeleton,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Skeleton,
+  Typography,
 } from '@mui/material'
-import { NotificationsOff } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import type { Notification } from '../types'
 import { NotificationItem } from './NotificationItem'
 

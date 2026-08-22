@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/app/providers'
 import { LoadingScreen } from '@/shared/ui'
-import { getRedirectUrl, clearRedirectUrl } from './redirectUrl'
+import type { ReactNode } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { clearRedirectUrl, getRedirectUrl } from './redirectUrl'
 
 interface GuestRouteProps {
   readonly children: ReactNode

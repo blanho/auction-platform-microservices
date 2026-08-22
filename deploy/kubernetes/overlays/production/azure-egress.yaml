@@ -1,24 +1,97 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-azure-and-external-integrations
+  name: allow-managed-postgresql
   namespace: auction-platform
 spec:
   podSelector:
-    matchLabels:
-      tier: backend
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - analytics-api
+          - auction-api
+          - bidding-api
+          - catalog-api
+          - identity-api
+          - job-api
+          - notification-api
+          - payment-api
+          - storage-api
   policyTypes:
     - Egress
   egress:
     - to:
+        # main.bicep delegates this private subnet exclusively to PostgreSQL.
+        - ipBlock:
+            cidr: 10.40.16.0/24
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-managed-redis
+  namespace: auction-platform
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - analytics-api
+          - auction-api
+          - bidding-api
+          - identity-api
+          - notification-api
+          - payment-api
+          - search-api
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        # Azure Managed Redis currently exposes a TLS public endpoint. Restrict
+        # this rule to its port and only the clients that use Redis.
         - ipBlock:
             cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16
+      ports:
+        - protocol: TCP
+          port: 10000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-public-https-integrations
+  namespace: auction-platform
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - identity-api
+          - notification-api
+          - payment-api
+          - storage-api
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        # NetworkPolicy cannot match DNS names. These workloads require HTTPS
+        # access to Stripe, OAuth, messaging, or Azure Blob endpoints.
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16
       ports:
         - protocol: TCP
           port: 443
-        - protocol: TCP
-          port: 5432
-        - protocol: TCP
-          port: 10000
-        - protocol: TCP
-          port: 587

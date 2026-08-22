@@ -1,7 +1,7 @@
-import { useCallback } from 'react'
-import { TableCell, TableSortLabel, Box, Typography } from '@mui/material'
-import { visuallyHidden } from '@mui/utils'
 import type { ColumnConfig } from '@/shared/types/filter.types'
+import { Box, TableCell, TableSortLabel, Typography } from '@mui/material'
+import { visuallyHidden } from '@mui/utils'
+import { useCallback } from 'react'
 
 export interface SortableTableHeaderProps<T> {
   column: ColumnConfig<T>

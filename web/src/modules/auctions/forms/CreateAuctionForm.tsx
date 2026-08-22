@@ -1,21 +1,22 @@
-import { useForm, Controller } from 'react-hook-form'
+import { FormField } from '@/shared/ui'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
-  TextField,
   Button,
+  FormControl,
+  FormHelperText,
   Grid,
   InputAdornment,
-  FormControl,
   InputLabel,
-  Select,
   MenuItem,
-  FormHelperText,
+  Select,
+  TextField,
 } from '@mui/material'
-import { FormField } from '@/shared/ui'
-import { createAuctionSchema, type CreateAuctionFormData } from '../schemas'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { CURRENCIES, ITEM_CONDITIONS } from '../constants'
 import { useActiveCategories } from '../hooks'
-import { ITEM_CONDITIONS, CURRENCIES } from '../constants'
+import { createAuctionSchema, type CreateAuctionFormData } from '../schemas'
 
 interface CreateAuctionFormProps {
   onSubmit: (data: CreateAuctionFormData) => void
@@ -23,6 +24,7 @@ interface CreateAuctionFormProps {
 }
 
 export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProps) => {
+  const { t } = useTranslation('auctions')
   const { data: categories = [] } = useActiveCategories()
   const {
     register,
@@ -30,7 +32,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
     control,
     formState: { errors },
   } = useForm<CreateAuctionFormData>({
-    resolver: zodResolver(createAuctionSchema),
+    resolver: zodResolver(createAuctionSchema(t)),
     defaultValues: {
       currency: 'USD',
       isFeatured: false,
@@ -41,7 +43,13 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12 }}>
-          <FormField name="title" register={register} errors={errors} fullWidth label="Title" />
+          <FormField
+            name="title"
+            register={register}
+            errors={errors}
+            fullWidth
+            label={t('form.title')}
+          />
         </Grid>
         <Grid size={{ xs: 12 }}>
           <FormField
@@ -49,7 +57,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
             register={register}
             errors={errors}
             fullWidth
-            label="Description"
+            label={t('form.description')}
             multiline
             rows={4}
           />
@@ -60,8 +68,8 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
             control={control}
             render={({ field }) => (
               <FormControl fullWidth error={!!errors.categoryId}>
-                <InputLabel>Category</InputLabel>
-                <Select {...field} label="Category">
+                <InputLabel>{t('form.category')}</InputLabel>
+                <Select {...field} label={t('form.category')}>
                   {categories.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>
                       {cat.name}
@@ -79,11 +87,11 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
             control={control}
             render={({ field }) => (
               <FormControl fullWidth>
-                <InputLabel>Condition</InputLabel>
-                <Select {...field} label="Condition">
+                <InputLabel>{t('form.condition')}</InputLabel>
+                <Select {...field} label={t('form.condition')}>
                   {ITEM_CONDITIONS.map((cond) => (
                     <MenuItem key={cond.value} value={cond.value}>
-                      {cond.label}
+                      {t(`condition.${cond.value === 'like-new' ? 'likeNew' : cond.value}`)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -94,7 +102,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
-            label="Starting Price (Reserve)"
+            label={t('form.reservePrice')}
             type="number"
             slotProps={{
               input: {
@@ -109,7 +117,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
-            label="Buy Now Price (Optional)"
+            label={t('form.buyNowPriceOptional')}
             type="number"
             slotProps={{
               input: {
@@ -127,8 +135,8 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
             control={control}
             render={({ field }) => (
               <FormControl fullWidth>
-                <InputLabel>Currency</InputLabel>
-                <Select {...field} label="Currency">
+                <InputLabel>{t('form.currency')}</InputLabel>
+                <Select {...field} label={t('form.currency')}>
                   {CURRENCIES.map((cur) => (
                     <MenuItem key={cur.value} value={cur.value}>
                       {cur.label}
@@ -142,7 +150,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
         <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
-            label="Auction End"
+            label={t('form.auctionEnd')}
             type="datetime-local"
             slotProps={{ inputLabel: { shrink: true } }}
             {...register('auctionEnd')}
@@ -152,7 +160,7 @@ export const CreateAuctionForm = ({ onSubmit, isLoading }: CreateAuctionFormProp
         </Grid>
         <Grid size={{ xs: 12 }}>
           <Button type="submit" variant="contained" size="large" fullWidth disabled={isLoading}>
-            {isLoading ? 'Creating...' : 'Create Auction'}
+            {t(isLoading ? 'form.creating' : 'createAuction')}
           </Button>
         </Grid>
       </Grid>

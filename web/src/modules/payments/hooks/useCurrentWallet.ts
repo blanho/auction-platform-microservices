@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/hooks/useAuth'
+import { useQuery } from '@tanstack/react-query'
 import { walletsApi } from '../api'
-import type { DepositRequest, WithdrawRequest, TransactionFilters, PaymentMethod } from '../types'
+import type { TransactionFilters } from '../types'
 
 export const currentWalletKeys = {
   all: ['current-wallet'] as const,
@@ -29,82 +29,5 @@ export const useTransactions = (filters: TransactionFilters) => {
     queryKey: currentWalletKeys.transactions(filters),
     queryFn: () => walletsApi.getTransactions(username, filters.page || 1, filters.pageSize || 20),
     enabled: !!username,
-  })
-}
-
-export const useDeposit = () => {
-  const { user } = useAuth()
-  const username = user?.username || ''
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (data: DepositRequest) => walletsApi.deposit(username, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: currentWalletKeys.all })
-    },
-  })
-}
-
-export const useWithdraw = () => {
-  const { user } = useAuth()
-  const username = user?.username || ''
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (data: WithdrawRequest) => walletsApi.withdraw(username, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: currentWalletKeys.all })
-    },
-  })
-}
-
-export const paymentMethodKeys = {
-  all: ['payment-methods'] as const,
-}
-
-export const usePaymentMethods = () => {
-  return useQuery({
-    queryKey: paymentMethodKeys.all,
-    queryFn: async (): Promise<PaymentMethod[]> => [],
-    enabled: false,
-  })
-}
-
-export const useAddPaymentMethod = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (_token: string) => {
-      throw new Error('Adding payment methods is not available')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })
-    },
-  })
-}
-
-export const useRemovePaymentMethod = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (_id: string) => {
-      throw new Error('Removing payment methods is not available')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })
-    },
-  })
-}
-
-export const useSetDefaultPaymentMethod = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (_id: string) => {
-      throw new Error('Changing the default payment method is not available')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })
-    },
   })
 }

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
@@ -15,10 +14,9 @@ public sealed class PermissionHandler : AuthorizationHandler<PermissionRequireme
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        var roles = context.User.FindAll(c => c.Type == ClaimTypes.Role || c.Type == AuthClaimTypes.Role)
-            .Select(c => c.Value);
-
-        if (RolePermissions.HasPermission(roles, requirement.Permission))
+        if (context.User.Claims.Any(claim =>
+                claim.Type == AuthClaimTypes.Permission &&
+                string.Equals(claim.Value, requirement.Permission, StringComparison.Ordinal)))
         {
             context.Succeed(requirement);
         }
@@ -39,6 +37,7 @@ public sealed class PermissionPolicyProvider(IOptions<AuthorizationOptions> opti
         {
             var permission = policyName[Prefix.Length..];
             var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
                 .AddRequirements(new PermissionRequirement(permission))
                 .Build();
             return Task.FromResult<AuthorizationPolicy?>(policy);

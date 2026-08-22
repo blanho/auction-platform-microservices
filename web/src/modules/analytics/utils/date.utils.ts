@@ -24,13 +24,3 @@ export const getDateRange = (range: TimeRange) => {
     endDate: end.toISOString(),
   }
 }
-
-export const formatTimeRangeLabel = (range: TimeRange): string => {
-  const labels: Record<TimeRange, string> = {
-    '7d': 'Last 7 Days',
-    '30d': 'Last 30 Days',
-    '90d': 'Last 90 Days',
-    '1y': 'Last Year',
-  }
-  return labels[range]
-}

@@ -1,18 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { viewsApi } from '../api'
 
 export const viewKeys = {
   all: ['views'] as const,
   count: (auctionId: string) => [...viewKeys.all, 'count', auctionId] as const,
-}
-
-export const useViewCount = (auctionId: string) => {
-  return useQuery({
-    queryKey: viewKeys.count(auctionId),
-    queryFn: () => viewsApi.getViewCount(auctionId),
-    enabled: !!auctionId,
-    staleTime: 60 * 1000,
-  })
 }
 
 export const useRecordView = () => {

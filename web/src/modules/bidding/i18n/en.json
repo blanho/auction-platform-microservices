@@ -5,6 +5,7 @@
   "outbid": "Outbid",
   "activeBids": "Active Bids",
   "bidHistory": "Bid History",
+  "bidHistoryDescription": "Review and filter your complete bidding activity",
 
   "placeBid": {
     "title": "Place Your Bid",
@@ -15,7 +16,8 @@
     "autoBid": "Auto Bid",
     "autoBidDescription": "Automatically bid up to your maximum",
     "submit": "Place Bid",
-    "confirm": "Confirm Bid"
+    "confirm": "Confirm Bid",
+    "cancel": "Cancel"
   },
 
   "status": {
@@ -23,7 +25,10 @@
     "outbid": "Outbid",
     "won": "Won",
     "lost": "Lost",
-    "pending": "Pending"
+    "pending": "Pending",
+    "ended": "Ended",
+    "active": "Active",
+    "inactive": "Inactive"
   },
 
   "messages": {
@@ -31,18 +36,132 @@
     "bidFailed": "Failed to place bid",
     "outbidAlert": "You've been outbid!",
     "wonAuction": "Congratulations! You won the auction!",
-    "minimumNotMet": "Bid must be at least {{amount}}"
+    "minimumNotMet": "Bid must be at least {{amount}}",
+    "loadFailed": "Failed to load bidding data. Please try again."
   },
 
   "filter": {
     "all": "All Bids",
     "active": "Active",
+    "inactive": "Inactive",
+    "show": "Show",
     "won": "Won",
     "lost": "Lost"
   },
 
   "empty": {
     "title": "No Bids Yet",
-    "description": "Start bidding on auctions you're interested in"
+    "description": "Start bidding on auctions you're interested in",
+    "noBidHistory": "No bid history found"
+  },
+
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "saveChanges": "Save Changes",
+    "browseAuctions": "Browse Auctions"
+  },
+
+  "autoBid": {
+    "title": "Auto-Bid Management",
+    "description": "Manage automatic bidding limits for your auctions",
+    "create": "Create Auto-Bid",
+    "auction": "Auction",
+    "auctionId": "Auction ID",
+    "maxAmount": "Maximum Amount",
+    "maxAmountDesc": "The maximum amount you are willing to bid",
+    "currentBid": "Current Bid",
+    "minimum": "Minimum",
+    "minimumIncrement": "Minimum increment",
+    "bidIncrement": "Bid Increment",
+    "bidIncrementDesc": "Amount added for each automatic bid",
+    "lastBid": "Last Bid",
+    "created": "Created",
+    "editTitle": "Edit Auto-Bid",
+    "confirmDelete": "Cancel Auto-Bid?",
+    "deleteWarning": "This will permanently cancel the selected auto-bid.",
+    "cancelAutoBid": "Cancel Auto-Bid",
+    "enable": "Enable Auto-Bid",
+    "stopOnOutbid": "Stop when outbid",
+    "stopOnOutbidDesc": "Disable automatic bidding after another bidder exceeds your limit",
+    "summary": "Auto-Bid Summary",
+    "summaryDesc": "Review your automatic bidding settings",
+    "activated": "Auto-bid activated",
+    "activatedDesc": "We will bid automatically up to your maximum amount.",
+    "update": "Update Auto-Bid",
+    "setupFailed": "Failed to configure auto-bid",
+    "empty": {
+      "title": "No Auto-Bids Yet",
+      "description": "Set a maximum bid on an auction to start automatic bidding"
+    }
+  },
+
+  "history": {
+    "auctionId": "Auction ID",
+    "auctionIdPlaceholder": "Enter auction ID...",
+    "auction": "Auction",
+    "bidAmount": "Bid Amount",
+    "status": "Status",
+    "date": "Date",
+    "winning": "Winning",
+    "bidTime": "Bid Time",
+    "statuses": {
+      "Pending": "Pending",
+      "Accepted": "Accepted",
+      "Rejected": "Rejected",
+      "Retracted": "Retracted",
+      "Outbid": "Outbid"
+    }
+  },
+
+  "validation": {
+    "invalidAuctionId": "Invalid auction ID",
+    "invalidAuction": "Invalid auction",
+    "auctionIdRequired": "Auction ID is required",
+    "bidMinimum": "Bid amount must be at least ${{amount}}",
+    "bidMaximum": "Bid amount cannot exceed $10,000,000",
+    "autoBidMinimum": "Maximum amount must be at least ${{amount}}",
+    "incrementMinimum": "Increment must be at least ${{amount}}",
+    "incrementLessThanMaximum": "Increment must be less than maximum amount",
+    "reasonMin": "Reason must be at least 10 characters",
+    "reasonMax": "Reason must not exceed 500 characters",
+    "maximumPositive": "Maximum amount must be greater than 0",
+    "incrementPositive": "Increment must be greater than 0"
+  },
+
+  "winning": {
+    "description": "Auctions where you currently have the highest bid",
+    "loadFailed": "Failed to load winning bids. Please try again.",
+    "badge": "WINNING",
+    "yourBid": "Your Bid",
+    "nextMinimum": "Next min: {{amount}}",
+    "ends": "Ends {{time}}",
+    "active": "ACTIVE",
+    "bidCount": "{{count}} BID",
+    "bidCount_other": "{{count}} BIDS",
+    "emptyTitle": "No Winning Bids Yet",
+    "emptyDescription": "Start bidding on auctions to see your winning positions here",
+    "browse": "Browse Auctions"
+  },
+
+  "myBidsPage": {
+    "description": "Track your bidding activity",
+    "loadError": "Failed to load your bids. Please try again.",
+    "activeAutoBids": "Active Auto-Bids",
+    "auctionNumber": "Auction #{{id}}",
+    "autoBidAmounts": "Max: {{maximum}} · Current: {{current}}",
+    "editAutoBid": "Edit Auto-Bid",
+    "cancelAutoBid": "Cancel Auto-Bid",
+    "viewAuction": "View Auction",
+    "bidBy": "Bid by {{username}}",
+    "editDescription": "Update your maximum bid amount for automatic bidding.",
+    "cancel": "Cancel",
+    "update": "Update",
+    "columns": { "auction": "Auction", "date": "Date", "status": "Status", "actions": "Actions" },
+    "empty": {
+      "all": "You haven't placed any bids yet",
+      "winning": "No winning bids",
+      "outbid": "No outbid auctions"
+    }
   }
 }

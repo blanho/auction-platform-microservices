@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { categoriesApi } from '../api/categories.api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+  Category,
   CategoryFilters,
   CreateCategoryRequest,
   UpdateCategoryRequest,
-  Category,
 } from '../api/categories.api'
+import { categoriesApi } from '../api/categories.api'
 
 export type { Category, CategoryFilters, CreateCategoryRequest, UpdateCategoryRequest }
 
@@ -27,22 +27,6 @@ export function useCategories(filters?: CategoryFilters) {
 
 export function useActiveCategories() {
   return useCategories({ activeOnly: true })
-}
-
-export function useCategoriesTree() {
-  return useQuery({
-    queryKey: categoryKeys.tree(),
-    queryFn: () => categoriesApi.getCategoriesTree(),
-    staleTime: 5 * 60 * 1000,
-  })
-}
-
-export function useCategory(id: string) {
-  return useQuery({
-    queryKey: categoryKeys.detail(id),
-    queryFn: () => categoriesApi.getCategoryById(id),
-    enabled: !!id,
-  })
 }
 
 export function useCreateCategory() {
@@ -76,19 +60,6 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: (id: string) => categoriesApi.deleteCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: categoryKeys.tree() })
-    },
-  })
-}
-
-export function useBulkUpdateCategories() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (updates: { id: string; sortOrder: number }[]) =>
-      categoriesApi.bulkUpdateCategories(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
       queryClient.invalidateQueries({ queryKey: categoryKeys.tree() })

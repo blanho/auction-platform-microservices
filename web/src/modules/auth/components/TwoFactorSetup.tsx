@@ -1,40 +1,35 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useToast } from '@/app/providers'
+import { fadeInUp, scaleIn } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { CheckCircle, ContentCopy, QrCode2, Refresh, Security } from '@mui/icons-material'
 import {
   Alert,
   Box,
-  Typography,
   Button,
-  TextField,
-  Stack,
   CircularProgress,
-  Paper,
-  Stepper,
-  Step,
-  StepLabel,
   InputAdornment,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Paper,
+  Stack,
+  Step,
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
 } from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
-import { Security, QrCode2, CheckCircle, ContentCopy, Refresh } from '@mui/icons-material'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
-import { http } from '@/services/http'
-import { fadeInUp, scaleIn } from '@/shared/lib/animations'
-import { palette } from '@/shared/theme/tokens'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { authApi } from '../api'
 
 interface TwoFactorSetupProps {
   isEnabled: boolean
   onComplete?: () => void
-}
-
-interface SetupResponse {
-  qrCodeUrl: string
-  manualEntryKey: string
-  recoveryCodes: string[]
 }
 
 export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
@@ -45,41 +40,44 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
     t('twoFactor.stepVerify'),
   ]
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [activeStep, setActiveStep] = useState(0)
   const [verificationCode, setVerificationCode] = useState('')
+  const [password, setPassword] = useState('')
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false)
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const setupQuery = useQuery<SetupResponse>({
-    queryKey: ['2fa-setup'],
-    queryFn: async (): Promise<SetupResponse> => {
-      const response = await http.post('/auth/2fa/setup')
-      return response.data as SetupResponse
+  useEffect(
+    () => () => {
+      if (copiedTimerRef.current) {
+        clearTimeout(copiedTimerRef.current)
+      }
     },
-    enabled: !isEnabled && activeStep >= 0,
-    staleTime: 5 * 60 * 1000,
+    []
+  )
+
+  const setupMutation = useMutation({
+    mutationFn: () => authApi.setup2FA(),
+    onSuccess: () => setActiveStep(1),
   })
 
   const verifyMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const response = await http.post('/auth/2fa/verify', { code })
-      return response.data as { recoveryCodes?: string[] }
-    },
-    onSuccess: (data) => {
-      setRecoveryCodes(data.recoveryCodes || setupQuery.data?.recoveryCodes || [])
+    mutationFn: (code: string) => authApi.enable2FA(code),
+    onSuccess: (codes) => {
+      setRecoveryCodes(codes)
       setShowRecoveryCodes(true)
       queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] })
     },
   })
 
   const disableMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const response = await http.post('/auth/2fa/disable', { code })
-      return response.data
-    },
+    mutationFn: (currentPassword: string) => authApi.disable2FA(currentPassword),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] })
       onComplete?.()
     },
   })
@@ -91,23 +89,42 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
   }
 
   const handleDisable = () => {
-    if (verificationCode.length === 6) {
-      disableMutation.mutate(verificationCode)
+    if (password) {
+      disableMutation.mutate(password)
     }
   }
 
   const handleCopyKey = async () => {
-    if (setupQuery.data?.manualEntryKey) {
-      await navigator.clipboard.writeText(setupQuery.data.manualEntryKey)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+    if (!setupMutation.data?.sharedKey) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(setupMutation.data.sharedKey)
+      showCopiedFeedback()
+    } catch {
+      toast.error(t('twoFactor.copyFailed'))
     }
   }
 
   const handleCopyRecoveryCodes = async () => {
-    await navigator.clipboard.writeText(recoveryCodes.join('\n'))
+    try {
+      await navigator.clipboard.writeText(recoveryCodes.join('\n'))
+      showCopiedFeedback()
+    } catch {
+      toast.error(t('twoFactor.copyFailed'))
+    }
+  }
+
+  const showCopiedFeedback = () => {
+    if (copiedTimerRef.current) {
+      clearTimeout(copiedTimerRef.current)
+    }
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    copiedTimerRef.current = setTimeout(() => {
+      setCopied(false)
+      copiedTimerRef.current = null
+    }, 2000)
   }
 
   if (showRecoveryCodes) {
@@ -134,8 +151,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
             {t('twoFactor.title')} {t('twoFactor.enabled')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Save these recovery codes in a secure place. You can use them to access your account if
-            you lose your device.
+            {t('twoFactor.recoveryInstructions')}
           </Typography>
 
           <Paper
@@ -173,7 +189,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                 '&:hover': { bgcolor: '#A16207' },
               }}
             >
-              Done
+              {t('twoFactor.done')}
             </Button>
           </Stack>
         </Paper>
@@ -215,9 +231,11 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
 
           <Stack spacing={2}>
             <TextField
-              label={t('twoFactor.enterCode')}
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              label={t('twoFactor.enterPassword')}
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -227,18 +245,17 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                   ),
                 },
               }}
-              placeholder="000000"
             />
 
             {disableMutation.error && (
-              <InlineAlert severity="error">{t('twoFactor.invalidCode')}</InlineAlert>
+              <InlineAlert severity="error">{t('twoFactor.invalidPassword')}</InlineAlert>
             )}
 
             <Button
               variant="outlined"
               color="error"
               onClick={handleDisable}
-              disabled={verificationCode.length !== 6 || disableMutation.isPending}
+              disabled={!password || disableMutation.isPending}
             >
               {disableMutation.isPending ? <CircularProgress size={24} /> : t('twoFactor.disable')}
             </Button>
@@ -306,43 +323,49 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
 
               <Button
                 variant="contained"
-                onClick={() => setActiveStep(1)}
-                disabled={setupQuery.isLoading}
+                onClick={() => setupMutation.mutate()}
+                disabled={setupMutation.isPending}
                 sx={{
                   mt: 2,
                   bgcolor: palette.brand.primary,
                   '&:hover': { bgcolor: '#A16207' },
                 }}
               >
-                {setupQuery.isLoading ? <CircularProgress size={24} /> : t('twoFactor.continue')}
+                {setupMutation.isPending ? <CircularProgress size={24} /> : t('twoFactor.continue')}
               </Button>
             </motion.div>
           )}
 
-          {activeStep === 1 && setupQuery.data && (
+          {activeStep === 1 && setupMutation.data && (
             <motion.div
               key="step-1"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 2,
-                    display: 'inline-block',
-                    bgcolor: 'white',
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={setupQuery.data.qrCodeUrl}
-                    alt="QR Code"
-                    sx={{ width: 200, height: 200 }}
-                  />
-                </Paper>
-              </Box>
+              {setupMutation.data.qrCodeBase64 ? (
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Paper
+                    variant="outlined"
+                    sx={{ p: 2, display: 'inline-block', bgcolor: 'white' }}
+                  >
+                    <Box
+                      component="img"
+                      src={
+                        setupMutation.data.qrCodeBase64.startsWith('data:')
+                          ? setupMutation.data.qrCodeBase64
+                          : `data:image/png;base64,${setupMutation.data.qrCodeBase64}`
+                      }
+                      alt={t('twoFactor.qrCodeAlt')}
+                      sx={{ width: 200, height: 200 }}
+                    />
+                  </Paper>
+                </Box>
+              ) : (
+                <InlineAlert severity="info" sx={{ mb: 3 }}>
+                  {t('twoFactor.manualSetupOnly')}
+                </InlineAlert>
+              )}
 
               <Typography variant="body2" color="text.secondary" textAlign="center" gutterBottom>
                 {t('twoFactor.cantScan')}
@@ -360,7 +383,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                 }}
               >
                 <Typography variant="body1" fontFamily="monospace" sx={{ letterSpacing: 2 }}>
-                  {setupQuery.data.manualEntryKey}
+                  {setupMutation.data.sharedKey}
                 </Typography>
                 <Button size="small" startIcon={<ContentCopy />} onClick={handleCopyKey}>
                   {copied ? t('twoFactor.copied') : t('twoFactor.copy')}
@@ -401,7 +424,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
 
               <TextField
                 fullWidth
-                label="Verification Code"
+                label={t('twoFactor.verificationCode')}
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 slotProps={{
@@ -447,7 +470,7 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
           )}
         </AnimatePresence>
 
-        {setupQuery.isError && (
+        {setupMutation.isError && (
           <Alert
             severity="error"
             action={
@@ -455,9 +478,9 @@ export function TwoFactorSetup({ isEnabled, onComplete }: TwoFactorSetupProps) {
                 color="inherit"
                 size="small"
                 startIcon={<Refresh />}
-                onClick={() => setupQuery.refetch()}
+                onClick={() => setupMutation.mutate()}
               >
-                Retry
+                {t('retry')}
               </Button>
             }
             sx={{ mt: 3 }}

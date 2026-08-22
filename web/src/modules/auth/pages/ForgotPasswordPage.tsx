@@ -1,22 +1,24 @@
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { FormField, InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { East, Email, West } from '@mui/icons-material'
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
+import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
-import { Box, Typography, Button, CircularProgress, Stack } from '@mui/material'
-import { InlineAlert, FormField } from '@/shared/ui'
-import { Email, West, East } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { useForgotPassword } from '../hooks'
-import { palette } from '@/shared/theme/tokens'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-})
+const createForgotPasswordSchema = (t: TFunction<'auth'>) =>
+  z.object({
+    email: z.string().email(t('validation.emailInvalid')),
+  })
 
-type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>
+type ForgotPasswordForm = z.infer<ReturnType<typeof createForgotPasswordSchema>>
 
 const inputStyles = {
   '& .MuiOutlinedInput-root': {
@@ -51,6 +53,7 @@ const inputStyles = {
 
 export function ForgotPasswordPage() {
   const { t } = useTranslation('auth')
+  const forgotPasswordSchema = createForgotPasswordSchema(t)
   const [emailSent, setEmailSent] = useState(false)
   const [sentEmail, setSentEmail] = useState('')
   const forgotPassword = useForgotPassword()
@@ -277,7 +280,7 @@ export function ForgotPasswordPage() {
                   mb: 3,
                 }}
               >
-                Password Recovery
+                {t('forgotPassword.heroTitle')}
               </Typography>
             </motion.div>
 
@@ -290,7 +293,7 @@ export function ForgotPasswordPage() {
                   lineHeight: 1.6,
                 }}
               >
-                No worries, we'll help you regain access to your account securely.
+                {t('forgotPassword.heroDescription')}
               </Typography>
             </motion.div>
           </motion.div>

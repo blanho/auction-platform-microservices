@@ -1,37 +1,37 @@
+import { formatNumber } from '@/shared/utils/formatters'
+import { MarkEmailUnread, Notifications, Today, TrendingUp } from '@mui/icons-material'
+import { Box, Card, Container, Grid, Skeleton, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Box, Container, Typography, Card, Grid } from '@mui/material'
-import { Notifications, MarkEmailUnread, Today, TrendingUp } from '@mui/icons-material'
 import { useNotificationStats } from '../hooks'
-import { Skeleton } from '@mui/material'
 
 export function NotificationStatsPage() {
-  const { t: _t } = useTranslation('notifications')
+  const { t } = useTranslation('notifications')
   const { data: stats, isLoading } = useNotificationStats()
 
   const statCards = [
     {
-      title: 'Total Notifications',
+      title: t('stats.total'),
       value: stats?.totalNotifications || 0,
       icon: <Notifications sx={{ fontSize: 32, color: '#7C3AED' }} />,
       color: '#7C3AED',
       bgcolor: '#F3E8FF',
     },
     {
-      title: 'Unread',
+      title: t('stats.unread'),
       value: stats?.unreadNotifications || 0,
       icon: <MarkEmailUnread sx={{ fontSize: 32, color: '#F59E0B' }} />,
       color: '#F59E0B',
       bgcolor: '#FEF3C7',
     },
     {
-      title: 'Today',
+      title: t('stats.today'),
       value: stats?.todayCount || 0,
       icon: <Today sx={{ fontSize: 32, color: '#10B981' }} />,
       color: '#10B981',
       bgcolor: '#D1FAE5',
     },
     {
-      title: 'Engagement Rate',
+      title: t('stats.engagementRate'),
       value: stats?.totalNotifications
         ? `${((1 - stats.unreadNotifications / stats.totalNotifications) * 100).toFixed(1)}%`
         : '0%',
@@ -53,10 +53,10 @@ export function NotificationStatsPage() {
             mb: 1,
           }}
         >
-          Notification Statistics
+          {t('stats.title')}
         </Typography>
         <Typography sx={{ color: '#78716C', fontFamily: '"Inter", sans-serif' }}>
-          Overview of notification performance and engagement
+          {t('stats.description')}
         </Typography>
       </Box>
 
@@ -96,7 +96,7 @@ export function NotificationStatsPage() {
                         color: stat.color,
                       }}
                     >
-                      {stat.value}
+                      {typeof stat.value === 'number' ? formatNumber(stat.value) : stat.value}
                     </Typography>
                   </Box>
                   <Box
@@ -128,7 +128,7 @@ export function NotificationStatsPage() {
             fontFamily: '"Inter", sans-serif',
           }}
         >
-          Notifications by Type
+          {t('stats.byType')}
         </Typography>
 
         <Grid container spacing={2}>
@@ -162,7 +162,9 @@ export function NotificationStatsPage() {
                           textTransform: 'capitalize',
                         }}
                       >
-                        {type.replace('_', ' ')}
+                        {t(`broadcast.types.${type}`, {
+                          defaultValue: type.replaceAll('_', ' '),
+                        })}
                       </Typography>
                       <Typography
                         sx={{
@@ -171,7 +173,7 @@ export function NotificationStatsPage() {
                           fontSize: '1.25rem',
                         }}
                       >
-                        {count as number}
+                        {formatNumber(count as number)}
                       </Typography>
                     </Box>
                   </Card>
@@ -181,7 +183,7 @@ export function NotificationStatsPage() {
 
         {!isLoading && Object.keys(stats?.byType || {}).length === 0 && (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography sx={{ color: '#78716C' }}>No notification data available</Typography>
+            <Typography sx={{ color: '#78716C' }}>{t('stats.noData')}</Typography>
           </Box>
         )}
       </Card>

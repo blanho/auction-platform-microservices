@@ -1,21 +1,21 @@
-import { useTranslation } from 'react-i18next'
+import { InlineAlert, StatusBadge } from '@/shared/ui'
+import { Block, Key, PhonelinkLock, Refresh, Security } from '@mui/icons-material'
 import {
+  Box,
+  Button,
   Chip,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  Button,
-  Stack,
-  Box,
-  Typography,
-  Skeleton,
+  DialogContent,
+  DialogTitle,
   Divider,
+  Skeleton,
+  Stack,
+  Typography,
 } from '@mui/material'
-import { Security, PhonelinkLock, Key, Refresh, Block } from '@mui/icons-material'
-import { getAdminUserDisplayName, getRecoveryCodesColor } from '../../utils'
-import { InlineAlert, StatusBadge } from '@/shared/ui'
+import { useTranslation } from 'react-i18next'
 import type { AdminUser, User2FAStatus } from '../../types'
+import { getAdminUserDisplayName, getRecoveryCodesColor } from '../../utils'
 
 interface TwoFactorDialogProps {
   open: boolean
@@ -53,7 +53,7 @@ export function TwoFactorDialog({
         <Stack spacing={3} sx={{ pt: 1 }}>
           <Box>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              User
+              {t('userManagement.user')}
             </Typography>
             <Typography variant="body1" fontWeight={500}>
               {getAdminUserDisplayName(user)}
@@ -74,7 +74,10 @@ export function TwoFactorDialog({
                   />
                   <Typography>{t('twoFactor.status')}</Typography>
                 </Box>
-                <StatusBadge status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'} />
+                <StatusBadge
+                  status={status?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                  label={t(status?.twoFactorEnabled ? 'twoFactor.enabled' : 'twoFactor.disabled')}
+                />
               </Box>
 
               {status?.twoFactorEnabled && (

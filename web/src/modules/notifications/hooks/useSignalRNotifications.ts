@@ -1,96 +1,69 @@
-import { useEffect, useRef, useCallback } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { signalRService } from '@/services/signalr'
-import type { NotificationPayload } from '@/services/signalr'
-import { notificationKeys } from '../hooks/useNotifications'
 import { useAuth } from '@/app/providers'
+import type { NotificationPayload } from '@/services/signalr'
+import { signalRService } from '@/services/signalr'
+import { useSignalRState } from '@/shared/hooks'
 import { signalRLogger } from '@/shared/lib/logger'
+import { HubConnectionState } from '@microsoft/signalr'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { notificationKeys } from './useNotifications'
 
-export const useSignalRNotifications = () => {
+export function useSignalRNotifications(): { isConnected: boolean } {
   const queryClient = useQueryClient()
   const { isAuthenticated } = useAuth()
-  const hasConnected = useRef(false)
-  const isMountedRef = useRef(true)
-
-  const handleNotification = useCallback(
-    (notification: NotificationPayload) => {
-      if (!isMountedRef.current) {
-        return
-      }
-      signalRLogger.info('📬 New notification received:', notification.id)
-      queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
-      queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
-    },
-    [queryClient]
-  )
-
-  const handleNotificationRead = useCallback(
-    (notificationId: string) => {
-      if (!isMountedRef.current) {
-        return
-      }
-      signalRLogger.info('✅ Notification marked as read:', notificationId)
-      queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
-      queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
-    },
-    [queryClient]
-  )
-
-  const handleAllNotificationsRead = useCallback(() => {
-    if (!isMountedRef.current) {
-      return
-    }
-    signalRLogger.info('✅ All notifications marked as read')
-    queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
-    queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
-  }, [queryClient])
+  const connectionState = useSignalRState()
 
   useEffect(() => {
-    isMountedRef.current = true
-
     if (!isAuthenticated) {
-      if (hasConnected.current) {
-        signalRService.disconnect()
-        hasConnected.current = false
-      }
       return
     }
 
-    if (hasConnected.current) {
-      return
+    let isActive = true
+
+    const handleNotification = (notification: NotificationPayload) => {
+      signalRLogger.info('New notification received:', notification.id)
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
     }
 
-    const connectAndListen = async () => {
+    const handleNotificationRead = (notificationId: string) => {
+      signalRLogger.info('Notification marked as read:', notificationId)
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
+    }
+
+    const handleAllNotificationsRead = () => {
+      signalRLogger.info('All notifications marked as read')
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.summary() })
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.lists() })
+    }
+
+    const connectAndSubscribe = async (): Promise<void> => {
       try {
         await signalRService.connect()
-
-        if (!isMountedRef.current) {
-          signalRService.disconnect()
+        if (!isActive) {
           return
         }
-
-        hasConnected.current = true
 
         signalRService.on('ReceiveNotification', handleNotification)
         signalRService.on('NotificationRead', handleNotificationRead)
         signalRService.on('AllNotificationsRead', handleAllNotificationsRead)
       } catch (error) {
-        signalRLogger.error('Failed to connect to SignalR:', error)
-        hasConnected.current = false
+        if (isActive) {
+          signalRLogger.error('Failed to initialize SignalR notifications:', error)
+        }
       }
     }
 
-    connectAndListen()
+    void connectAndSubscribe()
 
     return () => {
-      isMountedRef.current = false
+      isActive = false
       signalRService.off('ReceiveNotification', handleNotification)
       signalRService.off('NotificationRead', handleNotificationRead)
       signalRService.off('AllNotificationsRead', handleAllNotificationsRead)
     }
-  }, [isAuthenticated, handleNotification, handleNotificationRead, handleAllNotificationsRead])
+  }, [isAuthenticated, queryClient])
 
-  return {
-    isConnected: signalRService.isConnected,
-  }
+  return { isConnected: connectionState === HubConnectionState.Connected }
 }

@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
+import { palette } from '@/shared/theme/tokens'
+import { ExpandLess, ExpandMore, Reply, Star } from '@mui/icons-material'
 import {
-  Box,
-  Typography,
-  Stack,
   Avatar,
-  Rating,
+  Box,
   Button,
-  Skeleton,
   Divider,
   LinearProgress,
+  Rating,
+  Skeleton,
+  Stack,
+  Typography,
 } from '@mui/material'
-import { Star, Reply, ExpandMore, ExpandLess } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import type { Review, UserRatingSummary } from '@/modules/users/api/reviews.api'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatTimeAgo } from '../utils'
 
 interface ReviewsListProps {

@@ -14,7 +14,7 @@ public record GenerateAuthCodeCommand(string UserId) : ICommand<string>;
 
 public class GenerateAuthCodeCommandHandler(
     IUserService userService,
-    ITokenGenerationService tokenService) : ICommandHandler<GenerateAuthCodeCommand, string>
+    IAuthorizationCodeStore authorizationCodeStore) : ICommandHandler<GenerateAuthCodeCommand, string>
 {
     public async Task<Result<string>> Handle(GenerateAuthCodeCommand command, CancellationToken cancellationToken)
     {
@@ -22,7 +22,7 @@ public class GenerateAuthCodeCommandHandler(
         if (user == null)
             return Result.Failure<string>(IdentityErrors.User.NotFound);
 
-        var code = tokenService.GenerateTwoFactorStateToken(command.UserId);
+        var code = await authorizationCodeStore.CreateAsync(command.UserId, cancellationToken);
         return Result.Success(code);
     }
 }

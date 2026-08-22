@@ -1,79 +1,85 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useMutation } from '@tanstack/react-query'
+import { http } from '@/services/http'
+import { fadeInUp, scaleIn, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  Container,
-  Typography,
+  ArrowBack,
+  CheckCircle,
+  Gavel,
+  Security,
+  Store,
+  Support,
+  TrendingUp,
+} from '@mui/icons-material'
+import {
   Box,
-  Card,
-  Grid,
   Button,
-  TextField,
-  Divider,
-  CircularProgress,
+  Card,
   Checkbox,
+  CircularProgress,
+  Container,
+  Divider,
   FormControlLabel,
-  Stack,
+  Grid,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material'
-import {
-  Store,
-  CheckCircle,
-  TrendingUp,
-  Security,
-  Support,
-  Gavel,
-  ArrowBack,
-} from '@mui/icons-material'
-import { http } from '@/services/http'
-import { InlineAlert } from '@/shared/ui'
-import { fadeInUp, staggerContainer, staggerItem, scaleIn } from '@/shared/lib/animations'
+import { useMutation } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import type { TFunction } from 'i18next'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { z } from 'zod'
 
-const sellerSchema = z.object({
-  businessName: z.string().min(2, 'Business name is required'),
-  businessType: z.string().min(1, 'Business type is required'),
-  taxId: z.string().optional(),
-  phoneNumber: z.string().min(10, 'Valid phone number is required'),
-  address: z.string().min(10, 'Address is required'),
-  description: z.string().min(50, 'Tell us more about your business (min 50 characters)'),
-  agreedToTerms: z.boolean().refine((val) => val === true, {
-    message: 'You must agree to the terms',
-  }),
-})
+const createSellerSchema = (t: TFunction<'users'>) =>
+  z.object({
+    businessName: z.string().min(2, t('sellerApply.validation.businessName')),
+    businessType: z.string().min(1, t('sellerApply.validation.businessType')),
+    taxId: z.string().optional(),
+    phoneNumber: z.string().min(10, t('sellerApply.validation.phoneNumber')),
+    address: z.string().min(10, t('sellerApply.validation.address')),
+    description: z.string().min(50, t('sellerApply.validation.description')),
+    agreedToTerms: z.boolean().refine((val) => val === true, {
+      message: t('sellerApply.validation.terms'),
+    }),
+  })
 
-type SellerFormData = z.infer<typeof sellerSchema>
-
-const benefits = [
-  {
-    icon: <TrendingUp />,
-    title: 'Grow Your Business',
-    description: 'Reach thousands of collectors and buyers',
-  },
-  {
-    icon: <Security />,
-    title: 'Secure Transactions',
-    description: 'Protected payments and buyer verification',
-  },
-  { icon: <Support />, title: 'Dedicated Support', description: '24/7 seller support team' },
-  {
-    icon: <Gavel />,
-    title: 'Professional Tools',
-    description: 'Analytics, inventory management, and more',
-  },
-]
+type SellerFormData = z.infer<ReturnType<typeof createSellerSchema>>
 
 export function SellerApplyPage() {
-  const { t: _t } = useTranslation('users')
+  const { t } = useTranslation('users')
   const [success, setSuccess] = useState(false)
+  const sellerSchema = createSellerSchema(t)
+  const benefits = [
+    {
+      icon: <TrendingUp />,
+      title: t('sellerApply.benefits.growth.title'),
+      description: t('sellerApply.benefits.growth.description'),
+    },
+    {
+      icon: <Security />,
+      title: t('sellerApply.benefits.security.title'),
+      description: t('sellerApply.benefits.security.description'),
+    },
+    {
+      icon: <Support />,
+      title: t('sellerApply.benefits.support.title'),
+      description: t('sellerApply.benefits.support.description'),
+    },
+    {
+      icon: <Gavel />,
+      title: t('sellerApply.benefits.tools.title'),
+      description: t('sellerApply.benefits.tools.description'),
+    },
+  ]
 
   const {
     control,
@@ -142,19 +148,18 @@ export function SellerApplyPage() {
                 mb: 2,
               }}
             >
-              Application Submitted!
+              {t('sellerApply.successTitle')}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Thank you for applying to become a seller. We'll review your application and get back
-              to you within 2-3 business days.
+              {t('sellerApply.successDescription')}
             </Typography>
 
             <Stack direction="row" spacing={2} justifyContent="center">
               <Button variant="outlined" component={Link} to="/dashboard">
-                Go to Dashboard
+                {t('sellerApply.goToDashboard')}
               </Button>
               <Button variant="contained" component={Link} to="/auctions">
-                Browse Auctions
+                {t('sellerApply.browseAuctions')}
               </Button>
             </Stack>
           </Card>
@@ -173,7 +178,7 @@ export function SellerApplyPage() {
             to="/dashboard"
             sx={{ mb: 3, color: 'text.secondary' }}
           >
-            Back to Dashboard
+            {t('sellerApply.backToDashboard')}
           </Button>
         </motion.div>
 
@@ -192,16 +197,16 @@ export function SellerApplyPage() {
                       mb: 2,
                     }}
                   >
-                    Become a Seller
+                    {t('profile.becomeSeller')}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Join our marketplace and start selling your unique items to collectors worldwide
+                    {t('sellerApply.heroDescription')}
                   </Typography>
                 </Box>
 
                 <Card sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Seller Benefits
+                    {t('sellerApply.benefitsTitle')}
                   </Typography>
                   <List>
                     {benefits.map((benefit) => (
@@ -226,10 +231,10 @@ export function SellerApplyPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 4 }}>
                 <Typography variant="h5" fontWeight={600} gutterBottom>
-                  Seller Application
+                  {t('sellerApply.formTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Complete the form below to apply for a seller account
+                  {t('sellerApply.formDescription')}
                 </Typography>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -240,7 +245,7 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Business / Store Name"
+                          label={t('sellerApply.businessName')}
                           fullWidth
                           error={!!errors.businessName}
                           helperText={errors.businessName?.message}
@@ -254,12 +259,11 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Business Type"
+                          label={t('sellerApply.businessType')}
                           fullWidth
                           error={!!errors.businessType}
                           helperText={
-                            errors.businessType?.message ||
-                            'e.g., Antique Dealer, Art Gallery, Individual Collector'
+                            errors.businessType?.message || t('sellerApply.businessTypeHelp')
                           }
                         />
                       )}
@@ -271,9 +275,9 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Tax ID / Business Registration (Optional)"
+                          label={t('sellerApply.taxId')}
                           fullWidth
-                          helperText="Required for business accounts"
+                          helperText={t('sellerApply.taxIdHelp')}
                         />
                       )}
                     />
@@ -286,7 +290,7 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Phone Number"
+                          label={t('profile.phone')}
                           fullWidth
                           error={!!errors.phoneNumber}
                           helperText={errors.phoneNumber?.message}
@@ -300,7 +304,7 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Business Address"
+                          label={t('sellerApply.businessAddress')}
                           fullWidth
                           multiline
                           rows={2}
@@ -316,14 +320,13 @@ export function SellerApplyPage() {
                       render={({ field }) => (
                         <TextField
                           {...field}
-                          label="Tell us about your business"
+                          label={t('sellerApply.businessDescription')}
                           fullWidth
                           multiline
                           rows={4}
                           error={!!errors.description}
                           helperText={
-                            errors.description?.message ||
-                            'Describe what you sell, your expertise, and why you want to join our marketplace'
+                            errors.description?.message || t('sellerApply.businessDescriptionHelp')
                           }
                         />
                       )}
@@ -341,21 +344,21 @@ export function SellerApplyPage() {
                           }
                           label={
                             <Typography variant="body2">
-                              I agree to the{' '}
+                              {t('sellerApply.agreePrefix')}{' '}
                               <Button
                                 component="a"
                                 href="/terms"
                                 sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
                               >
-                                Seller Terms of Service
+                                {t('sellerApply.sellerTerms')}
                               </Button>{' '}
-                              and{' '}
+                              {t('sellerApply.and')}{' '}
                               <Button
                                 component="a"
                                 href="/fees"
                                 sx={{ p: 0, minWidth: 'auto', textTransform: 'none' }}
                               >
-                                Fee Schedule
+                                {t('sellerApply.feeSchedule')}
                               </Button>
                             </Typography>
                           }
@@ -369,9 +372,7 @@ export function SellerApplyPage() {
                     )}
 
                     {applyMutation.error && (
-                      <InlineAlert severity="error">
-                        Failed to submit application. Please try again.
-                      </InlineAlert>
+                      <InlineAlert severity="error">{t('sellerApply.submitError')}</InlineAlert>
                     )}
 
                     <Button
@@ -388,7 +389,7 @@ export function SellerApplyPage() {
                       {applyMutation.isPending ? (
                         <CircularProgress size={24} />
                       ) : (
-                        'Submit Application'
+                        t('sellerApply.submit')
                       )}
                     </Button>
                   </Stack>

@@ -26,7 +26,6 @@ public static class Perm
     public const string OrderView = "order:view";
     public const string OrderViewOwn = "order:view-own";
     public const string OrderCreate = "order:create";
-    public const string OrderCancel = "order:cancel";
     public const string OrderShip = "order:ship";
     public const string OrderDeliver = "order:deliver";
     public const string OrderRefund = "order:refund";
@@ -37,8 +36,6 @@ public static class Perm
 
     public const string WalletView = "wallet:view";
     public const string WalletViewOwn = "wallet:view-own";
-    public const string WalletDeposit = "wallet:deposit";
-    public const string WalletWithdraw = "wallet:withdraw";
 
     public const string AnalyticsViewPlatform = "analytics:view-platform";
     public const string AnalyticsViewOwn = "analytics:view-own";
@@ -92,7 +89,6 @@ public static class Permissions
         public const string View = Perm.OrderView;
         public const string ViewOwn = Perm.OrderViewOwn;
         public const string Create = Perm.OrderCreate;
-        public const string Cancel = Perm.OrderCancel;
         public const string Ship = Perm.OrderShip;
         public const string Deliver = Perm.OrderDeliver;
         public const string Refund = Perm.OrderRefund;
@@ -109,8 +105,6 @@ public static class Permissions
     {
         public const string View = Perm.WalletView;
         public const string ViewOwn = Perm.WalletViewOwn;
-        public const string Deposit = Perm.WalletDeposit;
-        public const string Withdraw = Perm.WalletWithdraw;
     }
 
     public static class Users

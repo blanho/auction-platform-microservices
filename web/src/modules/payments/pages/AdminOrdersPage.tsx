@@ -1,64 +1,58 @@
-import { useState, useMemo, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import type { FilterConfig } from '@/shared/ui'
+import { StatCard, TableEmptyStateRow, TableToolbar } from '@/shared/ui'
+import { formatCurrency, formatDateTime, formatNumber } from '@/shared/utils/formatters'
 import {
-  Container,
-  Card,
-  Typography,
+  LocalShipping,
+  MoreVert,
+  Pending,
+  Receipt,
+  Refresh,
+  TrendingUp,
+  Visibility,
+} from '@mui/icons-material'
+import {
+  Avatar,
   Box,
+  Button,
+  Card,
+  Chip,
+  Container,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
-  Button,
+  TableRow,
   Tabs,
-  Tab,
-  Chip,
-  Avatar,
-  IconButton,
-  Menu,
-  MenuItem,
-  Skeleton,
-  Grid,
   Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  TextField,
+  Typography,
 } from '@mui/material'
-import { InlineAlert, TableEmptyStateRow, TableToolbar, StatCard } from '@/shared/ui'
-import type { FilterConfig } from '@/shared/ui'
-import {
-  Refresh,
-  Visibility,
-  MoreVert,
-  LocalShipping,
-  Cancel,
-  Receipt,
-  TrendingUp,
-  Pending,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ordersApi } from '../api'
-import type { Order, OrderStatus, OrderStats } from '../types'
+import type { Order, OrderStats, OrderStatus } from '../types'
 import { getAdminOrderStatusConfig } from '../utils'
-import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boolean }) {
+  const { t } = useTranslation('payments')
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
-          title="Total Orders"
-          value={stats?.totalOrders.toLocaleString() ?? '0'}
+          title={t('adminOrders.totalOrders')}
+          value={formatNumber(stats?.totalOrders ?? 0)}
           icon={<Receipt />}
           color="#7C3AED"
           loading={loading}
@@ -66,7 +60,7 @@ function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boole
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
-          title="Pending"
+          title={t('adminOrders.pending')}
           value={stats?.pendingOrders ?? 0}
           icon={<Pending />}
           color={palette.semantic.warning}
@@ -75,7 +69,7 @@ function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boole
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
-          title="Processing"
+          title={t('adminOrders.processing')}
           value={(stats?.processingOrders ?? 0) + (stats?.shippedOrders ?? 0)}
           icon={<LocalShipping />}
           color={palette.semantic.info}
@@ -84,7 +78,7 @@ function OrderStatsGrid({ stats, loading }: { stats?: OrderStats; loading: boole
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
-          title="Revenue"
+          title={t('adminOrders.revenue')}
           value={formatCurrency(stats?.totalRevenue ?? 0)}
           icon={<TrendingUp />}
           color={palette.semantic.success}
@@ -140,6 +134,7 @@ function OrderTableRow({
   order: Order
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, order: Order) => void
 }) {
+  const { t } = useTranslation('payments')
   const statusConfig = getAdminOrderStatusConfig(order.status)
 
   return (
@@ -207,7 +202,7 @@ function OrderTableRow({
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Tooltip title="Actions">
+        <Tooltip title={t('adminOrders.actions')}>
           <IconButton size="small" onClick={(e) => onMenuOpen(e, order)}>
             <MoreVert fontSize="small" />
           </IconButton>
@@ -217,20 +212,19 @@ function OrderTableRow({
   )
 }
 
-const STATUS_FILTER_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'payment_pending', label: 'Payment Pending' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-  { value: 'refunded', label: 'Refunded' },
+const STATUS_FILTER_VALUES: OrderStatus[] = [
+  'pending',
+  'payment_pending',
+  'paid',
+  'shipped',
+  'delivered',
+  'completed',
+  'cancelled',
+  'refunded',
 ]
 
 export function AdminOrdersPage() {
-  const { t: _t } = useTranslation('payments')
-  const queryClient = useQueryClient()
+  const { t } = useTranslation('payments')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -238,12 +232,20 @@ export function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('')
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
 
   const filters: FilterConfig[] = useMemo(
-    () => [{ key: 'status', label: 'Status', options: STATUS_FILTER_OPTIONS, minWidth: 150 }],
-    []
+    () => [
+      {
+        key: 'status',
+        label: t('orders.status'),
+        options: STATUS_FILTER_VALUES.map((value) => ({
+          value,
+          label: t(`orderStatuses.${value}`),
+        })),
+        minWidth: 150,
+      },
+    ],
+    [t]
   )
 
   const filterValues = useMemo(() => ({ status: statusFilter }), [statusFilter])
@@ -295,18 +297,6 @@ export function AdminOrdersPage() {
     queryFn: () => ordersApi.getOrderStats(),
   })
 
-  const cancelMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
-      ordersApi.cancelOrder(id, { reason }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'orders', 'stats'] })
-      setCancelDialogOpen(false)
-      setCancelReason('')
-      setSelectedOrder(null)
-    },
-  })
-
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, order: Order) => {
     setMenuAnchor(event.currentTarget)
     setSelectedOrder(order)
@@ -319,18 +309,6 @@ export function AdminOrdersPage() {
   const handleViewOrder = useCallback(() => {
     handleMenuClose()
   }, [handleMenuClose])
-
-  const handleOpenCancelDialog = useCallback(() => {
-    setCancelDialogOpen(true)
-    handleMenuClose()
-  }, [handleMenuClose])
-
-  const handleCancelOrder = useCallback(() => {
-    if (!selectedOrder) {
-      return
-    }
-    cancelMutation.mutate({ id: selectedOrder.id, reason: cancelReason })
-  }, [selectedOrder, cancelReason, cancelMutation])
 
   const handleTabChange = useCallback((_: React.SyntheticEvent, value: number) => {
     setTabValue(value)
@@ -354,10 +332,10 @@ export function AdminOrdersPage() {
                   color: 'text.primary',
                 }}
               >
-                Order Management
+                {t('adminOrders.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                View and manage all platform orders
+                {t('adminOrders.description')}
               </Typography>
             </Box>
             <Button
@@ -366,7 +344,7 @@ export function AdminOrdersPage() {
               onClick={() => refetch()}
               sx={{ borderColor: 'divider' }}
             >
-              Refresh
+              {t('common:refresh')}
             </Button>
           </Box>
         </motion.div>
@@ -379,19 +357,19 @@ export function AdminOrdersPage() {
           <Card>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={tabValue} onChange={handleTabChange}>
-                <Tab label="All Orders" />
-                <Tab label="Pending" />
-                <Tab label="Paid" />
-                <Tab label="Shipped" />
-                <Tab label="Completed" />
-                <Tab label="Cancelled" />
+                <Tab label={t('adminOrders.allOrders')} />
+                <Tab label={t('orderStatuses.pending')} />
+                <Tab label={t('orderStatuses.paid')} />
+                <Tab label={t('orderStatuses.shipped')} />
+                <Tab label={t('orderStatuses.completed')} />
+                <Tab label={t('orderStatuses.cancelled')} />
               </Tabs>
             </Box>
 
             <Box sx={{ p: 2 }}>
               <TableToolbar
                 searchValue={search}
-                searchPlaceholder="Search orders by ID, buyer, or seller..."
+                searchPlaceholder={t('adminOrders.searchPlaceholder')}
                 onSearchChange={setSearch}
                 filters={filters}
                 filterValues={filterValues}
@@ -406,14 +384,14 @@ export function AdminOrdersPage() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Buyer</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Seller</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('adminOrders.order')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('orders.buyer')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('orders.seller')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('orders.amount')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('orders.status')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('orders.date')}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      Actions
+                      {t('adminOrders.actions')}
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -422,8 +400,8 @@ export function AdminOrdersPage() {
                   <TableBody>
                     <TableEmptyStateRow
                       colSpan={7}
-                      title="No orders found"
-                      description="Orders will appear here when customers make purchases"
+                      title={t('adminOrders.noOrders')}
+                      description={t('adminOrders.noOrdersDescription')}
                       icon={<Receipt sx={{ fontSize: 64, color: 'grey.300' }} />}
                       cellSx={{ py: 8 }}
                     />
@@ -473,52 +451,9 @@ export function AdminOrdersPage() {
           onClick={handleViewOrder}
         >
           <Visibility fontSize="small" sx={{ mr: 1.5 }} />
-          View Details
+          {t('adminOrders.viewDetails')}
         </MenuItem>
-        {selectedOrder && ['pending', 'payment_pending', 'paid'].includes(selectedOrder.status) && (
-          <MenuItem onClick={handleOpenCancelDialog} sx={{ color: 'error.main' }}>
-            <Cancel fontSize="small" sx={{ mr: 1.5 }} />
-            Cancel Order
-          </MenuItem>
-        )}
       </Menu>
-
-      <Dialog
-        open={cancelDialogOpen}
-        onClose={() => setCancelDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600, color: 'error.main' }}>Cancel Order</DialogTitle>
-        <DialogContent>
-          <InlineAlert severity="warning" sx={{ mb: 3 }}>
-            This will cancel order #{selectedOrder?.id.slice(0, 8).toUpperCase()}. This action
-            cannot be undone.
-          </InlineAlert>
-          <TextField
-            fullWidth
-            label="Cancellation Reason"
-            value={cancelReason}
-            onChange={(e) => setCancelReason(e.target.value)}
-            multiline
-            rows={3}
-            placeholder="Provide a reason for cancellation..."
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={() => setCancelDialogOpen(false)} sx={{ color: 'text.secondary' }}>
-            Keep Order
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleCancelOrder}
-            disabled={cancelMutation.isPending}
-          >
-            {cancelMutation.isPending ? <CircularProgress size={20} /> : 'Cancel Order'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   )
 }

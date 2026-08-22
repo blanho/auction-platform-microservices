@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion'
-import { Box, Container, Typography, Grid, Avatar } from '@mui/material'
-import { FormatQuote } from '@mui/icons-material'
 import { typography } from '@/shared/theme/tokens'
+import { FormatQuote } from '@mui/icons-material'
+import { Avatar, Box, Container, Grid, Typography } from '@mui/material'
+import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 const testimonialIds = ['1', '2', '3']

@@ -1,20 +1,20 @@
-import { useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Close, Refresh, Search } from '@mui/icons-material'
+import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
 import {
   Box,
-  TextField,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
   Button,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
+  TextField,
   Tooltip,
 } from '@mui/material'
-import type { SelectChangeEvent, SxProps, Theme } from '@mui/material'
-import { Search, Close, Refresh } from '@mui/icons-material'
+import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export interface FilterOption {
   value: string
@@ -62,13 +62,10 @@ export function TableToolbar({
   children,
 }: TableToolbarProps) {
   const { t } = useTranslation('common')
-  const [localSearch, setLocalSearch] = useState(searchValue)
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
-      setLocalSearch(value)
-      onSearchChange?.(value)
+      onSearchChange?.(e.target.value)
     },
     [onSearchChange]
   )
@@ -81,7 +78,7 @@ export function TableToolbar({
   )
 
   const hasActiveFilters =
-    localSearch || Object.values(filterValues).some((v) => v !== '' && v !== undefined)
+    searchValue || Object.values(filterValues).some((v) => v !== '' && v !== undefined)
 
   return (
     <Stack
@@ -93,7 +90,7 @@ export function TableToolbar({
       {onSearchChange && (
         <TextField
           placeholder={searchPlaceholder}
-          value={localSearch}
+          value={searchValue}
           onChange={handleSearchChange}
           size="small"
           sx={{ minWidth: 280 }}
@@ -136,7 +133,12 @@ export function TableToolbar({
           )}
           {showRefreshButton && onRefresh && (
             <Tooltip title={t('table.refresh')}>
-              <IconButton onClick={onRefresh} color="primary" size="small">
+              <IconButton
+                onClick={onRefresh}
+                color="primary"
+                size="small"
+                aria-label={t('table.refresh')}
+              >
                 <Refresh />
               </IconButton>
             </Tooltip>

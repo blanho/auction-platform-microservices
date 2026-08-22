@@ -1,32 +1,32 @@
-import { useEffect, useState } from 'react'
-import { useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency } from '@/shared/utils/formatters'
+import { ArrowForward, CheckCircle, Home, LocalShipping, Receipt } from '@mui/icons-material'
 import {
-  Container,
-  Card,
-  Typography,
   Box,
   Button,
+  Card,
   CircularProgress,
-  Stack,
+  Container,
   Divider,
+  Stack,
+  Typography,
 } from '@mui/material'
-import { InlineAlert } from '@/shared/ui'
-import { CheckCircle, Receipt, LocalShipping, ArrowForward, Home } from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ordersApi } from '../api'
-import { formatCurrency } from '@/shared/utils/formatters'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 
 export function PaymentSuccessPage() {
-  const { t: _t } = useTranslation('payments')
+  const { t } = useTranslation('payments')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const orderId = searchParams.get('order_id')
-  const sessionId = searchParams.get('session_id')
   const [countdown, setCountdown] = useState(10)
+  const [verificationTimedOut, setVerificationTimedOut] = useState(false)
 
   const {
     data: order,
@@ -43,48 +43,61 @@ export function PaymentSuccessPage() {
     enabled: !!orderId,
     retry: 3,
     retryDelay: 1000,
+    refetchInterval: (query) =>
+      verificationTimedOut || query.state.data?.paymentStatus === 'completed' ? false : 1000,
   })
 
+  const paymentConfirmed = order?.paymentStatus === 'completed'
+
   useEffect(() => {
-    if (!orderId && !sessionId) {
+    if (!orderId) {
       navigate('/orders')
     }
-  }, [orderId, sessionId, navigate])
+  }, [orderId, navigate])
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
+    if (paymentConfirmed || error || !orderId) {
+      return
+    }
 
-    return () => clearInterval(timer)
-  }, [])
+    const timer = setTimeout(() => setVerificationTimedOut(true), 20_000)
+    return () => clearTimeout(timer)
+  }, [paymentConfirmed, error, orderId])
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!paymentConfirmed) {
+      return
+    }
+
+    if (countdown === 0) {
+      navigate(orderId ? `/orders/${orderId}` : '/orders', { replace: true })
+      return
+    }
+
+    const timer = setTimeout(() => setCountdown((previous) => previous - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown, navigate, orderId, paymentConfirmed])
+
+  if (isLoading || (!paymentConfirmed && !verificationTimedOut && !error)) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card sx={{ p: 6, textAlign: 'center' }}>
           <CircularProgress size={48} sx={{ color: palette.brand.primary, mb: 3 }} />
-          <Typography variant="h6">Confirming your payment...</Typography>
+          <Typography variant="h6">{t('success.confirming')}</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Please wait while we verify your transaction
+            {t('success.verifying')}
           </Typography>
         </Card>
       </Container>
     )
   }
 
-  if (error) {
+  if (error || verificationTimedOut || !paymentConfirmed) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
         <Card sx={{ p: 6, textAlign: 'center' }}>
           <InlineAlert severity="warning" sx={{ mb: 3 }}>
-            We couldn't retrieve your order details, but your payment may have been processed.
+            {error ? t('success.orderLookupFailed') : t('success.verificationPending')}
           </InlineAlert>
           <Button
             variant="contained"
@@ -92,7 +105,7 @@ export function PaymentSuccessPage() {
             to="/orders"
             sx={{ bgcolor: palette.brand.primary, '&:hover': { bgcolor: '#A16207' } }}
           >
-            View My Orders
+            {t('success.viewOrders')}
           </Button>
         </Card>
       </Container>
@@ -143,11 +156,11 @@ export function PaymentSuccessPage() {
                   mb: 1,
                 }}
               >
-                Payment Successful!
+                {t('success.title')}
               </Typography>
 
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Thank you for your purchase. Your order has been confirmed.
+                {t('success.description')}
               </Typography>
 
               {order && (
@@ -165,7 +178,7 @@ export function PaymentSuccessPage() {
                     <Stack spacing={2}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">
-                          Order Number
+                          {t('success.orderNumber')}
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
                           #{order.id.slice(0, 8).toUpperCase()}
@@ -173,7 +186,7 @@ export function PaymentSuccessPage() {
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">
-                          Item
+                          {t('success.item')}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -186,7 +199,7 @@ export function PaymentSuccessPage() {
                       <Divider />
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">
-                          Total Paid
+                          {t('success.totalPaid')}
                         </Typography>
                         <Typography variant="h6" fontWeight={700} color={palette.brand.primary}>
                           {formatCurrency(order.totalAmount)}
@@ -212,10 +225,10 @@ export function PaymentSuccessPage() {
                   <LocalShipping sx={{ color: palette.brand.primary }} />
                   <Box sx={{ textAlign: 'left' }}>
                     <Typography variant="subtitle2" fontWeight={600}>
-                      What happens next?
+                      {t('success.nextTitle')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      The seller will be notified and will ship your item soon.
+                      {t('success.nextDescription')}
                     </Typography>
                   </Box>
                 </Box>
@@ -235,7 +248,7 @@ export function PaymentSuccessPage() {
                     '&:hover': { bgcolor: '#A16207' },
                   }}
                 >
-                  View Order Details
+                  {t('success.viewOrder')}
                 </Button>
                 <Button
                   variant="outlined"
@@ -251,7 +264,7 @@ export function PaymentSuccessPage() {
                     '&:hover': { borderColor: palette.neutral[700], bgcolor: palette.neutral[100] },
                   }}
                 >
-                  Continue Shopping
+                  {t('success.continueShopping')}
                 </Button>
               </Stack>
 
@@ -261,7 +274,7 @@ export function PaymentSuccessPage() {
                   color="text.secondary"
                   sx={{ display: 'block', mt: 3 }}
                 >
-                  Redirecting to order details in {countdown}s...
+                  {t('success.redirecting', { count: countdown })}
                 </Typography>
               )}
             </Card>
@@ -275,7 +288,7 @@ export function PaymentSuccessPage() {
                 startIcon={<Home />}
                 sx={{ color: palette.neutral[500] }}
               >
-                Back to Home
+                {t('success.backHome')}
               </Button>
             </Box>
           </motion.div>

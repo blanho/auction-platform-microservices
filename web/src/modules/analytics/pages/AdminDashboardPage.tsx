@@ -1,91 +1,91 @@
-import { useState, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { getCurrentLocale } from '@/i18n'
+import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
+import { palette } from '@/shared/theme/tokens'
+import { InlineAlert } from '@/shared/ui'
+import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
 import {
-  Container,
-  Grid,
-  Card,
-  Typography,
+  AttachMoney,
+  CheckCircle,
+  Gavel,
+  People,
+  Report as ReportIcon,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp,
+} from '@mui/icons-material'
+import {
   Box,
-  Stack,
-  LinearProgress,
+  Card,
   Chip,
+  Container,
+  Divider,
+  Grid,
+  LinearProgress,
   List,
   ListItem,
   ListItemText,
   Skeleton,
+  Stack,
   ToggleButton,
   ToggleButtonGroup,
-  Divider,
+  Typography,
 } from '@mui/material'
+import { motion } from 'framer-motion'
+import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  People,
-  Gavel,
-  AttachMoney,
-  Report as ReportIcon,
-  TrendingUp,
-  TrendingDown,
-  CheckCircle,
-  ShoppingCart,
-} from '@mui/icons-material'
-import { palette } from '@/shared/theme/tokens'
-import { InlineAlert } from '@/shared/ui'
+  BidMetricsCard,
+  DailyStatsChart,
+  RealTimeStatsCard,
+  TopPerformersTable,
+  TrendChart,
+} from '../components'
 import {
   useAdminDashboardStats,
-  useDashboardActivity,
-  usePlatformHealth,
-  usePlatformAnalytics,
   useCategoryPerformance,
+  useDashboardActivity,
+  usePlatformAnalytics,
+  usePlatformHealth,
 } from '../hooks/useAnalytics'
-import {
-  RealTimeStatsCard,
-  TrendChart,
-  BidMetricsCard,
-  TopPerformersTable,
-  DailyStatsChart,
-} from '../components'
-import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
-import { formatCurrency, formatNumber, formatPercentage } from '@/shared/utils/formatters'
-import { getHealthIcon, getHealthColor } from '../utils'
-import type { StatCardConfig, CategoryBreakdown } from '../types'
-
-const statCards: StatCardConfig[] = [
-  {
-    key: 'totalRevenue',
-    label: 'Total Revenue',
-    icon: <AttachMoney />,
-    color: palette.semantic.success,
-    format: 'currency',
-    changeKey: 'revenueChange',
-  },
-  {
-    key: 'activeUsers',
-    label: 'Active Users',
-    icon: <People />,
-    color: palette.semantic.info,
-    format: 'number',
-    changeKey: 'activeUsersChange',
-  },
-  {
-    key: 'liveAuctions',
-    label: 'Live Auctions',
-    icon: <Gavel />,
-    color: palette.brand.primary,
-    format: 'number',
-    changeKey: 'liveAuctionsChange',
-  },
-  {
-    key: 'pendingReports',
-    label: 'Pending Reports',
-    icon: <ReportIcon />,
-    color: palette.semantic.error,
-    format: 'number',
-    changeKey: 'pendingReportsChange',
-  },
-]
+import type { CategoryBreakdown, StatCardConfig } from '../types'
+import { getHealthColor, getHealthIcon } from '../utils'
 
 export function AdminDashboardPage() {
-  const { t: _t } = useTranslation('analytics')
+  const { t } = useTranslation('analytics')
+  const statCards: StatCardConfig[] = [
+    {
+      key: 'totalRevenue',
+      label: t('stats.totalRevenue'),
+      icon: <AttachMoney />,
+      color: palette.semantic.success,
+      format: 'currency',
+      changeKey: 'revenueChange',
+    },
+    {
+      key: 'activeUsers',
+      label: t('stats.activeUsers'),
+      icon: <People />,
+      color: palette.semantic.info,
+      format: 'number',
+      changeKey: 'activeUsersChange',
+    },
+    {
+      key: 'liveAuctions',
+      label: t('stats.liveAuctions'),
+      icon: <Gavel />,
+      color: palette.brand.primary,
+      format: 'number',
+      changeKey: 'liveAuctionsChange',
+    },
+    {
+      key: 'pendingReports',
+      label: t('stats.pendingReports'),
+      icon: <ReportIcon />,
+      color: palette.semantic.error,
+      format: 'number',
+      changeKey: 'pendingReportsChange',
+    },
+  ]
   const [period, setPeriod] = useState<string>('week')
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminDashboardStats()
   const { data: activityData, isLoading: activityLoading } = useDashboardActivity(10)
@@ -117,26 +117,26 @@ export function AdminDashboardPage() {
                 color: 'primary.main',
               }}
             >
-              Admin Dashboard
+              {t('adminDashboard')}
             </Typography>
             <ToggleButtonGroup
               value={period}
               exclusive
               onChange={handlePeriodChange}
               size="small"
-              aria-label="time period"
+              aria-label={t('period.timeRange')}
             >
-              <ToggleButton value="day">Day</ToggleButton>
-              <ToggleButton value="week">Week</ToggleButton>
-              <ToggleButton value="month">Month</ToggleButton>
-              <ToggleButton value="year">Year</ToggleButton>
+              <ToggleButton value="day">{t('period.day')}</ToggleButton>
+              <ToggleButton value="week">{t('period.week')}</ToggleButton>
+              <ToggleButton value="month">{t('period.month')}</ToggleButton>
+              <ToggleButton value="year">{t('period.year')}</ToggleButton>
             </ToggleButtonGroup>
           </Box>
         </motion.div>
 
         {statsError && (
           <InlineAlert severity="error" sx={{ mb: 3 }}>
-            Failed to load dashboard statistics. Please try again later.
+            {t('errors.statsLoadFailed')}
           </InlineAlert>
         )}
 
@@ -171,7 +171,7 @@ export function AdminDashboardPage() {
                         >
                           <Box>
                             <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {card.label}
+                              {t(`stats.${card.key}`, { defaultValue: card.label })}
                             </Typography>
                             <Typography variant="h4" fontWeight={700}>
                               {card.format === 'currency'
@@ -211,7 +211,7 @@ export function AdminDashboardPage() {
                             {formatPercentage(Math.abs(change))}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                            vs last {period}
+                            {t('stats.vsLast', { period: t(`period.${period}`) })}
                           </Typography>
                         </Box>
                       </>
@@ -228,7 +228,7 @@ export function AdminDashboardPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, height: '100%' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Orders Overview
+                  {t('orders.title')}
                 </Typography>
                 {statsLoading ? (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -246,7 +246,7 @@ export function AdminDashboardPage() {
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <ShoppingCart color="primary" />
-                        <Typography>Total Orders</Typography>
+                        <Typography>{t('orders.total')}</Typography>
                       </Box>
                       <Typography variant="h6" fontWeight={600}>
                         {formatNumber(stats?.totalOrders ?? 0)}
@@ -262,7 +262,7 @@ export function AdminDashboardPage() {
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <CheckCircle color="success" />
-                        <Typography>Completed Orders</Typography>
+                        <Typography>{t('orders.completed')}</Typography>
                       </Box>
                       <Typography variant="h6" fontWeight={600}>
                         {formatNumber(stats?.completedOrders ?? 0)}
@@ -270,7 +270,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Completion Rate
+                        {t('stats.completionRate')}
                       </Typography>
                       <LinearProgress
                         variant="determinate"
@@ -295,7 +295,7 @@ export function AdminDashboardPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, height: '100%' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Platform Health
+                  {t('health.title')}
                 </Typography>
                 {healthLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -307,10 +307,10 @@ export function AdminDashboardPage() {
                 {!healthLoading && health && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
                     {[
-                      { label: 'API Status', status: health.apiStatus },
-                      { label: 'Database', status: health.databaseStatus },
-                      { label: 'Cache', status: health.cacheStatus },
-                      { label: 'Queue', status: health.queueStatus },
+                      { label: t('health.apiStatus'), status: health.apiStatus },
+                      { label: t('health.database'), status: health.databaseStatus },
+                      { label: t('health.cache'), status: health.cacheStatus },
+                      { label: t('health.queue'), status: health.queueStatus },
                     ].map((item) => (
                       <Box
                         key={item.label}
@@ -327,20 +327,22 @@ export function AdminDashboardPage() {
                             variant="body2"
                             sx={{ color: getHealthColor(item.status), textTransform: 'capitalize' }}
                           >
-                            {item.status}
+                            {t(`health.${item.status.toLowerCase()}`, {
+                              defaultValue: item.status,
+                            })}
                           </Typography>
                         </Box>
                       </Box>
                     ))}
                     {health.queueJobCount > 0 && (
                       <InlineAlert severity="info" sx={{ mt: 1 }}>
-                        {health.queueJobCount} jobs in queue
+                        {t('health.jobsInQueue', { count: health.queueJobCount })}
                       </InlineAlert>
                     )}
                   </Stack>
                 )}
                 {!healthLoading && !health && (
-                  <Typography color="text.secondary">Unable to load health status</Typography>
+                  <Typography color="text.secondary">{t('health.unavailable')}</Typography>
                 )}
               </Card>
             </motion.div>
@@ -378,7 +380,7 @@ export function AdminDashboardPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, height: 400, overflow: 'auto' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Top Categories
+                  {t('categories.title')}
                 </Typography>
                 {categoriesLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -413,8 +415,10 @@ export function AdminDashboardPage() {
                           }}
                         />
                         <Typography variant="caption" color="text.secondary">
-                          {formatNumber(category.auctionCount)} auctions •{' '}
-                          {formatCurrency(category.revenue)}
+                          {t('categories.auctions', {
+                            count: category.auctionCount,
+                          })}{' '}
+                          • {formatCurrency(category.revenue)}
                         </Typography>
                       </Box>
                     ))}
@@ -422,7 +426,7 @@ export function AdminDashboardPage() {
                 )}
                 {!categoriesLoading && (!categories || categories.length === 0) && (
                   <Typography color="text.secondary" sx={{ mt: 2 }}>
-                    No category data available
+                    {t('user.noCategoryData')}
                   </Typography>
                 )}
               </Card>
@@ -433,7 +437,7 @@ export function AdminDashboardPage() {
             <motion.div variants={staggerItem}>
               <Card sx={{ p: 3, height: 400, overflow: 'auto' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Recent Activity
+                  {t('activity.title')}
                 </Typography>
                 {activityLoading && (
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -466,7 +470,9 @@ export function AdminDashboardPage() {
                               </Typography>
                             </Box>
                           }
-                          secondary={new Date(activity.timestamp).toLocaleString()}
+                          secondary={new Date(activity.timestamp).toLocaleString(
+                            getCurrentLocale()
+                          )}
                         />
                       </ListItem>
                     ))}
@@ -474,7 +480,7 @@ export function AdminDashboardPage() {
                 )}
                 {!activityLoading && (!activityData || activityData.length === 0) && (
                   <Typography color="text.secondary" sx={{ mt: 2 }}>
-                    No recent activity
+                    {t('activity.noActivity')}
                   </Typography>
                 )}
               </Card>
@@ -488,12 +494,12 @@ export function AdminDashboardPage() {
               <motion.div variants={staggerItem}>
                 <Card sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Auction Metrics
+                    {t('metrics.auctions')}
                   </Typography>
                   <Stack spacing={1.5} sx={{ mt: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Live Auctions
+                        {t('metrics.liveAuctions')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.auctions.liveAuctions)}
@@ -501,7 +507,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Success Rate
+                        {t('metrics.successRate')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatPercentage(analytics.auctions.successRate)}
@@ -509,7 +515,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Avg. Final Price
+                        {t('metrics.avgFinalPrice')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatCurrency(analytics.auctions.averageFinalPrice)}
@@ -517,7 +523,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Ending Today
+                        {t('metrics.endingToday')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.auctions.auctionsEndingToday)}
@@ -532,12 +538,12 @@ export function AdminDashboardPage() {
               <motion.div variants={staggerItem}>
                 <Card sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Bid Metrics
+                    {t('metrics.bids')}
                   </Typography>
                   <Stack spacing={1.5} sx={{ mt: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Total Bids
+                        {t('metrics.totalBids')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.bids.totalBids)}
@@ -545,7 +551,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Bids Today
+                        {t('metrics.bidsToday')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.bids.bidsToday)}
@@ -553,7 +559,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Unique Bidders
+                        {t('metrics.uniqueBidders')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.bids.uniqueBidders)}
@@ -561,7 +567,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Avg. Bid Amount
+                        {t('metrics.avgBidAmount')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatCurrency(analytics.bids.averageBidAmount)}
@@ -576,12 +582,12 @@ export function AdminDashboardPage() {
               <motion.div variants={staggerItem}>
                 <Card sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    User Metrics
+                    {t('metrics.users')}
                   </Typography>
                   <Stack spacing={1.5} sx={{ mt: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Total Users
+                        {t('metrics.totalUsers')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.users.totalUsers)}
@@ -589,7 +595,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        New Today
+                        {t('metrics.newToday')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.users.newUsersToday)}
@@ -597,7 +603,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Sellers / Buyers
+                        {t('metrics.sellersBuyers')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatNumber(analytics.users.totalSellers)} /{' '}
@@ -606,7 +612,7 @@ export function AdminDashboardPage() {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Retention Rate
+                        {t('metrics.retentionRate')}
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
                         {formatPercentage(analytics.users.userRetentionRate)}

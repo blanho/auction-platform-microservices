@@ -1,14 +1,24 @@
-import axios from 'axios'
-import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
-import { getAccessToken, setAccessToken, clearAuthStorage } from '@/modules/auth/utils/token.utils'
+import i18n, { getBackendCulture } from '@/i18n'
 import { getCsrfToken } from '@/modules/auth/utils/csrf.utils'
+import { clearAuthStorage, getAccessToken, setAccessToken } from '@/modules/auth/utils/token.utils'
+import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '')
 const MAX_RETRIES = 3
 const RETRY_DELAY_MS = 1000
 
 let isRefreshing = false
 let refreshSubscribers: ((token: string | null) => void)[] = []
+
+export function getApiUrl(path: string): string {
+  return `${API_BASE_URL}/${path.replace(/^\/+/, '')}`
+}
+
+interface RetryableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean
+  _retryCount?: number
+}
 
 function subscribeTokenRefresh(callback: (token: string | null) => void) {
   refreshSubscribers.push(callback)
@@ -27,7 +37,7 @@ function isRetryableError(error: AxiosError): boolean {
   return status >= 500 || status === 408 || status === 429
 }
 
-function shouldRetry(config: InternalAxiosRequestConfig & { _retryCount?: number }): boolean {
+function shouldRetry(config: RetryableRequestConfig): boolean {
   const method = config.method?.toUpperCase()
   const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(method || '')
   const retryCount = config._retryCount || 0
@@ -54,12 +64,16 @@ class HttpService {
     this.setupInterceptors()
   }
 
-  private setupInterceptors() {
+  private setupInterceptors(): void {
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = getAccessToken()
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`
+        }
+
+        if (config.headers) {
+          config.headers['Accept-Language'] = getBackendCulture()
         }
 
         const method = config.method?.toUpperCase()
@@ -78,10 +92,7 @@ class HttpService {
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & {
-          _retry?: boolean
-          _retryCount?: number
-        }
+        const originalRequest: RetryableRequestConfig | undefined = error.config
 
         if (!originalRequest) {
           return Promise.reject(error)
@@ -103,13 +114,13 @@ class HttpService {
           }
 
           if (isRefreshing) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
               subscribeTokenRefresh((token) => {
                 if (token) {
                   originalRequest.headers.Authorization = `Bearer ${token}`
                   resolve(this.client(originalRequest))
                 } else {
-                  resolve(Promise.reject(error))
+                  reject(error)
                 }
               })
             })
@@ -122,7 +133,10 @@ class HttpService {
             const response = await axios.post<{ accessToken: string; expiresIn: number }>(
               `${API_BASE_URL}/auth/refresh`,
               {},
-              { withCredentials: true }
+              {
+                withCredentials: true,
+                headers: { 'Accept-Language': getBackendCulture() },
+              }
             )
             const { accessToken, expiresIn } = response.data
             setAccessToken(accessToken, expiresIn)
@@ -177,53 +191,29 @@ class HttpService {
 
 export const http = new HttpService()
 
-export interface ProblemDetails {
-  type?: string
-  title?: string
-  status?: number
-  detail?: string
-  instance?: string
-  errors?: Record<string, string[]>
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export interface ApiError {
-  message: string
-  code: string
-  details?: Record<string, string[]>
-}
-
-export function isApiError(error: unknown): error is AxiosError<ApiError | ProblemDetails> {
-  return axios.isAxiosError(error)
+export function isApiError(error: unknown): error is AxiosError<Record<string, unknown>> {
+  return axios.isAxiosError(error) && isRecord(error.response?.data)
 }
 
 export function getErrorMessage(error: unknown): string {
   if (isApiError(error) && error.response?.data) {
-    const data = error.response.data as ApiError | ProblemDetails
-    if ('message' in data && data.message) {
+    const data = error.response.data
+    if (typeof data.message === 'string' && data.message) {
       return data.message
     }
-    if ('detail' in data && data.detail) {
+    if (typeof data.detail === 'string' && data.detail) {
       return data.detail
     }
-    if ('title' in data && data.title) {
+    if (typeof data.title === 'string' && data.title) {
       return data.title
     }
   }
   if (error instanceof Error) {
     return error.message
   }
-  return 'An unexpected error occurred'
-}
-
-export function getValidationErrors(error: unknown): Record<string, string[]> | null {
-  if (isApiError(error) && error.response?.data) {
-    const data = error.response.data as ApiError | ProblemDetails
-    if ('details' in data && data.details) {
-      return data.details
-    }
-    if ('errors' in data && data.errors) {
-      return data.errors
-    }
-  }
-  return null
+  return i18n.t('errors.unexpected')
 }

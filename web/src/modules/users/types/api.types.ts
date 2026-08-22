@@ -13,10 +13,6 @@ export interface ChangePasswordRequest {
   confirmPassword: string
 }
 
-export interface BecomeSellerRequest {
-  acceptTerms: boolean
-}
-
 export interface UserFilters extends QueryParameters {
   search?: string
   role?: string
@@ -26,9 +22,4 @@ export interface UserFilters extends QueryParameters {
 
 export interface UpdateUserRolesRequest {
   roles: string[]
-}
-
-export interface SuspendUserRequest {
-  id: string
-  reason: string
 }

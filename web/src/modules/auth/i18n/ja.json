@@ -11,7 +11,20 @@
     "signUp": "アカウント作成",
     "orContinueWith": "または",
     "google": "Googleで続ける",
-    "facebook": "Facebookで続ける"
+    "facebook": "Facebookで続ける",
+    "heroTitleLine1": "希少で",
+    "heroTitleLine2": "特別な逸品を発見",
+    "heroDescription": "世界中の信頼できる出品者から、真贋確認済みの高級品を探すコレクターの輪に加わりましょう。",
+    "stats": {
+      "itemsSold": "販売済み商品",
+      "trustedSellers": "信頼できる出品者",
+      "authenticityRate": "真贋確認率"
+    },
+    "session": {
+      "expired": "セッションの有効期限が切れました。もう一度ログインしてください。",
+      "security": "不審なアクティビティが検出されたため、セッションを終了し、すべての端末からログアウトしました。再度ログインし、パスワードの変更をご検討ください。",
+      "logout": "ログアウトしました。"
+    }
   },
 
   "register": {
@@ -32,7 +45,15 @@
     "confirmationSent": "確認リンクを送信しました：",
     "verifyEmailInstruction": "メール内のリンクをクリックして、アカウントを確認し登録を完了してください。",
     "goToLogin": "ログインへ",
-    "didntReceiveEmail": "メールが届きませんか？"
+    "didntReceiveEmail": "メールが届きませんか？",
+    "heroTitleLine1": "今日から",
+    "heroTitleLine2": "コレクションを始めよう",
+    "heroDescription": "コレクターコミュニティに参加し、世界中の特別な逸品を見つけましょう。",
+    "features": {
+      "exclusiveAuctions": "限定オークションに参加",
+      "verifiedSellers": "確認済みの出品者と商品",
+      "securePayments": "安全な決済保護"
+    }
   },
 
   "forgotPassword": {
@@ -45,7 +66,9 @@
     "resetInstructionsSent": "パスワードリセットの手順を送信しました：",
     "checkSpam": "メールが届かない場合は、迷惑メールフォルダをご確認ください。",
     "tryDifferentEmail": "別のメールアドレスを試す",
-    "rememberPassword": "パスワードを思い出しましたか？"
+    "rememberPassword": "パスワードを思い出しましたか？",
+    "heroTitle": "パスワードの復旧",
+    "heroDescription": "安全にアカウントへのアクセスを取り戻せるようお手伝いします。"
   },
 
   "resetPassword": {
@@ -61,7 +84,16 @@
     "invalidLink": "無効なリセットリンク",
     "invalidLinkMessage": "このパスワードリセットリンクは無効か、有効期限が切れています。新しいリンクをリクエストしてください。",
     "requestNewLink": "新しいリンクをリクエスト",
-    "backToLogin": "← ログインに戻る"
+    "backToLogin": "← ログインに戻る",
+    "heroTitle": "新しいパスワードを作成",
+    "heroDescription": "強力なパスワードを設定してアカウントを保護してください。",
+    "requirements": {
+      "minLength": "8文字以上",
+      "uppercase": "英大文字を1文字以上",
+      "lowercase": "英小文字を1文字以上",
+      "number": "数字を1文字以上",
+      "special": "特殊文字を1文字以上"
+    }
   },
 
   "confirmEmail": {
@@ -76,7 +108,9 @@
     "resend": "確認メールを再送信",
     "resendSuccess": "確認メールを送信しました！受信トレイをご確認ください。",
     "goToLogin": "ログインへ",
-    "backToLogin": "ログインに戻る"
+    "backToLogin": "ログインに戻る",
+    "welcomeTo": "ようこそ",
+    "heroDescription": "アカウントの確認が完了しました。限定オークションや希少な逸品を探してみましょう。"
   },
 
   "twoFactor": {
@@ -102,7 +136,20 @@
     "passwordRequired": "パスワードは必須です",
     "passwordMinLength": "パスワードは8文字以上で入力してください",
     "passwordMatch": "パスワードが一致しません",
-    "termsRequired": "利用規約に同意する必要があります"
+    "termsRequired": "利用規約に同意する必要があります",
+    "usernameOrEmailRequired": "メールアドレスまたはユーザー名を入力してください",
+    "usernameMinLength": "ユーザー名は{{min}}文字以上で入力してください",
+    "usernameMaxLength": "ユーザー名は{{max}}文字未満で入力してください",
+    "usernameFormat": "ユーザー名には英数字とアンダースコアのみ使用できます",
+    "usernameTaken": "このユーザー名はすでに使用されています",
+    "passwordMin": "パスワードは{{min}}文字以上で入力してください",
+    "passwordMax": "パスワードは{{max}}文字未満で入力してください",
+    "passwordUppercase": "パスワードに英大文字を1文字以上含めてください",
+    "passwordLowercase": "パスワードに英小文字を1文字以上含めてください",
+    "passwordNumber": "パスワードに数字を1文字以上含めてください",
+    "passwordSpecial": "パスワードに特殊文字を1文字以上含めてください",
+    "codeLength": "コードは{{count}}桁で入力してください",
+    "codeNumbersOnly": "コードには数字のみ使用できます"
   },
 
   "errors": {

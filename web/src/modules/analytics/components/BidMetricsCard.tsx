@@ -1,9 +1,9 @@
-import { useTranslation } from 'react-i18next'
-import { Box, Typography, Stack, Skeleton, useTheme, alpha, Divider } from '@mui/material'
-import { People, Gavel, AttachMoney, BarChart, TrendingUp, TrendingDown } from '@mui/icons-material'
-import { useBidMetrics } from '../hooks/useAnalytics'
-import { formatNumber, formatCurrency } from '@/shared/utils/formatters'
 import { palette } from '@/shared/theme/tokens'
+import { formatCurrency, formatNumber } from '@/shared/utils/formatters'
+import { AttachMoney, BarChart, Gavel, People, TrendingDown, TrendingUp } from '@mui/icons-material'
+import { alpha, Box, Divider, Skeleton, Stack, Typography, useTheme } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { useBidMetrics } from '../hooks/useAnalytics'
 
 interface MetricItemProps {
   icon: React.ReactNode

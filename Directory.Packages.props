@@ -17,7 +17,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.13" />
-    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="9.0.13" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
   <!-- ========================================================================
@@ -71,7 +71,7 @@
        Validation / Mapping / API
        ======================================================================== -->
   <ItemGroup>
-    <PackageVersion Include="AutoMapper" Version="13.0.1" />
+    <PackageVersion Include="AutoMapper" Version="15.1.3" />
     <PackageVersion Include="Carter" Version="8.2.1" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
@@ -79,7 +79,7 @@
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.2.0" />
-    <PackageVersion Include="HtmlSanitizer" Version="9.0.889" />
+    <PackageVersion Include="HtmlSanitizer" Version="9.1.974" />
   </ItemGroup>
   <!-- ========================================================================
        Observability (Serilog + OpenTelemetry)

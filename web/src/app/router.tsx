@@ -1,9 +1,9 @@
-import { lazy, Suspense, type ComponentType } from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { GuestRoute } from '@/shared/components/auth/GuestRoute'
+import { ProtectedRoute } from '@/shared/components/auth/ProtectedRoute'
 import { LandingLayout } from '@/shared/components/layouts/LandingLayout'
 import { LoadingScreen } from '@/shared/ui/LoadingScreen'
-import { ProtectedRoute } from '@/shared/components/auth/ProtectedRoute'
-import { GuestRoute } from '@/shared/components/auth/GuestRoute'
+import { lazy, Suspense, type ComponentType } from 'react'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 const LandingPage = lazy(() =>
   import('@/modules/home/pages/LandingPage').then((m) => ({
@@ -192,12 +192,6 @@ const TransactionDetailPage = lazy(() =>
     default: m.TransactionDetailPage,
   }))
 )
-const PaymentMethodsPage = lazy(() =>
-  import('@/modules/payments/pages/PaymentMethodsPage').then((m) => ({
-    default: m.PaymentMethodsPage,
-  }))
-)
-
 const CategoriesManagementPage = lazy(() =>
   import('@/modules/auctions/pages/CategoriesManagementPage').then((m) => ({
     default: m.CategoriesManagementPage,
@@ -342,10 +336,6 @@ export const router = createBrowserRouter([
       {
         path: '/wallet/transactions/:transactionId',
         element: <ProtectedRoute>{withSuspense(TransactionDetailPage)}</ProtectedRoute>,
-      },
-      {
-        path: '/wallet/payment-methods',
-        element: <ProtectedRoute>{withSuspense(PaymentMethodsPage)}</ProtectedRoute>,
       },
       {
         path: '/become-seller',

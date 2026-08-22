@@ -1,6 +1,6 @@
 namespace Bidding.Application.Features.AutoBids.GetAutoBid;
 
-public record GetAutoBidQuery(Guid AutoBidId) : IQuery<AutoBidDetailDto?>;
+public record GetAutoBidQuery(Guid AutoBidId, Guid UserId) : IQuery<AutoBidDetailDto?>;
 
 public record AutoBidDetailDto
 {

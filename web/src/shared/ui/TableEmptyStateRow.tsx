@@ -1,6 +1,6 @@
 import { Box, Stack, TableCell, TableRow, Typography } from '@mui/material'
-import type { ReactNode } from 'react'
 import type { SxProps, Theme } from '@mui/material/styles'
+import type { ReactNode } from 'react'
 
 interface TableEmptyStateRowProps {
   colSpan: number

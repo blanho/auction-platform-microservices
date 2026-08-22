@@ -1,62 +1,66 @@
+import type { TFunction } from 'i18next'
 import { z } from 'zod'
 
-const baseCreateAuctionSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title too long'),
-  description: z
-    .string()
-    .min(10, 'Description must be at least 10 characters')
-    .max(2000, 'Description too long'),
-  categoryId: z.string().min(1, 'Please select a category'),
-  brandId: z.string().optional(),
-  condition: z.string().max(50, 'Condition must be 50 characters or less').optional(),
-  yearManufactured: z
-    .number()
-    .min(1900)
-    .max(new Date().getFullYear() + 1)
-    .optional(),
-  reservePrice: z.number().min(0, 'Reserve price must be at least $0'),
-  buyNowPrice: z.number().optional(),
-  auctionEnd: z.string().min(1, 'Auction end time is required'),
-  currency: z.string().max(3, 'Currency must be a valid 3-letter code').optional().default('USD'),
-  isFeatured: z.boolean().optional().default(false),
-})
+const createBaseAuctionSchema = (t: TFunction<'auctions'>) =>
+  z.object({
+    title: z.string().min(3, t('validation.titleMin')).max(200, t('validation.titleMax')),
+    description: z
+      .string()
+      .min(10, t('validation.descriptionMinCreate'))
+      .max(2000, t('validation.descriptionMax')),
+    categoryId: z.string().min(1, t('validation.categoryRequired')),
+    brandId: z.string().optional(),
+    condition: z.string().max(50, t('validation.conditionMax')).optional(),
+    yearManufactured: z
+      .number()
+      .min(1900)
+      .max(new Date().getFullYear() + 1)
+      .optional(),
+    reservePrice: z.number().min(0, t('validation.reservePriceMin')),
+    buyNowPrice: z.number().optional(),
+    auctionEnd: z.string().min(1, t('validation.auctionEndRequired')),
+    currency: z.string().max(3, t('validation.currencyCode')).optional().default('USD'),
+    isFeatured: z.boolean().optional().default(false),
+  })
 
-export const createAuctionSchema = baseCreateAuctionSchema
-  .refine(
-    (data) => {
-      if (data.buyNowPrice && data.buyNowPrice <= data.reservePrice) {
-        return false
+export const createAuctionSchema = (t: TFunction<'auctions'>) =>
+  createBaseAuctionSchema(t)
+    .refine(
+      (data) => {
+        if (data.buyNowPrice && data.buyNowPrice <= data.reservePrice) {
+          return false
+        }
+        return true
+      },
+      {
+        message: t('validation.buyNowGreater'),
+        path: ['buyNowPrice'],
       }
-      return true
-    },
-    {
-      message: 'Buy now price must be greater than reserve price',
-      path: ['buyNowPrice'],
-    }
-  )
-  .refine(
-    (data) => {
-      const end = new Date(data.auctionEnd)
-      const now = new Date()
-      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000) // Backend requires +1 hour
-      return end > oneHourFromNow
-    },
-    {
-      message: 'Auction end time must be at least 1 hour in the future',
-      path: ['auctionEnd'],
-    }
-  )
+    )
+    .refine(
+      (data) => {
+        const end = new Date(data.auctionEnd)
+        const now = new Date()
+        const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000) // Backend requires +1 hour
+        return end > oneHourFromNow
+      },
+      {
+        message: t('validation.auctionEndFuture'),
+        path: ['auctionEnd'],
+      }
+    )
 
-export const updateAuctionSchema = z.object({
-  title: z.string().min(10, 'Title must be at least 10 characters').max(200, 'Title too long'),
-  description: z
-    .string()
-    .min(50, 'Description must be at least 50 characters')
-    .max(2000, 'Description too long'),
-  categoryId: z.string().min(1, 'Please select a category'),
-  condition: z.string().optional(),
-  yearManufactured: z.number().min(1900).max(2100).optional(),
-})
+export const createUpdateAuctionSchema = (t: TFunction<'auctions'>) =>
+  z.object({
+    title: z.string().min(10, t('validation.titleMinUpdate')).max(200, t('validation.titleMax')),
+    description: z
+      .string()
+      .min(50, t('validation.descriptionMinUpdate'))
+      .max(2000, t('validation.descriptionMax')),
+    categoryId: z.string().min(1, t('validation.categoryRequired')),
+    condition: z.string().optional(),
+    yearManufactured: z.number().min(1900).max(2100).optional(),
+  })
 
-export type CreateAuctionFormData = z.input<typeof baseCreateAuctionSchema>
-export type UpdateAuctionFormData = z.infer<typeof updateAuctionSchema>
+export type CreateAuctionFormData = z.input<ReturnType<typeof createBaseAuctionSchema>>
+export type UpdateAuctionFormData = z.infer<ReturnType<typeof createUpdateAuctionSchema>>

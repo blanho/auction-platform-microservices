@@ -42,7 +42,7 @@ builder.Services.AddCommonUtilities();
 builder.Services.AddAppLocalization<NotificationResources>();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
-builder.Services.AddAutoMapper(applicationAssembly);
+builder.Services.AddAutoMapper(_ => { }, applicationAssembly);
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);

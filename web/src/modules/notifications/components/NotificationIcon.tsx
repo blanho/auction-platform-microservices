@@ -1,11 +1,11 @@
 import {
-  Notifications,
-  Gavel,
-  EmojiEvents,
-  TrendingDown,
-  Payment,
   AccessTime,
   Campaign,
+  EmojiEvents,
+  Gavel,
+  Notifications,
+  Payment,
+  TrendingDown,
 } from '@mui/icons-material'
 import { Box } from '@mui/material'
 import type { NotificationType } from '../types'

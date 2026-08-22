@@ -42,7 +42,7 @@ namespace Auctions.Api.Extensions.DependencyInjection
                         npgsqlOptions.CommandTimeout(30);
                     })
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddAutoMapper(_ => { }, AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<AuctionRepository>();
             services.AddScoped(sp =>

@@ -44,6 +44,14 @@
   "createAccount": "アカウント作成",
   "backToTop": "トップへ戻る",
   "backToSite": "サイトへ戻る",
+  "language": {
+    "change": "言語を変更",
+    "en": "英語",
+    "ja": "日本語"
+  },
+  "theme": {
+    "toggle": "カラーテーマを切り替え"
+  },
   "nav": {
     "home": "ホーム",
     "auctions": "オークション",
@@ -62,7 +70,8 @@
     "logout": "ログアウト",
     "categories": "カテゴリー",
     "howItWorks": "使い方",
-    "sell": "出品"
+    "sell": "出品",
+    "openMenu": "ナビゲーションメニューを開く"
   },
   "validation": {
     "required": "この項目は必須です",
@@ -71,7 +80,12 @@
     "maxLength": "{{max}}文字以内で入力してください",
     "passwordMatch": "パスワードが一致しません",
     "invalidFormat": "形式が正しくありません",
-    "invalidEmail": "有効なメールアドレスを入力してください"
+    "invalidEmail": "有効なメールアドレスを入力してください",
+    "validNumber": "有効な数値を入力してください",
+    "boolean": "true または false を入力してください",
+    "validEmail": "有効なメールアドレスを入力してください",
+    "validUrl": "有効なURLを入力してください",
+    "validJson": "有効なJSONを入力してください"
   },
   "time": {
     "now": "たった今",
@@ -150,7 +164,8 @@
     "defaultMessage": "予期しないエラーが発生しました。もう一度お試しください。",
     "loginFailed": "ログインに失敗しました",
     "twoFactorFailed": "二要素認証に失敗しました",
-    "registrationFailed": "登録に失敗しました"
+    "registrationFailed": "登録に失敗しました",
+    "unexpected": "予期しないエラーが発生しました"
   },
   "emptyState": {
     "default": {
@@ -222,21 +237,6 @@
     "home": "ホーム",
     "sale": "セール"
   },
-  "megaMenu": {
-    "byCategory": "カテゴリー別",
-    "byStatus": "ステータス別",
-    "priceRange": "価格帯",
-    "endingToday": "本日終了",
-    "endingThisWeek": "今週終了",
-    "newlyListed": "新規出品",
-    "noReserve": "最低落札価格なし",
-    "buyNowAvailable": "即決可能",
-    "under500": "$500以下",
-    "range500to2000": "$500 - $2,000",
-    "range2000to10000": "$2,000 - $10,000",
-    "over10000": "$10,000以上",
-    "viewAll": "{{label}}をすべて見る →"
-  },
   "actions": {
     "cancel": "キャンセル",
     "save": "保存",
@@ -250,6 +250,8 @@
     "next": "次へ",
     "close": "閉じる",
     "search": "検索",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示",
     "retry": "再試行",
     "remove": "削除",
     "loadMore": "もっと読み込む",
@@ -266,15 +268,19 @@
     "endsIn": "終了まで{{time}}",
     "auctionEnded": "オークション終了",
     "yourBid": "入札額",
-    "minimumBidError": "最低入札額は${{amount}}です",
+    "minimumBidError": "最低入札額は{{amount}}です",
     "placeBid": "入札する",
     "placingBid": "入札中...",
-    "buyNow": "今すぐ購入 — ${{amount}}",
-    "autoBidActive": "自動入札有効 (上限: ${{amount}})",
+    "buyNow": "今すぐ購入 — {{amount}}",
+    "autoBidActive": "自動入札有効 (上限: {{amount}})",
     "setUpAutoBid": "自動入札を設定",
     "auctionEndedInfo": "このオークションは終了しました。",
     "biddingTerms": "入札することで、利用規約に同意したことになります。すべての入札は拘束力を持ちます。",
-    "orMore": "${{amount}}以上"
+    "orMore": "{{amount}}以上",
+    "bidPlacedSuccess": "{{amount}}で入札しました。",
+    "noBidsYet": "まだ入札はありません",
+    "highestBidder": "{{amount}}であなたが最高入札者です。",
+    "outbid": "他の入札者が上回りました。あなたの入札額は{{amount}}です。"
   },
   "seller": {
     "information": "出品者情報",
@@ -360,8 +366,11 @@
   "twoFactor": {
     "title": "二要素認証",
     "enabled": "有効",
+    "disabled": "無効",
     "disableWarning": "2FAを無効にするとアカウントのセキュリティが低下します。他のセキュリティ対策が整っていることを確認してください。",
     "enterCode": "認証アプリのコードを入力",
+    "enterPassword": "現在のパスワードを入力",
+    "invalidPassword": "パスワードが正しくありません。もう一度お試しください。",
     "invalidCode": "無効な確認コードです。もう一度お試しください。",
     "disable": "2FAを無効化",
     "setupTitle": "二要素認証を設定",
@@ -377,8 +386,10 @@
     "enterVerificationCodeDesc": "アプリからコードで設定を確認",
     "continue": "続ける",
     "cantScan": "スキャンできませんか？このキーを手動で入力:",
+    "manualSetupOnly": "認証アプリにセットアップキーを手動で入力してください。",
     "copied": "コピーしました！",
     "copy": "コピー",
+    "copyFailed": "コピーできませんでした。もう一度お試しください。",
     "scannedCode": "スキャンしました",
     "verifyEnable": "確認して有効化",
     "setupFailed": "2FA設定の生成に失敗しました。もう一度お試しください。",
@@ -391,7 +402,11 @@
     "reset": "2FAをリセット",
     "resetting": "リセット中...",
     "disabling": "無効化中...",
-    "notEnabled": "このユーザーは二要素認証を有効にしていません。"
+    "notEnabled": "このユーザーは二要素認証を有効にしていません。",
+    "recoveryInstructions": "リカバリーコードを安全な場所に保存してください。端末を紛失した場合に、アカウントへのアクセスに使用できます。",
+    "done": "完了",
+    "qrCodeAlt": "二要素認証用QRコード",
+    "verificationCode": "認証コード"
   },
   "autoBid": {
     "title": "自動入札設定",
@@ -421,6 +436,7 @@
     "emptyDesc": "入札やオークションに関する通知がここに表示されます"
   },
   "userManagement": {
+    "user": "ユーザー",
     "activateTitle": "ユーザーを有効化",
     "activateMessage": "{{name}}を有効化しますか？これによりユーザーは再びプラットフォームにアクセスできるようになります。",
     "activateButton": "ユーザーを有効化",
@@ -442,7 +458,6 @@
     "suspending": "停止中...",
     "suspendButton": "ユーザーを停止",
     "twoFactorTitle": "二要素認証",
-    "user": "ユーザー",
     "removeSuspension": "停止を解除",
     "suspendUser": "ユーザーを停止",
     "deactivateUser": "ユーザーを無効化",
@@ -457,7 +472,8 @@
     "noUsersTitle": "ユーザーが見つかりません",
     "noUsersDescription": "検索条件やフィルターを調整してみてください",
     "editUser": "ユーザーを編集",
-    "sendEmail": "メールを送信"
+    "sendEmail": "メールを送信",
+    "status": { "suspended": "利用停止中", "active": "有効", "inactive": "無効" }
   },
   "rolePermissions": {
     "noDescription": "説明なし",
@@ -528,12 +544,18 @@
     "maxSize": "最大{{size}}MB / ファイル · {{remaining}} / {{max}}スロット残り",
     "uploadFailed": "アップロード失敗",
     "uploadedFiles_one": "アップロードされたファイル ({{count}})",
-    "uploadedFiles_other": "アップロードされたファイル ({{count}})"
-  },
-  "searchBar": {
-    "placeholder": "オークション、カテゴリー、出品者を検索...",
-    "recentSearches": "最近の検索",
-    "trending": "トレンド"
+    "uploadedFiles_other": "アップロードされたファイル ({{count}})",
+    "uploadedFile": "アップロード済みファイル",
+    "cover": "カバー",
+    "image": "画像",
+    "document": "ドキュメント",
+    "coverPhoto": "カバー画像",
+    "setCoverPhoto": "カバー画像に設定",
+    "currentCoverPhoto": "現在のカバー画像",
+    "setFileAsCover": "{{fileName}}をカバー画像に設定",
+    "file": "ファイル",
+    "removeFile": "ファイルを削除",
+    "removeNamedFile": "{{fileName}}を削除"
   },
   "promo": {
     "liveNow": "ライブ中: {{title}}",

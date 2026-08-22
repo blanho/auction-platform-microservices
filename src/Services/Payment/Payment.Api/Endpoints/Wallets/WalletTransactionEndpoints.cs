@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Carter;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Application.Constants;
@@ -18,7 +19,7 @@ public class WalletTransactionEndpoints : ICarterModule
     {
         var group = app.MapGroup("/api/v1/wallets")
             .WithTags("Wallet Transactions")
-            .RequireAuthorization(new RequirePermissionAttribute(Permissions.Wallets.View));
+            .RequireAuthorization();
 
         group.MapGet("/{username}/transactions", GetTransactions)
             .WithName("GetWalletTransactions")
@@ -33,10 +34,16 @@ public class WalletTransactionEndpoints : ICarterModule
         string username,
         int page,
         int pageSize,
+        ClaimsPrincipal user,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
+        var authenticatedUsername = UserHelper.GetUsername(user);
+        if (!string.Equals(authenticatedUsername, username, StringComparison.OrdinalIgnoreCase) &&
+            !user.HasPermission(Permissions.Wallets.View))
+            return Results.Forbid();
+
         var effectivePage = page > 0 ? page : PaginationDefaults.DefaultPage;
         var effectivePageSize = pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize;
 
@@ -59,11 +66,19 @@ public class WalletTransactionEndpoints : ICarterModule
 
     private static async Task<IResult> GetTransaction(
         Guid id,
+        ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new GetTransactionByIdQuery { TransactionId = id }, cancellationToken);
 
-        return result.ToOkResult();
+        return result.ToApiResult(transaction =>
+        {
+            var authenticatedUsername = UserHelper.GetUsername(user);
+            return string.Equals(authenticatedUsername, transaction.Username, StringComparison.OrdinalIgnoreCase) ||
+                   user.HasPermission(Permissions.Wallets.View)
+                ? Results.Ok(transaction)
+                : Results.Forbid();
+        });
     }
 }

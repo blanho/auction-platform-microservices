@@ -40,6 +40,11 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
+        if (order.SellerId != request.SellerId && !request.CanManageAll)
+        {
+            return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
+        }
+
         if (order.PaymentStatus != PaymentStatus.Completed)
         {
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotPaidById(request.OrderId));
@@ -77,7 +82,7 @@ public class ShipOrderCommandHandler : ICommandHandler<ShipOrderCommand, OrderDt
             oldOrderData,
             new Dictionary<string, object>
             {
-                [AuditMetadataKeys.Action] = WalletDefaults.Audit.Shipped,
+                [AuditMetadataKeys.Action] = OrderAuditActions.Shipped,
                 [AuditMetadataKeys.TrackingNumber] = request.TrackingNumber ?? string.Empty,
                 [AuditMetadataKeys.ShippingCarrier] = request.ShippingCarrier ?? string.Empty
             },
