@@ -1,6 +1,6 @@
 using BuildingBlocks.Domain.Authorization;
+using BuildingBlocks.Domain.Exceptions;
 using BuildingBlocks.Infrastructure.Authorization;
-using BuildingBlocks.Web.Exceptions;
 using Identity.Domain.Entities;
 
 namespace Identity.Infrastructure.Persistence.Repositories;
@@ -202,7 +202,7 @@ public class AuthorizationRepository : IAuthorizationRepository
 
         if (role is null)
         {
-            throw new NotFoundException($"Role '{roleName}' not found");
+            throw new EntityNotFoundException("Role", roleName);
         }
 
         var existingAssignment = await _context.AppUserRoles

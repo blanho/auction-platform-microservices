@@ -1,3 +1,4 @@
+using Notification.Domain.Entities;
 using IdentityService.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
@@ -41,35 +42,35 @@ public class TwoFactorDisabledConsumer : IConsumer<TwoFactorDisabledEvent>
             message.UserId,
             message.Username);
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
-        var template = await _templateRepo.GetByKeyAsync("2fa-disabled", ct);
+        var template = await _templateRepo.GetByKeyAsync(NotificationTemplateKeys.TwoFactorDisabled, ct);
         if (template == null || !template.IsActive)
         {
             _logger.LogWarning("Template '2fa-disabled' not found or inactive");
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "Email", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.Email, ct: ct);
         if (lockHandle == null) return;
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
         var data = new Dictionary<string, string>
         {
-            ["username"] = message.Username,
-            ["disabledAt"] = message.DisabledAt.ToString("f")
+            [NotificationTemplateDataKeys.Username] = message.Username,
+            [NotificationTemplateDataKeys.DisabledAt] = message.DisabledAt.ToString("f")
         };
 
         var subject = TemplateHelper.RenderTemplate(template.Subject ?? "Two-Factor Authentication Disabled", data);
         var body = TemplateHelper.RenderTemplate(template.Body, data);
 
-        var record = Notification.Domain.Entities.NotificationRecord.Create(
+        var record = NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
-            "2fa-disabled",
-            "Email",
+            NotificationTemplateKeys.TwoFactorDisabled,
+            NotificationChannelNames.Email,
             subject,
             message.Email);
 
@@ -80,12 +81,12 @@ public class TwoFactorDisabledConsumer : IConsumer<TwoFactorDisabledEvent>
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                await _idempotency.MarkAsProcessedAsync(eventId, "Email", result.MessageId, ct: ct);
+                await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.Email, result.MessageId, ct: ct);
                 _logger.LogInformation("2FA disabled notification sent to {Email}", message.Email);
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }

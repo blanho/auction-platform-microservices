@@ -79,4 +79,5 @@
   <data name="External.UnlinkFailed" xml:space="preserve"><value>外部アカウントの連携解除に失敗しました。</value></data>
   <data name="External.CannotUnlinkLastLogin" xml:space="preserve"><value>唯一のログイン方法を解除することはできません。</value></data>
   <data name="External.ProcessFailed" xml:space="preserve"><value>外部ログインの処理に失敗しました。</value></data>
+  <data name="Identity.ValidationFailed" xml:space="preserve"><value>ユーザー情報の検証に失敗しました。</value></data>
 </root>

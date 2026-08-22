@@ -15,13 +15,41 @@ public static class AnalyticsEventTypes
 
 public static class AnalyticsAuctionStatuses
 {
+    public const string Active = "Active";
     public const string Live = "Live";
+    public const string Pending = "Pending";
+    public const string Scheduled = "Scheduled";
+    public const string Cancelled = "Cancelled";
     public const string Sold = "Sold";
     public const string Ended = "Ended";
     public const string Created = "Created";
     public const string Shipped = "Shipped";
     public const string Delivered = "Delivered";
     public const string Paid = "Paid";
+}
+
+public static class AnalyticsPaymentStatuses
+{
+    public const string Pending = "Pending";
+}
+
+public static class AnalyticsEntityTypes
+{
+    public const string Auction = "Auction";
+}
+
+public static class AnalyticsPeriods
+{
+    public const string Day = "day";
+    public const string Week = "week";
+    public const string Month = "month";
+    public const string Quarter = "quarter";
+    public const string Year = "year";
+    public const string All = "all";
+    public const string SevenDays = "7d";
+    public const string ThirtyDays = "30d";
+    public const string NinetyDays = "90d";
+    public const string OneYear = "1y";
 }
 
 public static class AnalyticsBidStatuses
@@ -40,10 +68,9 @@ public static class AnalyticsDefaults
     public const int DefaultDays = 30;
     public const int MaxDays = 365;
     public const int DefaultLimit = 10;
-    public const string DefaultPeriod = "week";
-    public const string DefaultGranularity = "day";
-    
-    // String Lengths
+    public const string DefaultPeriod = AnalyticsPeriods.Week;
+    public const string DefaultGranularity = AnalyticsPeriods.Day;
+
     public const int UsernameLength = 50;
     public const int CategoryLength = 100;
     public const int DescriptionLength = 1000;
@@ -56,7 +83,6 @@ public static class AnalyticsDefaults
     public const int TypeLength = 50;
     public const int KeyLength = 100;
     public const int ValueLength = 2000;
-
 
     public static class Messaging
     {

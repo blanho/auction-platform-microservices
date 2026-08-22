@@ -1,9 +1,9 @@
+using DomainConcurrencyException = BuildingBlocks.Domain.Exceptions.ConcurrencyException;
 using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using Auctions.Application.DTOs;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using BuildingBlocks.Application.Constants;
 using Auctions.Domain.Enums;
 using Auctions.Domain.Constants;
 using Microsoft.Extensions.Logging;
@@ -87,13 +87,10 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 AuctionAuditData.FromAuction(auction),
                 AuditAction.Updated,
                 oldAuctionData,
-                new Dictionary<string, object>
-                {
-                    [AuditMetadataKeys.Action] = AuctionDefaults.Audit.BuyNow,
-                    [AuditMetadataKeys.BuyerId] = request.BuyerId,
-                    [AuditMetadataKeys.BuyerUsername] = request.BuyerUsername,
-                    [AuditMetadataKeys.Price] = auction.BuyNowPrice!.Value
-                },
+                AuctionAuditMetadata.ForBuyNow(
+                    request.BuyerId,
+                    request.BuyerUsername,
+                    auction.BuyNowPrice!.Value),
                 cancellationToken);
 
             _logger.LogInformation("Buy Now completed for auction {AuctionId}. Price: {Price}",
@@ -109,7 +106,7 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 Success = true
             });
         }
-        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
+        catch (DomainConcurrencyException ex)
         {
             _logger.LogWarning(ex, "Concurrency conflict in BuyNow for auction {AuctionId}", request.AuctionId);
             return Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.ConflictPurchased);

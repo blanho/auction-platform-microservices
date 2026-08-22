@@ -35,10 +35,10 @@ public class ResendConfirmationCommandHandler(
         var token = await userService.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink = EmailLinkHelper.GenerateConfirmationLink(RequiredFrontendUrl, user.Id, token);
 
-        await authHelper.PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "email-confirmation", "Confirm Your Email", new Dictionary<string, string>
+        await authHelper.PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, IdentityDefaults.EmailTemplate.Confirmation, "Confirm Your Email", new Dictionary<string, string>
         {
             [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!,
-            ["confirmationLink"] = confirmationLink
+            [IdentityDefaults.EmailTemplate.ConfirmationLinkKey] = confirmationLink
         });
 
         logger.LogInformation("Confirmation email resent to {Email}", email);

@@ -1,3 +1,5 @@
+using Analytics.Domain.Constants;
+
 namespace Analytics.Application.Helpers;
 
 public static class AnalyticsHelper
@@ -16,10 +18,10 @@ public static class AnalyticsHelper
 
         return timeRange.ToLowerInvariant() switch
         {
-            "7d" or "week" => (now.AddDays(-7), now),
-            "30d" or "month" => (now.AddDays(-30), now),
-            "90d" or "quarter" => (now.AddDays(-90), now),
-            "1y" or "year" => (now.AddYears(-1), now),
+            AnalyticsPeriods.SevenDays or AnalyticsPeriods.Week => (now.AddDays(-7), now),
+            AnalyticsPeriods.ThirtyDays or AnalyticsPeriods.Month => (now.AddDays(-30), now),
+            AnalyticsPeriods.NinetyDays or AnalyticsPeriods.Quarter => (now.AddDays(-90), now),
+            AnalyticsPeriods.OneYear or AnalyticsPeriods.Year => (now.AddYears(-1), now),
             _ => (now.AddDays(-30), now)
         };
     }

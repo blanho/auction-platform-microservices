@@ -70,7 +70,7 @@ export function ForgotPasswordPage() {
       setSentEmail(data.email)
       setEmailSent(true)
     } catch {
-      /* Error handled by mutation */
+      return
     }
   }
 

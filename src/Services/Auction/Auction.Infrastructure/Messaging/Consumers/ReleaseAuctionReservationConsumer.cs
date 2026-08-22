@@ -8,14 +8,14 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
 {
     private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
-    private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<ReleaseAuctionReservationConsumer> _logger;
 
     public ReleaseAuctionReservationConsumer(
         IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
-        BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<ReleaseAuctionReservationConsumer> logger)
     {

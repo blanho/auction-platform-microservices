@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 public record SuspendUserCommand(string UserId, string Reason) : ICommand<AdminUserDto>;
 
 public class SuspendUserCommandHandler(
-    Identity.Application.Features.Users.Helpers.IUserHelper userHelper,
+    Helpers.IUserHelper userHelper,
     ILogger<SuspendUserCommandHandler> logger) : ICommandHandler<SuspendUserCommand, AdminUserDto>
 {
     public async Task<Result<AdminUserDto>> Handle(SuspendUserCommand command, CancellationToken cancellationToken)
@@ -23,7 +23,7 @@ public class SuspendUserCommandHandler(
             user => { user.IsSuspended = true; user.SuspensionReason = command.Reason; user.SuspendedAt = DateTimeOffset.UtcNow; },
             IdentityErrors.User.SuspendFailed,
             (user, _) => new UserSuspendedDomainEvent { UserId = user.Id, Username = user.UserName!, Reason = command.Reason },
-            new Dictionary<string, object> { [BuildingBlocks.Application.Constants.AuditMetadataKeys.ActionLower] = Identity.Domain.Constants.IdentityDefaults.Audit.Suspend, [BuildingBlocks.Application.Constants.AuditMetadataKeys.ReasonLower] = command.Reason },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Suspend, [AuditMetadataKeys.ReasonLower] = command.Reason },
             cancellationToken);
 
         if (result.IsSuccess)

@@ -1,3 +1,4 @@
+using BuildingBlocks.Web.Exceptions;
 using System.Text;
 using BuildingBlocks.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authentication;
@@ -16,8 +17,9 @@ internal static class AuthenticationExtensions
     {
         var identityAuthority = configuration["Identity:IssuerUri"] ?? "http://localhost:5001";
         var secretKey = configuration["Identity:SecretKey"]
-            ?? throw new BuildingBlocks.Web.Exceptions.ConfigurationException("Identity:SecretKey is not configured");
-        var isLocalDevelopment = environment.IsDevelopment() || environment.EnvironmentName == "Local";
+            ?? throw new ConfigurationException("Identity:SecretKey is not configured");
+        var isLocalDevelopment = environment.IsDevelopment() ||
+            environment.EnvironmentName == EnvironmentNameConstants.Local;
 
         var authBuilder = services.AddAuthentication(options =>
             {
@@ -38,8 +40,8 @@ internal static class AuthenticationExtensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                     ClockSkew = TimeSpan.Zero,
-                    NameClaimType = "name",
-                    RoleClaimType = "role"
+                    NameClaimType = AuthClaimTypes.Name,
+                    RoleClaimType = AuthClaimTypes.Role
                 };
             });
 

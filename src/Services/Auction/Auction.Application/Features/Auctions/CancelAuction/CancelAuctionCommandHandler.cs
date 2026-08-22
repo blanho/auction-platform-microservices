@@ -59,11 +59,7 @@ public class CancelAuctionCommandHandler : ICommandHandler<CancelAuctionCommand,
             AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
             oldAuctionData,
-            new Dictionary<string, object>
-            {
-                ["Action"] = "Cancelled",
-                ["Reason"] = request.Reason ?? string.Empty
-            },
+            AuctionAuditMetadata.ForCancellation(request.Reason),
             cancellationToken);
 
         _logger.LogInformation("Auction {AuctionId} cancelled successfully. Reason: {Reason}",

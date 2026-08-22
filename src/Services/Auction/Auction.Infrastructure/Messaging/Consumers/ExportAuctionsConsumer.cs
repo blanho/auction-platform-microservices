@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
@@ -5,6 +6,7 @@ using Auctions.Application.DTOs.Auctions;
 using Auctions.Application.Enums;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
+using Auctions.Domain.Enums;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
 
@@ -41,7 +43,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             JobType = nameof(JobType.DataExport),
             CorrelationId = correlationId,
             RequestedBy = message.RequestedBy,
-            PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            PayloadJson = JsonSerializer.Serialize(new
             {
                 message.Format,
                 message.StatusFilter,
@@ -108,14 +110,14 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             : ExportFormat.Csv;
     }
 
-    private static Auctions.Domain.Enums.Status? ParseStatusFilter(string? statusFilter)
+    private static Status? ParseStatusFilter(string? statusFilter)
     {
         if (string.IsNullOrWhiteSpace(statusFilter))
         {
             return null;
         }
 
-        return Enum.TryParse<Auctions.Domain.Enums.Status>(statusFilter, ignoreCase: true, out var parsed)
+        return Enum.TryParse<Status>(statusFilter, ignoreCase: true, out var parsed)
             ? parsed
             : null;
     }

@@ -9,10 +9,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         builder.HasKey(x => x.Id);
 
-        // PostgreSQL maps this uint row version to its system xmin column, so
-        // concurrent webhook deliveries cannot both commit the same transition.
-        builder.Property(x => x.Version)
-            .IsRowVersion();
+        ConfigureOptimisticConcurrency(builder);
 
         builder.Property(x => x.BuyerUsername)
             .IsRequired()
@@ -82,5 +79,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(x => x.PaymentStatus);
 
         builder.HasIndex(x => x.CreatedAt);
+    }
+
+    private static void ConfigureOptimisticConcurrency(EntityTypeBuilder<Order> builder)
+    {
+        builder.Property(x => x.Version)
+            .IsRowVersion();
     }
 }

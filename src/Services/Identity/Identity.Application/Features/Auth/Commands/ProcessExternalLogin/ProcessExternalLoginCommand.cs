@@ -1,5 +1,6 @@
 namespace Identity.Application.Features.Auth.Commands.ProcessExternalLogin;
 
+using System.Security.Claims;
 using Identity.Application.DTOs.Auth;
 using Identity.Application.DTOs.External;
 using Identity.Application.DTOs.TwoFactor;
@@ -22,8 +23,8 @@ public class ProcessExternalLoginCommandHandler(
     public async Task<Result<ExternalAuthResult>> Handle(ProcessExternalLoginCommand command, CancellationToken cancellationToken)
     {
         var info = command.Info;
-        var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-        var name = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        var email = info.Principal.FindFirst(ClaimTypes.Email)?.Value;
+        var name = info.Principal.FindFirst(ClaimTypes.Name)?.Value;
 
         if (string.IsNullOrEmpty(email))
             return Result.Failure<ExternalAuthResult>(IdentityErrors.External.EmailNotProvided);

@@ -28,10 +28,12 @@ import { NotificationList } from '../components'
 import { NOTIFICATION_CONFIG } from '../constants'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
+import { getErrorMessage } from '@/services/http'
 
 export function NotificationsPage() {
   const { t: _t } = useTranslation('notifications')
   const [activeTab, setActiveTab] = useState(0)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [filters, setFilters] = useState<NotificationFilters>({
     page: 1,
     pageSize: NOTIFICATION_CONFIG.DEFAULT_PAGE_SIZE,
@@ -63,29 +65,32 @@ export function NotificationsPage() {
 
   const handleMarkAsRead = useCallback(
     async (id: string) => {
+      setActionError(null)
       try {
         await markAsRead.mutateAsync(id)
-      } catch {
-        // Error handled by mutation
+      } catch (mutationError) {
+        setActionError(getErrorMessage(mutationError))
       }
     },
     [markAsRead]
   )
 
   const handleMarkAllAsRead = useCallback(async () => {
+    setActionError(null)
     try {
       await markAllAsRead.mutateAsync()
-    } catch {
-      // Error handled by mutation
+    } catch (mutationError) {
+      setActionError(getErrorMessage(mutationError))
     }
   }, [markAllAsRead])
 
   const handleDelete = useCallback(
     async (id: string) => {
+      setActionError(null)
       try {
         await deleteNotification.mutateAsync(id)
-      } catch {
-        // Error handled by mutation
+      } catch (mutationError) {
+        setActionError(getErrorMessage(mutationError))
       }
     },
     [deleteNotification]
@@ -93,10 +98,11 @@ export function NotificationsPage() {
 
   const handleArchive = useCallback(
     async (id: string) => {
+      setActionError(null)
       try {
         await archiveNotification.mutateAsync(id)
-      } catch {
-        // Error handled by mutation
+      } catch (mutationError) {
+        setActionError(getErrorMessage(mutationError))
       }
     },
     [archiveNotification]
@@ -179,6 +185,12 @@ export function NotificationsPage() {
           </Tooltip>
         </Box>
       </Box>
+
+      {actionError && (
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
+          {actionError}
+        </InlineAlert>
+      )}
 
       <Card
         sx={{

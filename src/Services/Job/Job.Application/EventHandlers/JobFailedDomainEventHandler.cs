@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Jobs.Domain.Events;
+using JobService.Contracts.Enums;
 using JobService.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public class JobFailedDomainEventHandler : INotificationHandler<JobFailedDomainE
         await _eventPublisher.PublishAsync(new JobFailedEvent
         {
             JobId = notification.JobId,
-            Type = (JobService.Contracts.Enums.JobType)(int)notification.Type,
+            Type = (JobType)(int)notification.Type,
             CorrelationId = notification.CorrelationId,
             ErrorMessage = notification.ErrorMessage,
             FailedAt = notification.OccurredAt

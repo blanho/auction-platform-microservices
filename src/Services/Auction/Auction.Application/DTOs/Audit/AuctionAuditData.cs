@@ -1,4 +1,5 @@
 using Auctions.Domain.Entities;
+using Auctions.Domain.Constants;
 
 namespace Auctions.Application.DTOs.Audit;
 
@@ -12,7 +13,7 @@ public record AuctionAuditData
     public required string Status { get; init; }
     public decimal ReservePrice { get; init; }
     public decimal? BuyNowPrice { get; init; }
-    public string Currency { get; init; } = "USD";
+    public string Currency { get; init; } = AuctionDefaults.DefaultCurrency;
     public DateTimeOffset AuctionEnd { get; init; }
     public Guid? WinnerId { get; init; }
     public string? WinnerUsername { get; init; }

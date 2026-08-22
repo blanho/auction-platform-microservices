@@ -29,10 +29,19 @@ public class AuctionImportCompletedConsumer : IdempotentNotificationConsumer<Auc
         {
             UserId = e.SellerId.ToString(),
             Type = NotificationType.AuctionImportCompleted,
-            Title = hasFailures ? "Auction Import Completed with Errors" : "Auction Import Completed",
-            Message = hasFailures
-                ? $"Import finished: {e.SucceededCount} succeeded, {e.FailedCount} failed, {e.SkippedDuplicateCount} duplicates skipped out of {e.TotalRows} total rows."
-                : $"Import finished successfully: {e.SucceededCount} auctions imported from {e.TotalRows} rows.",
+            LocalizedText = hasFailures
+                ? new(
+                    NotificationMessageKeys.AuctionImportCompletedWithErrorsTitle,
+                    NotificationMessageKeys.AuctionImportCompletedWithErrorsMessage,
+                    e.SucceededCount,
+                    e.FailedCount,
+                    e.SkippedDuplicateCount,
+                    e.TotalRows)
+                : new(
+                    NotificationMessageKeys.AuctionImportCompletedTitle,
+                    NotificationMessageKeys.AuctionImportCompletedMessage,
+                    e.SucceededCount,
+                    e.TotalRows),
             Data = NotificationDataBuilder.Create()
                 .Add("CorrelationId", e.CorrelationId.ToString())
                 .Add("TotalRows", e.TotalRows)
@@ -63,8 +72,12 @@ public class AuctionExportCompletedConsumer : IdempotentNotificationConsumer<Auc
     {
         UserId = e.RequestedBy.ToString(),
         Type = NotificationType.AuctionExportCompleted,
-        Title = "Auction Export Ready",
-        Message = $"Your {e.Format} export of {e.TotalRecords} auctions is ready. File: {e.FileName}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AuctionExportReadyTitle,
+            NotificationMessageKeys.AuctionExportReadyMessage,
+            e.Format,
+            e.TotalRecords,
+            e.FileName),
         Data = NotificationDataBuilder.Create()
             .Add("CorrelationId", e.CorrelationId.ToString())
             .Add("Format", e.Format)
@@ -92,20 +105,35 @@ public class BulkAuctionUpdateCompletedConsumer : IdempotentNotificationConsumer
 
     protected override CreateNotificationDto BuildNotification(BulkAuctionUpdateCompletedEvent e)
     {
-        var action = e.Activated ? "activated" : "updated";
         var hasFailures = e.FailedCount > 0;
-        var capitalizedAction = $"{char.ToUpper(action[0])}{action[1..]}";
 
         return new CreateNotificationDto
         {
             UserId = e.RequestedBy.ToString(),
             Type = NotificationType.BulkAuctionUpdateCompleted,
-            Title = hasFailures
-                ? $"Bulk Auction {capitalizedAction} Completed with Errors"
-                : $"Bulk Auction {capitalizedAction} Completed",
-            Message = hasFailures
-                ? $"Bulk {action} finished: {e.SucceededCount} succeeded, {e.FailedCount} failed out of {e.TotalRequested} total."
-                : $"Bulk {action} completed successfully: all {e.SucceededCount} auctions processed.",
+            LocalizedText = e.Activated
+                ? hasFailures
+                    ? new(
+                        NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsTitle,
+                        NotificationMessageKeys.BulkAuctionActivatedCompletedWithErrorsMessage,
+                        e.SucceededCount,
+                        e.FailedCount,
+                        e.TotalRequested)
+                    : new(
+                        NotificationMessageKeys.BulkAuctionActivatedCompletedTitle,
+                        NotificationMessageKeys.BulkAuctionActivatedCompletedMessage,
+                        e.SucceededCount)
+                : hasFailures
+                    ? new(
+                        NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsTitle,
+                        NotificationMessageKeys.BulkAuctionUpdatedCompletedWithErrorsMessage,
+                        e.SucceededCount,
+                        e.FailedCount,
+                        e.TotalRequested)
+                    : new(
+                        NotificationMessageKeys.BulkAuctionUpdatedCompletedTitle,
+                        NotificationMessageKeys.BulkAuctionUpdatedCompletedMessage,
+                        e.SucceededCount),
             Data = NotificationDataBuilder.Create()
                 .Add("CorrelationId", e.CorrelationId.ToString())
                 .Add("TotalRequested", e.TotalRequested)

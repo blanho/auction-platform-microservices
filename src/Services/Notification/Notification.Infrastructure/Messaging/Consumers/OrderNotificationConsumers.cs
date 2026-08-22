@@ -26,8 +26,11 @@ public class OrderShippedConsumer : IdempotentNotificationConsumer<OrderShippedE
     {
         UserId = e.BuyerId.ToString(),
         Type = NotificationType.OrderShipped,
-        Title = "Order Shipped",
-        Message = $"Your order has been shipped via {e.ShippingCarrier}. Tracking number: {e.TrackingNumber}.",
+        LocalizedText = new(
+            NotificationMessageKeys.OrderShippedTitle,
+            NotificationMessageKeys.OrderShippedMessage,
+            e.ShippingCarrier,
+            e.TrackingNumber),
         Data = NotificationDataBuilder.Create()
             .Add("OrderId", e.OrderId)
             .Add("AuctionId", e.AuctionId)
@@ -58,8 +61,9 @@ public class OrderDeliveredConsumer : IdempotentNotificationConsumer<OrderDelive
     {
         UserId = e.BuyerId.ToString(),
         Type = NotificationType.OrderDelivered,
-        Title = "Order Delivered",
-        Message = "Your order has been delivered. We hope you enjoy your purchase!",
+        LocalizedText = new(
+            NotificationMessageKeys.OrderDeliveredTitle,
+            NotificationMessageKeys.OrderDeliveredMessage),
         Data = NotificationDataBuilder.Create()
             .Add("OrderId", e.OrderId)
             .Add("AuctionId", e.AuctionId)
@@ -88,8 +92,13 @@ public class OrderReportGeneratedConsumer : IdempotentNotificationConsumer<Order
     {
         UserId = e.RequestedBy.ToString(),
         Type = NotificationType.OrderReportReady,
-        Title = "Order Report Ready",
-        Message = $"Your {e.ReportType} report ({e.TotalRecords} records) is ready for download. File: {e.FileName} ({NotificationFormattingHelper.FormatCurrency(e.FileSizeBytes / 1024m)} KB).",
+        LocalizedText = new(
+            NotificationMessageKeys.OrderReportReadyTitle,
+            NotificationMessageKeys.OrderReportReadyMessage,
+            e.ReportType,
+            e.TotalRecords,
+            e.FileName,
+            e.FileSizeBytes / 1024m),
         Data = NotificationDataBuilder.Create()
             .Add("CorrelationId", e.CorrelationId.ToString())
             .Add("ReportType", e.ReportType)

@@ -1,19 +1,20 @@
 using System.Globalization;
+using BuildingBlocks.Domain.Constants;
 using Notification.Domain.Constants;
 
 namespace Notification.Application.Helpers;
 
 public static class NotificationFormattingHelper
 {
-    public static string FormatCurrency(decimal amount, string currencyCode = "USD")
+    public static string FormatCurrency(decimal amount, string currencyCode = CurrencyCodes.Usd)
     {
         return currencyCode.ToUpperInvariant() switch
         {
-            "USD" => amount.ToString("C", CultureInfo.GetCultureInfo("en-US")),
-            "EUR" => amount.ToString("C", CultureInfo.GetCultureInfo("de-DE")),
-            "GBP" => amount.ToString("C", CultureInfo.GetCultureInfo("en-GB")),
-            "VND" => $"₫{amount:N0}",
-            "JPY" => $"¥{amount:N0}",
+            CurrencyCodes.Usd => amount.ToString("C", CultureInfo.GetCultureInfo("en-US")),
+            CurrencyCodes.Eur => amount.ToString("C", CultureInfo.GetCultureInfo("de-DE")),
+            CurrencyCodes.Gbp => amount.ToString("C", CultureInfo.GetCultureInfo("en-GB")),
+            CurrencyCodes.Vnd => $"₫{amount:N0}",
+            CurrencyCodes.Jpy => $"¥{amount:N0}",
             _ => $"{amount:N2} {currencyCode}"
         };
     }

@@ -29,10 +29,19 @@ public class JobCompletedConsumer : IdempotentNotificationConsumer<JobCompletedE
         {
             UserId = Guid.Empty.ToString(),
             Type = NotificationType.JobCompleted,
-            Title = hasFailures ? "Job Completed with Errors" : "Job Completed",
-            Message = hasFailures
-                ? $"Job '{e.Type}' completed: {e.CompletedItems} succeeded, {e.FailedItems} failed out of {e.TotalItems} total items."
-                : $"Job '{e.Type}' completed successfully. All {e.TotalItems} items processed.",
+            LocalizedText = hasFailures
+                ? new(
+                    NotificationMessageKeys.JobCompletedWithErrorsTitle,
+                    NotificationMessageKeys.JobCompletedWithErrorsMessage,
+                    e.Type,
+                    e.CompletedItems,
+                    e.FailedItems,
+                    e.TotalItems)
+                : new(
+                    NotificationMessageKeys.JobCompletedTitle,
+                    NotificationMessageKeys.JobCompletedMessage,
+                    e.Type,
+                    e.TotalItems),
             Data = NotificationDataBuilder.Create()
                 .Add("JobId", e.JobId)
                 .Add("JobType", e.Type.ToString())
@@ -64,8 +73,11 @@ public class JobFailedConsumer : IdempotentNotificationConsumer<JobFailedEvent>
     {
         UserId = Guid.Empty.ToString(),
         Type = NotificationType.JobFailed,
-        Title = "Job Failed",
-        Message = $"Job '{e.Type}' has failed: {e.ErrorMessage}",
+        LocalizedText = new(
+            NotificationMessageKeys.JobFailedTitle,
+            NotificationMessageKeys.JobFailedMessage,
+            e.Type,
+            e.ErrorMessage),
         Data = NotificationDataBuilder.Create()
             .Add("JobId", e.JobId)
             .Add("JobType", e.Type.ToString())
@@ -92,13 +104,15 @@ public class JobCreatedConsumer : IdempotentNotificationConsumer<JobCreatedEvent
 
     protected override CreateNotificationDto BuildNotification(JobCreatedEvent e)
     {
-        var totalItemsText = e.TotalItems > 0 ? $"{e.TotalItems} items" : "1 item";
         return new CreateNotificationDto
         {
             UserId = e.RequestedBy.ToString(),
             Type = NotificationType.JobCreated,
-            Title = "Job Queued",
-            Message = $"Job '{e.Type}' has been queued with {totalItemsText} to process.",
+            LocalizedText = new(
+                NotificationMessageKeys.JobQueuedTitle,
+                NotificationMessageKeys.JobQueuedMessage,
+                e.Type,
+                Math.Max(e.TotalItems, 1)),
             Data = NotificationDataBuilder.Create()
                 .Add("JobId", e.JobId)
                 .Add("JobType", e.Type.ToString())
@@ -126,17 +140,32 @@ public class JobProgressUpdatedConsumer : IdempotentNotificationConsumer<JobProg
 
     protected override CreateNotificationDto BuildNotification(JobProgressUpdatedEvent e)
     {
-        var failureNote = e.FailedItems > 0 ? $", {e.FailedItems} failed" : string.Empty;
-        var progressMessage = e.TotalItems > 0
-            ? $"Job '{e.Type}' progress: {Math.Round(e.ProgressPercentage)}% complete ({e.CompletedItems}/{e.TotalItems} items{failureNote})."
-            : $"Job '{e.Type}' progress update: {Math.Round(e.ProgressPercentage)}% complete.";
-
         return new CreateNotificationDto
         {
             UserId = Guid.Empty.ToString(),
             Type = NotificationType.JobProgressUpdated,
-            Title = "Job Progress Update",
-            Message = progressMessage,
+            LocalizedText = e.TotalItems > 0
+                ? e.FailedItems > 0
+                    ? new(
+                        NotificationMessageKeys.JobProgressTitle,
+                        NotificationMessageKeys.JobProgressWithErrorsMessage,
+                        e.Type,
+                        Math.Round(e.ProgressPercentage),
+                        e.CompletedItems,
+                        e.TotalItems,
+                        e.FailedItems)
+                    : new(
+                        NotificationMessageKeys.JobProgressTitle,
+                        NotificationMessageKeys.JobProgressMessage,
+                        e.Type,
+                        Math.Round(e.ProgressPercentage),
+                        e.CompletedItems,
+                        e.TotalItems)
+                : new(
+                    NotificationMessageKeys.JobProgressTitle,
+                    NotificationMessageKeys.JobProgressSimpleMessage,
+                    e.Type,
+                    Math.Round(e.ProgressPercentage)),
             Data = NotificationDataBuilder.Create()
                 .Add("JobId", e.JobId)
                 .Add("JobType", e.Type.ToString())

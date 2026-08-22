@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Gateway.Api.Constants;
 
 namespace Gateway.Api.Extensions;
 
@@ -16,7 +17,8 @@ public static class AuthenticationExtensions
             return services;
 
         var secretKey = configuration["Identity:SecretKey"];
-        var isLocalDevelopment = environment.IsDevelopment() || environment.EnvironmentName == "Local";
+        var isLocalDevelopment = environment.IsDevelopment() ||
+            environment.EnvironmentName == GatewayConstants.LocalEnvironment;
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -31,15 +33,15 @@ public static class AuthenticationExtensions
                     ValidateIssuer = true,
                     ValidIssuer = identityAuthority,
                     ValidateAudience = true,
-                    ValidAudience = "auctionApp",
+                    ValidAudience = GatewayConstants.DefaultAudience,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = !string.IsNullOrEmpty(secretKey),
                     IssuerSigningKey = !string.IsNullOrEmpty(secretKey)
                         ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                         : null,
                     ClockSkew = TimeSpan.FromMinutes(1),
-                    NameClaimType = "name",
-                    RoleClaimType = "role"
+                    NameClaimType = GatewayConstants.NameClaim,
+                    RoleClaimType = GatewayConstants.RoleClaim
                 };
 
                 options.Events = new JwtBearerEvents
@@ -63,7 +65,7 @@ public static class AuthenticationExtensions
     public static IServiceCollection AddGatewayCors(
         this IServiceCollection services,
         IConfiguration configuration,
-        Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment)
+        IWebHostEnvironment environment)
     {
         services.AddCors(options =>
         {
@@ -72,7 +74,8 @@ public static class AuthenticationExtensions
 
             options.AddPolicy("AllowAll", policy =>
             {
-                if (environment.IsDevelopment() || environment.EnvironmentName == "Local")
+                if (environment.IsDevelopment() ||
+                    environment.EnvironmentName == GatewayConstants.LocalEnvironment)
                 {
                     policy.SetIsOriginAllowed(_ => true)
                           .AllowAnyMethod()
@@ -88,7 +91,7 @@ public static class AuthenticationExtensions
                               "Content-Type",
                               "X-Requested-With",
                               "Accept",
-                              "X-Correlation-Id",
+                              GatewayConstants.CorrelationIdHeader,
                               "X-SignalR-User-Agent")
                           .AllowCredentials();
                 }

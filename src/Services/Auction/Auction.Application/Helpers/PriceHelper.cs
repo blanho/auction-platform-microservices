@@ -1,16 +1,18 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Auctions.Application.Helpers;
 
 public static class PriceHelper
 {
-    public static string FormatPrice(decimal price, string currencyCode = "USD")
+    public static string FormatPrice(decimal price, string currencyCode = CurrencyCodes.Usd)
     {
         return currencyCode.ToUpperInvariant() switch
         {
-            "USD" => $"${price:N2}",
-            "EUR" => $"€{price:N2}",
-            "GBP" => $"£{price:N2}",
-            "VND" => $"₫{price:N0}",
-            "JPY" => $"¥{price:N0}",
+            CurrencyCodes.Usd => $"${price:N2}",
+            CurrencyCodes.Eur => $"€{price:N2}",
+            CurrencyCodes.Gbp => $"£{price:N2}",
+            CurrencyCodes.Vnd => $"₫{price:N0}",
+            CurrencyCodes.Jpy => $"¥{price:N0}",
             _ => $"{price:N2} {currencyCode}"
         };
     }

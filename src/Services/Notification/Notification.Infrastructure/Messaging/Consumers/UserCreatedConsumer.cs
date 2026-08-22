@@ -1,3 +1,4 @@
+using Notification.Domain.Entities;
 using IdentityService.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
@@ -48,24 +49,24 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
 
         if (message.EmailConfirmed)
         {
-            templateKey = "welcome";
+            templateKey = NotificationTemplateKeys.Welcome;
             subject = "Welcome to Auction Platform";
             eventId = $"user-created-welcome-{message.UserId}";
             data = new Dictionary<string, string>
             {
-                ["username"] = message.Username,
-                ["fullName"] = message.FullName ?? message.Username
+                [NotificationTemplateDataKeys.Username] = message.Username,
+                [NotificationTemplateDataKeys.FullName] = message.FullName ?? message.Username
             };
         }
         else if (!string.IsNullOrEmpty(message.ConfirmationLink))
         {
-            templateKey = "email-confirmation";
+            templateKey = NotificationTemplateKeys.EmailConfirmation;
             subject = "Confirm Your Email";
             eventId = $"user-created-confirmation-{message.UserId}";
             data = new Dictionary<string, string>
             {
-                ["username"] = message.Username,
-                ["confirmationLink"] = message.ConfirmationLink
+                [NotificationTemplateDataKeys.Username] = message.Username,
+                [NotificationTemplateDataKeys.ConfirmationLink] = message.ConfirmationLink
             };
         }
         else
@@ -74,7 +75,7 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
             return;
         }
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
         {
             _logger.LogDebug("Email already sent for EventId={EventId}", eventId);
             return;
@@ -87,23 +88,23 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "Email", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.Email, ct: ct);
         if (lockHandle == null)
         {
             _logger.LogDebug("Could not acquire lock for email, EventId={EventId}", eventId);
             return;
         }
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
         var renderedSubject = TemplateHelper.RenderTemplate(template.Subject ?? subject, data);
         var body = TemplateHelper.RenderTemplate(template.Body, data);
 
-        var record = Notification.Domain.Entities.NotificationRecord.Create(
+        var record = NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
             templateKey,
-            "Email",
+            NotificationChannelNames.Email,
             renderedSubject,
             message.Email);
 
@@ -119,7 +120,7 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                await _idempotency.MarkAsProcessedAsync(eventId, "Email", result.MessageId, ct: ct);
+                await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.Email, result.MessageId, ct: ct);
                 _logger.LogInformation(
                     "Email sent for UserCreatedEvent: UserId={UserId}, MessageId={MessageId}",
                     message.UserId,
@@ -127,7 +128,7 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 _logger.LogWarning(
                     "Email failed for UserCreatedEvent: UserId={UserId}, Error={Error}",
                     message.UserId,

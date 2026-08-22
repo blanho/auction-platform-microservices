@@ -1,3 +1,4 @@
+using Notification.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
@@ -69,7 +70,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
         var subject = TemplateHelper.RenderTemplate(template.Subject ?? message.Subject, message.Data);
         var body = TemplateHelper.RenderTemplate(template.Body, message.Data);
 
-        var record = Notification.Domain.Entities.NotificationRecord.Create(
+        var record = NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
             message.TemplateKey,
             EmailChannelType,
@@ -96,7 +97,7 @@ public class EmailNotificationRequestedConsumer : IConsumer<EmailNotificationReq
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 _logger.LogWarning(
                     "Email failed: EventId={EventId}, Error={Error}",
                     message.EventId,

@@ -1,4 +1,4 @@
-using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Application.Authorization;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 

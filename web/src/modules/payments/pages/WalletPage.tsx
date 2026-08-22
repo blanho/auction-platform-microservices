@@ -80,7 +80,7 @@ export function WalletPage() {
       setDepositAmount('')
       setSelectedPaymentMethod('')
     } catch {
-      /* Error handled by mutation */
+      return
     }
   }
 
@@ -97,7 +97,7 @@ export function WalletPage() {
       setWithdrawAmount('')
       setSelectedPaymentMethod('')
     } catch {
-      /* Error handled by mutation */
+      return
     }
   }
 

@@ -17,6 +17,8 @@ public static class IdentityDefaults
 
     public static class EmailTemplate
     {
+        public const string Confirmation = "email-confirmation";
+        public const string PasswordReset = "password-reset";
         public const string UsernameKey = "username";
         public const string ConfirmationLinkKey = "confirmationLink";
         public const string ResetLinkKey = "resetLink";
@@ -34,5 +36,18 @@ public static class IdentityDefaults
         public const string Activate = "activate";
         public const string Deactivate = "deactivate";
         public const string RoleChange = "role_change";
+    }
+
+    public static class AuditData
+    {
+        public const string Login = "Login";
+        public const string PasswordChange = "PasswordChange";
+        public const string EnableTwoFactor = "Enable2FA";
+        public const string DisableTwoFactor = "Disable2FA";
+    }
+
+    public static class RateLimits
+    {
+        public const string PasswordReset = "password-reset";
     }
 }

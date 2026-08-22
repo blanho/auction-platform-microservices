@@ -33,7 +33,7 @@ public class PaymentCompletedDomainEventHandler : INotificationHandler<PaymentCo
             SellerId = notification.SellerId,
             SellerUsername = notification.SellerUsername,
             Amount = notification.Amount,
-            TransactionId = notification.TransactionId,
+            TransactionId = notification.TransactionId!,
             PaidAt = notification.OccurredAt
         }, cancellationToken);
     }

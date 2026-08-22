@@ -13,7 +13,7 @@ public class WalletRepository : IWalletRepository
         _context = context;
     }
 
-    public async Task<Wallet> GetByUsernameAsync(string username)
+    public async Task<Wallet?> GetByUsernameAsync(string username)
     {
         return await _context.Wallets
             .AsNoTracking()
@@ -26,11 +26,11 @@ public class WalletRepository : IWalletRepository
         return wallet;
     }
 
-    public async Task<Wallet> UpdateAsync(Wallet wallet)
+    public Task<Wallet> UpdateAsync(Wallet wallet)
     {
         wallet.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Wallets.Update(wallet);
-        return wallet;
+        return Task.FromResult(wallet);
     }
 
     public async Task<bool> ExistsAsync(string username)

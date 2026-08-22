@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Analytics.Infrastructure.Messaging.Consumers;
 using Analytics.Infrastructure.Persistence;
 using Analytics.Application.Interfaces;
+using Analytics.Application.Features.Reports.GetReports;
 using Analytics.Infrastructure.Repositories;
 using Analytics.Application.Validators;
 using Analytics.Domain.Constants;
@@ -27,7 +29,7 @@ public static class ServiceCollectionExtensions
                             errorCodesToAdd: null);
                         npgsqlOptions.CommandTimeout(AnalyticsDefaults.Database.CommandTimeoutSeconds);
                     })
-                .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         return services;
     }
@@ -50,8 +52,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAnalyticsServices(this IServiceCollection services)
     {
-        services.AddMediatR(cfg => {
-            cfg.RegisterServicesFromAssembly(typeof(Analytics.Application.Features.Reports.GetReportsQuery).Assembly);
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(GetReportsQuery).Assembly);
         });
 
         services.AddValidatorsFromAssemblyContaining<CreateReportDtoValidator>();

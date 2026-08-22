@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Infrastructure.Idempotency;
@@ -20,7 +21,7 @@ public static class InfrastructureServiceExtensions
         services.AddSingleton<IDistributedLock>(sp =>
         {
             var redis = sp.GetRequiredService<IConnectionMultiplexer>();
-            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RedisLock>>();
+            var logger = sp.GetRequiredService<ILogger<RedisLock>>();
             return new RedisLock(redis, logger, lockPrefix);
         });
         services.AddSingleton<IMessageDeduplicationService, RedisMessageDeduplicationService>();

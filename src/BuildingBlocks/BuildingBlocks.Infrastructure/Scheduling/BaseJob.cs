@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.Net.Http;
 using BuildingBlocks.Application.Abstractions.Locking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,7 +38,7 @@ public abstract class BaseJob : IJob
             "Job {JobName} starting execution at {FireTime} (attempt {Attempt}/{MaxAttempts})",
             jobName, fireTime, retryCount + 1, MaxRetries + 1);
 
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
         try
         {
@@ -116,8 +119,8 @@ public abstract class BaseJob : IJob
 
     protected virtual bool IsTransientException(Exception ex) =>
         ex is TimeoutException
-            or System.Net.Http.HttpRequestException
-            or Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException
+            or HttpRequestException
+            or DbUpdateConcurrencyException
             or InvalidOperationException { Message: "An exception has been raised that is likely due to a transient failure." };
 
     private TimeSpan CalculateBackoffDelay(int retryCount)

@@ -22,7 +22,7 @@ public class GetAuctionQueryHandler : IRequestHandler<GetAuctionQuery, Result<Au
         var result = await _searchService.GetByIdAsync(request.Id, cancellationToken);
         if (result == null)
             return Result.Failure<AuctionSearchResult>(SearchErrors.Auction.NotFoundById(request.Id));
-            
+
         return Result.Success(result);
     }
 }

@@ -1,3 +1,4 @@
+using Jobs.Domain.Enums;
 using Jobs.Application.Interfaces;
 using JobService.Contracts.Commands;
 
@@ -34,10 +35,10 @@ public class FailJobByCorrelationConsumer : IConsumer<FailJobByCorrelationComman
             return;
         }
 
-        if (job.Status is Jobs.Domain.Enums.JobStatus.Completed
-            or Jobs.Domain.Enums.JobStatus.CompletedWithErrors
-            or Jobs.Domain.Enums.JobStatus.Failed
-            or Jobs.Domain.Enums.JobStatus.Cancelled)
+        if (job.Status is JobStatus.Completed
+            or JobStatus.CompletedWithErrors
+            or JobStatus.Failed
+            or JobStatus.Cancelled)
         {
             _logger.LogWarning(
                 "Job {JobId} is already in terminal state {Status}, skipping fail",

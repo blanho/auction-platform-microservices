@@ -39,7 +39,6 @@ export function useAuctionForm(id: string | undefined) {
     mode: 'onBlur',
   })
 
-  // Populate form when editing an existing auction
   useEffect(() => {
     if (isEditMode && existingAuction) {
       form.reset({

@@ -26,7 +26,13 @@ public class CreateNotificationDto
     public string Data { get; set; } = string.Empty;
     public Guid? AuctionId { get; set; }
     public Guid? BidId { get; set; }
+    public LocalizedNotificationText? LocalizedText { get; set; }
 }
+
+public sealed record LocalizedNotificationText(
+    string TitleKey,
+    string MessageKey,
+    params object[] MessageArguments);
 
 public class MarkAsReadDto
 {

@@ -2,6 +2,7 @@ using AuctionService.Contracts.Commands;
 using Auctions.Application.Errors;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Messaging;
+using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.CQRS;
 using MassTransit;
 
@@ -24,7 +25,7 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
         QueueAuctionExportCommand request,
         CancellationToken cancellationToken)
     {
-        if (request.Format.ToString().ToLower() != "csv" && request.Format.ToString().ToLower() != "json")
+        if (!Enum.IsDefined(request.Format))
         {
             return Result.Failure<BackgroundJobResult>(AuctionErrors.Export.UnsupportedFormat(request.Format.ToString()));
         }
@@ -52,7 +53,7 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
         return Result<BackgroundJobResult>.Success(new BackgroundJobResult(
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
-            Status: "Queued",
+            Status: BackgroundJobStatuses.Queued,
             Message: $"Export in {request.Format} format has been queued for background processing."));
     }
 }

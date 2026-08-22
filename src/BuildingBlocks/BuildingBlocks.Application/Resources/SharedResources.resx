@@ -46,4 +46,14 @@
   <data name="Common.OperationCompleted" xml:space="preserve"><value>The operation has been completed.</value></data>
   <data name="RateLimit.TooManyRequests" xml:space="preserve"><value>Too many requests.</value></data>
   <data name="RateLimit.RetryAfter" xml:space="preserve"><value>Rate limit exceeded. Please retry after {0} seconds.</value></data>
+  <data name="Validation.Failed" xml:space="preserve"><value>One or more validation errors occurred.</value></data>
+  <data name="Validation.Invalid" xml:space="preserve"><value>The {0} field is invalid.</value></data>
+  <data name="Validation.MustBeNonNegative" xml:space="preserve"><value>The {0} field must be non-negative.</value></data>
+  <data name="Validation.MustBeAtLeast" xml:space="preserve"><value>At least {1} {0} is required.</value></data>
+  <data name="Validation.MustNotExceed" xml:space="preserve"><value>Maximum {1} {0} allowed.</value></data>
+  <data name="Validation.MustContainAtLeastOne" xml:space="preserve"><value>At least one {0} is required.</value></data>
+  <data name="Validation.MustNotExceedDaysFromNow" xml:space="preserve"><value>The {0} field must not exceed {1} days from now.</value></data>
+  <data name="Validation.UnsupportedValue" xml:space="preserve"><value>The {0} value '{1}' is not supported.</value></data>
+  <data name="Validation.PasswordComplexity" xml:space="preserve"><value>Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.</value></data>
+  <data name="Validation.PasswordsDoNotMatch" xml:space="preserve"><value>Passwords do not match.</value></data>
 </root>

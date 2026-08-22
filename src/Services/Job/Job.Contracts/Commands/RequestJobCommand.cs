@@ -11,9 +11,3 @@ public record RequestJobCommand
     public int TotalItems { get; init; }
     public List<RequestJobItemPayload> Items { get; init; } = [];
 }
-
-public record RequestJobItemPayload
-{
-    public string PayloadJson { get; init; } = string.Empty;
-    public int SequenceNumber { get; init; }
-}

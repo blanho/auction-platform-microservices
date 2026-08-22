@@ -1,7 +1,5 @@
 namespace Catalog.Application.DTOs;
 
-// ── Brand DTOs ───────────────────────────────────────────────────────────────
-
 public class BrandDto
 {
     public Guid Id { get; set; }
@@ -17,8 +15,8 @@ public class CreateBrandDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public int DisplayOrder { get; set; } = 0;
-    public bool IsFeatured { get; set; } = false;
+    public int DisplayOrder { get; set; }
+    public bool IsFeatured { get; set; }
 }
 
 public class UpdateBrandDto
@@ -29,8 +27,6 @@ public class UpdateBrandDto
     public bool? IsActive { get; set; }
     public bool? IsFeatured { get; set; }
 }
-
-// ── Category DTOs ─────────────────────────────────────────────────────────────
 
 public class CategoryDto
 {
@@ -60,7 +56,7 @@ public class CreateCategoryDto
     public string? Slug { get; set; }
     public string Icon { get; set; } = "fa-box";
     public string? Description { get; set; }
-    public int DisplayOrder { get; set; } = 0;
+    public int DisplayOrder { get; set; }
     public Guid? ParentCategoryId { get; set; }
 }
 

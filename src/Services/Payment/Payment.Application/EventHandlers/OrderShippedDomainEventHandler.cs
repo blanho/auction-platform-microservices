@@ -30,8 +30,8 @@ public class OrderShippedDomainEventHandler : INotificationHandler<OrderShippedD
             AuctionId = notification.AuctionId,
             BuyerId = notification.BuyerId,
             BuyerUsername = notification.BuyerUsername,
-            TrackingNumber = notification.TrackingNumber,
-            ShippingCarrier = notification.ShippingCarrier,
+            TrackingNumber = notification.TrackingNumber!,
+            ShippingCarrier = notification.ShippingCarrier!,
             ShippedAt = notification.OccurredAt
         }, cancellationToken);
     }

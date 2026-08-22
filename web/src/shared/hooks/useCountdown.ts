@@ -5,7 +5,7 @@ const MS_PER_MINUTE = 60 * MS_PER_SECOND
 const MS_PER_HOUR = 60 * MS_PER_MINUTE
 const MS_PER_DAY = 24 * MS_PER_HOUR
 
-const URGENT_THRESHOLD_MS = MS_PER_HOUR // < 1 hour remaining
+const URGENT_THRESHOLD_MS = MS_PER_HOUR
 
 interface CountdownState {
   timeLeft: string
@@ -40,10 +40,6 @@ function computeCountdown(endTime: string): CountdownState {
   return { timeLeft, isExpired: false, isUrgent }
 }
 
-/**
- * Provides a live countdown to a given end time.
- * Updates every second by default; pass intervalMs=60_000 for minute-precision cards.
- */
 export function useCountdown(endTime: string, intervalMs = MS_PER_SECOND): CountdownState {
   const [state, setState] = useState<CountdownState>(() => computeCountdown(endTime))
 

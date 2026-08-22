@@ -36,10 +36,10 @@ public class ForgotPasswordCommandHandler(
         var token = await userService.GeneratePasswordResetTokenAsync(user);
         var resetLink = EmailLinkHelper.GeneratePasswordResetLink(RequiredFrontendUrl, user.Email!, token);
 
-        await authHelper.PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, "password-reset", "Reset Your Password", new Dictionary<string, string>
+        await authHelper.PublishEmailEventAsync(user.Id, user.Email!, user.UserName!, IdentityDefaults.EmailTemplate.PasswordReset, "Reset Your Password", new Dictionary<string, string>
         {
             [IdentityDefaults.EmailTemplate.UsernameKey] = user.UserName!,
-            ["resetLink"] = resetLink
+            [IdentityDefaults.EmailTemplate.ResetLinkKey] = resetLink
         });
 
         logger.LogInformation("Password reset email requested for {Email}", email);

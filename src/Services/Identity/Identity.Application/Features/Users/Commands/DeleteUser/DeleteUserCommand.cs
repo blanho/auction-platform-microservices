@@ -15,23 +15,23 @@ public record DeleteUserCommand(string UserId) : ICommand;
 public class DeleteUserCommandHandler(
     IUserService userService,
     IMediator mediator,
-    BuildingBlocks.Application.Abstractions.Auditing.IAuditPublisher auditPublisher,
+    IAuditPublisher auditPublisher,
     ILogger<DeleteUserCommandHandler> logger) : ICommandHandler<DeleteUserCommand>
 {
     public async Task<Result> Handle(DeleteUserCommand command, CancellationToken cancellationToken)
     {
         var user = await userService.FindByIdAsync(command.UserId);
         if (user == null)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure(IdentityErrors.User.NotFound);
 
-        var userAuditData = Identity.Application.DTOs.Audit.UserAuditData.FromUser(user);
+        var userAuditData = UserAuditData.FromUser(user);
         var username = user.UserName!;
-        
+
         var result = await userService.DeleteAsync(user);
         if (!result.Succeeded)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.User.DeleteFailed);
+            return Result.Failure(IdentityErrors.User.DeleteFailed);
 
-        await mediator.Publish(new Identity.Domain.Events.UserDeletedDomainEvent
+        await mediator.Publish(new UserDeletedDomainEvent
         {
             UserId = command.UserId,
             Username = username
@@ -40,7 +40,7 @@ public class DeleteUserCommandHandler(
         await auditPublisher.PublishAsync(
             Guid.Parse(command.UserId),
             userAuditData,
-            BuildingBlocks.Application.Abstractions.Auditing.AuditAction.Deleted,
+            AuditAction.Deleted,
             cancellationToken: cancellationToken);
 
         logger.LogWarning("User {UserId} deleted", command.UserId);

@@ -1,7 +1,11 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Auctions.Domain.Constants;
 
 public static class AuctionDefaults
 {
+    public const string DefaultCurrency = CurrencyCodes.Usd;
+
     public static class Lock
     {
         public const int ExpirySeconds = 30;
@@ -16,11 +20,6 @@ public static class AuctionDefaults
             string.Format(BuyNowKeyFormat, auctionId);
     }
 
-    public static class Audit
-    {
-        public const string BuyNow = "BuyNow";
-    }
-
     public static class Cache
     {
         public const int SingleAuctionTtlMinutes = 10;
@@ -30,13 +29,7 @@ public static class AuctionDefaults
 
     public static class Scheduling
     {
-        public const int DefaultRetryDelaySeconds = 5;
-
-        public const int MaxRetryCount = 3;
-
         public const int CheckFinishedIntervalSeconds = 5;
-
-        public const int DeactivationIntervalMinutes = 1;
 
         public const int ActivationIntervalSeconds = 30;
 

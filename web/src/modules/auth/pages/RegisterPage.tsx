@@ -152,7 +152,7 @@ export function RegisterPage() {
       setRegisteredEmail(data.email)
       setRegistrationSuccess(true)
     } catch {
-      /* Error handled by mutation */
+      return
     }
   }
 

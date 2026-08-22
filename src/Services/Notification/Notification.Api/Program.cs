@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Notification.Application.DTOs;
+using Notification.Application.Features.Notifications.CreateNotification;
+using System.Text.Json.Serialization;
 using Carter;
 using Notification.Api.Extensions.DependencyInjection;
 using Notification.Application.Resources;
@@ -31,7 +36,7 @@ builder.Services.ValidateStandardConfiguration(
 builder.AddCentralizedLogging();
 
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
-var applicationAssembly = typeof(Notification.Application.DTOs.NotificationDto).Assembly;
+var applicationAssembly = typeof(NotificationDto).Assembly;
 
 builder.Services.AddCommonUtilities();
 builder.Services.AddAppLocalization<NotificationResources>();
@@ -41,7 +46,7 @@ builder.Services.AddAutoMapper(applicationAssembly);
 builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);
-builder.Services.AddCQRS(typeof(Notification.Application.Features.Notifications.CreateNotification.CreateNotificationCommand).Assembly);
+builder.Services.AddCQRS(typeof(CreateNotificationCommand).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddSignalR();
@@ -50,7 +55,7 @@ builder.Services.AddNotificationCors(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment, options =>
 {
     options.MapInboundClaims = false;
-    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
@@ -75,7 +80,7 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
                 npgsqlOptions.EnableRetryOnFailure(maxRetryCount: NotificationDefaults.Database.RetryCount, maxRetryDelay: TimeSpan.FromSeconds(NotificationDefaults.Database.MaxRetryDelaySeconds), errorCodesToAdd: null);
                 npgsqlOptions.CommandTimeout(NotificationDefaults.Database.CommandTimeoutSeconds);
             })
-        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+        .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddNotificationInfrastructure();
 builder.Services.AddNotificationServices();
 builder.Services.AddNotificationRedis(builder.Configuration);
@@ -96,8 +101,8 @@ builder.Services.AddCarter();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
 var app = builder.Build();

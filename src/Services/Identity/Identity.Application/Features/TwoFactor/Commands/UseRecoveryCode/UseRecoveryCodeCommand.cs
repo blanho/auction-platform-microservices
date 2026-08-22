@@ -6,13 +6,11 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.DTOs.TwoFactor;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record UseRecoveryCodeCommand(string RecoveryCode) : ICommand;
 
 public class UseRecoveryCodeCommandHandler(
-    Microsoft.AspNetCore.Identity.SignInManager<Identity.Domain.Entities.ApplicationUser> signInManager,
-    ILogger<UseRecoveryCodeCommandHandler> logger) : ICommandHandler<UseRecoveryCodeCommand>
+    SignInManager<ApplicationUser> signInManager) : ICommandHandler<UseRecoveryCodeCommand>
 {
     public async Task<Result> Handle(UseRecoveryCodeCommand command, CancellationToken cancellationToken)
     {
@@ -22,8 +20,8 @@ public class UseRecoveryCodeCommandHandler(
             return Result.Success();
 
         if (result.IsLockedOut)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.Auth.AccountLockedOut);
+            return Result.Failure(IdentityErrors.Auth.AccountLockedOut);
 
-        return Result.Failure(Identity.Application.Errors.IdentityErrors.TwoFactor.InvalidRecoveryCode);
+        return Result.Failure(IdentityErrors.TwoFactor.InvalidRecoveryCode);
     }
 }

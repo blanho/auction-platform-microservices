@@ -1,3 +1,5 @@
+using Auctions.Domain.Constants;
+
 namespace Auctions.Application.DTOs
 {
     public class AuctionDto
@@ -6,7 +8,7 @@ namespace Auctions.Application.DTOs
         public decimal ReservePrice { get; set; }
         public decimal? BuyNowPrice { get; set; }
         public bool IsBuyNowAvailable { get; set; }
-        public string Currency { get; set; } = "USD";
+        public string Currency { get; set; } = AuctionDefaults.DefaultCurrency;
         public Guid SellerId { get; set; }
         public required string Seller { get; set; }
         public Guid? WinnerId { get; set; }
@@ -45,4 +47,3 @@ namespace Auctions.Application.DTOs
         public string? Reason { get; set; }
     }
 }
-

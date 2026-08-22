@@ -4,6 +4,8 @@ using BuildingBlocks.Infrastructure.Authorization;
 using BuildingBlocks.Infrastructure.Scheduling;
 using Identity.Infrastructure.Persistence;
 using Identity.Infrastructure.Persistence.Repositories;
+using Identity.Application.Features.Auth.Helpers;
+using Identity.Application.Features.Users.Helpers;
 using Identity.Application.Interfaces;
 using Identity.Infrastructure.Jobs;
 using Identity.Application.Mappings;
@@ -28,10 +30,8 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
 
         services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
-        
-        // Helpers
-        services.AddScoped<Identity.Application.Features.Auth.Helpers.IAuthHelper, Identity.Application.Features.Auth.Helpers.AuthHelper>();
-        services.AddScoped<Identity.Application.Features.Users.Helpers.IUserHelper, Identity.Application.Features.Users.Helpers.UserHelper>();
+        services.AddScoped<IAuthHelper, AuthHelper>();
+        services.AddScoped<IUserHelper, UserHelper>();
 
         services.AddAutoMapper(typeof(UserMappingProfile));
 

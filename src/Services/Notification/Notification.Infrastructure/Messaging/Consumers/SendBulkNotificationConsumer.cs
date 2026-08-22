@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Text.Json;
 using JobService.Contracts.Commands;
@@ -157,22 +158,22 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         var tasks = new List<Task>();
 
-        if (message.Channels.Contains("Email") && !string.IsNullOrEmpty(recipient.Email))
+        if (message.Channels.Contains(NotificationChannelNames.Email) && !string.IsNullOrEmpty(recipient.Email))
         {
             tasks.Add(SendEmailAsync(message, recipient, template, parameters, cancellationToken));
         }
 
-        if (message.Channels.Contains("Sms") && !string.IsNullOrEmpty(recipient.PhoneNumber))
+        if (message.Channels.Contains(NotificationChannelNames.Sms) && !string.IsNullOrEmpty(recipient.PhoneNumber))
         {
             tasks.Add(SendSmsAsync(message, recipient, template, parameters, cancellationToken));
         }
 
-        if (message.Channels.Contains("Push"))
+        if (message.Channels.Contains(NotificationChannelNames.Push))
         {
             tasks.Add(SendPushAsync(message, recipient, template, parameters, cancellationToken));
         }
 
-        if (message.Channels.Contains("InApp"))
+        if (message.Channels.Contains(NotificationChannelNames.InApp))
         {
             tasks.Add(SendInAppAsync(message, recipient, parameters, cancellationToken));
         }
@@ -194,7 +195,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         var record = NotificationRecord.Create(
             recipient.UserId,
             message.TemplateKey,
-            "Email",
+            NotificationChannelNames.Email,
             subject,
             recipient.Email);
 
@@ -221,7 +222,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         var record = NotificationRecord.Create(
             recipient.UserId,
             message.TemplateKey,
-            "Sms",
+            NotificationChannelNames.Sms,
             message.Title,
             recipient.PhoneNumber ?? string.Empty);
 
@@ -247,7 +248,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         var record = NotificationRecord.Create(
             recipient.UserId,
             message.TemplateKey,
-            "Push",
+            NotificationChannelNames.Push,
             title,
             recipient.UserId.ToString());
 
@@ -274,7 +275,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         var record = NotificationRecord.Create(
             recipient.UserId,
             message.TemplateKey,
-            "InApp",
+            NotificationChannelNames.InApp,
             title,
             recipient.UserId.ToString());
 
@@ -284,10 +285,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             {
                 Id = Guid.NewGuid(),
                 UserId = recipient.UserId.ToString(),
-                Type = "BulkNotification",
+                Type = NotificationDefaults.PayloadType.BulkNotification,
                 Title = title,
                 Message = body,
-                Status = "Unread",
+                Status = nameof(NotificationStatus.Unread),
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
@@ -332,7 +333,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         if (success)
             record.MarkAsSent(messageId);
         else
-            record.MarkAsFailed(error ?? "Unknown error");
+            record.MarkAsFailed(error ?? NotificationDefaults.Fallback.UnknownError);
     }
 
     private async Task PersistNotificationRecordAsync(NotificationRecord record, CancellationToken cancellationToken)
@@ -360,6 +361,6 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         if (string.IsNullOrEmpty(html))
             return string.Empty;
 
-        return System.Text.RegularExpressions.Regex.Replace(html, "<[^>]*>", string.Empty);
+        return Regex.Replace(html, "<[^>]*>", string.Empty);
     }
 }

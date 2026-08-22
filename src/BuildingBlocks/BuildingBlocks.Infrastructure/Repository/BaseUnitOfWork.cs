@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Events;
+using BuildingBlocks.Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,7 +47,7 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            throw new BuildingBlocks.Domain.Exceptions.ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
+            throw new ConcurrencyException("A concurrency conflict occurred while saving changes.", ex);
         }
 
         return result;

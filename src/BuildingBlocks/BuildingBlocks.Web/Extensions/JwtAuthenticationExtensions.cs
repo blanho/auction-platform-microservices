@@ -51,8 +51,8 @@ public static class JwtAuthenticationExtensions
 
                 ClockSkew = TimeSpan.FromMinutes(1),
 
-                NameClaimType = "name",
-                RoleClaimType = "role"
+                NameClaimType = AuthClaimTypes.Name,
+                RoleClaimType = AuthClaimTypes.Role
             };
         });
     }
@@ -99,8 +99,8 @@ public static class JwtAuthenticationExtensions
 
                 ClockSkew = TimeSpan.FromMinutes(1),
 
-                NameClaimType = "name",
-                RoleClaimType = "role"
+                NameClaimType = AuthClaimTypes.Name,
+                RoleClaimType = AuthClaimTypes.Role
             };
 
             options.Events = new JwtBearerEvents

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
@@ -281,7 +282,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             JobType = nameof(JobType.AuctionImport),
             CorrelationId = correlationId,
             RequestedBy = message.SellerId,
-            PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            PayloadJson = JsonSerializer.Serialize(new
             {
                 message.SellerId,
                 message.SellerUsername,

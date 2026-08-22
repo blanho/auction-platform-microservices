@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +13,7 @@ public class ObservabilityOptions
 {
     public const string SectionName = "Observability";
 
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServiceName is required")]
+    [Required(ErrorMessage = "ServiceName is required")]
     public string ServiceName { get; set; } = string.Empty;
 
     public string ServiceVersion { get; set; } = "1.0.0";
@@ -43,7 +44,7 @@ public static class ObservabilityExtensions
             .AddAttributes(new[]
             {
                 new KeyValuePair<string, object>("deployment.environment", options.Environment),
-                new KeyValuePair<string, object>("host.name", System.Environment.MachineName)
+                new KeyValuePair<string, object>("host.name", Environment.MachineName)
             });
 
         foreach (var attr in options.ResourceAttributes)

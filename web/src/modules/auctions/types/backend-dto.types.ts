@@ -1,8 +1,3 @@
-/**
- * Backend DTO types - exact match to C# DTOs
- * These should be used for API responses before mapping to UI types
- */
-
 export interface BackendAuctionDto {
   id: string
   reservePrice: number

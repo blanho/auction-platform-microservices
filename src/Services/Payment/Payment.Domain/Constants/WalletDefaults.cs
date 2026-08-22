@@ -1,8 +1,10 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Payment.Domain.Constants;
 
 public static class WalletDefaults
 {
-    public const string DefaultCurrency = "USD";
+    public const string DefaultCurrency = CurrencyCodes.Usd;
 
     public static class Lock
     {

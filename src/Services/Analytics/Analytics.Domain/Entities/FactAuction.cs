@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Analytics.Domain.Entities;
 
 public class FactAuction
@@ -41,7 +43,7 @@ public class FactAuction
     public short TimesExtended { get; set; }
 
     public string? Condition { get; set; }
-    public string Currency { get; set; } = "USD";
+    public string Currency { get; set; } = CurrencyCodes.Usd;
 
     public string EventType { get; set; } = string.Empty;
 

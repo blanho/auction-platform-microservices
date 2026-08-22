@@ -16,6 +16,7 @@ public static class LocalizationKeys
 
     public static class Validation
     {
+        public const string Failed = "Validation.Failed";
         public const string Required = "Validation.Required";
         public const string MaxLength = "Validation.MaxLength";
         public const string MinLength = "Validation.MinLength";
@@ -26,6 +27,15 @@ public static class LocalizationKeys
         public const string InvalidDate = "Validation.InvalidDate";
         public const string FutureDate = "Validation.FutureDate";
         public const string PastDate = "Validation.PastDate";
+        public const string Invalid = "Validation.Invalid";
+        public const string MustBeNonNegative = "Validation.MustBeNonNegative";
+        public const string MustBeAtLeast = "Validation.MustBeAtLeast";
+        public const string MustNotExceed = "Validation.MustNotExceed";
+        public const string MustContainAtLeastOne = "Validation.MustContainAtLeastOne";
+        public const string MustNotExceedDaysFromNow = "Validation.MustNotExceedDaysFromNow";
+        public const string UnsupportedValue = "Validation.UnsupportedValue";
+        public const string PasswordComplexity = "Validation.PasswordComplexity";
+        public const string PasswordsDoNotMatch = "Validation.PasswordsDoNotMatch";
     }
 
     public static class Common
@@ -301,6 +311,8 @@ public static class LocalizationKeys
 
     public static class Index
     {
+        public const string Ready = "Index.Ready";
+        public const string Recreated = "Index.Recreated";
         public const string CreateFailed = "Index.CreateFailed";
         public const string RebuildFailed = "Index.RebuildFailed";
         public const string HealthCheckFailed = "Index.HealthCheckFailed";

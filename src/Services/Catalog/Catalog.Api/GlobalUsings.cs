@@ -1,3 +1,4 @@
+global using BuildingBlocks.Application.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using BuildingBlocks.Application.Abstractions;

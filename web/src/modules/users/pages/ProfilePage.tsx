@@ -29,11 +29,13 @@ import { useProfile, useUpdateProfile, useSellerStatus, useApplyForSeller } from
 import { updateProfileSchema } from '../schemas'
 import type { UpdateProfileRequest } from '../types'
 import { usersApi } from '../api'
+import { getErrorMessage } from '@/services/http'
 
 export function ProfilePage() {
   const { t: _t } = useTranslation('users')
   const [isEditing, setIsEditing] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
   const [showSellerDialog, setShowSellerDialog] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -74,8 +76,8 @@ export function ProfilePage() {
     try {
       await updateProfile.mutateAsync(data)
       setIsEditing(false)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      return
     }
   }
 
@@ -89,11 +91,12 @@ export function ProfilePage() {
       return
     }
 
+    setAvatarError(null)
     setUploadingAvatar(true)
     try {
       await usersApi.uploadAvatar(file)
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      setAvatarError(getErrorMessage(error))
     } finally {
       setUploadingAvatar(false)
     }
@@ -103,8 +106,8 @@ export function ProfilePage() {
     try {
       await applyForSeller.mutateAsync(true)
       setShowSellerDialog(false)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      return
     }
   }
 
@@ -184,6 +187,12 @@ export function ProfilePage() {
           Manage your account information
         </Typography>
       </Box>
+
+      {avatarError && (
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
+          {avatarError}
+        </InlineAlert>
+      )}
 
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, md: 4 }}>
@@ -457,6 +466,11 @@ export function ProfilePage() {
             <li>Respond to buyer inquiries promptly</li>
             <li>Accept returns for items not as described</li>
           </Box>
+          {applyForSeller.isError && (
+            <InlineAlert severity="error" sx={{ mt: 2 }}>
+              {getErrorMessage(applyForSeller.error)}
+            </InlineAlert>
+          )}
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button

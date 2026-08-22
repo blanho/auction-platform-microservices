@@ -1,4 +1,7 @@
+using Catalog.Api.Grpc;
+using Catalog.Application.Features.Brands.GetBrands;
 using Catalog.Api.Extensions;
+using Catalog.Application.Resources;
 using Catalog.Infrastructure.Persistence;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Extensions;
@@ -23,9 +26,10 @@ builder.AddCentralizedLogging();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddCommonUtilities();
 builder.Services.AddSanitization();
+builder.Services.AddAppLocalization<CatalogResources>();
 builder.Services.AddCatalogServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
-builder.Services.AddCQRS(typeof(Catalog.Application.Features.Brands.GetBrands.GetBrandsQuery).Assembly);
+builder.Services.AddCQRS(typeof(GetBrandsQuery).Assembly);
 builder.Services.AddAuditServices(builder.Configuration, "catalog-service");
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
@@ -70,7 +74,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCarter();
-app.MapGrpcService<Catalog.Api.Grpc.CatalogGrpcService>();
+app.MapGrpcService<CatalogGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {

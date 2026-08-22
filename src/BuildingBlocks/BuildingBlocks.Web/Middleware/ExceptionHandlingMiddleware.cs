@@ -62,15 +62,15 @@ public static class ExceptionHandlingMiddleware
 
         if (ex is ValidationAppException vex && vex.Errors.Count > 0)
         {
-            problem.Extensions["errors"] = vex.Errors;
+            problem.Extensions[ProblemDetailsExtensionKeys.Errors] = vex.Errors;
         }
 
         if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
         {
-            problem.Extensions["correlationId"] = cid.ToString();
+            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
         }
 
-        context.Response.ContentType = "application/problem+json";
+        context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
         return context.Response.WriteAsJsonAsync(problem);
     }
@@ -99,10 +99,10 @@ public static class ExceptionHandlingMiddleware
 
         if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
         {
-            problem.Extensions["correlationId"] = cid.ToString();
+            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
         }
 
-        context.Response.ContentType = "application/problem+json";
+        context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.BadRequest;
         return context.Response.WriteAsJsonAsync(problem);
     }
@@ -165,15 +165,15 @@ public static class ExceptionHandlingMiddleware
 
         if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
         {
-            problem.Extensions["correlationId"] = cid.ToString();
+            problem.Extensions[ProblemDetailsExtensionKeys.CorrelationId] = cid.ToString();
         }
 
         if (isDevelopment && status == HttpStatusCode.InternalServerError)
         {
-            problem.Extensions["exception"] = ex.ToString();
+            problem.Extensions[ProblemDetailsExtensionKeys.Exception] = ex.ToString();
         }
 
-        context.Response.ContentType = "application/problem+json";
+        context.Response.ContentType = MediaTypeConstants.ProblemJson;
         context.Response.StatusCode = problem.Status ?? (int)HttpStatusCode.InternalServerError;
         return context.Response.WriteAsJsonAsync(problem);
     }

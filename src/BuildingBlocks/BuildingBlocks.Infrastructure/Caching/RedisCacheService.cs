@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using BuildingBlocks.Application.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
@@ -26,14 +27,14 @@ public class RedisCacheService : ICacheService
         if (bytes == null || bytes.Length == 0)
             return default;
 
-        var json = System.Text.Encoding.UTF8.GetString(bytes);
+        var json = Encoding.UTF8.GetString(bytes);
         return JsonSerializer.Deserialize<T>(json, JsonOptions);
     }
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(value, JsonOptions);
-        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+        var bytes = Encoding.UTF8.GetBytes(json);
 
         var options = new DistributedCacheEntryOptions();
         if (expiration.HasValue)

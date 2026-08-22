@@ -15,7 +15,7 @@ public sealed class PermissionHandler : AuthorizationHandler<PermissionRequireme
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        var roles = context.User.FindAll(c => c.Type == ClaimTypes.Role || c.Type == "role")
+        var roles = context.User.FindAll(c => c.Type == ClaimTypes.Role || c.Type == AuthClaimTypes.Role)
             .Select(c => c.Value);
 
         if (RolePermissions.HasPermission(roles, requirement.Permission))

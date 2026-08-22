@@ -1,6 +1,7 @@
 using AuctionService.Contracts.Commands;
 using Auctions.Domain.Constants;
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +69,7 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
         return Result<BackgroundJobResult>.Success(new BackgroundJobResult(
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
-            Status: "Queued",
+            Status: BackgroundJobStatuses.Queued,
             Message: $"Import of {totalRows} auctions has been queued for background processing ({totalBatches} batches)."));
     }
 

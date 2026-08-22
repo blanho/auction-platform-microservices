@@ -161,8 +161,7 @@ Certificate issuance will remain pending until DNS resolves to the ingress.
 ```bash
 dotnet restore auction.sln
 dotnet build auction.sln -c Release --no-restore --disable-build-servers -m:1 -nodeReuse:false
-dotnet test src/Services/Bidding/tests/Bidding.Infrastructure.Tests/Bidding.Infrastructure.Tests.csproj -c Release --no-restore
-dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj --no-restore
+dotnet test auction.sln -c Release --no-build --disable-build-servers -m:1 -nodeReuse:false
 (cd web && npm run validate && npm run build)
 docker compose -f deploy/docker/docker-compose.yml config --quiet
 kubectl kustomize deploy/kubernetes/overlays/production >/tmp/auction-production.yaml

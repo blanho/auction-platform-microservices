@@ -86,10 +86,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, REFRESH_INTERVAL_MS)
   }, [silentRefresh])
 
-  /**
-   * Single source of truth for all post-authentication state updates.
-   * Called by login, loginWith2FA, and register after a successful auth response.
-   */
   const handleAuthSuccess = useCallback(
     async (response: AuthResponse): Promise<void> => {
       const authUser = extractUserFromResponse(response)

@@ -41,6 +41,7 @@ import { useMyBids, useMyAutoBids, useCancelAutoBid } from '../hooks'
 import { InlineAlert, TableEmptyStateRow, TableSkeletonRows } from '@/shared/ui'
 import { useUpdateAutoBid } from '../hooks/useAutoBids'
 import { formatCurrency } from '@/shared/utils'
+import { getErrorMessage } from '@/services/http'
 import type { AutoBid } from '../types'
 import { palette } from '@/shared/theme/tokens'
 
@@ -49,6 +50,7 @@ export function MyBidsPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [editAutoBid, setEditAutoBid] = useState<AutoBid | null>(null)
   const [newMaxAmount, setNewMaxAmount] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { data: myBids, isLoading: bidsLoading, error: bidsError } = useMyBids()
   const { data: autoBids, isLoading: autoBidsLoading } = useMyAutoBids()
@@ -106,10 +108,11 @@ export function MyBidsPage() {
   }
 
   const handleCancelAutoBid = async (autoBidId: string) => {
+    setActionError(null)
     try {
       await cancelAutoBid.mutateAsync(autoBidId)
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -117,6 +120,7 @@ export function MyBidsPage() {
     if (!editAutoBid || !newMaxAmount) {
       return
     }
+    setActionError(null)
     try {
       await updateAutoBid.mutateAsync({
         autoBidId: editAutoBid.id,
@@ -125,8 +129,8 @@ export function MyBidsPage() {
         },
       })
       setEditAutoBid(null)
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -158,6 +162,12 @@ export function MyBidsPage() {
         </Typography>
         <Typography sx={{ color: palette.neutral[500] }}>Track your bidding activity</Typography>
       </Box>
+
+      {actionError && (
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
+          {actionError}
+        </InlineAlert>
+      )}
 
       {autoBids?.autoBids?.length ? (
         <Card

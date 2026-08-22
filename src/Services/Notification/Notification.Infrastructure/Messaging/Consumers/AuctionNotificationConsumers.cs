@@ -26,8 +26,11 @@ public class AuctionCancelledNotificationConsumer : IdempotentNotificationConsum
     {
         UserId = e.SellerId.ToString(),
         Type = NotificationType.AuctionCancelled,
-        Title = "Auction Cancelled",
-        Message = $"Your auction '{e.Title}' has been cancelled. Reason: {e.Reason}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AuctionCancelledTitle,
+            NotificationMessageKeys.AuctionCancelledMessage,
+            e.Title,
+            e.Reason),
         Data = NotificationDataBuilder.Create()
             .Add("AuctionId", e.AuctionId)
             .Add("Title", e.Title)
@@ -63,8 +66,12 @@ public class AuctionEndingSoonConsumer : IdempotentNotificationConsumer<AuctionE
         {
             UserId = e.SellerId.ToString(),
             Type = NotificationType.AuctionEndingSoon,
-            Title = "Auction Ending Soon",
-            Message = $"Your auction '{e.Title}' is ending in {timeLeftDisplay}. Current bid: {NotificationFormattingHelper.FormatCurrency(e.CurrentHighBid)}.",
+            LocalizedText = new(
+                NotificationMessageKeys.AuctionEndingSoonTitle,
+                NotificationMessageKeys.AuctionEndingSoonMessage,
+                e.Title,
+                timeLeftDisplay,
+                NotificationFormattingHelper.FormatCurrency(e.CurrentHighBid)),
             Data = NotificationDataBuilder.Create()
                 .Add("AuctionId", e.AuctionId)
                 .Add("Title", e.Title)
@@ -95,8 +102,12 @@ public class AuctionExtendedConsumer : IdempotentNotificationConsumer<AuctionExt
     {
         UserId = e.SellerId.ToString(),
         Type = NotificationType.AuctionExtended,
-        Title = "Auction Extended",
-        Message = $"Your auction '{e.Title}' has been extended to {e.NewEndTime:MMM dd, yyyy HH:mm} UTC. Reason: {e.Reason}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AuctionExtendedTitle,
+            NotificationMessageKeys.AuctionExtendedMessage,
+            e.Title,
+            e.NewEndTime.ToString("MMM dd, yyyy HH:mm"),
+            e.Reason),
         Data = NotificationDataBuilder.Create()
             .Add("AuctionId", e.AuctionId)
             .Add("Title", e.Title)
@@ -126,8 +137,11 @@ public class AuctionStartedConsumer : IdempotentNotificationConsumer<AuctionStar
     {
         UserId = e.SellerId.ToString(),
         Type = NotificationType.AuctionStarted,
-        Title = "Auction Started",
-        Message = $"Your auction '{e.Title}' is now live! Starting price: {NotificationFormattingHelper.FormatCurrency(e.StartingPrice)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AuctionStartedTitle,
+            NotificationMessageKeys.AuctionStartedMessage,
+            e.Title,
+            NotificationFormattingHelper.FormatCurrency(e.StartingPrice)),
         Data = NotificationDataBuilder.Create()
             .Add("AuctionId", e.AuctionId)
             .Add("Title", e.Title)

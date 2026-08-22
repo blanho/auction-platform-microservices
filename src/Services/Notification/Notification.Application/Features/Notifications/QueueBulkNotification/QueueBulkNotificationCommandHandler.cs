@@ -1,4 +1,5 @@
 using MassTransit;
+using BuildingBlocks.Application.Constants;
 using NotificationService.Contracts.Commands;
 
 namespace Notification.Application.Features.Notifications.QueueBulkNotification;
@@ -55,7 +56,7 @@ public class QueueBulkNotificationCommandHandler : ICommandHandler<QueueBulkNoti
         return Result.Success(new BackgroundJobResult(
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
-            Status: "Queued",
+            Status: BackgroundJobStatuses.Queued,
             Message: $"Bulk notification job queued for {request.Recipients.Count} recipients"));
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
@@ -49,7 +50,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
             JobType = nameof(JobType.BulkAuctionUpdate),
             CorrelationId = correlationId,
             RequestedBy = message.RequestedBy,
-            PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            PayloadJson = JsonSerializer.Serialize(new
             {
                 message.Activate,
                 message.Reason,

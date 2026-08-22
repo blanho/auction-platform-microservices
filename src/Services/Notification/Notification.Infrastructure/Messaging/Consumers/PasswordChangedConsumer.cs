@@ -1,3 +1,4 @@
+using Notification.Domain.Entities;
 using IdentityService.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
@@ -41,38 +42,38 @@ public class PasswordChangedConsumer : IConsumer<PasswordChangedEvent>
             message.UserId,
             message.Username);
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
         {
             _logger.LogDebug("Email already sent for EventId={EventId}", eventId);
             return;
         }
 
-        var template = await _templateRepo.GetByKeyAsync("password-changed", ct);
+        var template = await _templateRepo.GetByKeyAsync(NotificationTemplateKeys.PasswordChanged, ct);
         if (template == null || !template.IsActive)
         {
             _logger.LogWarning("Template 'password-changed' not found or inactive");
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "Email", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.Email, ct: ct);
         if (lockHandle == null) return;
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
         var data = new Dictionary<string, string>
         {
-            ["username"] = message.Username,
-            ["changedAt"] = message.ChangedAt.ToString("f")
+            [NotificationTemplateDataKeys.Username] = message.Username,
+            [NotificationTemplateDataKeys.ChangedAt] = message.ChangedAt.ToString("f")
         };
 
         var subject = TemplateHelper.RenderTemplate(template.Subject ?? "Your Password Has Been Changed", data);
         var body = TemplateHelper.RenderTemplate(template.Body, data);
 
-        var record = Notification.Domain.Entities.NotificationRecord.Create(
+        var record = NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
-            "password-changed",
-            "Email",
+            NotificationTemplateKeys.PasswordChanged,
+            NotificationChannelNames.Email,
             subject,
             message.Email);
 
@@ -88,12 +89,12 @@ public class PasswordChangedConsumer : IConsumer<PasswordChangedEvent>
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                await _idempotency.MarkAsProcessedAsync(eventId, "Email", result.MessageId, ct: ct);
+                await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.Email, result.MessageId, ct: ct);
                 _logger.LogInformation("Password change notification sent to {Email}", message.Email);
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }

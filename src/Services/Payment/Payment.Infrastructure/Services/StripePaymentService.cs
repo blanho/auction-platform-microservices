@@ -65,7 +65,7 @@ public class StripePaymentService : IStripePaymentService
         long amountInCents,
         string currency,
         string customerId,
-        Dictionary<string, string> metadata = null,
+        Dictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default)
     {
         var idempotencyKey = metadata?.GetValueOrDefault(StripeMetadataKeys.OrderId) ?? Guid.NewGuid().ToString();
@@ -194,7 +194,7 @@ public class StripePaymentService : IStripePaymentService
         return customer;
     }
 
-    public async Task<Customer> GetCustomerByEmailAsync(
+    public async Task<Customer?> GetCustomerByEmailAsync(
         string email,
         CancellationToken cancellationToken = default)
     {

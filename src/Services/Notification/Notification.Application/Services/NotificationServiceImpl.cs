@@ -1,7 +1,9 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Providers;
+using BuildingBlocks.Application.Localization;
 using Notification.Application.DTOs;
+using Notification.Application.Helpers;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
@@ -16,6 +18,7 @@ namespace Notification.Application.Services
         private readonly IMapper _mapper;
         private readonly INotificationHubService _hubService;
         private readonly IDateTimeProvider _dateTime;
+        private readonly ILocalizationService _localization;
 
         public NotificationServiceImpl(
             INotificationRepository repository,
@@ -23,7 +26,8 @@ namespace Notification.Application.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             INotificationHubService hubService,
-            IDateTimeProvider dateTime)
+            IDateTimeProvider dateTime,
+            ILocalizationService localization)
         {
             _repository = repository;
             _preferenceRepository = preferenceRepository;
@@ -31,18 +35,20 @@ namespace Notification.Application.Services
             _mapper = mapper;
             _hubService = hubService;
             _dateTime = dateTime;
+            _localization = localization;
         }
 
         public async Task<NotificationDto> CreateNotificationAsync(CreateNotificationDto dto, CancellationToken cancellationToken = default)
         {
+            var localizedContent = NotificationLocalizationMetadata.ResolveForStorage(dto, _localization);
             var notification = NotificationEntity.Create(
                 dto.UserId,
                 dto.UserId,
                 dto.Type,
-                dto.Title,
-                dto.Message,
+                localizedContent.Title,
+                localizedContent.Message,
                 ChannelType.InApp,
-                dto.Data,
+                localizedContent.Data,
                 null,
                 dto.AuctionId,
                 dto.BidId,
@@ -54,7 +60,7 @@ namespace Notification.Application.Services
             await _repository.CreateAsync(notification, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var notificationDto = notification.ToDto(_mapper);
+            var notificationDto = Localize(notification.ToDto(_mapper));
             await _hubService.SendNotificationToUserAsync(dto.UserId, notificationDto);
 
             return notificationDto;
@@ -63,7 +69,7 @@ namespace Notification.Application.Services
         public async Task<List<NotificationDto>> GetUserNotificationsAsync(string userId, CancellationToken cancellationToken = default)
         {
             var notifications = await _repository.GetByUserIdAsync(userId, cancellationToken);
-            return notifications.ToDtoList(_mapper);
+            return notifications.Select(notification => Localize(notification.ToDto(_mapper))).ToList();
         }
 
         public async Task<NotificationSummaryDto> GetNotificationSummaryAsync(string userId, CancellationToken cancellationToken = default)
@@ -75,7 +81,10 @@ namespace Notification.Application.Services
             {
                 UnreadCount = unreadCount,
                 TotalCount = allNotifications.Count,
-                RecentNotifications = allNotifications.Take(NotificationDefaults.Pagination.RecentNotificationsCount).ToList().ToDtoList(_mapper)
+                RecentNotifications = allNotifications
+                    .Take(NotificationDefaults.Pagination.RecentNotificationsCount)
+                    .Select(notification => Localize(notification.ToDto(_mapper)))
+                    .ToList()
             };
         }
 
@@ -129,7 +138,7 @@ namespace Notification.Application.Services
                 cancellationToken);
 
             return new PaginatedResult<NotificationDto>(
-                result.Items.ToDtoList(_mapper),
+                result.Items.Select(notification => Localize(notification.ToDto(_mapper))).ToList(),
                 result.TotalCount,
                 result.Page,
                 result.PageSize
@@ -152,7 +161,7 @@ namespace Notification.Application.Services
             await _repository.CreateAsync(notification, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var notificationDto = notification.ToDto(_mapper);
+            var notificationDto = Localize(notification.ToDto(_mapper));
             await _hubService.SendNotificationToAllAsync(notificationDto);
         }
 
@@ -225,6 +234,20 @@ namespace Notification.Application.Services
                 PromotionalEmails = preference.PromotionalEmails,
                 SystemAlerts = preference.SystemAlerts
             };
+        }
+
+        private NotificationDto Localize(NotificationDto notification)
+        {
+            var localizedContent = NotificationLocalizationMetadata.ResolveForResponse(
+                notification.Title,
+                notification.Message,
+                notification.Data,
+                _localization);
+
+            notification.Title = localizedContent.Title;
+            notification.Message = localizedContent.Message;
+            notification.Data = localizedContent.Data;
+            return notification;
         }
     }
 }

@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.FileProviders;
+using Storage.Application.Features.Files.UploadFile;
+using System.Text.Json.Serialization;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.Extensions;
 using Storage.Application.Resources;
@@ -27,13 +31,13 @@ builder.Services.ValidateStandardConfiguration(
 
 builder.AddCentralizedLogging();
 
-var applicationAssembly = typeof(Storage.Application.DTOs.StoredFileDto).Assembly;
+var applicationAssembly = typeof(StoredFileDto).Assembly;
 
 builder.Services.AddCommonUtilities();
 builder.Services.AddAppLocalization<StorageResources>();
 builder.Services.AddObservability(builder.Configuration);
 builder.Services.AddValidatorsFromAssembly(applicationAssembly);
-builder.Services.AddCQRS(typeof(Storage.Application.Features.Files.UploadFile.UploadFileCommand).Assembly);
+builder.Services.AddCQRS(typeof(UploadFileCommand).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
@@ -47,7 +51,7 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
                 npgsqlOptions.EnableRetryOnFailure(maxRetryCount: StorageDefaults.Database.RetryCount, maxRetryDelay: TimeSpan.FromSeconds(StorageDefaults.Database.MaxRetryDelaySeconds), errorCodesToAdd: null);
                 npgsqlOptions.CommandTimeout(StorageDefaults.Database.CommandTimeoutSeconds);
             })
-        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+        .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 builder.Services.AddStorageInfrastructure();
 builder.Services.AddStorageMessaging(builder.Configuration);
 builder.Services.AddAuditServices(builder.Configuration, "storage-service");
@@ -62,8 +66,8 @@ builder.Services.AddCustomHealthChecks(
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
 var app = builder.Build();
@@ -106,7 +110,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 var storageSettings = builder.Configuration.GetSection(FileStorageSettings.SectionName).Get<FileStorageSettings>();
-if (storageSettings?.Provider == "Local")
+if (storageSettings is { Provider: var provider } &&
+    string.Equals(provider, StorageDefaults.Providers.Local, StringComparison.OrdinalIgnoreCase))
 {
     var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, storageSettings.Local.BasePath);
     if (!Directory.Exists(uploadsPath))
@@ -116,7 +121,7 @@ if (storageSettings?.Provider == "Local")
 
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+        FileProvider = new PhysicalFileProvider(uploadsPath),
         RequestPath = storageSettings.Local.BaseUrl
     });
 }

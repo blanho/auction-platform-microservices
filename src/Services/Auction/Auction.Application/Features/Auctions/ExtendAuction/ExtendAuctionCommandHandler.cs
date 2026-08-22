@@ -63,13 +63,10 @@ public class ExtendAuctionCommandHandler : ICommandHandler<ExtendAuctionCommand,
             AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
             oldAuctionData,
-            new Dictionary<string, object>
-            {
-                ["Action"] = "Extended",
-                ["ExtensionMinutes"] = request.ExtensionMinutes,
-                ["PreviousEnd"] = previousEnd,
-                ["NewEnd"] = auction.AuctionEnd
-            },
+            AuctionAuditMetadata.ForExtension(
+                request.ExtensionMinutes,
+                previousEnd,
+                auction.AuctionEnd),
             cancellationToken);
 
         _logger.LogInformation("Auction {AuctionId} extended to {NewEnd}",

@@ -61,11 +61,11 @@ public class AzureBlobStorageService : IFileStorageService
 
         var headers = new BlobHttpHeaders { ContentType = request.ContentType };
         var metadata = request.Metadata ?? new Dictionary<string, string>();
-        metadata["OriginalFileName"] = request.FileName;
+        metadata[BlobStorageConstants.MetadataKeys.OriginalFileName] = request.FileName;
 
         if (request.OwnerId.HasValue)
         {
-            metadata["OwnerId"] = request.OwnerId.Value.ToString();
+            metadata[BlobStorageConstants.MetadataKeys.OwnerId] = request.OwnerId.Value.ToString();
         }
 
         await blobClient.UploadAsync(
@@ -108,7 +108,7 @@ public class AzureBlobStorageService : IFileStorageService
 
         return new FileDownloadResult(
             Content: memoryStream,
-            FileName: properties.Metadata.TryGetValue("OriginalFileName", out var originalName) ? originalName : Path.GetFileName(blobClient.Name),
+            FileName: properties.Metadata.TryGetValue(BlobStorageConstants.MetadataKeys.OriginalFileName, out var originalName) ? originalName : Path.GetFileName(blobClient.Name),
             ContentType: properties.ContentType,
             FileSize: properties.ContentLength
         );
@@ -159,7 +159,7 @@ public class AzureBlobStorageService : IFileStorageService
         {
             BlobContainerName = _containerClient.Name,
             BlobName = blobPath,
-            Resource = "b",
+            Resource = BlobStorageConstants.BlobResource,
             ExpiresOn = expiresAt
         };
         sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
@@ -169,8 +169,8 @@ public class AzureBlobStorageService : IFileStorageService
 
         var headers = new Dictionary<string, string>
         {
-            ["x-ms-blob-type"] = "BlockBlob",
-            ["Content-Type"] = request.ContentType
+            [BlobStorageConstants.Headers.BlobType] = BlobStorageConstants.BlockBlob,
+            [BlobStorageConstants.Headers.ContentType] = request.ContentType
         };
 
         _logger.LogInformation("Generated upload SAS token for blob: {BlobPath}", blobPath);
@@ -203,7 +203,7 @@ public class AzureBlobStorageService : IFileStorageService
         {
             BlobContainerName = _containerClient.Name,
             BlobName = blobClient.Name,
-            Resource = "b",
+            Resource = BlobStorageConstants.BlobResource,
             ExpiresOn = expiresAt
         };
         sasBuilder.SetPermissions(BlobSasPermissions.Read);
@@ -211,7 +211,7 @@ public class AzureBlobStorageService : IFileStorageService
         var sasToken = await GenerateSasQueryAsync(sasBuilder, expiresAt, cancellationToken);
         var downloadUrl = $"{blobClient.Uri}?{sasToken}";
 
-        var originalName = properties.Value.Metadata.TryGetValue("OriginalFileName", out var name)
+        var originalName = properties.Value.Metadata.TryGetValue(BlobStorageConstants.MetadataKeys.OriginalFileName, out var name)
             ? name
             : Path.GetFileName(blobClient.Name);
 

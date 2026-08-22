@@ -20,10 +20,6 @@ interface UseAuctionDetailActionsReturn {
   handleSellerContact: () => void
 }
 
-/**
- * Encapsulates all user-action handlers for the AuctionDetailPage.
- * Keeps the page component focused on layout and composition only.
- */
 export function useAuctionDetailActions(
   auctionId: string | undefined
 ): UseAuctionDetailActionsReturn {

@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Search.Domain.Documents;
 
 public class AuctionDocument
@@ -31,7 +33,7 @@ public class AuctionDocument
 
     public decimal? BuyNowPrice { get; set; }
 
-    public string Currency { get; set; } = "USD";
+    public string Currency { get; set; } = CurrencyCodes.Usd;
 
     public string Status { get; set; } = string.Empty;
 

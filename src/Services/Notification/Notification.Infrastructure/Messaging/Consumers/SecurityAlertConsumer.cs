@@ -1,3 +1,4 @@
+using Notification.Domain.Entities;
 using IdentityService.Contracts.Events;
 using Microsoft.Extensions.Logging;
 using Notification.Application.Helpers;
@@ -40,16 +41,16 @@ public class SecurityAlertConsumer : IConsumer<SecurityAlertEvent>
             "Processing SecurityAlertEvent: UserId={UserId}, AlertType={AlertType}, IP={IpAddress}",
             message.UserId,
             message.AlertType,
-            message.IpAddress ?? "unknown");
+            message.IpAddress ?? NotificationDefaults.Fallback.UnknownLower);
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
         var templateKey = GetTemplateKey(message.AlertType);
         var template = await _templateRepo.GetByKeyAsync(templateKey, ct);
         if (template == null || !template.IsActive)
         {
-            template = await _templateRepo.GetByKeyAsync("security-alert-general", ct);
+            template = await _templateRepo.GetByKeyAsync(NotificationTemplateKeys.SecurityAlertGeneral, ct);
         }
 
         if (template == null || !template.IsActive)
@@ -58,28 +59,28 @@ public class SecurityAlertConsumer : IConsumer<SecurityAlertEvent>
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "Email", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.Email, ct: ct);
         if (lockHandle == null) return;
 
-        if (await _idempotency.IsProcessedAsync(eventId, "Email", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.Email, ct))
             return;
 
         var data = new Dictionary<string, string>
         {
-            ["username"] = message.Username,
-            ["alertType"] = message.AlertType,
-            ["description"] = message.Description,
-            ["ipAddress"] = message.IpAddress ?? "Unknown",
-            ["occurredAt"] = message.OccurredAt.ToString("f")
+            [NotificationTemplateDataKeys.Username] = message.Username,
+            [NotificationTemplateDataKeys.AlertType] = message.AlertType,
+            [NotificationTemplateDataKeys.Description] = message.Description,
+            [NotificationTemplateDataKeys.IpAddress] = message.IpAddress ?? NotificationDefaults.Fallback.Unknown,
+            [NotificationTemplateDataKeys.OccurredAt] = message.OccurredAt.ToString("f")
         };
 
         var subject = GetSubject(message.AlertType);
         var body = TemplateHelper.RenderTemplate(template.Body, data);
 
-        var record = Notification.Domain.Entities.NotificationRecord.Create(
+        var record = NotificationRecord.Create(
             Guid.TryParse(message.UserId, out var uid) ? uid : Guid.Empty,
             templateKey,
-            "Email",
+            NotificationChannelNames.Email,
             subject,
             message.Email);
 
@@ -90,12 +91,12 @@ public class SecurityAlertConsumer : IConsumer<SecurityAlertEvent>
             if (result.Success)
             {
                 record.MarkAsSent(result.MessageId);
-                await _idempotency.MarkAsProcessedAsync(eventId, "Email", result.MessageId, ct: ct);
+                await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.Email, result.MessageId, ct: ct);
                 _logger.LogInformation("Security alert email sent to {Email} for {AlertType}", message.Email, message.AlertType);
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 throw new InvalidOperationException($"Email delivery failed: {result.Error}");
             }
         }
@@ -108,11 +109,11 @@ public class SecurityAlertConsumer : IConsumer<SecurityAlertEvent>
 
     private static string GetTemplateKey(string alertType) => alertType switch
     {
-        SecurityAlertTypes.TokenTheftDetected => "security-alert-token-theft",
-        SecurityAlertTypes.SuspiciousLogin => "security-alert-suspicious-login",
-        SecurityAlertTypes.MultipleFailedLogins => "security-alert-failed-logins",
-        SecurityAlertTypes.SessionsRevoked => "security-alert-sessions-revoked",
-        _ => "security-alert-general"
+        SecurityAlertTypes.TokenTheftDetected => NotificationTemplateKeys.SecurityAlertTokenTheft,
+        SecurityAlertTypes.SuspiciousLogin => NotificationTemplateKeys.SecurityAlertSuspiciousLogin,
+        SecurityAlertTypes.MultipleFailedLogins => NotificationTemplateKeys.SecurityAlertFailedLogins,
+        SecurityAlertTypes.SessionsRevoked => NotificationTemplateKeys.SecurityAlertSessionsRevoked,
+        _ => NotificationTemplateKeys.SecurityAlertGeneral
     };
 
     private static string GetSubject(string alertType) => alertType switch

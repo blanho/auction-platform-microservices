@@ -9,7 +9,7 @@ using Analytics.Application.Interfaces;
 
 namespace Analytics.Infrastructure.Repositories;
 
-public class UnitOfWork : BaseUnitOfWork<AnalyticsDbContext>, BuildingBlocks.Application.Abstractions.IUnitOfWork
+public class UnitOfWork : BaseUnitOfWork<AnalyticsDbContext>, IUnitOfWork
 {
     private IAuditLogRepository? _auditLogs;
 

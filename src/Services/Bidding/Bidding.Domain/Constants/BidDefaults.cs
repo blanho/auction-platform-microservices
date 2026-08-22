@@ -15,12 +15,6 @@ public static class BidDefaults
     public const int DeduplicationWindowSeconds = 5;
     public const string DeduplicationKeyPrefix = "bid:dedup:";
 
-    public const int BidRateLimitPerSecond = 5;
-    public const int AutoBidRateLimitPerMinute = 10;
-    public const int ApiRateLimitPerMinute = 100;
-
-    public const int MaxAutoBidRecursionDepth = 10;
-    public const int MaxActiveBidsPerUser = 100;
 
     public const int RetractWindowMinutes = 5;
 
@@ -82,7 +76,6 @@ public static class BidDefaults
     {
         public const string Live = "Live";
         public const string Finished = "Finished";
-        public const string Deleted = "Deleted";
     }
 
     public static class BiddingAuditActions

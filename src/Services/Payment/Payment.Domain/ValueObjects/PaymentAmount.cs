@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
+using Payment.Domain.Constants;
 
 namespace Payment.Domain.ValueObjects;
 
@@ -27,7 +28,7 @@ public sealed class PaymentAmount : ValueObject
             currency.Trim().ToUpperInvariant());
     }
 
-    public static PaymentAmount Zero(string currency = "USD") => new(0, currency);
+    public static PaymentAmount Zero(string currency = WalletDefaults.DefaultCurrency) => new(0, currency);
 
     public PaymentAmount ApplyPlatformFee(decimal feePercentage)
     {

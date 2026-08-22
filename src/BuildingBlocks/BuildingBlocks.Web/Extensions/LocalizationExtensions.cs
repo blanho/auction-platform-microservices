@@ -1,6 +1,7 @@
 using System.Globalization;
 using BuildingBlocks.Application.Localization;
 using BuildingBlocks.Infrastructure.Localization;
+using BuildingBlocks.Web.Localization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,10 @@ public static class LocalizationExtensions
 
         services.AddLocalization(localizationOptions =>
         {
-            localizationOptions.ResourcesPath = options.ResourcesPath;
+            if (!string.IsNullOrWhiteSpace(options.ResourcesPath))
+            {
+                localizationOptions.ResourcesPath = options.ResourcesPath;
+            }
         });
 
         services.AddScoped<ILocalizationService, CompositeLocalizationService<TServiceResources>>();
@@ -87,6 +91,7 @@ public static class LocalizationExtensions
         if (localizationOptions?.Value != null)
         {
             app.UseRequestLocalization(localizationOptions.Value);
+            app.UseMiddleware<RequestLocalizationContextMiddleware>();
         }
 
         return app;

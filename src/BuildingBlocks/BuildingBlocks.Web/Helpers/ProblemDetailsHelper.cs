@@ -1,5 +1,7 @@
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Localization;
+using BuildingBlocks.Web.Constants;
+using BuildingBlocks.Web.Localization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,7 @@ public static class ProblemDetailsHelper
 
     public static ProblemDetails FromError(Error error, string? errorTypeBaseUrl = null)
     {
-        return FromError(error, localizer: null, errorTypeBaseUrl);
+        return FromError(error, RequestLocalizationContext.Current, errorTypeBaseUrl);
     }
 
     public static ProblemDetails FromError(Error error, ILocalizationService? localizer, string? errorTypeBaseUrl = null)
@@ -29,7 +31,8 @@ public static class ProblemDetailsHelper
 
         if (error is ValidationError validationError)
         {
-            problemDetails.Extensions["errors"] = validationError.Errors;
+            problemDetails.Extensions[ProblemDetailsExtensionKeys.Errors] =
+                ValidationErrorLocalizer.Localize(validationError.Errors, localizer);
         }
 
         return problemDetails;
@@ -78,8 +81,10 @@ public static class ProblemDetailsHelper
         Dictionary<string, string[]> errors,
         string? errorTypeBaseUrl = null)
     {
+        var localizer = RequestLocalizationContext.Current;
         var problemDetails = ValidationError(detail, errorTypeBaseUrl);
-        problemDetails.Extensions["errors"] = errors;
+        problemDetails.Extensions[ProblemDetailsExtensionKeys.Errors] =
+            ValidationErrorLocalizer.Localize(errors, localizer);
         return problemDetails;
     }
 
@@ -87,9 +92,11 @@ public static class ProblemDetailsHelper
         Dictionary<string, string[]> errors,
         string? errorTypeBaseUrl = null)
     {
-        var firstError = errors.Values.FirstOrDefault()?.FirstOrDefault() ?? "Validation failed";
-        var problemDetails = ValidationError(firstError, errorTypeBaseUrl);
-        problemDetails.Extensions["errors"] = errors;
+        var localizer = RequestLocalizationContext.Current;
+        var localizedErrors = ValidationErrorLocalizer.Localize(errors, localizer);
+        var detail = localizer?.GetString(LocalizationKeys.Validation.Failed) ?? "Validation failed";
+        var problemDetails = ValidationError(detail, errorTypeBaseUrl);
+        problemDetails.Extensions[ProblemDetailsExtensionKeys.Errors] = localizedErrors;
         return problemDetails;
     }
 
@@ -108,13 +115,17 @@ public static class ProblemDetailsHelper
         string? errorTypeBaseUrl = null)
     {
         var errorList = errors ?? new List<string>();
-        var firstError = errorList.FirstOrDefault() ?? "Validation failed";
-        var problemDetails = ValidationError(firstError, errorTypeBaseUrl);
+        var localizer = RequestLocalizationContext.Current;
+        var localizedErrors = errorList
+            .Select(error => ValidationErrorLocalizer.LocalizeMessage(error, localizer))
+            .ToList();
+        var detail = localizer?.GetString(LocalizationKeys.Validation.Failed) ?? "Validation failed";
+        var problemDetails = ValidationError(detail, errorTypeBaseUrl);
         if (errorList.Count > 0)
         {
-            problemDetails.Extensions["errors"] = new Dictionary<string, string[]>
+            problemDetails.Extensions[ProblemDetailsExtensionKeys.Errors] = new Dictionary<string, string[]>
             {
-                ["general"] = errorList.ToArray()
+                [ProblemDetailsExtensionKeys.General] = localizedErrors.ToArray()
             };
         }
         return problemDetails;

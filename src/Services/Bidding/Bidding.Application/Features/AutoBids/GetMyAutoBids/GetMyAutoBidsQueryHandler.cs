@@ -56,7 +56,7 @@ public class GetMyAutoBidsQueryHandler : IQueryHandler<GetMyAutoBidsQuery, Pagin
                 Id = autoBid.Id,
                 AuctionId = autoBid.AuctionId,
                 AuctionTitle = "Auction",
-                AuctionStatus = "Live",
+                AuctionStatus = BidDefaults.AuctionStatuses.Live,
                 MaxAmount = autoBid.MaxAmount,
                 CurrentBidAmount = autoBid.CurrentBidAmount,
                 CurrentAuctionBid = highestBid?.Amount ?? 0,

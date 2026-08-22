@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Globalization;
 using Gateway.Api.Extensions;
+using Gateway.Api.Constants;
 using Microsoft.AspNetCore.Localization;
 using Serilog;
 using Yarp.ReverseProxy.Transforms;
@@ -32,11 +35,10 @@ builder.Services.AddReverseProxy()
     {
         builderContext.AddRequestTransform(context =>
         {
-            const string correlationIdHeader = "X-Correlation-Id";
-            var correlationId = context.HttpContext.Request.Headers[correlationIdHeader].FirstOrDefault()
+            var correlationId = context.HttpContext.Request.Headers[GatewayConstants.CorrelationIdHeader].FirstOrDefault()
                                 ?? Guid.NewGuid().ToString();
-            context.ProxyRequest.Headers.Remove(correlationIdHeader);
-            context.ProxyRequest.Headers.Add(correlationIdHeader, correlationId);
+            context.ProxyRequest.Headers.Remove(GatewayConstants.CorrelationIdHeader);
+            context.ProxyRequest.Headers.Add(GatewayConstants.CorrelationIdHeader, correlationId);
             return ValueTask.CompletedTask;
         });
     });
@@ -45,12 +47,12 @@ builder.Services.AddGatewayRateLimiter();
 builder.Services.AddGatewayAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("GatewayService is running"),
+    .AddCheck("self", () => HealthCheckResult.Healthy("GatewayService is running"),
         tags: new[] { "self", "ready" });
 builder.Services.AddGatewayCors(builder.Configuration, builder.Environment);
 
 var supportedCultures = new[] { new CultureInfo("en-US"), new CultureInfo("ja-JP") };
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddLocalization();
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     options.DefaultRequestCulture = new RequestCulture("en-US");
@@ -77,17 +79,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/health", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("self")
 }).AllowAnonymous();
 
-app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
 }).AllowAnonymous();
 
-app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
     Predicate = _ => false
 }).AllowAnonymous();

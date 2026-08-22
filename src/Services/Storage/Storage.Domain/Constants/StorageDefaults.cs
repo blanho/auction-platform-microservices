@@ -1,3 +1,5 @@
+using Storage.Domain.Enums;
+
 namespace Storage.Domain.Constants;
 
 public static class StorageDefaults
@@ -72,9 +74,9 @@ public static class StorageDefaults
         public const string AzureBlob = "AzureBlob";
         public const string Local = "Local";
 
-        public static Enums.StorageProvider Resolve(string providerName) =>
+        public static StorageProvider Resolve(string providerName) =>
             string.Equals(providerName, AzureBlob, StringComparison.OrdinalIgnoreCase)
-                ? Enums.StorageProvider.AzureBlob
-                : Enums.StorageProvider.Local;
+                ? StorageProvider.AzureBlob
+                : StorageProvider.Local;
     }
 }

@@ -6,13 +6,11 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.DTOs.TwoFactor;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record VerifyCodeCommand(string Code, bool RememberDevice) : ICommand;
 
 public class VerifyCodeCommandHandler(
-    Microsoft.AspNetCore.Identity.SignInManager<Identity.Domain.Entities.ApplicationUser> signInManager,
-    ILogger<VerifyCodeCommandHandler> logger) : ICommandHandler<VerifyCodeCommand>
+    SignInManager<ApplicationUser> signInManager) : ICommandHandler<VerifyCodeCommand>
 {
     public async Task<Result> Handle(VerifyCodeCommand command, CancellationToken cancellationToken)
     {
@@ -26,8 +24,8 @@ public class VerifyCodeCommandHandler(
             return Result.Success();
 
         if (result.IsLockedOut)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.Auth.AccountLockedOut);
+            return Result.Failure(IdentityErrors.Auth.AccountLockedOut);
 
-        return Result.Failure(Identity.Application.Errors.IdentityErrors.TwoFactor.InvalidCode);
+        return Result.Failure(IdentityErrors.TwoFactor.InvalidCode);
     }
 }

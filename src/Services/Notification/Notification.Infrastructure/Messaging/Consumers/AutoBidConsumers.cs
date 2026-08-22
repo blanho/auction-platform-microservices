@@ -26,8 +26,10 @@ public class AutoBidCreatedConsumer : IdempotentNotificationConsumer<AutoBidCrea
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.AutoBidCreated,
-        Title = "Auto-Bid Created",
-        Message = $"Your auto-bid has been set up with a maximum of {NotificationFormattingHelper.FormatCurrency(e.MaxAmount)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AutoBidCreatedTitle,
+            NotificationMessageKeys.AutoBidCreatedMessage,
+            NotificationFormattingHelper.FormatCurrency(e.MaxAmount)),
         Data = NotificationDataBuilder.Create()
             .Add("AutoBidId", e.AutoBidId)
             .Add("AuctionId", e.AuctionId)
@@ -55,8 +57,9 @@ public class AutoBidActivatedConsumer : IdempotentNotificationConsumer<AutoBidAc
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.AutoBidActivated,
-        Title = "Auto-Bid Activated",
-        Message = "Your auto-bid has been activated and will automatically place bids on your behalf.",
+        LocalizedText = new(
+            NotificationMessageKeys.AutoBidActivatedTitle,
+            NotificationMessageKeys.AutoBidActivatedMessage),
         Data = NotificationDataBuilder.Create()
             .Add("AutoBidId", e.AutoBidId)
             .Add("AuctionId", e.AuctionId)
@@ -83,8 +86,9 @@ public class AutoBidDeactivatedConsumer : IdempotentNotificationConsumer<AutoBid
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.AutoBidDeactivated,
-        Title = "Auto-Bid Deactivated",
-        Message = "Your auto-bid has been deactivated. You will no longer place automatic bids on this auction.",
+        LocalizedText = new(
+            NotificationMessageKeys.AutoBidDeactivatedTitle,
+            NotificationMessageKeys.AutoBidDeactivatedMessage),
         Data = NotificationDataBuilder.Create()
             .Add("AutoBidId", e.AutoBidId)
             .Add("AuctionId", e.AuctionId)
@@ -112,8 +116,10 @@ public class AutoBidUpdatedConsumer : IdempotentNotificationConsumer<AutoBidUpda
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.AutoBidUpdated,
-        Title = "Auto-Bid Updated",
-        Message = $"Your auto-bid maximum has been updated to {NotificationFormattingHelper.FormatCurrency(e.NewMaxAmount)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.AutoBidUpdatedTitle,
+            NotificationMessageKeys.AutoBidUpdatedMessage,
+            NotificationFormattingHelper.FormatCurrency(e.NewMaxAmount)),
         Data = NotificationDataBuilder.Create()
             .Add("AutoBidId", e.AutoBidId)
             .Add("AuctionId", e.AuctionId)

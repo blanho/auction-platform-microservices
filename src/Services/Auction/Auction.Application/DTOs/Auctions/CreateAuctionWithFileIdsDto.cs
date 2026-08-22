@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Auctions.Domain.Constants;
 
 namespace Auctions.Application.DTOs.Auctions;
 
@@ -35,7 +36,7 @@ public class CreateAuctionWithFileIdsDto
 
     public bool IsFeatured { get; set; } = false;
 
-    public string Currency { get; set; } = "USD";
+    public string Currency { get; set; } = AuctionDefaults.DefaultCurrency;
 }
 
 public class AuctionFileInputDto
@@ -46,4 +47,3 @@ public class AuctionFileInputDto
     public int DisplayOrder { get; set; }
     public bool IsPrimary { get; set; }
 }
-

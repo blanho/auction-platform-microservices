@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Application.Authorization;
 using BuildingBlocks.Web.Exceptions;
 using Identity.Infrastructure.Persistence;
 using Identity.Domain.Entities;

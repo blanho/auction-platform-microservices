@@ -45,7 +45,7 @@ public class AuthHelper(
             {
                 UserId = user.Id,
                 Username = user.UserName,
-                Action = "Login",
+                Action = IdentityDefaults.AuditData.Login,
                 IpAddress = ipAddress,
                 Success = true
             },

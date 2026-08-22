@@ -1,4 +1,6 @@
+using System.Globalization;
 using BuildingBlocks.Domain.Entities;
+using BuildingBlocks.Domain.Constants;
 using BuildingBlocks.Domain.Exceptions;
 
 namespace BuildingBlocks.Domain.ValueObjects;
@@ -7,7 +9,16 @@ public sealed class Money : ValueObject, IComparable<Money>
 {
     private static readonly HashSet<string> SupportedCurrencies = new(StringComparer.OrdinalIgnoreCase)
     {
-        "USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "SEK", "NOK"
+        CurrencyCodes.Usd,
+        CurrencyCodes.Eur,
+        CurrencyCodes.Gbp,
+        CurrencyCodes.Jpy,
+        CurrencyCodes.Aud,
+        CurrencyCodes.Cad,
+        CurrencyCodes.Chf,
+        CurrencyCodes.Cny,
+        CurrencyCodes.Sek,
+        CurrencyCodes.Nok
     };
 
     public decimal Amount { get; }
@@ -30,9 +41,9 @@ public sealed class Money : ValueObject, IComparable<Money>
         Currency = normalizedCurrency;
     }
 
-    public static Money Zero(string currency = "USD") => new(0, currency);
+    public static Money Zero(string currency = CurrencyCodes.Usd) => new(0, currency);
 
-    public static Money Of(decimal amount, string currency = "USD") => new(amount, currency);
+    public static Money Of(decimal amount, string currency = CurrencyCodes.Usd) => new(amount, currency);
 
     public Money Add(Money other)
     {
@@ -111,5 +122,5 @@ public sealed class Money : ValueObject, IComparable<Money>
         yield return Currency;
     }
 
-    public override string ToString() => $"{Amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)} {Currency}";
+    public override string ToString() => $"{Amount.ToString("F2", CultureInfo.InvariantCulture)} {Currency}";
 }

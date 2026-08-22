@@ -10,16 +10,14 @@ using Identity.Application.DTOs.Seller;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Paging;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Identity.Application.Filters;
 
-public record GetUsersListQuery(Identity.Application.DTOs.Users.GetUsersQuery Query) : IQuery<PaginatedResult<AdminUserDto>>;
+public record GetUsersListQuery(GetUsersQuery Query) : IQuery<PaginatedResult<AdminUserDto>>;
 
 public class GetUsersListQueryHandler(
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
-    Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole> roleManager,
-    AutoMapper.IMapper mapper,
-    ILogger<GetUsersListQueryHandler> logger) : IQueryHandler<GetUsersListQuery, PaginatedResult<AdminUserDto>>
+    UserManager<ApplicationUser> userManager,
+    RoleManager<IdentityRole> roleManager,
+    IMapper mapper) : IQueryHandler<GetUsersListQuery, PaginatedResult<AdminUserDto>>
 {
     public async Task<Result<PaginatedResult<AdminUserDto>>> Handle(GetUsersListQuery request, CancellationToken cancellationToken)
     {
@@ -39,7 +37,7 @@ public class GetUsersListQueryHandler(
             .Include(u => u.UserRoles)
             .ApplyUserFilters(query.Filter?.Search, query.Filter?.IsActive, query.Filter?.IsSuspended)
             .ApplyRoleFilter(roleId)
-            .ApplySorting(query, Identity.Application.Filters.UserSortMap.Map, u => u.CreatedAt);
+            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BidService.Contracts.Events;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
@@ -32,16 +33,16 @@ public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
             "Processing BidAccepted event for bid {BidId} by {Bidder}",
             @event.BidId, @event.BidderUsername);
 
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.InApp, ct))
         {
             _logger.LogDebug("BidAccepted already processed for EventId={EventId}", eventId);
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.InApp, ct: ct);
         if (lockHandle == null) return;
 
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.InApp, ct))
             return;
 
         await _notificationService.CreateNotificationAsync(
@@ -49,19 +50,21 @@ public class BidAcceptedConsumer : IConsumer<BidAcceptedEvent>
             {
                 UserId = @event.BidderId.ToString(),
                 Type = NotificationType.BidAccepted,
-                Title = "Bid Accepted",
-                Message = $"Congratulations! Your bid of {NotificationFormattingHelper.FormatCurrency(@event.Amount)} has been accepted.",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                LocalizedText = new(
+                    NotificationMessageKeys.BidAcceptedTitle,
+                    NotificationMessageKeys.BidAcceptedMessage,
+                    NotificationFormattingHelper.FormatCurrency(@event.Amount)),
+                Data = JsonSerializer.Serialize(new Dictionary<string, string>
                 {
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["BidId"] = @event.BidId.ToString(),
-                    ["Amount"] = @event.Amount.ToString("F2")
+                    [NotificationPayloadDataKeys.AuctionId] = @event.AuctionId.ToString(),
+                    [NotificationPayloadDataKeys.BidId] = @event.BidId.ToString(),
+                    [NotificationPayloadDataKeys.Amount] = @event.Amount.ToString("F2")
                 }),
                 AuctionId = @event.AuctionId,
                 BidId = @event.BidId
             },
             ct);
 
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+        await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.InApp, ct: ct);
     }
 }

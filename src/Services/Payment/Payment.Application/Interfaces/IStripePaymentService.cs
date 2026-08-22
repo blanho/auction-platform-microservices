@@ -10,7 +10,7 @@ public interface IStripePaymentService
         long amountInCents,
         string currency,
         string customerId,
-        Dictionary<string, string> metadata = null,
+        Dictionary<string, string>? metadata = null,
         CancellationToken cancellationToken = default);
 
     Task<PaymentIntent> GetPaymentIntentAsync(
@@ -34,7 +34,7 @@ public interface IStripePaymentService
         string name,
         CancellationToken cancellationToken = default);
 
-    Task<Customer> GetCustomerByEmailAsync(
+    Task<Customer?> GetCustomerByEmailAsync(
         string email,
         CancellationToken cancellationToken = default);
 

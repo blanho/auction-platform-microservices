@@ -1,4 +1,5 @@
 using Payment.Domain.Entities;
+using Payment.Domain.Constants;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Payment.Infrastructure.Persistence.Configurations;
@@ -25,7 +26,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         builder.Property(x => x.Currency)
             .IsRequired()
             .HasMaxLength(10)
-            .HasDefaultValue("USD");
+            .HasDefaultValue(WalletDefaults.DefaultCurrency);
 
         builder.Property(x => x.IsActive)
             .IsRequired()

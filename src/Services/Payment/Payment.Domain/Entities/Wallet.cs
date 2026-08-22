@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
 using BuildingBlocks.Domain.Guards;
+using Payment.Domain.Constants;
 
 namespace Payment.Domain.Entities;
 
@@ -12,10 +13,10 @@ public class Wallet : AggregateRoot
     public decimal Balance { get; private set; }
     public decimal HeldAmount { get; private set; }
     public decimal AvailableBalance => Balance - HeldAmount;
-    public string Currency { get; private set; } = "USD";
+    public string Currency { get; private set; } = WalletDefaults.DefaultCurrency;
     public bool IsActive { get; private set; } = true;
 
-    public static Wallet Create(Guid userId, string username, string currency = "USD")
+    public static Wallet Create(Guid userId, string username, string currency = WalletDefaults.DefaultCurrency)
     {
         Guard.AgainstEmpty(userId, nameof(userId));
         Guard.AgainstNullOrEmpty(username, nameof(username));

@@ -26,8 +26,9 @@ public class WalletCreatedConsumer : IdempotentNotificationConsumer<WalletCreate
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.WalletCreated,
-        Title = "Wallet Created",
-        Message = "Your wallet has been created. You can now deposit funds and start bidding!",
+        LocalizedText = new(
+            NotificationMessageKeys.WalletCreatedTitle,
+            NotificationMessageKeys.WalletCreatedMessage),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Build()
@@ -53,8 +54,11 @@ public class FundsDepositedConsumer : IdempotentNotificationConsumer<FundsDeposi
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.FundsDeposited,
-        Title = "Funds Deposited",
-        Message = $"{NotificationFormattingHelper.FormatCurrency(e.Amount)} has been deposited to your wallet. New balance: {NotificationFormattingHelper.FormatCurrency(e.NewBalance)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.FundsDepositedTitle,
+            NotificationMessageKeys.FundsDepositedMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount),
+            NotificationFormattingHelper.FormatCurrency(e.NewBalance)),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Add("Amount", e.Amount)
@@ -82,8 +86,11 @@ public class FundsWithdrawnConsumer : IdempotentNotificationConsumer<FundsWithdr
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.FundsWithdrawn,
-        Title = "Funds Withdrawn",
-        Message = $"{NotificationFormattingHelper.FormatCurrency(e.Amount)} has been withdrawn. New balance: {NotificationFormattingHelper.FormatCurrency(e.NewBalance)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.FundsWithdrawnTitle,
+            NotificationMessageKeys.FundsWithdrawnMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount),
+            NotificationFormattingHelper.FormatCurrency(e.NewBalance)),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Add("Amount", e.Amount)
@@ -111,8 +118,11 @@ public class FundsHeldConsumer : IdempotentNotificationConsumer<FundsHeldEvent>
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.FundsHeld,
-        Title = "Funds Reserved",
-        Message = $"{NotificationFormattingHelper.FormatCurrency(e.Amount)} has been reserved for your bid. Total held: {NotificationFormattingHelper.FormatCurrency(e.NewHeldAmount)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.FundsHeldTitle,
+            NotificationMessageKeys.FundsHeldMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount),
+            NotificationFormattingHelper.FormatCurrency(e.NewHeldAmount)),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Add("Amount", e.Amount)
@@ -140,8 +150,11 @@ public class FundsReleasedConsumer : IdempotentNotificationConsumer<FundsRelease
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.FundsReleased,
-        Title = "Funds Released",
-        Message = $"{NotificationFormattingHelper.FormatCurrency(e.Amount)} has been released back to your available balance. Total still held: {NotificationFormattingHelper.FormatCurrency(e.NewHeldAmount)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.FundsReleasedTitle,
+            NotificationMessageKeys.FundsReleasedMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount),
+            NotificationFormattingHelper.FormatCurrency(e.NewHeldAmount)),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Add("Amount", e.Amount)
@@ -169,8 +182,11 @@ public class FundsDeductedFromHeldConsumer : IdempotentNotificationConsumer<Fund
     {
         UserId = e.UserId.ToString(),
         Type = NotificationType.FundsDeducted,
-        Title = "Payment Processed",
-        Message = $"{NotificationFormattingHelper.FormatCurrency(e.Amount)} has been deducted from your reserved funds. New balance: {NotificationFormattingHelper.FormatCurrency(e.NewBalance)}.",
+        LocalizedText = new(
+            NotificationMessageKeys.FundsDeductedTitle,
+            NotificationMessageKeys.FundsDeductedMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount),
+            NotificationFormattingHelper.FormatCurrency(e.NewBalance)),
         Data = NotificationDataBuilder.Create()
             .Add("WalletId", e.WalletId)
             .Add("Amount", e.Amount)

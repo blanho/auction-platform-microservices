@@ -8,14 +8,14 @@ public class ReserveAuctionForBuyNowConsumer : IConsumer<ReserveAuctionForBuyNow
 {
     private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
-    private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<ReserveAuctionForBuyNowConsumer> _logger;
 
     public ReserveAuctionForBuyNowConsumer(
         IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
-        BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<ReserveAuctionForBuyNowConsumer> logger)
     {

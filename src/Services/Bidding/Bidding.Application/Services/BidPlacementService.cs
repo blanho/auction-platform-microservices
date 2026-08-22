@@ -69,10 +69,10 @@ namespace Bidding.Application.Services
                 return CreateRejectedBid(dto, bidderId, bidderUsername, "Another bid is being processed. Please try again.");
             }
 
-            return await ExecuteBidTransaction(dto, bidderId, bidderUsername, isAutoBid, ct);
+            return await ExecuteBidWithinAuctionLock(dto, bidderId, bidderUsername, isAutoBid, ct);
         }
 
-        private async Task<BidDto> ExecuteBidTransaction(
+        private async Task<BidDto> ExecuteBidWithinAuctionLock(
             PlaceBidDto dto,
             Guid bidderId,
             string bidderUsername,
@@ -83,8 +83,6 @@ namespace Bidding.Application.Services
                 dto.AuctionId,
                 async lockCt =>
                 {
-                    // Auction finalization acquires this same database lock. Revalidating
-                    // inside the lock creates one authoritative close/bid boundary.
                     var (auctionError, reservePrice) = await ValidateAuctionForBid(
                         dto,
                         bidderUsername,
@@ -133,8 +131,6 @@ namespace Bidding.Application.Services
             errorMessage = $"Bid must be at least ${minimumNextBid:N2}. Minimum increment is ${increment:N2} for bids at this level.";
             return false;
         }
-
-
 
         private Bid CreateBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, Bid? highestBid, bool isAutoBid, decimal reservePrice)
         {
@@ -234,7 +230,7 @@ namespace Bidding.Application.Services
             var snapshot = await _snapshotRepository.GetAsync(dto.AuctionId, ct);
             if (snapshot != null)
             {
-                if (!string.Equals(snapshot.Status, "Live", StringComparison.OrdinalIgnoreCase) &&
+                if (!string.Equals(snapshot.Status, BidDefaults.AuctionStatuses.Live, StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(snapshot.Status, "Active", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogWarning(

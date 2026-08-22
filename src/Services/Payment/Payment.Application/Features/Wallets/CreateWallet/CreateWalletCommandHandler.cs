@@ -6,6 +6,7 @@ using Payment.Application.DTOs.Audit;
 using Payment.Application.Errors;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using Payment.Domain.Constants;
 
 namespace Payment.Application.Features.Wallets.CreateWallet;
 
@@ -37,7 +38,7 @@ public class CreateWalletCommandHandler : ICommandHandler<CreateWalletCommand, W
         if (exists)
             return Result.Failure<WalletDto>(PaymentErrors.Wallet.AlreadyExists);
 
-        var wallet = Wallet.Create(request.UserId, request.Username, "USD");
+        var wallet = Wallet.Create(request.UserId, request.Username, WalletDefaults.DefaultCurrency);
 
         var created = await _walletRepository.AddAsync(wallet);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -66,11 +66,7 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
             AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
             oldAuctionData,
-            new Dictionary<string, object>
-            {
-                ["Action"] = "Deactivated",
-                ["PreviousStatus"] = previousStatus.ToString()
-            },
+            AuctionAuditMetadata.ForDeactivation(previousStatus),
             cancellationToken);
 
         _logger.LogInformation("Deactivated auction {AuctionId} from {PreviousStatus} to Inactive",
@@ -79,4 +75,3 @@ public class DeactivateAuctionCommandHandler : ICommandHandler<DeactivateAuction
         return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
     }
 }
-

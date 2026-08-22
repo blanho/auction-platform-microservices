@@ -10,13 +10,11 @@ using Identity.Application.DTOs.Seller;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Paging;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record GetAdminStatsQuery() : IQuery<AdminStatsResponse>;
 
 public class GetAdminStatsQueryHandler(
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
-    ILogger<GetAdminStatsQueryHandler> logger) : IQueryHandler<GetAdminStatsQuery, AdminStatsResponse>
+    UserManager<ApplicationUser> userManager) : IQueryHandler<GetAdminStatsQuery, AdminStatsResponse>
 {
     public async Task<Result<AdminStatsResponse>> Handle(GetAdminStatsQuery query, CancellationToken cancellationToken)
     {

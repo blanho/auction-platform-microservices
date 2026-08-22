@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Analytics.Infrastructure.Persistence;
 using Analytics.Application.Interfaces;
 using Analytics.Application.DTOs;
+using Analytics.Domain.Constants;
 
 namespace Analytics.Infrastructure.Repositories;
 
@@ -67,7 +68,7 @@ public class FactBidRepository : IFactBidRepository
 
         var auctionsWon = await _context.FactAuctions
             .AsNoTracking()
-            .Where(f => f.WinnerUsername == username && f.EventType == "Finished" && f.Sold)
+            .Where(f => f.WinnerUsername == username && f.EventType == AnalyticsEventTypes.Finished && f.Sold)
             .Select(f => f.AuctionId)
             .Distinct()
             .CountAsync(cancellationToken);

@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using BuildingBlocks.Web.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +18,7 @@ public class LoggingOptions
 {
     public const string SectionName = "Logging";
 
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServiceName is required")]
+    [Required(ErrorMessage = "ServiceName is required")]
     public string ServiceName { get; set; } = string.Empty;
 
     public string Environment { get; set; } = "development";
@@ -26,7 +28,7 @@ public class LoggingOptions
     public bool EnableRequestLogging { get; set; } = true;
     public bool EnablePerformanceLogging { get; set; } = true;
 
-    [System.ComponentModel.DataAnnotations.Range(100, 60000, ErrorMessage = "SlowRequestThresholdMs must be between 100 and 60000")]
+    [Range(100, 60000, ErrorMessage = "SlowRequestThresholdMs must be between 100 and 60000")]
     public int SlowRequestThresholdMs { get; set; } = 3000;
 
     public FileLoggingOptions? File { get; set; }
@@ -48,17 +50,17 @@ public class ElasticsearchLoggingOptions
 {
     public bool Enabled { get; set; } = false;
 
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Elasticsearch Url is required when Enabled=true")]
-    [System.ComponentModel.DataAnnotations.Url(ErrorMessage = "Url must be a valid URL")]
+    [Required(ErrorMessage = "Elasticsearch Url is required when Enabled=true")]
+    [Url(ErrorMessage = "Url must be a valid URL")]
     public string Url { get; set; } = string.Empty;
 
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "IndexFormat is required")]
+    [Required(ErrorMessage = "IndexFormat is required")]
     public string IndexFormat { get; set; } = "logs-{0:yyyy.MM.dd}";
 
     public string? Username { get; set; }
     public string? Password { get; set; }
 
-    [System.ComponentModel.DataAnnotations.Range(1, 1000, ErrorMessage = "BatchPostingLimit must be between 1 and 1000")]
+    [Range(1, 1000, ErrorMessage = "BatchPostingLimit must be between 1 and 1000")]
     public int BatchPostingLimit { get; set; } = 50;
 
     public TimeSpan Period { get; set; } = TimeSpan.FromSeconds(2);
@@ -68,8 +70,8 @@ public class SeqLoggingOptions
 {
     public bool Enabled { get; set; } = false;
 
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "ServerUrl is required when Enabled=true")]
-    [System.ComponentModel.DataAnnotations.Url(ErrorMessage = "ServerUrl must be a valid URL")]
+    [Required(ErrorMessage = "ServerUrl is required when Enabled=true")]
+    [Url(ErrorMessage = "ServerUrl must be a valid URL")]
     public string ServerUrl { get; set; } = string.Empty;
 
     public string? ApiKey { get; set; }
@@ -217,7 +219,7 @@ public static class LoggingExtensions
         diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
         diagnosticContext.Set("RequestProtocol", httpContext.Request.Protocol);
 
-        if (httpContext.Request.Headers.TryGetValue("X-Correlation-Id", out var correlationId))
+        if (httpContext.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var correlationId))
         {
             diagnosticContext.Set("CorrelationId", correlationId.ToString());
         }
@@ -257,12 +259,12 @@ public static class LoggingExtensions
     {
         return app.Use(async (context, next) =>
         {
-            var correlationId = context.Request.Headers["X-Correlation-Id"].FirstOrDefault()
+            var correlationId = context.Request.Headers[HeaderConstants.CorrelationId].FirstOrDefault()
                 ?? context.TraceIdentifier;
 
             using (LogContext.PushProperty("CorrelationId", correlationId))
             {
-                context.Response.Headers["X-Correlation-Id"] = correlationId;
+                context.Response.Headers[HeaderConstants.CorrelationId] = correlationId;
                 await next();
             }
         });

@@ -32,6 +32,7 @@ import {
 } from '../hooks/useAutoBids'
 import { BID_CONSTANTS } from '../constants'
 import { formatCurrency, formatDateTime } from '@/shared/utils'
+import { getErrorMessage } from '@/services/http'
 import type { AutoBid, UpdateAutoBidRequest } from '../types'
 import { palette } from '@/shared/theme/tokens'
 
@@ -42,6 +43,7 @@ export const AutoBidManagementPage = () => {
   const [activeOnly, setActiveOnly] = useState<boolean | undefined>(undefined)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const skeletonKeys = useMemo(() => Array.from({ length: 6 }, () => crypto.randomUUID()), [])
   const [selectedAutoBid, setSelectedAutoBid] = useState<AutoBid | null>(null)
@@ -54,13 +56,14 @@ export const AutoBidManagementPage = () => {
   const updateMutation = useUpdateAutoBid()
 
   const handleToggle = async (autoBid: AutoBid) => {
+    setActionError(null)
     try {
       await toggleMutation.mutateAsync({
         autoBidId: autoBid.id,
         activate: !autoBid.isActive,
       })
     } catch (error) {
-      console.error('Failed to toggle auto bid:', error)
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -78,6 +81,7 @@ export const AutoBidManagementPage = () => {
       return
     }
 
+    setActionError(null)
     try {
       await updateMutation.mutateAsync({
         autoBidId: selectedAutoBid.id,
@@ -86,7 +90,7 @@ export const AutoBidManagementPage = () => {
       setEditDialogOpen(false)
       setSelectedAutoBid(null)
     } catch (error) {
-      console.error('Failed to update auto bid:', error)
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -100,12 +104,13 @@ export const AutoBidManagementPage = () => {
       return
     }
 
+    setActionError(null)
     try {
       await cancelMutation.mutateAsync(selectedAutoBid.id)
       setDeleteDialogOpen(false)
       setSelectedAutoBid(null)
     } catch (error) {
-      console.error('Failed to cancel auto bid:', error)
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -128,6 +133,12 @@ export const AutoBidManagementPage = () => {
       }}
     >
       <Container maxWidth="xl">
+        {actionError && (
+          <InlineAlert severity="error" sx={{ mb: 3 }}>
+            {actionError}
+          </InlineAlert>
+        )}
+
         <Box
           sx={{
             mb: 4,

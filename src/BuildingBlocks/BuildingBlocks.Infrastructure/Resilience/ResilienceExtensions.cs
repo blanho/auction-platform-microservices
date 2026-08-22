@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
@@ -50,7 +51,7 @@ public static class ResilienceExtensions
                 UseJitter = true,
                 ShouldHandle = static args => ValueTask.FromResult(
                     args.Outcome.Exception is HttpRequestException ||
-                    (args.Outcome.Result?.StatusCode >= System.Net.HttpStatusCode.InternalServerError))
+                    (args.Outcome.Result?.StatusCode >= HttpStatusCode.InternalServerError))
             });
 
             pipeline.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
@@ -61,7 +62,7 @@ public static class ResilienceExtensions
                 BreakDuration = TimeSpan.FromMinutes(1),
                 ShouldHandle = static args => ValueTask.FromResult(
                     args.Outcome.Exception != null ||
-                    (args.Outcome.Result?.StatusCode >= System.Net.HttpStatusCode.InternalServerError))
+                    (args.Outcome.Result?.StatusCode >= HttpStatusCode.InternalServerError))
             });
 
             pipeline.AddTimeout(TimeSpan.FromSeconds(15));

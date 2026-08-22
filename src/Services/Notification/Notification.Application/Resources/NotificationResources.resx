@@ -36,4 +36,81 @@
   <data name="Preference.UpdateFailed" xml:space="preserve"><value>Failed to update preference: {0}</value></data>
   <data name="Email.SendFailed" xml:space="preserve"><value>Failed to send email: {0}</value></data>
   <data name="Email.InvalidRecipient" xml:space="preserve"><value>Invalid email recipient.</value></data>
+  <data name="Notification.Forbidden" xml:space="preserve"><value>You do not own this notification.</value></data>
+  <data name="User.InvalidToken" xml:space="preserve"><value>User ID was not found in the access token.</value></data>
+  <data name="User.NotFound" xml:space="preserve"><value>User not found.</value></data>
+  <data name="Notification.BidAccepted.Title" xml:space="preserve"><value>Bid Accepted</value></data>
+  <data name="Notification.BidAccepted.Message" xml:space="preserve"><value>Congratulations! Your bid of {0} has been accepted.</value></data>
+  <data name="Notification.BidRejected.Title" xml:space="preserve"><value>Bid Rejected</value></data>
+  <data name="Notification.BidRejected.Message" xml:space="preserve"><value>Your bid of {0} was rejected. Reason: {1}</value></data>
+  <data name="Notification.BidOutbid.Title" xml:space="preserve"><value>You've Been Outbid!</value></data>
+  <data name="Notification.BidOutbid.Message" xml:space="preserve"><value>Your bid of {0} has been outbid. New high bid: {1}</value></data>
+  <data name="Notification.BidBelowReserve.Title" xml:space="preserve"><value>Bid Below Reserve Price</value></data>
+  <data name="Notification.BidBelowReserve.Message" xml:space="preserve"><value>Your bid of {0} was accepted but is below the reserve price. The item may not sell unless the reserve is met.</value></data>
+  <data name="Notification.BidTooLow.Title" xml:space="preserve"><value>Bid Too Low</value></data>
+  <data name="Notification.BidTooLow.Message" xml:space="preserve"><value>Your bid of {0} did not meet the minimum bid requirement.</value></data>
+  <data name="Notification.AutoBidCreated.Title" xml:space="preserve"><value>Auto-Bid Created</value></data>
+  <data name="Notification.AutoBidCreated.Message" xml:space="preserve"><value>Your auto-bid has been set up with a maximum of {0}.</value></data>
+  <data name="Notification.AutoBidActivated.Title" xml:space="preserve"><value>Auto-Bid Activated</value></data>
+  <data name="Notification.AutoBidActivated.Message" xml:space="preserve"><value>Your auto-bid has been activated and will automatically place bids on your behalf.</value></data>
+  <data name="Notification.AutoBidDeactivated.Title" xml:space="preserve"><value>Auto-Bid Deactivated</value></data>
+  <data name="Notification.AutoBidDeactivated.Message" xml:space="preserve"><value>Your auto-bid has been deactivated. You will no longer place automatic bids on this auction.</value></data>
+  <data name="Notification.AutoBidUpdated.Title" xml:space="preserve"><value>Auto-Bid Updated</value></data>
+  <data name="Notification.AutoBidUpdated.Message" xml:space="preserve"><value>Your auto-bid maximum has been updated to {0}.</value></data>
+  <data name="Notification.WalletCreated.Title" xml:space="preserve"><value>Wallet Created</value></data>
+  <data name="Notification.WalletCreated.Message" xml:space="preserve"><value>Your wallet has been created. You can now deposit funds and start bidding!</value></data>
+  <data name="Notification.FundsDeposited.Title" xml:space="preserve"><value>Funds Deposited</value></data>
+  <data name="Notification.FundsDeposited.Message" xml:space="preserve"><value>{0} has been deposited to your wallet. New balance: {1}.</value></data>
+  <data name="Notification.FundsWithdrawn.Title" xml:space="preserve"><value>Funds Withdrawn</value></data>
+  <data name="Notification.FundsWithdrawn.Message" xml:space="preserve"><value>{0} has been withdrawn. New balance: {1}.</value></data>
+  <data name="Notification.FundsHeld.Title" xml:space="preserve"><value>Funds Reserved</value></data>
+  <data name="Notification.FundsHeld.Message" xml:space="preserve"><value>{0} has been reserved for your bid. Total held: {1}.</value></data>
+  <data name="Notification.FundsReleased.Title" xml:space="preserve"><value>Funds Released</value></data>
+  <data name="Notification.FundsReleased.Message" xml:space="preserve"><value>{0} has been released back to your available balance. Total still held: {1}.</value></data>
+  <data name="Notification.FundsDeducted.Title" xml:space="preserve"><value>Payment Processed</value></data>
+  <data name="Notification.FundsDeducted.Message" xml:space="preserve"><value>{0} has been deducted from your reserved funds. New balance: {1}.</value></data>
+  <data name="Notification.AuctionCancelled.Title" xml:space="preserve"><value>Auction Cancelled</value></data>
+  <data name="Notification.AuctionCancelled.Message" xml:space="preserve"><value>Your auction '{0}' has been cancelled. Reason: {1}.</value></data>
+  <data name="Notification.AuctionEndingSoon.Title" xml:space="preserve"><value>Auction Ending Soon</value></data>
+  <data name="Notification.AuctionEndingSoon.Message" xml:space="preserve"><value>Your auction '{0}' is ending in {1}. Current bid: {2}.</value></data>
+  <data name="Notification.AuctionExtended.Title" xml:space="preserve"><value>Auction Extended</value></data>
+  <data name="Notification.AuctionExtended.Message" xml:space="preserve"><value>Your auction '{0}' has been extended to {1} UTC. Reason: {2}.</value></data>
+  <data name="Notification.AuctionStarted.Title" xml:space="preserve"><value>Auction Started</value></data>
+  <data name="Notification.AuctionStarted.Message" xml:space="preserve"><value>Your auction '{0}' is now live! Starting price: {1}.</value></data>
+  <data name="Notification.UserReactivated.Title" xml:space="preserve"><value>Account Reactivated</value></data>
+  <data name="Notification.UserReactivated.Message" xml:space="preserve"><value>Welcome back, {0}! Your account has been reactivated. You can now access all platform features.</value></data>
+  <data name="Notification.UserEmailConfirmed.Title" xml:space="preserve"><value>Email Address Confirmed</value></data>
+  <data name="Notification.UserEmailConfirmed.Message" xml:space="preserve"><value>Your email address {0} has been successfully confirmed. Your account is now fully active.</value></data>
+  <data name="Notification.OrderShipped.Title" xml:space="preserve"><value>Order Shipped</value></data>
+  <data name="Notification.OrderShipped.Message" xml:space="preserve"><value>Your order has been shipped via {0}. Tracking number: {1}.</value></data>
+  <data name="Notification.OrderDelivered.Title" xml:space="preserve"><value>Order Delivered</value></data>
+  <data name="Notification.OrderDelivered.Message" xml:space="preserve"><value>Your order has been delivered. We hope you enjoy your purchase!</value></data>
+  <data name="Notification.OrderReportReady.Title" xml:space="preserve"><value>Order Report Ready</value></data>
+  <data name="Notification.OrderReportReady.Message" xml:space="preserve"><value>Your {0} report ({1} records) is ready for download. File: {2} ({3} KB).</value></data>
+  <data name="Notification.JobCompleted.Title" xml:space="preserve"><value>Job Completed</value></data>
+  <data name="Notification.JobCompleted.Message" xml:space="preserve"><value>Job '{0}' completed successfully. All {1} items processed.</value></data>
+  <data name="Notification.JobCompletedWithErrors.Title" xml:space="preserve"><value>Job Completed with Errors</value></data>
+  <data name="Notification.JobCompletedWithErrors.Message" xml:space="preserve"><value>Job '{0}' completed: {1} succeeded, {2} failed out of {3} total items.</value></data>
+  <data name="Notification.JobFailed.Title" xml:space="preserve"><value>Job Failed</value></data>
+  <data name="Notification.JobFailed.Message" xml:space="preserve"><value>Job '{0}' has failed: {1}</value></data>
+  <data name="Notification.JobQueued.Title" xml:space="preserve"><value>Job Queued</value></data>
+  <data name="Notification.JobQueued.Message" xml:space="preserve"><value>Job '{0}' has been queued with {1} item(s) to process.</value></data>
+  <data name="Notification.JobProgress.Title" xml:space="preserve"><value>Job Progress Update</value></data>
+  <data name="Notification.JobProgress.Message" xml:space="preserve"><value>Job '{0}' progress: {1}% complete ({2}/{3} items).</value></data>
+  <data name="Notification.JobProgressWithErrors.Message" xml:space="preserve"><value>Job '{0}' progress: {1}% complete ({2}/{3} items, {4} failed).</value></data>
+  <data name="Notification.JobProgressSimple.Message" xml:space="preserve"><value>Job '{0}' progress update: {1}% complete.</value></data>
+  <data name="Notification.AuctionImportCompleted.Title" xml:space="preserve"><value>Auction Import Completed</value></data>
+  <data name="Notification.AuctionImportCompleted.Message" xml:space="preserve"><value>Import finished successfully: {0} auctions imported from {1} rows.</value></data>
+  <data name="Notification.AuctionImportCompletedWithErrors.Title" xml:space="preserve"><value>Auction Import Completed with Errors</value></data>
+  <data name="Notification.AuctionImportCompletedWithErrors.Message" xml:space="preserve"><value>Import finished: {0} succeeded, {1} failed, {2} duplicates skipped out of {3} total rows.</value></data>
+  <data name="Notification.AuctionExportReady.Title" xml:space="preserve"><value>Auction Export Ready</value></data>
+  <data name="Notification.AuctionExportReady.Message" xml:space="preserve"><value>Your {0} export of {1} auctions is ready. File: {2}.</value></data>
+  <data name="Notification.BulkAuctionActivatedCompleted.Title" xml:space="preserve"><value>Bulk Auction Activation Completed</value></data>
+  <data name="Notification.BulkAuctionActivatedCompleted.Message" xml:space="preserve"><value>Bulk activation completed successfully: all {0} auctions processed.</value></data>
+  <data name="Notification.BulkAuctionActivatedCompletedWithErrors.Title" xml:space="preserve"><value>Bulk Auction Activation Completed with Errors</value></data>
+  <data name="Notification.BulkAuctionActivatedCompletedWithErrors.Message" xml:space="preserve"><value>Bulk activation finished: {0} succeeded, {1} failed out of {2} total.</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompleted.Title" xml:space="preserve"><value>Bulk Auction Update Completed</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompleted.Message" xml:space="preserve"><value>Bulk update completed successfully: all {0} auctions processed.</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompletedWithErrors.Title" xml:space="preserve"><value>Bulk Auction Update Completed with Errors</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompletedWithErrors.Message" xml:space="preserve"><value>Bulk update finished: {0} succeeded, {1} failed out of {2} total.</value></data>
 </root>

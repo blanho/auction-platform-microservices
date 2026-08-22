@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.CQRS.Commands;
 using MassTransit;
 using PaymentService.Contracts.Commands;
@@ -47,7 +48,7 @@ public class QueueOrderReportCommandHandler : ICommandHandler<QueueOrderReportCo
         return Result<BackgroundJobResult>.Success(new BackgroundJobResult(
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
-            Status: "Queued",
+            Status: BackgroundJobStatuses.Queued,
             Message: $"{request.ReportType} report in {request.Format} format has been queued for background processing."));
     }
 }
