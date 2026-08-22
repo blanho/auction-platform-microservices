@@ -66,7 +66,9 @@ public class BookmarkEndpoints : ICarterModule
         var username = UserHelper.GetUsername(httpContext.User);
         var query = new GetWatchlistQuery(username);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     private static async Task<IResult> GetWatchlistCount(
@@ -77,7 +79,9 @@ public class BookmarkEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var query = new GetWatchlistCountQuery(userId);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     private static async Task<IResult> IsInWatchlist(
@@ -89,7 +93,9 @@ public class BookmarkEndpoints : ICarterModule
         var userId = UserHelper.GetRequiredUserId(httpContext.User);
         var query = new IsInWatchlistQuery(userId, auctionId);
         var result = await sender.Send(query, ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
     }
 
     private static async Task<IResult> GetBookmark(
@@ -103,7 +109,7 @@ public class BookmarkEndpoints : ICarterModule
         var result = await sender.Send(query, ct);
 
         if (!result.IsSuccess)
-            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
 
         if (result.Value == null)
             return Results.NotFound();
@@ -131,9 +137,10 @@ public class BookmarkEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            if (result.Error.Code == AuctionErrors.Auction.NotFound.Code)
+            if (result.Error?.Code == AuctionErrors.Auction.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return Results.CreatedAtRoute("GetWatchlist", result.Value);
@@ -153,9 +160,10 @@ public class BookmarkEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            if (result.Error.Code == AuctionErrors.Bookmark.NotFound.Code)
+            if (result.Error?.Code == AuctionErrors.Bookmark.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return Results.NoContent();
@@ -180,12 +188,12 @@ public class BookmarkEndpoints : ICarterModule
 
         if (result.IsFailure)
         {
-            if (result.Error.Code == AuctionErrors.Bookmark.NotFound.Code)
+            if (result.Error?.Code == AuctionErrors.Bookmark.NotFound.Code)
                 return Results.NotFound(result.Error.Message);
-            return Results.Problem(ProblemDetailsHelper.FromError(result.Error));
+
+            return Results.BadRequest(ProblemDetailsHelper.FromError(result.Error!));
         }
 
         return Results.NoContent();
     }
 }
-

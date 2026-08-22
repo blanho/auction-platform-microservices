@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Analytics.Infrastructure.Persistence;
 using Analytics.Application.Interfaces;
 using Analytics.Application.DTOs;
+using Analytics.Domain.Constants;
 
 namespace Analytics.Infrastructure.Repositories;
 
@@ -44,7 +45,7 @@ public class FactPaymentRepository : IFactPaymentRepository
             TotalPlatformFees = totalRevenue * 0.05m,
             TotalTransactions = payments.Count,
             CompletedOrders = paidPayments.Count,
-            PendingOrders = payments.Count(p => p.Status == "Pending"),
+            PendingOrders = payments.Count(p => p.Status == AnalyticsPaymentStatuses.Pending),
             RefundedOrders = payments.Count(p => p.IsRefunded),
             AverageOrderValue = paidPayments.Count > 0 ? paidPayments.Average(p => p.TotalAmount) : 0,
             RevenueToday = paidPayments.Where(p => p.EventTime >= todayStart).Sum(p => p.TotalAmount),

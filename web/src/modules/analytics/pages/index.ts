@@ -1,5 +1,0 @@
-export { UserDashboardPage } from './UserDashboardPage'
-export { ReportsPage } from './ReportsPage'
-export { AdminDashboardPage } from './AdminDashboardPage'
-export { AuditLogsPage } from './AuditLogsPage'
-export { PlatformSettingsPage } from './PlatformSettingsPage'

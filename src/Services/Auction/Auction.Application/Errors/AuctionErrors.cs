@@ -57,7 +57,8 @@ public static class AuctionErrors
 
     public static class Export
     {
-        public static Error UnsupportedFormat(string format) => Error.Create("Export.UnsupportedFormat", $"Unsupported export format: {format}");
+        public static Error UnsupportedFormat(string format) =>
+            LocalizableError.Localizable("Export.UnsupportedFormat", $"Unsupported export format: {format}", format);
     }
 
 }

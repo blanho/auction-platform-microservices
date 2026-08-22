@@ -74,9 +74,8 @@ export const useAddPaymentMethod = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (token: string) => {
-      console.warn('Adding payment method not implemented:', token)
-      throw new Error('Not implemented')
+    mutationFn: async (_token: string) => {
+      throw new Error('Adding payment methods is not available')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })
@@ -88,9 +87,8 @@ export const useRemovePaymentMethod = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      console.warn('Removing payment method not implemented:', id)
-      throw new Error('Not implemented')
+    mutationFn: async (_id: string) => {
+      throw new Error('Removing payment methods is not available')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })
@@ -102,9 +100,8 @@ export const useSetDefaultPaymentMethod = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      console.warn('Setting default payment method not implemented:', id)
-      throw new Error('Not implemented')
+    mutationFn: async (_id: string) => {
+      throw new Error('Changing the default payment method is not available')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentMethodKeys.all })

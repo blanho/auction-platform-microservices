@@ -2,6 +2,9 @@ import { Component } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 import i18next from 'i18next'
 import { ErrorState } from '@/shared/ui'
+import { createLogger } from '@/shared/lib/logger'
+
+const errorBoundaryLogger = createLogger({ prefix: 'ErrorBoundary' })
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -28,8 +31,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.props.onError?.(error, errorInfo)
 
     if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error)
-      console.error('Component stack:', errorInfo.componentStack)
+      errorBoundaryLogger.error('Caught an error:', error, errorInfo.componentStack)
     }
   }
 

@@ -1,14 +1,6 @@
 namespace Identity.Application.Features.Auth.Commands.ChangePassword;
 
 using Identity.Application.DTOs.Auth;
-using Identity.Application.DTOs.External;
-using Identity.Application.DTOs.TwoFactor;
-using Identity.Application.DTOs.Users;
-using Identity.Application.Features.Auth.Helpers;
-using Identity.Application.Interfaces;
-using BuildingBlocks.Application.Abstractions;
-using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 public record ChangePasswordCommand(string UserId, ChangePasswordRequest Request) : ICommand;
 

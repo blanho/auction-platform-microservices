@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Payment.Application.Interfaces;
 using Stripe;
 
-namespace Payment.API.Endpoints.Payments;
+namespace Payment.Api.Endpoints.Payments;
 
 public class PaymentWebhookEndpoints : ICarterModule
 {

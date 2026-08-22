@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Notification.Domain.Constants;
+using Notification.Domain.Enums;
 
 namespace Notification.Infrastructure.Persistence.Configurations;
 
-public class NotificationConfiguration : IEntityTypeConfiguration<Domain.Entities.Notification>
+public class NotificationConfiguration : IEntityTypeConfiguration<NotificationEntity>
 {
-    public void Configure(EntityTypeBuilder<Domain.Entities.Notification> builder)
+    public void Configure(EntityTypeBuilder<NotificationEntity> builder)
     {
         builder.HasKey(x => x.Id);
 
@@ -39,12 +40,12 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Domain.Entitie
         builder.Property(x => x.Status)
             .IsRequired()
             .HasConversion<int>()
-            .HasDefaultValue(Domain.Enums.NotificationStatus.Unread);
+            .HasDefaultValue(NotificationStatus.Unread);
 
         builder.Property(x => x.Channels)
             .IsRequired()
             .HasConversion<int>()
-            .HasDefaultValue(Domain.Enums.ChannelType.InApp);
+            .HasDefaultValue(ChannelType.InApp);
 
         builder.Property(x => x.ReadAt);
 

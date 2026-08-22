@@ -1,5 +1,6 @@
 using System.Net;
 using Gateway.Api.Resources;
+using Gateway.Api.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -43,14 +44,14 @@ public static class MiddlewareExtensions
                     Instance = context.Request.Path
                 };
 
-                var correlationId = context.Response.Headers["X-Correlation-Id"].FirstOrDefault();
+                var correlationId = context.Response.Headers[GatewayConstants.CorrelationIdHeader].FirstOrDefault();
                 if (!string.IsNullOrEmpty(correlationId))
                 {
-                    problem.Extensions["correlationId"] = correlationId;
+                    problem.Extensions[GatewayConstants.CorrelationIdExtension] = correlationId;
                 }
 
                 context.Response.StatusCode = (int)statusCode;
-                context.Response.ContentType = "application/problem+json";
+                context.Response.ContentType = GatewayConstants.ProblemJsonMediaType;
                 await context.Response.WriteAsJsonAsync(problem);
             }
         });
@@ -93,10 +94,9 @@ public static class MiddlewareExtensions
     {
         app.Use(async (context, next) =>
         {
-            const string correlationIdHeader = "X-Correlation-Id";
-            var correlationId = context.Request.Headers[correlationIdHeader].FirstOrDefault()
+            var correlationId = context.Request.Headers[GatewayConstants.CorrelationIdHeader].FirstOrDefault()
                                 ?? Guid.NewGuid().ToString();
-            context.Response.Headers[correlationIdHeader] = correlationId;
+            context.Response.Headers[GatewayConstants.CorrelationIdHeader] = correlationId;
             await next();
         });
 

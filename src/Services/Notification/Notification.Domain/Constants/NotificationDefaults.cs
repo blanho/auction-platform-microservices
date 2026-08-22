@@ -2,6 +2,18 @@ namespace Notification.Domain.Constants;
 
 public static class NotificationDefaults
 {
+    public static class Fallback
+    {
+        public const string Unknown = "Unknown";
+        public const string UnknownLower = "unknown";
+        public const string UnknownError = "Unknown error";
+    }
+
+    public static class PayloadType
+    {
+        public const string BulkNotification = "BulkNotification";
+    }
+
     public static class Messaging
     {
         public const int RetryLimit = 5;

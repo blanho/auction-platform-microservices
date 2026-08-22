@@ -10,7 +10,7 @@ public class NotificationDbContext : DbContext
     {
     }
 
-    public DbSet<Domain.Entities.Notification> Notifications { get; set; }
+    public DbSet<NotificationEntity> Notifications { get; set; }
     public DbSet<NotificationTemplate> Templates { get; set; }
     public DbSet<NotificationRecord> Records { get; set; }
     public DbSet<UserNotification> UserNotifications { get; set; }

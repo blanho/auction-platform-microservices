@@ -151,11 +151,78 @@ persistence, start-event producer, health checks, and deployment are added.
 Every microservice follows a four-layer architecture:
 
 ```
-{Service}.Domain/          # Layer 0 — No dependencies on other layers
-{Service}.Application/     # Layer 1 — Depends only on Domain
+{Service}.Domain/          # Layer 0 — Depends only on BuildingBlocks.Domain
+{Service}.Application/     # Layer 1 — Domain, BuildingBlocks.Application, own contracts
 {Service}.Infrastructure/  # Layer 2 — Depends on Domain + Application
 {Service}.Api/             # Layer 3 — Depends on all layers (composition root)
 ```
+
+### Directory and Namespace Conventions
+
+Keep physical folders and namespaces aligned. Use singular service names for
+project folders and the project's configured root namespace inside source files.
+Public integration-contract namespaces are versioned APIs and must not be renamed
+without a coordinated consumer migration.
+
+Application features use vertical slices:
+
+```text
+{Service}.Application/
+├── Features/
+│   └── {Area}/
+│       └── {Operation}/
+│           ├── {Operation}Command.cs or {Operation}Query.cs
+│           ├── {Operation}CommandHandler.cs or {Operation}QueryHandler.cs
+│           └── {Operation}Validator.cs        # when validation is required
+└── EventHandlers/                             # domain-to-integration event handlers
+```
+
+API endpoints are grouped by the same business area:
+
+```text
+{Service}.Api/
+└── Endpoints/
+    └── {Area}/
+        └── {Area}Endpoints.cs
+```
+
+Infrastructure keeps persistence, messaging, external clients, and background
+jobs separated. Message contracts use one public contract per file under
+`Commands/`, `Events/`, `Enums/`, or `Grpc/`.
+
+Tests follow the service boundary and layer under test:
+
+```text
+{Service}/
+└── tests/
+    ├── {Service}.Domain.Tests/
+    ├── {Service}.Application.Tests/
+    └── {Service}.Infrastructure.Tests/      # when infrastructure behavior is tested
+```
+
+Every service keeps Domain and Application test projects in the solution. Tests
+for repository-wide dependency and folder rules remain in
+`src/Tests/Architecture.Tests`.
+
+### Public Namespace Migrations
+
+Public contract namespaces are compatibility boundaries. Namespace
+normalization must be delivered as a coordinated breaking-change migration, not
+as part of an unrelated cleanup. Such a migration must:
+
+1. inventory every producer, consumer, serializer binding, generated client,
+   and external package that uses the namespace;
+2. define the target namespace and versioning or compatibility strategy;
+3. update producers and consumers in a coordinated release, using temporary
+   adapters or dual-published contracts when rolling deployment is required;
+4. verify message deserialization and client compilation across service
+   boundaries; and
+5. remove compatibility aliases only after all consumers have migrated.
+
+Internal namespaces may follow folder moves when all in-repository references
+are updated atomically. This does not authorize renaming public integration
+contracts such as `AuctionService.Contracts`, `BidService.Contracts`, or
+`JobService.Contracts`.
 
 ### Domain Layer
 - Entities with private setters (encapsulation)

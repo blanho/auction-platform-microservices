@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using BuildingBlocks.Domain.Constants;
 
 namespace Identity.Application.DTOs.Auth;
 
@@ -21,11 +22,11 @@ public class ResetPasswordRequest
     [Required]
     [StringLength(100, MinimumLength = 12)]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
-        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
+        ErrorMessage = ValidationConstants.Messages.PasswordComplexity)]
     public string NewPassword { get; set; } = string.Empty;
 
     [Required]
-    [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
+    [Compare("NewPassword", ErrorMessage = ValidationConstants.Messages.PasswordsDoNotMatch)]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
@@ -53,11 +54,11 @@ public class ChangePasswordRequest
     [Required]
     [StringLength(100, MinimumLength = 12)]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
-        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
+        ErrorMessage = ValidationConstants.Messages.PasswordComplexity)]
     public string NewPassword { get; set; } = string.Empty;
 
     [Required]
-    [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
+    [Compare("NewPassword", ErrorMessage = ValidationConstants.Messages.PasswordsDoNotMatch)]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
@@ -85,7 +86,7 @@ public class RegisterRequest
     [Required]
     [StringLength(100, MinimumLength = 12)]
     [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?"":{}|<>])[A-Za-z\d!@#$%^&*(),.?"":{}|<>]{12,}$",
-        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
+        ErrorMessage = ValidationConstants.Messages.PasswordComplexity)]
     public string Password { get; set; } = string.Empty;
 }
 

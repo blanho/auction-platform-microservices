@@ -8,14 +8,12 @@ using Identity.Application.DTOs.Seller;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Paging;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record GetUserByIdQuery(string Id) : IQuery<AdminUserDto?>;
 
 public class GetUserByIdQueryHandler(
     IUserService userService,
-    AutoMapper.IMapper mapper,
-    ILogger<GetUserByIdQueryHandler> logger) : IQueryHandler<GetUserByIdQuery, AdminUserDto?>
+    IMapper mapper) : IQueryHandler<GetUserByIdQuery, AdminUserDto?>
 {
     public async Task<Result<AdminUserDto?>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
     {

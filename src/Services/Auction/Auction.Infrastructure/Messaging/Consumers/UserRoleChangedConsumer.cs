@@ -1,5 +1,5 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
-using BuildingBlocks.Web.Authorization;
+using BuildingBlocks.Application.Authorization;
 using IdentityService.Contracts.Events;
 using NotificationService.Contracts.Events;
 

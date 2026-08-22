@@ -26,8 +26,10 @@ public class BidBelowReserveConsumer : IdempotentNotificationConsumer<BidAccepte
     {
         UserId = e.BidderId.ToString(),
         Type = NotificationType.BidBelowReserve,
-        Title = "Bid Below Reserve Price",
-        Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(e.Amount)} was accepted but is below the reserve price. The item may not sell unless the reserve is met.",
+        LocalizedText = new(
+            NotificationMessageKeys.BidBelowReserveTitle,
+            NotificationMessageKeys.BidBelowReserveMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount)),
         Data = NotificationDataBuilder.Create()
             .Add("AuctionId", e.AuctionId)
             .Add("BidId", e.BidId)
@@ -56,8 +58,10 @@ public class BidTooLowConsumer : IdempotentNotificationConsumer<BidMarkedTooLowE
     {
         UserId = e.BidderId.ToString(),
         Type = NotificationType.BidTooLow,
-        Title = "Bid Too Low",
-        Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(e.Amount)} did not meet the minimum bid requirement.",
+        LocalizedText = new(
+            NotificationMessageKeys.BidTooLowTitle,
+            NotificationMessageKeys.BidTooLowMessage,
+            NotificationFormattingHelper.FormatCurrency(e.Amount)),
         Data = NotificationDataBuilder.Create()
             .Add("AuctionId", e.AuctionId)
             .Add("BidId", e.BidId)

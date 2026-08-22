@@ -1,4 +1,5 @@
 using Auctions.Application.DTOs;
+using Auctions.Domain.Constants;
 namespace Auctions.Application.Features.Auctions.CreateAuction;
 
 public record CreateAuctionCommand(
@@ -12,7 +13,7 @@ public record CreateAuctionCommand(
     DateTimeOffset AuctionEnd,
     Guid SellerId,
     string SellerUsername,
-    string Currency = "USD",
+    string Currency = AuctionDefaults.DefaultCurrency,
     List<CreateAuctionFileDto>? Files = null,
     Guid? CategoryId = null,
     Guid? BrandId = null,
@@ -25,4 +26,3 @@ public record CreateAuctionFileDto(
     int DisplayOrder,
     bool IsPrimary
 );
-

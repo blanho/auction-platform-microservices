@@ -1,3 +1,4 @@
+global using BuildingBlocks.Application.Authorization;
 global using BuildingBlocks.Application.Abstractions.Providers;
 global using BuildingBlocks.Application.Extensions;
 global using BuildingBlocks.Infrastructure.Caching;

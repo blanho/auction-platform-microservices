@@ -163,10 +163,6 @@ class HttpService {
     return this.client.delete<T>(url)
   }
 
-  /**
-   * Upload multipart/form-data through the shared interceptor pipeline
-   * (auth token, CSRF, retry, token refresh — all applied automatically).
-   */
   postForm<T>(
     url: string,
     formData: FormData,

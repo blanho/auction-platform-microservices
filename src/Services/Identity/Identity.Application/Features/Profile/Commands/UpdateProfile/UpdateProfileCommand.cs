@@ -13,10 +13,10 @@ public record UpdateProfileCommand(string UserId, UpdateProfileRequest Request) 
 
 public class UpdateProfileCommandHandler(
     IUserService userService,
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
+    UserManager<ApplicationUser> userManager,
     IMediator mediator,
-    BuildingBlocks.Application.Abstractions.Auditing.IAuditPublisher auditPublisher,
-    AutoMapper.IMapper mapper,
+    IAuditPublisher auditPublisher,
+    IMapper mapper,
     ILogger<UpdateProfileCommandHandler> logger) : ICommandHandler<UpdateProfileCommand, UserProfileDto>
 {
     public async Task<Result<UserProfileDto>> Handle(UpdateProfileCommand command, CancellationToken cancellationToken)
@@ -24,9 +24,9 @@ public class UpdateProfileCommandHandler(
         var request = command.Request;
         var (user, roles) = await userService.GetByIdWithRolesAsync(command.UserId, cancellationToken);
         if (user == null)
-            return Result.Failure<UserProfileDto>(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure<UserProfileDto>(IdentityErrors.User.NotFound);
 
-        var oldUserData = Identity.Application.DTOs.Audit.UserAuditData.FromUser(user, roles);
+        var oldUserData = UserAuditData.FromUser(user, roles);
 
         user.FullName = request.FullName ?? user.FullName;
         user.Bio = request.Bio ?? user.Bio;
@@ -38,14 +38,14 @@ public class UpdateProfileCommandHandler(
         var result = await userManager.UpdateAsync(user);
 
         if (!result.Succeeded)
-            return Result.Failure<UserProfileDto>(Identity.Application.Errors.IdentityErrors.WithIdentityErrors("Failed to update profile", result.Errors));
+            return Result.Failure<UserProfileDto>(IdentityErrors.WithIdentityErrors("Failed to update profile", result.Errors));
 
         logger.LogInformation("User {UserId} updated their profile", command.UserId);
 
         var profile = mapper.Map<UserProfileDto>(user);
         profile.Roles = roles.ToList();
 
-        await mediator.Publish(new Identity.Domain.Events.UserUpdatedDomainEvent
+        await mediator.Publish(new UserUpdatedDomainEvent
         {
             UserId = profile.Id,
             Username = profile.Username,
@@ -56,10 +56,10 @@ public class UpdateProfileCommandHandler(
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
-            Identity.Application.DTOs.Audit.UserAuditData.FromUser(user, roles),
-            BuildingBlocks.Application.Abstractions.Auditing.AuditAction.Updated,
+            UserAuditData.FromUser(user, roles),
+            AuditAction.Updated,
             oldUserData,
-            new Dictionary<string, object> { [BuildingBlocks.Application.Constants.AuditMetadataKeys.ActionLower] = Identity.Domain.Constants.IdentityDefaults.Audit.ProfileUpdate },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.ProfileUpdate },
             cancellationToken);
 
         return Result.Success(profile);

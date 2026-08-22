@@ -12,14 +12,14 @@ using Microsoft.Extensions.Logging;
 public record EnableTwoFactorCommand(string UserId) : ICommand;
 
 public class EnableTwoFactorCommandHandler(
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
+    UserManager<ApplicationUser> userManager,
     ILogger<EnableTwoFactorCommandHandler> logger) : ICommandHandler<EnableTwoFactorCommand>
 {
     public async Task<Result> Handle(EnableTwoFactorCommand command, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(command.UserId);
         if (user == null)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure(IdentityErrors.User.NotFound);
 
         await userManager.SetTwoFactorEnabledAsync(user, true);
 

@@ -90,7 +90,7 @@ public class BidGrpcService : BidGrpc.BidGrpcBase
         return response;
     }
 
-    private static BidResponse MapToResponse(Bidding.Domain.Entities.Bid bid) => new()
+    private static BidResponse MapToResponse(Bid bid) => new()
     {
         Id = bid.Id.ToString(),
         AuctionId = bid.AuctionId.ToString(),

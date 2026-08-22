@@ -7,15 +7,13 @@ using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
-public record GetAllRolesQuery() : IQuery<IReadOnlyList<Identity.Application.Interfaces.RoleDto>>;
+public record GetAllRolesQuery() : IQuery<IReadOnlyList<RoleDto>>;
 
 public class GetAllRolesQueryHandler(
-    Identity.Application.Interfaces.IApplicationDbContext context,
-    ILogger<GetAllRolesQueryHandler> logger) : IQueryHandler<GetAllRolesQuery, IReadOnlyList<Identity.Application.Interfaces.RoleDto>>
+    IApplicationDbContext context) : IQueryHandler<GetAllRolesQuery, IReadOnlyList<RoleDto>>
 {
-    public async Task<Result<IReadOnlyList<Identity.Application.Interfaces.RoleDto>>> Handle(GetAllRolesQuery query, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyList<RoleDto>>> Handle(GetAllRolesQuery query, CancellationToken cancellationToken)
     {
         var roles = await context.AppRoles
             .AsNoTracking()
@@ -32,7 +30,7 @@ public class GetAllRolesQueryHandler(
             .GroupBy(p => p.RoleId)
             .ToDictionary(g => g.Key, g => g.Select(p => p.PermissionCode).ToList());
 
-        var result = roles.Select(r => new Identity.Application.Interfaces.RoleDto(
+        var result = roles.Select(r => new RoleDto(
             r.Id,
             r.Name,
             r.Description,
@@ -40,6 +38,6 @@ public class GetAllRolesQueryHandler(
             permissionsByRole.GetValueOrDefault(r.Id, [])
         )).ToList();
 
-        return Result.Success<IReadOnlyList<Identity.Application.Interfaces.RoleDto>>(result);
+        return Result.Success<IReadOnlyList<RoleDto>>(result);
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using DefaultRoles = BuildingBlocks.Application.Authorization.Roles;
 
 namespace BuildingBlocks.Web.Authorization;
 
@@ -13,7 +14,7 @@ public sealed class RequireAdminAttribute : AuthorizeAttribute
 {
     public RequireAdminAttribute() : base()
     {
-        Roles = Authorization.Roles.Admin;
+        Roles = DefaultRoles.Admin;
     }
 
     public RequireAdminAttribute(string? _) : this() { }

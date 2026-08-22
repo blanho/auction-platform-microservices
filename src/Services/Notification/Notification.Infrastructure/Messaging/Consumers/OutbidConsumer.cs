@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BidService.Contracts.Events;
 using Notification.Application.DTOs;
 using Notification.Application.Helpers;
@@ -35,16 +36,16 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
             "Processing Outbid event for auction {AuctionId}",
             @event.AuctionId);
 
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.InApp, ct))
         {
             _logger.LogDebug("Outbid already processed for EventId={EventId}", eventId);
             return;
         }
 
-        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, "InApp", ct: ct);
+        await using var lockHandle = await _idempotency.TryAcquireLockAsync(eventId, NotificationChannelNames.InApp, ct: ct);
         if (lockHandle == null) return;
 
-        if (await _idempotency.IsProcessedAsync(eventId, "InApp", ct))
+        if (await _idempotency.IsProcessedAsync(eventId, NotificationChannelNames.InApp, ct))
             return;
 
         await _notificationService.CreateNotificationAsync(
@@ -52,13 +53,16 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
             {
                 UserId = @event.OutbidBidderId.ToString(),
                 Type = NotificationType.BidOutbid,
-                Title = "You've Been Outbid!",
-                Message = $"Your bid of {NotificationFormattingHelper.FormatCurrency(@event.PreviousBidAmount)} has been outbid. New high bid: {NotificationFormattingHelper.FormatCurrency(@event.NewHighBidAmount)}",
-                Data = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                LocalizedText = new(
+                    NotificationMessageKeys.BidOutbidTitle,
+                    NotificationMessageKeys.BidOutbidMessage,
+                    NotificationFormattingHelper.FormatCurrency(@event.PreviousBidAmount),
+                    NotificationFormattingHelper.FormatCurrency(@event.NewHighBidAmount)),
+                Data = JsonSerializer.Serialize(new Dictionary<string, string>
                 {
-                    ["AuctionId"] = @event.AuctionId.ToString(),
-                    ["PreviousBidAmount"] = @event.PreviousBidAmount.ToString("F2"),
-                    ["NewHighBidAmount"] = @event.NewHighBidAmount.ToString("F2")
+                    [NotificationPayloadDataKeys.AuctionId] = @event.AuctionId.ToString(),
+                    [NotificationPayloadDataKeys.PreviousBidAmount] = @event.PreviousBidAmount.ToString("F2"),
+                    [NotificationPayloadDataKeys.NewHighBidAmount] = @event.NewHighBidAmount.ToString("F2")
                 }),
                 AuctionId = @event.AuctionId
             },
@@ -74,6 +78,6 @@ public class OutbidConsumer : IConsumer<OutbidEvent>
                 OutbidAt = @event.OutbidAt
             });
 
-        await _idempotency.MarkAsProcessedAsync(eventId, "InApp", ct: ct);
+        await _idempotency.MarkAsProcessedAsync(eventId, NotificationChannelNames.InApp, ct: ct);
     }
 }

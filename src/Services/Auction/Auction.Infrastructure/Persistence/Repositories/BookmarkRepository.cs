@@ -18,8 +18,8 @@ public class BookmarkRepository : IBookmarkRepository
         new(StringComparer.OrdinalIgnoreCase)
         {
             ["addedat"] = x => x.AddedAt,
-            ["auctionend"] = x => x.Auction!.AuctionEnd,
-            ["currentbid"] = x => x.Auction!.CurrentHighBid
+            ["auctionend"] = x => x.Auction != null ? (object)x.Auction.AuctionEnd : DateTime.MinValue,
+            ["currentbid"] = x => x.Auction != null ? (object)(x.Auction.CurrentHighBid ?? 0m) : 0m
         };
 
     public BookmarkRepository(AuctionDbContext context, IDateTimeProvider dateTime)

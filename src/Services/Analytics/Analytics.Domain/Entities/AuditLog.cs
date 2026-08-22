@@ -1,5 +1,5 @@
-using Common.Contracts.Events;
 using System.ComponentModel.DataAnnotations.Schema;
+using Analytics.Domain.Enums;
 
 namespace Analytics.Domain.Entities;
 

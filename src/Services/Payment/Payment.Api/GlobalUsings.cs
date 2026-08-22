@@ -1,3 +1,4 @@
+global using BuildingBlocks.Application.Authorization;
 global using BuildingBlocks.Web.Extensions;
 global using BuildingBlocks.Web.Middleware;
 global using BuildingBlocks.Web.Authorization;

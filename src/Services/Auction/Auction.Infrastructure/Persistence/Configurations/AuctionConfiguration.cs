@@ -1,5 +1,6 @@
 #nullable enable
 using Auctions.Domain.Entities;
+using Auctions.Domain.Constants;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Auctions.Infrastructure.Persistence.Configurations;
@@ -29,7 +30,7 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
         builder.Property(x => x.Currency)
             .IsRequired()
             .HasMaxLength(AuctionDefaults.Persistence.CurrencyCodeMaxLength)
-            .HasDefaultValue("USD");
+            .HasDefaultValue(AuctionDefaults.DefaultCurrency);
 
         builder.Property(x => x.SellerId)
             .IsRequired();
@@ -78,4 +79,3 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
         builder.HasIndex(x => new { x.IsDeleted, x.Status });
     }
 }
-

@@ -33,7 +33,7 @@ public class HighestBidUpdatedDomainEventHandler : INotificationHandler<HighestB
             NewHighestAmount = notification.NewHighestAmount,
             PreviousHighestAmount = notification.PreviousHighestAmount,
             BidTime = DateTimeOffset.UtcNow,
-            BidStatus = nameof(Bidding.Domain.Enums.BidStatus.Accepted)
+            BidStatus = nameof(BidStatus.Accepted)
         }, cancellationToken);
 
         if (notification.PreviousBidderId.HasValue &&

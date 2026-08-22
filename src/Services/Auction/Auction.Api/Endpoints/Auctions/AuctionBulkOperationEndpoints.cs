@@ -93,7 +93,7 @@ public class AuctionBulkOperationEndpoints : ICarterModule
 
 public record QueueAuctionExportRequest(
     ExportFormat Format,
-    Status? StatusFilter = null,
+    AuctionStatus? StatusFilter = null,
     string? SellerFilter = null,
     DateTimeOffset? StartDate = null,
     DateTimeOffset? EndDate = null);

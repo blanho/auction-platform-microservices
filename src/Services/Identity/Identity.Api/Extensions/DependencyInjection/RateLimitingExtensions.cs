@@ -20,7 +20,7 @@ internal static class RateLimitingExtensions
                 opt.QueueLimit = 0;
             });
 
-            options.AddFixedWindowLimiter("password-reset", opt =>
+            options.AddFixedWindowLimiter(IdentityDefaults.RateLimits.PasswordReset, opt =>
             {
                 opt.PermitLimit = 3;
                 opt.Window = TimeSpan.FromMinutes(15);

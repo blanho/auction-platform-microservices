@@ -1,8 +1,8 @@
 using AuctionService.Contracts.Grpc;
 using Bidding.Application.Interfaces;
 using Bidding.Infrastructure.Grpc;
-using GrpcCore = global::Grpc.Core;
-using GrpcConfig = global::Grpc.Net.Client.Configuration;
+using GrpcCore = Grpc.Core;
+using GrpcConfig = Grpc.Net.Client.Configuration;
 
 using BuildingBlocks.Infrastructure.Resilience;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Common.Contracts.Events;
 using Analytics.Domain.Entities;
+using DomainAuditAction = Analytics.Domain.Enums.AuditAction;
 using Analytics.Application.Interfaces;
 using Analytics.Infrastructure.Persistence;
 
@@ -49,7 +50,7 @@ public class AuditEventConsumer : IConsumer<AuditEvent>
             Id = auditEvent.Id,
             EntityId = auditEvent.EntityId,
             EntityType = auditEvent.EntityType,
-            Action = auditEvent.Action,
+            Action = (DomainAuditAction)(int)auditEvent.Action,
             OldValues = auditEvent.OldValues,
             NewValues = auditEvent.NewValues,
             ChangedProperties = auditEvent.ChangedProperties.Count > 0

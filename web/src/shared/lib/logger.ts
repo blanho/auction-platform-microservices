@@ -60,8 +60,4 @@ export function createLogger(config: Partial<LoggerConfig> = {}) {
   }
 }
 
-export const logger = createLogger()
-
 export const signalRLogger = createLogger({ prefix: 'SignalR' })
-export const authLogger = createLogger({ prefix: 'Auth' })
-export const apiLogger = createLogger({ prefix: 'API' })

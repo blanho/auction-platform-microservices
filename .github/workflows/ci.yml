@@ -99,6 +99,15 @@ jobs:
               -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           done < <(find src -type f -name '*Tests.csproj' | sort)
 
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            coverage/**/coverage.opencover.xml
+            coverage/**/*.trx
+
   infrastructure:
     name: Infrastructure Validation
     runs-on: ubuntu-latest
@@ -109,23 +118,6 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: az bicep build --file deploy/azure/main.bicep
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: |
-            coverage/**/coverage.opencover.xml
-            coverage/**/*.trx
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            src/**/bin/Release/**/publish/
-          retention-days: 5
 
   security-scan:
     name: Security Scan

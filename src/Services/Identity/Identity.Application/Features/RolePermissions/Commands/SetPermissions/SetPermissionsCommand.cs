@@ -7,13 +7,11 @@ using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record SetPermissionsCommand(Guid RoleId, IEnumerable<string> Permissions) : ICommand<bool>;
 
 public class SetPermissionsCommandHandler(
-    Identity.Application.Interfaces.IApplicationDbContext context,
-    ILogger<SetPermissionsCommandHandler> logger) : ICommandHandler<SetPermissionsCommand, bool>
+    IApplicationDbContext context) : ICommandHandler<SetPermissionsCommand, bool>
 {
     public async Task<Result<bool>> Handle(SetPermissionsCommand command, CancellationToken cancellationToken)
     {
@@ -38,7 +36,7 @@ public class SetPermissionsCommandHandler(
 
         foreach (var code in newPermissions)
         {
-            context.RolePermissionStrings.Add(new Identity.Domain.Entities.RolePermissionString
+            context.RolePermissionStrings.Add(new RolePermissionString
             {
                 Id = Guid.NewGuid(),
                 RoleId = command.RoleId,

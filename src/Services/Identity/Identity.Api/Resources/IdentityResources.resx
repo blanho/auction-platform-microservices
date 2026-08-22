@@ -79,4 +79,5 @@
   <data name="External.UnlinkFailed" xml:space="preserve"><value>Failed to unlink external account.</value></data>
   <data name="External.CannotUnlinkLastLogin" xml:space="preserve"><value>Cannot unlink the only login method.</value></data>
   <data name="External.ProcessFailed" xml:space="preserve"><value>Failed to process external login.</value></data>
+  <data name="Identity.ValidationFailed" xml:space="preserve"><value>Identity validation failed.</value></data>
 </root>

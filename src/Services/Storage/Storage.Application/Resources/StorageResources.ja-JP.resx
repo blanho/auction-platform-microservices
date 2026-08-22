@@ -30,4 +30,7 @@
   <data name="Storage.TooManyFiles" xml:space="preserve"><value>アップロードは最大{0}ファイルまでです。</value></data>
   <data name="Storage.DeleteFailed" xml:space="preserve"><value>ストレージからのファイル削除に失敗しました。</value></data>
   <data name="Storage.PresignedUrlNotSupported" xml:space="preserve"><value>現在のストレージプロバイダーでは署名付きURL生成はサポートされていません。</value></data>
+  <data name="Storage.BatchUploadFailed" xml:space="preserve"><value>すべてのファイルのアップロードに失敗しました。</value></data>
+  <data name="Storage.FileNotFoundInStorage" xml:space="preserve"><value>ストレージにファイルが見つかりません。</value></data>
+  <data name="Storage.UrlGenerationFailed" xml:space="preserve"><value>ファイルURLの生成に失敗しました: {0}</value></data>
 </root>

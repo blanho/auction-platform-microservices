@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Jobs.Domain.Events;
+using JobService.Contracts.Enums;
 using JobService.Contracts.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ public class JobCompletedDomainEventHandler : INotificationHandler<JobCompletedD
         await _eventPublisher.PublishAsync(new JobCompletedEvent
         {
             JobId = notification.JobId,
-            Type = (JobService.Contracts.Enums.JobType)(int)notification.Type,
+            Type = (JobType)(int)notification.Type,
             CorrelationId = notification.CorrelationId,
             TotalItems = notification.TotalItems,
             CompletedItems = notification.CompletedItems,

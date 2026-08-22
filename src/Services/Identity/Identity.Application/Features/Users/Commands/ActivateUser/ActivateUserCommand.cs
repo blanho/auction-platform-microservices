@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 public record ActivateUserCommand(string UserId) : ICommand<AdminUserDto>;
 
 public class ActivateUserCommandHandler(
-    Identity.Application.Features.Users.Helpers.IUserHelper userHelper) : ICommandHandler<ActivateUserCommand, AdminUserDto>
+    Helpers.IUserHelper userHelper) : ICommandHandler<ActivateUserCommand, AdminUserDto>
 {
     public async Task<Result<AdminUserDto>> Handle(ActivateUserCommand command, CancellationToken cancellationToken)
     {
@@ -22,7 +22,7 @@ public class ActivateUserCommandHandler(
             user => user.IsActive = true,
             IdentityErrors.User.ActivateFailed,
             (_, _) => null,
-            new Dictionary<string, object> { [BuildingBlocks.Application.Constants.AuditMetadataKeys.ActionLower] = Identity.Domain.Constants.IdentityDefaults.Audit.Activate },
+            new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.Activate },
             cancellationToken);
     }
 }

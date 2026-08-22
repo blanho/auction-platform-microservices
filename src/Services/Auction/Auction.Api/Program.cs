@@ -1,4 +1,6 @@
 using Auctions.Api.Extensions.DependencyInjection;
+using Auctions.Api.Grpc;
+using Auctions.Application.Features.Auctions.CreateAuction;
 using Auctions.Application.Resources;
 using Auctions.Infrastructure.Extensions;
 using Auctions.Infrastructure.Persistence;
@@ -34,7 +36,7 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
-builder.Services.AddCQRS(typeof(Auctions.Application.Features.Auctions.CreateAuction.CreateAuctionCommand).Assembly);
+builder.Services.AddCQRS(typeof(CreateAuctionCommand).Assembly);
 builder.Services.AddAuditServices(builder.Configuration, "auction-service");
 builder.Services.AddAuctionScheduling(builder.Configuration);
 builder.Services.AddCommonApiVersioning();
@@ -84,7 +86,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCarter();
-app.MapGrpcService<Auctions.Api.Grpc.AuctionGrpcService>();
+app.MapGrpcService<AuctionGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {

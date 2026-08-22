@@ -1,5 +1,5 @@
 
-using Analytics.Api.Endpoints;
+using System.Text.Json.Serialization;
 using Analytics.Api.Extensions.DependencyInjection;
 using Analytics.Api.Resources;
 using Carter;
@@ -21,8 +21,8 @@ builder.Services.ValidateStandardConfiguration(
 
 builder.WebHost.ConfigureKestrel((context, options) =>
 {
-    var httpPort = context.Configuration.GetValue<int>("Kestrel:HttpPort", 8080);
-    var grpcPort = context.Configuration.GetValue<int>("Kestrel:GrpcPort", 8081);
+    var httpPort = context.Configuration.GetValue("Kestrel:HttpPort", 8080);
+    var grpcPort = context.Configuration.GetValue("Kestrel:GrpcPort", 8081);
     options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
     options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
 });
@@ -56,8 +56,8 @@ builder.Services.AddCarter();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
 builder.Services.AddCommonApiVersioning();

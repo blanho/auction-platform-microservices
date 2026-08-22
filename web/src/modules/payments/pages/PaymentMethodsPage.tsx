@@ -21,6 +21,7 @@ import {
   Grid,
 } from '@mui/material'
 import { InlineAlert } from '@/shared/ui'
+import { getErrorMessage } from '@/services/http'
 import {
   ArrowBack,
   CreditCard,
@@ -293,6 +294,7 @@ export function PaymentMethodsPage() {
   const { t: _t } = useTranslation('payments')
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { data: paymentMethods, isLoading } = usePaymentMethods()
   const addPaymentMethod = useAddPaymentMethod()
@@ -300,30 +302,33 @@ export function PaymentMethodsPage() {
   const setDefaultPaymentMethod = useSetDefaultPaymentMethod()
 
   const handleAddPaymentMethod = async (token: string) => {
+    setActionError(null)
     try {
       await addPaymentMethod.mutateAsync(token)
       setShowAddDialog(false)
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     }
   }
 
   const handleDeletePaymentMethod = async (id: string) => {
     setDeletingId(id)
+    setActionError(null)
     try {
       await removePaymentMethod.mutateAsync(id)
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     } finally {
       setDeletingId(null)
     }
   }
 
   const handleSetDefault = async (id: string) => {
+    setActionError(null)
     try {
       await setDefaultPaymentMethod.mutateAsync(id)
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -349,6 +354,14 @@ export function PaymentMethodsPage() {
               Back to Wallet
             </Button>
           </motion.div>
+
+          {actionError && (
+            <motion.div variants={staggerItem}>
+              <InlineAlert severity="error" sx={{ mb: 3 }}>
+                {actionError}
+              </InlineAlert>
+            </motion.div>
+          )}
 
           <motion.div variants={staggerItem}>
             <Box sx={{ mb: 4 }}>

@@ -1,5 +1,5 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
+using BuildingBlocks.Web.Helpers;
 
 namespace Analytics.Api.Extensions.DependencyInjection;
 
@@ -46,18 +46,7 @@ public class ValidationFilter<T> : IEndpointFilter where T : class
 
             _logger.LogWarning("Validation failed for {Type}: {Errors}", typeof(T).Name, errors);
 
-            var problemDetails = new ProblemDetails
-            {
-                Title = "Validation failed",
-                Status = StatusCodes.Status400BadRequest,
-                Detail = "One or more validation errors occurred.",
-                Extensions =
-                {
-                    ["errors"] = errors
-                }
-            };
-
-            return Results.BadRequest(problemDetails);
+            return Results.BadRequest(ProblemDetailsHelper.ValidationError(errors));
         }
 
         return await next(context);

@@ -7,13 +7,11 @@ using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record GetPermissionsForRoleQuery(Guid RoleId) : IQuery<IReadOnlyList<string>>;
 
 public class GetPermissionsForRoleQueryHandler(
-    Identity.Application.Interfaces.IApplicationDbContext context,
-    ILogger<GetPermissionsForRoleQueryHandler> logger) : IQueryHandler<GetPermissionsForRoleQuery, IReadOnlyList<string>>
+    IApplicationDbContext context) : IQueryHandler<GetPermissionsForRoleQuery, IReadOnlyList<string>>
 {
     public async Task<Result<IReadOnlyList<string>>> Handle(GetPermissionsForRoleQuery query, CancellationToken cancellationToken)
     {

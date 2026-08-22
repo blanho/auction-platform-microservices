@@ -1,6 +1,0 @@
-export { NotificationsPage } from './NotificationsPage'
-export { TemplatesManagementPage } from './TemplatesManagementPage'
-export { RecordsDashboardPage } from './RecordsDashboardPage'
-export { BroadcastNotificationPage } from './BroadcastNotificationPage'
-export { AllNotificationsPage } from './AllNotificationsPage'
-export { NotificationStatsPage } from './NotificationStatsPage'

@@ -116,7 +116,7 @@ export function ResetPasswordPage() {
       })
       setResetSuccess(true)
     } catch {
-      /* Error handled by mutation */
+      return
     }
   }
 

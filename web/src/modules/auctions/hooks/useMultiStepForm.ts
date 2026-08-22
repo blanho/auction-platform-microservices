@@ -17,10 +17,6 @@ interface UseMultiStepFormReturn {
   goToPrev: () => void
 }
 
-/**
- * Manages multi-step form progression with per-step validation.
- * Decouples stepper logic from form content, keeping both testable and focused.
- */
 export function useMultiStepForm<T extends FieldValues>({
   totalSteps,
   trigger,

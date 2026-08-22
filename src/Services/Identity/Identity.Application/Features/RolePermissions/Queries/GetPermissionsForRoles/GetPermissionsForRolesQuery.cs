@@ -5,15 +5,14 @@ using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 using Microsoft.EntityFrameworkCore;
+using DefaultRolePermissions = BuildingBlocks.Application.Authorization.RolePermissions;
 
 public record GetPermissionsForRolesQuery(IEnumerable<string> RoleNames) : IQuery<HashSet<string>>;
 
 public class GetPermissionsForRolesQueryHandler(
-    Identity.Application.Interfaces.IApplicationDbContext context,
-    ILogger<GetPermissionsForRolesQueryHandler> logger) : IQueryHandler<GetPermissionsForRolesQuery, HashSet<string>>
+    IApplicationDbContext context) : IQueryHandler<GetPermissionsForRolesQuery, HashSet<string>>
 {
     public async Task<Result<HashSet<string>>> Handle(GetPermissionsForRolesQuery query, CancellationToken cancellationToken)
     {
@@ -27,7 +26,7 @@ public class GetPermissionsForRolesQueryHandler(
 
         if (roleIds.Count == 0)
         {
-            return Result.Success<HashSet<string>>(BuildingBlocks.Web.Authorization.RolePermissions.GetPermissionsForRoles(roleNamesList));
+            return Result.Success(DefaultRolePermissions.GetPermissionsForRoles(roleNamesList));
         }
 
         var permissions = await context.RolePermissionStrings
@@ -39,7 +38,7 @@ public class GetPermissionsForRolesQueryHandler(
 
         if (permissions.Count == 0)
         {
-            return Result.Success<HashSet<string>>(BuildingBlocks.Web.Authorization.RolePermissions.GetPermissionsForRoles(roleNamesList));
+            return Result.Success(DefaultRolePermissions.GetPermissionsForRoles(roleNamesList));
         }
 
         return Result.Success<HashSet<string>>([.. permissions]);

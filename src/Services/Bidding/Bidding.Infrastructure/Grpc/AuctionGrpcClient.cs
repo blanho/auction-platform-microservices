@@ -1,3 +1,4 @@
+using System.Globalization;
 using AuctionService.Contracts.Grpc;
 using Bidding.Application.Interfaces;
 using Grpc.Core;
@@ -76,8 +77,8 @@ public class AuctionGrpcClient : IAuctionGrpcClient
 
             if (!DateTimeOffset.TryParse(
                     response.AuctionEnd,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.AssumeUniversal,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
                     out var auctionEnd))
             {
                 _logger.LogError(
@@ -135,8 +136,8 @@ public class AuctionGrpcClient : IAuctionGrpcClient
             if (!string.IsNullOrEmpty(response.NewEndTime) &&
                 DateTimeOffset.TryParse(
                     response.NewEndTime,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.AssumeUniversal,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
                     out var dt))
             {
                 parsedEndTime = dt;

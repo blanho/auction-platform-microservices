@@ -22,7 +22,7 @@ public sealed class LocalizationOptions
 {
     public string DefaultCulture { get; set; } = "en-US";
     public IReadOnlyList<string> SupportedCultures { get; set; } = ["en-US", "ja-JP"];
-    public string ResourcesPath { get; set; } = "Resources";
+    public string ResourcesPath { get; set; } = string.Empty;
     public bool EnableRequestLocalization { get; set; } = true;
     public bool UseAcceptLanguageHeader { get; set; } = true;
     public bool UseQueryStringProvider { get; set; } = true;

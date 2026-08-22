@@ -20,7 +20,7 @@ public class ReviewRepository : IReviewRepository
         {
             ["createdat"] = x => x.CreatedAt,
             ["rating"] = x => x.Rating,
-            ["title"] = x => x.Title
+            ["title"] = x => (object)(x.Title ?? string.Empty)
         };
 
     public ReviewRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)

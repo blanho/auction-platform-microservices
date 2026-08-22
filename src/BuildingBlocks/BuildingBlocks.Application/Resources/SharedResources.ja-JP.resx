@@ -46,4 +46,14 @@
   <data name="Common.OperationCompleted" xml:space="preserve"><value>操作が完了しました。</value></data>
   <data name="RateLimit.TooManyRequests" xml:space="preserve"><value>リクエストが多すぎます。</value></data>
   <data name="RateLimit.RetryAfter" xml:space="preserve"><value>レート制限を超えました。{0}秒後に再試行してください。</value></data>
+  <data name="Validation.Failed" xml:space="preserve"><value>1つ以上の検証エラーが発生しました。</value></data>
+  <data name="Validation.Invalid" xml:space="preserve"><value>{0}フィールドが無効です。</value></data>
+  <data name="Validation.MustBeNonNegative" xml:space="preserve"><value>{0}フィールドは0以上でなければなりません。</value></data>
+  <data name="Validation.MustBeAtLeast" xml:space="preserve"><value>{0}は少なくとも{1}件必要です。</value></data>
+  <data name="Validation.MustNotExceed" xml:space="preserve"><value>{0}は最大{1}件までです。</value></data>
+  <data name="Validation.MustContainAtLeastOne" xml:space="preserve"><value>{0}は少なくとも1件必要です。</value></data>
+  <data name="Validation.MustNotExceedDaysFromNow" xml:space="preserve"><value>{0}フィールドは現在から{1}日以内でなければなりません。</value></data>
+  <data name="Validation.UnsupportedValue" xml:space="preserve"><value>{0}の値「{1}」はサポートされていません。</value></data>
+  <data name="Validation.PasswordComplexity" xml:space="preserve"><value>パスワードには大文字、小文字、数字、特殊文字をそれぞれ1文字以上含める必要があります。</value></data>
+  <data name="Validation.PasswordsDoNotMatch" xml:space="preserve"><value>パスワードが一致しません。</value></data>
 </root>

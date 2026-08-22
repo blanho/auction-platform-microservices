@@ -80,7 +80,7 @@ public class UserDeletedConsumer : IConsumer<UserDeletedEvent>
             affectedBidderAuctions.Count);
     }
 
-    private static void CollectAffectedBidder(Auctions.Domain.Entities.Auction auction, Dictionary<string, List<string>> affectedBidderAuctions)
+    private static void CollectAffectedBidder(Auction auction, Dictionary<string, List<string>> affectedBidderAuctions)
     {
         if (!auction.CurrentHighBid.HasValue || string.IsNullOrEmpty(auction.WinnerUsername))
             return;

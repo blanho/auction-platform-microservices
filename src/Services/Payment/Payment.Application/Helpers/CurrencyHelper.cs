@@ -1,14 +1,16 @@
+using BuildingBlocks.Domain.Constants;
+
 namespace Payment.Application.Helpers;
 
 public static class CurrencyHelper
 {
     private static readonly Dictionary<string, int> DecimalPlaces = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "USD", 2 },
-        { "EUR", 2 },
-        { "GBP", 2 },
-        { "VND", 0 },
-        { "JPY", 0 },
+        { CurrencyCodes.Usd, 2 },
+        { CurrencyCodes.Eur, 2 },
+        { CurrencyCodes.Gbp, 2 },
+        { CurrencyCodes.Vnd, 0 },
+        { CurrencyCodes.Jpy, 0 },
         { "KRW", 0 }
     };
 

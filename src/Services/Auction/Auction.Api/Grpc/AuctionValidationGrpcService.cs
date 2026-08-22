@@ -20,7 +20,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "INVALID_AUCTION_ID",
-                ErrorMessage = "Invalid auction ID format"
+                ErrorMessage = _localization.GetString("Grpc.InvalidAuctionId")
             };
         }
 
@@ -32,7 +32,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "AUCTION_NOT_FOUND",
-                ErrorMessage = "Auction not found"
+                ErrorMessage = _localization.GetString("Grpc.AuctionNotFound")
             };
         }
 
@@ -42,7 +42,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "AUCTION_NOT_LIVE",
-                ErrorMessage = $"Auction is not active. Current status: {auction.Status}",
+                ErrorMessage = _localization.GetString("Grpc.AuctionNotActive", auction.Status),
                 Status = auction.Status.ToString()
             };
         }
@@ -53,7 +53,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "AUCTION_ENDED",
-                ErrorMessage = "Auction has ended",
+                ErrorMessage = _localization.GetString("Grpc.AuctionEnded"),
                 AuctionEnd = auction.AuctionEnd.ToString("O")
             };
         }
@@ -64,7 +64,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "SELLER_CANNOT_BID",
-                ErrorMessage = "You cannot bid on your own auction",
+                ErrorMessage = _localization.GetString("Grpc.CannotBidOwnAuction"),
                 Seller = auction.SellerUsername
             };
         }
@@ -75,7 +75,7 @@ public partial class AuctionGrpcService
             {
                 IsValid = false,
                 ErrorCode = "AUCTION_SOLD",
-                ErrorMessage = "This auction has already been sold"
+                ErrorMessage = _localization.GetString("Grpc.AuctionSold")
             };
         }
 
@@ -96,14 +96,14 @@ public partial class AuctionGrpcService
     {
         if (!Guid.TryParse(request.AuctionId, out var auctionId))
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid auction ID"));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, _localization.GetString("Grpc.InvalidAuctionId")));
         }
 
         var auction = await _readRepository.GetByIdAsync(auctionId, context.CancellationToken);
 
         if (auction == null)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Auction not found"));
+            throw new RpcException(new Status(StatusCode.NotFound, _localization.GetString("Grpc.AuctionNotFound")));
         }
 
         return new AuctionDetailsResponse
@@ -134,7 +134,7 @@ public partial class AuctionGrpcService
             return new ExtendAuctionResponse
             {
                 Success = false,
-                ErrorMessage = "Invalid auction ID"
+                ErrorMessage = _localization.GetString("Grpc.InvalidAuctionId")
             };
         }
 
@@ -145,7 +145,7 @@ public partial class AuctionGrpcService
             return new ExtendAuctionResponse
             {
                 Success = false,
-                ErrorMessage = "Auction not found"
+                ErrorMessage = _localization.GetString("Grpc.AuctionNotFound")
             };
         }
 
@@ -154,7 +154,7 @@ public partial class AuctionGrpcService
             return new ExtendAuctionResponse
             {
                 Success = false,
-                ErrorMessage = "Can only extend live auctions"
+                ErrorMessage = _localization.GetString("Grpc.CanOnlyExtendLive")
             };
         }
 

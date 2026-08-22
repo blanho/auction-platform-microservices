@@ -6,7 +6,7 @@ public static class ClaimsPrincipalExtensions
 {
 
     public static string? GetUserId(this ClaimsPrincipal user)
-        => user.FindFirstValue("sub") ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
+        => user.FindFirstValue(AuthClaimTypes.Subject) ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
 
     public static Guid? GetUserIdGuid(this ClaimsPrincipal user)
         => Guid.TryParse(user.GetUserId(), out var guid) ? guid : null;
@@ -21,13 +21,13 @@ public static class ClaimsPrincipalExtensions
         => user.GetUserIdGuid() ?? throw new UnauthorizedAccessException("User ID not found in claims");
 
     public static string? GetUsername(this ClaimsPrincipal user)
-        => user.FindFirstValue(ClaimTypes.Name) ?? user.FindFirstValue("name");
+        => user.FindFirstValue(ClaimTypes.Name) ?? user.FindFirstValue(AuthClaimTypes.Name);
 
     public static string? GetEmail(this ClaimsPrincipal user)
         => user.FindFirstValue(ClaimTypes.Email) ?? user.FindFirstValue("email");
 
     public static IEnumerable<string> GetRoles(this ClaimsPrincipal user)
-        => user.FindAll(c => c.Type == ClaimTypes.Role || c.Type == "role").Select(c => c.Value);
+        => user.FindAll(c => c.Type == ClaimTypes.Role || c.Type == AuthClaimTypes.Role).Select(c => c.Value);
 
     public static bool HasRole(this ClaimsPrincipal user, string role)
         => user.GetRoles().Contains(role, StringComparer.OrdinalIgnoreCase);

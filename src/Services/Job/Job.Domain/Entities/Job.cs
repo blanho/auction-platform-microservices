@@ -254,17 +254,17 @@ public class Job : AggregateRoot
         _executionLogs.Add(log);
     }
 
-    public void LogInformation(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null, TimeSpan? duration = null)
+    public void LogInformation(string message, ValueObjects.ExecutionContext? context = null, TimeSpan? duration = null)
     {
         _executionLogs.Add(JobExecutionLog.CreateInformation(Id, message, context, duration));
     }
 
-    public void LogWarning(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null)
+    public void LogWarning(string message, ValueObjects.ExecutionContext? context = null)
     {
         _executionLogs.Add(JobExecutionLog.CreateWarning(Id, message, context));
     }
 
-    public void LogError(string message, Jobs.Domain.ValueObjects.ExecutionContext? context = null)
+    public void LogError(string message, ValueObjects.ExecutionContext? context = null)
     {
         _executionLogs.Add(JobExecutionLog.CreateError(Id, message, context));
     }

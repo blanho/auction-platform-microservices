@@ -30,7 +30,6 @@ import { useMultiStepForm } from '../hooks/useMultiStepForm'
 import type { CreateAuctionFormData } from '../schemas'
 import { BasicInfoStep, ItemDetailsStep, PricingStep, ReviewStep } from '../forms'
 
-/** Field names validated at each step to prevent advancing with errors. */
 const STEP_FIELDS: Record<number, (keyof CreateAuctionFormData)[]> = {
   0: ['title', 'description', 'categoryId'],
   1: ['condition', 'yearManufactured'],
@@ -165,7 +164,6 @@ export function AuctionFormPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-      {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
         <MuiLink component={Link} to="/" underline="hover" color="inherit">
           {t('common:nav.home')}
@@ -178,7 +176,6 @@ export function AuctionFormPage() {
         </Typography>
       </Breadcrumbs>
 
-      {/* Page header */}
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h4"
@@ -198,7 +195,6 @@ export function AuctionFormPage() {
       </Box>
 
       <Card sx={{ p: { xs: 3, md: 4 } }}>
-        {/* Step indicator */}
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
           {FORM_STEPS.map((label) => (
             <Step key={label}>
@@ -211,7 +207,6 @@ export function AuctionFormPage() {
           ))}
         </Stepper>
 
-        {/* Step content */}
         <Box
           component={motion.div}
           key={activeStep}
@@ -223,7 +218,6 @@ export function AuctionFormPage() {
             <form onSubmit={onSubmit}>
               {steps[activeStep]}
 
-              {/* Navigation */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                 <Button
                   startIcon={<ArrowBack />}

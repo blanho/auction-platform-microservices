@@ -1,4 +1,5 @@
 using Search.Domain.Constants;
+using BuildingBlocks.Domain.Constants;
 
 namespace Search.Domain.Models;
 
@@ -66,7 +67,7 @@ public class AuctionSearchResult
 
     public decimal CurrentPrice { get; set; }
     public decimal? BuyNowPrice { get; set; }
-    public string Currency { get; set; } = "USD";
+    public string Currency { get; set; } = CurrencyCodes.Usd;
 
     public string Status { get; set; } = string.Empty;
     public string? Condition { get; set; }

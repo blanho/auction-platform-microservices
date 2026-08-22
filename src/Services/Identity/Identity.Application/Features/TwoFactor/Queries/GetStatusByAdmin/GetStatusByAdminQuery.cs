@@ -6,19 +6,17 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.DTOs.TwoFactor;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record GetStatusByAdminQuery(string UserId) : IQuery<TwoFactorStatusResponse>;
 
 public class GetStatusByAdminQueryHandler(
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
-    ILogger<GetStatusByAdminQueryHandler> logger) : IQueryHandler<GetStatusByAdminQuery, TwoFactorStatusResponse>
+    UserManager<ApplicationUser> userManager) : IQueryHandler<GetStatusByAdminQuery, TwoFactorStatusResponse>
 {
     public async Task<Result<TwoFactorStatusResponse>> Handle(GetStatusByAdminQuery query, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(query.UserId);
         if (user == null)
-            return Result.Failure<TwoFactorStatusResponse>(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure<TwoFactorStatusResponse>(IdentityErrors.User.NotFound);
 
         var isEnabledTask = userManager.GetTwoFactorEnabledAsync(user);
         var authenticatorKeyTask = userManager.GetAuthenticatorKeyAsync(user);

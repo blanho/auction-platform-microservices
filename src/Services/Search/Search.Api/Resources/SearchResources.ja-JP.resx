@@ -38,4 +38,7 @@
   <data name="IndexError.BulkIndexFailed" xml:space="preserve"><value>{0}件のドキュメントの一括インデックスに失敗しました: {1}</value></data>
   <data name="IndexError.ConnectionFailed" xml:space="preserve"><value>検索エンジンへの接続に失敗しました: {0}</value></data>
   <data name="IndexError.IndexCreationFailed" xml:space="preserve"><value>インデックス {0} の作成に失敗しました: {1}</value></data>
+  <data name="Auction.NotFound" xml:space="preserve"><value>オークションが見つかりません。</value></data>
+  <data name="Index.Ready" xml:space="preserve"><value>検索インデックスの準備が完了しました。</value></data>
+  <data name="Index.Recreated" xml:space="preserve"><value>検索インデックスを再作成しました。</value></data>
 </root>

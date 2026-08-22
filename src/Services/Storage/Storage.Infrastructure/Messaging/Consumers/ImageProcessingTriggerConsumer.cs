@@ -1,5 +1,6 @@
 using System.Text.Json;
 using JobService.Contracts.Commands;
+using JobService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using StorageService.Contracts.Events;
 
@@ -59,7 +60,7 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
 
         await _publishEndpoint.Publish(new RequestJobCommand
         {
-            JobType = nameof(JobService.Contracts.Enums.JobType.ImageProcessing),
+            JobType = nameof(JobType.ImageProcessing),
             CorrelationId = correlationId,
             RequestedBy = message.OwnerId ?? Guid.Empty,
             PayloadJson = payload,

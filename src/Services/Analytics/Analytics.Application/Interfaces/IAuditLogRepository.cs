@@ -1,4 +1,3 @@
-using Common.Contracts.Events;
 using Analytics.Domain.Entities;
 using Analytics.Application.DTOs;
 using BuildingBlocks.Application.Abstractions;

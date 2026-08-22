@@ -1,3 +1,5 @@
+using Bidding.Api.Grpc;
+using Bidding.Application.Interfaces;
 using Bidding.Api.Extensions.DependencyInjection;
 using Bidding.Application.Resources;
 using Bidding.Domain.Constants;
@@ -43,7 +45,7 @@ builder.Services.AddDistributedLocking(redisConnectionString);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddAuditServices(builder.Configuration, "bidding-service");
-builder.Services.AddCQRS(typeof(Bidding.Application.Interfaces.IBidRepository).Assembly);
+builder.Services.AddCQRS(typeof(IBidRepository).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();
@@ -94,7 +96,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapCarter();
-app.MapGrpcService<Bidding.Api.Grpc.BidGrpcService>();
+app.MapGrpcService<BidGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {

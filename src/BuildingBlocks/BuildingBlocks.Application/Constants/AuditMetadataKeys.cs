@@ -19,6 +19,10 @@ public static class AuditMetadataKeys
     public const string PreviousMaxAmount = "PreviousMaxAmount";
     public const string NewMaxAmount = "NewMaxAmount";
     public const string PreviousStatus = "PreviousStatus";
+    public const string ModifiedFields = "ModifiedFields";
+    public const string ExtensionMinutes = "ExtensionMinutes";
+    public const string PreviousEnd = "PreviousEnd";
+    public const string NewEnd = "NewEnd";
     public const string FileName = "FileName";
     public const string FileSize = "FileSize";
     public const string Provider = "Provider";

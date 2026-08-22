@@ -177,7 +177,6 @@ public class Order : AggregateRoot
 
     public bool MarkPaymentFailed()
     {
-        // A delayed failure must never overwrite a payment that already succeeded.
         if (PaymentStatus == PaymentStatus.Completed)
         {
             return false;

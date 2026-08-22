@@ -26,7 +26,7 @@
   <data name="Bid.AlreadyRejected" xml:space="preserve"><value>Cannot retract a rejected bid.</value></data>
   <data name="Bid.RetractWindowExpired" xml:space="preserve"><value>Bids can only be retracted within {0} minutes of placement.</value></data>
   <data name="Bid.PlaceFailed" xml:space="preserve"><value>Bid placement failed: {0}</value></data>
-  <data name="Bid.TooLow" xml:space="preserve"><value>Bid must be at least {0}.</value></data>
+  <data name="Bid.TooLow" xml:space="preserve"><value>The bid amount is below the required minimum.</value></data>
   <data name="Bid.AuctionNotLive" xml:space="preserve"><value>This auction is not accepting bids.</value></data>
   <data name="Bid.SelfBidding" xml:space="preserve"><value>You cannot bid on your own auction.</value></data>
   <data name="Bid.DuplicateBid" xml:space="preserve"><value>Duplicate bid detected, please wait before placing another bid.</value></data>
@@ -38,4 +38,11 @@
   <data name="AutoBid.MaxAmountTooLow" xml:space="preserve"><value>Max amount must be higher than current bid ({0}).</value></data>
   <data name="AutoBid.UpdateFailed" xml:space="preserve"><value>Failed to update auto-bid: {0}</value></data>
   <data name="AutoBid.CreateFailed" xml:space="preserve"><value>Failed to create auto-bid: {0}</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>The auction has already ended.</value></data>
+  <data name="Auction.NotActive" xml:space="preserve"><value>The auction is not active.</value></data>
+  <data name="Auction.NotFound" xml:space="preserve"><value>Auction not found.</value></data>
+  <data name="Auction.SelfBid" xml:space="preserve"><value>You cannot bid on your own auction.</value></data>
+  <data name="Bid.AlreadyRetracted" xml:space="preserve"><value>This bid has already been retracted.</value></data>
+  <data name="Bid.Rejected" xml:space="preserve"><value>The bid was rejected.</value></data>
+  <data name="Bid.DuplicateRequest" xml:space="preserve"><value>This bid request was already processed. Use a new idempotency key for a new bid.</value></data>
 </root>

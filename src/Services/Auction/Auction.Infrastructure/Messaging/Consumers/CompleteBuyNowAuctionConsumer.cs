@@ -10,14 +10,14 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
 {
     private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
-    private readonly BuildingBlocks.Application.Abstractions.IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<CompleteBuyNowAuctionConsumer> _logger;
 
     public CompleteBuyNowAuctionConsumer(
         IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
-        BuildingBlocks.Application.Abstractions.IUnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<CompleteBuyNowAuctionConsumer> logger)
     {

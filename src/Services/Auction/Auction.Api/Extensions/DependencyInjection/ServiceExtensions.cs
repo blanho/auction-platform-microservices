@@ -1,3 +1,5 @@
+using Catalog.Contracts.Grpc;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Auctions.Application.Services;
 using Auctions.Infrastructure.Persistence;
 using Auctions.Infrastructure.Persistence.Repositories;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 using AutoMapper;
+using BidService.API.Grpc;
 using Npgsql;
 using Serilog;
 using System.Text.Json.Serialization;
@@ -38,11 +41,11 @@ namespace Auctions.Api.Extensions.DependencyInjection
                             errorCodesToAdd: null);
                         npgsqlOptions.CommandTimeout(30);
                     })
-                    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+                    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<AuctionRepository>();
-            services.AddScoped<CachedAuctionRepository>(sp =>
+            services.AddScoped(sp =>
             {
                 var inner = sp.GetRequiredService<AuctionRepository>();
                 var cache = sp.GetRequiredService<ICacheService>();
@@ -59,14 +62,14 @@ namespace Auctions.Api.Extensions.DependencyInjection
 
             services.AddScoped<IPaginatedAuctionQueryService, PaginatedAuctionQueryService>();
 
-            services.AddGrpcClient<Catalog.Contracts.Grpc.CatalogGrpc.CatalogGrpcClient>((sp, o) =>
+            services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>((sp, o) =>
             {
-                var cfg = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+                var cfg = sp.GetRequiredService<IConfiguration>();
                 o.Address = new Uri(cfg["CatalogService:GrpcUrl"] ?? "http://localhost:5013");
             });
             services.AddScoped<ICatalogGrpcClient, CatalogGrpcClient>();
 
-            services.AddGrpcClient<BidService.API.Grpc.BidGrpc.BidGrpcClient>((sp, o) =>
+            services.AddGrpcClient<BidGrpc.BidGrpcClient>((sp, o) =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>();
                 o.Address = new Uri(cfg["BidService:GrpcUrl"]

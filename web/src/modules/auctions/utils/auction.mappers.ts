@@ -1,8 +1,3 @@
-/**
- * DTO Mappers - Transform backend DTOs to frontend UI types
- * This layer prevents contract drift and provides a single place for field mapping
- */
-
 import type { BackendAuctionDto, BackendAuctionFileDto } from '../types/backend-dto.types'
 import type {
   AuctionDetails,
@@ -13,10 +8,6 @@ import type {
 
 const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/files'
 
-/**
- * Maps backend status string to frontend AuctionStatus
- * Backend enum: Draft, Scheduled, Live, Finished, ReservedNotMet, Inactive, Cancelled, ReservedForBuyNow
- */
 function mapAuctionStatus(status: string): AuctionStatus {
   const statusMap: Record<string, AuctionStatus> = {
     Draft: 'draft',
@@ -35,9 +26,6 @@ function mapAuctionStatus(status: string): AuctionStatus {
   return statusMap[status] || 'draft'
 }
 
-/**
- * Determines if auction is ending soon (within 1 hour)
- */
 function isEndingSoon(endTime: string, status: string): boolean {
   if (status !== 'Active') {
     return false
@@ -48,9 +36,6 @@ function isEndingSoon(endTime: string, status: string): boolean {
   return hoursRemaining > 0 && hoursRemaining <= 1
 }
 
-/**
- * Maps backend file DTO to frontend AuctionImage
- */
 function mapAuctionFile(file: BackendAuctionFileDto): AuctionImage {
   return {
     id: file.fileId,
@@ -61,9 +46,6 @@ function mapAuctionFile(file: BackendAuctionFileDto): AuctionImage {
   }
 }
 
-/**
- * Maps full BackendAuctionDto to frontend Auction type
- */
 export function mapAuctionDto(dto: BackendAuctionDto): AuctionDetails {
   const baseStatus = mapAuctionStatus(dto.status)
 
@@ -78,15 +60,15 @@ export function mapAuctionDto(dto: BackendAuctionDto): AuctionDetails {
     reservePrice: dto.reservePrice,
     buyNowPrice: dto.buyNowPrice,
     status: isEndingSoon(dto.auctionEnd, dto.status) ? 'ending-soon' : baseStatus,
-    startTime: dto.createdAt, // Using createdAt as startTime
+    startTime: dto.createdAt,
     endTime: dto.auctionEnd,
     sellerId: dto.sellerId,
     sellerName: dto.seller,
     categoryId: dto.categoryId ?? '',
     categoryName: dto.categoryName ?? '',
     images: dto.files.map(mapAuctionFile),
-    bidCount: 0, // Not in backend DTO
-    watcherCount: 0, // Not in backend DTO
+    bidCount: 0,
+    watcherCount: 0,
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
     seller: {
@@ -103,9 +85,6 @@ export function mapAuctionDto(dto: BackendAuctionDto): AuctionDetails {
   }
 }
 
-/**
- * Maps the backend auction DTO to the compact card model.
- */
 export function mapAuctionListDto(dto: BackendAuctionDto): AuctionListItem {
   const baseStatus = mapAuctionStatus(dto.status)
   const primaryFile = dto.files.find((file) => file.isPrimary) ?? dto.files[0]
@@ -124,10 +103,6 @@ export function mapAuctionListDto(dto: BackendAuctionDto): AuctionListItem {
   }
 }
 
-/**
- * Maps backend OrderStatus enum to frontend OrderStatus
- * Backend enum: Pending, PaymentPending, Paid, Processing, Shipped, Delivered, Completed, Cancelled, Disputed, Refunded
- */
 export function mapOrderStatus(status: string): string {
   const statusMap: Record<string, string> = {
     Pending: 'pending',
@@ -144,10 +119,6 @@ export function mapOrderStatus(status: string): string {
   return statusMap[status] || status.toLowerCase()
 }
 
-/**
- * Maps backend PaymentStatus enum to frontend PaymentStatus
- * Backend enum: Pending, Processing, Completed, Failed, Refunded, Cancelled
- */
 export function mapPaymentStatus(status: string): string {
   const statusMap: Record<string, string> = {
     Pending: 'pending',
@@ -160,10 +131,6 @@ export function mapPaymentStatus(status: string): string {
   return statusMap[status] || status.toLowerCase()
 }
 
-/**
- * Maps backend BidStatus enum to frontend BidStatus
- * Backend enum: Pending, Accepted, AcceptedBelowReserve, TooLow, Rejected
- */
 export function mapBidStatus(status: string): string {
   const statusMap: Record<string, string> = {
     Pending: 'Pending',
@@ -177,10 +144,6 @@ export function mapBidStatus(status: string): string {
   return statusMap[status] || status
 }
 
-/**
- * Maps backend NotificationType enum to frontend notification type string
- * Backend enum: General=0, AuctionCreated=10, AuctionUpdated=11, etc.
- */
 export function mapNotificationType(type: string | number): string {
   const typeMap: Record<string | number, string> = {
     0: 'system',
@@ -229,10 +192,6 @@ export function mapNotificationType(type: string | number): string {
   return typeMap[type] || 'system'
 }
 
-/**
- * Maps backend NotificationStatus enum to frontend status
- * Backend enum: Pending=0, Unread=1, Read=2, Dismissed=3, Archived=4
- */
 export function mapNotificationStatus(status: string | number): string {
   const statusMap: Record<string | number, string> = {
     0: 'unread',
@@ -249,9 +208,6 @@ export function mapNotificationStatus(status: string | number): string {
   return statusMap[status] || 'unread'
 }
 
-/**
- * Maps array of auction list DTOs
- */
 export function mapAuctionListDtos(dtos: BackendAuctionDto[]): AuctionListItem[] {
   return dtos.map(mapAuctionListDto)
 }

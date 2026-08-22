@@ -33,7 +33,7 @@ builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMassTransitWithOutbox(builder.Configuration);
 builder.Services.AddAuditServices(builder.Configuration, "payment-service");
-builder.Services.AddDomainEvents(typeof(Payment.Infrastructure.Persistence.UnitOfWork).Assembly);
+builder.Services.AddDomainEvents(typeof(UnitOfWork).Assembly);
 builder.Services.AddCommonApiVersioning();
 builder.Services.AddCommonOpenApi();
 builder.Services.AddCarter();

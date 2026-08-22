@@ -15,10 +15,3 @@ public record AuctionImportCompletedEvent : IVersionedEvent
     public DateTimeOffset CompletedAt { get; init; }
     public List<ImportRowErrorPayload> Errors { get; init; } = [];
 }
-
-public record ImportRowErrorPayload
-{
-    public int RowNumber { get; init; }
-    public string Field { get; init; } = string.Empty;
-    public string ErrorMessage { get; init; } = string.Empty;
-}

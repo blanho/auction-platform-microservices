@@ -107,5 +107,10 @@ public static class ValidationConstants
 
         public static string MustContainAtLeastOne(string fieldName)
             => $"At least one {fieldName.ToLowerInvariant()} is required";
+
+        public const string PasswordComplexity =
+            "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character";
+
+        public const string PasswordsDoNotMatch = "Passwords do not match";
     }
 }

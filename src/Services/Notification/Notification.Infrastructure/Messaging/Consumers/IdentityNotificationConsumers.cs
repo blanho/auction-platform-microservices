@@ -26,8 +26,10 @@ public class UserReactivatedConsumer : IdempotentNotificationConsumer<UserReacti
     {
         UserId = e.UserId,
         Type = NotificationType.UserReactivated,
-        Title = "Account Reactivated",
-        Message = $"Welcome back, {e.Username}! Your account has been reactivated. You can now access all platform features.",
+        LocalizedText = new(
+            NotificationMessageKeys.UserReactivatedTitle,
+            NotificationMessageKeys.UserReactivatedMessage,
+            e.Username),
         Data = NotificationDataBuilder.Create()
             .Add("Username", e.Username)
             .Add("ReactivatedAt", e.ReactivatedAt)
@@ -54,8 +56,10 @@ public class UserEmailConfirmedConsumer : IdempotentNotificationConsumer<UserEma
     {
         UserId = e.UserId,
         Type = NotificationType.UserEmailConfirmed,
-        Title = "Email Address Confirmed",
-        Message = $"Your email address {e.Email} has been successfully confirmed. Your account is now fully active.",
+        LocalizedText = new(
+            NotificationMessageKeys.UserEmailConfirmedTitle,
+            NotificationMessageKeys.UserEmailConfirmedMessage,
+            e.Email),
         Data = NotificationDataBuilder.Create()
             .Add("Username", e.Username)
             .Add("Email", e.Email)

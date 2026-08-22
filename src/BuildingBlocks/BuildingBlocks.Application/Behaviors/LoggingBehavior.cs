@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BuildingBlocks.Application.Abstractions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
             correlationId,
             _userContext?.UserIdOrDefault);
 
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
         try
         {

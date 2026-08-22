@@ -36,4 +36,81 @@
   <data name="Preference.UpdateFailed" xml:space="preserve"><value>設定の更新に失敗しました: {0}</value></data>
   <data name="Email.SendFailed" xml:space="preserve"><value>メールの送信に失敗しました: {0}</value></data>
   <data name="Email.InvalidRecipient" xml:space="preserve"><value>無効なメール受信者です。</value></data>
+  <data name="Notification.Forbidden" xml:space="preserve"><value>この通知を操作する権限がありません。</value></data>
+  <data name="User.InvalidToken" xml:space="preserve"><value>アクセストークンにユーザーIDが含まれていません。</value></data>
+  <data name="User.NotFound" xml:space="preserve"><value>ユーザーが見つかりません。</value></data>
+  <data name="Notification.BidAccepted.Title" xml:space="preserve"><value>入札が承認されました</value></data>
+  <data name="Notification.BidAccepted.Message" xml:space="preserve"><value>おめでとうございます。{0}の入札が承認されました。</value></data>
+  <data name="Notification.BidRejected.Title" xml:space="preserve"><value>入札が拒否されました</value></data>
+  <data name="Notification.BidRejected.Message" xml:space="preserve"><value>{0}の入札は拒否されました。理由: {1}</value></data>
+  <data name="Notification.BidOutbid.Title" xml:space="preserve"><value>より高い入札がありました</value></data>
+  <data name="Notification.BidOutbid.Message" xml:space="preserve"><value>{0}の入札を上回る入札がありました。現在の最高入札額: {1}</value></data>
+  <data name="Notification.BidBelowReserve.Title" xml:space="preserve"><value>入札額が最低落札価格を下回っています</value></data>
+  <data name="Notification.BidBelowReserve.Message" xml:space="preserve"><value>{0}の入札は承認されましたが、最低落札価格を下回っています。最低落札価格に達しない場合、商品は売れない可能性があります。</value></data>
+  <data name="Notification.BidTooLow.Title" xml:space="preserve"><value>入札額が低すぎます</value></data>
+  <data name="Notification.BidTooLow.Message" xml:space="preserve"><value>{0}の入札は最低入札額の要件を満たしていません。</value></data>
+  <data name="Notification.AutoBidCreated.Title" xml:space="preserve"><value>自動入札を作成しました</value></data>
+  <data name="Notification.AutoBidCreated.Message" xml:space="preserve"><value>上限額{0}で自動入札を設定しました。</value></data>
+  <data name="Notification.AutoBidActivated.Title" xml:space="preserve"><value>自動入札を有効にしました</value></data>
+  <data name="Notification.AutoBidActivated.Message" xml:space="preserve"><value>自動入札が有効になり、代理で自動的に入札されます。</value></data>
+  <data name="Notification.AutoBidDeactivated.Title" xml:space="preserve"><value>自動入札を無効にしました</value></data>
+  <data name="Notification.AutoBidDeactivated.Message" xml:space="preserve"><value>自動入札を無効にしました。このオークションで自動入札は行われなくなります。</value></data>
+  <data name="Notification.AutoBidUpdated.Title" xml:space="preserve"><value>自動入札を更新しました</value></data>
+  <data name="Notification.AutoBidUpdated.Message" xml:space="preserve"><value>自動入札の上限額を{0}に更新しました。</value></data>
+  <data name="Notification.WalletCreated.Title" xml:space="preserve"><value>ウォレットを作成しました</value></data>
+  <data name="Notification.WalletCreated.Message" xml:space="preserve"><value>ウォレットを作成しました。入金して入札を開始できます。</value></data>
+  <data name="Notification.FundsDeposited.Title" xml:space="preserve"><value>入金されました</value></data>
+  <data name="Notification.FundsDeposited.Message" xml:space="preserve"><value>{0}をウォレットに入金しました。新しい残高: {1}。</value></data>
+  <data name="Notification.FundsWithdrawn.Title" xml:space="preserve"><value>出金されました</value></data>
+  <data name="Notification.FundsWithdrawn.Message" xml:space="preserve"><value>{0}を出金しました。新しい残高: {1}。</value></data>
+  <data name="Notification.FundsHeld.Title" xml:space="preserve"><value>資金を確保しました</value></data>
+  <data name="Notification.FundsHeld.Message" xml:space="preserve"><value>入札のために{0}を確保しました。確保済み合計: {1}。</value></data>
+  <data name="Notification.FundsReleased.Title" xml:space="preserve"><value>資金を解放しました</value></data>
+  <data name="Notification.FundsReleased.Message" xml:space="preserve"><value>{0}を利用可能残高に戻しました。確保済み残高: {1}。</value></data>
+  <data name="Notification.FundsDeducted.Title" xml:space="preserve"><value>支払いを処理しました</value></data>
+  <data name="Notification.FundsDeducted.Message" xml:space="preserve"><value>確保済み資金から{0}を差し引きました。新しい残高: {1}。</value></data>
+  <data name="Notification.AuctionCancelled.Title" xml:space="preserve"><value>オークションをキャンセルしました</value></data>
+  <data name="Notification.AuctionCancelled.Message" xml:space="preserve"><value>オークション「{0}」をキャンセルしました。理由: {1}。</value></data>
+  <data name="Notification.AuctionEndingSoon.Title" xml:space="preserve"><value>オークション終了間近</value></data>
+  <data name="Notification.AuctionEndingSoon.Message" xml:space="preserve"><value>オークション「{0}」は{1}後に終了します。現在の入札額: {2}。</value></data>
+  <data name="Notification.AuctionExtended.Title" xml:space="preserve"><value>オークションを延長しました</value></data>
+  <data name="Notification.AuctionExtended.Message" xml:space="preserve"><value>オークション「{0}」を{1} UTCまで延長しました。理由: {2}。</value></data>
+  <data name="Notification.AuctionStarted.Title" xml:space="preserve"><value>オークションを開始しました</value></data>
+  <data name="Notification.AuctionStarted.Message" xml:space="preserve"><value>オークション「{0}」が開始されました。開始価格: {1}。</value></data>
+  <data name="Notification.UserReactivated.Title" xml:space="preserve"><value>アカウントを再有効化しました</value></data>
+  <data name="Notification.UserReactivated.Message" xml:space="preserve"><value>おかえりなさい、{0}さん。アカウントが再有効化され、すべての機能を利用できます。</value></data>
+  <data name="Notification.UserEmailConfirmed.Title" xml:space="preserve"><value>メールアドレスを確認しました</value></data>
+  <data name="Notification.UserEmailConfirmed.Message" xml:space="preserve"><value>メールアドレス{0}を確認しました。アカウントは完全に有効です。</value></data>
+  <data name="Notification.OrderShipped.Title" xml:space="preserve"><value>注文を発送しました</value></data>
+  <data name="Notification.OrderShipped.Message" xml:space="preserve"><value>ご注文を{0}で発送しました。追跡番号: {1}。</value></data>
+  <data name="Notification.OrderDelivered.Title" xml:space="preserve"><value>注文を配達しました</value></data>
+  <data name="Notification.OrderDelivered.Message" xml:space="preserve"><value>ご注文を配達しました。お買い物をお楽しみください。</value></data>
+  <data name="Notification.OrderReportReady.Title" xml:space="preserve"><value>注文レポートの準備ができました</value></data>
+  <data name="Notification.OrderReportReady.Message" xml:space="preserve"><value>{0}レポート（{1}件）のダウンロード準備ができました。ファイル: {2}（{3} KB）。</value></data>
+  <data name="Notification.JobCompleted.Title" xml:space="preserve"><value>ジョブが完了しました</value></data>
+  <data name="Notification.JobCompleted.Message" xml:space="preserve"><value>ジョブ「{0}」が正常に完了しました。{1}件すべてを処理しました。</value></data>
+  <data name="Notification.JobCompletedWithErrors.Title" xml:space="preserve"><value>エラーを含めてジョブが完了しました</value></data>
+  <data name="Notification.JobCompletedWithErrors.Message" xml:space="preserve"><value>ジョブ「{0}」が完了しました。成功: {1}件、失敗: {2}件、合計: {3}件。</value></data>
+  <data name="Notification.JobFailed.Title" xml:space="preserve"><value>ジョブに失敗しました</value></data>
+  <data name="Notification.JobFailed.Message" xml:space="preserve"><value>ジョブ「{0}」に失敗しました: {1}</value></data>
+  <data name="Notification.JobQueued.Title" xml:space="preserve"><value>ジョブをキューに追加しました</value></data>
+  <data name="Notification.JobQueued.Message" xml:space="preserve"><value>ジョブ「{0}」をキューに追加しました。処理対象: {1}件。</value></data>
+  <data name="Notification.JobProgress.Title" xml:space="preserve"><value>ジョブの進捗更新</value></data>
+  <data name="Notification.JobProgress.Message" xml:space="preserve"><value>ジョブ「{0}」の進捗: {1}%（{2}/{3}件処理）。</value></data>
+  <data name="Notification.JobProgressWithErrors.Message" xml:space="preserve"><value>ジョブ「{0}」の進捗: {1}%（{2}/{3}件処理、{4}件失敗）。</value></data>
+  <data name="Notification.JobProgressSimple.Message" xml:space="preserve"><value>ジョブ「{0}」の進捗更新: {1}%完了。</value></data>
+  <data name="Notification.AuctionImportCompleted.Title" xml:space="preserve"><value>オークションのインポートが完了しました</value></data>
+  <data name="Notification.AuctionImportCompleted.Message" xml:space="preserve"><value>インポートが正常に完了しました。{1}行から{0}件のオークションをインポートしました。</value></data>
+  <data name="Notification.AuctionImportCompletedWithErrors.Title" xml:space="preserve"><value>エラーを含めてオークションのインポートが完了しました</value></data>
+  <data name="Notification.AuctionImportCompletedWithErrors.Message" xml:space="preserve"><value>インポートが完了しました。成功: {0}件、失敗: {1}件、重複スキップ: {2}件、合計: {3}行。</value></data>
+  <data name="Notification.AuctionExportReady.Title" xml:space="preserve"><value>オークションのエクスポート準備ができました</value></data>
+  <data name="Notification.AuctionExportReady.Message" xml:space="preserve"><value>{0}形式で{1}件のオークションをエクスポートしました。ファイル: {2}。</value></data>
+  <data name="Notification.BulkAuctionActivatedCompleted.Title" xml:space="preserve"><value>オークションの一括有効化が完了しました</value></data>
+  <data name="Notification.BulkAuctionActivatedCompleted.Message" xml:space="preserve"><value>一括有効化が正常に完了しました。{0}件すべてを処理しました。</value></data>
+  <data name="Notification.BulkAuctionActivatedCompletedWithErrors.Title" xml:space="preserve"><value>エラーを含めてオークションの一括有効化が完了しました</value></data>
+  <data name="Notification.BulkAuctionActivatedCompletedWithErrors.Message" xml:space="preserve"><value>一括有効化が完了しました。成功: {0}件、失敗: {1}件、合計: {2}件。</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompleted.Title" xml:space="preserve"><value>オークションの一括更新が完了しました</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompleted.Message" xml:space="preserve"><value>一括更新が正常に完了しました。{0}件すべてを処理しました。</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompletedWithErrors.Title" xml:space="preserve"><value>エラーを含めてオークションの一括更新が完了しました</value></data>
+  <data name="Notification.BulkAuctionUpdatedCompletedWithErrors.Message" xml:space="preserve"><value>一括更新が完了しました。成功: {0}件、失敗: {1}件、合計: {2}件。</value></data>
 </root>

@@ -59,11 +59,10 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var action = request.Activate ? "BulkActivated" : "BulkDeactivated";
         await _auditPublisher.PublishBatchAsync(
             auditEntries.Select(e => (e.AuctionId, e.NewData)),
             AuditAction.Updated,
-            new Dictionary<string, object> { ["Action"] = action },
+            AuctionAuditMetadata.ForBulkStatusChange(request.Activate),
             cancellationToken);
 
         _logger.LogInformation("Successfully updated {UpdatedCount} auctions", updatedCount);
@@ -92,4 +91,3 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
         return false;
     }
 }
-

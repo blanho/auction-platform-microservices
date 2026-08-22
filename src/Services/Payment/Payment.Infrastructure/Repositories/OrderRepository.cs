@@ -32,21 +32,21 @@ public class OrderRepository : IOrderRepository
         _context = context;
     }
 
-    public async Task<Order> GetByIdAsync(Guid id)
+    public async Task<Order?> GetByIdAsync(Guid id)
     {
         return await _context.Orders
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
-    public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context.Orders
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
-    public async Task<Order> GetByAuctionIdAsync(Guid auctionId)
+    public async Task<Order?> GetByAuctionIdAsync(Guid auctionId)
     {
         return await _context.Orders
             .AsNoTracking()
@@ -88,18 +88,18 @@ public class OrderRepository : IOrderRepository
         return order;
     }
 
-    public async Task<Order> UpdateAsync(Order order)
+    public Task<Order> UpdateAsync(Order order)
     {
         order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Orders.Update(order);
-        return order;
+        return Task.FromResult(order);
     }
 
-    public async Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken)
+    public Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken)
     {
         order.SetUpdatedAudit(Guid.Empty, DateTimeOffset.UtcNow);
         _context.Orders.Update(order);
-        return await Task.FromResult(order);
+        return Task.FromResult(order);
     }
 
     public async Task<int> GetCountByBuyerUsernameAsync(string username)
@@ -168,7 +168,7 @@ public class OrderRepository : IOrderRepository
         var dailyStats = await _context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
-            .GroupBy(o => o.PaidAt.Value.Date)
+            .GroupBy(o => o.PaidAt!.Value.Date)
             .Select(g => new DailyRevenueStatDto(
                 DateOnly.FromDateTime(g.Key),
                 g.Sum(o => o.TotalAmount),

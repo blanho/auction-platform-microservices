@@ -140,7 +140,7 @@ public class NotificationSender : INotificationSender
                 UserId = userId,
                 Title = title,
                 Message = message,
-                Status = "Unread",
+                Status = nameof(NotificationStatus.Unread),
                 CreatedAt = notification.CreatedAt
             };
             await _hubService.SendNotificationToUserAsync(userId, dto);
@@ -178,7 +178,7 @@ public class NotificationSender : INotificationSender
         var record = NotificationRecord.Create(
             Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
             templateKey,
-            "Email",
+            NotificationChannelNames.Email,
             subject,
             recipientEmail);
 
@@ -192,7 +192,7 @@ public class NotificationSender : INotificationSender
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 _logger.LogWarning("Failed to send email to {Email}: {Error}", recipientEmail, result.Error);
             }
         }
@@ -211,7 +211,7 @@ public class NotificationSender : INotificationSender
         var record = NotificationRecord.Create(
             Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
             templateKey,
-            "Sms",
+            NotificationChannelNames.Sms,
             message.Length > 50 ? message[..50] + "..." : message,
             phoneNumber);
 
@@ -225,7 +225,7 @@ public class NotificationSender : INotificationSender
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 _logger.LogWarning("Failed to send SMS to {Phone}: {Error}", TemplateHelper.MaskPhone(phoneNumber), result.Error);
             }
         }
@@ -244,7 +244,7 @@ public class NotificationSender : INotificationSender
         var record = NotificationRecord.Create(
             Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
             templateKey,
-            "Push",
+            NotificationChannelNames.Push,
             title,
             userId);
 
@@ -258,7 +258,7 @@ public class NotificationSender : INotificationSender
             }
             else
             {
-                record.MarkAsFailed(result.Error ?? "Unknown error");
+                record.MarkAsFailed(result.Error ?? NotificationDefaults.Fallback.UnknownError);
                 _logger.LogWarning("Failed to send push to user {UserId}: {Error}", userId, result.Error);
             }
         }

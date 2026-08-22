@@ -1,5 +1,6 @@
 using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
+using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using Microsoft.Extensions.Logging;
 
@@ -43,7 +44,7 @@ public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUp
         return Result<BackgroundJobResult>.Success(new BackgroundJobResult(
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
-            Status: "Queued",
+            Status: BackgroundJobStatuses.Queued,
             Message: $"Bulk update of {request.AuctionIds.Count} auctions has been queued for background processing."));
     }
 }

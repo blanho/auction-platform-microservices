@@ -6,7 +6,7 @@ namespace Payment.Application.Interfaces;
 
 public interface IWalletTransactionRepository
 {
-    Task<WalletTransaction> GetByIdAsync(Guid id);
+    Task<WalletTransaction?> GetByIdAsync(Guid id);
     Task<WalletTransaction?> GetByReferenceIdAsync(string referenceId, TransactionType type, CancellationToken cancellationToken = default);
     Task<PaginatedResult<WalletTransaction>> GetByUsernameAsync(WalletTransactionQueryParams queryParams, CancellationToken cancellationToken = default);
     Task<WalletTransaction> AddAsync(WalletTransaction transaction);

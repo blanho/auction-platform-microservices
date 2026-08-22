@@ -61,8 +61,8 @@ public class AuctionSearchService : IAuctionSearchService
                     .PreTags(new[] { SearchDefaults.HighlightPreTag })
                     .PostTags(new[] { SearchDefaults.HighlightPostTag })
                     .Fields(f => f
-                        .Add(ElasticsearchFields.Title, hf => { })
-                        .Add(ElasticsearchFields.Description, hf => { })))
+                        .Add(new Field(ElasticsearchFields.Title), hf => { })
+                        .Add(new Field(ElasticsearchFields.Description), hf => { })))
                 .Sort(BuildSortOptions(request.SortBy, request.SortDirection))
                 .TrackTotalHits(new TrackHits(true))
                 .Aggregations(agg => agg
@@ -153,7 +153,7 @@ public class AuctionSearchService : IAuctionSearchService
                     }
                 }))
                 .Query(q => q.Match(m => m
-                    .Field(ElasticsearchFields.TitleAutocomplete)
+                    .Field(new Field(ElasticsearchFields.TitleAutocomplete))
                     .Query(prefix))),
             ct);
 
@@ -233,7 +233,7 @@ public class AuctionSearchService : IAuctionSearchService
         if (string.IsNullOrWhiteSpace(value))
             return;
 
-        filters.Add(Query.Term(new TermQuery(fieldName) { Value = value }));
+        filters.Add(Query.Term(new TermQuery(new Field(fieldName)) { Value = value }));
     }
 
     private static void AddTermFilter(List<Query> filters, string fieldName, Guid? id)
@@ -241,7 +241,7 @@ public class AuctionSearchService : IAuctionSearchService
         if (!id.HasValue)
             return;
 
-        filters.Add(Query.Term(new TermQuery(fieldName) { Value = id.Value.ToString() }));
+        filters.Add(Query.Term(new TermQuery(new Field(fieldName)) { Value = id.Value.ToString() }));
     }
 
     private static void AddPriceRangeFilter(List<Query> filters, decimal? minPrice, decimal? maxPrice)
@@ -249,7 +249,7 @@ public class AuctionSearchService : IAuctionSearchService
         if (!minPrice.HasValue && !maxPrice.HasValue)
             return;
 
-        var rangeQuery = new NumberRangeQuery(ElasticsearchFields.CurrentPrice);
+        var rangeQuery = new NumberRangeQuery(new Field(ElasticsearchFields.CurrentPrice));
 
         if (minPrice.HasValue)
             rangeQuery.Gte = (double)minPrice.Value;
@@ -268,7 +268,7 @@ public class AuctionSearchService : IAuctionSearchService
         if (!endingAfter.HasValue && !endingBefore.HasValue)
             return;
 
-        var rangeQuery = new DateRangeQuery(ElasticsearchFields.EndTime);
+        var rangeQuery = new DateRangeQuery(new Field(ElasticsearchFields.EndTime));
 
         if (endingAfter.HasValue)
             rangeQuery.Gte = endingAfter.Value.ToString("o");
@@ -284,7 +284,7 @@ public class AuctionSearchService : IAuctionSearchService
         if (!featuredOnly)
             return;
 
-        filters.Add(Query.Term(new TermQuery(ElasticsearchFields.IsFeatured)
+        filters.Add(Query.Term(new TermQuery(new Field(ElasticsearchFields.IsFeatured))
         {
             Value = true
         }));
@@ -301,7 +301,7 @@ public class AuctionSearchService : IAuctionSearchService
     }
 
     private static SortOrder ParseSortDirection(string? sortDirection) =>
-        sortDirection?.ToLowerInvariant() == "asc"
+        sortDirection?.ToLowerInvariant() == SortDirections.Ascending
             ? SortOrder.Asc
             : SortOrder.Desc;
 
@@ -322,15 +322,15 @@ public class AuctionSearchService : IAuctionSearchService
         new()
         {
             SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
-            SortOptions.Field(ElasticsearchFields.CreatedAt, new FieldSort { Order = SortOrder.Desc }),
-            SortOptions.Field(ElasticsearchFields.Id, new FieldSort { Order = SortOrder.Asc })
+            SortOptions.Field(new Field(ElasticsearchFields.CreatedAt), new FieldSort { Order = SortOrder.Desc }),
+            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
         };
 
     private static List<SortOptions> BuildFieldSortOptions(string sortField, SortOrder direction) =>
         new()
         {
-            SortOptions.Field(sortField, new FieldSort { Order = direction }),
-            SortOptions.Field(ElasticsearchFields.Id, new FieldSort { Order = SortOrder.Asc })
+            SortOptions.Field(new Field(sortField), new FieldSort { Order = direction }),
+            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
         };
 
 }

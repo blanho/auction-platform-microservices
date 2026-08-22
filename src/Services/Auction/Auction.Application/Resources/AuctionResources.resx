@@ -64,4 +64,15 @@
   <data name="Review.AlreadyResponded" xml:space="preserve"><value>Seller has already responded to this review.</value></data>
   <data name="Analytics.Error" xml:space="preserve"><value>Failed to retrieve seller analytics.</value></data>
   <data name="Dashboard.Error" xml:space="preserve"><value>Failed to retrieve dashboard statistics.</value></data>
+  <data name="Auction.Forbidden" xml:space="preserve"><value>You are not authorized to modify this auction.</value></data>
+  <data name="Export.UnsupportedFormat" xml:space="preserve"><value>Export format '{0}' is not supported.</value></data>
+  <data name="Validation.Empty" xml:space="preserve"><value>At least one auction ID is required.</value></data>
+  <data name="Validation.TooMany" xml:space="preserve"><value>Maximum 100 auction IDs are allowed per request.</value></data>
+  <data name="Grpc.InvalidAuctionId" xml:space="preserve"><value>Invalid auction ID.</value></data>
+  <data name="Grpc.AuctionNotFound" xml:space="preserve"><value>Auction not found.</value></data>
+  <data name="Grpc.AuctionNotActive" xml:space="preserve"><value>Auction is not active. Current status: {0}.</value></data>
+  <data name="Grpc.AuctionEnded" xml:space="preserve"><value>Auction has ended.</value></data>
+  <data name="Grpc.CannotBidOwnAuction" xml:space="preserve"><value>You cannot bid on your own auction.</value></data>
+  <data name="Grpc.AuctionSold" xml:space="preserve"><value>This auction has already been sold.</value></data>
+  <data name="Grpc.CanOnlyExtendLive" xml:space="preserve"><value>Only live auctions can be extended.</value></data>
 </root>

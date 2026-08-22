@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Catalog.Api.Grpc;
 
-public class CatalogGrpcService : Catalog.Contracts.Grpc.CatalogGrpc.CatalogGrpcBase
+public class CatalogGrpcService : CatalogGrpc.CatalogGrpcBase
 {
     private readonly IBrandRepository _brandRepository;
     private readonly ICategoryRepository _categoryRepository;

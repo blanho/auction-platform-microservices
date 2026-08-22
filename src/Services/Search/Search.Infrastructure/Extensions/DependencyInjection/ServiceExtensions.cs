@@ -36,7 +36,7 @@ public static class ServiceExtensions
             options.InstanceName = "SearchService:";
         });
 
-        services.AddSingleton<ElasticsearchClient>(sp =>
+        services.AddSingleton(sp =>
         {
             var options = configuration
                 .GetSection(ElasticsearchOptions.SectionName)

@@ -32,7 +32,7 @@ export function ConfirmEmailPage() {
         await resendConfirmation.mutateAsync(email)
         setResendSuccess(true)
       } catch {
-        /* Error handled by mutation */
+        return
       }
     }
   }

@@ -3,6 +3,7 @@ using Auctions.Domain.Events;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Exceptions;
 using Auctions.Domain.Enums;
+using Auctions.Domain.Constants;
 
 namespace Auctions.Domain.Entities;
 
@@ -23,7 +24,7 @@ public class Auction : AggregateRoot
     private Auction() { }
     public decimal ReservePrice { get; private set; }
     public decimal? BuyNowPrice { get; private set; }
-    public string Currency { get; private set; } = "USD";
+    public string Currency { get; private set; } = AuctionDefaults.DefaultCurrency;
     public bool IsBuyNowEnabled => BuyNowPrice.HasValue && BuyNowPrice > 0;
     public bool IsBuyNowAvailable => IsBuyNowEnabled && Status == Status.Live && !SoldAmount.HasValue;
 
@@ -40,8 +41,6 @@ public class Auction : AggregateRoot
     public Item Item { get; private set; } = null!;
 
     public ICollection<Review> Reviews { get; private set; } = new List<Review>();
-    // Note: Bookmarks (Watchlist) are NOT part of the Auction aggregate.
-    // Bookmark references AuctionId as a FK. Use IBookmarkRepository to query bookmarks by auction.
 
     public static Auction Create(CreateAuctionParams createParams)
     {
@@ -86,7 +85,7 @@ public class Auction : AggregateRoot
         Item item,
         decimal reservePrice,
         DateTimeOffset auctionEnd,
-        string currency = "USD")
+        string currency = AuctionDefaults.DefaultCurrency)
     {
 
         return new Auction
@@ -331,6 +330,6 @@ public record CreateAuctionParams(
     Item Item,
     decimal ReservePrice,
     DateTimeOffset AuctionEnd,
-    string Currency = "USD",
+    string Currency = AuctionDefaults.DefaultCurrency,
     decimal? BuyNowPrice = null,
     bool IsFeatured = false);

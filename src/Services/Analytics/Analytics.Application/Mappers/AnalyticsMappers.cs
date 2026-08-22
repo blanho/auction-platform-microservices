@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Analytics.Domain.Entities;
 using Analytics.Application.DTOs;
 
@@ -51,7 +52,7 @@ public static class AnalyticsMappers
             Action = log.Action,
             OldValues = log.OldValues,
             NewValues = log.NewValues,
-            ChangedProperties = string.IsNullOrEmpty(log.ChangedProperties) ? null : System.Text.Json.JsonSerializer.Deserialize<List<string>>(log.ChangedProperties),
+            ChangedProperties = string.IsNullOrEmpty(log.ChangedProperties) ? null : JsonSerializer.Deserialize<List<string>>(log.ChangedProperties),
             UserId = log.UserId,
             Username = log.Username,
             ServiceName = log.ServiceName,

@@ -28,7 +28,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
         _context = context;
     }
 
-    public async Task<WalletTransaction> GetByIdAsync(Guid id)
+    public async Task<WalletTransaction?> GetByIdAsync(Guid id)
     {
         return await _context.WalletTransactions
             .AsNoTracking()
@@ -71,10 +71,10 @@ public class WalletTransactionRepository : IWalletTransactionRepository
         return transaction;
     }
 
-    public async Task<WalletTransaction> UpdateAsync(WalletTransaction transaction)
+    public Task<WalletTransaction> UpdateAsync(WalletTransaction transaction)
     {
         _context.WalletTransactions.Update(transaction);
-        return transaction;
+        return Task.FromResult(transaction);
     }
 
     public async Task<int> GetCountByUsernameAsync(string username)

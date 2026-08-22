@@ -1,3 +1,4 @@
+global using BuildingBlocks.Application.Authorization;
 global using BuildingBlocks.Web.Extensions;
 global using BuildingBlocks.Application.Abstractions;
 global using Notification.Domain.Constants;

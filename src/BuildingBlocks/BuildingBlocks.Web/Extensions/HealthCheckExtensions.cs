@@ -1,4 +1,5 @@
 using HealthChecks.UI.Client;
+using BuildingBlocks.Web.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -91,7 +92,7 @@ public static class HealthCheckExtensions
 
     private static async Task WriteSimpleResponse(HttpContext context, HealthReport report)
     {
-        context.Response.ContentType = "application/json";
+        context.Response.ContentType = MediaTypeConstants.Json;
 
         var response = new
         {

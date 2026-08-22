@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Payment.Application.DTOs;
 using Payment.Application.Interfaces;
 using Payment.Infrastructure.Configuration;
 using Payment.Infrastructure.Extensions;
@@ -26,7 +29,7 @@ public static class ServiceExtensions
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower));
             });
 
-        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+        services.Configure<JsonOptions>(options =>
         {
             options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
@@ -46,11 +49,11 @@ public static class ServiceExtensions
                             errorCodesToAdd: null);
                         npgsqlOptions.CommandTimeout(30);
                     })
-                .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        var applicationAssembly = typeof(Payment.Application.DTOs.OrderDto).Assembly;
+        var applicationAssembly = typeof(OrderDto).Assembly;
         services.AddCQRS(applicationAssembly);
 
         services.AddScoped<IOrderRepository, OrderRepository>();

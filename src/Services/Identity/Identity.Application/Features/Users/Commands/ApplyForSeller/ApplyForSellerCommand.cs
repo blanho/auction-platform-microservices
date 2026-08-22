@@ -21,23 +21,23 @@ public class ApplyForSellerCommandHandler(
     {
         var (user, roles) = await userService.GetByIdWithRolesAsync(command.UserId, cancellationToken);
         if (user == null)
-            return Result.Failure<SellerStatusResponse>(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure<SellerStatusResponse>(IdentityErrors.User.NotFound);
 
         if (roles.Contains(Roles.Seller))
-            return Result.Failure<SellerStatusResponse>(Identity.Application.Errors.IdentityErrors.User.AlreadySeller);
+            return Result.Failure<SellerStatusResponse>(IdentityErrors.User.AlreadySeller);
 
         if (roles.Contains(Roles.Admin))
-            return Result.Failure<SellerStatusResponse>(Identity.Application.Errors.IdentityErrors.User.AdminHasSellerPrivileges);
+            return Result.Failure<SellerStatusResponse>(IdentityErrors.User.AdminHasSellerPrivileges);
 
         await userService.EnsureRoleExistsAsync(Roles.Seller);
 
         var result = await userService.AddToRoleAsync(user, Roles.Seller);
         if (!result.Succeeded)
-            return Result.Failure<SellerStatusResponse>(Identity.Application.Errors.IdentityErrors.User.SellerUpgradeFailed);
+            return Result.Failure<SellerStatusResponse>(IdentityErrors.User.SellerUpgradeFailed);
 
         var updatedRoles = roles.Append(Roles.Seller).ToList();
 
-        await mediator.Publish(new Identity.Domain.Events.UserRoleChangedDomainEvent
+        await mediator.Publish(new UserRoleChangedDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,

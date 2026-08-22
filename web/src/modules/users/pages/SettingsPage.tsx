@@ -42,6 +42,7 @@ import {
 import { changePasswordSchema } from '../schemas'
 import type { ChangePasswordRequest } from '../types'
 import { TwoFactorSetup } from '@/modules/auth/components/TwoFactorSetup'
+import { getErrorMessage } from '@/services/http'
 
 export function SettingsPage() {
   const { t: _t } = useTranslation('users')
@@ -77,8 +78,8 @@ export function SettingsPage() {
       setPasswordChangeSuccess(true)
       reset()
       setTimeout(() => setPasswordChangeSuccess(false), 5000)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      return
     }
   }
 
@@ -86,8 +87,8 @@ export function SettingsPage() {
     try {
       await disableTwoFactor.mutateAsync()
       setShow2FADialog(false)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      return
     }
   }
 
@@ -505,6 +506,11 @@ export function SettingsPage() {
           <Typography sx={{ color: palette.neutral[500] }}>
             Disabling 2FA will make your account less secure. Are you sure you want to continue?
           </Typography>
+          {disableTwoFactor.isError && (
+            <InlineAlert severity="error" sx={{ mt: 2 }}>
+              {getErrorMessage(disableTwoFactor.error)}
+            </InlineAlert>
+          )}
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button

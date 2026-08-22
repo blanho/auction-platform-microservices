@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Analytics.Infrastructure.Persistence;
 using Analytics.Application.Interfaces;
 using Analytics.Application.DTOs;
+using Analytics.Domain.Constants;
 
 namespace Analytics.Infrastructure.Repositories;
 
@@ -38,10 +39,12 @@ public class FactAuctionRepository : IFactAuctionRepository
         var todayEnd = now.Date.AddDays(1);
         var weekEnd = now.Date.AddDays(7);
 
-        var liveAuctions = auctions.Count(a => a.Status == "Active" || a.Status == "Live");
+        var liveAuctions = auctions.Count(a => IsLive(a.Status));
         var completedAuctions = auctions.Count(a => a.Sold);
-        var pendingAuctions = auctions.Count(a => a.Status == "Pending" || a.Status == "Scheduled");
-        var cancelledAuctions = auctions.Count(a => a.Status == "Cancelled");
+        var pendingAuctions = auctions.Count(a =>
+            a.Status == AnalyticsAuctionStatuses.Pending ||
+            a.Status == AnalyticsAuctionStatuses.Scheduled);
+        var cancelledAuctions = auctions.Count(a => a.Status == AnalyticsAuctionStatuses.Cancelled);
 
         var soldAuctions = auctions.Where(a => a.Sold && a.FinalPrice.HasValue).ToList();
         var avgFinalPrice = soldAuctions.Count > 0 ? soldAuctions.Average(a => a.FinalPrice!.Value) : 0;
@@ -49,7 +52,7 @@ public class FactAuctionRepository : IFactAuctionRepository
 
         var endingToday = auctions.Count(a =>
             a.EndedAt.HasValue == false &&
-            (a.Status == "Active" || a.Status == "Live"));
+            IsLive(a.Status));
 
         return new AuctionMetrics
         {
@@ -71,7 +74,7 @@ public class FactAuctionRepository : IFactAuctionRepository
     {
         var data = await _context.FactAuctions
             .AsNoTracking()
-            .Where(f => f.EventType == "Created" && f.EventTime >= startDate && f.EventTime <= endDate)
+            .Where(f => f.EventType == AnalyticsEventTypes.Created && f.EventTime >= startDate && f.EventTime <= endDate)
             .GroupBy(f => f.DateKey)
             .Select(g => new
             {
@@ -96,7 +99,7 @@ public class FactAuctionRepository : IFactAuctionRepository
     {
         var query = _context.FactAuctions
             .AsNoTracking()
-            .Where(f => f.EventType == "Finished" && f.CategoryId.HasValue);
+            .Where(f => f.EventType == AnalyticsEventTypes.Finished && f.CategoryId.HasValue);
 
         if (startDate.HasValue)
             query = query.Where(f => f.EventTime >= startDate.Value);
@@ -138,7 +141,7 @@ public class FactAuctionRepository : IFactAuctionRepository
 
         var topAuctions = await _context.FactAuctions
             .AsNoTracking()
-            .Where(f => f.EventType == "Finished" && f.Sold && f.FinalPrice.HasValue)
+            .Where(f => f.EventType == AnalyticsEventTypes.Finished && f.Sold && f.FinalPrice.HasValue)
             .OrderByDescending(f => f.FinalPrice)
             .Take(limit)
             .Select(f => new TopAuctionDto
@@ -164,7 +167,7 @@ public class FactAuctionRepository : IFactAuctionRepository
             .AsNoTracking()
             .GroupBy(f => f.AuctionId)
             .Select(g => g.OrderByDescending(f => f.EventTime).First())
-            .Where(f => f.Status == "Active" || f.Status == "Live")
+            .Where(f => f.Status == AnalyticsAuctionStatuses.Active || f.Status == AnalyticsAuctionStatuses.Live)
             .CountAsync(cancellationToken);
 
         return latestStatuses;
@@ -183,12 +186,12 @@ public class FactAuctionRepository : IFactAuctionRepository
 
         var wonAuctions = await _context.FactAuctions
             .AsNoTracking()
-            .Where(f => f.WinnerUsername == username && f.EventType == "Finished" && f.Sold)
+            .Where(f => f.WinnerUsername == username && f.EventType == AnalyticsEventTypes.Finished && f.Sold)
             .ToListAsync(cancellationToken);
 
         return new UserAuctionStatsDto
         {
-            ActiveAuctions = sellerAuctions.Count(a => a.Status == "Active" || a.Status == "Live"),
+            ActiveAuctions = sellerAuctions.Count(a => IsLive(a.Status)),
             TotalAuctions = sellerAuctions.Count,
             TotalSpent = wonAuctions.Sum(a => a.FinalPrice ?? 0),
             TotalEarned = sellerAuctions.Where(a => a.Sold).Sum(a => a.FinalPrice ?? 0)
@@ -204,7 +207,7 @@ public class FactAuctionRepository : IFactAuctionRepository
         var sellerAuctions = await _context.FactAuctions
             .AsNoTracking()
             .Where(f => f.SellerUsername == username &&
-                        f.EventType == "Finished" &&
+                        f.EventType == AnalyticsEventTypes.Finished &&
                         f.Sold &&
                         f.EventTime >= startDate &&
                         f.EventTime <= endDate)
@@ -258,14 +261,14 @@ public class FactAuctionRepository : IFactAuctionRepository
             Type = f.EventType,
             Description = (f.EventType, f.WinnerUsername, f.SellerUsername) switch
             {
-                ("Created", _, _) => $"Listed auction: {f.Title}",
-                ("Finished", var winner, _) when winner == username => $"Won auction: {f.Title}",
-                ("Finished", _, var seller) when seller == username => $"Sold auction: {f.Title}",
+                (AnalyticsEventTypes.Created, _, _) => $"Listed auction: {f.Title}",
+                (AnalyticsEventTypes.Finished, var winner, _) when winner == username => $"Won auction: {f.Title}",
+                (AnalyticsEventTypes.Finished, _, var seller) when seller == username => $"Sold auction: {f.Title}",
                 _ => f.EventType
             },
             Timestamp = f.EventTime,
             RelatedEntityId = f.AuctionId,
-            RelatedEntityType = "Auction"
+            RelatedEntityType = AnalyticsEntityTypes.Auction
         }).ToList();
     }
 
@@ -279,7 +282,7 @@ public class FactAuctionRepository : IFactAuctionRepository
             .Where(f => f.SellerUsername == username)
             .GroupBy(f => f.AuctionId)
             .Select(g => g.OrderByDescending(f => f.EventTime).First())
-            .Where(f => f.Status == "Active" || f.Status == "Live")
+            .Where(f => f.Status == AnalyticsAuctionStatuses.Active || f.Status == AnalyticsAuctionStatuses.Live)
             .ToListAsync(cancellationToken);
 
         var auctionIds = activeAuctions.Select(a => a.AuctionId).ToList();
@@ -311,4 +314,7 @@ public class FactAuctionRepository : IFactAuctionRepository
 
         return topListings;
     }
+
+    private static bool IsLive(string status) =>
+        status == AnalyticsAuctionStatuses.Active || status == AnalyticsAuctionStatuses.Live;
 }

@@ -74,11 +74,7 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
             AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
             oldAuctionData,
-            new Dictionary<string, object>
-            {
-                ["Action"] = "Activated",
-                ["PreviousStatus"] = previousStatus.ToString()
-            },
+            AuctionAuditMetadata.ForActivation(previousStatus),
             cancellationToken);
 
         _logger.LogInformation("Activated auction {AuctionId} from {PreviousStatus} to Live",
@@ -87,4 +83,3 @@ public class ActivateAuctionCommandHandler : ICommandHandler<ActivateAuctionComm
         return Result<AuctionDto>.Success(_mapper.Map<AuctionDto>(auction));
     }
 }
-

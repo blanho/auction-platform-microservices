@@ -1,4 +1,5 @@
 using Payment.Domain.Entities;
+using Payment.Domain.Constants;
 
 namespace Payment.Application.DTOs.Audit;
 
@@ -59,7 +60,7 @@ public record WalletAuditData
     public decimal Balance { get; init; }
     public decimal HeldAmount { get; init; }
     public decimal AvailableBalance { get; init; }
-    public string Currency { get; init; } = "USD";
+    public string Currency { get; init; } = WalletDefaults.DefaultCurrency;
     public bool IsActive { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
 

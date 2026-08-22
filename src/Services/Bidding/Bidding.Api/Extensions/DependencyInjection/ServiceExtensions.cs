@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Bidding.Application.Interfaces;
+using Bidding.Application.Mappings;
 using Bidding.Application.Services;
 using Bidding.Infrastructure.Extensions;
 using Bidding.Infrastructure.Persistence;
@@ -27,8 +29,8 @@ namespace Bidding.Api.Extensions.DependencyInjection
                                 errorCodesToAdd: null);
                             npgsqlOptions.CommandTimeout(BidDefaults.Database.CommandTimeoutSeconds);
                         })
-                    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
-            services.AddAutoMapper(typeof(Bidding.Application.Mappings.MappingProfiles).Assembly);
+                    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
             services.AddScoped<IBidRepository, BidRepository>();
             services.AddScoped<IAuthoritativeBidReader, AuthoritativeBidReader>();

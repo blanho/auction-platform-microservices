@@ -1,3 +1,4 @@
+using System.Data;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,7 +22,7 @@ public class PostgresAuctionBidLock : IAuctionBidLock
         CancellationToken cancellationToken = default)
     {
         var lockKey = ToAdvisoryLockKey(auctionId);
-        var closeConnection = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Closed;
+        var closeConnection = _context.Database.GetDbConnection().State == ConnectionState.Closed;
 
         if (closeConnection)
             await _context.Database.OpenConnectionAsync(cancellationToken);

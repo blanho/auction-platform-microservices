@@ -2,7 +2,6 @@ using Bidding.Domain.Enums;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Locking;
 using BuildingBlocks.Application.Abstractions.Providers;
-using BuildingBlocks.Application.Paging;
 using Microsoft.Extensions.Logging;
 
 namespace Bidding.Application.Services
@@ -16,8 +15,6 @@ namespace Bidding.Application.Services
         private readonly IDateTimeProvider _dateTime;
         private readonly ILogger<AutoBidService> _logger;
         private readonly IAuctionGrpcClient _auctionGrpcClient;
-        private const string AuctionStatusActive = "Live";
-        private const int DefaultUserAutoBidsPageSize = 100;
 
         public AutoBidService(
             IAutoBidRepository autoBidRepository,
@@ -35,75 +32,6 @@ namespace Bidding.Application.Services
             _dateTime = dateTime;
             _logger = logger;
             _auctionGrpcClient = auctionGrpcClient;
-        }
-
-        public async Task<AutoBidDto?> CreateAutoBidAsync(CreateAutoBidDto dto, Guid userId, string username, CancellationToken cancellationToken = default)
-        {
-            var auctionDetails = await _auctionGrpcClient.GetAuctionDetailsAsync(dto.AuctionId, cancellationToken);
-
-            if (!IsAuctionEligibleForAutoBid(auctionDetails, username, dto.AuctionId))
-                return null;
-
-            var existingAutoBid = await _autoBidRepository.GetActiveAutoBidAsync(dto.AuctionId, userId, cancellationToken);
-
-            if (existingAutoBid != null)
-                return await UpdateExistingAutoBid(existingAutoBid, dto.MaxAmount, cancellationToken);
-
-            return await CreateNewAutoBid(dto, userId, username, cancellationToken);
-        }
-
-        public async Task<AutoBidDto?> GetAutoBidByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            var autoBid = await _autoBidRepository.GetByIdAsync(id, cancellationToken);
-            return autoBid != null ? MapToDto(autoBid) : null;
-        }
-
-        public async Task<AutoBidDto?> GetActiveAutoBidAsync(Guid auctionId, Guid userId, CancellationToken cancellationToken = default)
-        {
-            var autoBid = await _autoBidRepository.GetActiveAutoBidAsync(auctionId, userId, cancellationToken);
-            return autoBid != null ? MapToDto(autoBid) : null;
-        }
-
-        public async Task<List<AutoBidDto>> GetAutoBidsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
-        {
-            var queryParams = new AutoBidQueryParams
-            {
-                Page = 1,
-                PageSize = DefaultUserAutoBidsPageSize,
-                Filter = new AutoBidFilter()
-            };
-            var result = await _autoBidRepository.GetAutoBidsByUserAsync(userId, queryParams, cancellationToken);
-            return result.Items.Select(MapToDto).ToList();
-        }
-
-        public async Task<AutoBidDto?> UpdateAutoBidAsync(Guid id, UpdateAutoBidDto dto, Guid userId, CancellationToken cancellationToken = default)
-        {
-            var autoBid = await _autoBidRepository.GetByIdAsync(id, cancellationToken);
-
-            if (!IsAuthorizedToModifyAutoBid(autoBid, userId))
-                return null;
-
-            UpdateAutoBidSettings(autoBid!, dto);
-
-            await _autoBidRepository.UpdateAsync(autoBid!, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return MapToDto(autoBid!);
-        }
-
-        public async Task<bool> CancelAutoBidAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
-        {
-            var autoBid = await _autoBidRepository.GetByIdAsync(id, cancellationToken);
-
-            if (!IsAuthorizedToModifyAutoBid(autoBid, userId))
-                return false;
-
-            autoBid!.Deactivate();
-            await _autoBidRepository.UpdateAsync(autoBid, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Auto-bid {Id} cancelled by user {UserId}", id, userId);
-            return true;
         }
 
         public async Task ProcessAutoBidsForAuctionAsync(Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken = default)
@@ -126,92 +54,6 @@ namespace Bidding.Application.Services
             await ProcessAutoBidsWithLock(auctionId, currentHighBid, cancellationToken);
         }
 
-        private static AutoBidDto MapToDto(AutoBid autoBid)
-        {
-            return new AutoBidDto(
-                autoBid.Id,
-                autoBid.AuctionId,
-                autoBid.UserId,
-                autoBid.Username,
-                autoBid.MaxAmount,
-                autoBid.CurrentBidAmount,
-                autoBid.IsActive,
-                autoBid.CreatedAt,
-                autoBid.LastBidAt
-            );
-        }
-
-        private bool IsAuctionEligibleForAutoBid(AuctionDetails? auctionDetails, string username, Guid auctionId)
-        {
-            if (auctionDetails == null)
-            {
-                _logger.LogWarning("Cannot create auto-bid for non-existent auction {AuctionId}", auctionId);
-                return false;
-            }
-
-            if (auctionDetails.Status != AuctionStatusActive)
-            {
-                _logger.LogWarning("Cannot create auto-bid for inactive auction {AuctionId} (Status: {Status})",
-                    auctionId, auctionDetails.Status);
-                return false;
-            }
-
-            if (auctionDetails.SellerUsername.Equals(username, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogWarning("User {Username} attempted to create auto-bid on own auction {AuctionId}",
-                    username, auctionId);
-                return false;
-            }
-
-            if (auctionDetails.EndTime <= _dateTime.UtcNow)
-            {
-                _logger.LogWarning("Cannot create auto-bid for ended auction {AuctionId}", auctionId);
-                return false;
-            }
-
-            return true;
-        }
-
-        private async Task<AutoBidDto> UpdateExistingAutoBid(AutoBid existingAutoBid, decimal newMaxAmount, CancellationToken cancellationToken)
-        {
-            existingAutoBid.UpdateMaxAmount(newMaxAmount);
-            existingAutoBid.Activate();
-            await _autoBidRepository.UpdateAsync(existingAutoBid, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return MapToDto(existingAutoBid);
-        }
-
-        private async Task<AutoBidDto> CreateNewAutoBid(CreateAutoBidDto dto, Guid userId, string username, CancellationToken cancellationToken)
-        {
-            var autoBid = AutoBid.Create(dto.AuctionId, userId, username, dto.MaxAmount);
-
-            await _autoBidRepository.CreateAsync(autoBid, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Auto-bid created for auction {AuctionId} by {Username} with max amount {MaxAmount}",
-                dto.AuctionId, username, dto.MaxAmount);
-
-            return MapToDto(autoBid);
-        }
-
-        private static bool IsAuthorizedToModifyAutoBid(AutoBid? autoBid, Guid userId)
-        {
-            return autoBid != null && autoBid.UserId == userId;
-        }
-
-        private static void UpdateAutoBidSettings(AutoBid autoBid, UpdateAutoBidDto dto)
-        {
-            autoBid.UpdateMaxAmount(dto.MaxAmount);
-
-            if (dto.IsActive.HasValue)
-            {
-                if (dto.IsActive.Value)
-                    autoBid.Activate();
-                else
-                    autoBid.Deactivate();
-            }
-        }
-
         private async Task ProcessAutoBidsWithLock(Guid auctionId, decimal currentHighBid, CancellationToken cancellationToken)
         {
             var auctionDetails = await _auctionGrpcClient.GetAuctionDetailsAsync(auctionId, cancellationToken);
@@ -229,7 +71,7 @@ namespace Bidding.Application.Services
 
         private bool IsAuctionEligibleForAutoBidProcessing(AuctionDetails? auctionDetails, Guid auctionId)
         {
-            if (auctionDetails == null || auctionDetails.Status != AuctionStatusActive || auctionDetails.EndTime <= _dateTime.UtcNow)
+            if (auctionDetails == null || auctionDetails.Status != BidDefaults.AuctionStatuses.Live || auctionDetails.EndTime <= _dateTime.UtcNow)
             {
                 _logger.LogInformation(
                     "Skipping auto-bid processing for auction {AuctionId} - auction not eligible",

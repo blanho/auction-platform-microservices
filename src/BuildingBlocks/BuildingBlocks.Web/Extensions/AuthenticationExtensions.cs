@@ -39,8 +39,8 @@ public static class AuthenticationExtensions
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
                 ClockSkew = TimeSpan.Zero,
-                NameClaimType = "name",
-                RoleClaimType = "role"
+                NameClaimType = AuthClaimTypes.Name,
+                RoleClaimType = AuthClaimTypes.Role
             };
 
             configureJwtBearer?.Invoke(options);

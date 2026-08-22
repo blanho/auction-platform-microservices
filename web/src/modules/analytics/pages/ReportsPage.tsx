@@ -35,6 +35,7 @@ import { Visibility, Delete, CheckCircle } from '@mui/icons-material'
 import { useReportList, useReportStats, useReportDetail } from '../hooks/useAnalytics'
 import { useUpdateReportStatus, useDeleteReport } from '../hooks/useReportMutations'
 import { formatNumber } from '@/shared/utils/formatters'
+import { getErrorMessage } from '@/services/http'
 import type { ReportStatus, ReportType, ReportPriority, ReportQueryParams, Report } from '../types'
 
 const REPORT_STATUS_OPTIONS: {
@@ -102,6 +103,7 @@ export const ReportsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [updateStatus, setUpdateStatus] = useState<ReportStatus>('UnderReview')
   const [updateResolution, setUpdateResolution] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const toolbarFilters: FilterConfig[] = useMemo(
     () => [
@@ -129,7 +131,12 @@ export const ReportsPage = () => {
     setFilters({ page: 1, pageSize: 10 })
   }
 
-  const { data: reportsData, isLoading: reportsLoading, refetch } = useReportList(filters)
+  const {
+    data: reportsData,
+    isLoading: reportsLoading,
+    error: reportsError,
+    refetch,
+  } = useReportList(filters)
   const { data: stats, isLoading: statsLoading } = useReportStats()
   const { data: selectedReport, isLoading: reportDetailLoading } = useReportDetail(
     selectedReportId ?? ''
@@ -161,6 +168,7 @@ export const ReportsPage = () => {
     if (!selectedReportId) {
       return
     }
+    setActionError(null)
     try {
       await updateMutation.mutateAsync({
         id: selectedReportId,
@@ -169,7 +177,7 @@ export const ReportsPage = () => {
       setUpdateDialogOpen(false)
       setSelectedReportId(null)
     } catch (error) {
-      console.error('Failed to update report:', error)
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -177,12 +185,13 @@ export const ReportsPage = () => {
     if (!selectedReportId) {
       return
     }
+    setActionError(null)
     try {
       await deleteMutation.mutateAsync(selectedReportId)
       setDeleteDialogOpen(false)
       setSelectedReportId(null)
     } catch (error) {
-      console.error('Failed to delete report:', error)
+      setActionError(getErrorMessage(error))
     }
   }
 
@@ -207,6 +216,12 @@ export const ReportsPage = () => {
         </Typography>
         <Typography color="text.secondary">Review and manage user reports</Typography>
       </Box>
+
+      {(reportsError || actionError) && (
+        <InlineAlert severity="error" sx={{ mb: 3 }}>
+          {actionError ?? getErrorMessage(reportsError)}
+        </InlineAlert>
+      )}
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statsLoading &&

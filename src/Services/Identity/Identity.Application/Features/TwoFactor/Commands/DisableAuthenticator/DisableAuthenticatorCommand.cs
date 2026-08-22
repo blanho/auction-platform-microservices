@@ -6,33 +6,31 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Identity.Application.DTOs.TwoFactor;
 using Identity.Application.Interfaces;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 public record DisableAuthenticatorCommand(string UserId, string Password) : ICommand;
 
 public class DisableAuthenticatorCommandHandler(
-    Microsoft.AspNetCore.Identity.UserManager<Identity.Domain.Entities.ApplicationUser> userManager,
+    UserManager<ApplicationUser> userManager,
     IMediator mediator,
-    BuildingBlocks.Application.Abstractions.Auditing.IAuditPublisher auditPublisher,
-    ILogger<DisableAuthenticatorCommandHandler> logger) : ICommandHandler<DisableAuthenticatorCommand>
+    IAuditPublisher auditPublisher) : ICommandHandler<DisableAuthenticatorCommand>
 {
     public async Task<Result> Handle(DisableAuthenticatorCommand command, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByIdAsync(command.UserId);
         if (user == null)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.User.NotFound);
+            return Result.Failure(IdentityErrors.User.NotFound);
 
         var passwordValid = await userManager.CheckPasswordAsync(user, command.Password);
         if (!passwordValid)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.Auth.InvalidPassword);
+            return Result.Failure(IdentityErrors.Auth.InvalidPassword);
 
         var result = await userManager.SetTwoFactorEnabledAsync(user, false);
         if (!result.Succeeded)
-            return Result.Failure(Identity.Application.Errors.IdentityErrors.TwoFactor.DisableFailed);
+            return Result.Failure(IdentityErrors.TwoFactor.DisableFailed);
 
         await userManager.ResetAuthenticatorKeyAsync(user);
 
-        await mediator.Publish(new Identity.Domain.Events.TwoFactorDisabledDomainEvent
+        await mediator.Publish(new TwoFactorDisabledDomainEvent
         {
             UserId = user.Id,
             Username = user.UserName!,
@@ -41,15 +39,15 @@ public class DisableAuthenticatorCommandHandler(
 
         await auditPublisher.PublishAsync(
             Guid.Parse(user.Id),
-            new Identity.Application.DTOs.Audit.TwoFactorAuditData
+            new TwoFactorAuditData
             {
                 UserId = user.Id,
                 Username = user.UserName,
-                Action = "Disable2FA",
+                Action = IdentityDefaults.AuditData.DisableTwoFactor,
                 IsEnabled = false
             },
-            BuildingBlocks.Application.Abstractions.Auditing.AuditAction.Updated,
-            metadata: new Dictionary<string, object> { [BuildingBlocks.Application.Constants.AuditMetadataKeys.ActionLower] = Identity.Domain.Constants.IdentityDefaults.Audit.TwoFactorDisabled });
+            AuditAction.Updated,
+            metadata: new Dictionary<string, object> { [AuditMetadataKeys.ActionLower] = IdentityDefaults.Audit.TwoFactorDisabled });
 
         return Result.Success();
     }

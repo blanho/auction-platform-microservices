@@ -1,3 +1,4 @@
+using DomainConcurrencyException = BuildingBlocks.Domain.Exceptions.ConcurrencyException;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Locking;
@@ -102,7 +103,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             await _transactionRepository.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (BuildingBlocks.Domain.Exceptions.ConcurrencyException ex)
+        catch (DomainConcurrencyException ex)
         {
             _logger.LogWarning(ex,
                 "Concurrency conflict processing payment for user {Username}, order {ReferenceId}. Lock may have been released prematurely.",

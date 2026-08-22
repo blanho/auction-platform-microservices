@@ -35,8 +35,6 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.AuctionId)
             .IsUnique();
 
-        // CategoryId / BrandId are FK references to the Catalog service — no navigation properties.
-        // CategoryName / BrandName are denormalized strings synced via integration events.
         builder.Property(x => x.CategoryId);
         builder.Property(x => x.CategoryName)
             .HasMaxLength(AuctionDefaults.Persistence.CategoryNameMaxLength);

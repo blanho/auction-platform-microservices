@@ -38,4 +38,7 @@
   <data name="IndexError.BulkIndexFailed" xml:space="preserve"><value>Bulk index failed for {0} documents: {1}</value></data>
   <data name="IndexError.ConnectionFailed" xml:space="preserve"><value>Failed to connect to search engine: {0}</value></data>
   <data name="IndexError.IndexCreationFailed" xml:space="preserve"><value>Failed to create index {0}: {1}</value></data>
+  <data name="Auction.NotFound" xml:space="preserve"><value>Auction not found.</value></data>
+  <data name="Index.Ready" xml:space="preserve"><value>Search index is ready.</value></data>
+  <data name="Index.Recreated" xml:space="preserve"><value>Search index was recreated.</value></data>
 </root>

@@ -26,7 +26,7 @@
   <data name="Bid.AlreadyRejected" xml:space="preserve"><value>却下された入札は取り消せません。</value></data>
   <data name="Bid.RetractWindowExpired" xml:space="preserve"><value>入札は配置後{0}分以内にのみ取り消し可能です。</value></data>
   <data name="Bid.PlaceFailed" xml:space="preserve"><value>入札に失敗しました: {0}</value></data>
-  <data name="Bid.TooLow" xml:space="preserve"><value>入札額は最低{0}必要です。</value></data>
+  <data name="Bid.TooLow" xml:space="preserve"><value>入札額が必要な最低金額を下回っています。</value></data>
   <data name="Bid.AuctionNotLive" xml:space="preserve"><value>このオークションは入札を受け付けていません。</value></data>
   <data name="Bid.SelfBidding" xml:space="preserve"><value>自分のオークションに入札することはできません。</value></data>
   <data name="Bid.DuplicateBid" xml:space="preserve"><value>重複入札が検出されました。しばらく待ってから再度入札してください。</value></data>
@@ -38,4 +38,11 @@
   <data name="AutoBid.MaxAmountTooLow" xml:space="preserve"><value>最大額は現在の入札額({0})より高くなければなりません。</value></data>
   <data name="AutoBid.UpdateFailed" xml:space="preserve"><value>自動入札の更新に失敗しました: {0}</value></data>
   <data name="AutoBid.CreateFailed" xml:space="preserve"><value>自動入札の作成に失敗しました: {0}</value></data>
+  <data name="Auction.AlreadyEnded" xml:space="preserve"><value>オークションはすでに終了しています。</value></data>
+  <data name="Auction.NotActive" xml:space="preserve"><value>オークションは開催中ではありません。</value></data>
+  <data name="Auction.NotFound" xml:space="preserve"><value>オークションが見つかりません。</value></data>
+  <data name="Auction.SelfBid" xml:space="preserve"><value>自分のオークションには入札できません。</value></data>
+  <data name="Bid.AlreadyRetracted" xml:space="preserve"><value>この入札はすでに取り消されています。</value></data>
+  <data name="Bid.Rejected" xml:space="preserve"><value>入札は拒否されました。</value></data>
+  <data name="Bid.DuplicateRequest" xml:space="preserve"><value>この入札リクエストはすでに処理されています。新しい入札には新しい冪等性キーを使用してください。</value></data>
 </root>

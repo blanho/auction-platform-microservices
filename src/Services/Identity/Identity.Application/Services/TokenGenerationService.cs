@@ -264,21 +264,21 @@ public class TokenGenerationService : ITokenGenerationService
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Jti, jwtId ?? Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-            new("name", user.UserName ?? string.Empty),
-            new("email", user.Email ?? string.Empty)
+            new(AuthClaimTypes.Name, user.UserName ?? string.Empty),
+            new(AuthClaimTypes.Email, user.Email ?? string.Empty)
         };
 
         var effectiveRoles = roles.Any() ? roles : new List<string> { Roles.User };
 
         foreach (var role in effectiveRoles)
         {
-            claims.Add(new Claim("role", role));
+            claims.Add(new Claim(AuthClaimTypes.Role, role));
         }
 
         var permissions = await _rolePermissionService.GetPermissionsForRolesAsync(effectiveRoles);
         foreach (var permission in permissions)
         {
-            claims.Add(new Claim("permission", permission));
+            claims.Add(new Claim(AuthClaimTypes.Permission, permission));
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

@@ -1,3 +1,4 @@
+global using BuildingBlocks.Application.Authorization;
 global using Search.Domain.Constants;
 global using Search.Domain.Documents;
 global using Search.Application.Interfaces;

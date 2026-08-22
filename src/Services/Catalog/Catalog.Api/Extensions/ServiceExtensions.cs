@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Catalog.Application.Mappings;
 using Catalog.Api.Extensions;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Repositories;
@@ -31,9 +33,9 @@ public static class ServiceExtensions
                 npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                 npgsqlOptions.CommandTimeout(30);
             })
-            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
-        services.AddAutoMapper(typeof(Catalog.Application.Mappings.CatalogMappingProfile).Assembly);
+        services.AddAutoMapper(typeof(CatalogMappingProfile).Assembly);
 
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();

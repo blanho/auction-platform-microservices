@@ -1,5 +1,5 @@
+using Analytics.Domain.Enums;
 using BuildingBlocks.Application.Paging;
-using Common.Contracts.Events;
 
 namespace Analytics.Application.DTOs;
 

@@ -64,4 +64,15 @@
   <data name="Review.AlreadyResponded" xml:space="preserve"><value>出品者はすでにこのレビューに返信済みです。</value></data>
   <data name="Analytics.Error" xml:space="preserve"><value>出品者分析の取得に失敗しました。</value></data>
   <data name="Dashboard.Error" xml:space="preserve"><value>ダッシュボード統計の取得に失敗しました。</value></data>
+  <data name="Auction.Forbidden" xml:space="preserve"><value>このオークションを変更する権限がありません。</value></data>
+  <data name="Export.UnsupportedFormat" xml:space="preserve"><value>エクスポート形式「{0}」はサポートされていません。</value></data>
+  <data name="Validation.Empty" xml:space="preserve"><value>少なくとも1つのオークションIDが必要です。</value></data>
+  <data name="Validation.TooMany" xml:space="preserve"><value>1回のリクエストで指定できるオークションIDは最大100件です。</value></data>
+  <data name="Grpc.InvalidAuctionId" xml:space="preserve"><value>オークションIDが無効です。</value></data>
+  <data name="Grpc.AuctionNotFound" xml:space="preserve"><value>オークションが見つかりません。</value></data>
+  <data name="Grpc.AuctionNotActive" xml:space="preserve"><value>オークションは有効ではありません。現在のステータス: {0}。</value></data>
+  <data name="Grpc.AuctionEnded" xml:space="preserve"><value>オークションは終了しています。</value></data>
+  <data name="Grpc.CannotBidOwnAuction" xml:space="preserve"><value>自分のオークションには入札できません。</value></data>
+  <data name="Grpc.AuctionSold" xml:space="preserve"><value>このオークションの商品はすでに売却されています。</value></data>
+  <data name="Grpc.CanOnlyExtendLive" xml:space="preserve"><value>開催中のオークションのみ延長できます。</value></data>
 </root>

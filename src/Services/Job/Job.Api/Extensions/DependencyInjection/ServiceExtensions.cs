@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using BuildingBlocks.Application.Abstractions;
 using Jobs.Application.Interfaces;
 using Jobs.Infrastructure.Messaging;
@@ -37,7 +38,7 @@ public static class ServiceExtensions
                         errorCodesToAdd: null);
                     npgsqlOptions.CommandTimeout(JobDefaults.Connection.CommandTimeoutSeconds);
                 })
-                .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

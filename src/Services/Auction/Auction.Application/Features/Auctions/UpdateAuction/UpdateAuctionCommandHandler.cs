@@ -106,9 +106,9 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
             var categoryInfo = await _catalogClient.GetCategoryAsync(request.CategoryId.Value, cancellationToken);
             if (categoryInfo == null)
                 return Result.Failure<bool>(AuctionErrors.Category.NotFoundById(request.CategoryId.Value));
-            
+
             auction.Item.UpdateCategory(request.CategoryId, categoryInfo.Value.Name);
-            modifiedFields.Add("CategoryId");
+            modifiedFields.Add(nameof(auction.Item.CategoryId));
         }
 
         if (request.BrandId.HasValue && request.BrandId != auction.Item.BrandId)
@@ -116,9 +116,9 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
             var brandInfo = await _catalogClient.GetBrandAsync(request.BrandId.Value, cancellationToken);
             if (brandInfo == null)
                 return Result.Failure<bool>(AuctionErrors.Brand.NotFoundById(request.BrandId.Value));
-            
+
             auction.Item.UpdateBrand(request.BrandId, brandInfo.Value.Name);
-            modifiedFields.Add("BrandId");
+            modifiedFields.Add(nameof(auction.Item.BrandId));
         }
 
         if (request.IsFeatured.HasValue && request.IsFeatured.Value != auction.IsFeatured)
@@ -145,7 +145,7 @@ public class UpdateAuctionCommandHandler : ICommandHandler<UpdateAuctionCommand,
             AuctionAuditData.FromAuction(auction),
             AuditAction.Updated,
             oldAuctionData,
-            new Dictionary<string, object> { ["ModifiedFields"] = modifiedFields },
+            AuctionAuditMetadata.ForModifiedFields(modifiedFields),
             cancellationToken);
 
         _logger.LogInformation("Updated auction {AuctionId} with fields: {ModifiedFields}",
