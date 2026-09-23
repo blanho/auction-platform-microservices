@@ -42,7 +42,6 @@ jobs:
 
       - name: Check for breaking changes
         run: |
-          # Check if any API contracts changed
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           if echo "$CHANGED_FILES" | grep -q "Contracts/"; then
             echo "::warning::API contracts modified - ensure backward compatibility"

@@ -7,7 +7,6 @@ export interface Brand {
   slug: string
   description?: string
   logoUrl?: string
-  websiteUrl?: string
   displayOrder: number
   isActive: boolean
   isFeatured: boolean
@@ -20,7 +19,6 @@ export interface CreateBrandRequest {
   name: string
   description?: string
   logoUrl?: string
-  websiteUrl?: string
   displayOrder?: number
   isFeatured?: boolean
 }
@@ -33,17 +31,11 @@ export interface BrandFilters extends QueryParameters {
   search?: string
   activeOnly?: boolean
   featuredOnly?: boolean
-  count?: number
 }
 
 export const brandsApi = {
   async getBrands(filters?: BrandFilters): Promise<PaginatedResponse<Brand>> {
     const response = await http.get<PaginatedResponse<Brand>>('/brands', { params: filters })
-    return response.data
-  },
-
-  async getAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }): Promise<Brand[]> {
-    const response = await http.get<Brand[]>('/brands', { params: { ...filters, count: 1000 } })
     return response.data
   },
 

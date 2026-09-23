@@ -31,6 +31,7 @@ public class AuctionDeletedConsumer : IConsumer<AuctionDeletedEvent>
         if (result.IsFailure)
         {
             _logger.LogWarning("Failed to delete auction {AuctionId}: {Error}", message.Id, result.Error);
+            throw new InvalidOperationException($"Search index operation failed: {result.Error}");
         }
         else
         {

@@ -76,6 +76,11 @@ export default defineConfig([
   },
 
   {
+    files: ['src/shared/lib/logger.ts'],
+    rules: { 'no-console': 'off' },
+  },
+
+  {
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

@@ -177,7 +177,7 @@ All errors follow a consistent format:
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| GET | `/brands` | No | List all brands |
+| GET | `/brands` | No | Search, filter, sort, and page brands |
 | GET | `/brands/{id}` | No | Get brand details |
 | POST | `/brands` | Yes (Admin) | Create brand |
 | PUT | `/brands/{id}` | Yes (Admin) | Update brand |
@@ -464,3 +464,19 @@ Every service exposes three health endpoints:
 HTTP/1.1 429 Too Many Requests
 Retry-After: 60
 ```
+
+### Brand listing parameters
+
+`GET /brands` returns `{ items, totalCount, page, pageSize, totalPages, hasNextPage, hasPreviousPage }`.
+
+Supported query parameters: `page` (default 1), `pageSize` (default 10, maximum 100), `search` (case-insensitive name substring), `activeOnly` (default true), `featuredOnly` (default false), `sortBy` (`name`, `slug`, or `displayOrder`), and `sortOrder` (`asc` or `desc`). Filters, ordering, counting, and paging execute in the database. Sorting uses ID as a stable tie-breaker.
+
+This replaces the previous array response and `count` parameter. Clients must read `items` and use `pageSize` to limit results. The auction brand picker requests at most 20 matches after a 300 ms search debounce.
+
+### Catalog update contracts
+
+`PUT /categories/{id}` requires `name`, `icon`, `displayOrder`, `isActive`, and `parentCategoryId` (explicit `null` for a root). `slug` and `description` are optional. Omitted required fields return 400. Parent categories with children cannot be deleted or deactivated; active children require active parents.
+
+`GET /categories/tree?activeOnly=false` returns the management tree with inactive records and editable category metadata. Ordering and hierarchy construction happen on the backend.
+
+Brand create/update accepts name, description, display order, featured state, and (on update) active state. Slugs are generated from names; website URLs and custom brand slugs are not supported. Category slugs may still be supplied explicitly. Catalog slugs support Unicode letters/numbers; empty normalized results are rejected.

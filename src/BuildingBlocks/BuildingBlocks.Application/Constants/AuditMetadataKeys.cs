@@ -35,11 +35,6 @@ public static class AuditMetadataKeys
     public const string PreviousRoles = "PreviousRoles";
     public const string NewRoles = "NewRoles";
 
-    /// <summary>
-    /// Lowercase variants produce camelCase JSON keys in audit payloads,
-    /// as required by the Identity service audit consumer.
-    /// Do not remove without updating all Identity service callsites.
-    /// </summary>
     public const string ActionLower = "action";
     public const string ReasonLower = "reason";
 }

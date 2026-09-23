@@ -22,7 +22,6 @@ spec:
     - Egress
   egress:
     - to:
-        # main.bicep delegates this private subnet exclusively to PostgreSQL.
         - ipBlock:
             cidr: 10.40.16.0/24
       ports:
@@ -51,8 +50,6 @@ spec:
     - Egress
   egress:
     - to:
-        # Azure Managed Redis currently exposes a TLS public endpoint. Restrict
-        # this rule to its port and only the clients that use Redis.
         - ipBlock:
             cidr: 0.0.0.0/0
             except:
@@ -83,8 +80,6 @@ spec:
     - Egress
   egress:
     - to:
-        # NetworkPolicy cannot match DNS names. These workloads require HTTPS
-        # access to Stripe, OAuth, messaging, or Azure Blob endpoints.
         - ipBlock:
             cidr: 0.0.0.0/0
             except:

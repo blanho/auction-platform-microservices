@@ -1,9 +1,6 @@
 #nullable enable
 namespace Catalog.Domain.Entities;
 
-/// <summary>
-/// Shared media file value object. Stored as JSON in the owning entity's column.
-/// </summary>
 public class MediaFile
 {
     public Guid FileId { get; private set; }

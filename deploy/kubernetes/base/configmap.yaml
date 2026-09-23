@@ -9,15 +9,12 @@ data:
   ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
   Database__AutoMigrate: "false"
   
-  # Database
   POSTGRES_HOST: "postgres"
   POSTGRES_PORT: "5432"
   
-  # Redis
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
   
-  # RabbitMQ
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_PORT: "5672"
   RabbitMQ__Host: "rabbitmq"
@@ -32,17 +29,14 @@ data:
   FileStorage__AzureBlob__ServiceUri: "https://REPLACE_WITH_STORAGE_ACCOUNT.blob.core.windows.net"
   FileStorage__AzureBlob__ContainerName: "uploads"
   
-  # Logging & Observability
   ELASTICSEARCH_URL: "http://elasticsearch:9200"
   
-  # Logging Configuration
   Logging__MinimumLevel: "Warning"
   Logging__EnableConsole: "true"
   Logging__UseJsonFormat: "true"
   Logging__Elasticsearch__Enabled: "true"
   Logging__Elasticsearch__Url: "http://elasticsearch:9200"
   
-  # Service URLs (internal)
   AUCTION_SERVICE_URL: "http://auction-api:80"
   BIDDING_SERVICE_URL: "http://bidding-api:80"
   PAYMENT_SERVICE_URL: "http://payment-api:80"

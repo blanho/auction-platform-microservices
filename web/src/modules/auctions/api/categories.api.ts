@@ -8,8 +8,7 @@ export interface Category {
   icon?: string
   description?: string
   imageUrl?: string
-  parentId?: string
-  parentCategoryId?: string
+  parentCategoryId?: string | null
   displayOrder: number
   sortOrder: number
   isActive: boolean
@@ -25,18 +24,23 @@ export interface CreateCategoryRequest {
   icon?: string
   description?: string
   imageUrl?: string
-  parentCategoryId?: string
+  parentCategoryId?: string | null
   displayOrder?: number
   isActive?: boolean
 }
 
-export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
-  isActive?: boolean
+export interface UpdateCategoryRequest {
+  name: string
+  slug?: string
+  icon: string
+  description?: string
+  displayOrder: number
+  isActive: boolean
+  parentCategoryId: string | null
 }
 
 export interface CategoryFilters extends QueryParameters {
   search?: string
-  parentId?: string
   isActive?: boolean
   activeOnly?: boolean
   includeCount?: boolean
@@ -48,8 +52,8 @@ export const categoriesApi = {
     return response.data
   },
 
-  async getCategoriesTree(): Promise<Category[]> {
-    const response = await http.get<Category[]>('/categories/tree')
+  async getCategoriesTree(activeOnly = true): Promise<Category[]> {
+    const response = await http.get<Category[]>('/categories/tree', { params: { activeOnly } })
     return response.data
   },
 
@@ -70,9 +74,5 @@ export const categoriesApi = {
 
   async deleteCategory(id: string): Promise<void> {
     await http.delete(`/categories/${id}`)
-  },
-
-  async bulkUpdateCategories(updates: { id: string; sortOrder: number }[]): Promise<void> {
-    await http.post('/categories/bulk-update', { updates })
   },
 }

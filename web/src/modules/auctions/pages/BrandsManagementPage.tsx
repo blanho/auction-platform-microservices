@@ -3,7 +3,6 @@ import { fadeInUp, staggerContainer } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
 import type { ColumnConfig, FilterPanelConfig } from '@/shared/types'
 import { DataTable, FilterPanel } from '@/shared/ui'
-import { getSafeHttpUrl } from '@/shared/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Add, Delete, Edit, Image as ImageIcon } from '@mui/icons-material'
 import {
@@ -64,13 +63,12 @@ export function BrandsManagementPage() {
     resolver: zodResolver(brandSchema),
     defaultValues: {
       name: '',
-      slug: '',
       description: '',
-      websiteUrl: '',
     },
   })
 
   const { data: brandsData, refetch } = useBrands({
+    activeOnly: false,
     page: pagination.page,
     pageSize: pagination.pageSize,
     sortBy: pagination.sortBy,
@@ -88,13 +86,11 @@ export function BrandsManagementPage() {
         setEditingBrand(brand)
         reset({
           name: brand.name,
-          slug: brand.slug,
           description: brand.description || '',
-          websiteUrl: brand.websiteUrl || '',
         })
       } else {
         setEditingBrand(null)
-        reset({ name: '', slug: '', description: '', websiteUrl: '' })
+        reset({ name: '', description: '' })
       }
       setDialogOpen(true)
     },
@@ -145,35 +141,6 @@ export function BrandsManagementPage() {
             /{row.slug}
           </Typography>
         ),
-      },
-      {
-        key: 'auctionCount',
-        header: t('title'),
-        sortable: true,
-        sortKey: 'auctionCount',
-        render: (_, row) => row.auctionCount ?? 0,
-      },
-      {
-        key: 'websiteUrl',
-        header: t('brands.websiteUrl'),
-        render: (_, row) => {
-          const websiteUrl = getSafeHttpUrl(row.websiteUrl)
-          return websiteUrl ? (
-            <Typography
-              variant="body2"
-              component="a"
-              href={websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: 'primary.main', textDecoration: 'none' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {websiteUrl.replace(/^https?:\/\//, '')}
-            </Typography>
-          ) : (
-            '-'
-          )
-        },
       },
       {
         key: 'actions',
@@ -317,20 +284,6 @@ export function BrandsManagementPage() {
               />
 
               <Controller
-                name="slug"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label={t('brands.slug')}
-                    fullWidth
-                    error={!!errors.slug}
-                    helperText={errors.slug?.message || t('brands.slugHelper')}
-                  />
-                )}
-              />
-
-              <Controller
                 name="description"
                 control={control}
                 render={({ field }) => (
@@ -340,21 +293,6 @@ export function BrandsManagementPage() {
                     fullWidth
                     multiline
                     rows={3}
-                  />
-                )}
-              />
-
-              <Controller
-                name="websiteUrl"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label={t('brands.websiteUrl')}
-                    fullWidth
-                    error={!!errors.websiteUrl}
-                    helperText={errors.websiteUrl?.message}
-                    placeholder="https://example.com"
                   />
                 )}
               />

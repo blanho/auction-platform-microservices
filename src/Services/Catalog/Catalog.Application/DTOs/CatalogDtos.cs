@@ -47,6 +47,10 @@ public class CategoryTreeDto
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string Icon { get; set; } = "fa-box";
+    public string? Description { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsActive { get; set; }
+    public Guid? ParentCategoryId { get; set; }
     public List<CategoryTreeDto> Children { get; set; } = new();
 }
 
@@ -62,11 +66,11 @@ public class CreateCategoryDto
 
 public class UpdateCategoryDto
 {
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
     public string? Slug { get; set; }
-    public string Icon { get; set; } = "fa-box";
+    public required string Icon { get; set; }
     public string? Description { get; set; }
-    public int DisplayOrder { get; set; }
-    public bool IsActive { get; set; }
-    public Guid? ParentCategoryId { get; set; }
+    public required int DisplayOrder { get; set; }
+    public required bool IsActive { get; set; }
+    public required Guid? ParentCategoryId { get; set; }
 }

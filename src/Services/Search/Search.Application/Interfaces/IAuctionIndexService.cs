@@ -14,5 +14,5 @@ public interface IAuctionIndexService
 
     Task<Result> DeleteAsync(Guid auctionId, CancellationToken ct = default);
 
-    Task<Result> UpdateBidInfoAsync(Guid auctionId, decimal currentPrice, int bidCount, CancellationToken ct = default);
+    Task<Result> ApplyBidStateAsync(Guid auctionId, decimal? currentPrice, DateTimeOffset occurredAt, bool isRetraction, CancellationToken ct = default);
 }

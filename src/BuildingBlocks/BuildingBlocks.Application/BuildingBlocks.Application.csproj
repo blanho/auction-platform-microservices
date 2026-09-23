@@ -10,15 +10,7 @@
     <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
-  <!-- 
-    BuildingBlocks.Application contains:
-    - CQRS abstractions (ICommand, IQuery, ICommandHandler, IQueryHandler)
-    - MediatR behaviors (Validation, Logging, Transaction)
-    - Result pattern types
-    - Application-level interfaces
-    
-    Dependencies: BuildingBlocks.Domain only
-  -->
+
 
   <ItemGroup>
     <PackageReference Include="HtmlSanitizer" />

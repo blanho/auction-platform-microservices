@@ -25,8 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- GrpcServices="Both" generates BidGrpcBase (for Bidding.Api server) and
-         BidGrpcClient (for consumers needing to query bids) in a single assembly. -->
+
     <Protobuf Include="Grpc\bids.proto" GrpcServices="Both" />
   </ItemGroup>
 

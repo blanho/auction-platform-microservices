@@ -1,3 +1,3 @@
 namespace Catalog.Application.Features.Categories.GetCategoryTree;
 
-public record GetCategoryTreeQuery : IQuery<List<CategoryTreeDto>>;
+public record GetCategoryTreeQuery(bool ActiveOnly = true) : IQuery<List<CategoryTreeDto>>;

@@ -15,6 +15,8 @@ public record BidRetractedEvent : IVersionedEvent
     public string Reason { get; init; } = string.Empty;
     public DateTimeOffset RetractedAt { get; init; }
 
+    public bool WasHighestBid { get; init; } = true;
+
     public Guid? NewHighestBidId { get; init; }
     public decimal? NewHighestAmount { get; init; }
     public Guid? NewHighestBidderId { get; init; }

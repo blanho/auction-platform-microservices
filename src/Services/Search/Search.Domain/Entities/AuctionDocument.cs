@@ -49,6 +49,9 @@ public class AuctionDocument
 
     public DateTimeOffset LastSyncedAt { get; set; }
 
+    public long LastBidEventTicks { get; set; }
+    public bool LastBidEventIsRetraction { get; set; }
+
     public int BidCount { get; set; }
     public int ViewCount { get; set; }
     public int WatchCount { get; set; }

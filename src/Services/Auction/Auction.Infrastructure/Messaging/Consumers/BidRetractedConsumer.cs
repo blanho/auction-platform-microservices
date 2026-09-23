@@ -24,6 +24,8 @@ public class BidRetractedConsumer : IConsumer<BidRetractedEvent>
     public async Task Consume(ConsumeContext<BidRetractedEvent> context)
     {
         var message = context.Message;
+        if (!message.WasHighestBid)
+            return;
         _logger.LogInformation(
             "Consuming BidRetracted event for auction {AuctionId}",
             message.AuctionId);

@@ -14,14 +14,6 @@
     <PackageReference Include="MediatR.Contracts" />
   </ItemGroup>
 
-  <!-- 
-    BuildingBlocks.Domain contains:
-    - BaseEntity and base classes
-    - Domain primitives (Value Objects)
-    - Domain event interfaces
-    - Shared enums (Status, BidStatus)
-    
-    NO dependencies on infrastructure or application concerns
-  -->
+
 
 </Project>

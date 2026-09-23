@@ -64,9 +64,6 @@ patches:
     target:
       kind: Ingress
       name: auction-platform-ingress
-  # These placeholders make a disposable staging namespace self-consistent,
-  # but they are not credentials. Replace this Secret from the deployment
-  # environment before exposing staging outside an isolated test cluster.
   - patch: |-
       apiVersion: v1
       kind: Secret
@@ -111,7 +108,6 @@ configMapGenerator:
       - Kestrel__Endpoints__Http__Url=http://+:8080
       - Cors__AllowedOrigins__0=http://staging.auction-platform.test
       - FrontendUrl=http://staging.auction-platform.test
-      # Non-routable values satisfy startup validation without enabling delivery.
       - SendGrid__ApiKey=staging-disabled-sendgrid-key
       - SendGrid__FromEmail=noreply@staging.auction-platform.test
       - SendGrid__FromName=Auction Platform Staging

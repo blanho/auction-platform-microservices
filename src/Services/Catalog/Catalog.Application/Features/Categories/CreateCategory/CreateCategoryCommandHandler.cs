@@ -1,4 +1,5 @@
 using AutoMapper;
+using BuildingBlocks.Application.Helpers;
 using Catalog.Application.Errors;
 using Catalog.Domain.Entities;
 
@@ -25,7 +26,7 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
 
     public async Task<Result<CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
-        var slug = (request.Slug ?? request.Name).ToLowerInvariant().Replace(" ", "-");
+        var slug = SlugHelper.GenerateSlug(request.Slug ?? request.Name);
 
         var slugExists = await _categoryRepository.SlugExistsAsync(slug, cancellationToken: cancellationToken);
         if (slugExists)
@@ -33,9 +34,11 @@ public class CreateCategoryCommandHandler : ICommandHandler<CreateCategoryComman
 
         if (request.ParentCategoryId.HasValue)
         {
-            var parentExists = await _categoryRepository.ExistsAsync(request.ParentCategoryId.Value, cancellationToken);
-            if (!parentExists)
+            var parent = await _categoryRepository.GetByIdAsync(request.ParentCategoryId.Value, cancellationToken);
+            if (parent is null)
                 return Result.Failure<CategoryDto>(CatalogErrors.Category.ParentNotFound);
+            if (!parent.IsActive)
+                return Result.Failure<CategoryDto>(CatalogErrors.Category.ParentInactive);
         }
 
         var category = Category.Create(

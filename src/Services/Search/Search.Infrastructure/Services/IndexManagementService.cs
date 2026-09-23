@@ -48,7 +48,10 @@ public class IndexManagementService : IIndexManagementService
             if (existsResponse.Exists)
             {
                 _logger.LogDebug("Index {IndexName} already exists", indexName);
-                return Result.Success();
+                var mapping = await _client.Indices.PutMappingAsync<AuctionDocument>(indexName, m => m
+                    .Properties(p => p.LongNumber(x => x.LastBidEventTicks).Boolean(x => x.LastBidEventIsRetraction)), ct);
+                return mapping.IsValidResponse ? Result.Success()
+                    : Result.Failure(IndexErrors.IndexCreationFailed(indexName, mapping.DebugInformation));
             }
 
             return await CreateIndexAsync(indexName, ct);
@@ -107,6 +110,8 @@ public class IndexManagementService : IIndexManagementService
                     .Keyword(k => k.SellerId)
                     .Keyword(k => k.SellerUsername)
                     .DoubleNumber(k => k.StartPrice)
+                    .LongNumber(k => k.LastBidEventTicks)
+                    .Boolean(k => k.LastBidEventIsRetraction)
                     .DoubleNumber(k => k.CurrentPrice)
                     .DoubleNumber(k => k.ReservePrice)
                     .DoubleNumber(k => k.BuyNowPrice!)

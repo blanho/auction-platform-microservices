@@ -1,5 +1,7 @@
 #nullable enable
 using Carter;
+using BuildingBlocks.Application.Constants;
+using Catalog.Application.Errors;
 using Catalog.Application.Features.Brands.CreateBrand;
 using Catalog.Application.Features.Brands.DeleteBrand;
 using Catalog.Application.Features.Brands.GetBrandById;
@@ -23,7 +25,7 @@ public class BrandEndpoints : ICarterModule
         group.MapGet("/", GetBrands)
             .WithName("GetBrands")
             .AllowAnonymous()
-            .Produces<List<BrandDto>>(StatusCodes.Status200OK);
+            .Produces<PaginatedResult<BrandDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}", GetBrandById)
             .WithName("GetBrandById")
@@ -53,11 +55,15 @@ public class BrandEndpoints : ICarterModule
     private static async Task<IResult> GetBrands(
         bool activeOnly = true,
         bool featuredOnly = false,
-        int? count = null,
+        int page = PaginationDefaults.DefaultPage,
+        int pageSize = PaginationDefaults.DefaultPageSize,
+        string? search = null,
+        string? sortBy = null,
+        string? sortOrder = null,
         IMediator mediator = null!,
         CancellationToken ct = default)
     {
-        var result = await mediator.Send(new GetBrandsQuery(activeOnly, featuredOnly, count), ct);
+        var result = await mediator.Send(new GetBrandsQuery(activeOnly, featuredOnly, page, pageSize, search, sortBy, sortOrder), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
     }
 
@@ -78,7 +84,11 @@ public class BrandEndpoints : ICarterModule
     private static async Task<IResult> UpdateBrand(Guid id, UpdateBrandDto dto, IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateBrandCommand(id, dto.Name, dto.Description, dto.DisplayOrder, dto.IsActive, dto.IsFeatured), ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
+        if (result.IsSuccess)
+            return Results.Ok(result.Value);
+        return result.Error?.Code == CatalogErrors.Brand.NotFound.Code
+            ? Results.NotFound()
+            : Results.BadRequest(result.Error);
     }
 
     private static async Task<IResult> DeleteBrand(Guid id, IMediator mediator, CancellationToken ct)
