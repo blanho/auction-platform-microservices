@@ -19,6 +19,9 @@ public class CategoryRepository : ICategoryRepository
         _auditContext = auditContext;
     }
 
+    public Task<bool> HasChildrenAsync(Guid id, CancellationToken cancellationToken = default) =>
+        _context.Categories.AnyAsync(x => !x.IsDeleted && x.ParentCategoryId == id, cancellationToken);
+
     public async Task<PaginatedResult<Category>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var query = _context.Categories
@@ -54,11 +57,16 @@ public class CategoryRepository : ICategoryRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<Category>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default)
+    public Task<List<Category>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default) =>
+        GetAllAsync(cancellationToken: cancellationToken);
+
+    public async Task<List<Category>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
     {
-        return await _context.Categories
-            .Where(x => !x.IsDeleted && x.IsActive)
-            .AsNoTracking()
+        var query = _context.Categories.Where(x => !x.IsDeleted);
+        if (!includeInactive)
+            query = query.Where(x => x.IsActive);
+
+        return await query.AsNoTracking()
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Name)
             .ToListAsync(cancellationToken);
@@ -89,7 +97,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Categories.Where(x => !x.IsDeleted && x.Slug == slug);
+        var query = _context.Categories.Where(x => x.Slug == slug);
         if (excludeId.HasValue)
             query = query.Where(x => x.Id != excludeId.Value);
         return await query.AnyAsync(cancellationToken);

@@ -29,7 +29,7 @@ import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { Category } from '../api/categories.api'
-import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '../hooks'
+import { useCategoryTree, useCreateCategory, useDeleteCategory, useUpdateCategory } from '../hooks'
 import { createCategorySchema, type CategoryFormData } from '../schemas'
 
 export function CategoriesManagementPage() {
@@ -53,7 +53,7 @@ export function CategoriesManagementPage() {
     },
   })
 
-  const { data: categories = [] } = useCategories({})
+  const { data: categories = [] } = useCategoryTree(false)
 
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
@@ -66,7 +66,7 @@ export function CategoriesManagementPage() {
         name: category.name,
         slug: category.slug,
         description: category.description || '',
-        parentId: category.parentId,
+        parentCategoryId: category.parentCategoryId,
       })
     } else {
       setEditingCategory(null)
@@ -78,7 +78,16 @@ export function CategoriesManagementPage() {
   const onSubmit = (data: CategoryFormData) => {
     if (editingCategory) {
       updateMutation.mutate(
-        { id: editingCategory.id, data },
+        {
+          id: editingCategory.id,
+          data: {
+            ...data,
+            icon: editingCategory.icon ?? 'fa-box',
+            displayOrder: editingCategory.displayOrder,
+            isActive: editingCategory.isActive,
+            parentCategoryId: data.parentCategoryId ?? null,
+          },
+        },
         {
           onSuccess: () => {
             setDialogOpen(false)
@@ -221,9 +230,7 @@ export function CategoriesManagementPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {categories
-                    .filter((c: Category) => !c.parentId)
-                    .map((category: Category) => renderCategoryRow(category))}
+                  {categories.map((category: Category) => renderCategoryRow(category))}
                 </TableBody>
               </Table>
             </TableContainer>

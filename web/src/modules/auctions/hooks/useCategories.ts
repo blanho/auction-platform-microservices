@@ -25,6 +25,14 @@ export function useCategories(filters?: CategoryFilters) {
   })
 }
 
+export function useCategoryTree(activeOnly = true) {
+  return useQuery({
+    queryKey: [...categoryKeys.tree(), { activeOnly }],
+    queryFn: () => categoriesApi.getCategoriesTree(activeOnly),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 export function useActiveCategories() {
   return useCategories({ activeOnly: true })
 }

@@ -25,7 +25,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="MassTransit" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" />
-    <!-- Grpc.Net.Client needed at runtime for AuctionGrpcClient channel/stub -->
+
     <PackageReference Include="Grpc.Net.Client" />
   </ItemGroup>
 

@@ -34,14 +34,12 @@ export function createLogger(config: Partial<LoggerConfig> = {}) {
   return {
     debug: (...args: unknown[]): void => {
       if (shouldLog('debug', mergedConfig)) {
-        // eslint-disable-next-line no-console
         console.debug(...formatMessage(mergedConfig.prefix, ...args))
       }
     },
 
     info: (...args: unknown[]): void => {
       if (shouldLog('info', mergedConfig)) {
-        // eslint-disable-next-line no-console
         console.info(...formatMessage(mergedConfig.prefix, ...args))
       }
     },

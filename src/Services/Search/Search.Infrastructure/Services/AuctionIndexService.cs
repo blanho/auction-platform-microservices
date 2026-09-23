@@ -43,10 +43,11 @@ public class AuctionIndexService : IAuctionIndexService
             var response = await _client.IndexAsync(document, i => i
                 .Index(indexName)
                 .Id(document.Id.ToString())
+                .OpType(OpType.Create)
                 .Refresh(Elastic.Clients.Elasticsearch.Refresh.False),
             ct);
 
-            if (!response.IsValidResponse)
+            if (!response.IsValidResponse && response.ApiCallDetails.HttpStatusCode != 409)
             {
                 _logger.LogError("Failed to index auction {AuctionId}: {Error}",
                     document.Id, response.DebugInformation);
@@ -172,10 +173,11 @@ public class AuctionIndexService : IAuctionIndexService
         }
     }
 
-    public async Task<Result> UpdateBidInfoAsync(
+    public async Task<Result> ApplyBidStateAsync(
         Guid auctionId,
-        decimal currentPrice,
-        int bidCount,
+        decimal? currentPrice,
+        DateTimeOffset occurredAt,
+        bool isRetraction,
         CancellationToken ct = default)
     {
         var indexName = _indexName;
@@ -187,11 +189,15 @@ public class AuctionIndexService : IAuctionIndexService
                 auctionId.ToString(),
                 u => u
                     .Script(s => s
-                        .Source("ctx._source.currentPrice = params.price; ctx._source.bidCount = params.count; ctx._source.lastSyncedAt = params.syncedAt")
+                        .Source(BidStateScript.Source)
                         .Lang("painless")
                         .Params(p => p
-                            .Add("price", currentPrice)
-                            .Add("count", bidCount)
+                            .Add("price", currentPrice.GetValueOrDefault())
+                            .Add("hasPrice", currentPrice.HasValue)
+                            .Add("ticks", occurredAt.UtcTicks)
+                            .Add("isRetraction", isRetraction)
+                            .Add("soldStatus", AuctionStatuses.Sold)
+                            .Add("finishedStatus", AuctionStatuses.Finished)
                             .Add("syncedAt", DateTimeOffset.UtcNow.ToString(DateTimeFormats.Iso8601))))
                     .RetryOnConflict(IndexingDefaults.BidUpdateRetryOnConflict),
                 ct);

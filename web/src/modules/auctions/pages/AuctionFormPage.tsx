@@ -19,7 +19,8 @@ import {
   Typography,
 } from '@mui/material'
 import { motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { Brand } from '../api/brands.api'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { FORM_STEPS } from '../constants'
@@ -61,7 +62,14 @@ export function AuctionFormPage() {
   const { id } = useParams<{ id: string }>()
 
   const { data: categories = [] } = useActiveCategories()
-  const { data: brands = [] } = useActiveBrands()
+  const [brandSearch, setBrandSearch] = useState('')
+  const [debouncedBrandSearch, setDebouncedBrandSearch] = useState('')
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedBrandSearch(brandSearch), 300)
+    return () => clearTimeout(timer)
+  }, [brandSearch])
+  const { data: brands = [], isFetching: isFetchingBrands } = useActiveBrands(debouncedBrandSearch)
 
   const {
     form,
@@ -123,6 +131,10 @@ export function AuctionFormPage() {
       isEditMode={isEditMode}
       categories={categories}
       brands={brands}
+      selectedBrand={selectedBrand}
+      onBrandChange={setSelectedBrand}
+      onBrandSearchChange={setBrandSearch}
+      isFetchingBrands={isFetchingBrands}
     />,
     <ItemDetailsStep
       key="details"
@@ -149,7 +161,7 @@ export function AuctionFormPage() {
       formValues={formValues}
       isEditMode={isEditMode}
       categories={categories}
-      brands={brands}
+      brands={selectedBrand ? [selectedBrand] : []}
       attachments={attachments}
       enableBuyNow={enableBuyNow}
     />,

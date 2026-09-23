@@ -1,5 +1,6 @@
 #nullable enable
 using Carter;
+using Catalog.Application.Errors;
 using Catalog.Application.Features.Categories.CreateCategory;
 using Catalog.Application.Features.Categories.DeleteCategory;
 using Catalog.Application.Features.Categories.GetCategories;
@@ -62,9 +63,9 @@ public class CategoryEndpoints : ICarterModule
         return Results.Ok(result.Value);
     }
 
-    private static async Task<IResult> GetCategoryTree(IMediator mediator, CancellationToken ct)
+    private static async Task<IResult> GetCategoryTree(IMediator mediator, CancellationToken ct, bool activeOnly = true)
     {
-        var result = await mediator.Send(new GetCategoryTreeQuery(), ct);
+        var result = await mediator.Send(new GetCategoryTreeQuery(activeOnly), ct);
         return Results.Ok(result.Value);
     }
 
@@ -85,12 +86,17 @@ public class CategoryEndpoints : ICarterModule
     private static async Task<IResult> UpdateCategory(Guid id, UpdateCategoryDto dto, IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateCategoryCommand(id, dto.Name, dto.Slug, dto.Icon, dto.Description, dto.DisplayOrder, dto.IsActive, dto.ParentCategoryId), ct);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
+        if (result.IsSuccess)
+            return Results.Ok(result.Value);
+        return result.Error?.Code == CatalogErrors.Category.NotFound.Code
+            ? Results.NotFound()
+            : Results.BadRequest(result.Error);
     }
 
     private static async Task<IResult> DeleteCategory(Guid id, IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteCategoryCommand(id), ct);
-        return result.IsSuccess ? Results.NoContent() : Results.NotFound();
+        return result.IsSuccess ? Results.NoContent()
+            : result.Error?.Code == CatalogErrors.Category.NotFound.Code ? Results.NotFound() : Results.BadRequest(result.Error);
     }
 }

@@ -24,8 +24,7 @@ public class DeleteBrandCommandHandler : ICommandHandler<DeleteBrandCommand>
         if (brand is null)
             return Result.Failure(CatalogErrors.Brand.NotFound);
 
-        brand.Deactivate();
-        await _brandRepository.UpdateAsync(brand, cancellationToken);
+        await _brandRepository.DeleteAsync(request.Id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Brand {BrandId} deleted", request.Id);

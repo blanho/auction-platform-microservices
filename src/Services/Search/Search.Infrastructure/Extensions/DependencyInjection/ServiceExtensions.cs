@@ -79,9 +79,7 @@ public static class ServiceExtensions
             x.AddConsumer<AuctionUpdatedConsumer>();
             x.AddConsumer<AuctionDeletedConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
-            x.AddConsumer<BidPlacedConsumer>();
             x.AddConsumer<HighestBidUpdatedConsumer>();
-            x.AddConsumer<AuctionHighBidUpdatedConsumer>();
             x.AddConsumer<BidRetractedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -142,14 +140,7 @@ public static class ServiceExtensions
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
-                cfg.ReceiveEndpoint("search-bid-placed", e =>
-                {
-                    e.ConfigureConsumer<BidPlacedConsumer>(context);
-                    e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
-                    e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
-                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
-                });
+
 
                 cfg.ReceiveEndpoint("search-bid-updated", e =>
                 {
@@ -169,14 +160,7 @@ public static class ServiceExtensions
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
-                cfg.ReceiveEndpoint("search-auction-high-bid", e =>
-                {
-                    e.ConfigureConsumer<AuctionHighBidUpdatedConsumer>(context);
-                    e.PrefetchCount = MessagingDefaults.PrefetchCountHigh;
-                    e.UseDelayedRedelivery(r => r.Intervals(
-                        TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
-                        TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
-                });
+
 
                 cfg.ConfigureEndpoints(context);
             });

@@ -2,9 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-  <!-- ========================================================================
-       ASP.NET Core & EF Core
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
@@ -20,9 +18,7 @@
     <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="9.0.13" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
-  <!-- ========================================================================
-       Microsoft Extensions
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.13" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.13" />
@@ -32,33 +28,25 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.13" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
   </ItemGroup>
-  <!-- ========================================================================
-       Testing
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
-  <!-- ========================================================================
-       MassTransit (Messaging / Sagas)
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="MassTransit" Version="8.4.0" />
     <PackageVersion Include="MassTransit.Abstractions" Version="8.4.0" />
     <PackageVersion Include="MassTransit.RabbitMQ" Version="8.4.0" />
     <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.4.0" />
   </ItemGroup>
-  <!-- ========================================================================
-       MediatR (CQRS)
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
   </ItemGroup>
-  <!-- ========================================================================
-       gRPC
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Google.Protobuf" Version="3.29.3" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.70.0" />
@@ -67,9 +55,7 @@
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.83.0" />
   </ItemGroup>
-  <!-- ========================================================================
-       Validation / Mapping / API
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="AutoMapper" Version="15.1.3" />
     <PackageVersion Include="Carter" Version="8.2.1" />
@@ -81,9 +67,7 @@
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.2.0" />
     <PackageVersion Include="HtmlSanitizer" Version="9.1.974" />
   </ItemGroup>
-  <!-- ========================================================================
-       Observability (Serilog + OpenTelemetry)
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
@@ -101,9 +85,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.11.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.10.0" />
   </ItemGroup>
-  <!-- ========================================================================
-       Health Checks
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="AspNetCore.HealthChecks.Elasticsearch" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
@@ -112,17 +94,13 @@
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
   </ItemGroup>
-  <!-- ========================================================================
-       Scheduling (Quartz)
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="Quartz" Version="3.14.0" />
     <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="3.14.0" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.14.0" />
   </ItemGroup>
-  <!-- ========================================================================
-       Infrastructure / External Services
-       ======================================================================== -->
+
   <ItemGroup>
     <PackageVersion Include="StackExchange.Redis" Version="2.8.41" />
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.17.0" />

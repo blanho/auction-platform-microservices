@@ -521,3 +521,9 @@ EF Core does not have automatic rollback in production. Options:
 2. **Check logs:** `kubectl logs -n auction-platform deployment/auction-api --previous`
 3. **Rollback:** `kubectl rollout undo deployment/auction-api -n auction-platform`
 4. **Verify:** `kubectl get pods -n auction-platform -w`
+
+## Search bid projection rollout
+
+Deploy the updated Bidding publisher and Search service together. Search startup adds `lastBidEventTicks` (long) and `lastBidEventIsRetraction` (boolean) mappings to an existing index; its Elasticsearch credentials must allow mapping updates. Stop old Search consumers before relying on the ordering guard. After cutover and verification of the authoritative `search-bid-updated` and `search-bid-retracted` queues, retire the obsolete `search-bid-placed` and `search-auction-high-bid` queues/bindings through normal broker operations. This change does not delete broker queues automatically.
+
+Source timestamps determine bid-event ordering, so publisher clocks must be synchronized. Retractions published by the new Bidding service include `WasHighestBid`; legacy payloads default to the previous highest-bid behavior for compatibility. Previously indexed incorrect prices require a deliberate reconciliation; this deployment does not rewrite historical documents. Coordinate bulk reindexing separately from live bid processing because it replaces projection metadata.

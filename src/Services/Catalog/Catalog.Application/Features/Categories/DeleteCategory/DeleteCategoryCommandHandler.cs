@@ -24,8 +24,10 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
         if (category is null)
             return Result.Failure(CatalogErrors.Category.NotFound);
 
-        category.Deactivate();
-        await _categoryRepository.UpdateAsync(category, cancellationToken);
+        if (await _categoryRepository.HasChildrenAsync(request.Id, cancellationToken))
+            return Result.Failure(CatalogErrors.Category.HasChildren);
+
+        await _categoryRepository.DeleteAsync(request.Id, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Category {CategoryId} deleted", request.Id);

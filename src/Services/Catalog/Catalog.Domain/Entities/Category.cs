@@ -5,10 +5,6 @@ using Catalog.Domain.Events;
 
 namespace Catalog.Domain.Entities;
 
-/// <summary>
-/// Category aggregate root. Represents a hierarchical classification tree for auction items.
-/// Belongs to the Catalog bounded context; not part of the Auction lifecycle.
-/// </summary>
 public class Category : AggregateRoot
 {
     public string Name { get; private set; } = string.Empty;

@@ -6,7 +6,6 @@ export const brandKeys = {
   all: ['brands'] as const,
   lists: () => [...brandKeys.all, 'list'] as const,
   list: (filters?: BrandFilters) => [...brandKeys.lists(), filters] as const,
-  allBrands: () => [...brandKeys.all, 'all'] as const,
   detail: (id: string) => [...brandKeys.all, 'detail', id] as const,
 }
 
@@ -17,16 +16,13 @@ export function useBrands(filters?: BrandFilters) {
   })
 }
 
-function useAllBrands(filters?: { activeOnly?: boolean; featuredOnly?: boolean }) {
+export function useActiveBrands(search = '') {
   return useQuery({
-    queryKey: brandKeys.allBrands(),
-    queryFn: () => brandsApi.getAllBrands(filters),
+    queryKey: brandKeys.list({ activeOnly: true, search, page: 1, pageSize: 20 }),
+    queryFn: () => brandsApi.getBrands({ activeOnly: true, search, page: 1, pageSize: 20 }),
+    select: (data) => data.items,
     staleTime: 5 * 60 * 1000,
   })
-}
-
-export function useActiveBrands() {
-  return useAllBrands({ activeOnly: true })
 }
 
 export function useCreateBrand() {
@@ -36,7 +32,6 @@ export function useCreateBrand() {
     mutationFn: (data: CreateBrandRequest) => brandsApi.createBrand(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: brandKeys.allBrands() })
     },
   })
 }
@@ -50,7 +45,6 @@ export function useUpdateBrand() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: brandKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: brandKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: brandKeys.allBrands() })
     },
   })
 }
@@ -62,7 +56,6 @@ export function useDeleteBrand() {
     mutationFn: (id: string) => brandsApi.deleteBrand(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brandKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: brandKeys.allBrands() })
     },
   })
 }

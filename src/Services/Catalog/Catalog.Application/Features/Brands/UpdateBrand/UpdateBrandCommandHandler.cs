@@ -1,4 +1,5 @@
 using AutoMapper;
+using BuildingBlocks.Application.Helpers;
 using Catalog.Application.Errors;
 
 namespace Catalog.Application.Features.Brands.UpdateBrand;
@@ -28,15 +29,16 @@ public class UpdateBrandCommandHandler : ICommandHandler<UpdateBrandCommand, Bra
         if (brand is null)
             return Result.Failure<BrandDto>(CatalogErrors.Brand.NotFound);
 
+        string? slug = null;
         if (request.Name is not null)
         {
-            var slug = request.Name.ToLowerInvariant().Replace(" ", "-");
+            slug = SlugHelper.GenerateSlug(request.Name);
             var slugExists = await _brandRepository.SlugExistsAsync(slug, excludeId: request.Id, cancellationToken: cancellationToken);
             if (slugExists)
                 return Result.Failure<BrandDto>(CatalogErrors.Brand.SlugAlreadyExists);
         }
 
-        brand.Update(request.Name, null, request.Description, request.DisplayOrder, request.IsActive, request.IsFeatured);
+        brand.Update(request.Name, slug, request.Description, request.DisplayOrder, request.IsActive, request.IsFeatured);
         await _brandRepository.UpdateAsync(brand, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

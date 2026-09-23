@@ -27,4 +27,6 @@
   <data name="Category.SlugAlreadyExists" xml:space="preserve"><value>A category with this slug already exists.</value></data>
   <data name="Category.ParentNotFound" xml:space="preserve"><value>Parent category not found.</value></data>
   <data name="Category.CannotBeOwnParent" xml:space="preserve"><value>A category cannot be its own parent.</value></data>
+  <data name="Category.HasChildren" xml:space="preserve"><value>Reassign or remove child categories before deleting or deactivating their parent.</value></data>
+  <data name="Category.ParentInactive" xml:space="preserve"><value>An active category must have an active parent.</value></data>
 </root>

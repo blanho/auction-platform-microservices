@@ -12,8 +12,7 @@
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
-    <!-- Grpc.Tools needed only for server-stub generation from auctions.proto.
-         bids.proto (BidGrpc client) has been moved to BidService.Contracts. -->
+
     <PackageReference Include="Grpc.Tools">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -33,9 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- No Protobuf compilation needed here.
-         AuctionGrpcBase is generated in AuctionService.Contracts (GrpcServices="Both").
-         BidGrpc client (bids.proto) is owned by BidService.Contracts. -->
+
   </ItemGroup>
 
   <ItemGroup>

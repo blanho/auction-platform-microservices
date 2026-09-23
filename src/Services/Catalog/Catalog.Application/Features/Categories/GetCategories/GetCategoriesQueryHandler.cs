@@ -15,7 +15,7 @@ public class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery, List<
 
     public async Task<Result<List<CategoryDto>>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
     {
-        var categories = await _categoryRepository.GetActiveCategoriesAsync(cancellationToken);
+        var categories = await _categoryRepository.GetAllAsync(!request.ActiveOnly, cancellationToken);
         return Result.Success(_mapper.Map<List<CategoryDto>>(categories));
     }
 }

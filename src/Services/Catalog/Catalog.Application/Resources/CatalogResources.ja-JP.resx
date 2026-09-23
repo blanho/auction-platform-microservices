@@ -27,4 +27,6 @@
   <data name="Category.SlugAlreadyExists" xml:space="preserve"><value>このスラッグのカテゴリはすでに存在します。</value></data>
   <data name="Category.ParentNotFound" xml:space="preserve"><value>親カテゴリが見つかりません。</value></data>
   <data name="Category.CannotBeOwnParent" xml:space="preserve"><value>カテゴリを自身の親に設定することはできません。</value></data>
+  <data name="Category.HasChildren" xml:space="preserve"><value>親カテゴリを削除または無効化する前に、子カテゴリを移動または削除してください。</value></data>
+  <data name="Category.ParentInactive" xml:space="preserve"><value>有効なカテゴリの親カテゴリは有効である必要があります。</value></data>
 </root>

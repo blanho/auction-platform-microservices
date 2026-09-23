@@ -54,6 +54,7 @@ public class AuctionUpdatedConsumer : IConsumer<AuctionUpdatedEvent>
         if (result.IsFailure)
         {
             _logger.LogWarning("Failed to update auction {AuctionId}: {Error}", message.Id, result.Error);
+            throw new InvalidOperationException($"Search index operation failed: {result.Error}");
         }
         else
         {

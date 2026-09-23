@@ -75,8 +75,6 @@ patches:
     target:
       kind: Ingress
       name: auction-platform-ingress
-  # These values are intentionally non-secret and suitable only for an isolated
-  # local development namespace. Override the Secret before any shared use.
   - patch: |-
       apiVersion: v1
       kind: Secret

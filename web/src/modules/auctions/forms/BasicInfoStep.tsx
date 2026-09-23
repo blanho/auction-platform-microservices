@@ -21,6 +21,10 @@ interface BasicInfoStepProps {
   isEditMode: boolean
   categories: Category[]
   brands: Brand[]
+  selectedBrand: Brand | null
+  onBrandChange: (brand: Brand | null) => void
+  onBrandSearchChange: (search: string) => void
+  isFetchingBrands: boolean
 }
 
 export function BasicInfoStep({
@@ -29,6 +33,10 @@ export function BasicInfoStep({
   isEditMode,
   categories,
   brands,
+  selectedBrand,
+  onBrandChange,
+  onBrandSearchChange,
+  isFetchingBrands,
 }: BasicInfoStepProps) {
   const { t } = useTranslation('auctions')
 
@@ -105,8 +113,19 @@ export function BasicInfoStep({
               <Autocomplete
                 options={brands}
                 getOptionLabel={(option) => option.name}
-                value={brands.find((b) => b.id === field.value) || null}
-                onChange={(_, newValue) => field.onChange(newValue?.id || '')}
+                filterOptions={(options) => options}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                loading={isFetchingBrands}
+                value={selectedBrand}
+                onInputChange={(_, value, reason) => {
+                  if (reason === 'input' || reason === 'clear') {
+                    onBrandSearchChange(value)
+                  }
+                }}
+                onChange={(_, newValue) => {
+                  field.onChange(newValue?.id || '')
+                  onBrandChange(newValue)
+                }}
                 renderInput={(params) => (
                   <TextField
                     {...params}

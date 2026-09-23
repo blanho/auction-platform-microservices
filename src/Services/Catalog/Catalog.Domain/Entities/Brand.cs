@@ -4,11 +4,6 @@ using Catalog.Domain.Events;
 
 namespace Catalog.Domain.Entities;
 
-/// <summary>
-/// Brand aggregate root. Represents a manufacturer or label used to classify auction items.
-/// This is reference / taxonomy data managed by admins — it belongs to the Catalog bounded
-/// context, NOT to the Auction context.
-/// </summary>
 public class Brand : AggregateRoot
 {
     public string Name { get; private set; } = string.Empty;

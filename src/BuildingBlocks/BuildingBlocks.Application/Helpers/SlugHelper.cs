@@ -35,7 +35,7 @@ public static partial class SlugHelper
         return slug;
     }
 
-    [GeneratedRegex(@"[^a-z0-9\s-]")]
+    [GeneratedRegex(@"[^\p{L}\p{N}\s-]")]
     private static partial Regex SlugRegex();
 
     [GeneratedRegex(@"\s+")]

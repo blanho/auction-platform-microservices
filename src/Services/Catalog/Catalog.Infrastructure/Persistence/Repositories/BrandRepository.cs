@@ -1,5 +1,6 @@
 #nullable enable
 using Catalog.Domain.Entities;
+using Catalog.Application.Filtering;
 using Catalog.Infrastructure.Persistence;
 using BuildingBlocks.Application.Abstractions.Auditing;
 
@@ -34,32 +35,17 @@ public class BrandRepository : IBrandRepository
             .FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
     }
 
-    public async Task<List<Brand>> GetAllAsync(bool includeInactive = false, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResult<Brand>> GetPagedAsync(BrandQueryParams parameters, CancellationToken cancellationToken = default)
     {
-        var query = _context.Brands.Where(b => !b.IsDeleted);
-        if (!includeInactive)
-            query = query.Where(b => b.IsActive);
-        return await query
-            .AsNoTracking()
-            .OrderBy(b => b.DisplayOrder)
-            .ThenBy(b => b.Name)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<List<Brand>> GetFeaturedBrandsAsync(int count = PaginationDefaults.DefaultPageSize, CancellationToken cancellationToken = default)
-    {
-        return await _context.Brands
-            .Where(b => !b.IsDeleted && b.IsActive && b.IsFeatured)
-            .AsNoTracking()
-            .OrderBy(b => b.DisplayOrder)
-            .ThenBy(b => b.Name)
-            .Take(count)
-            .ToListAsync(cancellationToken);
+        var query = BrandQueries.Filter(_context.Brands.AsNoTracking(), parameters);
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await BrandQueries.Page(query, parameters).ToListAsync(cancellationToken);
+        return new PaginatedResult<Brand>(items, totalCount, parameters.Page, parameters.PageSize);
     }
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Brands.Where(b => !b.IsDeleted && b.Slug == slug);
+        var query = _context.Brands.Where(b => b.Slug == slug);
         if (excludeId.HasValue)
             query = query.Where(b => b.Id != excludeId.Value);
         return await query.AnyAsync(cancellationToken);

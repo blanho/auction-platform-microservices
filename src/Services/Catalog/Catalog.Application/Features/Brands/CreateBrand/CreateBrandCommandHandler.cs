@@ -1,4 +1,5 @@
 using AutoMapper;
+using BuildingBlocks.Application.Helpers;
 using Catalog.Application.Errors;
 using Catalog.Domain.Entities;
 
@@ -25,7 +26,7 @@ public class CreateBrandCommandHandler : ICommandHandler<CreateBrandCommand, Bra
 
     public async Task<Result<BrandDto>> Handle(CreateBrandCommand request, CancellationToken cancellationToken)
     {
-        var slug = request.Name.ToLowerInvariant().Replace(" ", "-");
+        var slug = SlugHelper.GenerateSlug(request.Name);
 
         var slugExists = await _brandRepository.SlugExistsAsync(slug, cancellationToken: cancellationToken);
         if (slugExists)
