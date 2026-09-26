@@ -19,6 +19,7 @@ public interface IOrderRepository
     Task<int> GetCountBySellerUsernameAsync(string username);
 
     Task<PaginatedResult<Order>> GetAllAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default);
+    Task<List<Order>> GetForReportAsync(OrderReportParameters parameters, CancellationToken cancellationToken = default);
     Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default);
 
     Task<RevenueStatsDto> GetRevenueStatsAsync(DateTimeOffset? startDate, DateTimeOffset? endDate, CancellationToken cancellationToken = default);

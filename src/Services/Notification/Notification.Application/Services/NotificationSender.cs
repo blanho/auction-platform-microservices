@@ -9,6 +9,8 @@ namespace Notification.Application.Services;
 
 public class NotificationSender : INotificationSender
 {
+    private const int SmsSubjectPreviewLength = 50;
+
     private readonly ITemplateRepository _templateRepo;
     private readonly INotificationRecordRepository _notificationRepo;
     private readonly IUnitOfWork _unitOfWork;
@@ -176,7 +178,7 @@ public class NotificationSender : INotificationSender
     private async Task SendEmailInternalAsync(string userId, string templateKey, string recipientEmail, string subject, string body, CancellationToken ct)
     {
         var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
+            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
             templateKey,
             NotificationChannelNames.Email,
             subject,
@@ -202,17 +204,16 @@ public class NotificationSender : INotificationSender
             _logger.LogError(ex, "Exception sending email to {Email}", recipientEmail);
         }
 
-        await _notificationRepo.AddRecordAsync(record, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+        await PersistRecordAsync(record, ct);
     }
 
     private async Task SendSmsInternalAsync(string userId, string templateKey, string phoneNumber, string message, CancellationToken ct)
     {
         var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
+            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
             templateKey,
             NotificationChannelNames.Sms,
-            message.Length > 50 ? message[..50] + "..." : message,
+            message.Length > SmsSubjectPreviewLength ? message[..SmsSubjectPreviewLength] + "..." : message,
             phoneNumber);
 
         try
@@ -235,14 +236,13 @@ public class NotificationSender : INotificationSender
             _logger.LogError(ex, "Exception sending SMS to {Phone}", TemplateHelper.MaskPhone(phoneNumber));
         }
 
-        await _notificationRepo.AddRecordAsync(record, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+        await PersistRecordAsync(record, ct);
     }
 
     private async Task SendPushInternalAsync(string userId, string templateKey, string title, string body, Dictionary<string, string> data, CancellationToken ct)
     {
         var record = NotificationRecord.Create(
-            Guid.TryParse(userId, out var uid) ? uid : Guid.Empty,
+            Guid.TryParse(userId, out var parsedUserId) ? parsedUserId : Guid.Empty,
             templateKey,
             NotificationChannelNames.Push,
             title,
@@ -268,8 +268,12 @@ public class NotificationSender : INotificationSender
             _logger.LogError(ex, "Exception sending push to user {UserId}", userId);
         }
 
+        await PersistRecordAsync(record, ct);
+    }
+
+    private async Task PersistRecordAsync(NotificationRecord record, CancellationToken ct)
+    {
         await _notificationRepo.AddRecordAsync(record, ct);
         await _unitOfWork.SaveChangesAsync(ct);
     }
-
 }

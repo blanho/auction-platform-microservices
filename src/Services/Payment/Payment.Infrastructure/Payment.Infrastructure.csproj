@@ -15,6 +15,11 @@
     <PackageReference Include="MassTransit" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" />
     <PackageReference Include="Stripe.net" />
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="PDFsharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts/Lato-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
@@ -24,6 +29,7 @@
     <ProjectReference Include="..\..\Auction\Auction.Contracts\AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\..\Bidding\Bidding.Contracts\BidService.Contracts.csproj" />
     <ProjectReference Include="..\..\Job\Job.Contracts\JobService.Contracts.csproj" />
+    <ProjectReference Include="..\..\Storage\Storage.Contracts\StorageService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Orchestration\Orchestration.Contracts\OrchestrationService.Contracts.csproj" />
   </ItemGroup>
 </Project>

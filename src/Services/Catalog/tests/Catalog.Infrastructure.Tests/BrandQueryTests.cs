@@ -21,8 +21,13 @@ public class BrandQueryTests
         var query = new[] { inactive, ordinary, deleted, active }.AsQueryable();
         var parameters = new BrandQueryParams
         {
-            ActiveOnly = false, FeaturedOnly = true, Search = " alp ",
-            SortBy = "name", SortDescending = false, Page = 2, PageSize = 1
+            ActiveOnly = false,
+            FeaturedOnly = true,
+            Search = " alp ",
+            SortBy = "name",
+            SortDescending = false,
+            Page = 2,
+            PageSize = 1
         };
         var filtered = BrandQueries.Filter(query, parameters);
         Assert.Equal(2, filtered.Count());

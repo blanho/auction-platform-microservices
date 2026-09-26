@@ -3,6 +3,7 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Storage.Application.DTOs;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Application.Features.Files.GeneratePresignedDownload;
 
@@ -20,7 +21,7 @@ public class GeneratePresignedDownloadQueryHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null)
+        if (file is null || file.SubFolder == ReportStorageContract.PrivateFolder)
         {
             return Result.Failure<PresignedDownloadDto>(StorageErrors.FileNotFound(request.FileId));
         }

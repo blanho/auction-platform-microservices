@@ -141,24 +141,27 @@ namespace Bidding.Application.Services
                 dto.Amount,
                 _dateTime.UtcNow);
 
-            if (highestBid == null || dto.Amount > highestBid.Amount)
+            if (highestBid != null && dto.Amount <= highestBid.Amount)
             {
-                if (reservePrice > 0 && dto.Amount < reservePrice)
-                    bid.AcceptBelowReserve(
-                        highestBid?.Amount,
-                        highestBid?.BidderId,
-                        highestBid?.BidderUsername,
-                        isAutoBid);
-                else
-                    bid.Accept(
-                        highestBid?.Amount,
-                        highestBid?.BidderId,
-                        highestBid?.BidderUsername,
-                        isAutoBid);
+                bid.MarkAsTooLow();
+                return bid;
+            }
+
+            if (reservePrice > 0 && dto.Amount < reservePrice)
+            {
+                bid.AcceptBelowReserve(
+                    highestBid?.Amount,
+                    highestBid?.BidderId,
+                    highestBid?.BidderUsername,
+                    isAutoBid);
             }
             else
             {
-                bid.MarkAsTooLow();
+                bid.Accept(
+                    highestBid?.Amount,
+                    highestBid?.BidderId,
+                    highestBid?.BidderUsername,
+                    isAutoBid);
             }
 
             return bid;
@@ -199,19 +202,20 @@ namespace Bidding.Application.Services
 
         private BidDto CreateRejectedBid(PlaceBidDto dto, Guid bidderId, string bidderUsername, string errorMessage)
         {
-            return new BidDto
-            {
-                AuctionId = dto.AuctionId,
-                BidderId = bidderId,
-                BidderUsername = bidderUsername,
-                Amount = dto.Amount,
-                BidTime = _dateTime.UtcNow,
-                Status = BidStatus.Rejected.ToString(),
-                ErrorMessage = errorMessage
-            };
+            return CreateUnsuccessfulBid(dto, bidderId, bidderUsername, BidStatus.Rejected, errorMessage);
         }
 
         private BidDto CreateBidTooLow(PlaceBidDto dto, Guid bidderId, string bidderUsername, string errorMessage)
+        {
+            return CreateUnsuccessfulBid(dto, bidderId, bidderUsername, BidStatus.TooLow, errorMessage);
+        }
+
+        private BidDto CreateUnsuccessfulBid(
+            PlaceBidDto dto,
+            Guid bidderId,
+            string bidderUsername,
+            BidStatus status,
+            string errorMessage)
         {
             return new BidDto
             {
@@ -220,7 +224,7 @@ namespace Bidding.Application.Services
                 BidderUsername = bidderUsername,
                 Amount = dto.Amount,
                 BidTime = _dateTime.UtcNow,
-                Status = BidStatus.TooLow.ToString(),
+                Status = status.ToString(),
                 ErrorMessage = errorMessage
             };
         }

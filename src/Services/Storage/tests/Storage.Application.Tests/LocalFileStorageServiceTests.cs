@@ -86,8 +86,10 @@ public sealed class LocalFileStorageServiceTests : IDisposable
         }
     }
 
-    [Fact]
-    public async Task FileOperations_UseCanonicalStoredPath()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FileOperations_UseCanonicalStoredPath(bool useEncodedPath)
     {
         var service = CreateService(baseUrl: "https://storage.example.test/files/");
         await using var content = CreateContent("stored-content");
@@ -98,17 +100,22 @@ public sealed class LocalFileStorageServiceTests : IDisposable
             content.Length,
             "user documents"));
 
-        Assert.True(await service.ExistsAsync(upload.StoredFileName));
+        var storedPath = useEncodedPath
+            ? upload.StoredFileName.Replace(" ", "%20").Replace("/", @"\\")
+            : upload.StoredFileName;
+
+        Assert.True(await service.ExistsAsync(storedPath));
         Assert.Equal(
             $"https://storage.example.test/files/{upload.StoredFileName.Replace("user documents", "user%20documents")}",
-            await service.GetUrlAsync(upload.StoredFileName));
+            await service.GetUrlAsync(storedPath));
 
-        var presignedDownload = await service.GenerateDownloadSasTokenAsync(upload.StoredFileName);
+        var presignedDownload = await service.GenerateDownloadSasTokenAsync(storedPath);
         Assert.NotNull(presignedDownload);
+        Assert.Equal(upload.Url, presignedDownload.DownloadUrl);
         Assert.Equal("application/pdf", presignedDownload.ContentType);
         Assert.Equal(Path.GetFileName(upload.StoredFileName), presignedDownload.FileName);
 
-        var download = await service.DownloadAsync(upload.StoredFileName);
+        var download = await service.DownloadAsync(storedPath);
         Assert.NotNull(download);
         await using (download.Content)
         using (var reader = new StreamReader(download.Content, Encoding.UTF8))
@@ -116,8 +123,26 @@ public sealed class LocalFileStorageServiceTests : IDisposable
             Assert.Equal("stored-content", await reader.ReadToEndAsync());
         }
 
-        Assert.True(await service.DeleteAsync(upload.StoredFileName));
+        Assert.True(await service.DeleteAsync(storedPath));
         Assert.False(await service.ExistsAsync(upload.StoredFileName));
+    }
+
+    [Theory]
+    [InlineData("missing.txt")]
+    [InlineData("existing-directory")]
+    [InlineData("")]
+    [InlineData("safe/../file.txt")]
+    public async Task FileOperations_ReturnNotFoundWhenPathDoesNotIdentifyAnAccessibleFile(string storedPath)
+    {
+        var service = CreateService();
+        Directory.CreateDirectory(Path.Combine(_storageRoot, "existing-directory"));
+
+        Assert.False(await service.ExistsAsync(storedPath));
+        Assert.Null(await service.DownloadAsync(storedPath));
+        Assert.Null(await service.GetUrlAsync(storedPath));
+        Assert.Null(await service.GenerateDownloadSasTokenAsync(storedPath));
+        Assert.False(await service.DeleteAsync(storedPath));
+        Assert.True(Directory.Exists(Path.Combine(_storageRoot, "existing-directory")));
     }
 
     [Fact]

@@ -45,9 +45,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
             "Starting bulk import of {RowCount} auctions for seller {Seller} with correlation {CorrelationId}",
             request.Rows.Count, request.SellerUsername, request.CorrelationId);
 
-        var existingCount = await _bulkRepository.CountByCorrelationIdAsync(
-            request.CorrelationId, cancellationToken);
-
         var checkpoint = await _checkpointRepository.GetCheckpointAsync(
             request.CorrelationId, cancellationToken);
 
@@ -69,12 +66,13 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 TotalRows: request.Rows.Count,
                 SucceededCount: 0,
                 FailedCount: validationResult.Errors.Count,
-                SkippedDuplicateCount: existingCount,
+                SkippedDuplicateCount: 0,
                 Duration: stopwatch.Elapsed,
                 Errors: validationResult.Errors));
         }
 
         var rowsToProcess = ResumeFromCheckpoint(validationResult.ValidRows, checkpoint);
+        var skippedDuplicateCount = validationResult.ValidRows.Count - rowsToProcess.Count;
 
         var priorSucceeded = checkpoint?.SucceededCount ?? 0;
 
@@ -103,7 +101,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
             TotalRows: request.Rows.Count,
             SucceededCount: totalSucceeded,
             FailedCount: validationResult.Errors.Count,
-            SkippedDuplicateCount: existingCount,
+            SkippedDuplicateCount: skippedDuplicateCount,
             Duration: stopwatch.Elapsed,
             Errors: validationResult.Errors));
     }
@@ -133,7 +131,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         CancellationToken cancellationToken)
     {
         var totalInserted = 0;
-        var batches = ChunkRows(validRows, AuctionDefaults.Batch.InsertBatchSize);
+        var batches = validRows.Chunk(AuctionDefaults.Batch.InsertBatchSize);
 
         foreach (var batch in batches)
         {
@@ -267,17 +265,6 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         }
 
         return auctions;
-    }
-
-    private static IEnumerable<IReadOnlyList<ValidatedRow>> ChunkRows(
-        IReadOnlyList<ValidatedRow> rows,
-        int chunkSize)
-    {
-        for (var i = 0; i < rows.Count; i += chunkSize)
-        {
-            var remaining = Math.Min(chunkSize, rows.Count - i);
-            yield return rows.Skip(i).Take(remaining).ToList();
-        }
     }
 
     private sealed record ValidatedRow(int RowNumber, ImportAuctionRow Row);

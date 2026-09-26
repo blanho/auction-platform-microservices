@@ -69,7 +69,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
 
         var insertedCount = 0;
 
-        foreach (var chunk in ChunkRows(validationResult.ValidRows, AuctionDefaults.Batch.InsertBatchSize))
+        foreach (var chunk in validationResult.ValidRows.Chunk(AuctionDefaults.Batch.InsertBatchSize))
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -203,15 +203,6 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         }
 
         return auctions;
-    }
-
-    private static IEnumerable<IReadOnlyList<ValidatedRow>> ChunkRows(
-        IReadOnlyList<ValidatedRow> rows, int chunkSize)
-    {
-        for (var i = 0; i < rows.Count; i += chunkSize)
-        {
-            yield return rows.Skip(i).Take(Math.Min(chunkSize, rows.Count - i)).ToList();
-        }
     }
 
     private static async Task ReportProgress(

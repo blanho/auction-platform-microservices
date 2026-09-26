@@ -1,21 +1,25 @@
 using System.Globalization;
 using System.Text;
+using ClosedXML.Excel;
 using Microsoft.Extensions.Logging;
 using Payment.Application.Features.Orders.QueueOrderReportGeneration;
-using Payment.Application.Filtering;
 using Payment.Application.Interfaces;
 using Payment.Domain.Entities;
+using Payment.Domain.Enums;
+using PdfSharp.Drawing;
+using PdfSharp.Fonts;
+using PdfSharp.Pdf;
 
 namespace Payment.Infrastructure.Services;
 
 public class OrderReportGenerator : IOrderReportGenerator
 {
+    private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static readonly object FontRegistrationLock = new();
     private readonly IOrderRepository _orderRepository;
     private readonly ILogger<OrderReportGenerator> _logger;
 
-    public OrderReportGenerator(
-        IOrderRepository orderRepository,
-        ILogger<OrderReportGenerator> logger)
+    public OrderReportGenerator(IOrderRepository orderRepository, ILogger<OrderReportGenerator> logger)
     {
         _orderRepository = orderRepository;
         _logger = logger;
@@ -29,173 +33,262 @@ public class OrderReportGenerator : IOrderReportGenerator
     {
         try
         {
-            var queryParams = new OrderQueryParams
-            {
-                Page = 1,
-                PageSize = 10000,
-                Filter = new OrderFilter
-                {
-                    Status = parameters.StatusFilter,
-                    FromDate = parameters.StartDate?.DateTime,
-                    ToDate = parameters.EndDate?.DateTime
-                }
-            };
-
-            var orders = await _orderRepository.GetAllAsync(queryParams, cancellationToken);
-
-            var filteredOrders = orders.Items.AsEnumerable();
-
-            if (parameters.BuyerIdFilter.HasValue)
-            {
-                filteredOrders = filteredOrders.Where(o => o.BuyerId == parameters.BuyerIdFilter.Value);
-            }
-
-            if (parameters.SellerIdFilter.HasValue)
-            {
-                filteredOrders = filteredOrders.Where(o => o.SellerId == parameters.SellerIdFilter.Value);
-            }
-
-            var orderList = filteredOrders.ToList();
-
+            var orders = await _orderRepository.GetForReportAsync(parameters, cancellationToken);
+            var report = BuildReport(orders, reportType);
             var (content, contentType, extension) = format switch
             {
-                ReportFormat.Csv => GenerateCsvReport(orderList, reportType),
-                ReportFormat.Excel => GenerateCsvReport(orderList, reportType),
-                ReportFormat.Pdf => GeneratePdfReport(orderList, reportType),
+                ReportFormat.Csv => (GenerateCsv(report), "text/csv", ".csv"),
+                ReportFormat.Excel => (GenerateExcel(report), ExcelContentType, ".xlsx"),
+                ReportFormat.Pdf => (GeneratePdf(report, reportType), "application/pdf", ".pdf"),
                 _ => throw new ArgumentOutOfRangeException(nameof(format))
             };
 
             var timestamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss");
             var fileName = $"order-report-{reportType.ToString().ToLowerInvariant()}-{timestamp}{extension}";
-
             _logger.LogInformation(
                 "Generated {ReportType} report with {RecordCount} records, size {Size} bytes",
-                reportType, orderList.Count, content.Length);
+                reportType, report.Rows.Count, content.Length);
 
-            return new OrderReportResult(
-                Success: true,
-                FileName: fileName,
-                ContentType: contentType,
-                Content: content,
-                FileSizeBytes: content.Length,
-                TotalRecords: orderList.Count);
+            return new OrderReportResult(true, fileName, contentType, content, content.Length, report.Rows.Count);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate {ReportType} report", reportType);
-            return new OrderReportResult(
-                Success: false,
-                FileName: string.Empty,
-                ContentType: string.Empty,
-                Content: [],
-                FileSizeBytes: 0,
-                TotalRecords: 0,
-                ErrorMessage: ex.Message);
+            return new OrderReportResult(false, string.Empty, string.Empty, [], 0, 0, ex.Message);
         }
     }
 
-    private static (byte[] Content, string ContentType, string Extension) GenerateCsvReport(
-        IReadOnlyCollection<Order> orders,
-        ReportType reportType)
+    private static ReportTable BuildReport(IReadOnlyList<Order> orders, ReportType reportType) => reportType switch
     {
-        var sb = new StringBuilder();
-
-        sb.AppendLine(reportType switch
-        {
-            ReportType.OrderSummary => "OrderId,AuctionId,Buyer,Seller,ItemTitle,Status,TotalAmount,CreatedAt",
-            ReportType.PaymentTransactions => "OrderId,Buyer,TotalAmount,PaymentStatus,PaymentTransactionId,PaidAt",
-            ReportType.SellerPayout => "SellerId,SellerUsername,OrderCount,TotalRevenue,TotalPlatformFees,NetPayout",
-            ReportType.BuyerPurchaseHistory => "BuyerId,BuyerUsername,OrderId,ItemTitle,TotalAmount,Status,PaidAt",
-            ReportType.RevenueReport => "Date,OrderCount,TotalRevenue,TotalPlatformFees,TotalShipping",
-            ReportType.RefundReport => "OrderId,Buyer,Seller,TotalAmount,Status,RefundReason",
-            _ => "OrderId,Status,TotalAmount"
-        });
-
-        foreach (var order in orders)
-        {
-            var line = reportType switch
+        ReportType.OrderSummary => new(
+            ["OrderId", "AuctionId", "Buyer", "Seller", "ItemTitle", "Status", "TotalAmount", "CreatedAt"],
+            orders.Select(o => new object?[]
             {
-                ReportType.OrderSummary => FormatOrderSummaryRow(order),
-                ReportType.PaymentTransactions => FormatPaymentTransactionRow(order),
-                ReportType.BuyerPurchaseHistory => FormatBuyerHistoryRow(order),
-                _ => FormatOrderSummaryRow(order)
-            };
-            sb.AppendLine(line);
-        }
+                o.Id, o.AuctionId, o.BuyerUsername, o.SellerUsername, o.ItemTitle,
+                o.Status, o.TotalAmount, o.CreatedAt
+            }).ToList()),
+        ReportType.PaymentTransactions => new(
+            ["OrderId", "Buyer", "TotalAmount", "PaymentStatus", "PaymentTransactionId", "PaidAt"],
+            orders.Select(o => new object?[]
+            {
+                o.Id, o.BuyerUsername, o.TotalAmount, o.PaymentStatus, o.PaymentTransactionId, o.PaidAt
+            }).ToList()),
+        ReportType.SellerPayout => BuildSellerPayoutReport(orders),
+        ReportType.BuyerPurchaseHistory => new(
+            ["BuyerId", "BuyerUsername", "OrderId", "ItemTitle", "TotalAmount", "Status", "PaidAt"],
+            orders.Select(o => new object?[]
+            {
+                o.BuyerId, o.BuyerUsername, o.Id, o.ItemTitle, o.TotalAmount, o.Status, o.PaidAt
+            }).ToList()),
+        ReportType.RevenueReport => BuildRevenueReport(orders),
+        ReportType.RefundReport => new(
+            ["OrderId", "Buyer", "Seller", "TotalAmount", "Status"],
+            orders.Where(o => o.Status == OrderStatus.Refunded)
+                .Select(o => new object?[]
+                {
+                    o.Id, o.BuyerUsername, o.SellerUsername, o.TotalAmount, o.Status
+                }).ToList()),
+        _ => new(
+            ["OrderId", "Status", "TotalAmount"],
+            orders.Select(o => new object?[] { o.Id, o.Status, o.TotalAmount }).ToList())
+    };
 
-        return (Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", ".csv");
+    private static ReportTable BuildSellerPayoutReport(IReadOnlyList<Order> orders)
+    {
+        var rows = orders.Where(IsPaidAndNotRefunded)
+            .GroupBy(o => new { o.SellerId, o.SellerUsername })
+            .OrderBy(group => group.Key.SellerUsername)
+            .Select(group =>
+            {
+                var revenue = group.Sum(o => o.TotalAmount);
+                var fees = group.Sum(o => o.PlatformFee ?? 0);
+                return new object?[]
+                {
+                    group.Key.SellerId, group.Key.SellerUsername, group.Count(), revenue, fees, revenue - fees
+                };
+            }).ToList();
+
+        return new ReportTable(
+            ["SellerId", "SellerUsername", "OrderCount", "TotalRevenue", "TotalPlatformFees", "NetPayout"], rows);
     }
 
-    private static (byte[] Content, string ContentType, string Extension) GeneratePdfReport(
-        IReadOnlyCollection<Order> orders,
-        ReportType reportType)
+    private static ReportTable BuildRevenueReport(IReadOnlyList<Order> orders)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine($"Order Report: {reportType}");
-        sb.AppendLine($"Generated: {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
-        sb.AppendLine($"Total Records: {orders.Count}");
-        sb.AppendLine(new string('-', 80));
-        sb.AppendLine();
+        var rows = orders.Where(IsPaidAndNotRefunded)
+            .GroupBy(o => DateOnly.FromDateTime(o.PaidAt!.Value.UtcDateTime))
+            .OrderBy(group => group.Key)
+            .Select(group => new object?[]
+            {
+                group.Key, group.Count(), group.Sum(o => o.TotalAmount),
+                group.Sum(o => o.PlatformFee ?? 0), group.Sum(o => o.ShippingCost ?? 0)
+            }).ToList();
 
-        foreach (var order in orders)
+        return new ReportTable(
+            ["Date", "OrderCount", "TotalRevenue", "TotalPlatformFees", "TotalShipping"], rows);
+    }
+
+    private static bool IsPaidAndNotRefunded(Order order) =>
+        order.PaymentStatus == PaymentStatus.Completed &&
+        order.Status != OrderStatus.Refunded && order.PaidAt.HasValue;
+
+    private static byte[] GenerateCsv(ReportTable report)
+    {
+        var csv = new StringBuilder();
+        csv.AppendLine(string.Join(',', report.Headers));
+        foreach (var row in report.Rows)
+            csv.AppendLine(string.Join(',', row.Select(value => EscapeCsv(FormatValue(value)))));
+        return Encoding.UTF8.GetBytes(csv.ToString());
+    }
+
+    private static byte[] GenerateExcel(ReportTable report)
+    {
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Orders");
+        for (var column = 0; column < report.Headers.Length; column++)
+            sheet.Cell(1, column + 1).Value = report.Headers[column];
+
+        for (var row = 0; row < report.Rows.Count; row++)
         {
-            sb.AppendLine($"Order ID: {order.Id}");
-            sb.AppendLine($"  Buyer: {order.BuyerUsername}");
-            sb.AppendLine($"  Seller: {order.SellerUsername}");
-            sb.AppendLine($"  Item: {order.ItemTitle}");
-            sb.AppendLine($"  Total: ${order.TotalAmount:N2}");
-            sb.AppendLine($"  Status: {order.Status}");
-            sb.AppendLine($"  Created: {order.CreatedAt:yyyy-MM-dd HH:mm}");
-            sb.AppendLine();
+            for (var column = 0; column < report.Headers.Length; column++)
+            {
+                var cell = sheet.Cell(row + 2, column + 1);
+                var value = report.Rows[row][column];
+                if (value is decimal amount)
+                    cell.Value = amount;
+                else if (value is int count)
+                    cell.Value = count;
+                else
+                    cell.Value = FormatValue(value);
+            }
         }
 
-        return (Encoding.UTF8.GetBytes(sb.ToString()), "application/pdf", ".pdf");
+        sheet.Row(1).Style.Font.Bold = true;
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
     }
 
-    private static string FormatOrderSummaryRow(Order order)
+    private static byte[] GeneratePdf(ReportTable report, ReportType reportType)
     {
-        return string.Join(",",
-            order.Id,
-            order.AuctionId,
-            EscapeCsv(order.BuyerUsername),
-            EscapeCsv(order.SellerUsername),
-            EscapeCsv(order.ItemTitle),
-            order.Status,
-            order.TotalAmount.ToString(CultureInfo.InvariantCulture),
-            order.CreatedAt.ToString("o"));
+        RegisterPdfFont();
+        using var document = new PdfDocument();
+        document.Info.Title = $"Order Report: {reportType}";
+        var font = new XFont("Lato", 10);
+        var titleFont = new XFont("Lato", 14);
+        var page = document.AddPage();
+        page.Size = PdfSharp.PageSize.A4;
+        var graphics = XGraphics.FromPdfPage(page);
+        const double margin = 40;
+        const double lineHeight = 15;
+        var y = margin;
+
+        void WriteLine(string line, XFont lineFont)
+        {
+            if (y + lineHeight > page.Height.Point - margin)
+            {
+                graphics.Dispose();
+                page = document.AddPage();
+                page.Size = PdfSharp.PageSize.A4;
+                graphics = XGraphics.FromPdfPage(page);
+                y = margin;
+            }
+            graphics.DrawString(line, lineFont, XBrushes.Black, margin, y);
+            y += lineHeight;
+        }
+
+        WriteLine($"Order Report: {reportType}", titleFont);
+        WriteLine($"Total Records: {report.Rows.Count}", font);
+        y += lineHeight;
+        foreach (var row in report.Rows)
+        {
+            for (var column = 0; column < report.Headers.Length; column++)
+            {
+                var field = $"{report.Headers[column]}: {FormatValue(row[column]).Replace('\r', ' ').Replace('\n', ' ')}";
+                foreach (var line in WrapPdfLine(field, graphics, font, page.Width.Point - 2 * margin).ToList())
+                    WriteLine(line, font);
+            }
+            y += lineHeight;
+        }
+
+        graphics.Dispose();
+        using var stream = new MemoryStream();
+        document.Save(stream, false);
+        return stream.ToArray();
     }
 
-    private static string FormatPaymentTransactionRow(Order order)
+    private static IEnumerable<string> WrapPdfLine(string text, XGraphics graphics, XFont font, double maxWidth)
     {
-        return string.Join(",",
-            order.Id,
-            EscapeCsv(order.BuyerUsername),
-            order.TotalAmount.ToString(CultureInfo.InvariantCulture),
-            order.PaymentStatus,
-            EscapeCsv(order.PaymentTransactionId ?? string.Empty),
-            order.PaidAt?.ToString("o") ?? string.Empty);
+        var line = new StringBuilder();
+        foreach (var word in text.Split(' '))
+        {
+            var candidate = line.Length == 0 ? word : $"{line} {word}";
+            if (graphics.MeasureString(candidate, font).Width <= maxWidth)
+            {
+                line.Clear().Append(candidate);
+                continue;
+            }
+            if (line.Length > 0)
+            {
+                yield return line.ToString();
+                line.Clear();
+            }
+            foreach (var character in word)
+            {
+                if (line.Length > 0 && graphics.MeasureString($"{line}{character}", font).Width > maxWidth)
+                {
+                    yield return line.ToString();
+                    line.Clear();
+                }
+                line.Append(character);
+            }
+        }
+        if (line.Length > 0)
+            yield return line.ToString();
     }
 
-    private static string FormatBuyerHistoryRow(Order order)
+    private static void RegisterPdfFont()
     {
-        return string.Join(",",
-            order.BuyerId,
-            EscapeCsv(order.BuyerUsername),
-            order.Id,
-            EscapeCsv(order.ItemTitle),
-            order.TotalAmount.ToString(CultureInfo.InvariantCulture),
-            order.Status,
-            order.PaidAt?.ToString("o") ?? string.Empty);
+        lock (FontRegistrationLock)
+        {
+            if (GlobalFontSettings.FontResolver is null)
+                GlobalFontSettings.FontResolver = new LatoFontResolver();
+        }
     }
 
-    private static string EscapeCsv(string value)
+    private static string FormatValue(object? value) => value switch
     {
-        if (string.IsNullOrEmpty(value))
-            return string.Empty;
+        null => string.Empty,
+        DateTimeOffset date => date.ToString("o", CultureInfo.InvariantCulture),
+        DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        IFormattable formatted => formatted.ToString(null, CultureInfo.InvariantCulture),
+        _ => value.ToString() ?? string.Empty
+    };
 
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-            return $"\"{value.Replace("\"", "\"\"")}\"";
+    private static string EscapeCsv(string value) =>
+        value.Contains(',') || value.Contains('"') || value.Contains('\r') || value.Contains('\n')
+            ? $"\"{value.Replace("\"", "\"\"")}\""
+            : value;
 
-        return value;
+    private sealed record ReportTable(string[] Headers, List<object?[]> Rows);
+
+    private sealed class LatoFontResolver : IFontResolver
+    {
+        private const string FaceName = "Lato-Regular";
+        private static readonly byte[] FontBytes = LoadFont();
+
+        public FontResolverInfo? ResolveTypeface(string familyName, bool bold, bool italic) =>
+            familyName == "Lato" ? new FontResolverInfo(FaceName, bold, italic) : null;
+
+        public byte[]? GetFont(string faceName) => faceName == FaceName ? FontBytes : null;
+
+        private static byte[] LoadFont()
+        {
+            using var stream = typeof(OrderReportGenerator).Assembly.GetManifestResourceStream(
+                "Payment.Infrastructure.Fonts.Lato-Regular.ttf")
+                ?? throw new InvalidOperationException("The report font is missing.");
+            using var buffer = new MemoryStream();
+            stream.CopyTo(buffer);
+            return buffer.ToArray();
+        }
     }
 }

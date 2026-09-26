@@ -59,7 +59,7 @@ public class UploadMultipleFilesCommandHandler(
                 "Failed to persist {Count} uploaded file records to database. Rolling back blob storage.",
                 successfulFiles.Count);
 
-            await RollbackUploadedBlobsAsync(successfulFiles, cancellationToken);
+            await RollbackUploadedBlobsAsync(successfulFiles);
 
             throw;
         }
@@ -126,6 +126,10 @@ public class UploadMultipleFilesCommandHandler(
                 request.OwnerId,
                 provider);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to upload file {FileName} at index {Index}", file.FileName, index);
@@ -141,15 +145,22 @@ public class UploadMultipleFilesCommandHandler(
     }
 
     private async Task RollbackUploadedBlobsAsync(
-        IEnumerable<StoredFile> uploadedFiles,
-        CancellationToken cancellationToken)
+        IEnumerable<StoredFile> uploadedFiles)
     {
         foreach (var file in uploadedFiles)
         {
-            var deleted = await fileStorageService.DeleteAsync(file.StoredFileName, cancellationToken);
-            if (!deleted)
+            try
             {
-                logger.LogWarning(
+                if (!await fileStorageService.DeleteAsync(file.StoredFileName, CancellationToken.None))
+                {
+                    logger.LogWarning(
+                        "Failed to roll back blob '{StoredFileName}' after DB commit failure. Manual cleanup required.",
+                        file.StoredFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex,
                     "Failed to roll back blob '{StoredFileName}' after DB commit failure. Manual cleanup required.",
                     file.StoredFileName);
             }

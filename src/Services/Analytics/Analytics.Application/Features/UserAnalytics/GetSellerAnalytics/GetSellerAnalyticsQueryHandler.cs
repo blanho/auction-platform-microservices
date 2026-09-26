@@ -19,15 +19,9 @@ public class GetSellerAnalyticsQueryHandler : IRequestHandler<GetSellerAnalytics
         var (startDate, endDate) = AnalyticsHelper.GetDateRange(request.TimeRange);
         var (previousStartDate, previousEndDate) = AnalyticsHelper.GetPreviousPeriod(startDate, endDate);
 
-        var currentStatsTask = _auctionRepository.GetSellerAnalyticsAsync(request.Username, startDate, endDate, cancellationToken);
-        var previousStatsTask = _auctionRepository.GetSellerAnalyticsAsync(request.Username, previousStartDate, previousEndDate, cancellationToken);
-        var topListingsTask = _auctionRepository.GetTopListingsAsync(request.Username, 5, cancellationToken);
-
-        await Task.WhenAll(currentStatsTask, previousStatsTask, topListingsTask);
-
-        var currentStats = await currentStatsTask;
-        var previousStats = await previousStatsTask;
-        var topListings = await topListingsTask;
+        var currentStats = await _auctionRepository.GetSellerAnalyticsAsync(request.Username, startDate, endDate, cancellationToken);
+        var previousStats = await _auctionRepository.GetSellerAnalyticsAsync(request.Username, previousStartDate, previousEndDate, cancellationToken);
+        var topListings = await _auctionRepository.GetTopListingsAsync(request.Username, 5, cancellationToken);
 
         var revenueChange = AnalyticsHelper.CalculatePercentageChange(previousStats.TotalRevenue, currentStats.TotalRevenue);
         var itemsSoldChange = AnalyticsHelper.CalculatePercentageChange(previousStats.CompletedAuctions, currentStats.CompletedAuctions);

@@ -23,17 +23,10 @@ public class GetPlatformAnalyticsQueryHandler : IRequestHandler<GetPlatformAnaly
         var startDate = request.Query.StartDate ?? DateTimeOffset.UtcNow.AddDays(-AnalyticsDefaults.DefaultDays);
         var endDate = request.Query.EndDate ?? DateTimeOffset.UtcNow;
 
-        var auctionTask = _auctionRepository.GetAuctionMetricsAsync(startDate, endDate, cancellationToken);
-        var bidTask = _bidRepository.GetBidMetricsAsync(startDate, endDate, cancellationToken);
-        var revenueTask = _paymentRepository.GetRevenueMetricsAsync(startDate, endDate, cancellationToken);
-        var categoryTask = _auctionRepository.GetCategoryPerformanceAsync(startDate, endDate, cancellationToken);
-
-        await Task.WhenAll(auctionTask, bidTask, revenueTask, categoryTask);
-
-        var auctionMetrics = await auctionTask;
-        var bidMetrics = await bidTask;
-        var revenueMetrics = await revenueTask;
-        var categoryPerformance = await categoryTask;
+        var auctionMetrics = await _auctionRepository.GetAuctionMetricsAsync(startDate, endDate, cancellationToken);
+        var bidMetrics = await _bidRepository.GetBidMetricsAsync(startDate, endDate, cancellationToken);
+        var revenueMetrics = await _paymentRepository.GetRevenueMetricsAsync(startDate, endDate, cancellationToken);
+        var categoryPerformance = await _auctionRepository.GetCategoryPerformanceAsync(startDate, endDate, cancellationToken);
 
         return new PlatformAnalyticsDto
         {

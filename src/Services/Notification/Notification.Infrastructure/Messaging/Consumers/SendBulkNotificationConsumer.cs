@@ -26,6 +26,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
     private readonly INotificationHubService _hubService;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<SendBulkNotificationConsumer> _logger;
+    private readonly SemaphoreSlim _persistenceLock = new(1, 1);
 
     public SendBulkNotificationConsumer(
         IIdempotencyService idempotency,
@@ -338,8 +339,16 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
     private async Task PersistNotificationRecordAsync(NotificationRecord record, CancellationToken cancellationToken)
     {
-        await _recordRepo.AddRecordAsync(record, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _persistenceLock.WaitAsync(cancellationToken);
+        try
+        {
+            await _recordRepo.AddRecordAsync(record, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            _persistenceLock.Release();
+        }
     }
 
     private static string RenderTemplate(string? template, Dictionary<string, string> parameters)

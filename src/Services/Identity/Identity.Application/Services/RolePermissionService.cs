@@ -48,11 +48,7 @@ public class RolePermissionService : IRolePermissionService
         if (role is null)
             return null;
 
-        var permissions = await _context.RolePermissionStrings
-            .AsNoTracking()
-            .Where(p => p.RoleId == roleId && p.IsEnabled)
-            .Select(p => p.PermissionCode)
-            .ToListAsync(cancellationToken);
+        var permissions = await GetEnabledPermissionCodesAsync(roleId, cancellationToken);
 
         return new RoleDto(role.Id, role.Name, role.Description, role.IsSystemRole, permissions);
     }
@@ -66,18 +62,19 @@ public class RolePermissionService : IRolePermissionService
         if (role is null)
             return null;
 
-        var permissions = await _context.RolePermissionStrings
-            .AsNoTracking()
-            .Where(p => p.RoleId == role.Id && p.IsEnabled)
-            .Select(p => p.PermissionCode)
-            .ToListAsync(cancellationToken);
+        var permissions = await GetEnabledPermissionCodesAsync(role.Id, cancellationToken);
 
         return new RoleDto(role.Id, role.Name, role.Description, role.IsSystemRole, permissions);
     }
 
     public async Task<IReadOnlyList<string>> GetPermissionsForRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await _context.RolePermissionStrings
+        return await GetEnabledPermissionCodesAsync(roleId, cancellationToken);
+    }
+
+    private Task<List<string>> GetEnabledPermissionCodesAsync(Guid roleId, CancellationToken cancellationToken)
+    {
+        return _context.RolePermissionStrings
             .AsNoTracking()
             .Where(p => p.RoleId == roleId && p.IsEnabled)
             .Select(p => p.PermissionCode)

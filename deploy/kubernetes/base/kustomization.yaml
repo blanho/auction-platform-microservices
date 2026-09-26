@@ -10,6 +10,7 @@ resources:
   - rbac.yaml
   - configmap.yaml
   - secrets.yaml
+  - report-storage-secret.yaml
   - services/auction-api.yaml
   - services/bidding-api.yaml
   - services/payment-api.yaml

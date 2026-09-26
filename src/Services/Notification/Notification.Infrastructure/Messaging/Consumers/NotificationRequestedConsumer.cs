@@ -20,6 +20,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
     private readonly IPushSender _pushSender;
     private readonly INotificationHubService _hubService;
     private readonly ILogger<NotificationRequestedConsumer> _logger;
+    private readonly SemaphoreSlim _persistenceLock = new(1, 1);
 
     public NotificationRequestedConsumer(
         IIdempotencyService idempotency,
@@ -151,8 +152,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         }
         finally
         {
-            await _recordRepo.AddRecordAsync(record, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            await PersistRecordAsync(record, ct);
         }
     }
 
@@ -204,8 +204,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         }
         finally
         {
-            await _recordRepo.AddRecordAsync(record, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            await PersistRecordAsync(record, ct);
         }
     }
 
@@ -257,8 +256,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
         }
         finally
         {
-            await _recordRepo.AddRecordAsync(record, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
+            await PersistRecordAsync(record, ct);
         }
     }
 
@@ -287,8 +285,16 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
             StripHtml(body),
             message.InAppLink);
 
-        await _recordRepo.AddUserNotificationAsync(notification, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+        await _persistenceLock.WaitAsync(ct);
+        try
+        {
+            await _recordRepo.AddUserNotificationAsync(notification, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+        finally
+        {
+            _persistenceLock.Release();
+        }
         await _idempotency.MarkAsProcessedAsync(message.EventId, channel, notification.Id.ToString(), ct: ct);
 
         try
@@ -312,6 +318,20 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
 
     private static string RenderTemplate(string template, Dictionary<string, string> data)
         => TemplateHelper.RenderTemplate(template, data);
+
+    private async Task PersistRecordAsync(NotificationRecord record, CancellationToken cancellationToken)
+    {
+        await _persistenceLock.WaitAsync(cancellationToken);
+        try
+        {
+            await _recordRepo.AddRecordAsync(record, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            _persistenceLock.Release();
+        }
+    }
 
     private static string StripHtml(string html)
         => TemplateHelper.StripHtml(html);

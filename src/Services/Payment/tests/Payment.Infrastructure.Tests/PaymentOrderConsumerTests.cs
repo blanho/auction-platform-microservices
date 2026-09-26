@@ -185,6 +185,7 @@ public sealed class PaymentOrderConsumerTests
         public Task<int> GetCountByBuyerUsernameAsync(string username) => throw new NotSupportedException();
         public Task<int> GetCountBySellerUsernameAsync(string username) => throw new NotSupportedException();
         public Task<PaginatedResult<Order>> GetAllAsync(OrderQueryParams queryParams, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task<List<Order>> GetForReportAsync(OrderReportParameters parameters, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<RevenueStatsDto> GetRevenueStatsAsync(DateTimeOffset? startDate, DateTimeOffset? endDate, CancellationToken cancellationToken = default) => throw new NotSupportedException();
         public Task<List<DailyRevenueStatDto>> GetDailyRevenueAsync(int days, CancellationToken cancellationToken = default) => throw new NotSupportedException();

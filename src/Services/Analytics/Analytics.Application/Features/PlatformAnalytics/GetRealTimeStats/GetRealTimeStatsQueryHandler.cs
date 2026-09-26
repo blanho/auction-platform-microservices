@@ -17,15 +17,13 @@ public class GetRealTimeStatsQueryHandler : IRequestHandler<GetRealTimeStatsQuer
 
     public async Task<RealTimeStatsDto> Handle(GetRealTimeStatsQuery request, CancellationToken cancellationToken)
     {
-        var liveAuctionsTask = _auctionRepository.GetLiveAuctionsCountAsync(cancellationToken);
-        var bidsLastHourTask = _bidRepository.GetBidsInLastHourAsync(cancellationToken);
-
-        await Task.WhenAll(liveAuctionsTask, bidsLastHourTask);
+        var liveAuctions = await _auctionRepository.GetLiveAuctionsCountAsync(cancellationToken);
+        var bidsLastHour = await _bidRepository.GetBidsInLastHourAsync(cancellationToken);
 
         return new RealTimeStatsDto
         {
-            ActiveAuctions = await liveAuctionsTask,
-            BidsLastHour = await bidsLastHourTask
+            ActiveAuctions = liveAuctions,
+            BidsLastHour = bidsLastHour
         };
     }
 }
