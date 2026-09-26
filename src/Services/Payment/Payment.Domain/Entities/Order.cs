@@ -76,6 +76,7 @@ public class Order : AggregateRoot
 
         var totalAmount = winningBid + (shippingCost ?? 0);
 
+        var createdAt = DateTimeOffset.UtcNow;
         var order = new Order
         {
             Id = Guid.NewGuid(),
@@ -93,7 +94,8 @@ public class Order : AggregateRoot
             BuyerNotes = buyerNotes,
             Status = OrderStatus.PaymentPending,
             PaymentStatus = PaymentStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt
         };
 
         order.AddDomainEvent(new OrderCreatedDomainEvent

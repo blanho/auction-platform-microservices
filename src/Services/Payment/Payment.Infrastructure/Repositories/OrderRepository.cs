@@ -167,20 +167,27 @@ public class OrderRepository : IOrderRepository
     {
         var startDate = DateTimeOffset.UtcNow.AddDays(-days);
 
-        var dailyStats = await _context.Orders
+        var dailyTotals = await _context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => o.PaidAt!.Value.Date)
-            .Select(g => new DailyRevenueStatDto(
-                DateOnly.FromDateTime(g.Key),
-                g.Sum(o => o.TotalAmount),
-                g.Sum(o => o.PlatformFee ?? 0),
-                g.Count()
-            ))
-            .OrderBy(s => s.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Revenue = g.Sum(o => o.TotalAmount),
+                PlatformFees = g.Sum(o => o.PlatformFee ?? 0),
+                OrderCount = g.Count()
+            })
+            .OrderBy(stat => stat.Date)
             .ToListAsync(cancellationToken);
 
-        return dailyStats;
+        return dailyTotals
+            .Select(stat => new DailyRevenueStatDto(
+                DateOnly.FromDateTime(stat.Date),
+                stat.Revenue,
+                stat.PlatformFees,
+                stat.OrderCount))
+            .ToList();
     }
 
     public async Task<List<TopSellerDto>> GetTopSellersAsync(int limit, string period, CancellationToken cancellationToken = default)
@@ -191,18 +198,25 @@ public class OrderRepository : IOrderRepository
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.SellerId, o.SellerUsername })
-            .Select(g => new TopSellerDto(
+            .Select(g => new
+            {
                 g.Key.SellerId,
                 g.Key.SellerUsername,
-                g.Sum(o => o.TotalAmount),
-                g.Count(),
-                g.Sum(o => o.TotalAmount) / g.Count()
-            ))
-            .OrderByDescending(s => s.TotalSales)
+                TotalSales = g.Sum(o => o.TotalAmount),
+                OrderCount = g.Count()
+            })
+            .OrderByDescending(seller => seller.TotalSales)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        return topSellers;
+        return topSellers
+            .Select(seller => new TopSellerDto(
+                seller.SellerId,
+                seller.SellerUsername,
+                seller.TotalSales,
+                seller.OrderCount,
+                seller.TotalSales / seller.OrderCount))
+            .ToList();
     }
 
     public async Task<List<TopBuyerDto>> GetTopBuyersAsync(int limit, string period, CancellationToken cancellationToken = default)
@@ -213,17 +227,24 @@ public class OrderRepository : IOrderRepository
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.BuyerId, o.BuyerUsername })
-            .Select(g => new TopBuyerDto(
+            .Select(g => new
+            {
                 g.Key.BuyerId,
                 g.Key.BuyerUsername,
-                g.Sum(o => o.TotalAmount),
-                g.Count()
-            ))
-            .OrderByDescending(b => b.TotalSpent)
+                TotalSpent = g.Sum(o => o.TotalAmount),
+                OrderCount = g.Count()
+            })
+            .OrderByDescending(buyer => buyer.TotalSpent)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        return topBuyers;
+        return topBuyers
+            .Select(buyer => new TopBuyerDto(
+                buyer.BuyerId,
+                buyer.BuyerUsername,
+                buyer.TotalSpent,
+                buyer.OrderCount))
+            .ToList();
     }
 
     public async Task<PaginatedResult<Order>> GetAllAsync(
