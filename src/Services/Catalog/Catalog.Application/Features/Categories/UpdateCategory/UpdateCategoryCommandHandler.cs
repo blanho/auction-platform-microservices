@@ -32,22 +32,9 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         if (category.IsActive && !request.IsActive && await _categoryRepository.HasChildrenAsync(request.Id, cancellationToken))
             return Result.Failure<CategoryDto>(CatalogErrors.Category.HasChildren);
 
-        var visited = new HashSet<Guid> { request.Id };
-        var parentId = request.ParentCategoryId;
-        while (parentId.HasValue)
-        {
-            if (!visited.Add(parentId.Value))
-                return Result.Failure<CategoryDto>(CatalogErrors.Category.CannotBeOwnParent);
-
-            var parent = await _categoryRepository.GetByIdAsync(parentId.Value, cancellationToken);
-            if (parent is null)
-                return Result.Failure<CategoryDto>(CatalogErrors.Category.ParentNotFound);
-
-            if (request.IsActive && !parent.IsActive)
-                return Result.Failure<CategoryDto>(CatalogErrors.Category.ParentInactive);
-
-            parentId = parent.ParentCategoryId;
-        }
+        var hierarchyError = await ValidateParentHierarchyAsync(request, cancellationToken);
+        if (hierarchyError is not null)
+            return Result.Failure<CategoryDto>(hierarchyError);
 
         var slug = SlugHelper.GenerateSlug(request.Slug ?? request.Name);
         var slugExists = await _categoryRepository.SlugExistsAsync(slug, excludeId: request.Id, cancellationToken: cancellationToken);
@@ -61,5 +48,29 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         _logger.LogInformation("Category {CategoryId} updated", category.Id);
 
         return Result.Success(_mapper.Map<CategoryDto>(category));
+    }
+
+    private async Task<Error?> ValidateParentHierarchyAsync(
+        UpdateCategoryCommand request,
+        CancellationToken cancellationToken)
+    {
+        var visited = new HashSet<Guid> { request.Id };
+        var parentId = request.ParentCategoryId;
+        while (parentId.HasValue)
+        {
+            if (!visited.Add(parentId.Value))
+                return CatalogErrors.Category.CannotBeOwnParent;
+
+            var parent = await _categoryRepository.GetByIdAsync(parentId.Value, cancellationToken);
+            if (parent is null)
+                return CatalogErrors.Category.ParentNotFound;
+
+            if (request.IsActive && !parent.IsActive)
+                return CatalogErrors.Category.ParentInactive;
+
+            parentId = parent.ParentCategoryId;
+        }
+
+        return null;
     }
 }

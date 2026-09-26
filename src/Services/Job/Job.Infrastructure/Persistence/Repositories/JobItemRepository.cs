@@ -115,19 +115,22 @@ public class JobItemRepository : IJobItemRepository
 
             if (batch.Count >= JobDefaults.Persistence.BulkInsertBatchSize)
             {
-                await _context.JobItems.AddRangeAsync(batch, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-                _context.ChangeTracker.Clear();
+                await PersistBatchAsync(batch, cancellationToken);
                 batch.Clear();
             }
         }
 
         if (batch.Count > 0)
         {
-            await _context.JobItems.AddRangeAsync(batch, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
-            _context.ChangeTracker.Clear();
+            await PersistBatchAsync(batch, cancellationToken);
         }
+    }
+
+    private async Task PersistBatchAsync(List<JobItem> batch, CancellationToken cancellationToken)
+    {
+        await _context.JobItems.AddRangeAsync(batch, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        _context.ChangeTracker.Clear();
     }
 
     public async Task<List<JobItem>> GetByIdsForUpdateAsync(

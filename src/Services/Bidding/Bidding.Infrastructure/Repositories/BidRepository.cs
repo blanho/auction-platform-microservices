@@ -80,13 +80,14 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<IEnumerable<Bid>> AddRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
         {
+            var batch = bids as IList<Bid> ?? bids.ToList();
             var utcNow = _dateTime.UtcNow;
-            foreach (var bid in bids)
+            foreach (var bid in batch)
             {
                 bid.SetCreatedAudit(_auditContext.UserId, utcNow);
             }
-            await _context.Bids.AddRangeAsync(bids, cancellationToken);
-            return bids;
+            await _context.Bids.AddRangeAsync(batch, cancellationToken);
+            return batch;
         }
 
         public Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
@@ -98,12 +99,13 @@ namespace Bidding.Infrastructure.Repositories
 
         public Task UpdateRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
         {
+            var batch = bids as IList<Bid> ?? bids.ToList();
             var utcNow = _dateTime.UtcNow;
-            foreach (var bid in bids)
+            foreach (var bid in batch)
             {
                 bid.SetUpdatedAudit(_auditContext.UserId, utcNow);
             }
-            _context.Bids.UpdateRange(bids);
+            _context.Bids.UpdateRange(batch);
             return Task.CompletedTask;
         }
 
@@ -300,20 +302,12 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var count = await _context.Bids
+            var acceptedBids = _context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
-                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
-                .GroupBy(x => x.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
-                .Where(b => !_context.Bids.Any(ob =>
-                    !ob.IsDeleted &&
-                    ob.AuctionId == b.AuctionId &&
-                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))))
-                .CountAsync(cancellationToken);
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve));
 
-            return count;
+            return await SelectWinningBids(acceptedBids).CountAsync(cancellationToken);
         }
 
         public async Task<UserBidStatsDto> GetUserBidStatsAsync(string username, CancellationToken cancellationToken = default)
@@ -324,15 +318,9 @@ namespace Bidding.Infrastructure.Repositories
             var activeBids = await query.CountAsync(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve, cancellationToken);
             var totalAmountBid = await query.SumAsync(b => b.Amount, cancellationToken);
 
-            var winningBidsQuery = query
-                .Where(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve)
-                .GroupBy(b => b.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
-                .Where(b => !_context.Bids.Any(ob =>
-                    !ob.IsDeleted &&
-                    ob.AuctionId == b.AuctionId &&
-                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))));
+            var acceptedBids = query
+                .Where(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve);
+            var winningBidsQuery = SelectWinningBids(acceptedBids);
 
             var auctionsWon = await winningBidsQuery.CountAsync(cancellationToken);
             var totalAmountWon = await winningBidsQuery.SumAsync(b => b.Amount, cancellationToken);
@@ -344,6 +332,18 @@ namespace Bidding.Infrastructure.Repositories
                 totalAmountBid,
                 totalAmountWon
             );
+        }
+
+        private IQueryable<Bid> SelectWinningBids(IQueryable<Bid> acceptedBids)
+        {
+            return acceptedBids
+                .GroupBy(bid => bid.AuctionId)
+                .Select(group => group.OrderByDescending(bid => bid.Amount).ThenBy(bid => bid.BidTime).First())
+                .Where(bid => !_context.Bids.Any(other =>
+                    !other.IsDeleted &&
+                    other.AuctionId == bid.AuctionId &&
+                    (other.Status == BidStatus.Accepted || other.Status == BidStatus.AcceptedBelowReserve) &&
+                    (other.Amount > bid.Amount || (other.Amount == bid.Amount && other.BidTime < bid.BidTime))));
         }
 
         public async Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default)
@@ -422,17 +422,11 @@ namespace Bidding.Infrastructure.Repositories
         {
             var filter = queryParams.Filter;
 
-            var baseQuery = _context.Bids
+            var acceptedBids = _context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
-                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
-                .GroupBy(x => x.AuctionId)
-                .Select(g => g.OrderByDescending(b => b.Amount).ThenBy(b => b.BidTime).First())
-                .Where(b => !_context.Bids.Any(ob =>
-                    !ob.IsDeleted &&
-                    ob.AuctionId == b.AuctionId &&
-                    (ob.Status == BidStatus.Accepted || ob.Status == BidStatus.AcceptedBelowReserve) &&
-                    (ob.Amount > b.Amount || (ob.Amount == b.Amount && ob.BidTime < b.BidTime))));
+                    (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve));
+            var baseQuery = SelectWinningBids(acceptedBids);
 
             if (filter.AuctionId.HasValue)
             {

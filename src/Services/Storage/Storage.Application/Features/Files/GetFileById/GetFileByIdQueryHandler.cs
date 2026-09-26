@@ -2,6 +2,7 @@ using BuildingBlocks.Application.CQRS.Queries;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Application.Features.Files.GetFileById;
 
@@ -16,7 +17,7 @@ public class GetFileByIdQueryHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null)
+        if (file is null || file.SubFolder == ReportStorageContract.PrivateFolder)
         {
             return Result.Failure<StoredFileDto>(StorageErrors.FileNotFound(request.FileId));
         }

@@ -80,13 +80,14 @@ public class AutoBidRepository : IAutoBidRepository
 
     public async Task<IEnumerable<AutoBid>> AddRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
     {
+        var batch = autoBids as IList<AutoBid> ?? autoBids.ToList();
         var utcNow = _dateTime.UtcNow;
-        foreach (var autoBid in autoBids)
+        foreach (var autoBid in batch)
         {
             autoBid.SetCreatedAudit(autoBid.UserId, utcNow);
         }
-        await _context.AutoBids.AddRangeAsync(autoBids, cancellationToken);
-        return autoBids;
+        await _context.AutoBids.AddRangeAsync(batch, cancellationToken);
+        return batch;
     }
 
     async Task IBatchRepository<AutoBid>.AddRangeAsync(IEnumerable<AutoBid> entities, CancellationToken cancellationToken)
@@ -103,12 +104,13 @@ public class AutoBidRepository : IAutoBidRepository
 
     public Task UpdateRangeAsync(IEnumerable<AutoBid> autoBids, CancellationToken cancellationToken = default)
     {
+        var batch = autoBids as IList<AutoBid> ?? autoBids.ToList();
         var utcNow = _dateTime.UtcNow;
-        foreach (var autoBid in autoBids)
+        foreach (var autoBid in batch)
         {
             autoBid.SetUpdatedAudit(autoBid.UserId, utcNow);
         }
-        _context.AutoBids.UpdateRange(autoBids);
+        _context.AutoBids.UpdateRange(batch);
         return Task.CompletedTask;
     }
 

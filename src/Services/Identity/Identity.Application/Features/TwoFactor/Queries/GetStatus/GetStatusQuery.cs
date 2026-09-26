@@ -19,16 +19,10 @@ public class GetStatusQueryHandler(
         if (user == null)
             return Result.Failure<TwoFactorStatusResponse>(IdentityErrors.User.NotFound);
 
-        var isEnabledTask = userManager.GetTwoFactorEnabledAsync(user);
-        var authenticatorKeyTask = userManager.GetAuthenticatorKeyAsync(user);
-        var recoveryCodesTask = userManager.CountRecoveryCodesAsync(user);
-        var isMachineRememberedTask = signInManager.IsTwoFactorClientRememberedAsync(user);
-
-        await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask, isMachineRememberedTask);
-        var isEnabled = await isEnabledTask;
-        var authenticatorKey = await authenticatorKeyTask;
-        var recoveryCodes = await recoveryCodesTask;
-        var isMachineRemembered = await isMachineRememberedTask;
+        var isEnabled = await userManager.GetTwoFactorEnabledAsync(user);
+        var authenticatorKey = await userManager.GetAuthenticatorKeyAsync(user);
+        var recoveryCodes = await userManager.CountRecoveryCodesAsync(user);
+        var isMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user);
 
         return Result.Success(new TwoFactorStatusResponse
         {

@@ -15,15 +15,18 @@ namespace Payment.Infrastructure.Messaging.Consumers;
 public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
 {
     private readonly IOrderReportGenerator _reportGenerator;
+    private readonly IReportStorageClient _reportStorageClient;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<GenerateOrderReportConsumer> _logger;
 
     public GenerateOrderReportConsumer(
         IOrderReportGenerator reportGenerator,
+        IReportStorageClient reportStorageClient,
         IPublishEndpoint publishEndpoint,
         ILogger<GenerateOrderReportConsumer> logger)
     {
         _reportGenerator = reportGenerator;
+        _reportStorageClient = reportStorageClient;
         _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
@@ -68,6 +71,9 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
 
         if (result.Success)
         {
+            var downloadUrl = await _reportStorageClient.StoreAsync(
+                result, message.RequestedBy, context.CancellationToken);
+
             _logger.LogInformation(
                 "Order report generation completed {CorrelationId} - Records: {TotalRecords}, Size: {FileSizeBytes} bytes, Duration: {Duration}ms",
                 correlationId, result.TotalRecords, result.FileSizeBytes, stopwatch.ElapsedMilliseconds);
@@ -79,7 +85,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
                 FailedCount = 0
             });
 
-            await PublishCompletionEvent(context, message, stopwatch.Elapsed, result);
+            await PublishCompletionEvent(context, message, stopwatch.Elapsed, result, downloadUrl);
         }
         else
         {
@@ -117,7 +123,8 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
         ConsumeContext<GenerateOrderReportCommand> context,
         GenerateOrderReportCommand message,
         TimeSpan duration,
-        OrderReportResult result)
+        OrderReportResult result,
+        string downloadUrl)
     {
         await context.Publish(new OrderReportGeneratedEvent
         {
@@ -129,7 +136,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             FileName = result.FileName,
             ContentType = result.ContentType,
             FileSizeBytes = result.FileSizeBytes,
-            DownloadUrl = string.Empty,
+            DownloadUrl = downloadUrl,
             Duration = duration,
             CompletedAt = DateTimeOffset.UtcNow
         });

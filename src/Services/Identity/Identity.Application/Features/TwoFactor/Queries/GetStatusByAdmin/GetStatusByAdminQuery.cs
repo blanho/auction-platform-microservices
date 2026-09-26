@@ -18,14 +18,9 @@ public class GetStatusByAdminQueryHandler(
         if (user == null)
             return Result.Failure<TwoFactorStatusResponse>(IdentityErrors.User.NotFound);
 
-        var isEnabledTask = userManager.GetTwoFactorEnabledAsync(user);
-        var authenticatorKeyTask = userManager.GetAuthenticatorKeyAsync(user);
-        var recoveryCodesTask = userManager.CountRecoveryCodesAsync(user);
-
-        await Task.WhenAll(isEnabledTask, authenticatorKeyTask, recoveryCodesTask);
-        var isEnabled = await isEnabledTask;
-        var authenticatorKey = await authenticatorKeyTask;
-        var recoveryCodes = await recoveryCodesTask;
+        var isEnabled = await userManager.GetTwoFactorEnabledAsync(user);
+        var authenticatorKey = await userManager.GetAuthenticatorKeyAsync(user);
+        var recoveryCodes = await userManager.CountRecoveryCodesAsync(user);
 
         return Result.Success(new TwoFactorStatusResponse
         {

@@ -114,15 +114,9 @@ public class DailyStatsRepository : IDailyStatsRepository
         DateOnly? endDate,
         CancellationToken cancellationToken = default)
     {
-        var auctionStatsTask = GetDailyAuctionStatsAsync(startDate, endDate, cancellationToken);
-        var bidStatsTask = GetDailyBidStatsAsync(startDate, endDate, cancellationToken);
-        var revenueStatsTask = GetDailyRevenueStatsAsync(startDate, endDate, cancellationToken);
-
-        await Task.WhenAll(auctionStatsTask, bidStatsTask, revenueStatsTask);
-
-        var auctionStats = await auctionStatsTask;
-        var bidStats = await bidStatsTask;
-        var revenueStats = await revenueStatsTask;
+        var auctionStats = await GetDailyAuctionStatsAsync(startDate, endDate, cancellationToken);
+        var bidStats = await GetDailyBidStatsAsync(startDate, endDate, cancellationToken);
+        var revenueStats = await GetDailyRevenueStatsAsync(startDate, endDate, cancellationToken);
 
         return new AggregatedDailyStatsDto
         {

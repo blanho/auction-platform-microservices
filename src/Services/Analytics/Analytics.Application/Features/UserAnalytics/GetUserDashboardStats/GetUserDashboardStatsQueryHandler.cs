@@ -17,15 +17,9 @@ public class GetUserDashboardStatsQueryHandler : IRequestHandler<GetUserDashboar
 
     public async Task<UserDashboardStatsDto> Handle(GetUserDashboardStatsQuery request, CancellationToken cancellationToken)
     {
-        var auctionStatsTask = _auctionRepository.GetUserAuctionStatsAsync(request.Username, cancellationToken);
-        var bidStatsTask = _bidRepository.GetUserBidStatsAsync(request.Username, cancellationToken);
-        var recentActivityTask = _auctionRepository.GetRecentActivityAsync(request.Username, 10, cancellationToken);
-
-        await Task.WhenAll(auctionStatsTask, bidStatsTask, recentActivityTask);
-
-        var auctionStats = await auctionStatsTask;
-        var bidStats = await bidStatsTask;
-        var recentActivity = await recentActivityTask;
+        var auctionStats = await _auctionRepository.GetUserAuctionStatsAsync(request.Username, cancellationToken);
+        var bidStats = await _bidRepository.GetUserBidStatsAsync(request.Username, cancellationToken);
+        var recentActivity = await _auctionRepository.GetRecentActivityAsync(request.Username, 10, cancellationToken);
 
         return new UserDashboardStatsDto
         {

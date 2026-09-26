@@ -168,16 +168,17 @@ public class FileEndpoints : ICarterModule
         var streams = new List<Stream>();
         try
         {
-            var fileItems = files.Select(f =>
+            var fileItems = new List<UploadFileItem>(files.Count);
+            foreach (var file in files)
             {
-                var stream = f.OpenReadStream();
+                var stream = file.OpenReadStream();
                 streams.Add(stream);
-                return new UploadFileItem(
+                fileItems.Add(new UploadFileItem(
                     stream,
-                    f.FileName,
-                    f.ContentType,
-                    f.Length);
-            }).ToList();
+                    file.FileName,
+                    file.ContentType,
+                    file.Length));
+            }
 
             var command = new UploadMultipleFilesCommand(fileItems, subFolder, ownerId);
             var result = await sender.Send(command, cancellationToken);

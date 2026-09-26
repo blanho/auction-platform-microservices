@@ -133,7 +133,9 @@ public class OrderRepository : IOrderRepository
         if (endDate.HasValue)
             query = query.Where(o => o.CreatedAt <= endDate.Value);
 
-        var allOrders = await query.ToListAsync(cancellationToken);
+        var allOrders = await query
+            .Select(o => new { o.PaymentStatus, o.TotalAmount, o.PlatformFee, o.PaidAt })
+            .ToListAsync(cancellationToken);
 
         var completedOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Completed).ToList();
         var pendingOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Pending).ToList();
@@ -245,10 +247,33 @@ public class OrderRepository : IOrderRepository
         return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
+    public Task<List<Order>> GetForReportAsync(
+        OrderReportParameters parameters,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Orders.AsNoTracking();
+
+        if (parameters.StatusFilter.HasValue)
+            query = query.Where(order => order.Status == parameters.StatusFilter.Value);
+        if (parameters.StartDate.HasValue)
+            query = query.Where(order => order.CreatedAt >= new DateTimeOffset(parameters.StartDate.Value.DateTime, TimeSpan.Zero));
+        if (parameters.EndDate.HasValue)
+            query = query.Where(order => order.CreatedAt <= new DateTimeOffset(parameters.EndDate.Value.DateTime, TimeSpan.Zero));
+        if (parameters.BuyerIdFilter.HasValue)
+            query = query.Where(order => order.BuyerId == parameters.BuyerIdFilter.Value);
+        if (parameters.SellerIdFilter.HasValue)
+            query = query.Where(order => order.SellerId == parameters.SellerIdFilter.Value);
+
+        return query.OrderByDescending(order => order.CreatedAt)
+            .ThenBy(order => order.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
     {
         var orders = await _context.Orders
             .AsNoTracking()
+            .Select(o => new { o.Status, o.PaymentStatus, o.TotalAmount })
             .ToListAsync(cancellationToken);
 
         var totalRevenue = orders.Where(o => o.PaymentStatus == PaymentStatus.Completed).Sum(o => o.TotalAmount);

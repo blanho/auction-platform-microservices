@@ -64,7 +64,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
         var failedCount = 0;
         var pendingChanges = 0;
 
-        var idBatches = ChunkList(message.AuctionIds, AuctionDefaults.Batch.FetchBatchSize);
+        var idBatches = message.AuctionIds.Chunk(AuctionDefaults.Batch.FetchBatchSize).ToList();
 
         foreach (var idBatch in idBatches)
         {
@@ -163,25 +163,13 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
                 return true;
             }
         }
-        else
+        else if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
         {
-            if (auction.Status == Status.Live || auction.Status == Status.Scheduled)
-            {
-                auction.ChangeStatus(Status.Inactive);
-                return true;
-            }
+            auction.ChangeStatus(Status.Inactive);
+            return true;
         }
 
         return false;
     }
 
-    private static List<List<T>> ChunkList<T>(IReadOnlyList<T> source, int chunkSize)
-    {
-        var chunks = new List<List<T>>();
-        for (var i = 0; i < source.Count; i += chunkSize)
-        {
-            chunks.Add(source.Skip(i).Take(Math.Min(chunkSize, source.Count - i)).ToList());
-        }
-        return chunks;
-    }
 }

@@ -5,6 +5,7 @@ using Storage.Application.DTOs.Audit;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
 using Storage.Domain.Entities;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Application.Features.Files.DeleteFile;
 
@@ -22,7 +23,7 @@ public class DeleteFileCommandHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null)
+        if (file is null || file.SubFolder == ReportStorageContract.PrivateFolder)
         {
             return Result.Failure(StorageErrors.FileNotFound(request.FileId));
         }

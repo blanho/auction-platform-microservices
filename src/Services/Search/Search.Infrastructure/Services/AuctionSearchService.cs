@@ -292,18 +292,27 @@ public class AuctionSearchService : IAuctionSearchService
 
     private static ICollection<SortOptions> BuildSortOptions(string? sortBy, string? sortDirection)
     {
-        var direction = ParseSortDirection(sortDirection);
-        var sortField = MapSortFieldName(sortBy);
-
-        return IsRelevanceSort(sortField)
-            ? BuildRelevanceSortOptions()
-            : BuildFieldSortOptions(sortField, direction);
-    }
-
-    private static SortOrder ParseSortDirection(string? sortDirection) =>
-        sortDirection?.ToLowerInvariant() == SortDirections.Ascending
+        var direction = sortDirection?.ToLowerInvariant() == SortDirections.Ascending
             ? SortOrder.Asc
             : SortOrder.Desc;
+        var sortField = MapSortFieldName(sortBy);
+
+        if (sortField == ElasticsearchFields.ScoreField)
+        {
+            return new List<SortOptions>
+            {
+                SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
+                SortOptions.Field(new Field(ElasticsearchFields.CreatedAt), new FieldSort { Order = SortOrder.Desc }),
+                SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
+            };
+        }
+
+        return new List<SortOptions>
+        {
+            SortOptions.Field(new Field(sortField), new FieldSort { Order = direction }),
+            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
+        };
+    }
 
     private static string MapSortFieldName(string? sortBy) =>
         sortBy?.ToLowerInvariant() switch
@@ -314,23 +323,4 @@ public class AuctionSearchService : IAuctionSearchService
             SortFields.Created => ElasticsearchFields.CreatedAt,
             _ => ElasticsearchFields.ScoreField
         };
-
-    private static bool IsRelevanceSort(string sortField) =>
-        sortField == ElasticsearchFields.ScoreField;
-
-    private static List<SortOptions> BuildRelevanceSortOptions() =>
-        new()
-        {
-            SortOptions.Score(new ScoreSort { Order = SortOrder.Desc }),
-            SortOptions.Field(new Field(ElasticsearchFields.CreatedAt), new FieldSort { Order = SortOrder.Desc }),
-            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
-        };
-
-    private static List<SortOptions> BuildFieldSortOptions(string sortField, SortOrder direction) =>
-        new()
-        {
-            SortOptions.Field(new Field(sortField), new FieldSort { Order = direction }),
-            SortOptions.Field(new Field(ElasticsearchFields.Id), new FieldSort { Order = SortOrder.Asc })
-        };
-
 }

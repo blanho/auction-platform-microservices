@@ -8,8 +8,6 @@ namespace Auctions.Infrastructure.Persistence.Repositories;
 
 public class AuctionBulkRepository : IAuctionBulkRepository
 {
-    private const int InsertBatchSize = 500;
-
     private readonly AuctionDbContext _context;
     private readonly IDateTimeProvider _dateTime;
     private readonly IAuditContext _auditContext;
@@ -37,7 +35,7 @@ public class AuctionBulkRepository : IAuctionBulkRepository
         var utcNow = _dateTime.UtcNowOffset;
         var totalInserted = 0;
 
-        foreach (var batch in Chunk(auctions, AuctionDefaults.Batch.InsertBatchSize))
+        foreach (var batch in auctions.Chunk(AuctionDefaults.Batch.InsertBatchSize).ToList())
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -49,13 +47,13 @@ public class AuctionBulkRepository : IAuctionBulkRepository
             await _context.Auctions.AddRangeAsync(batch, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            totalInserted += batch.Count;
+            totalInserted += batch.Length;
 
             _context.ChangeTracker.Clear();
 
             _logger.LogDebug(
                 "Bulk inserted batch of {Count} auctions ({Total}/{Grand})",
-                batch.Count, totalInserted, auctions.Count);
+                batch.Length, totalInserted, auctions.Count);
         }
     }
 
@@ -68,14 +66,4 @@ public class AuctionBulkRepository : IAuctionBulkRepository
             .CountAsync(cancellationToken);
     }
 
-    private static List<List<T>> Chunk<T>(IReadOnlyList<T> source, int chunkSize)
-    {
-        var chunks = new List<List<T>>();
-        for (var i = 0; i < source.Count; i += chunkSize)
-        {
-            var count = Math.Min(chunkSize, source.Count - i);
-            chunks.Add(source.Skip(i).Take(count).ToList());
-        }
-        return chunks;
-    }
 }

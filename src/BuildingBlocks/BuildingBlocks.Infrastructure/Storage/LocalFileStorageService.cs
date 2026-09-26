@@ -8,7 +8,6 @@ namespace BuildingBlocks.Infrastructure.Storage;
 
 public class LocalFileStorageService : IFileStorageService
 {
-    private readonly LocalStorageSettings _settings;
     private readonly string _basePath;
     private readonly string _basePathPrefix;
     private readonly string _baseUrl;
@@ -24,20 +23,20 @@ public class LocalFileStorageService : IFileStorageService
         RecyclableMemoryStreamManager streamManager,
         ILogger<LocalFileStorageService> logger)
     {
-        _settings = settings.Value.Local;
+        var localSettings = settings.Value.Local;
         _streamManager = streamManager;
         _logger = logger;
 
-        if (string.IsNullOrWhiteSpace(_settings.BasePath))
+        if (string.IsNullOrWhiteSpace(localSettings.BasePath))
         {
             throw new InvalidOperationException("The local file storage base path must be configured.");
         }
 
-        _basePath = Path.GetFullPath(_settings.BasePath);
+        _basePath = Path.GetFullPath(localSettings.BasePath);
         _basePathPrefix = Path.EndsInDirectorySeparator(_basePath)
             ? _basePath
             : _basePath + Path.DirectorySeparatorChar;
-        _baseUrl = _settings.BaseUrl.Replace('\\', '/').TrimEnd('/');
+        _baseUrl = localSettings.BaseUrl.Replace('\\', '/').TrimEnd('/');
 
         EnsureDirectoryExists(_basePath);
     }
@@ -84,8 +83,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public async Task<FileDownloadResult?> DownloadAsync(string storedFileName, CancellationToken cancellationToken = default)
     {
-        var filePath = ResolveFilePath(storedFileName);
-        if (filePath is null || !File.Exists(filePath))
+        if (!TryResolveExistingFile(storedFileName, out var filePath, out _))
         {
             return null;
         }
@@ -109,8 +107,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<string?> GetUrlAsync(string storedFileName, CancellationToken cancellationToken = default)
     {
-        if (!TryResolvePath(storedFileName, out var filePath, out var normalizedStoredFileName)
-            || !File.Exists(filePath))
+        if (!TryResolveExistingFile(storedFileName, out _, out var normalizedStoredFileName))
         {
             return Task.FromResult<string?>(null);
         }
@@ -121,8 +118,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<bool> DeleteAsync(string storedFileName, CancellationToken cancellationToken = default)
     {
-        var filePath = ResolveFilePath(storedFileName);
-        if (filePath is null || !File.Exists(filePath))
+        if (!TryResolveExistingFile(storedFileName, out var filePath, out _))
         {
             return Task.FromResult(false);
         }
@@ -134,8 +130,7 @@ public class LocalFileStorageService : IFileStorageService
 
     public Task<bool> ExistsAsync(string storedFileName, CancellationToken cancellationToken = default)
     {
-        var filePath = ResolveFilePath(storedFileName);
-        return Task.FromResult(filePath is not null && File.Exists(filePath));
+        return Task.FromResult(TryResolveExistingFile(storedFileName, out _, out _));
     }
 
     public Task<PresignedUploadResult?> GenerateUploadSasTokenAsync(
@@ -151,8 +146,7 @@ public class LocalFileStorageService : IFileStorageService
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default)
     {
-        if (!TryResolvePath(storedFileName, out var filePath, out var normalizedStoredFileName)
-            || !File.Exists(filePath))
+        if (!TryResolveExistingFile(storedFileName, out var filePath, out var normalizedStoredFileName))
         {
             return Task.FromResult<PresignedDownloadResult?>(null);
         }
@@ -169,9 +163,10 @@ public class LocalFileStorageService : IFileStorageService
         ));
     }
 
-    private string? ResolveFilePath(string storedFileName)
+    private bool TryResolveExistingFile(string storedFileName, out string fullPath, out string normalizedStoredFileName)
     {
-        return TryResolvePath(storedFileName, out var fullPath, out _) ? fullPath : null;
+        return TryResolvePath(storedFileName, out fullPath, out normalizedStoredFileName)
+            && File.Exists(fullPath);
     }
 
     private bool TryResolvePath(string relativePath, out string fullPath, out string normalizedRelativePath)

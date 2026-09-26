@@ -521,6 +521,7 @@ kubeconfig
 **/*-secrets.yaml
 **/*-secret.yaml
 !deploy/kubernetes/base/secrets.yaml
+!deploy/kubernetes/base/report-storage-secret.yaml
 
 # ============================================================
 # Deploy — Terraform (if adopted)

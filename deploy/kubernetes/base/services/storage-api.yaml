@@ -45,6 +45,11 @@ spec:
                   key: STORAGE_DB_CONNECTION
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
+            - name: ReportStorage__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: report-storage-secret
+                  key: apiKey
           lifecycle:
             preStop:
               exec:

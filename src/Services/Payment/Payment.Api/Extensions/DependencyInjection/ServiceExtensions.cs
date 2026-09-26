@@ -60,6 +60,7 @@ public static class ServiceExtensions
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
         services.AddScoped<IOrderReportGenerator, OrderReportGenerator>();
+        services.AddHttpClient<IReportStorageClient, HttpReportStorageClient>();
         services.AddScoped<UnitOfWork>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UnitOfWork>());
         var redisConnectionString = configuration.GetConnectionString("Redis")

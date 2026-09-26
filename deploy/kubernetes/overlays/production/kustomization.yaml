@@ -37,6 +37,16 @@ patches:
       name: identity-signing-keys
   - patch: |-
       $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: report-storage-secret
+        namespace: auction-platform
+    target:
+      kind: Secret
+      name: report-storage-secret
+  - patch: |-
+      $patch: delete
       apiVersion: apps/v1
       kind: StatefulSet
       metadata:

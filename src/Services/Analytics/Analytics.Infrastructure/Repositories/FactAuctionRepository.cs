@@ -35,10 +35,6 @@ public class FactAuctionRepository : IFactAuctionRepository
 
         var auctions = await latestByAuction.ToListAsync(cancellationToken);
 
-        var now = DateTimeOffset.UtcNow;
-        var todayEnd = now.Date.AddDays(1);
-        var weekEnd = now.Date.AddDays(7);
-
         var liveAuctions = auctions.Count(a => IsLive(a.Status));
         var completedAuctions = auctions.Count(a => a.Sold);
         var pendingAuctions = auctions.Count(a =>
@@ -133,12 +129,6 @@ public class FactAuctionRepository : IFactAuctionRepository
         int limit,
         CancellationToken cancellationToken = default)
     {
-        var bidCounts = await _context.FactBids
-            .AsNoTracking()
-            .GroupBy(b => b.AuctionId)
-            .Select(g => new { AuctionId = g.Key, BidCount = g.Count() })
-            .ToDictionaryAsync(x => x.AuctionId, x => x.BidCount, cancellationToken);
-
         var topAuctions = await _context.FactAuctions
             .AsNoTracking()
             .Where(f => f.EventType == AnalyticsEventTypes.Finished && f.Sold && f.FinalPrice.HasValue)
@@ -152,6 +142,17 @@ public class FactAuctionRepository : IFactAuctionRepository
                 FinalPrice = f.FinalPrice ?? 0
             })
             .ToListAsync(cancellationToken);
+
+        if (topAuctions.Count == 0)
+            return topAuctions;
+
+        var auctionIds = topAuctions.Select(a => a.AuctionId).ToArray();
+        var bidCounts = await _context.FactBids
+            .AsNoTracking()
+            .Where(b => auctionIds.Contains(b.AuctionId))
+            .GroupBy(b => b.AuctionId)
+            .Select(g => new { AuctionId = g.Key, BidCount = g.Count() })
+            .ToDictionaryAsync(x => x.AuctionId, x => x.BidCount, cancellationToken);
 
         foreach (var auction in topAuctions)
         {
@@ -295,17 +296,17 @@ public class FactAuctionRepository : IFactAuctionRepository
             .ToDictionaryAsync(x => x.AuctionId, cancellationToken);
 
         var topListings = activeAuctions
-            .Select(a => new TopListingDto
+            .Select(auction =>
             {
-                Id = a.AuctionId.ToString(),
-                Title = a.Title,
-                CurrentBid = bidCounts.ContainsKey(a.AuctionId)
-                    ? bidCounts[a.AuctionId].CurrentBid
-                    : a.StartingPrice,
-                Views = null,
-                Bids = bidCounts.ContainsKey(a.AuctionId)
-                    ? bidCounts[a.AuctionId].BidCount
-                    : 0
+                bidCounts.TryGetValue(auction.AuctionId, out var bidStats);
+                return new TopListingDto
+                {
+                    Id = auction.AuctionId.ToString(),
+                    Title = auction.Title,
+                    CurrentBid = bidStats?.CurrentBid ?? auction.StartingPrice,
+                    Views = null,
+                    Bids = bidStats?.BidCount ?? 0
+                };
             })
             .OrderByDescending(l => l.Bids)
             .ThenByDescending(l => l.CurrentBid)

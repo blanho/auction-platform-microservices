@@ -271,6 +271,8 @@ services:
       Stripe__SecretKey: ${STRIPE_SECRET_KEY:-sk_test_xxx}
       Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET:-whsec_local_development_secret}
       FrontendUrl: ${FRONTEND_URL:-http://localhost:3000}
+      ReportStorage__BaseUrl: http://storage-api:8080
+      ReportStorage__ApiKey: ${REPORT_STORAGE_API_KEY:-local-development-report-storage-key-change-me}
       Serilog__WriteTo__0__Name: Seq
       Serilog__WriteTo__0__Args__serverUrl: http://seq:80
     depends_on:
@@ -473,6 +475,7 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=storage_db;Username=postgres;Password=postgres123
       Identity__Authority: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
+      ReportStorage__ApiKey: ${REPORT_STORAGE_API_KEY:-local-development-report-storage-key-change-me}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest

@@ -19,17 +19,15 @@ public class GetTopPerformersQueryHandler : IRequestHandler<GetTopPerformersQuer
     public async Task<TopPerformersDto> Handle(GetTopPerformersQuery request, CancellationToken cancellationToken)
     {
         var startDate = GetPeriodStartDate(request.Period);
-        var topAuctionsTask = _auctionRepository.GetTopAuctionsAsync(request.Limit, cancellationToken);
-        var topSellersTask = _paymentRepository.GetTopSellersAsync(request.Limit, startDate, cancellationToken);
-        var topBuyersTask = _paymentRepository.GetTopBuyersAsync(request.Limit, startDate, cancellationToken);
-
-        await Task.WhenAll(topAuctionsTask, topSellersTask, topBuyersTask);
+        var topAuctions = await _auctionRepository.GetTopAuctionsAsync(request.Limit, cancellationToken);
+        var topSellers = await _paymentRepository.GetTopSellersAsync(request.Limit, startDate, cancellationToken);
+        var topBuyers = await _paymentRepository.GetTopBuyersAsync(request.Limit, startDate, cancellationToken);
 
         return new TopPerformersDto
         {
-            TopAuctions = await topAuctionsTask,
-            TopSellers = await topSellersTask,
-            TopBuyers = await topBuyersTask
+            TopAuctions = topAuctions,
+            TopSellers = topSellers,
+            TopBuyers = topBuyers
         };
     }
 

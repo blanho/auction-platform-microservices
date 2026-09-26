@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.FileProviders;
 using Storage.Application.Features.Files.UploadFile;
+using StorageService.Contracts.Reports;
 using System.Text.Json.Serialization;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.Extensions;
@@ -113,6 +114,19 @@ var storageSettings = builder.Configuration.GetSection(FileStorageSettings.Secti
 if (storageSettings is { Provider: var provider } &&
     string.Equals(provider, StorageDefaults.Providers.Local, StringComparison.OrdinalIgnoreCase))
 {
+    var privateReportsPath = new PathString(
+        $"{storageSettings.Local.BaseUrl.TrimEnd('/')}/{ReportStorageContract.PrivateFolder}");
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments(privateReportsPath, StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await next();
+    });
+
     var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, storageSettings.Local.BasePath);
     if (!Directory.Exists(uploadsPath))
     {
