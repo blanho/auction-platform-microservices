@@ -95,6 +95,7 @@ public sealed class InternalReportEndpoints : ICarterModule
         return Path.GetExtension(fileName).ToLowerInvariant() switch
         {
             ".csv" => contentType == "text/csv",
+            ".json" => contentType == "application/json",
             ".pdf" => contentType == "application/pdf",
             ".xlsx" => contentType ==
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

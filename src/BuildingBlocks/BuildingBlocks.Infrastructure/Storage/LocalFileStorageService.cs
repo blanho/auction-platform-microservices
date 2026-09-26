@@ -295,6 +295,7 @@ public class LocalFileStorageService : IFileStorageService
             ".webp" => "image/webp",
             ".pdf" => "application/pdf",
             ".csv" => "text/csv",
+            ".json" => "application/json",
             ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             _ => "application/octet-stream"
         };
