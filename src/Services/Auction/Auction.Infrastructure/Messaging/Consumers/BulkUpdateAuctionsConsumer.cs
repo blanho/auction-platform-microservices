@@ -62,11 +62,11 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
 
         var succeededCount = 0;
         var failedCount = 0;
+        var reportedSucceededCount = 0;
+        var reportedFailedCount = 0;
         var pendingChanges = 0;
 
-        var idBatches = message.AuctionIds.Chunk(AuctionDefaults.Batch.FetchBatchSize).ToList();
-
-        foreach (var idBatch in idBatches)
+        foreach (var idBatch in message.AuctionIds.Chunk(AuctionDefaults.Batch.FetchBatchSize))
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -108,12 +108,11 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
                 await _unitOfWork.SaveChangesAsync(context.CancellationToken);
                 _dbContext.ChangeTracker.Clear();
 
-                await context.Publish(new ReportJobBatchProgressCommand
-                {
-                    CorrelationId = correlationId,
-                    CompletedCount = succeededCount,
-                    FailedCount = failedCount
-                });
+                await PublishProgress(context, correlationId,
+                    succeededCount - reportedSucceededCount,
+                    failedCount - reportedFailedCount);
+                reportedSucceededCount = succeededCount;
+                reportedFailedCount = failedCount;
 
                 pendingChanges = 0;
             }
@@ -125,12 +124,12 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
             _dbContext.ChangeTracker.Clear();
         }
 
-        await context.Publish(new ReportJobBatchProgressCommand
+        if (succeededCount != reportedSucceededCount || failedCount != reportedFailedCount)
         {
-            CorrelationId = correlationId,
-            CompletedCount = succeededCount,
-            FailedCount = failedCount
-        });
+            await PublishProgress(context, correlationId,
+                succeededCount - reportedSucceededCount,
+                failedCount - reportedFailedCount);
+        }
 
         stopwatch.Stop();
 
@@ -171,5 +170,17 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
 
         return false;
     }
+
+    private static Task PublishProgress(
+        ConsumeContext<ProcessBulkAuctionUpdateCommand> context,
+        string correlationId,
+        int completedCount,
+        int failedCount) =>
+        context.Publish(new ReportJobBatchProgressCommand
+        {
+            CorrelationId = correlationId,
+            CompletedCount = completedCount,
+            FailedCount = failedCount
+        });
 
 }
