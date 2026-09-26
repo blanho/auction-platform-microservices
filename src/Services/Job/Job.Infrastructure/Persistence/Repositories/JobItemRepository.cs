@@ -90,13 +90,14 @@ public class JobItemRepository : IJobItemRepository
     public async Task AddRangeAsync(
         IEnumerable<JobItem> items, CancellationToken cancellationToken = default)
     {
+        var itemBatch = items as ICollection<JobItem> ?? items.ToList();
         var utcNow = _dateTime.UtcNowOffset;
-        foreach (var item in items)
+        foreach (var item in itemBatch)
         {
             item.SetCreatedAudit(_auditContext.UserId, utcNow);
         }
 
-        await _context.JobItems.AddRangeAsync(items, cancellationToken);
+        await _context.JobItems.AddRangeAsync(itemBatch, cancellationToken);
     }
 
     public async Task BulkCreateItemsAsync(

@@ -21,6 +21,7 @@ The ledger hashes reflect the initial audit snapshot; files changed during follo
 - PostgreSQL checks found that Payment's daily revenue and top-performer projections could not be translated; their aggregation and limiting now run in SQL, followed by DTO construction. Fresh Payment orders and wallets also failed insertion because their required `UpdatedAt` columns received null; both factories now initialize it to the creation timestamp. The Payment aggregates, report filter, top-performer queries, inserts, and analytics top-auction query passed against a disposable PostgreSQL 16 container. The follow-up Payment infrastructure and domain test projects passed 13 and four tests, respectively.
 - Message broker verification is still needed. The disposable PostgreSQL check did not exercise migrations or the full service stack.
 - The Job worker now propagates cancellation during dispatch and stuck-job recovery instead of treating shutdown as a job failure. `RequestJobCommand` requests with a positive `TotalItems` and no explicit items use the external-progress path; requests with explicit items, and requests without a positive total, create job items for the dispatcher. Only the latter path is affected by the missing `ProcessJobItemCommand` consumer.
+- Job item batch insertion now enumerates caller input once when assigning audit fields and adding items to EF. Existing lists and arrays are reused without allocation.
 
 ## Findings requiring follow-up
 
