@@ -56,6 +56,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         }
 
         var validationResult = ValidateAllRows(request.Rows, request.Currency);
+        var failedRowCount = request.Rows.Count - validationResult.ValidRows.Count;
 
         if (validationResult.ValidRows.Count == 0)
         {
@@ -65,7 +66,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 CorrelationId: request.CorrelationId,
                 TotalRows: request.Rows.Count,
                 SucceededCount: 0,
-                FailedCount: validationResult.Errors.Count,
+                FailedCount: failedRowCount,
                 SkippedDuplicateCount: 0,
                 Duration: stopwatch.Elapsed,
                 Errors: validationResult.Errors));
@@ -83,7 +84,7 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
             request.Currency,
             request.CorrelationId,
             priorSucceeded,
-            validationResult.Errors.Count,
+            failedRowCount,
             cancellationToken);
 
         var totalSucceeded = priorSucceeded + batchSucceeded;
@@ -93,14 +94,14 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
         stopwatch.Stop();
 
         _logger.LogInformation(
-            "Bulk import completed: {Succeeded}/{Total} succeeded, {Failed} validation errors in {Duration}ms",
-            totalSucceeded, request.Rows.Count, validationResult.Errors.Count, stopwatch.ElapsedMilliseconds);
+            "Bulk import completed: {Succeeded}/{Total} succeeded, {Failed} rows failed validation in {Duration}ms",
+            totalSucceeded, request.Rows.Count, failedRowCount, stopwatch.ElapsedMilliseconds);
 
         return Result<ImportAuctionsResult>.Success(new ImportAuctionsResult(
             CorrelationId: request.CorrelationId,
             TotalRows: request.Rows.Count,
             SucceededCount: totalSucceeded,
-            FailedCount: validationResult.Errors.Count,
+            FailedCount: failedRowCount,
             SkippedDuplicateCount: skippedDuplicateCount,
             Duration: stopwatch.Elapsed,
             Errors: validationResult.Errors));

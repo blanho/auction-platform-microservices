@@ -3,6 +3,7 @@ using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
 using Auctions.Application.Features.Auctions.ImportAuctions;
+using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Domain.Constants;
 using JobService.Contracts.Commands;
@@ -12,8 +13,6 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
 {
-    private const int BatchSize = 500;
-
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly IImportCheckpointRepository _checkpointRepository;
     private readonly ISanitizationService _sanitizationService;
@@ -50,27 +49,28 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             correlationId, context.CancellationToken);
 
         var validationResult = ValidateAllRows(message.Rows, message.Currency);
+        var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
 
         if (validationResult.ValidRows.Count == 0)
         {
             await ReportJobFailure(context, correlationId,
-                $"All {validationResult.Errors.Count} rows failed validation.");
+                $"All {failedRowCount} rows failed validation.");
             await PublishCompletionEvent(context, message, stopwatch.Elapsed, 0,
-                validationResult.Errors.Count, 0, validationResult.Errors);
+                failedRowCount, 0, validationResult.Errors);
             return;
         }
 
         var rowsToProcess = ResumeFromCheckpoint(validationResult.ValidRows, checkpoint);
         var priorSucceeded = checkpoint?.SucceededCount ?? 0;
 
-        if (validationResult.Errors.Count > 0)
+        if (failedRowCount > 0)
         {
-            await ReportJobBatchProgress(context, correlationId, 0, validationResult.Errors.Count);
+            await ReportJobBatchProgress(context, correlationId, 0, failedRowCount);
         }
 
         var batchSucceeded = await ProcessBatchesAsync(
             rowsToProcess, message, correlationId,
-            priorSucceeded, validationResult.Errors.Count,
+            priorSucceeded, failedRowCount,
             context);
 
         var totalSucceeded = priorSucceeded + batchSucceeded;
@@ -80,7 +80,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         stopwatch.Stop();
 
         await PublishCompletionEvent(context, message, stopwatch.Elapsed,
-            totalSucceeded, validationResult.Errors.Count, 0, validationResult.Errors);
+            totalSucceeded, failedRowCount, 0, validationResult.Errors);
 
         _logger.LogInformation(
             "Import {CorrelationId} completed: {Succeeded}/{Total} succeeded in {Duration}ms",
@@ -109,7 +109,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
     {
         var totalInserted = 0;
 
-        foreach (var batch in validRows.Chunk(BatchSize))
+        foreach (var batch in validRows.Chunk(AuctionDefaults.Batch.InsertBatchSize))
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 

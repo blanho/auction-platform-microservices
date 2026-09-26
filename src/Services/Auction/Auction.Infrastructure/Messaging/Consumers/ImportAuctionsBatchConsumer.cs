@@ -61,10 +61,11 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         }
 
         var validationResult = ValidateRows(message.Rows, message.Currency);
+        var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
 
-        if (validationResult.Errors.Count > 0)
+        if (failedRowCount > 0)
         {
-            await ReportProgress(context, correlationId, 0, validationResult.Errors.Count);
+            await ReportProgress(context, correlationId, 0, failedRowCount);
         }
 
         var insertedCount = 0;
@@ -87,7 +88,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         _logger.LogInformation(
             "Import batch {BatchNumber}/{TotalBatches} completed for {CorrelationId}: {Inserted} inserted, {Failed} failed in {Duration}ms",
             message.BatchNumber, message.TotalBatches, correlationId,
-            insertedCount, validationResult.Errors.Count, stopwatch.ElapsedMilliseconds);
+            insertedCount, failedRowCount, stopwatch.ElapsedMilliseconds);
 
         if (message.BatchNumber == message.TotalBatches)
         {
@@ -97,7 +98,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
                 SellerId = message.SellerId,
                 TotalRows = message.TotalRows,
                 SucceededCount = insertedCount,
-                FailedCount = validationResult.Errors.Count,
+                FailedCount = failedRowCount,
                 SkippedDuplicateCount = 0,
                 Duration = stopwatch.Elapsed,
                 CompletedAt = DateTimeOffset.UtcNow,
