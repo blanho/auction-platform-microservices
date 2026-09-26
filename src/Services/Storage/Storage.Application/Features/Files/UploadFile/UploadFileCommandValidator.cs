@@ -1,5 +1,6 @@
 using BuildingBlocks.Application.Abstractions.Storage;
 using FluentValidation;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Application.Features.Files.UploadFile;
 
@@ -18,7 +19,10 @@ public class UploadFileCommandValidator : AbstractValidator<UploadFileCommand>
 
         RuleFor(x => x.FileSize)
             .GreaterThan(0)
-            .LessThanOrEqualTo(validation.MaxFileSizeBytes);
+            .Must((request, size) => size <= (
+                request.SubFolder == ReportStorageContract.PrivateFolder
+                    ? ReportStorageContract.MaxReportSizeBytes
+                    : validation.MaxFileSizeBytes));
 
         RuleFor(x => x.Content)
             .NotNull();

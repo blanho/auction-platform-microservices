@@ -13,6 +13,7 @@ using Npgsql;
 using Serilog;
 using System.Text.Json.Serialization;
 using Auctions.Infrastructure.Grpc;
+using Auctions.Infrastructure.Services;
 
 namespace Auctions.Api.Extensions.DependencyInjection
 {
@@ -61,6 +62,7 @@ namespace Auctions.Api.Extensions.DependencyInjection
             services.AddScoped<IImportCheckpointRepository, ImportCheckpointRepository>();
 
             services.AddScoped<IPaginatedAuctionQueryService, PaginatedAuctionQueryService>();
+            services.AddHttpClient<AuctionExportStorageClient>();
 
             services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>((sp, o) =>
             {

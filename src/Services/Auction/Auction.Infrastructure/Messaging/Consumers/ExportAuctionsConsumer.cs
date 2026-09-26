@@ -7,6 +7,7 @@ using Auctions.Application.Enums;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using Auctions.Domain.Enums;
+using Auctions.Infrastructure.Services;
 using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
 
@@ -16,15 +17,18 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
 {
     private readonly IAuctionReadRepository _readRepository;
     private readonly IEnumerable<IReportExporter> _exporters;
+    private readonly AuctionExportStorageClient _storageClient;
     private readonly ILogger<ExportAuctionsConsumer> _logger;
 
     public ExportAuctionsConsumer(
         IAuctionReadRepository readRepository,
         IEnumerable<IReportExporter> exporters,
+        AuctionExportStorageClient storageClient,
         ILogger<ExportAuctionsConsumer> logger)
     {
         _readRepository = readRepository;
         _exporters = exporters;
+        _storageClient = storageClient;
         _logger = logger;
     }
 
@@ -88,6 +92,9 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
 
         stopwatch.Stop();
 
+        var downloadUrl = await _storageClient.StoreAsync(
+            content, fileName, exporter.ContentType, message.RequestedBy, context.CancellationToken);
+
         await context.Publish(new ReportJobBatchProgressCommand
         {
             CorrelationId = correlationId,
@@ -100,7 +107,7 @@ public class ExportAuctionsConsumer : IConsumer<ProcessAuctionExportCommand>
             correlationId, exportRows.Count, content.Length, stopwatch.ElapsedMilliseconds);
 
         await PublishCompletionEvent(context, message, stopwatch.Elapsed,
-            exportRows.Count, fileName, exporter.ContentType, content.Length, downloadUrl: string.Empty);
+            exportRows.Count, fileName, exporter.ContentType, content.Length, downloadUrl);
     }
 
     private static ExportFormat ParseExportFormat(string format)

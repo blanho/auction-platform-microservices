@@ -16,6 +16,7 @@ using Storage.Application.Features.Files.GetFileUrl;
 using Storage.Application.Features.Files.UploadFile;
 using Storage.Application.Features.Files.UploadMultipleFiles;
 using Microsoft.Extensions.Options;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Api.Endpoints.Files;
 
@@ -84,6 +85,12 @@ public class FileEndpoints : ICarterModule
     {
         var form = await httpContext.Request.ReadFormAsync(cancellationToken);
         var file = form.Files.FirstOrDefault();
+        var subFolder = form["subFolder"].FirstOrDefault();
+
+        if (IsPrivateReportFolder(subFolder))
+        {
+            return TypedResults.BadRequest(ReservedFolderError());
+        }
 
         if (file is null || file.Length == 0)
         {
@@ -99,7 +106,6 @@ public class FileEndpoints : ICarterModule
             return TypedResults.BadRequest(validationError);
         }
 
-        var subFolder = form["subFolder"].FirstOrDefault();
         Guid? ownerId = Guid.TryParse(form["ownerId"].FirstOrDefault(), out var parsedOwnerId)
             ? parsedOwnerId
             : UserHelper.GetUserId(httpContext.User);
@@ -132,6 +138,12 @@ public class FileEndpoints : ICarterModule
     {
         var form = await httpContext.Request.ReadFormAsync(cancellationToken);
         var files = form.Files;
+        var subFolder = form["subFolder"].FirstOrDefault();
+
+        if (IsPrivateReportFolder(subFolder))
+        {
+            return TypedResults.BadRequest(ReservedFolderError());
+        }
 
         if (files.Count == 0)
         {
@@ -160,7 +172,6 @@ public class FileEndpoints : ICarterModule
             }
         }
 
-        var subFolder = form["subFolder"].FirstOrDefault();
         Guid? ownerId = Guid.TryParse(form["ownerId"].FirstOrDefault(), out var parsedOwnerId)
             ? parsedOwnerId
             : UserHelper.GetUserId(httpContext.User);
@@ -252,6 +263,11 @@ public class FileEndpoints : ICarterModule
         ISender sender,
         CancellationToken cancellationToken)
     {
+        if (IsPrivateReportFolder(command.SubFolder))
+        {
+            return TypedResults.BadRequest(ReservedFolderError());
+        }
+
         var result = await sender.Send(command, cancellationToken);
 
         if (result.IsFailure)
@@ -283,6 +299,11 @@ public class FileEndpoints : ICarterModule
         ISender sender,
         CancellationToken cancellationToken)
     {
+        if (IsPrivateReportFolder(command.SubFolder))
+        {
+            return TypedResults.BadRequest(ReservedFolderError());
+        }
+
         var result = await sender.Send(command, cancellationToken);
 
         if (result.IsFailure)
@@ -292,4 +313,11 @@ public class FileEndpoints : ICarterModule
 
         return TypedResults.Ok(result.Value);
     }
+
+    private static bool IsPrivateReportFolder(string? subFolder) =>
+        string.Equals(subFolder, ReportStorageContract.PrivateFolder, StringComparison.OrdinalIgnoreCase);
+
+    private static ProblemDetails ReservedFolderError() =>
+        ProblemDetailsHelper.Create(
+            "Invalid Folder", "This folder is reserved for internal reports", StatusCodes.Status400BadRequest);
 }

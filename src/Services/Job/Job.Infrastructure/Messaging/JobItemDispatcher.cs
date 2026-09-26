@@ -61,7 +61,7 @@ public class JobItemDispatcher : IJobItemDispatcher
                 CorrelationId = job.CorrelationId
             }).ToList();
 
-            foreach (var publishBatch in Chunk(commands, JobDefaults.Dispatcher.PublishBatchSize))
+            foreach (var publishBatch in commands.Chunk(JobDefaults.Dispatcher.PublishBatchSize))
             {
                 await Task.WhenAll(publishBatch.Select(cmd =>
                     _publishEndpoint.Publish(cmd, cancellationToken)));
@@ -79,11 +79,4 @@ public class JobItemDispatcher : IJobItemDispatcher
             totalDispatched, jobId);
     }
 
-    private static IEnumerable<List<T>> Chunk<T>(List<T> source, int chunkSize)
-    {
-        for (var i = 0; i < source.Count; i += chunkSize)
-        {
-            yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
-        }
-    }
 }

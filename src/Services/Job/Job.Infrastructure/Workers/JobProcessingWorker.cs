@@ -92,7 +92,7 @@ public class JobProcessingWorker : BackgroundService
                 _logger.LogInformation("Started job {JobId} of type {JobType} with {TotalItems} items",
                     job.Id, job.Type, job.TotalItems);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Failed to start job {JobId}", job.Id);
 
@@ -102,7 +102,7 @@ public class JobProcessingWorker : BackgroundService
                     await jobRepository.UpdateAsync(job, cancellationToken);
                     await unitOfWork.SaveChangesAsync(cancellationToken);
                 }
-                catch (Exception innerEx)
+                catch (Exception innerEx) when (innerEx is not OperationCanceledException)
                 {
                     _logger.LogError(innerEx, "Failed to mark job {JobId} as failed", job.Id);
                 }
@@ -134,7 +134,7 @@ public class JobProcessingWorker : BackgroundService
 
                 _logger.LogWarning("Recovered stuck job {JobId}", job.Id);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 _logger.LogError(ex, "Failed to recover stuck job {JobId}", job.Id);
             }

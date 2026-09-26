@@ -123,6 +123,8 @@ public class OrderRepository : IOrderRepository
     {
         var now = DateTimeOffset.UtcNow;
         var today = now.Date;
+        var todayStart = new DateTimeOffset(today, TimeSpan.Zero);
+        var tomorrowStart = todayStart.AddDays(1);
         var weekStart = today.AddDays(-(int)today.DayOfWeek);
         var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -133,33 +135,39 @@ public class OrderRepository : IOrderRepository
         if (endDate.HasValue)
             query = query.Where(o => o.CreatedAt <= endDate.Value);
 
-        var allOrders = await query
-            .Select(o => new { o.PaymentStatus, o.TotalAmount, o.PlatformFee, o.PaidAt })
-            .ToListAsync(cancellationToken);
+        var totals = await query
+            .GroupBy(_ => 1)
+            .Select(orders => new
+            {
+                TotalTransactions = orders.Count(),
+                CompletedOrders = orders.Count(o => o.PaymentStatus == PaymentStatus.Completed),
+                PendingOrders = orders.Count(o => o.PaymentStatus == PaymentStatus.Pending),
+                RefundedOrders = orders.Count(o => o.PaymentStatus == PaymentStatus.Refunded),
+                TotalRevenue = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed ? o.TotalAmount : 0),
+                TotalPlatformFees = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed ? o.PlatformFee ?? 0 : 0),
+                RevenueToday = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed &&
+                    o.PaidAt >= todayStart && o.PaidAt < tomorrowStart ? o.TotalAmount : 0),
+                RevenueThisWeek = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed &&
+                    o.PaidAt >= weekStart ? o.TotalAmount : 0),
+                RevenueThisMonth = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed &&
+                    o.PaidAt >= monthStart ? o.TotalAmount : 0)
+            })
+            .SingleOrDefaultAsync(cancellationToken);
 
-        var completedOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Completed).ToList();
-        var pendingOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Pending).ToList();
-        var refundedOrders = allOrders.Where(o => o.PaymentStatus == PaymentStatus.Refunded).ToList();
-
-        var totalRevenue = completedOrders.Sum(o => o.TotalAmount);
-        var totalPlatformFees = completedOrders.Sum(o => o.PlatformFee ?? 0);
-        var averageOrderValue = completedOrders.Count > 0 ? totalRevenue / completedOrders.Count : 0;
-
-        var todayOrders = completedOrders.Where(o => o.PaidAt?.Date == today).ToList();
-        var weekOrders = completedOrders.Where(o => o.PaidAt >= weekStart).ToList();
-        var monthOrders = completedOrders.Where(o => o.PaidAt >= monthStart).ToList();
+        if (totals is null)
+            return new RevenueStatsDto(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
         return new RevenueStatsDto(
-            totalRevenue,
-            totalPlatformFees,
-            allOrders.Count,
-            completedOrders.Count,
-            pendingOrders.Count,
-            refundedOrders.Count,
-            averageOrderValue,
-            todayOrders.Sum(o => o.TotalAmount),
-            weekOrders.Sum(o => o.TotalAmount),
-            monthOrders.Sum(o => o.TotalAmount)
+            totals.TotalRevenue,
+            totals.TotalPlatformFees,
+            totals.TotalTransactions,
+            totals.CompletedOrders,
+            totals.PendingOrders,
+            totals.RefundedOrders,
+            totals.CompletedOrders > 0 ? totals.TotalRevenue / totals.CompletedOrders : 0,
+            totals.RevenueToday,
+            totals.RevenueThisWeek,
+            totals.RevenueThisMonth
         );
     }
 
@@ -167,20 +175,27 @@ public class OrderRepository : IOrderRepository
     {
         var startDate = DateTimeOffset.UtcNow.AddDays(-days);
 
-        var dailyStats = await _context.Orders
+        var dailyTotals = await _context.Orders
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => o.PaidAt!.Value.Date)
-            .Select(g => new DailyRevenueStatDto(
-                DateOnly.FromDateTime(g.Key),
-                g.Sum(o => o.TotalAmount),
-                g.Sum(o => o.PlatformFee ?? 0),
-                g.Count()
-            ))
-            .OrderBy(s => s.Date)
+            .Select(g => new
+            {
+                Date = g.Key,
+                Revenue = g.Sum(o => o.TotalAmount),
+                PlatformFees = g.Sum(o => o.PlatformFee ?? 0),
+                OrderCount = g.Count()
+            })
+            .OrderBy(stat => stat.Date)
             .ToListAsync(cancellationToken);
 
-        return dailyStats;
+        return dailyTotals
+            .Select(stat => new DailyRevenueStatDto(
+                DateOnly.FromDateTime(stat.Date),
+                stat.Revenue,
+                stat.PlatformFees,
+                stat.OrderCount))
+            .ToList();
     }
 
     public async Task<List<TopSellerDto>> GetTopSellersAsync(int limit, string period, CancellationToken cancellationToken = default)
@@ -191,18 +206,25 @@ public class OrderRepository : IOrderRepository
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.SellerId, o.SellerUsername })
-            .Select(g => new TopSellerDto(
+            .Select(g => new
+            {
                 g.Key.SellerId,
                 g.Key.SellerUsername,
-                g.Sum(o => o.TotalAmount),
-                g.Count(),
-                g.Sum(o => o.TotalAmount) / g.Count()
-            ))
-            .OrderByDescending(s => s.TotalSales)
+                TotalSales = g.Sum(o => o.TotalAmount),
+                OrderCount = g.Count()
+            })
+            .OrderByDescending(seller => seller.TotalSales)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        return topSellers;
+        return topSellers
+            .Select(seller => new TopSellerDto(
+                seller.SellerId,
+                seller.SellerUsername,
+                seller.TotalSales,
+                seller.OrderCount,
+                seller.TotalSales / seller.OrderCount))
+            .ToList();
     }
 
     public async Task<List<TopBuyerDto>> GetTopBuyersAsync(int limit, string period, CancellationToken cancellationToken = default)
@@ -213,17 +235,24 @@ public class OrderRepository : IOrderRepository
             .AsNoTracking()
             .Where(o => o.PaymentStatus == PaymentStatus.Completed && o.PaidAt >= startDate)
             .GroupBy(o => new { o.BuyerId, o.BuyerUsername })
-            .Select(g => new TopBuyerDto(
+            .Select(g => new
+            {
                 g.Key.BuyerId,
                 g.Key.BuyerUsername,
-                g.Sum(o => o.TotalAmount),
-                g.Count()
-            ))
-            .OrderByDescending(b => b.TotalSpent)
+                TotalSpent = g.Sum(o => o.TotalAmount),
+                OrderCount = g.Count()
+            })
+            .OrderByDescending(buyer => buyer.TotalSpent)
             .Take(limit)
             .ToListAsync(cancellationToken);
 
-        return topBuyers;
+        return topBuyers
+            .Select(buyer => new TopBuyerDto(
+                buyer.BuyerId,
+                buyer.BuyerUsername,
+                buyer.TotalSpent,
+                buyer.OrderCount))
+            .ToList();
     }
 
     public async Task<PaginatedResult<Order>> GetAllAsync(
@@ -271,28 +300,42 @@ public class OrderRepository : IOrderRepository
 
     public async Task<OrderStatsDto> GetOrderStatsAsync(CancellationToken cancellationToken = default)
     {
-        var orders = await _context.Orders
+        var totals = await _context.Orders
             .AsNoTracking()
-            .Select(o => new { o.Status, o.PaymentStatus, o.TotalAmount })
-            .ToListAsync(cancellationToken);
+            .GroupBy(_ => 1)
+            .Select(orders => new
+            {
+                TotalOrders = orders.Count(),
+                PendingOrders = orders.Count(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.PaymentPending),
+                PaidOrders = orders.Count(o => o.Status == OrderStatus.Paid),
+                ProcessingOrders = orders.Count(o => o.Status == OrderStatus.Processing),
+                ShippedOrders = orders.Count(o => o.Status == OrderStatus.Shipped),
+                DeliveredOrders = orders.Count(o => o.Status == OrderStatus.Delivered),
+                CompletedOrders = orders.Count(o => o.Status == OrderStatus.Completed),
+                CancelledOrders = orders.Count(o => o.Status == OrderStatus.Cancelled),
+                DisputedOrders = orders.Count(o => o.Status == OrderStatus.Disputed),
+                RefundedOrders = orders.Count(o => o.Status == OrderStatus.Refunded),
+                PaidOrderCount = orders.Count(o => o.PaymentStatus == PaymentStatus.Completed),
+                TotalRevenue = orders.Sum(o => o.PaymentStatus == PaymentStatus.Completed ? o.TotalAmount : 0)
+            })
+            .SingleOrDefaultAsync(cancellationToken);
 
-        var totalRevenue = orders.Where(o => o.PaymentStatus == PaymentStatus.Completed).Sum(o => o.TotalAmount);
-        var completedOrdersCount = orders.Count(o => o.PaymentStatus == PaymentStatus.Completed);
-        var averageOrderValue = completedOrdersCount > 0 ? totalRevenue / completedOrdersCount : 0;
+        if (totals is null)
+            return new OrderStatsDto(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
         return new OrderStatsDto(
-            orders.Count,
-            orders.Count(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.PaymentPending),
-            orders.Count(o => o.Status == OrderStatus.Paid),
-            orders.Count(o => o.Status == OrderStatus.Processing),
-            orders.Count(o => o.Status == OrderStatus.Shipped),
-            orders.Count(o => o.Status == OrderStatus.Delivered),
-            orders.Count(o => o.Status == OrderStatus.Completed),
-            orders.Count(o => o.Status == OrderStatus.Cancelled),
-            orders.Count(o => o.Status == OrderStatus.Disputed),
-            orders.Count(o => o.Status == OrderStatus.Refunded),
-            totalRevenue,
-            averageOrderValue
+            totals.TotalOrders,
+            totals.PendingOrders,
+            totals.PaidOrders,
+            totals.ProcessingOrders,
+            totals.ShippedOrders,
+            totals.DeliveredOrders,
+            totals.CompletedOrders,
+            totals.CancelledOrders,
+            totals.DisputedOrders,
+            totals.RefundedOrders,
+            totals.TotalRevenue,
+            totals.PaidOrderCount > 0 ? totals.TotalRevenue / totals.PaidOrderCount : 0
         );
     }
 }

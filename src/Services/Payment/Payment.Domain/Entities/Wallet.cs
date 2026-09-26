@@ -22,6 +22,7 @@ public class Wallet : AggregateRoot
         Guard.AgainstNullOrEmpty(username, nameof(username));
         Guard.AgainstNullOrEmpty(currency, nameof(currency));
 
+        var createdAt = DateTimeOffset.UtcNow;
         var wallet = new Wallet
         {
             Id = Guid.NewGuid(),
@@ -31,7 +32,8 @@ public class Wallet : AggregateRoot
             Balance = 0,
             HeldAmount = 0,
             IsActive = true,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt
         };
 
         wallet.AddDomainEvent(new WalletCreatedDomainEvent

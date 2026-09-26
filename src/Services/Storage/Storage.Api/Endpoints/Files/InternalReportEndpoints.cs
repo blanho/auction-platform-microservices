@@ -13,13 +13,11 @@ namespace Storage.Api.Endpoints.Files;
 
 public sealed class InternalReportEndpoints : ICarterModule
 {
-    private const long MaxReportSizeBytes = 50 * 1024 * 1024;
-
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost(ReportStorageContract.UploadPath, UploadReport)
             .AllowAnonymous()
-            .WithMetadata(new RequestSizeLimitAttribute(MaxReportSizeBytes))
+            .WithMetadata(new RequestSizeLimitAttribute(ReportStorageContract.MaxReportSizeBytes))
             .ExcludeFromDescription();
 
         app.MapGet("/api/v1/files/{fileId:guid}/download", DownloadReport)
@@ -72,7 +70,7 @@ public sealed class InternalReportEndpoints : ICarterModule
         if (!Guid.TryParse(ownerIdText, out var ownerId) || ownerId == Guid.Empty ||
             string.IsNullOrWhiteSpace(fileName) || fileName.IndexOfAny(['/', '\\']) >= 0 ||
             !IsSupportedReport(fileName, contentType) ||
-            fileSize is null or <= 0 or > MaxReportSizeBytes)
+            fileSize is null or <= 0 or > ReportStorageContract.MaxReportSizeBytes)
             return Results.BadRequest();
 
         var result = await sender.Send(new UploadFileCommand(
@@ -95,6 +93,7 @@ public sealed class InternalReportEndpoints : ICarterModule
         return Path.GetExtension(fileName).ToLowerInvariant() switch
         {
             ".csv" => contentType == "text/csv",
+            ".json" => contentType == "application/json",
             ".pdf" => contentType == "application/pdf",
             ".xlsx" => contentType ==
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

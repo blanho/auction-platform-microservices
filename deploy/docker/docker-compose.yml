@@ -188,6 +188,8 @@ services:
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       CatalogService__GrpcUrl: http://catalog-api:8081
       BidService__GrpcUrl: http://bidding-api:8081
+      ReportStorage__BaseUrl: http://storage-api:8080
+      ReportStorage__ApiKey: ${REPORT_STORAGE_API_KEY:-local-development-report-storage-key-change-me}
       Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
       Kestrel__Endpoints__Http__Protocols: Http1
       Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
