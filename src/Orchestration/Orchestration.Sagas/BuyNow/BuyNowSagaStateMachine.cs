@@ -38,7 +38,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
 
         Schedule(() => SagaTimeout, instance => instance.TimeoutTokenId, s =>
         {
-            s.Delay = TimeSpan.FromMinutes(5);
+            s.Delay = SagaConstants.BuyNowTimeout;
             s.Received = r => r.CorrelateById(m => m.Message.CorrelationId);
         });
 
@@ -61,7 +61,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                     AuctionId = context.Saga.AuctionId,
                     BuyerId = context.Saga.BuyerId,
                     BuyerUsername = context.Saga.BuyerUsername,
-                    TimedOutAt = DateTimeOffset.UtcNow.AddMinutes(5)
+                    TimedOutAt = DateTimeOffset.UtcNow.Add(SagaConstants.BuyNowTimeout)
                 })
                 .Publish(context => new ReserveAuctionForBuyNow
                 {
@@ -101,6 +101,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                     context.Saga.FailureReason = context.Message.Reason;
                     context.Saga.CompletedAt = DateTimeOffset.UtcNow;
                 })
+                .Unschedule(SagaTimeout)
                 .Publish(context => new BuyNowSagaCompleted
                 {
                     CorrelationId = context.Saga.CorrelationId,
