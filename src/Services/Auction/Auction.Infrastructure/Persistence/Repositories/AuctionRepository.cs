@@ -143,7 +143,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             auction.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
 
-            _context.Auctions.Update(auction);
+            if (_context.Entry(auction).State == EntityState.Detached)
+                _context.Auctions.Update(auction);
             return Task.CompletedTask;
         }
 
@@ -312,4 +313,3 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
     }
 }
-
