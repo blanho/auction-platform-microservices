@@ -11,6 +11,28 @@ namespace Auction.Application.Tests;
 
 public class ImportBatchingTests
 {
+    [Fact]
+    public async Task Import_CountsRejectedRowsRatherThanValidationMessages()
+    {
+        var checkpointRepository = Stub<IImportCheckpointRepository>((method, _) => method.Name switch
+        {
+            nameof(IImportCheckpointRepository.GetCheckpointAsync) => Task.FromResult<ImportCheckpoint?>(null),
+            nameof(IImportCheckpointRepository.DeleteCheckpointAsync) => Task.CompletedTask,
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var handler = new ImportAuctionsCommandHandler(null!, checkpointRepository, null!, null!,
+            NullLogger<ImportAuctionsCommandHandler>.Instance, null!);
+        var invalidRow = new ImportAuctionRow("", "", null, null, -1m, null,
+            DateTimeOffset.UtcNow.AddDays(-1));
+
+        var result = await handler.Handle(new ImportAuctionsCommand(
+            Guid.NewGuid(), "seller", "invalid-import", "USD", [invalidRow]), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(1, result.Value!.FailedCount);
+        Assert.True(result.Value.Errors.Count > 1);
+    }
+
     [Theory]
     [InlineData(0, 0, new int[0])]
     [InlineData(1, 0, new[] { 1 })]

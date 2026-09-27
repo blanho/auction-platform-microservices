@@ -124,6 +124,19 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
+        public async Task<List<Auction>> GetByIdsForUpdateAsync(
+            IEnumerable<Guid> ids,
+            CancellationToken cancellationToken = default)
+        {
+            var idList = ids.ToList();
+            if (idList.Count == 0)
+                return [];
+
+            return await ActiveAuctionsWithItemDetails
+                .Where(x => idList.Contains(x.Id))
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             var utcNow = _dateTime.UtcNow;
@@ -143,7 +156,8 @@ namespace Auctions.Infrastructure.Persistence.Repositories
         {
             auction.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
 
-            _context.Auctions.Update(auction);
+            if (_context.Entry(auction).State == EntityState.Detached)
+                _context.Auctions.Update(auction);
             return Task.CompletedTask;
         }
 
@@ -312,4 +326,3 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
     }
 }
-

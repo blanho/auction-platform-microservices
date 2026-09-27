@@ -74,7 +74,7 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 CreatedAt = order.CreatedAt
             });
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex,
                 "Failed to create order for Buy Now saga - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",

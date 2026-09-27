@@ -104,7 +104,9 @@ public class JobRepository : IJobRepository
         int batchSize, CancellationToken cancellationToken = default)
     {
         return await _context.Jobs
-            .Where(x => !x.IsDeleted && x.Status == JobStatus.Pending)
+            .Where(x => !x.IsDeleted
+                && x.Status == JobStatus.Pending
+                && x.Items.Any(item => !item.IsDeleted && item.Status == JobItemStatus.Pending))
             .OrderByDescending(x => x.Priority)
             .ThenBy(x => x.CreatedAt)
             .Take(batchSize)

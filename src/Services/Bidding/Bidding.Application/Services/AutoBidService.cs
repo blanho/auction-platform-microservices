@@ -138,7 +138,7 @@ namespace Bidding.Application.Services
             }
 
             autoBid.RecordBid(amount);
-            await _autoBidRepository.UpdateAsync(autoBid);
+            await _autoBidRepository.UpdateAsync(autoBid, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Auto-bid placed for auction {AuctionId} by {Username} for {Amount}",

@@ -49,7 +49,7 @@ public class EmailSender : IEmailSender
 
             return new EmailSendResult(true, messageId);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send email to {To}", EmailHelper.MaskEmail(to));
             return new EmailSendResult(false, Error: ex.Message);

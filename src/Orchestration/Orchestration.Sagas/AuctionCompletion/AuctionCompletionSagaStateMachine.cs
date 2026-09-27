@@ -33,7 +33,7 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
 
         Schedule(() => SagaTimeout, instance => instance.TimeoutTokenId, s =>
         {
-            s.Delay = TimeSpan.FromMinutes(10);
+            s.Delay = SagaConstants.AuctionCompletionTimeout;
             s.Received = r => r.CorrelateById(m => m.Message.CorrelationId);
         });
 
@@ -54,7 +54,7 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    TimedOutAt = DateTimeOffset.UtcNow.AddMinutes(10)
+                    TimedOutAt = DateTimeOffset.UtcNow.Add(SagaConstants.AuctionCompletionTimeout)
                 })
                 .Publish(context => new CreateAuctionWinnerOrder
                 {

@@ -35,6 +35,7 @@ public class AuctionIndexService : IAuctionIndexService
 
     public async Task<Result> IndexAsync(AuctionDocument document, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = _indexName;
         document.LastSyncedAt = DateTimeOffset.UtcNow;
 
@@ -46,6 +47,7 @@ public class AuctionIndexService : IAuctionIndexService
                 .OpType(OpType.Create)
                 .Refresh(Elastic.Clients.Elasticsearch.Refresh.False),
             ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse && response.ApiCallDetails.HttpStatusCode != 409)
             {
@@ -57,7 +59,7 @@ public class AuctionIndexService : IAuctionIndexService
             _logger.LogDebug("Indexed auction {AuctionId}", document.Id);
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error indexing auction {AuctionId}", document.Id);
             return Result.Failure(IndexErrors.IndexingFailed(document.Id, ex.Message));
@@ -68,6 +70,7 @@ public class AuctionIndexService : IAuctionIndexService
         IEnumerable<AuctionDocument> documents,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = _indexName;
         var now = DateTimeOffset.UtcNow;
 
@@ -83,6 +86,7 @@ public class AuctionIndexService : IAuctionIndexService
                 .Index(indexName)
                 .IndexMany(documentList, (d, doc) => d.Id(doc.Id.ToString())),
             ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse)
             {
@@ -106,7 +110,7 @@ public class AuctionIndexService : IAuctionIndexService
 
             return Result.Success(result);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error in bulk index");
             return Result.Failure<BulkIndexResult>(
@@ -119,6 +123,7 @@ public class AuctionIndexService : IAuctionIndexService
         object partialDocument,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = _indexName;
 
         try
@@ -131,6 +136,7 @@ public class AuctionIndexService : IAuctionIndexService
                     .DocAsUpsert(false)
                     .RetryOnConflict(IndexingDefaults.PartialUpdateRetryOnConflict),
                 ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse)
             {
@@ -141,7 +147,7 @@ public class AuctionIndexService : IAuctionIndexService
 
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error partially updating auction {AuctionId}", auctionId);
             return Result.Failure(IndexErrors.UpdateFailed(auctionId, ex.Message));
@@ -150,11 +156,13 @@ public class AuctionIndexService : IAuctionIndexService
 
     public async Task<Result> DeleteAsync(Guid auctionId, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = _indexName;
 
         try
         {
             var response = await _client.DeleteAsync<AuctionDocument>(indexName, auctionId.ToString(), ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse && response.Result != Elastic.Clients.Elasticsearch.Result.NotFound)
             {
@@ -166,7 +174,7 @@ public class AuctionIndexService : IAuctionIndexService
             _logger.LogDebug("Deleted auction {AuctionId} from index", auctionId);
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error deleting auction {AuctionId}", auctionId);
             return Result.Failure(IndexErrors.DeleteFailed(auctionId, ex.Message));
@@ -180,6 +188,7 @@ public class AuctionIndexService : IAuctionIndexService
         bool isRetraction,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = _indexName;
 
         try
@@ -201,6 +210,7 @@ public class AuctionIndexService : IAuctionIndexService
                             .Add("syncedAt", DateTimeOffset.UtcNow.ToString(DateTimeFormats.Iso8601))))
                     .RetryOnConflict(IndexingDefaults.BidUpdateRetryOnConflict),
                 ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse)
             {
@@ -211,7 +221,7 @@ public class AuctionIndexService : IAuctionIndexService
 
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error updating bid info for auction {AuctionId}", auctionId);
             return Result.Failure(IndexErrors.UpdateFailed(auctionId, ex.Message));

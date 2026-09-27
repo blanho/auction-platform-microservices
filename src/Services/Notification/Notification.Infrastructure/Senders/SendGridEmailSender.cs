@@ -92,7 +92,7 @@ public class SendGridEmailSender : IEmailSender
                 return new EmailSendResult(false, Error: $"SendGrid error: {response.StatusCode} - {body}");
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send email via SendGrid to {To}", EmailHelper.MaskEmail(to));
             return new EmailSendResult(false, Error: ex.Message);

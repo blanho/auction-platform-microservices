@@ -6,20 +6,17 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReservation>
 {
-    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
     private readonly ILogger<ReleaseAuctionReservationConsumer> _logger;
 
     public ReleaseAuctionReservationConsumer(
-        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         ILogger<ReleaseAuctionReservationConsumer> logger)
     {
-        _readRepository = readRepository;
         _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
@@ -35,7 +32,7 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
 
         try
         {
-            var auction = await _readRepository.GetByIdAsync(message.AuctionId);
+            var auction = await _writeRepository.GetByIdForUpdateAsync(message.AuctionId, context.CancellationToken);
 
             if (auction == null)
             {
@@ -76,7 +73,7 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
                 ReleasedAt = _dateTime.UtcNow
             });
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex,
                 "Failed to release auction reservation - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
@@ -85,4 +82,3 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
         }
     }
 }
-

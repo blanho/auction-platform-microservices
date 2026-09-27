@@ -12,7 +12,6 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateCommand>
 {
-    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
@@ -20,14 +19,12 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
     private readonly ILogger<BulkUpdateAuctionsConsumer> _logger;
 
     public BulkUpdateAuctionsConsumer(
-        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         AuctionDbContext dbContext,
         ILogger<BulkUpdateAuctionsConsumer> logger)
     {
-        _readRepository = readRepository;
         _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
@@ -70,7 +67,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            var auctions = await _readRepository.GetByIdsAsync(idBatch, context.CancellationToken);
+            var auctions = await _writeRepository.GetByIdsForUpdateAsync(idBatch, context.CancellationToken);
             var auctionLookup = auctions.ToDictionary(a => a.Id);
 
             foreach (var auctionId in idBatch)
@@ -94,7 +91,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
                         failedCount++;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogWarning(ex,
                         "Failed to update auction {AuctionId} in bulk update {CorrelationId}",

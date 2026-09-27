@@ -117,7 +117,7 @@ public class FirebasePushSender : IPushSender
 
             return new PushSendResult(false, Error: $"{ex.MessagingErrorCode}: {ex.Message}");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send push notification to user {UserId}", userId);
             return new PushSendResult(false, Error: ex.Message);
@@ -180,7 +180,7 @@ public class FirebasePushSender : IPushSender
 
             return new PushSendResult(false, Error: $"All {tokens.Count} sends failed");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send multicast push notification");
             return new PushSendResult(false, Error: ex.Message);

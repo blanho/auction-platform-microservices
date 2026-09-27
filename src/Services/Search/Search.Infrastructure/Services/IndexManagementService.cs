@@ -39,24 +39,27 @@ public class IndexManagementService : IIndexManagementService
 
     public async Task<Result> EnsureIndexExistsAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = GetIndexName();
 
         try
         {
             var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
+            ct.ThrowIfCancellationRequested();
 
             if (existsResponse.Exists)
             {
                 _logger.LogDebug("Index {IndexName} already exists", indexName);
                 var mapping = await _client.Indices.PutMappingAsync<AuctionDocument>(indexName, m => m
                     .Properties(p => p.LongNumber(x => x.LastBidEventTicks).Boolean(x => x.LastBidEventIsRetraction)), ct);
+                ct.ThrowIfCancellationRequested();
                 return mapping.IsValidResponse ? Result.Success()
                     : Result.Failure(IndexErrors.IndexCreationFailed(indexName, mapping.DebugInformation));
             }
 
             return await CreateIndexAsync(indexName, ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error ensuring index {IndexName} exists", indexName);
             return Result.Failure(IndexErrors.IndexCreationFailed(indexName, ex.Message));
@@ -134,6 +137,7 @@ public class IndexManagementService : IIndexManagementService
                     .GeoPoint(k => k.Location!)
                     .Date(k => k.LastSyncedAt))),
         ct);
+        ct.ThrowIfCancellationRequested();
 
         if (!createResponse.IsValidResponse)
         {
@@ -148,14 +152,17 @@ public class IndexManagementService : IIndexManagementService
 
     public async Task<Result> RecreateIndexAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = GetIndexName();
 
         _logger.LogWarning("Recreating index {IndexName} - ALL DATA WILL BE LOST", indexName);
 
         var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
+        ct.ThrowIfCancellationRequested();
         if (existsResponse.Exists)
         {
             var deleteResponse = await _client.Indices.DeleteAsync(indexName, ct);
+            ct.ThrowIfCancellationRequested();
             if (!deleteResponse.IsValidResponse)
             {
                 return Result.Failure(IndexErrors.DeleteFailed(Guid.Empty, deleteResponse.DebugInformation));
@@ -167,11 +174,13 @@ public class IndexManagementService : IIndexManagementService
 
     public async Task<Result<IndexStats>> GetIndexStatsAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var indexName = GetIndexName();
 
         try
         {
             var existsResponse = await _client.Indices.ExistsAsync(indexName, ct);
+            ct.ThrowIfCancellationRequested();
             if (!existsResponse.Exists)
             {
                 return Result.Success(new IndexStats(indexName, false, SearchDefaults.ZeroDocCount, SearchDefaults.IndexHealthNone, SearchDefaults.ZeroSizeBytes));
@@ -179,6 +188,7 @@ public class IndexManagementService : IIndexManagementService
 
             var statsResponse = await _client.Indices.StatsAsync(
                 new IndicesStatsRequest(Elastic.Clients.Elasticsearch.Indices.Parse(indexName)), ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!statsResponse.IsValidResponse || statsResponse.Indices == null)
             {
@@ -188,7 +198,7 @@ public class IndexManagementService : IIndexManagementService
             var stats = BuildIndexStats(indexName, statsResponse);
             return Result.Success(stats);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error getting stats for index {IndexName}", indexName);
             return Result.Failure<IndexStats>(IndexErrors.ConnectionFailed(ex.Message));
@@ -212,14 +222,16 @@ public class IndexManagementService : IIndexManagementService
 
     public async Task<Result> IsHealthyAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         try
         {
             var response = await _client.PingAsync(ct);
+            ct.ThrowIfCancellationRequested();
             return response.IsValidResponse
                 ? Result.Success()
                 : Result.Failure(IndexErrors.ConnectionFailed("Elasticsearch ping failed"));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return Result.Failure(IndexErrors.ConnectionFailed(ex.Message));
         }

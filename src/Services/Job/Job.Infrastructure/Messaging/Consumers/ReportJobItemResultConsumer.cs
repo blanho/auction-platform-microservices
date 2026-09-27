@@ -39,6 +39,14 @@ public class ReportJobItemResultConsumer : IConsumer<ReportJobItemResultCommand>
             return;
         }
 
+        if (jobItem.JobId != message.JobId)
+        {
+            _logger.LogWarning(
+                "Job item {JobItemId} does not belong to job {JobId}, skipping result",
+                message.JobItemId, message.JobId);
+            return;
+        }
+
         if (jobItem.IsTerminal)
         {
             _logger.LogWarning(
