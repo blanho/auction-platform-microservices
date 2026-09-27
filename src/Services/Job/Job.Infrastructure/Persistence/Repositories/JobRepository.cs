@@ -106,7 +106,7 @@ public class JobRepository : IJobRepository
         return await _context.Jobs
             .Where(x => !x.IsDeleted
                 && x.Status == JobStatus.Pending
-                && x.Items.Any(item => !item.IsDeleted))
+                && x.Items.Any(item => !item.IsDeleted && item.Status == JobItemStatus.Pending))
             .OrderByDescending(x => x.Priority)
             .ThenBy(x => x.CreatedAt)
             .Take(batchSize)
