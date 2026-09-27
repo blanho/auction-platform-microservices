@@ -7,7 +7,6 @@ namespace Auctions.Application.Features.Auctions.BulkUpdateAuctions;
 
 public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctionsCommand, int>
 {
-    private readonly IAuctionReadRepository _readRepository;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly ILogger<BulkUpdateAuctionsCommandHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
@@ -15,14 +14,12 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
     private readonly IAuditPublisher _auditPublisher;
 
     public BulkUpdateAuctionsCommandHandler(
-        IAuctionReadRepository readRepository,
         IAuctionWriteRepository writeRepository,
         ILogger<BulkUpdateAuctionsCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
         IAuditPublisher auditPublisher)
     {
-        _readRepository = readRepository;
         _writeRepository = writeRepository;
         _logger = logger;
         _unitOfWork = unitOfWork;
@@ -36,23 +33,22 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
             request.AuctionIds.Count, request.Activate);
 
         var updatedCount = 0;
-        var auditEntries = new List<(Guid AuctionId, AuctionAuditData OldData, AuctionAuditData NewData)>();
+        var auditEntries = new List<(Guid AuctionId, AuctionAuditData Data)>();
+        var auctions = await _writeRepository.GetByIdsForUpdateAsync(request.AuctionIds, cancellationToken);
+        var auctionLookup = auctions.ToDictionary(auction => auction.Id);
 
         foreach (var auctionId in request.AuctionIds)
         {
-            var auction = await _readRepository.GetByIdAsync(auctionId, cancellationToken);
-            if (auction == null)
+            if (!auctionLookup.TryGetValue(auctionId, out var auction))
             {
                 _logger.LogWarning("Auction {AuctionId} not found, skipping", auctionId);
                 continue;
             }
 
-            var oldData = AuctionAuditData.FromAuction(auction);
-
             if (TryApplyStatusChange(auction, request.Activate))
             {
                 await _writeRepository.UpdateAsync(auction, cancellationToken);
-                auditEntries.Add((auctionId, oldData, AuctionAuditData.FromAuction(auction)));
+                auditEntries.Add((auctionId, AuctionAuditData.FromAuction(auction)));
                 updatedCount++;
             }
         }
@@ -60,7 +56,7 @@ public class BulkUpdateAuctionsCommandHandler : ICommandHandler<BulkUpdateAuctio
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditPublisher.PublishBatchAsync(
-            auditEntries.Select(e => (e.AuctionId, e.NewData)),
+            auditEntries,
             AuditAction.Updated,
             AuctionAuditMetadata.ForBulkStatusChange(request.Activate),
             cancellationToken);
