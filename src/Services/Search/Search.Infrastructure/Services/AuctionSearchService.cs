@@ -48,6 +48,7 @@ public class AuctionSearchService : IAuctionSearchService
         AuctionSearchRequest request,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var pageSize = Math.Min(request.PageSize, _options.MaxPageSize);
 
         try
@@ -77,6 +78,7 @@ public class AuctionSearchService : IAuctionSearchService
                     .Add(AggregationNames.PriceStats, a => a
                         .Stats(s => s.Field(ElasticsearchFields.CurrentPrice)))),
             ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse)
             {
@@ -98,7 +100,7 @@ public class AuctionSearchService : IAuctionSearchService
                 Took = response.Took
             };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Search error");
             throw;
@@ -109,11 +111,13 @@ public class AuctionSearchService : IAuctionSearchService
         Guid auctionId,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         try
         {
             var response = await _client.GetAsync<AuctionDocument>(auctionId.ToString(), g => g
                 .Index(_indexName),
             ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse || response.Source == null)
             {
@@ -122,7 +126,7 @@ public class AuctionSearchService : IAuctionSearchService
 
             return response.Source.ToResult();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Get by ID error for auction {AuctionId}", auctionId);
             return null;
@@ -134,6 +138,7 @@ public class AuctionSearchService : IAuctionSearchService
         int maxSuggestions = SearchDefaults.DefaultAutocompleteLimit,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(prefix) || prefix.Length < SearchDefaults.MinAutocompleteLength)
             return Array.Empty<AutocompleteSuggestion>();
 
@@ -156,13 +161,14 @@ public class AuctionSearchService : IAuctionSearchService
                     .Field(new Field(ElasticsearchFields.TitleAutocomplete))
                     .Query(prefix))),
             ct);
+            ct.ThrowIfCancellationRequested();
 
             if (!response.IsValidResponse)
                 return Array.Empty<AutocompleteSuggestion>();
 
             return MapToAutocompleteSuggestions(response.Documents);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Autocomplete error for prefix: {Prefix}", prefix);
             return Array.Empty<AutocompleteSuggestion>();
