@@ -310,7 +310,7 @@ public class NotificationRequestedConsumer : IConsumer<NotificationRequestedEven
             };
             await _hubService.SendNotificationToUserAsync(message.UserId, dto);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(ex, "Failed to send real-time notification");
         }
