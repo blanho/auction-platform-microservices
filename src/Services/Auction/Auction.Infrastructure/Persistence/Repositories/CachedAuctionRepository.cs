@@ -88,6 +88,9 @@ public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepo
         return _inner.GetByIdForUpdateAsync(id, cancellationToken);
     }
 
+    public Task<List<Auction>> GetByIdsForUpdateAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        => _inner.GetByIdsForUpdateAsync(ids, cancellationToken);
+
     public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
     {
         var result = await _inner.CreateAsync(auction, cancellationToken);
@@ -160,4 +163,3 @@ public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepo
         await _cache.RemoveAsync(CacheKeys.AuctionList(), cancellationToken);
     }
 }
-
