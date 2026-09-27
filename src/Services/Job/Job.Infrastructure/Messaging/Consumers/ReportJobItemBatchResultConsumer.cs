@@ -55,6 +55,14 @@ public class ReportJobItemBatchResultConsumer : IConsumer<ReportJobItemBatchResu
                 continue;
             }
 
+            if (jobItem.JobId != message.JobId)
+            {
+                _logger.LogWarning(
+                    "Job item {JobItemId} does not belong to job {JobId}, skipping result",
+                    result.JobItemId, message.JobId);
+                continue;
+            }
+
             if (jobItem.IsTerminal)
                 continue;
 
