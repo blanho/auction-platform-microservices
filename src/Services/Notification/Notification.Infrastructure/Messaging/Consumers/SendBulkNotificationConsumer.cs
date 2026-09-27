@@ -82,12 +82,11 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             {
                 try
                 {
-                    await ProcessRecipientAsync(
+                    return await ProcessRecipientAsync(
                         message,
                         recipient,
                         template,
                         context.CancellationToken);
-                    return true;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -139,7 +138,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             correlationId, successCount, failureCount, stopwatch.ElapsedMilliseconds);
     }
 
-    private async Task ProcessRecipientAsync(
+    private async Task<bool> ProcessRecipientAsync(
         SendBulkNotificationCommand message,
         BulkNotificationRecipient recipient,
         NotificationTemplate? template,
@@ -152,7 +151,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             _logger.LogDebug(
                 "Notification already sent for {UserId} in bulk job {CorrelationId}",
                 recipient.UserId, message.CorrelationId);
-            return;
+            return true;
         }
 
         var parameters = new Dictionary<string, string>(message.GlobalParameters);
@@ -161,7 +160,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             parameters[param.Key] = param.Value;
         }
 
-        var tasks = new List<Task>();
+        var tasks = new List<Task<bool>>();
 
         if (message.Channels.Contains(NotificationChannelNames.Email) && !string.IsNullOrEmpty(recipient.Email))
         {
@@ -183,11 +182,12 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             tasks.Add(SendInAppAsync(message, recipient, parameters, cancellationToken));
         }
 
-        await Task.WhenAll(tasks);
+        var results = await Task.WhenAll(tasks);
         await _idempotency.MarkAsProcessedAsync(idempotencyKey, "bulk", message.CorrelationId.ToString(), ct: cancellationToken);
+        return results.All(success => success);
     }
 
-    private async Task SendEmailAsync(
+    private async Task<bool> SendEmailAsync(
         SendBulkNotificationCommand message,
         BulkNotificationRecipient recipient,
         NotificationTemplate? template,
@@ -213,9 +213,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         ApplySendResult(record, result.Success, result.MessageId, result.Error);
         await PersistNotificationRecordAsync(record, cancellationToken);
+        return result.Success;
     }
 
-    private async Task SendSmsAsync(
+    private async Task<bool> SendSmsAsync(
         SendBulkNotificationCommand message,
         BulkNotificationRecipient recipient,
         NotificationTemplate? template,
@@ -238,9 +239,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         ApplySendResult(record, result.Success, result.MessageId, result.Error);
         await PersistNotificationRecordAsync(record, cancellationToken);
+        return result.Success;
     }
 
-    private async Task SendPushAsync(
+    private async Task<bool> SendPushAsync(
         SendBulkNotificationCommand message,
         BulkNotificationRecipient recipient,
         NotificationTemplate? template,
@@ -266,9 +268,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         ApplySendResult(record, result.Success, result.MessageId, result.Error);
         await PersistNotificationRecordAsync(record, cancellationToken);
+        return result.Success;
     }
 
-    private async Task SendInAppAsync(
+    private async Task<bool> SendInAppAsync(
         SendBulkNotificationCommand message,
         BulkNotificationRecipient recipient,
         Dictionary<string, string> parameters,
@@ -284,6 +287,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             title,
             recipient.UserId.ToString());
 
+        var sent = false;
         try
         {
             var notification = new NotificationDto
@@ -302,6 +306,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
                 notification);
 
             record.MarkAsSent("inapp");
+            sent = true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -309,6 +314,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         }
 
         await PersistNotificationRecordAsync(record, cancellationToken);
+        return sent;
     }
 
     private async Task PublishJobStarted(
