@@ -47,10 +47,9 @@ public class UploadMultipleFilesCommandHandler(
             return Result.Failure<BatchUploadResultDto>(StorageErrors.BatchUploadFailed);
         }
 
-        await repository.AddRangeAsync(successfulFiles, cancellationToken);
-
         try
         {
+            await repository.AddRangeAsync(successfulFiles, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)

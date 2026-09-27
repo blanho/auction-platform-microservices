@@ -64,6 +64,37 @@ public class UploadMultipleFilesFailureTests
         Assert.True(deleted);
     }
 
+    [Fact]
+    public async Task Handle_RollsBackBlobWhenAddingRecordsFails()
+    {
+        var databaseError = new InvalidOperationException("add failed");
+        var deleted = false;
+        var storage = Stub<IFileStorageService>((method, _) => method.Name switch
+        {
+            nameof(IFileStorageService.UploadAsync) => Task.FromResult(new FileUploadResult(
+                "id", "report.csv", "stored.csv", "text/csv", 1, "/files/stored.csv", DateTimeOffset.UtcNow)),
+            nameof(IFileStorageService.DeleteAsync) => Delete(),
+            _ => throw new NotSupportedException(method.Name)
+        });
+        Task<bool> Delete()
+        {
+            deleted = true;
+            return Task.FromResult(true);
+        }
+
+        var repository = Stub<IStoredFileRepository>((method, _) =>
+            method.Name == nameof(IStoredFileRepository.AddRangeAsync)
+                ? Task.FromException(databaseError)
+                : throw new NotSupportedException(method.Name));
+        var handler = CreateHandler(storage, repository);
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.Handle(CreateCommand(), CancellationToken.None));
+
+        Assert.Same(databaseError, thrown);
+        Assert.True(deleted);
+    }
+
     private static UploadMultipleFilesCommand CreateCommand() => new(
         [new UploadFileItem(new MemoryStream([1]), "report.csv", "text/csv", 1)]);
 

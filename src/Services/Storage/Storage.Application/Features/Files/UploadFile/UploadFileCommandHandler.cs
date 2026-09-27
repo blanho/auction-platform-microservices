@@ -48,8 +48,30 @@ public class UploadFileCommandHandler(
             request.OwnerId,
             provider);
 
-        await repository.AddAsync(storedFile, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await repository.AddAsync(storedFile, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            try
+            {
+                if (!await fileStorageService.DeleteAsync(storedFile.StoredFileName, CancellationToken.None))
+                {
+                    logger.LogWarning("Failed to roll back blob {StoredFileName} after database failure",
+                        storedFile.StoredFileName);
+                }
+            }
+            catch (Exception rollbackError)
+            {
+                logger.LogWarning(rollbackError,
+                    "Failed to roll back blob {StoredFileName} after database failure",
+                    storedFile.StoredFileName);
+            }
+
+            throw;
+        }
 
         await auditPublisher.PublishAsync(
             storedFile.Id,

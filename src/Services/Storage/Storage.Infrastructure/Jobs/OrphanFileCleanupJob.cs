@@ -105,7 +105,7 @@ public class OrphanFileCleanupJob : BaseJob
 
                     file.MarkAsDeleted(null);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     failedDeletes++;
                     Logger.LogError(ex, "Failed to delete orphan file {FileId} ({StoredFileName})",
