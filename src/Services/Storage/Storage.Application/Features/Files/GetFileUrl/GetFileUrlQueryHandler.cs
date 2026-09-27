@@ -18,7 +18,8 @@ public class GetFileUrlQueryHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null || file.SubFolder == ReportStorageContract.PrivateFolder)
+        if (file is null || ReportStorageContract.IsPrivatePath(file.SubFolder) ||
+            ReportStorageContract.IsPrivatePath(file.StoredFileName))
         {
             return Result.Failure<FileUrlDto>(StorageErrors.FileNotFound(request.FileId));
         }

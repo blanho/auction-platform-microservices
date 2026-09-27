@@ -8,6 +8,11 @@ public static class ReportStorageContract
     public const string OwnerIdHeader = "X-Report-Owner-Id";
     public const string PrivateFolder = "private-reports";
     public const long MaxReportSizeBytes = 50 * 1024 * 1024;
+
+    public static bool IsPrivatePath(string? path) =>
+        path is not null &&
+        (path.Equals(PrivateFolder, StringComparison.OrdinalIgnoreCase) ||
+         path.StartsWith(PrivateFolder + "/", StringComparison.OrdinalIgnoreCase));
 }
 
 public record StoredReportResponse(Guid FileId, string DownloadUrl);

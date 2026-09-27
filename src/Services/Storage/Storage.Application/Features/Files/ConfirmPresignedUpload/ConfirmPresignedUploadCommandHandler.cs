@@ -9,6 +9,7 @@ using Storage.Application.Interfaces;
 using Storage.Domain.Constants;
 using Storage.Domain.Entities;
 using Storage.Domain.Enums;
+using StorageService.Contracts.Reports;
 
 namespace Storage.Application.Features.Files.ConfirmPresignedUpload;
 
@@ -26,6 +27,11 @@ public class ConfirmPresignedUploadCommandHandler(
         CancellationToken cancellationToken)
     {
         logger.LogDebug("Confirming presigned upload for: {StoredFileName}", request.StoredFileName);
+
+        if (ReportStorageContract.IsPrivatePath(request.StoredFileName))
+        {
+            return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
+        }
 
         var exists = await fileStorageService.ExistsAsync(request.StoredFileName, cancellationToken);
 

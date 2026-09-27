@@ -315,7 +315,7 @@ public class FileEndpoints : ICarterModule
     }
 
     private static bool IsPrivateReportFolder(string? subFolder) =>
-        string.Equals(subFolder, ReportStorageContract.PrivateFolder, StringComparison.OrdinalIgnoreCase);
+        ReportStorageContract.IsPrivatePath(subFolder);
 
     private static ProblemDetails ReservedFolderError() =>
         ProblemDetailsHelper.Create(
