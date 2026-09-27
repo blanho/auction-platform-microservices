@@ -58,7 +58,7 @@ public class BidPlacedAntiSnipeConsumer : IConsumer<HighestBidUpdatedEvent>
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error processing anti-snipe for auction {AuctionId}", message.AuctionId);
             throw;
