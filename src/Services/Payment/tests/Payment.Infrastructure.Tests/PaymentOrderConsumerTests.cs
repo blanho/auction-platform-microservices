@@ -38,6 +38,8 @@ public sealed class PaymentOrderConsumerTests
         Assert.Equal(message.BuyNowPrice, order.WinningBid);
         Assert.Equal(1, unitOfWork.SaveCalls);
         Assert.Equal(cancellationToken, unitOfWork.LastCancellationToken);
+        Assert.Equal(cancellationToken, repository.LastLookupCancellationToken);
+        Assert.Equal(cancellationToken, repository.LastAddCancellationToken);
     }
 
     [Fact]
@@ -80,6 +82,8 @@ public sealed class PaymentOrderConsumerTests
         Assert.Equal(message.SoldAmount, order.WinningBid);
         Assert.Equal(1, unitOfWork.SaveCalls);
         Assert.Equal(cancellationToken, unitOfWork.LastCancellationToken);
+        Assert.Equal(cancellationToken, repository.LastLookupCancellationToken);
+        Assert.Equal(cancellationToken, repository.LastAddCancellationToken);
     }
 
     [Theory]
@@ -163,16 +167,25 @@ public sealed class PaymentOrderConsumerTests
         public Order? ExistingOrder { get; init; }
         public int GetByAuctionIdCalls { get; private set; }
         public List<Order> AddedOrders { get; } = [];
+        public CancellationToken LastLookupCancellationToken { get; private set; }
+        public CancellationToken LastAddCancellationToken { get; private set; }
 
-        public Task<Order?> GetByAuctionIdAsync(Guid auctionId)
+        public Task<Order?> GetByAuctionIdAsync(Guid auctionId) =>
+            GetByAuctionIdAsync(auctionId, CancellationToken.None);
+
+        public Task<Order?> GetByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken)
         {
             GetByAuctionIdCalls++;
+            LastLookupCancellationToken = cancellationToken;
             return Task.FromResult(ExistingOrder);
         }
 
-        public Task<Order> AddAsync(Order order)
+        public Task<Order> AddAsync(Order order) => AddAsync(order, CancellationToken.None);
+
+        public Task<Order> AddAsync(Order order, CancellationToken cancellationToken)
         {
             AddedOrders.Add(order);
+            LastAddCancellationToken = cancellationToken;
             return Task.FromResult(order);
         }
 

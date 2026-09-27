@@ -14,6 +14,8 @@ public class BuyNowOrderCancellationTests
     [Fact]
     public async Task CanceledOrderRead_DoesNotPublishOrderCreationFailure()
     {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
         var message = new CreateBuyNowOrder
         {
             CorrelationId = Guid.NewGuid(),
@@ -22,14 +24,20 @@ public class BuyNowOrderCancellationTests
         var context = Stub<ConsumeContext<CreateBuyNowOrder>>((method, args) => method.Name switch
         {
             "get_Message" => message,
+            "get_CancellationToken" => cancellation.Token,
             "Publish" => throw new Xunit.Sdk.XunitException($"Unexpected event: {args![0]?.GetType().Name}"),
             _ => throw new NotSupportedException(method.Name)
         });
-        var orders = Stub<IOrderRepository>((method, _) => method.Name switch
+        var orders = Stub<IOrderRepository>((method, args) => method.Name switch
         {
-            nameof(IOrderRepository.GetByAuctionIdAsync) => Task.FromException<Order?>(new OperationCanceledException()),
+            nameof(IOrderRepository.GetByAuctionIdAsync) => CanceledRead(args!),
             _ => throw new NotSupportedException(method.Name)
         });
+        Task<Order?> CanceledRead(object?[] args)
+        {
+            Assert.Equal(cancellation.Token, args[1]);
+            return Task.FromCanceled<Order?>(cancellation.Token);
+        }
         var consumer = new CreateBuyNowOrderConsumer(orders, null!,
             NullLogger<CreateBuyNowOrderConsumer>.Instance);
 

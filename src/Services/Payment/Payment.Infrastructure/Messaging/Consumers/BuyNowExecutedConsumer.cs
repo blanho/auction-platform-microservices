@@ -29,7 +29,7 @@ public class BuyNowExecutedConsumer : IConsumer<BuyNowExecutedEvent>
 
         _logger.LogInformation("Processing BuyNowExecutedEvent for auction {AuctionId}", message.AuctionId);
 
-        var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId);
+        var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId, context.CancellationToken);
         if (existingOrder != null)
         {
             _logger.LogWarning("Order already exists for auction {AuctionId}", message.AuctionId);
@@ -45,7 +45,7 @@ public class BuyNowExecutedConsumer : IConsumer<BuyNowExecutedEvent>
             itemTitle: message.ItemTitle,
             winningBid: message.BuyNowPrice);
 
-        await _orderRepository.AddAsync(order);
+        await _orderRepository.AddAsync(order, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation(

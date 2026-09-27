@@ -18,7 +18,7 @@ public class GetOrderByAuctionIdQueryHandler : IQueryHandler<GetOrderByAuctionId
 
     public async Task<Result<OrderDto?>> Handle(GetOrderByAuctionIdQuery request, CancellationToken cancellationToken)
     {
-        var order = await _repository.GetByAuctionIdAsync(request.AuctionId);
+        var order = await _repository.GetByAuctionIdAsync(request.AuctionId, cancellationToken);
         if (order is null ||
             (!request.CanViewAll && order.BuyerId != request.UserId && order.SellerId != request.UserId))
         {

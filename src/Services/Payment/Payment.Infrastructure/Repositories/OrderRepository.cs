@@ -46,11 +46,14 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
-    public async Task<Order?> GetByAuctionIdAsync(Guid auctionId)
+    public Task<Order?> GetByAuctionIdAsync(Guid auctionId) =>
+        GetByAuctionIdAsync(auctionId, CancellationToken.None);
+
+    public async Task<Order?> GetByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken)
     {
         return await _context.Orders
             .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.AuctionId == auctionId);
+            .FirstOrDefaultAsync(o => o.AuctionId == auctionId, cancellationToken);
     }
 
     public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)
@@ -82,9 +85,11 @@ public class OrderRepository : IOrderRepository
         return new PaginatedResult<Order>(items, totalCount, queryParams.Page, queryParams.PageSize);
     }
 
-    public async Task<Order> AddAsync(Order order)
+    public Task<Order> AddAsync(Order order) => AddAsync(order, CancellationToken.None);
+
+    public async Task<Order> AddAsync(Order order, CancellationToken cancellationToken)
     {
-        await _context.Orders.AddAsync(order);
+        await _context.Orders.AddAsync(order, cancellationToken);
         return order;
     }
 
