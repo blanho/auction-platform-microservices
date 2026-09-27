@@ -86,7 +86,7 @@ public class CategoryRepository : ICategoryRepository
     public async Task<List<Category>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
     {
         var idList = ids.Distinct().ToList();
-        if (!idList.Any())
+        if (idList.Count == 0)
             return new List<Category>();
 
         return await _context.Categories
@@ -117,25 +117,25 @@ public class CategoryRepository : ICategoryRepository
         return category;
     }
 
-    public async Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
     {
         category.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Categories.Update(category);
-        await Task.CompletedTask;
+        _context.Entry(category).State = EntityState.Modified;
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
     {
         category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Categories.Update(category);
-        await Task.CompletedTask;
+        _context.Entry(category).State = EntityState.Modified;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var category = await GetByIdAsync(id, cancellationToken);
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id, cancellationToken);
         if (category is null) return;
         category.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Categories.Update(category);
     }
 }
