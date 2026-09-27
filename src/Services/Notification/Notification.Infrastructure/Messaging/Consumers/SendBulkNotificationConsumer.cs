@@ -89,7 +89,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
                         context.CancellationToken);
                     return true;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _logger.LogWarning(
                         ex,
@@ -100,15 +100,19 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             });
 
             var results = await Task.WhenAll(batchTasks);
-            successCount += results.Count(r => r);
-            failureCount += results.Count(r => !r);
+            context.CancellationToken.ThrowIfCancellationRequested();
+
+            var batchSuccessCount = results.Count(result => result);
+            var batchFailureCount = results.Length - batchSuccessCount;
+            successCount += batchSuccessCount;
+            failureCount += batchFailureCount;
             processedCount += batch.Count;
 
             await _publishEndpoint.Publish(new ReportJobBatchProgressCommand
             {
                 CorrelationId = correlationId,
-                CompletedCount = successCount,
-                FailedCount = failureCount
+                CompletedCount = batchSuccessCount,
+                FailedCount = batchFailureCount
             }, context.CancellationToken);
 
             _logger.LogInformation(
@@ -299,7 +303,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
             record.MarkAsSent("inapp");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             record.MarkAsFailed(ex.Message);
         }
