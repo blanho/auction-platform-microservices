@@ -97,6 +97,22 @@ public class NotificationSenderTests
         Assert.Equal(new[] { "send", "record", "save" }, calls);
     }
 
+    [Fact]
+    public async Task Email_CancellationDoesNotPersistFailedDelivery()
+    {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+        var template = NotificationTemplate.Create("test", "Test", "Subject", "Body");
+        var templates = Stub<ITemplateRepository>((_, _) => Task.FromResult<NotificationTemplate?>(template));
+        var emailSender = Stub<IEmailSender>((_, _) =>
+            Task.FromCanceled<EmailSendResult>(cancellation.Token));
+        var sender = new NotificationSender(templates, null!, null!, emailSender, null!, null!, null!,
+            NullLogger<NotificationSender>.Instance);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            sender.SendEmailAsync(Guid.NewGuid().ToString(), "test", [], "user@example.com", cancellation.Token));
+    }
+
     private static T Stub<T>(Func<MethodInfo, object?[], object?> handler) where T : class
     {
         var proxy = DispatchProxy.Create<T, TestProxy>();

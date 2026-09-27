@@ -147,7 +147,7 @@ public class NotificationSender : INotificationSender
             };
             await _hubService.SendNotificationToUserAsync(userId, dto);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(ex, "Failed to send real-time notification to user {UserId}", userId);
         }
@@ -198,7 +198,7 @@ public class NotificationSender : INotificationSender
                 _logger.LogWarning("Failed to send email to {Email}: {Error}", recipientEmail, result.Error);
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             record.MarkAsFailed(ex.Message);
             _logger.LogError(ex, "Exception sending email to {Email}", recipientEmail);
@@ -230,7 +230,7 @@ public class NotificationSender : INotificationSender
                 _logger.LogWarning("Failed to send SMS to {Phone}: {Error}", TemplateHelper.MaskPhone(phoneNumber), result.Error);
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             record.MarkAsFailed(ex.Message);
             _logger.LogError(ex, "Exception sending SMS to {Phone}", TemplateHelper.MaskPhone(phoneNumber));
@@ -262,7 +262,7 @@ public class NotificationSender : INotificationSender
                 _logger.LogWarning("Failed to send push to user {UserId}: {Error}", userId, result.Error);
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             record.MarkAsFailed(ex.Message);
             _logger.LogError(ex, "Exception sending push to user {UserId}", userId);

@@ -48,7 +48,7 @@ public class PushSender : IPushSender
 
             return new PushSendResult(true, messageId);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send push notification to user {UserId}", userId);
             return new PushSendResult(false, Error: ex.Message);

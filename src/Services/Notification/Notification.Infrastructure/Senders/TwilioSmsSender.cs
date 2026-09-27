@@ -115,7 +115,7 @@ public class TwilioSmsSender : ISmsSender
 
             return new SmsSendResult(false, Error: $"Twilio error {ex.Code}: {ex.Message}");
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to send SMS to {Phone}", PhoneNumberHelper.MaskPhoneNumber(phoneNumber));
             return new SmsSendResult(false, Error: ex.Message);

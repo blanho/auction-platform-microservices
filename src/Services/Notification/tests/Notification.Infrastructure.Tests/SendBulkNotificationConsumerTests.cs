@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Infrastructure.Messaging.Consumers;
+using Notification.Infrastructure.Senders;
 using NotificationService.Contracts.Commands;
 using NotificationService.Contracts.Events;
 using Xunit;
@@ -123,6 +124,23 @@ public class SendBulkNotificationConsumerTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => consumer.Consume(context));
         Assert.Empty(published.OfType<ReportJobBatchProgressCommand>());
         Assert.Empty(published.OfType<BulkNotificationCompletedEvent>());
+    }
+
+    [Fact]
+    public async Task DefaultSenders_PropagateCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new EmailSender(NullLogger<EmailSender>.Instance).SendAsync(
+                "user@example.com", "Subject", "Body", ct: cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new SmsNotificationSender(NullLogger<SmsNotificationSender>.Instance).SendAsync(
+                "+1234567890", "Message", cancellation.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new PushSender(NullLogger<PushSender>.Instance).SendAsync(
+                "user", "Title", "Body", ct: cancellation.Token));
     }
 
     private static T Stub<T>(Func<MethodInfo, object?[]?, object?> handler) where T : class
