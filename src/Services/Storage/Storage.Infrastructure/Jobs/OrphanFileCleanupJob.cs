@@ -92,6 +92,7 @@ public class OrphanFileCleanupJob : BaseJob
                 break;
             }
 
+            var cleanedThisBatch = 0;
             foreach (var file in batch)
             {
                 try
@@ -104,6 +105,7 @@ public class OrphanFileCleanupJob : BaseJob
                     }
 
                     file.MarkAsDeleted(null);
+                    cleanedThisBatch++;
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -117,7 +119,13 @@ public class OrphanFileCleanupJob : BaseJob
             await unitOfWork.SaveChangesAsync(cancellationToken);
             dbContext.ChangeTracker.Clear();
 
-            totalCleaned += batch.Count(f => f.IsDeleted);
+            totalCleaned += cleanedThisBatch;
+
+            if (cleanedThisBatch == 0)
+            {
+                Logger.LogWarning("Orphan cleanup stopped because no files in the batch could be deleted");
+                break;
+            }
         }
 
         if (totalCleaned > 0 || failedDeletes > 0)
