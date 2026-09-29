@@ -3,6 +3,7 @@ using BuildingBlocks.Application.Localization;
 using BuildingBlocks.Domain.Exceptions;
 using BuildingBlocks.Web.Constants;
 using BuildingBlocks.Web.Exceptions;
+using BuildingBlocks.Web.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -53,8 +54,8 @@ public static class ExceptionHandlingMiddleware
 
         var problem = new ProblemDetails
         {
-            Title = ex.Message,
-            Detail = ex.Details,
+            Title = UserMessageLocalizer.Translate(ex.Message),
+            Detail = UserMessageLocalizer.TranslateOptional(ex.Details),
             Status = (int)status,
             Type = $"https://httpstatuses.com/{(int)status}",
             Instance = context.Request.Path
@@ -62,7 +63,7 @@ public static class ExceptionHandlingMiddleware
 
         if (ex is ValidationAppException vex && vex.Errors.Count > 0)
         {
-            problem.Extensions[ProblemDetailsExtensionKeys.Errors] = vex.Errors;
+            problem.Extensions[ProblemDetailsExtensionKeys.Errors] = ValidationErrorLocalizer.Localize(vex.Errors, context.RequestServices.GetService<ILocalizationService>());
         }
 
         if (context.Request.Headers.TryGetValue(HeaderConstants.CorrelationId, out var cid))
@@ -91,7 +92,7 @@ public static class ExceptionHandlingMiddleware
         var problem = new ProblemDetails
         {
             Title = title,
-            Detail = ex.Message,
+            Detail = UserMessageLocalizer.Translate(ex.Message),
             Status = (int)status,
             Type = $"https://httpstatuses.com/{(int)status}",
             Instance = context.Request.Path
@@ -152,7 +153,7 @@ public static class ExceptionHandlingMiddleware
             ? ex.Message
             : status == HttpStatusCode.InternalServerError
                 ? localizer?[LocalizationKeys.Errors.InternalServerError] ?? "An internal server error occurred. Please try again later."
-                : ex.Message;
+                : UserMessageLocalizer.Translate(ex.Message);
 
         var problem = new ProblemDetails
         {

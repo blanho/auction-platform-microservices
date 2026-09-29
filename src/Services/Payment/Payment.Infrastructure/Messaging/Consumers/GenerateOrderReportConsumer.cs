@@ -62,7 +62,8 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             BuyerIdFilter: message.BuyerIdFilter,
             SellerIdFilter: message.SellerIdFilter,
             StartDate: message.StartDate,
-            EndDate: message.EndDate);
+            EndDate: message.EndDate,
+            Culture: message.Culture ?? "en-US");
 
         var result = await _reportGenerator.GenerateReportAsync(
             reportType.Value, format.Value, parameters, context.CancellationToken);

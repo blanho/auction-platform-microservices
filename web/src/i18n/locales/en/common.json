@@ -1,4 +1,5 @@
 {
+  "unknownUser": "Unknown user",
   "appName": "Auction Platform",
   "brandName": "THE AUCTION",
   "brandNameItalic": "TheAuction",
@@ -154,6 +155,10 @@
     "affiliateProgram": "Affiliate Program"
   },
   "errors": {
+    "uploadFailed": "File upload failed (status {{status}}).",
+    "connectionUnavailable": "The live connection is unavailable. Please try again.",
+    "requestTimeout": "The request timed out. Please try again.",
+    "network": "Unable to connect. Please check your network and try again.",
     "notFoundTitle": "Page Not Found",
     "notFoundMessage": "The page you're looking for seems to have gone to auction. It might have been sold, moved, or never existed.",
     "unauthorizedTitle": "Access Denied",
@@ -536,6 +541,11 @@
     "maxValue": "Max {{label}}"
   },
   "upload": {
+    "emptyFile": "File is empty",
+    "sizeExceeded": "File size exceeds the {{size}}MB limit.",
+    "unsupportedType": "File type \"{{type}}\" is not supported.",
+    "unknownType": "unknown",
+    "limitExceeded": "Maximum {{max}} files allowed. {{remaining}} slots remaining.",
     "dropHere": "Drop files here",
     "dragAndDrop": "Drag & drop files here",
     "clickToBrowse": "or click to browse",

@@ -34,7 +34,7 @@ public static partial class ValidationErrorLocalizer
             TryLocalize(UnsupportedValuePattern(), message, localizer, LocalizationKeys.Validation.UnsupportedValue, 1, 2) ??
             TryLocalize(InvalidPattern(), message, localizer, LocalizationKeys.Validation.Invalid, 1) ??
             TryLocalize(RequiredPattern(), message, localizer, LocalizationKeys.Validation.Required, 1) ??
-            message;
+            UserMessageLocalizer.Translate(message);
     }
 
     private static string? TryLocalize(
@@ -49,7 +49,7 @@ public static partial class ValidationErrorLocalizer
             return null;
 
         var arguments = groupIndexes
-            .Select(index => (object)match.Groups[index].Value)
+            .Select(index => (object)UserMessageLocalizer.Label(match.Groups[index].Value))
             .ToArray();
         return localizer.GetString(key, arguments);
     }

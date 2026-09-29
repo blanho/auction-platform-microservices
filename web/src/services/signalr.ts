@@ -1,3 +1,4 @@
+import i18n from '@/i18n'
 import { getAccessToken } from '@/modules/auth/utils/token.utils'
 import { signalRLogger } from '@/shared/lib/logger'
 import * as signalR from '@microsoft/signalr'
@@ -209,7 +210,7 @@ class SignalRService {
 
   async invoke(methodName: string, ...args: unknown[]): Promise<unknown> {
     if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
-      throw new Error('SignalR connection is not established')
+      throw new Error(i18n.t('errors.connectionUnavailable'))
     }
     return this.connection.invoke(methodName, ...args)
   }

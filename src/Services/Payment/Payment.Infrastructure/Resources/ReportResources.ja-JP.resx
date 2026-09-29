@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Order Report: {0}" xml:space="preserve"><value>注文レポート：{0}</value></data>
+  <data name="Total Records: {0}" xml:space="preserve"><value>総件数：{0}</value></data>
+  <data name="Orders" xml:space="preserve"><value>注文</value></data>
+  <data name="OrderId" xml:space="preserve"><value>注文ID</value></data>
+  <data name="AuctionId" xml:space="preserve"><value>オークションID</value></data>
+  <data name="Buyer" xml:space="preserve"><value>購入者</value></data>
+  <data name="Seller" xml:space="preserve"><value>出品者</value></data>
+  <data name="ItemTitle" xml:space="preserve"><value>商品名</value></data>
+  <data name="Status" xml:space="preserve"><value>状態</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>合計金額</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>作成日時</value></data>
+  <data name="PaymentStatus" xml:space="preserve"><value>支払い状況</value></data>
+  <data name="PaymentTransactionId" xml:space="preserve"><value>支払い取引ID</value></data>
+  <data name="PaidAt" xml:space="preserve"><value>支払い日時</value></data>
+  <data name="BuyerId" xml:space="preserve"><value>購入者ID</value></data>
+  <data name="BuyerUsername" xml:space="preserve"><value>購入者名</value></data>
+  <data name="SellerId" xml:space="preserve"><value>出品者ID</value></data>
+  <data name="SellerUsername" xml:space="preserve"><value>出品者名</value></data>
+  <data name="OrderCount" xml:space="preserve"><value>注文数</value></data>
+  <data name="TotalRevenue" xml:space="preserve"><value>売上合計</value></data>
+  <data name="TotalPlatformFees" xml:space="preserve"><value>手数料合計</value></data>
+  <data name="NetPayout" xml:space="preserve"><value>支払い純額</value></data>
+  <data name="Date" xml:space="preserve"><value>日付</value></data>
+  <data name="TotalShipping" xml:space="preserve"><value>送料合計</value></data>
+  <data name="Pending" xml:space="preserve"><value>待機中</value></data>
+  <data name="PaymentPending" xml:space="preserve"><value>支払い待ち</value></data>
+  <data name="Paid" xml:space="preserve"><value>支払い済み</value></data>
+  <data name="Processing" xml:space="preserve"><value>処理中</value></data>
+  <data name="Shipped" xml:space="preserve"><value>発送済み</value></data>
+  <data name="Delivered" xml:space="preserve"><value>配達済み</value></data>
+  <data name="Completed" xml:space="preserve"><value>完了</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>キャンセル済み</value></data>
+  <data name="Disputed" xml:space="preserve"><value>異議申し立て中</value></data>
+  <data name="Refunded" xml:space="preserve"><value>返金済み</value></data>
+  <data name="Failed" xml:space="preserve"><value>失敗</value></data>
+  <data name="OrderSummary" xml:space="preserve"><value>注文概要</value></data>
+  <data name="PaymentTransactions" xml:space="preserve"><value>支払い取引</value></data>
+  <data name="SellerPayout" xml:space="preserve"><value>出品者への支払い</value></data>
+  <data name="BuyerPurchaseHistory" xml:space="preserve"><value>購入履歴</value></data>
+  <data name="RevenueReport" xml:space="preserve"><value>売上</value></data>
+  <data name="RefundReport" xml:space="preserve"><value>返金</value></data>
+</root>

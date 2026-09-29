@@ -1,3 +1,5 @@
+using System.Resources;
+using BuildingBlocks.Application.Localization;
 using System.Globalization;
 using System.Text;
 using ClosedXML.Excel;
@@ -14,6 +16,8 @@ namespace Payment.Infrastructure.Services;
 
 public class OrderReportGenerator : IOrderReportGenerator
 {
+    private static readonly ResourceManager ReportResources = new(
+        "Payment.Infrastructure.Resources.ReportResources", typeof(OrderReportGenerator).Assembly);
     private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static readonly object FontRegistrationLock = new();
     private readonly IOrderRepository _orderRepository;
@@ -31,6 +35,7 @@ public class OrderReportGenerator : IOrderReportGenerator
         OrderReportParameters parameters,
         CancellationToken cancellationToken = default)
     {
+        using var culture = new RequestCultureScope(parameters.Culture ?? CultureInfo.CurrentUICulture.Name);
         try
         {
             var orders = await _orderRepository.GetForReportAsync(parameters, cancellationToken);
@@ -143,9 +148,9 @@ public class OrderReportGenerator : IOrderReportGenerator
     private static byte[] GenerateExcel(ReportTable report)
     {
         using var workbook = new XLWorkbook();
-        var sheet = workbook.Worksheets.Add("Orders");
+        var sheet = workbook.Worksheets.Add(ReportText("Orders"));
         for (var column = 0; column < report.Headers.Length; column++)
-            sheet.Cell(1, column + 1).Value = report.Headers[column];
+            sheet.Cell(1, column + 1).Value = ReportText(report.Headers[column]);
 
         for (var row = 0; row < report.Rows.Count; row++)
         {
@@ -158,7 +163,7 @@ public class OrderReportGenerator : IOrderReportGenerator
                 else if (value is int count)
                     cell.Value = count;
                 else
-                    cell.Value = FormatValue(value);
+                    cell.Value = FormatDisplayValue(value);
             }
         }
 
@@ -172,9 +177,9 @@ public class OrderReportGenerator : IOrderReportGenerator
     {
         RegisterPdfFont();
         using var document = new PdfDocument();
-        document.Info.Title = $"Order Report: {reportType}";
-        var font = new XFont("Lato", 10);
-        var titleFont = new XFont("Lato", 14);
+        document.Info.Title = string.Format(CultureInfo.CurrentCulture, ReportText("Order Report: {0}"), ReportText(reportType.ToString()));
+        var font = new XFont("Noto Sans JP", 10);
+        var titleFont = new XFont("Noto Sans JP", 14);
         var page = document.AddPage();
         page.Size = PdfSharp.PageSize.A4;
         var graphics = XGraphics.FromPdfPage(page);
@@ -196,14 +201,14 @@ public class OrderReportGenerator : IOrderReportGenerator
             y += lineHeight;
         }
 
-        WriteLine($"Order Report: {reportType}", titleFont);
-        WriteLine($"Total Records: {report.Rows.Count}", font);
+        WriteLine(document.Info.Title, titleFont);
+        WriteLine(string.Format(CultureInfo.CurrentCulture, ReportText("Total Records: {0}"), report.Rows.Count), font);
         y += lineHeight;
         foreach (var row in report.Rows)
         {
             for (var column = 0; column < report.Headers.Length; column++)
             {
-                var field = $"{report.Headers[column]}: {FormatValue(row[column]).Replace('\r', ' ').Replace('\n', ' ')}";
+                var field = $"{ReportText(report.Headers[column])}: {FormatDisplayValue(row[column]).Replace('\r', ' ').Replace('\n', ' ')}";
                 foreach (var line in WrapPdfLine(field, graphics, font, page.Width.Point - 2 * margin).ToList())
                     WriteLine(line, font);
             }
@@ -251,9 +256,21 @@ public class OrderReportGenerator : IOrderReportGenerator
         lock (FontRegistrationLock)
         {
             if (GlobalFontSettings.FontResolver is null)
-                GlobalFontSettings.FontResolver = new LatoFontResolver();
+                GlobalFontSettings.FontResolver = new ReportFontResolver();
         }
     }
+
+    private static string ReportText(string key) => ReportResources.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+
+    private static string FormatDisplayValue(object? value) => value switch
+    {
+        null => string.Empty,
+        Enum status => ReportText(status.ToString()),
+        DateTimeOffset date => $"{date.ToString("g", CultureInfo.CurrentCulture)} {date:zzz}",
+        DateOnly date => date.ToString("d", CultureInfo.CurrentCulture),
+        IFormattable formatted => formatted.ToString(null, CultureInfo.CurrentCulture),
+        _ => value.ToString() ?? string.Empty
+    };
 
     private static string FormatValue(object? value) => value switch
     {
@@ -271,20 +288,20 @@ public class OrderReportGenerator : IOrderReportGenerator
 
     private sealed record ReportTable(string[] Headers, List<object?[]> Rows);
 
-    private sealed class LatoFontResolver : IFontResolver
+    private sealed class ReportFontResolver : IFontResolver
     {
-        private const string FaceName = "Lato-Regular";
+        private const string FaceName = "NotoSansJP-Regular";
         private static readonly byte[] FontBytes = LoadFont();
 
         public FontResolverInfo? ResolveTypeface(string familyName, bool bold, bool italic) =>
-            familyName == "Lato" ? new FontResolverInfo(FaceName, bold, italic) : null;
+            familyName == "Noto Sans JP" ? new FontResolverInfo(FaceName, bold, italic) : null;
 
         public byte[]? GetFont(string faceName) => faceName == FaceName ? FontBytes : null;
 
         private static byte[] LoadFont()
         {
             using var stream = typeof(OrderReportGenerator).Assembly.GetManifestResourceStream(
-                "Payment.Infrastructure.Fonts.Lato-Regular.ttf")
+                "Payment.Infrastructure.Fonts.NotoSansJP-Regular.ttf")
                 ?? throw new InvalidOperationException("The report font is missing.");
             using var buffer = new MemoryStream();
             stream.CopyTo(buffer);

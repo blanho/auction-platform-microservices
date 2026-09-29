@@ -525,3 +525,13 @@ graph LR
 - Bulk notification processing marks a recipient processed even when a delivery channel fails. Channel-level retry policy remains to be defined.
 - `AuctionBulkRepository.CountByCorrelationIdAsync` does not filter by correlation. Import processing no longer uses it; other callers must not treat it as a correlation-specific count.
 - Some legacy repository overloads do not forward cancellation tokens, and clock usage is not uniform across services.
+
+## Localization
+
+The web app and HTTP APIs support English (`en-US`) and Japanese (`ja-JP`). The web client sends `Accept-Language` and refreshes cached queries after a language change. Service resources supply business messages; shared resources supply validation labels and fallback messages. Unrecognized technical errors receive a generic Japanese message while stored diagnostics remain available for troubleshooting.
+
+Queued auction imports and order reports carry the requesting culture. Consumers scope the culture to each delivery; older messages without a culture use English. Deploy updated consumers before producers to ensure queued requests retain their language. Job DTOs and notification metadata resolve stored messages in the reader's current language without modifying the original diagnostic or template arguments.
+
+Excel and PDF order reports localize headings, status labels, and dates. PDF reports embed the licensed Noto Sans JP font for Japanese text. CSV headers, enum values, API field names, and error codes remain invariant for integrations. User-provided titles and notification content retain their original text.
+
+Run `npm run i18n:check` in `web` to check locale key parity and static translation references. Backend localization, culture isolation, job mapping, import consumer, and report tests run with `dotnet test auction.sln`.

@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Localization;
 using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
@@ -36,6 +37,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
     public async Task Consume(ConsumeContext<ProcessAuctionImportCommand> context)
     {
         var message = context.Message;
+        using var culture = new RequestCultureScope(message.Culture);
         var receiptKey = $"ImportAuctionsConsumer:{message.CorrelationId}";
         if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
         var stopwatch = Stopwatch.StartNew();
@@ -134,7 +136,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             {
                 RowNumber = e.RowNumber,
                 Field = e.Field,
-                ErrorMessage = e.ErrorMessage
+                ErrorMessage = UserMessageLocalizer.Translate(e.ErrorMessage)
             }).ToList()
         });
     }

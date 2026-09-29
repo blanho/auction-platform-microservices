@@ -19,7 +19,7 @@
     <PackageReference Include="PDFsharp" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Fonts/Lato-Regular.ttf" />
+    <EmbeddedResource Include="Fonts/NotoSansJP-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />

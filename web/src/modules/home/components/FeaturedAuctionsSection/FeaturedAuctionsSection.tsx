@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/services/http'
 import { colors, typography } from '@/shared/theme/tokens'
 import { East, Favorite, FavoriteBorder, Refresh, Timer } from '@mui/icons-material'
 import {
@@ -125,8 +126,7 @@ export const FeaturedAuctionsSection = () => {
                   </Button>
                 }
               >
-                {t('featuredAuctions.errorMessage')}{' '}
-                {error instanceof Error ? error.message : t('featuredAuctions.errorFallback')}
+                {t('featuredAuctions.errorMessage')} {getErrorMessage(error)}
               </Alert>
             </Grid>
           ) : (

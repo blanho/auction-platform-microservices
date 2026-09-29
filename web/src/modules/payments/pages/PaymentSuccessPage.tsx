@@ -36,7 +36,7 @@ export function PaymentSuccessPage() {
     queryKey: ['order', orderId],
     queryFn: () => {
       if (!orderId) {
-        throw new Error('Order ID is required')
+        throw new Error(t('success.orderIdRequired'))
       }
       return ordersApi.getOrderById(orderId)
     },

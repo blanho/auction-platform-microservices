@@ -47,6 +47,7 @@
   },
 
   "success": {
+    "orderIdRequired": "注文IDが必要です。",
     "confirming": "お支払いを確認しています...",
     "verifying": "取引を確認しています。しばらくお待ちください",
     "orderLookupFailed": "注文の詳細を取得できませんでしたが、支払いは処理されている可能性があります。",

@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Localization;
 using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
@@ -36,6 +37,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
     public async Task Consume(ConsumeContext<ProcessAuctionImportBatchCommand> context)
     {
         var message = context.Message;
+        using var culture = new RequestCultureScope(message.Culture);
         var receiptKey = $"ImportAuctionsBatchConsumer:{message.CorrelationId}:{message.BatchNumber}";
         if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
         var correlationId = message.CorrelationId.ToString();
@@ -91,7 +93,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
 
         var totals = await _workflow.CompleteAsync(receiptKey, message.CorrelationId,
             insertedCount, failedRowCount, validationResult.Errors.Select(e => new ImportRowErrorPayload
-            { RowNumber = e.RowNumber, Field = e.Field, ErrorMessage = e.ErrorMessage }).ToList(),
+            { RowNumber = e.RowNumber, Field = e.Field, ErrorMessage = UserMessageLocalizer.Translate(e.ErrorMessage) }).ToList(),
             message.TotalBatches, context.CancellationToken);
         if (totals is not null)
         {

@@ -1,4 +1,5 @@
 {
+  "unknownUser": "不明なユーザー",
   "appName": "オークションプラットフォーム",
   "brandName": "THE AUCTION",
   "brandNameItalic": "TheAuction",
@@ -154,6 +155,10 @@
     "affiliateProgram": "アフィリエイトプログラム"
   },
   "errors": {
+    "uploadFailed": "ファイルのアップロードに失敗しました（ステータス：{{status}}）。",
+    "connectionUnavailable": "リアルタイム接続を利用できません。もう一度お試しください。",
+    "requestTimeout": "リクエストがタイムアウトしました。もう一度お試しください。",
+    "network": "接続できません。ネットワークを確認して、もう一度お試しください。",
     "notFoundTitle": "ページが見つかりません",
     "notFoundMessage": "お探しのページはオークションに出品されたようです。売却済み、移動済み、または存在しない可能性があります。",
     "unauthorizedTitle": "アクセス拒否",
@@ -536,6 +541,11 @@
     "maxValue": "最大{{label}}"
   },
   "upload": {
+    "emptyFile": "ファイルが空です。",
+    "sizeExceeded": "ファイルサイズが上限の{{size}}MBを超えています。",
+    "unsupportedType": "ファイル形式「{{type}}」には対応していません。",
+    "unknownType": "不明",
+    "limitExceeded": "ファイルは最大{{max}}件までです。あと{{remaining}}件追加できます。",
     "dropHere": "ここにファイルをドロップ",
     "dragAndDrop": "ここにファイルをドラッグ＆ドロップ",
     "clickToBrowse": "またはクリックして選択",

@@ -19,14 +19,14 @@ export function OAuthCallbackPage() {
   const urlError = useMemo(() => {
     const error = searchParams.get('error')
     if (error) {
-      return error
+      return t('oauth.authorizationFailed')
     }
     const code = searchParams.get('code')
     if (!code) {
-      return 'No authorization code received'
+      return t('oauth.missingCode')
     }
     return null
-  }, [searchParams])
+  }, [searchParams, t])
 
   const errorMessage = mutationError ?? urlError
 

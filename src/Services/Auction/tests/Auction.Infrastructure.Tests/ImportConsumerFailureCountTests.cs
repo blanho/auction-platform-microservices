@@ -13,11 +13,14 @@ namespace Auction.Infrastructure.Tests;
 
 public class ImportConsumerFailureCountTests
 {
-    [Fact]
-    public async Task SingleImportWithMultipleErrors_CountsOneFailedRow()
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("ja-JP")]
+    public async Task SingleImportWithMultipleErrors_CountsOneFailedRow(string culture)
     {
         var message = new ProcessAuctionImportCommand
         {
+            Culture = culture,
             CorrelationId = Guid.NewGuid(),
             SellerId = Guid.NewGuid(),
             Rows =
@@ -54,15 +57,20 @@ public class ImportConsumerFailureCountTests
         var completed = Assert.Single(published.OfType<AuctionImportCompletedEvent>());
         Assert.Equal(1, completed.FailedCount);
         Assert.True(completed.Errors.Count > 1);
+        Assert.Equal(culture == "ja-JP" ? "タイトルは必須です。" : "Title is required.",
+            completed.Errors.First(error => error.Field == "Title").ErrorMessage);
         var failure = Assert.Single(published.OfType<FailJobByCorrelationCommand>());
         Assert.Equal("All 1 rows failed validation.", failure.ErrorMessage);
     }
 
-    [Fact]
-    public async Task InvalidRowWithMultipleErrors_CountsOneFailedRow()
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("ja-JP")]
+    public async Task InvalidRowWithMultipleErrors_CountsOneFailedRow(string culture)
     {
         var message = new ProcessAuctionImportBatchCommand
         {
+            Culture = culture,
             CorrelationId = Guid.NewGuid(),
             SellerId = Guid.NewGuid(),
             BatchNumber = 1,
@@ -105,6 +113,8 @@ public class ImportConsumerFailureCountTests
         var completed = Assert.Single(published.OfType<AuctionImportCompletedEvent>());
         Assert.Equal(1, completed.FailedCount);
         Assert.True(completed.Errors.Count > 1);
+        Assert.Equal(culture == "ja-JP" ? "タイトルは必須です。" : "Title is required.",
+            completed.Errors.First(error => error.Field == "Title").ErrorMessage);
     }
 
     public class TestProxy : DispatchProxy

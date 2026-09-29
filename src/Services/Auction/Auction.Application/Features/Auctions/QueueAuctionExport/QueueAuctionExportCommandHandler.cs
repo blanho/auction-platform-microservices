@@ -69,6 +69,6 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
             Status: BackgroundJobStatuses.Queued,
-            Message: $"Export in {request.Format} format has been queued for background processing."));
+            Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"Export in {request.Format} format has been queued for background processing.")));
     }
 }

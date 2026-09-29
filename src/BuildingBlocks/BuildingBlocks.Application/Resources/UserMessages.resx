@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="The operation could not be completed. Please try again or contact support." xml:space="preserve"><value>The operation could not be completed. Please try again or contact support.</value></data>
+  <data name="TotalItems must match the number of job items." xml:space="preserve"><value>TotalItems must match the number of job items.</value></data>
+  <data name="Item sequence numbers must be unique." xml:space="preserve"><value>Item sequence numbers must be unique.</value></data>
+  <data name="{0} is required." xml:space="preserve"><value>{0} is required.</value></data>
+  <data name="{0} must not exceed {1} characters." xml:space="preserve"><value>{0} must not exceed {1} characters.</value></data>
+  <data name="{0} must be non-negative." xml:space="preserve"><value>{0} must be non-negative.</value></data>
+  <data name="{0} must be between {1} and {2}." xml:space="preserve"><value>{0} must be between {1} and {2}.</value></data>
+  <data name="Buy now price must exceed reserve price." xml:space="preserve"><value>Buy now price must exceed reserve price.</value></data>
+  <data name="Buy now price must be greater than reserve price" xml:space="preserve"><value>Buy now price must be greater than reserve price</value></data>
+  <data name="Auction end date must be in the future." xml:space="preserve"><value>Auction end date must be in the future.</value></data>
+  <data name="Currency '{0}' is not supported." xml:space="preserve"><value>Currency '{0}' is not supported.</value></data>
+  <data name="Auction workflow failed after broker retries." xml:space="preserve"><value>Auction workflow failed after broker retries.</value></data>
+  <data name="Auction workflow completed with errors." xml:space="preserve"><value>Auction workflow completed with errors.</value></data>
+  <data name="No item processor is registered for {0}." xml:space="preserve"><value>No item processor is registered for {0}.</value></data>
+  <data name="The job item payload is not a valid command." xml:space="preserve"><value>The job item payload is not a valid command.</value></data>
+  <data name="All {0} items failed." xml:space="preserve"><value>All {0} items failed.</value></data>
+  <data name="Unknown error" xml:space="preserve"><value>Unknown error</value></data>
+  <data name="Report generation failed" xml:space="preserve"><value>Report generation failed</value></data>
+  <data name="Invalid report type or format specified" xml:space="preserve"><value>Invalid report type or format specified</value></data>
+  <data name="Export in {0} format has been queued for background processing." xml:space="preserve"><value>Export in {0} format has been queued for background processing.</value></data>
+  <data name="Bulk update of {0} auctions has been queued for background processing." xml:space="preserve"><value>Bulk update of {0} auctions has been queued for background processing.</value></data>
+  <data name="Import of {0} auctions has been queued for background processing ({1} batches)." xml:space="preserve"><value>Import of {0} auctions has been queued for background processing ({1} batches).</value></data>
+  <data name="{0} report in {1} format has been queued for background processing." xml:space="preserve"><value>{0} report in {1} format has been queued for background processing.</value></data>
+  <data name="Seller response cannot be empty" xml:space="preserve"><value>Seller response cannot be empty</value></data>
+  <data name="Cannot change reserve price after bids have been placed" xml:space="preserve"><value>Cannot change reserve price after bids have been placed</value></data>
+  <data name="Cannot change buy now price on finished auction" xml:space="preserve"><value>Cannot change buy now price on finished auction</value></data>
+  <data name="Can only extend live auctions" xml:space="preserve"><value>Can only extend live auctions</value></data>
+  <data name="Buy now is not available for this auction" xml:space="preserve"><value>Buy now is not available for this auction</value></data>
+  <data name="Seller cannot buy their own auction" xml:space="preserve"><value>Seller cannot buy their own auction</value></data>
+  <data name="Cannot transition from {0} to {1}" xml:space="preserve"><value>Cannot transition from {0} to {1}</value></data>
+  <data name="Cannot mark dismissed notification as read" xml:space="preserve"><value>Cannot mark dismissed notification as read</value></data>
+  <data name="Cannot mark dismissed notification as unread" xml:space="preserve"><value>Cannot mark dismissed notification as unread</value></data>
+  <data name="Cannot archive pending notification" xml:space="preserve"><value>Cannot archive pending notification</value></data>
+  <data name="The order has already been paid with a different transaction" xml:space="preserve"><value>The order has already been paid with a different transaction</value></data>
+  <data name="A paid order cannot be cancelled without a refund" xml:space="preserve"><value>A paid order cannot be cancelled without a refund</value></data>
+  <data name="Insufficient available balance. Available: {0}, Requested: {1}" xml:space="preserve"><value>Insufficient available balance. Available: {0}, Requested: {1}</value></data>
+  <data name="Insufficient available balance to hold. Available: {0}, Requested: {1}" xml:space="preserve"><value>Insufficient available balance to hold. Available: {0}, Requested: {1}</value></data>
+  <data name="Cannot release more than held amount. Held: {0}, Requested: {1}" xml:space="preserve"><value>Cannot release more than held amount. Held: {0}, Requested: {1}</value></data>
+  <data name="Cannot deduct more than held amount. Held: {0}, Requested: {1}" xml:space="preserve"><value>Cannot deduct more than held amount. Held: {0}, Requested: {1}</value></data>
+  <data name="Wallet is deactivated" xml:space="preserve"><value>Wallet is deactivated</value></data>
+  <data name="Amount must be positive. Received: {0}" xml:space="preserve"><value>Amount must be positive. Received: {0}</value></data>
+  <data name="Category cannot be its own parent" xml:space="preserve"><value>Category cannot be its own parent</value></data>
+  <data name="Upload reservation is no longer valid." xml:space="preserve"><value>Upload reservation is no longer valid.</value></data>
+  <data name="CorrelationId is required for job creation." xml:space="preserve"><value>CorrelationId is required for job creation.</value></data>
+  <data name="TotalItems must be greater than zero." xml:space="preserve"><value>TotalItems must be greater than zero.</value></data>
+  <data name="Job can only be started from Pending status." xml:space="preserve"><value>Job can only be started from Pending status.</value></data>
+  <data name="Can only increment total items during initialization." xml:space="preserve"><value>Can only increment total items during initialization.</value></data>
+  <data name="Increment count must be greater than zero." xml:space="preserve"><value>Increment count must be greater than zero.</value></data>
+  <data name="Can only finalize a job that is being initialized." xml:space="preserve"><value>Can only finalize a job that is being initialized.</value></data>
+  <data name="Cannot finalize a job with zero items." xml:space="preserve"><value>Cannot finalize a job with zero items.</value></data>
+  <data name="Cannot record item completion on a non-processing job." xml:space="preserve"><value>Cannot record item completion on a non-processing job.</value></data>
+  <data name="Cannot record item failure on a non-processing job." xml:space="preserve"><value>Cannot record item failure on a non-processing job.</value></data>
+  <data name="Job is not processing." xml:space="preserve"><value>Job is not processing.</value></data>
+  <data name="Batch progress exceeds the declared job total." xml:space="preserve"><value>Batch progress exceeds the declared job total.</value></data>
+  <data name="Cannot record batch completion on a non-processing job." xml:space="preserve"><value>Cannot record batch completion on a non-processing job.</value></data>
+  <data name="Batch count must be greater than zero." xml:space="preserve"><value>Batch count must be greater than zero.</value></data>
+  <data name="Cannot record batch failure on a non-processing job." xml:space="preserve"><value>Cannot record batch failure on a non-processing job.</value></data>
+  <data name="Cannot fail a job that is already in a terminal state." xml:space="preserve"><value>Cannot fail a job that is already in a terminal state.</value></data>
+  <data name="Cannot cancel a job that is already in a terminal state." xml:space="preserve"><value>Cannot cancel a job that is already in a terminal state.</value></data>
+  <data name="Can only retry a failed or partially completed job." xml:space="preserve"><value>Can only retry a failed or partially completed job.</value></data>
+  <data name="Execution log must belong to this job." xml:space="preserve"><value>Execution log must belong to this job.</value></data>
+  <data name="Cannot modify a job in a terminal state." xml:space="preserve"><value>Cannot modify a job in a terminal state.</value></data>
+  <data name="Item can only start processing from Pending status." xml:space="preserve"><value>Item can only start processing from Pending status.</value></data>
+  <data name="Item can only be completed from Processing status." xml:space="preserve"><value>Item can only be completed from Processing status.</value></data>
+  <data name="Item can only be failed from Processing status." xml:space="preserve"><value>Item can only be failed from Processing status.</value></data>
+  <data name="Item can only be reset from Failed status." xml:space="preserve"><value>Item can only be reset from Failed status.</value></data>
+  <data name="Log message is required." xml:space="preserve"><value>Log message is required.</value></data>
+  <data name="Machine name is required for execution context." xml:space="preserve"><value>Machine name is required for execution context.</value></data>
+  <data name="Job with ID '{0}' was not found." xml:space="preserve"><value>Job with ID '{0}' was not found.</value></data>
+  <data name="Label.Title" xml:space="preserve"><value>Title</value></data>
+  <data name="Label.Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Label.Reserve price" xml:space="preserve"><value>Reserve price</value></data>
+  <data name="Label.ReservePrice" xml:space="preserve"><value>ReservePrice</value></data>
+  <data name="Label.Buy now price" xml:space="preserve"><value>Buy now price</value></data>
+  <data name="Label.BuyNowPrice" xml:space="preserve"><value>BuyNowPrice</value></data>
+  <data name="Label.Auction end date" xml:space="preserve"><value>Auction end date</value></data>
+  <data name="Label.AuctionEnd" xml:space="preserve"><value>AuctionEnd</value></data>
+  <data name="Label.Year" xml:space="preserve"><value>Year</value></data>
+  <data name="Label.YearManufactured" xml:space="preserve"><value>YearManufactured</value></data>
+  <data name="Label.Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="Label.Condition" xml:space="preserve"><value>Condition</value></data>
+  <data name="Label.Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="Label.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Label.Processing" xml:space="preserve"><value>Processing</value></data>
+  <data name="Label.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Label.Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Label.CompletedWithErrors" xml:space="preserve"><value>CompletedWithErrors</value></data>
+  <data name="Label.Initializing" xml:space="preserve"><value>Initializing</value></data>
+  <data name="Label.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Label.Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="Label.Live" xml:space="preserve"><value>Live</value></data>
+  <data name="Label.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Label.Finished" xml:space="preserve"><value>Finished</value></data>
+  <data name="Label.ReservedForBuyNow" xml:space="preserve"><value>ReservedForBuyNow</value></data>
+  <data name="Label.ReservedNotMet" xml:space="preserve"><value>ReservedNotMet</value></data>
+  <data name="Label.Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Label.AuctionImport" xml:space="preserve"><value>AuctionImport</value></data>
+  <data name="Label.BulkAuctionUpdate" xml:space="preserve"><value>BulkAuctionUpdate</value></data>
+  <data name="Label.DataExport" xml:space="preserve"><value>DataExport</value></data>
+  <data name="Label.ImageProcessing" xml:space="preserve"><value>ImageProcessing</value></data>
+  <data name="Label.OrderSummary" xml:space="preserve"><value>OrderSummary</value></data>
+  <data name="Label.PaymentTransactions" xml:space="preserve"><value>PaymentTransactions</value></data>
+  <data name="Label.SellerPayout" xml:space="preserve"><value>SellerPayout</value></data>
+  <data name="Label.BuyerPurchaseHistory" xml:space="preserve"><value>BuyerPurchaseHistory</value></data>
+  <data name="Label.RevenueReport" xml:space="preserve"><value>RevenueReport</value></data>
+  <data name="Label.RefundReport" xml:space="preserve"><value>RefundReport</value></data>
+  <data name="Label.Auction ID" xml:space="preserve"><value>Auction ID</value></data>
+  <data name="Label.Auction IDs" xml:space="preserve"><value>Auction IDs</value></data>
+  <data name="Label.Auctions" xml:space="preserve"><value>Auctions</value></data>
+  <data name="Label.Auto-bid ID" xml:space="preserve"><value>Auto-bid ID</value></data>
+  <data name="Label.Batch size" xml:space="preserve"><value>Batch size</value></data>
+  <data name="Label.Bid ID" xml:space="preserve"><value>Bid ID</value></data>
+  <data name="Label.Bid amount" xml:space="preserve"><value>Bid amount</value></data>
+  <data name="Label.Bidder ID" xml:space="preserve"><value>Bidder ID</value></data>
+  <data name="Label.Bidder username" xml:space="preserve"><value>Bidder username</value></data>
+  <data name="Label.Body" xml:space="preserve"><value>Body</value></data>
+  <data name="Label.Buyer ID" xml:space="preserve"><value>Buyer ID</value></data>
+  <data name="Label.Buyer username" xml:space="preserve"><value>Buyer username</value></data>
+  <data name="Label.Cancellation reason" xml:space="preserve"><value>Cancellation reason</value></data>
+  <data name="Label.Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="Label.Correlation ID" xml:space="preserve"><value>Correlation ID</value></data>
+  <data name="Label.Date range" xml:space="preserve"><value>Date range</value></data>
+  <data name="Label.Export format" xml:space="preserve"><value>Export format</value></data>
+  <data name="Label.Idempotency key" xml:space="preserve"><value>Idempotency key</value></data>
+  <data name="Label.Increment amount" xml:space="preserve"><value>Increment amount</value></data>
+  <data name="Label.Max amount" xml:space="preserve"><value>Max amount</value></data>
+  <data name="Label.Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Label.New max amount" xml:space="preserve"><value>New max amount</value></data>
+  <data name="Label.Order ID" xml:space="preserve"><value>Order ID</value></data>
+  <data name="Label.Push body" xml:space="preserve"><value>Push body</value></data>
+  <data name="Label.Push title" xml:space="preserve"><value>Push title</value></data>
+  <data name="Label.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Label.Reason for retraction" xml:space="preserve"><value>Reason for retraction</value></data>
+  <data name="Label.Report format" xml:space="preserve"><value>Report format</value></data>
+  <data name="Label.Report type" xml:space="preserve"><value>Report type</value></data>
+  <data name="Label.Reported username" xml:space="preserve"><value>Reported username</value></data>
+  <data name="Label.Requested by" xml:space="preserve"><value>Requested by</value></data>
+  <data name="Label.Resolution" xml:space="preserve"><value>Resolution</value></data>
+  <data name="Label.Reviewed user ID" xml:space="preserve"><value>Reviewed user ID</value></data>
+  <data name="Label.Reviewed username" xml:space="preserve"><value>Reviewed username</value></data>
+  <data name="Label.Reviewer ID" xml:space="preserve"><value>Reviewer ID</value></data>
+  <data name="Label.Reviewer username" xml:space="preserve"><value>Reviewer username</value></data>
+  <data name="Label.Row" xml:space="preserve"><value>Row</value></data>
+  <data name="Label.Rows" xml:space="preserve"><value>Rows</value></data>
+  <data name="Label.SMS body" xml:space="preserve"><value>SMS body</value></data>
+  <data name="Label.Seller ID" xml:space="preserve"><value>Seller ID</value></data>
+  <data name="Label.Seller filter" xml:space="preserve"><value>Seller filter</value></data>
+  <data name="Label.Seller notes" xml:space="preserve"><value>Seller notes</value></data>
+  <data name="Label.Seller username" xml:space="preserve"><value>Seller username</value></data>
+  <data name="Label.Shipping address" xml:space="preserve"><value>Shipping address</value></data>
+  <data name="Label.Shipping carrier" xml:space="preserve"><value>Shipping carrier</value></data>
+  <data name="Label.Start date" xml:space="preserve"><value>Start date</value></data>
+  <data name="Label.Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Label.Template ID" xml:space="preserve"><value>Template ID</value></data>
+  <data name="Label.Template key" xml:space="preserve"><value>Template key</value></data>
+  <data name="Label.Template name" xml:space="preserve"><value>Template name</value></data>
+  <data name="Label.Tracking number" xml:space="preserve"><value>Tracking number</value></data>
+  <data name="Label.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Label.User ID" xml:space="preserve"><value>User ID</value></data>
+  <data name="Label.UserId" xml:space="preserve"><value>UserId</value></data>
+  <data name="Label.Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Label.Year manufactured" xml:space="preserve"><value>Year manufactured</value></data>
+  <data name="Label.notification channel" xml:space="preserve"><value>notification channel</value></data>
+  <data name="Label.recipient" xml:space="preserve"><value>recipient</value></data>
+  <data name="Label.recipients" xml:space="preserve"><value>recipients</value></data>
+  <data name="Label.report status" xml:space="preserve"><value>report status</value></data>
+  <data name="Label.UserImport" xml:space="preserve"><value>UserImport</value></data>
+  <data name="Label.AuctionSettlement" xml:space="preserve"><value>AuctionSettlement</value></data>
+  <data name="Label.SearchReindex" xml:space="preserve"><value>SearchReindex</value></data>
+  <data name="Label.PaymentCycle" xml:space="preserve"><value>PaymentCycle</value></data>
+  <data name="Label.BulkNotification" xml:space="preserve"><value>BulkNotification</value></data>
+  <data name="Label.AnalyticsAggregation" xml:space="preserve"><value>AnalyticsAggregation</value></data>
+  <data name="Label.BulkFileUpload" xml:space="preserve"><value>BulkFileUpload</value></data>
+  <data name="Label.ReportGeneration" xml:space="preserve"><value>ReportGeneration</value></data>
+  <data name="All {0} rows failed validation." xml:space="preserve"><value>All {0} rows failed validation.</value></data>
+  <data name="Job timed out after {0} minutes of inactivity." xml:space="preserve"><value>Job timed out after {0} minutes of inactivity.</value></data>
+  <data name="Failed to start job: {0}" xml:space="preserve"><value>Failed to start job: {0}</value></data>
+  <data name="Job was cancelled by user." xml:space="preserve"><value>Job was cancelled by user.</value></data>
+  <data name="{0} cannot be empty." xml:space="preserve"><value>{0} cannot be empty.</value></data>
+  <data name="{0} cannot be null." xml:space="preserve"><value>{0} cannot be null.</value></data>
+  <data name="{0} cannot be negative." xml:space="preserve"><value>{0} cannot be negative.</value></data>
+  <data name="{0} must be positive." xml:space="preserve"><value>{0} must be positive.</value></data>
+  <data name="{0} must be in the future." xml:space="preserve"><value>{0} must be in the future.</value></data>
+  <data name="{0} must contain at least one element." xml:space="preserve"><value>{0} must contain at least one element.</value></data>
+  <data name="Job reset for retry." xml:space="preserve"><value>Job reset for retry.</value></data>
+  <data name="Job timed out while processing" xml:space="preserve"><value>Job timed out while processing</value></data>
+  <data name="Job execution details were recorded." xml:space="preserve"><value>Job execution details were recorded.</value></data>
+  <data name="Bulk notification job queued for {0} recipients" xml:space="preserve"><value>Bulk notification job queued for {0} recipients</value></data>
+</root>

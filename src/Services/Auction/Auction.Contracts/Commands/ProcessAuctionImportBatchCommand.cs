@@ -2,6 +2,7 @@ namespace AuctionService.Contracts.Commands;
 
 public record ProcessAuctionImportBatchCommand
 {
+    public string? Culture { get; init; }
     public Guid CorrelationId { get; init; }
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;

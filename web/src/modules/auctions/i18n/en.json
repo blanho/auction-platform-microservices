@@ -233,6 +233,7 @@
   },
 
   "validation": {
+    "incompleteForm": "Please complete the required auction fields.",
     "nameRequired": "Name is required",
     "slugRequired": "Slug is required",
     "invalidUrl": "Invalid URL",

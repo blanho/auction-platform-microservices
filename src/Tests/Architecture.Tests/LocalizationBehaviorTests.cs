@@ -101,9 +101,9 @@ public sealed class LocalizationBehaviorTests
         var localizedErrors = Assert.IsType<Dictionary<string, string[]>>(
             problemDetails!.Extensions[ProblemDetailsExtensionKeys.Errors]);
         Assert.Equal("1つ以上の検証エラーが発生しました。", problemDetails.Detail);
-        Assert.Equal("Titleフィールドは必須です。", localizedErrors["Title"].Single());
+        Assert.Equal("タイトルフィールドは必須です。", localizedErrors["Title"].Single());
         Assert.Equal(
-            "Auction end dateフィールドは現在から30日以内でなければなりません。",
+            "終了日時フィールドは現在から30日以内でなければなりません。",
             localizedErrors["AuctionEnd"].Single());
     }
 }

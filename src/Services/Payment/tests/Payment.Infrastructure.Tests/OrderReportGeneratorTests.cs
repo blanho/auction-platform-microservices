@@ -92,6 +92,37 @@ public class OrderReportGeneratorTests
         }
     }
 
+    [Fact]
+    public async Task JapaneseReportsLocalizeDisplayTextAndKeepCsvColumnsStable()
+    {
+        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "購入者", Guid.NewGuid(),
+            "出品者", "日本製の時計", 100m);
+        order.CompletePayment(Guid.NewGuid().ToString());
+        var generator = CreateGenerator([order]);
+        var parameters = new OrderReportParameters(Culture: "ja-JP");
+        var excel = await generator.GenerateReportAsync(ReportType.OrderSummary, ReportFormat.Excel, parameters);
+        Assert.True(excel.Success, excel.ErrorMessage);
+        using (var workbook = new XLWorkbook(new MemoryStream(excel.Content)))
+        {
+            var sheet = workbook.Worksheet("注文");
+            Assert.Equal("注文ID", sheet.Cell(1, 1).GetString());
+            Assert.Equal("日本製の時計", sheet.Cell(2, 5).GetString());
+            Assert.Equal("支払い済み", sheet.Cell(2, 6).GetString());
+        }
+        var pdf = await generator.GenerateReportAsync(ReportType.OrderSummary, ReportFormat.Pdf, parameters);
+        Assert.True(pdf.Success, pdf.ErrorMessage);
+        using (var document = PdfReader.Open(new MemoryStream(pdf.Content), PdfDocumentOpenMode.Import))
+        {
+            Assert.Equal("注文レポート：注文概要", document.Info.Title);
+            Assert.True(document.PageCount > 0);
+        }
+        var csv = await generator.GenerateReportAsync(ReportType.OrderSummary, ReportFormat.Csv, parameters);
+        Assert.StartsWith("OrderId,AuctionId,Buyer,Seller,ItemTitle,Status,TotalAmount,CreatedAt", Encoding.UTF8.GetString(csv.Content));
+        Assert.Contains(",Paid,", Encoding.UTF8.GetString(csv.Content));
+        var preview = Environment.GetEnvironmentVariable("I18N_REPORT_PREVIEW");
+        if (!string.IsNullOrEmpty(preview)) await File.WriteAllBytesAsync(preview, pdf.Content);
+    }
+
     private static Order CreatePaidOrder()
     {
         var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(),

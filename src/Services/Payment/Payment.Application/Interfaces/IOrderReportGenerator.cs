@@ -17,7 +17,8 @@ public record OrderReportParameters(
     Guid? BuyerIdFilter = null,
     Guid? SellerIdFilter = null,
     DateTimeOffset? StartDate = null,
-    DateTimeOffset? EndDate = null);
+    DateTimeOffset? EndDate = null,
+    string? Culture = null);
 
 public record OrderReportResult(
     bool Success,

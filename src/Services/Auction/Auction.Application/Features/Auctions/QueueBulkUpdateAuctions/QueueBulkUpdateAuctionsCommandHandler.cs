@@ -60,6 +60,6 @@ public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUp
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
             Status: BackgroundJobStatuses.Queued,
-            Message: $"Bulk update of {request.AuctionIds.Count} auctions has been queued for background processing."));
+            Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"Bulk update of {request.AuctionIds.Count} auctions has been queued for background processing.")));
     }
 }

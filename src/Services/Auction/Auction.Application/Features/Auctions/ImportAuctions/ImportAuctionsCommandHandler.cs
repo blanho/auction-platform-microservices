@@ -68,7 +68,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
                 FailedCount: failedRowCount,
                 SkippedDuplicateCount: 0,
                 Duration: stopwatch.Elapsed,
-                Errors: validationResult.Errors));
+                Errors: validationResult.Errors.Select(error => error with
+                { ErrorMessage = BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate(error.ErrorMessage) }).ToList()));
         }
 
         var rowsToProcess = ResumeFromCheckpoint(validationResult.ValidRows, checkpoint);
@@ -103,7 +104,8 @@ public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsComman
             FailedCount: failedRowCount,
             SkippedDuplicateCount: skippedDuplicateCount,
             Duration: stopwatch.Elapsed,
-            Errors: validationResult.Errors));
+            Errors: validationResult.Errors.Select(error => error with
+            { ErrorMessage = BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate(error.ErrorMessage) }).ToList()));
     }
 
     private static IReadOnlyList<ValidatedRow> ResumeFromCheckpoint(

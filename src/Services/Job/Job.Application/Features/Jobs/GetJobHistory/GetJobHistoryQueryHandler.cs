@@ -58,7 +58,7 @@ public class GetJobHistoryQueryHandler : IQueryHandler<GetJobHistoryQuery, JobHi
             Id = log.Id,
             JobId = log.JobId,
             LogLevel = log.LogLevel,
-            Message = log.Message,
+            Message = BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate(log.Message, "Job execution details were recorded."),
             PreviousStatus = log.PreviousStatus,
             NewStatus = log.NewStatus,
             MachineName = log.Context?.MachineName,

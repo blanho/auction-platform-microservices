@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+import { getErrorMessage } from '@/services/http'
 import { staggerContainer, staggerItem } from '@/shared/lib/animations'
 import type { PaginatedResponse } from '@/shared/types/api'
 import type { ColumnConfig } from '@/shared/types/filter.types'
@@ -65,7 +67,7 @@ export function DataTable<T extends { id?: string }>({
   selectable = false,
   selectedIds = [],
   onSelectionChange,
-  emptyMessage = 'No data available',
+  emptyMessage,
   emptyIcon,
   skeletonRows = 5,
   stickyHeader = false,
@@ -77,6 +79,7 @@ export function DataTable<T extends { id?: string }>({
   tableContainerSx,
   animated = true,
 }: Readonly<DataTableProps<T>>) {
+  const { t } = useTranslation('common')
   const visibleColumns = useMemo(() => columns.filter((col) => !col.hidden), [columns])
 
   const items = useMemo(() => data?.items ?? [], [data?.items])
@@ -173,7 +176,7 @@ export function DataTable<T extends { id?: string }>({
       return (
         <TableEmptyStateRow
           colSpan={visibleColumns.length + (selectable ? 1 : 0)}
-          title={error.message || 'An error occurred'}
+          title={getErrorMessage(error)}
         />
       )
     }
@@ -191,7 +194,7 @@ export function DataTable<T extends { id?: string }>({
       return (
         <TableEmptyStateRow
           colSpan={visibleColumns.length + (selectable ? 1 : 0)}
-          title={emptyMessage}
+          title={emptyMessage ?? t('emptyState.default.title')}
           icon={emptyIcon}
         />
       )

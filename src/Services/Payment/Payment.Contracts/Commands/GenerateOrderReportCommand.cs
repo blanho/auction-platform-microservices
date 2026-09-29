@@ -2,6 +2,7 @@ namespace PaymentService.Contracts.Commands;
 
 public record GenerateOrderReportCommand
 {
+    public string? Culture { get; init; }
     public Guid CorrelationId { get; init; }
     public Guid RequestedBy { get; init; }
     public string ReportType { get; init; } = string.Empty;
