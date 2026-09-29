@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/services/http'
 import { usePlaceBid } from '@/modules/bidding/hooks/useBidding'
 import { useSnackbar } from '@/shared/hooks/useSnackbar'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -80,7 +81,7 @@ export function useAuctionDetailActions(
         await placeBidMutation.mutateAsync({ auctionId, amount })
         snackbar.show(t('messages.bidPlaced'), 'success')
       } catch (error) {
-        snackbar.show(error instanceof Error ? error.message : t('messages.bidFailed'), 'error')
+        snackbar.show(getErrorMessage(error), 'error')
         throw error
       }
     },

@@ -24,7 +24,7 @@ public static class ProblemDetailsHelper
         var problemDetails = new ProblemDetails
         {
             Title = error.Code,
-            Detail = detail,
+            Detail = UserMessageLocalizer.Translate(detail),
             Status = GetStatusCode(error),
             Type = $"{baseUrl}/{error.Code.ToLowerInvariant().Replace('.', '-')}"
         };
@@ -41,18 +41,18 @@ public static class ProblemDetailsHelper
     private static string ResolveLocalizedMessage(Error error, ILocalizationService? localizer)
     {
         if (localizer == null)
-            return error.Message;
+            return UserMessageLocalizer.Translate(error.Message);
 
         if (error is LocalizableError localizableError && localizableError.Parameters.Length > 0)
         {
             var template = localizer.GetLocalizedString(error.Code);
             return template.ResourceNotFound
-                ? error.Message
+                ? UserMessageLocalizer.Translate(error.Message)
                 : string.Format(template.Value, localizableError.Parameters);
         }
 
         var localized = localizer.GetLocalizedString(error.Code);
-        return localized.ResourceNotFound ? error.Message : localized.Value;
+        return localized.ResourceNotFound ? UserMessageLocalizer.Translate(error.Message) : localized.Value;
     }
 
     public static ProblemDetails Create(
@@ -65,7 +65,7 @@ public static class ProblemDetailsHelper
         return new ProblemDetails
         {
             Title = title,
-            Detail = detail,
+            Detail = UserMessageLocalizer.Translate(detail),
             Status = statusCode,
             Type = $"{baseUrl}/{title.ToLowerInvariant().Replace('.', '-')}"
         };

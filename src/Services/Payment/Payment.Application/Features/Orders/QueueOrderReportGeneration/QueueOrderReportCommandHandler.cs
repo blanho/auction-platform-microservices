@@ -28,6 +28,7 @@ public class QueueOrderReportCommandHandler : ICommandHandler<QueueOrderReportCo
         var command = new GenerateOrderReportCommand
         {
             CorrelationId = correlationId,
+            Culture = System.Globalization.CultureInfo.CurrentUICulture.Name,
             RequestedBy = request.RequestedBy,
             ReportType = request.ReportType.ToString(),
             Format = request.Format.ToString(),
@@ -49,6 +50,6 @@ public class QueueOrderReportCommandHandler : ICommandHandler<QueueOrderReportCo
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
             Status: BackgroundJobStatuses.Queued,
-            Message: $"{request.ReportType} report in {request.Format} format has been queued for background processing."));
+            Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"{request.ReportType} report in {request.Format} format has been queued for background processing.")));
     }
 }

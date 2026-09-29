@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/services/http'
 import { authApi } from '@/modules/auth/api'
 import type {
   AuthResponse,
@@ -186,7 +187,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return {}
     } catch (err) {
       setStatus('unauthenticated')
-      const message = err instanceof Error ? err.message : 'Login failed'
+      const message = getErrorMessage(err)
       setError(message)
       throw err
     }
@@ -201,7 +202,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await handleAuthSuccess(response)
     } catch (err) {
       setStatus('unauthenticated')
-      const message = err instanceof Error ? err.message : '2FA verification failed'
+      const message = getErrorMessage(err)
       setError(message)
       throw err
     }
@@ -216,7 +217,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await handleAuthSuccess(response)
     } catch (err) {
       setStatus('unauthenticated')
-      const message = err instanceof Error ? err.message : 'Registration failed'
+      const message = getErrorMessage(err)
       setError(message)
       throw err
     }

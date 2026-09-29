@@ -1,3 +1,4 @@
+import i18n from '@/i18n'
 import { http } from '@/services/http'
 import type {
   BatchUploadResponse,
@@ -101,7 +102,7 @@ export const storageApi = {
       body: file,
     })
     if (!response.ok) {
-      throw new Error(`File upload failed with status ${response.status}`)
+      throw new Error(i18n.t('errors.uploadFailed', { status: response.status }))
     }
     onProgress?.(100)
   },

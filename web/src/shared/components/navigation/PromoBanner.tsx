@@ -81,7 +81,7 @@ export const PromoBanner = ({
   const currentPromo = resolvedPromotions[safeCurrentIndex]
   const displayText = currentPromo.text
   const displayLink = currentPromo.link
-  const displayLinkText = currentPromo.linkText || 'Shop Now'
+  const displayLinkText = currentPromo.linkText || t('shopNow')
   const displayBgColor = currentPromo.bgColor || palette.neutral[900]
 
   return (

@@ -63,6 +63,7 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
             var batchCommand = new ProcessAuctionImportBatchCommand
             {
                 CorrelationId = correlationId,
+                Culture = System.Globalization.CultureInfo.CurrentUICulture.Name,
                 SellerId = request.SellerId,
                 SellerUsername = request.SellerUsername,
                 Currency = request.Currency,
@@ -85,7 +86,7 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
             Status: BackgroundJobStatuses.Queued,
-            Message: $"Import of {totalRows} auctions has been queued for background processing ({totalBatches} batches)."));
+            Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"Import of {totalRows} auctions has been queued for background processing ({totalBatches} batches).")));
     }
 
     private static List<List<T>> ChunkList<T>(List<T> source, int chunkSize)

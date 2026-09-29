@@ -86,7 +86,7 @@ export function useAuctionForm(id: string | undefined) {
       await updateMutation.mutateAsync({ id, data: updateData })
     } else {
       if (!isCreateAuctionFormData(data)) {
-        throw new Error('Create auction form data is incomplete')
+        throw new Error(t('validation.incompleteForm'))
       }
 
       const createData: CreateAuctionRequest = {

@@ -212,6 +212,12 @@ export function getErrorMessage(error: unknown): string {
       return data.title
     }
   }
+  if (axios.isAxiosError(error)) {
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      return i18n.t('errors.requestTimeout')
+    }
+    return i18n.t(error.response ? 'errors.unexpected' : 'errors.network')
+  }
   if (error instanceof Error) {
     return error.message
   }

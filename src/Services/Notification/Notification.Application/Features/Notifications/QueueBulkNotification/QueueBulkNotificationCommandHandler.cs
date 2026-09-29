@@ -57,6 +57,6 @@ public class QueueBulkNotificationCommandHandler : ICommandHandler<QueueBulkNoti
             JobId: correlationId,
             CorrelationId: correlationId.ToString(),
             Status: BackgroundJobStatuses.Queued,
-            Message: $"Bulk notification job queued for {request.Recipients.Count} recipients"));
+            Message: BuildingBlocks.Application.Localization.UserMessageLocalizer.Translate($"Bulk notification job queued for {request.Recipients.Count} recipients")));
     }
 }

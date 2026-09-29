@@ -1,10 +1,11 @@
+import i18n from '@/i18n'
 import type { AdminUser } from '../types'
 
 export function getAdminUserDisplayName(user: AdminUser | null | undefined): string {
   if (!user) {
     return ''
   }
-  return user.displayName || user.username || 'Unknown User'
+  return user.displayName || user.username || i18n.t('unknownUser')
 }
 
 export function getAdminUserInitial(user: AdminUser | null | undefined): string {

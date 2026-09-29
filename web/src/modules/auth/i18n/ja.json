@@ -124,6 +124,8 @@
   },
 
   "oauth": {
+    "missingCode": "認証コードを受信できませんでした。",
+    "authorizationFailed": "認証に失敗しました。もう一度ログインしてください。",
     "authenticationFailed": "認証に失敗しました",
     "redirectingToLogin": "ログインページにリダイレクト中...",
     "completingSignIn": "ログインを完了中...",

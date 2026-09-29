@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+import { getErrorMessage } from '@/services/http'
 import { storageApi } from '@/services/storage'
 import {
   ALL_ACCEPTED_TYPES,
@@ -47,16 +49,16 @@ function generateUploadId(): string {
 
 function validateFile(file: File, config: FileValidationConfig): string | null {
   if (file.size === 0) {
-    return 'File is empty'
+    return i18n.t('upload.emptyFile')
   }
 
   if (file.size > config.maxFileSize) {
     const maxMb = config.maxFileSize / (1024 * 1024)
-    return `File size exceeds ${maxMb}MB limit`
+    return i18n.t('upload.sizeExceeded', { size: maxMb })
   }
 
   if (!config.acceptedTypes.includes(file.type)) {
-    return `File type "${file.type || 'unknown'}" is not supported`
+    return i18n.t('upload.unsupportedType', { type: file.type || i18n.t('upload.unknownType') })
   }
 
   return null
@@ -140,7 +142,10 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
         return [
           {
             file: files[0],
-            reason: `Maximum ${validationConfig.maxFiles} files allowed. ${validationConfig.maxFiles - currentCount} slots remaining.`,
+            reason: i18n.t('upload.limitExceeded', {
+              max: validationConfig.maxFiles,
+              remaining: validationConfig.maxFiles - currentCount,
+            }),
           },
         ]
       }
@@ -208,7 +213,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
 
           onUploadComplete?.(attachment)
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Upload failed'
+          const errorMessage = getErrorMessage(err)
           updateUploadState(upload.id, { status: 'error', error: errorMessage })
           errors.push({ file: upload.file, reason: errorMessage })
           onUploadError?.(upload.file, errorMessage)

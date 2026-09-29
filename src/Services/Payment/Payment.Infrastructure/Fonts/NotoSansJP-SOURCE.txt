@@ -1,0 +1,6 @@
+Noto Sans JP, upstream release Sans2.004
+Source: https://github.com/notofonts/noto-cjk/tree/Sans2.004
+Original: Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf
+License: NotoSansJP-LICENSE.txt (SIL Open Font License 1.1)
+Regular static instance generated with fonttools:
+python -m fontTools.varLib.instancer NotoSansJP-VF.ttf wght=400 --output NotoSansJP-Regular.ttf

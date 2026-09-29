@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using BuildingBlocks.Application.Localization;
 using Notification.Application.DTOs;
+using Notification.Application.Localization;
 
 namespace Notification.Application.Helpers;
 
@@ -23,7 +24,7 @@ public static class NotificationLocalizationMetadata
 
         return (
             localizer.GetString(text.TitleKey),
-            localizer.GetString(text.MessageKey, arguments),
+            localizer.GetString(text.MessageKey, LocalizeArguments(text.MessageKey, arguments)),
             AddMetadata(notification.Data, text.TitleKey, text.MessageKey, arguments));
     }
 
@@ -38,8 +39,18 @@ public static class NotificationLocalizationMetadata
 
         return (
             localizer.GetString(metadata.TitleKey),
-            localizer.GetString(metadata.MessageKey, metadata.MessageArguments),
+            localizer.GetString(metadata.MessageKey, LocalizeArguments(metadata.MessageKey, metadata.MessageArguments)),
             cleanData);
+    }
+
+    private static string[] LocalizeArguments(string key, string[] arguments)
+    {
+        var localized = (string[])arguments.Clone();
+        if (key.StartsWith("Notification.Job", StringComparison.Ordinal) && localized.Length > 0)
+            localized[0] = UserMessageLocalizer.Label(localized[0]);
+        if (key == NotificationMessageKeys.JobFailedMessage && localized.Length > 1)
+            localized[1] = UserMessageLocalizer.Translate(localized[1]);
+        return localized;
     }
 
     private static string AddMetadata(string data, string titleKey, string messageKey, string[] arguments)

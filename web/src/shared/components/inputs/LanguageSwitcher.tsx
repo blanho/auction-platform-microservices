@@ -1,4 +1,5 @@
 import { supportedLanguages } from '@/i18n'
+import { useQueryClient } from '@tanstack/react-query'
 import { Language } from '@mui/icons-material'
 import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { useState } from 'react'
@@ -6,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation('common')
+  const queryClient = useQueryClient()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -17,9 +19,11 @@ export function LanguageSwitcher() {
     setAnchorEl(null)
   }
 
-  const handleLanguageChange = (langCode: string) => {
-    i18n.changeLanguage(langCode)
+  const handleLanguageChange = async (langCode: string) => {
     handleClose()
+    await queryClient.cancelQueries()
+    await i18n.changeLanguage(langCode)
+    await queryClient.invalidateQueries()
   }
 
   const currentLanguage =

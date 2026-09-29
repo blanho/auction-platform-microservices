@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Order Report: {0}" xml:space="preserve"><value>Order Report: {0}</value></data>
+  <data name="Total Records: {0}" xml:space="preserve"><value>Total Records: {0}</value></data>
+  <data name="Orders" xml:space="preserve"><value>Orders</value></data>
+  <data name="OrderId" xml:space="preserve"><value>OrderId</value></data>
+  <data name="AuctionId" xml:space="preserve"><value>AuctionId</value></data>
+  <data name="Buyer" xml:space="preserve"><value>Buyer</value></data>
+  <data name="Seller" xml:space="preserve"><value>Seller</value></data>
+  <data name="ItemTitle" xml:space="preserve"><value>ItemTitle</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>TotalAmount</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>CreatedAt</value></data>
+  <data name="PaymentStatus" xml:space="preserve"><value>PaymentStatus</value></data>
+  <data name="PaymentTransactionId" xml:space="preserve"><value>PaymentTransactionId</value></data>
+  <data name="PaidAt" xml:space="preserve"><value>PaidAt</value></data>
+  <data name="BuyerId" xml:space="preserve"><value>BuyerId</value></data>
+  <data name="BuyerUsername" xml:space="preserve"><value>BuyerUsername</value></data>
+  <data name="SellerId" xml:space="preserve"><value>SellerId</value></data>
+  <data name="SellerUsername" xml:space="preserve"><value>SellerUsername</value></data>
+  <data name="OrderCount" xml:space="preserve"><value>OrderCount</value></data>
+  <data name="TotalRevenue" xml:space="preserve"><value>TotalRevenue</value></data>
+  <data name="TotalPlatformFees" xml:space="preserve"><value>TotalPlatformFees</value></data>
+  <data name="NetPayout" xml:space="preserve"><value>NetPayout</value></data>
+  <data name="Date" xml:space="preserve"><value>Date</value></data>
+  <data name="TotalShipping" xml:space="preserve"><value>TotalShipping</value></data>
+  <data name="Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="PaymentPending" xml:space="preserve"><value>PaymentPending</value></data>
+  <data name="Paid" xml:space="preserve"><value>Paid</value></data>
+  <data name="Processing" xml:space="preserve"><value>Processing</value></data>
+  <data name="Shipped" xml:space="preserve"><value>Shipped</value></data>
+  <data name="Delivered" xml:space="preserve"><value>Delivered</value></data>
+  <data name="Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Disputed" xml:space="preserve"><value>Disputed</value></data>
+  <data name="Refunded" xml:space="preserve"><value>Refunded</value></data>
+  <data name="Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="OrderSummary" xml:space="preserve"><value>OrderSummary</value></data>
+  <data name="PaymentTransactions" xml:space="preserve"><value>PaymentTransactions</value></data>
+  <data name="SellerPayout" xml:space="preserve"><value>SellerPayout</value></data>
+  <data name="BuyerPurchaseHistory" xml:space="preserve"><value>BuyerPurchaseHistory</value></data>
+  <data name="RevenueReport" xml:space="preserve"><value>RevenueReport</value></data>
+  <data name="RefundReport" xml:space="preserve"><value>RefundReport</value></data>
+</root>

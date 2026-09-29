@@ -124,6 +124,8 @@
   },
 
   "oauth": {
+    "missingCode": "No authorization code received.",
+    "authorizationFailed": "Authorization failed. Please sign in again.",
     "authenticationFailed": "Authentication Failed",
     "redirectingToLogin": "Redirecting to login...",
     "completingSignIn": "Completing sign in...",

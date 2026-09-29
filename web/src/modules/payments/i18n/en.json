@@ -47,6 +47,7 @@
   },
 
   "success": {
+    "orderIdRequired": "Order ID is required.",
     "confirming": "Confirming your payment...",
     "verifying": "Please wait while we verify your transaction",
     "orderLookupFailed": "We couldn't retrieve your order details, but your payment may have been processed.",

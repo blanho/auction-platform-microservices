@@ -145,19 +145,18 @@ walkSource(root, (path) => {
   }
 
   findNamespace(sourceFile)
-  if (!usesTranslation) {
-    return
-  }
 
   function checkTranslationCall(node) {
     if (
       ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === 't' &&
+      ((usesTranslation && ts.isIdentifier(node.expression) && node.expression.text === 't') ||
+        (ts.isPropertyAccessExpression(node.expression) &&
+          node.expression.expression.getText(sourceFile) === 'i18n' &&
+          node.expression.name.text === 't')) &&
       node.arguments[0] &&
       ts.isStringLiteral(node.arguments[0])
     ) {
-      let namespace = defaultNamespace
+      let namespace = ts.isPropertyAccessExpression(node.expression) ? 'common' : defaultNamespace
       let key = node.arguments[0].text
       const namespaceSeparator = key.indexOf(':')
       if (namespaceSeparator >= 0) {
