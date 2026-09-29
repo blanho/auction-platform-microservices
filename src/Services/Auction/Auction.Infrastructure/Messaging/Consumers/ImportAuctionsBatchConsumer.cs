@@ -13,12 +13,14 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCommand>
 {
+    private readonly IAuctionWorkflowStore _workflow;
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly ISanitizationService _sanitizationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ImportAuctionsBatchConsumer> _logger;
 
     public ImportAuctionsBatchConsumer(
+        IAuctionWorkflowStore workflow,
         IAuctionBulkRepository bulkRepository,
         ISanitizationService sanitizationService,
         IUnitOfWork unitOfWork,
@@ -28,11 +30,14 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         _sanitizationService = sanitizationService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _workflow = workflow;
     }
 
     public async Task Consume(ConsumeContext<ProcessAuctionImportBatchCommand> context)
     {
         var message = context.Message;
+        var receiptKey = $"ImportAuctionsBatchConsumer:{message.CorrelationId}:{message.BatchNumber}";
+        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
         var correlationId = message.CorrelationId.ToString();
         var stopwatch = Stopwatch.StartNew();
 
@@ -40,33 +45,28 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             "Processing import batch {BatchNumber}/{TotalBatches} for {CorrelationId}: {RowCount} rows",
             message.BatchNumber, message.TotalBatches, correlationId, message.Rows.Count);
 
-        if (message.BatchNumber == 1)
+        if (message.BatchNumber < 1 || message.BatchNumber > message.TotalBatches || message.TotalRows <= 0)
+            throw new ArgumentException("Invalid import batch metadata.");
+
+        await context.Publish(new RequestJobCommand
         {
-            await context.Publish(new RequestJobCommand
+            JobType = nameof(JobType.AuctionImport),
+            CorrelationId = correlationId,
+            RequestedBy = message.SellerId,
+            PayloadJson = JsonSerializer.Serialize(new
             {
-                JobType = nameof(JobType.AuctionImport),
-                CorrelationId = correlationId,
-                RequestedBy = message.SellerId,
-                PayloadJson = JsonSerializer.Serialize(new
-                {
-                    message.SellerId,
-                    message.SellerUsername,
-                    message.Currency,
-                    RowCount = message.TotalRows,
-                    TotalBatches = message.TotalBatches
-                }),
-                TotalItems = message.TotalRows,
-                MaxRetryCount = 0
-            });
-        }
+                message.SellerId,
+                message.SellerUsername,
+                message.Currency,
+                RowCount = message.TotalRows,
+                TotalBatches = message.TotalBatches
+            }),
+            TotalItems = message.TotalRows,
+            MaxRetryCount = 0
+        });
 
         var validationResult = ValidateRows(message.Rows, message.Currency);
         var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
-
-        if (failedRowCount > 0)
-        {
-            await ReportProgress(context, correlationId, 0, failedRowCount);
-        }
 
         var insertedCount = 0;
 
@@ -79,10 +79,9 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
             insertedCount += auctions.Count;
-
-            await ReportProgress(context, correlationId, auctions.Count, 0);
         }
 
+        await ReportProgress(context, correlationId, insertedCount, failedRowCount);
         stopwatch.Stop();
 
         _logger.LogInformation(
@@ -90,24 +89,23 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
             message.BatchNumber, message.TotalBatches, correlationId,
             insertedCount, failedRowCount, stopwatch.ElapsedMilliseconds);
 
-        if (message.BatchNumber == message.TotalBatches)
+        var totals = await _workflow.CompleteAsync(receiptKey, message.CorrelationId,
+            insertedCount, failedRowCount, validationResult.Errors.Select(e => new ImportRowErrorPayload
+            { RowNumber = e.RowNumber, Field = e.Field, ErrorMessage = e.ErrorMessage }).ToList(),
+            message.TotalBatches, context.CancellationToken);
+        if (totals is not null)
         {
             await context.Publish(new AuctionImportCompletedEvent
             {
                 CorrelationId = message.CorrelationId,
                 SellerId = message.SellerId,
                 TotalRows = message.TotalRows,
-                SucceededCount = insertedCount,
-                FailedCount = failedRowCount,
+                SucceededCount = totals.Succeeded,
+                FailedCount = totals.Failed,
                 SkippedDuplicateCount = 0,
                 Duration = stopwatch.Elapsed,
                 CompletedAt = DateTimeOffset.UtcNow,
-                Errors = validationResult.Errors.Select(e => new ImportRowErrorPayload
-                {
-                    RowNumber = e.RowNumber,
-                    Field = e.Field,
-                    ErrorMessage = e.ErrorMessage
-                }).ToList()
+                Errors = totals.Errors
             });
         }
     }
@@ -215,6 +213,7 @@ public class ImportAuctionsBatchConsumer : IConsumer<ProcessAuctionImportBatchCo
         await context.Publish(new ReportJobBatchProgressCommand
         {
             CorrelationId = correlationId,
+            BatchId = $"import:{context.Message.BatchNumber}",
             CompletedCount = completedCount,
             FailedCount = failedCount
         });

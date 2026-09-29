@@ -16,8 +16,10 @@ public static class MassTransitOutboxExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddScoped<IPaymentStatusClient, Services.PaymentStatusClient>();
         services.AddMassTransit(x =>
         {
+            x.AddRequestClient<PaymentService.Contracts.Requests.GetBuyerAuctionPaymentStatuses>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<ProcessAutoBidsConsumer>();
             x.AddConsumer<AuctionCreatedSnapshotConsumer>();
@@ -44,7 +46,8 @@ public static class MassTransitOutboxExtensions
                     ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
                 var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, virtualHost, h =>
+                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
+                cfg.Host(host, port, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);

@@ -1,3 +1,7 @@
+using Storage.Application.Interfaces;
+using Storage.Domain.Entities;
+using Microsoft.Extensions.Options;
+using StorageService.Contracts.Reports;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using Storage.Application.DTOs;
@@ -7,6 +11,9 @@ namespace Storage.Application.Features.Files.GeneratePresignedUpload;
 
 public class GeneratePresignedUploadCommandHandler(
     IFileStorageService fileStorageService,
+    IStoredFileRepository repository,
+    IUnitOfWork unitOfWork,
+    IOptions<FileStorageSettings> settings,
     ILogger<GeneratePresignedUploadCommandHandler> logger)
     : ICommandHandler<GeneratePresignedUploadCommand, PresignedUploadDto>
 {
@@ -15,6 +22,10 @@ public class GeneratePresignedUploadCommandHandler(
         CancellationToken cancellationToken)
     {
         logger.LogDebug("Generating presigned upload URL for: {FileName}", request.FileName);
+
+        if (request.OwnerId is null || request.OwnerId == Guid.Empty ||
+            ReportStorageContract.IsPrivatePath(request.SubFolder))
+            return Result.Failure<PresignedUploadDto>(StorageErrors.FileNotFoundInStorage);
 
         var presignedRequest = new PresignedUploadRequest(
             FileName: request.FileName,
@@ -30,6 +41,12 @@ public class GeneratePresignedUploadCommandHandler(
         {
             return Result.Failure<PresignedUploadDto>(StorageErrors.PresignedUrlNotSupported);
         }
+
+        var reservation = StoredFile.ReserveUpload(Guid.Parse(result.FileId), request.FileName,
+            result.StoredFileName, request.ContentType, request.FileSize, request.SubFolder,
+            request.OwnerId.Value, StorageDefaults.Providers.Resolve(settings.Value.Provider), result.ExpiresAt);
+        await repository.AddAsync(reservation, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(new PresignedUploadDto(
             FileId: result.FileId,

@@ -7,6 +7,8 @@ public class JobItemConfiguration : IEntityTypeConfiguration<JobItem>
 {
     public void Configure(EntityTypeBuilder<JobItem> builder)
     {
+        builder.Property(x => x.RowVersion).IsRowVersion();
+
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.JobId)

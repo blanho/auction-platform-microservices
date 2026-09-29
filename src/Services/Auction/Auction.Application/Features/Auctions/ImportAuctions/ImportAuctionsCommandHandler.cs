@@ -11,7 +11,6 @@ namespace Auctions.Application.Features.Auctions.ImportAuctions;
 public class ImportAuctionsCommandHandler : ICommandHandler<ImportAuctionsCommand, ImportAuctionsResult>
 {
 
-
     private readonly IAuctionBulkRepository _bulkRepository;
     private readonly IImportCheckpointRepository _checkpointRepository;
     private readonly ISanitizationService _sanitizationService;

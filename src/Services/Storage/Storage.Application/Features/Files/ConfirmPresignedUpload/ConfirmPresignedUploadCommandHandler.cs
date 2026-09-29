@@ -2,7 +2,6 @@ using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.Constants;
-using Microsoft.Extensions.Options;
 using Storage.Application.DTOs.Audit;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
@@ -17,7 +16,6 @@ public class ConfirmPresignedUploadCommandHandler(
     IFileStorageService fileStorageService,
     IStoredFileRepository repository,
     IUnitOfWork unitOfWork,
-    IOptions<FileStorageSettings> storageSettings,
     ILogger<ConfirmPresignedUploadCommandHandler> logger,
     IAuditPublisher auditPublisher)
     : ICommandHandler<ConfirmPresignedUploadCommand, StoredFileDto>
@@ -33,6 +31,19 @@ public class ConfirmPresignedUploadCommandHandler(
             return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
         }
 
+        var storedFile = await repository.GetByStoredFileNameAsync(request.StoredFileName, cancellationToken);
+        if (storedFile is null || request.OwnerId is null || storedFile.OwnerId != request.OwnerId ||
+            storedFile.FileName != request.FileName || storedFile.ContentType != request.ContentType ||
+            storedFile.FileSize != request.FileSize || storedFile.SubFolder != request.SubFolder ||
+            ReportStorageContract.IsPrivatePath(storedFile.SubFolder))
+            return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
+
+        if (storedFile.Status == FileStatus.Ready)
+            return Result.Success(new StoredFileDto(storedFile.Id, storedFile.FileName,
+                storedFile.ContentType, storedFile.FileSize, storedFile.Url, storedFile.CreatedAt));
+        if (storedFile.Status != FileStatus.Pending || !storedFile.UploadExpiresAt.HasValue || storedFile.UploadExpiresAt <= DateTimeOffset.UtcNow)
+            return Result.Failure<StoredFileDto>(StorageErrors.FileNotFoundInStorage);
+
         var exists = await fileStorageService.ExistsAsync(request.StoredFileName, cancellationToken);
 
         if (!exists)
@@ -41,19 +52,8 @@ public class ConfirmPresignedUploadCommandHandler(
         }
 
         var url = await fileStorageService.GetUrlAsync(request.StoredFileName, cancellationToken);
-        var provider = StorageDefaults.Providers.Resolve(storageSettings.Value.Provider);
-
-        var storedFile = StoredFile.Create(
-            request.FileName,
-            request.StoredFileName,
-            request.ContentType,
-            request.FileSize,
-            url ?? string.Empty,
-            request.SubFolder,
-            request.OwnerId,
-            provider);
-
-        await repository.AddAsync(storedFile, cancellationToken);
+        storedFile.ConfirmUpload(url ?? string.Empty);
+        repository.Update(storedFile);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await auditPublisher.PublishAsync(
@@ -64,7 +64,7 @@ public class ConfirmPresignedUploadCommandHandler(
             {
                 [AuditMetadataKeys.FileName] = storedFile.FileName,
                 [AuditMetadataKeys.FileSize] = storedFile.FileSize,
-                [AuditMetadataKeys.Provider] = provider.ToString(),
+                [AuditMetadataKeys.Provider] = storedFile.Provider.ToString(),
                 [AuditMetadataKeys.PresignedUpload] = true
             },
             cancellationToken: cancellationToken);

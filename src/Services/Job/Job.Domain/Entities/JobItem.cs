@@ -6,6 +6,7 @@ namespace Jobs.Domain.Entities;
 
 public class JobItem : BaseEntity
 {
+    public uint RowVersion { get; private set; }
     public Guid JobId { get; private set; }
     public Job Job { get; private set; } = null!;
     public int SequenceNumber { get; private set; }
@@ -59,7 +60,7 @@ public class JobItem : BaseEntity
         ErrorMessage = null;
     }
 
-    public void MarkFailed(string errorMessage)
+    public void MarkFailed(string errorMessage, bool terminal = false)
     {
         if (Status != JobItemStatus.Processing)
             throw new InvalidEntityStateException(nameof(JobItem), Status.ToString(),
@@ -68,7 +69,7 @@ public class JobItem : BaseEntity
         ErrorMessage = errorMessage;
         RetryCount++;
 
-        if (RetryCount >= MaxRetryCount)
+        if (terminal || RetryCount >= MaxRetryCount)
         {
             Status = JobItemStatus.Failed;
             CompletedAt = DateTimeOffset.UtcNow;

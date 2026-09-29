@@ -21,7 +21,7 @@ public class GeneratePresignedDownloadQueryHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null || ReportStorageContract.IsPrivatePath(file.SubFolder) ||
+        if (file is null || file.Status != Storage.Domain.Enums.FileStatus.Ready || ReportStorageContract.IsPrivatePath(file.SubFolder) ||
             ReportStorageContract.IsPrivatePath(file.StoredFileName))
         {
             return Result.Failure<PresignedDownloadDto>(StorageErrors.FileNotFound(request.FileId));

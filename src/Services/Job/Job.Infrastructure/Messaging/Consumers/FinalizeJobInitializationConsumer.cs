@@ -31,10 +31,14 @@ public class FinalizeJobInitializationConsumer : IConsumer<FinalizeJobInitializa
 
         if (job is null)
         {
-            _logger.LogWarning("Job {JobId} not found, skipping finalization", message.JobId);
-            return;
+            throw new InvalidOperationException($"Job {message.JobId} has not been initialized.");
         }
 
+        if (message.ExpectedTotalItems <= 0)
+            throw new ArgumentException("Finalization requires the expected item count.");
+        if (job.TotalItems != message.ExpectedTotalItems)
+            throw new InvalidOperationException("Job item batches are not complete yet; retry finalization.");
+        if (job.Status != Jobs.Domain.Enums.JobStatus.Initializing) return;
         job.FinalizeInitialization();
         await _jobRepository.UpdateAsync(job, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);

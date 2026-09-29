@@ -25,6 +25,13 @@ public class UploadFileCommandHandler(
         logger.LogDebug("Uploading file {FileName} ({ContentType}, {FileSize} bytes)",
             request.FileName, request.ContentType, request.FileSize);
 
+        if (request.ReportRequestId.HasValue && request.OwnerId.HasValue)
+        {
+            var existing = await repository.GetByReportRequestIdAsync(request.OwnerId.Value,
+                request.ReportRequestId.Value, cancellationToken);
+            if (existing is not null) return Result.Success(MapToDto(existing));
+        }
+
         var uploadRequest = new FileUploadRequest(
             request.Content,
             request.FileName,
@@ -48,6 +55,10 @@ public class UploadFileCommandHandler(
             request.OwnerId,
             provider);
 
+        if (request.Metadata is not null)
+            foreach (var pair in request.Metadata) storedFile.Metadata[pair.Key] = pair.Value;
+        if (request.ReportRequestId.HasValue) storedFile.SetReportRequestId(request.ReportRequestId.Value);
+
         try
         {
             await repository.AddAsync(storedFile, cancellationToken);
@@ -57,7 +68,18 @@ public class UploadFileCommandHandler(
         {
             try
             {
-                if (!await fileStorageService.DeleteAsync(storedFile.StoredFileName, CancellationToken.None))
+                var mayHaveCommitted = false;
+                if (request.ReportRequestId.HasValue && request.OwnerId.HasValue)
+                {
+                    try
+                    {
+                        var committed = await repository.GetByReportRequestIdAsync(request.OwnerId.Value,
+                            request.ReportRequestId.Value, CancellationToken.None);
+                        mayHaveCommitted = committed?.StoredFileName == storedFile.StoredFileName;
+                    }
+                    catch { mayHaveCommitted = true; }
+                }
+                if (!mayHaveCommitted && !await fileStorageService.DeleteAsync(storedFile.StoredFileName, CancellationToken.None))
                 {
                     logger.LogWarning("Failed to roll back blob {StoredFileName} after database failure",
                         storedFile.StoredFileName);

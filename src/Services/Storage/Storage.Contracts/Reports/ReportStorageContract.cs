@@ -5,6 +5,9 @@ public static class ReportStorageContract
     public const string UploadPath = "/api/v1/internal/reports";
     public const string ApiKeyHeader = "X-Internal-Api-Key";
     public const string FileNameHeader = "X-Report-File-Name";
+    public const string RecordCountHeader = "X-Report-Record-Count";
+    public const string RecordCountMetadataKey = "ReportRecordCount";
+    public const string RequestIdHeader = "X-Report-Request-Id";
     public const string OwnerIdHeader = "X-Report-Owner-Id";
     public const string PrivateFolder = "private-reports";
     public const long MaxReportSizeBytes = 50 * 1024 * 1024;
@@ -15,4 +18,5 @@ public static class ReportStorageContract
          path.StartsWith(PrivateFolder + "/", StringComparison.OrdinalIgnoreCase));
 }
 
-public record StoredReportResponse(Guid FileId, string DownloadUrl);
+public record StoredReportResponse(Guid FileId, string DownloadUrl, string? FileName = null,
+    string? ContentType = null, long? FileSizeBytes = null, int? TotalRecords = null);

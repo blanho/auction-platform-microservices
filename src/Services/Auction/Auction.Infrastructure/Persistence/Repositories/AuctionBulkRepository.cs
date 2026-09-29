@@ -45,11 +45,8 @@ public class AuctionBulkRepository : IAuctionBulkRepository
             }
 
             await _context.Auctions.AddRangeAsync(batch, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
 
             totalInserted += batch.Length;
-
-            _context.ChangeTracker.Clear();
 
             _logger.LogDebug(
                 "Bulk inserted batch of {Count} auctions ({Total}/{Grand})",
@@ -65,5 +62,4 @@ public class AuctionBulkRepository : IAuctionBulkRepository
             .Where(x => !x.IsDeleted)
             .CountAsync(cancellationToken);
     }
-
 }

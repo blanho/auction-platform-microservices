@@ -64,6 +64,14 @@ public sealed class InternalReportEndpoints : ICarterModule
 
         var fileName = context.Request.Headers[ReportStorageContract.FileNameHeader].ToString();
         var ownerIdText = context.Request.Headers[ReportStorageContract.OwnerIdHeader].ToString();
+        var requestIdText = context.Request.Headers[ReportStorageContract.RequestIdHeader].ToString();
+        Guid? requestId = null;
+        if (!string.IsNullOrEmpty(requestIdText))
+        {
+            if (!Guid.TryParse(requestIdText, out var parsedRequestId) || parsedRequestId == Guid.Empty)
+                return Results.BadRequest();
+            requestId = parsedRequestId;
+        }
         var contentType = context.Request.ContentType;
         var fileSize = context.Request.ContentLength;
 
@@ -73,9 +81,16 @@ public sealed class InternalReportEndpoints : ICarterModule
             fileSize is null or <= 0 or > ReportStorageContract.MaxReportSizeBytes)
             return Results.BadRequest();
 
+        var metadata = new Dictionary<string, string>();
+        var recordCountText = context.Request.Headers[ReportStorageContract.RecordCountHeader].ToString();
+        if (!string.IsNullOrEmpty(recordCountText))
+        {
+            if (!int.TryParse(recordCountText, out var count) || count < 0) return Results.BadRequest();
+            metadata[ReportStorageContract.RecordCountMetadataKey] = count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
         var result = await sender.Send(new UploadFileCommand(
             context.Request.Body, fileName, contentType!, fileSize.Value,
-            ReportStorageContract.PrivateFolder, ownerId), cancellationToken);
+            ReportStorageContract.PrivateFolder, ownerId, Metadata: metadata, ReportRequestId: requestId), cancellationToken);
 
         if (result.IsFailure)
             return Results.BadRequest();
@@ -84,8 +99,11 @@ public sealed class InternalReportEndpoints : ICarterModule
         if (storedFile is null)
             return Results.StatusCode(StatusCodes.Status500InternalServerError);
 
+        var storedCount = storedFile.Metadata.TryGetValue(ReportStorageContract.RecordCountMetadataKey, out var countText)
+            && int.TryParse(countText, out var parsedCount) ? (int?)parsedCount : null;
         return Results.Ok(new StoredReportResponse(
-            storedFile.Id, $"/files/{storedFile.Id}/download"));
+            storedFile.Id, $"/files/{storedFile.Id}/download", storedFile.FileName,
+            storedFile.ContentType, storedFile.FileSize, storedCount));
     }
 
     private static bool IsSupportedReport(string fileName, string? contentType)

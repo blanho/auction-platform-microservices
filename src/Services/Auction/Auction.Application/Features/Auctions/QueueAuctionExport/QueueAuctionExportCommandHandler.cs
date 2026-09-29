@@ -1,3 +1,4 @@
+using JobService.Contracts.Commands;
 using AuctionService.Contracts.Commands;
 using Auctions.Application.Errors;
 using BuildingBlocks.Application.Abstractions;
@@ -10,15 +11,18 @@ namespace Auctions.Application.Features.Auctions.QueueAuctionExport;
 
 public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExportCommand, BackgroundJobResult>
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _publishEndpoint;
     private readonly ILogger<QueueAuctionExportCommandHandler> _logger;
 
     public QueueAuctionExportCommandHandler(
+        IUnitOfWork unitOfWork,
         IEventPublisher publishEndpoint,
         ILogger<QueueAuctionExportCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<BackgroundJobResult>> Handle(
@@ -31,6 +35,15 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
         }
 
         var correlationId = Guid.NewGuid();
+        await _publishEndpoint.PublishAsync(new RequestJobCommand
+        {
+            CorrelationId = correlationId.ToString(),
+            JobType = "DataExport",
+            RequestedBy = request.RequestedBy,
+            TotalItems = 1,
+            MaxRetryCount = 0,
+            PayloadJson = "{}"
+        }, cancellationToken);
 
         var command = new ProcessAuctionExportCommand
         {
@@ -45,6 +58,8 @@ public class QueueAuctionExportCommandHandler : ICommandHandler<QueueAuctionExpo
         };
 
         await _publishEndpoint.PublishAsync(command, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Queued auction export job {CorrelationId} in {Format} format for user {RequestedBy}",

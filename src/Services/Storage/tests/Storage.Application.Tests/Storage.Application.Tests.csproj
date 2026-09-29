@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="../../Storage.Infrastructure/Storage.Infrastructure.csproj" />
+    <Compile Include="../../../../Tests/TestSupport/PostgresTestDatabase.cs" Link="TestSupport/PostgresTestDatabase.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">

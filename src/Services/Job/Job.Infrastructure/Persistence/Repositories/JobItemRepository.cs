@@ -131,7 +131,6 @@ public class JobItemRepository : IJobItemRepository
     {
         await _context.JobItems.AddRangeAsync(batch, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        _context.ChangeTracker.Clear();
     }
 
     public async Task<List<JobItem>> GetByIdsForUpdateAsync(

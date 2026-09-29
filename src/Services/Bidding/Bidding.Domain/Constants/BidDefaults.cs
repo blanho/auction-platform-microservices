@@ -15,7 +15,6 @@ public static class BidDefaults
     public const int DeduplicationWindowSeconds = 5;
     public const string DeduplicationKeyPrefix = "bid:dedup:";
 
-
     public const int RetractWindowMinutes = 5;
 
     public const int DefaultPage = 1;

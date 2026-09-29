@@ -1,5 +1,6 @@
 #nullable enable
 using Auctions.Domain.Entities;
+using BuildingBlocks.Infrastructure.Repository.Converters;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Auctions.Infrastructure.Persistence.Configurations;
@@ -49,9 +50,11 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         builder.HasIndex(x => x.Condition);
 
         builder.Property(x => x.Files)
+            .HasConversion(new JsonValueConverter<List<MediaFile>>(), new JsonValueComparer<List<MediaFile>>())
             .HasColumnType("jsonb");
 
         builder.Property(x => x.Attributes)
+            .HasConversion(new JsonValueConverter<Dictionary<string, string>>(), new JsonValueComparer<Dictionary<string, string>>())
             .HasColumnType("jsonb");
     }
 }

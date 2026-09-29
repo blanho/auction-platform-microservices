@@ -63,7 +63,6 @@ public class AuctionDocument
     public string? WinnerUsername { get; set; }
     public decimal? FinalPrice { get; set; }
 
-
     public Dictionary<string, object>? Attributes { get; set; }
 
     public bool IsFeatured { get; set; }

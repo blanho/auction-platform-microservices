@@ -19,14 +19,22 @@ public sealed class AuctionExportStorageClient
             ?? throw new InvalidOperationException("ReportStorage:ApiKey is required.");
     }
 
-    public async Task<string> StoreAsync(
+    public async Task<string> StoreAsync(byte[] content, string fileName, string contentType,
+        Guid ownerId, CancellationToken cancellationToken, Guid? requestId = null) =>
+        (await StoreReportAsync(content, fileName, contentType, ownerId, cancellationToken, requestId)).DownloadUrl;
+
+    public async Task<StoredReportResponse> StoreReportAsync(
         byte[] content,
         string fileName,
         string contentType,
         Guid ownerId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? requestId = null,
+        int? recordCount = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, ReportStorageContract.UploadPath);
+        if (recordCount.HasValue) request.Headers.Add(ReportStorageContract.RecordCountHeader, recordCount.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (requestId.HasValue) request.Headers.Add(ReportStorageContract.RequestIdHeader, requestId.Value.ToString());
         request.Headers.Add(ReportStorageContract.ApiKeyHeader, _apiKey);
         request.Headers.Add(ReportStorageContract.FileNameHeader, fileName);
         request.Headers.Add(ReportStorageContract.OwnerIdHeader, ownerId.ToString());
@@ -38,7 +46,7 @@ public sealed class AuctionExportStorageClient
         response.EnsureSuccessStatusCode();
 
         var storedReport = await response.Content.ReadFromJsonAsync<StoredReportResponse>(cancellationToken);
-        return storedReport?.DownloadUrl
+        return storedReport
             ?? throw new InvalidOperationException("Storage returned no report download URL.");
     }
 }

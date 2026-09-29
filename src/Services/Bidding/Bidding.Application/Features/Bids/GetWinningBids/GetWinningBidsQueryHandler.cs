@@ -7,16 +7,19 @@ namespace Bidding.Application.Features.Bids.GetWinningBids;
 
 public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, PaginatedResult<WinningBidDto>>
 {
+    private readonly IPaymentStatusClient _payments;
     private readonly IBidRepository _repository;
     private readonly IAuctionSnapshotRepository _snapshotRepository;
     private readonly ILogger<GetWinningBidsQueryHandler> _logger;
 
     public GetWinningBidsQueryHandler(
         IBidRepository repository,
+        IPaymentStatusClient payments,
         IAuctionSnapshotRepository snapshotRepository,
         ILogger<GetWinningBidsQueryHandler> logger)
     {
         _repository = repository;
+        _payments = payments;
         _snapshotRepository = snapshotRepository;
         _logger = logger;
     }
@@ -25,6 +28,7 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
     {
         _logger.LogDebug("Getting winning bids for user {UserId}, page {Page}", request.UserId, request.Page);
 
+        var paymentStatuses = await _payments.GetForBuyerAsync(request.UserId, cancellationToken);
         var queryParams = new WinningBidQueryParams
         {
             Page = request.Page,
@@ -35,6 +39,7 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
             {
                 AuctionId = request.AuctionId,
                 IsPaid = request.IsPaid,
+                PaidAuctionIds = paymentStatuses.Where(x => x.Value.IsPaid).Select(x => x.Key).ToArray(),
                 FromDate = request.FromDate,
                 ToDate = request.ToDate
             }
@@ -49,6 +54,7 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
         foreach (var bid in result.Items)
         {
             var snapshot = await _snapshotRepository.GetAsync(bid.AuctionId, cancellationToken);
+            paymentStatuses.TryGetValue(bid.AuctionId, out var payment);
             enrichedBids.Add(new WinningBidDto
             {
                 BidId = bid.Id,
@@ -56,8 +62,8 @@ public class GetWinningBidsQueryHandler : IQueryHandler<GetWinningBidsQuery, Pag
                 AuctionTitle = snapshot?.Title ?? BidDefaults.WinningBids.DefaultAuctionTitle,
                 WinningAmount = bid.Amount,
                 WonAt = bid.BidTime,
-                PaymentStatus = BidDefaults.WinningBids.DefaultPaymentStatus,
-                IsPaid = false
+                PaymentStatus = payment?.Status ?? "AwaitingOrder",
+                IsPaid = payment?.IsPaid ?? false
             });
         }
 

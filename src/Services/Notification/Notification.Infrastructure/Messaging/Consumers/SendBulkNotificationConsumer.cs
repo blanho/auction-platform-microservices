@@ -110,6 +110,7 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             await _publishEndpoint.Publish(new ReportJobBatchProgressCommand
             {
                 CorrelationId = correlationId,
+                BatchId = $"notification:{processedCount}",
                 CompletedCount = batchSuccessCount,
                 FailedCount = batchFailureCount
             }, context.CancellationToken);

@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Repository.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Storage.Domain.Entities;
@@ -36,6 +37,7 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
         builder.Property(x => x.OwnerId);
 
         builder.Property(x => x.Status)
+            .IsConcurrencyToken()
             .IsRequired()
             .HasConversion<int>()
             .HasDefaultValue(FileStatus.Pending);
@@ -49,6 +51,7 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
             .HasMaxLength(StorageDefaults.Persistence.ChecksumMaxLength);
 
         builder.Property(x => x.Metadata)
+            .HasConversion(new JsonValueConverter<Dictionary<string, string>>(), new JsonValueComparer<Dictionary<string, string>>())
             .HasColumnType("jsonb");
 
         builder.Property(x => x.CreatedAt)
@@ -60,6 +63,7 @@ public class StoredFileConfiguration : IEntityTypeConfiguration<StoredFile>
             .IsRequired()
             .HasDefaultValue(false);
 
+        builder.HasIndex(x => new { x.OwnerId, x.ReportRequestId }).IsUnique();
         builder.HasIndex(x => x.OwnerId);
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.CreatedAt);

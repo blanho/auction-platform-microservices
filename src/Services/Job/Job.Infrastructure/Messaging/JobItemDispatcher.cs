@@ -50,10 +50,9 @@ public class JobItemDispatcher : IJobItemDispatcher
                 item.MarkProcessing();
             }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             var commands = pendingItems.Select(item => new ProcessJobItemCommand
             {
+                Attempt = item.RetryCount,
                 JobId = job.Id,
                 JobItemId = item.Id,
                 JobType = job.Type.ToString(),
@@ -63,9 +62,11 @@ public class JobItemDispatcher : IJobItemDispatcher
 
             foreach (var publishBatch in commands.Chunk(JobDefaults.Dispatcher.PublishBatchSize))
             {
-                await Task.WhenAll(publishBatch.Select(cmd =>
-                    _publishEndpoint.Publish(cmd, cancellationToken)));
+                foreach (var command in publishBatch)
+                    await _publishEndpoint.Publish(command, cancellationToken);
             }
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             totalDispatched += pendingItems.Count;
 
@@ -78,5 +79,4 @@ public class JobItemDispatcher : IJobItemDispatcher
             "Completed dispatching {TotalDispatched} items for job {JobId}",
             totalDispatched, jobId);
     }
-
 }

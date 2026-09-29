@@ -44,8 +44,8 @@ public class BulkUpdateCancellationTests
             nameof(IAuctionWriteRepository.UpdateAsync) => Task.FromException(new OperationCanceledException()),
             _ => throw new NotSupportedException(method.Name)
         });
-        var consumer = new BulkUpdateAuctionsConsumer(writeRepository, null!,
-            new DateTimeProvider(), null!, NullLogger<BulkUpdateAuctionsConsumer>.Instance);
+        var consumer = new BulkUpdateAuctionsConsumer(new TestWorkflowStore(), writeRepository, null!,
+            new DateTimeProvider(), NullLogger<BulkUpdateAuctionsConsumer>.Instance);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => consumer.Consume(context));
         Assert.Equal(Status.Live, auction.Status);
@@ -107,8 +107,8 @@ public class BulkUpdateCancellationTests
             .UseNpgsql("Host=localhost;Database=auction_bulk_test")
             .Options;
         await using var dbContext = new AuctionDbContext(options);
-        var consumer = new BulkUpdateAuctionsConsumer(writeRepository, unitOfWork,
-            new DateTimeProvider(), dbContext, NullLogger<BulkUpdateAuctionsConsumer>.Instance);
+        var consumer = new BulkUpdateAuctionsConsumer(new TestWorkflowStore(), writeRepository, unitOfWork,
+            new DateTimeProvider(), NullLogger<BulkUpdateAuctionsConsumer>.Instance);
 
         await consumer.Consume(context);
 

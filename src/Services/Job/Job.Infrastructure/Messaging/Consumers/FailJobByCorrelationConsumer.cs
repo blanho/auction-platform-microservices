@@ -1,58 +1,16 @@
-using Jobs.Domain.Enums;
-using Jobs.Application.Interfaces;
+using Jobs.Infrastructure.Persistence;
 using JobService.Contracts.Commands;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 
-public class FailJobByCorrelationConsumer : IConsumer<FailJobByCorrelationCommand>
+public class FailJobByCorrelationConsumer(JobProgressStore progress) : IConsumer<FailJobByCorrelationCommand>
 {
-    private readonly IJobRepository _jobRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<FailJobByCorrelationConsumer> _logger;
-
-    public FailJobByCorrelationConsumer(
-        IJobRepository jobRepository,
-        IUnitOfWork unitOfWork,
-        ILogger<FailJobByCorrelationConsumer> logger)
-    {
-        _jobRepository = jobRepository;
-        _unitOfWork = unitOfWork;
-        _logger = logger;
-    }
-
-    public async Task Consume(ConsumeContext<FailJobByCorrelationCommand> context)
-    {
-        var message = context.Message;
-
-        var job = await _jobRepository.GetByCorrelationIdAsync(
-            message.CorrelationId, context.CancellationToken);
-
-        if (job is null)
+    public Task Consume(ConsumeContext<FailJobByCorrelationCommand> context) =>
+        progress.RecordAsync(new JobProgressEntry
         {
-            _logger.LogWarning(
-                "Job with CorrelationId {CorrelationId} not found, skipping fail command",
-                message.CorrelationId);
-            return;
-        }
-
-        if (job.Status is JobStatus.Completed
-            or JobStatus.CompletedWithErrors
-            or JobStatus.Failed
-            or JobStatus.Cancelled)
-        {
-            _logger.LogWarning(
-                "Job {JobId} is already in terminal state {Status}, skipping fail",
-                job.Id, job.Status);
-            return;
-        }
-
-        job.Fail(message.ErrorMessage);
-
-        await _jobRepository.UpdateAsync(job, context.CancellationToken);
-        await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-
-        _logger.LogInformation(
-            "Job {JobId} marked as failed: {ErrorMessage}",
-            job.Id, message.ErrorMessage);
-    }
+            CorrelationId = context.Message.CorrelationId,
+            BatchId = "failure:" + (context.MessageId?.ToString()
+                ?? throw new InvalidOperationException("Failure needs a stable message identity.")),
+            ErrorMessage = context.Message.ErrorMessage
+        }, context.CancellationToken);
 }

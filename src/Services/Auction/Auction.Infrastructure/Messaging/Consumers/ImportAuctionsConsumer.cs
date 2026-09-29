@@ -13,29 +13,31 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
 {
+    private readonly IAuctionWorkflowStore _workflow;
     private readonly IAuctionBulkRepository _bulkRepository;
-    private readonly IImportCheckpointRepository _checkpointRepository;
     private readonly ISanitizationService _sanitizationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ImportAuctionsConsumer> _logger;
 
     public ImportAuctionsConsumer(
+        IAuctionWorkflowStore workflow,
         IAuctionBulkRepository bulkRepository,
-        IImportCheckpointRepository checkpointRepository,
         ISanitizationService sanitizationService,
         IUnitOfWork unitOfWork,
         ILogger<ImportAuctionsConsumer> logger)
     {
         _bulkRepository = bulkRepository;
-        _checkpointRepository = checkpointRepository;
         _sanitizationService = sanitizationService;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _workflow = workflow;
     }
 
     public async Task Consume(ConsumeContext<ProcessAuctionImportCommand> context)
     {
         var message = context.Message;
+        var receiptKey = $"ImportAuctionsConsumer:{message.CorrelationId}";
+        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
         var stopwatch = Stopwatch.StartNew();
         var correlationId = message.CorrelationId.ToString();
 
@@ -44,9 +46,6 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             correlationId, message.SellerId, message.Rows.Count);
 
         await PublishJobRequest(context, message, correlationId);
-
-        var checkpoint = await _checkpointRepository.GetCheckpointAsync(
-            correlationId, context.CancellationToken);
 
         var validationResult = ValidateAllRows(message.Rows, message.Currency);
         var failedRowCount = message.Rows.Count - validationResult.ValidRows.Count;
@@ -60,22 +59,9 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             return;
         }
 
-        var rowsToProcess = ResumeFromCheckpoint(validationResult.ValidRows, checkpoint);
-        var priorSucceeded = checkpoint?.SucceededCount ?? 0;
-
-        if (failedRowCount > 0)
-        {
-            await ReportJobBatchProgress(context, correlationId, 0, failedRowCount);
-        }
-
-        var batchSucceeded = await ProcessBatchesAsync(
-            rowsToProcess, message, correlationId,
-            priorSucceeded, failedRowCount,
-            context);
-
-        var totalSucceeded = priorSucceeded + batchSucceeded;
-
-        await _checkpointRepository.DeleteCheckpointAsync(correlationId, context.CancellationToken);
+        var totalSucceeded = await ProcessBatchesAsync(
+            validationResult.ValidRows, message, correlationId, context);
+        await ReportJobBatchProgress(context, correlationId, totalSucceeded, failedRowCount);
 
         stopwatch.Stop();
 
@@ -87,24 +73,10 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
             correlationId, totalSucceeded, message.Rows.Count, stopwatch.ElapsedMilliseconds);
     }
 
-    private static IReadOnlyList<ValidatedImportRow> ResumeFromCheckpoint(
-        IReadOnlyList<ValidatedImportRow> validRows,
-        ImportCheckpoint? checkpoint)
-    {
-        if (checkpoint is null || checkpoint.LastProcessedRowIndex <= 0)
-        {
-            return validRows;
-        }
-
-        return validRows.Where(r => r.RowNumber > checkpoint.LastProcessedRowIndex).ToList();
-    }
-
     private async Task<int> ProcessBatchesAsync(
         IReadOnlyList<ValidatedImportRow> validRows,
         ProcessAuctionImportCommand message,
         string correlationId,
-        int priorSucceeded,
-        int failedCount,
         ConsumeContext<ProcessAuctionImportCommand> context)
     {
         var totalInserted = 0;
@@ -119,17 +91,6 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
 
             totalInserted += auctions.Count;
 
-            await _checkpointRepository.SaveCheckpointAsync(
-                new ImportCheckpoint(
-                    correlationId,
-                    batch[^1].RowNumber,
-                    priorSucceeded + totalInserted,
-                    failedCount,
-                    DateTimeOffset.UtcNow),
-                context.CancellationToken);
-
-            await ReportJobBatchProgress(context, correlationId, auctions.Count, 0);
-
             _logger.LogInformation(
                 "Import batch processed: {Inserted}/{Total} for {CorrelationId}",
                 totalInserted, validRows.Count, correlationId);
@@ -138,7 +99,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         return totalInserted;
     }
 
-    private static async Task PublishCompletionEvent(
+    private async Task PublishCompletionEvent(
         ConsumeContext<ProcessAuctionImportCommand> context,
         ProcessAuctionImportCommand message,
         TimeSpan duration,
@@ -147,6 +108,18 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         int skipped,
         IReadOnlyList<ImportRowValidationError> errors)
     {
+        await _workflow.CompleteAsync($"ImportAuctionsConsumer:{message.CorrelationId}", message.CorrelationId,
+            succeeded, failed, [], 1, context.CancellationToken);
+        if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+            await context.Publish(new ReportJobItemResultCommand
+            {
+                JobId = message.ParentJobId.Value,
+                JobItemId = message.ParentJobItemId.Value,
+                Attempt = message.Attempt,
+                IsSuccess = failed == 0,
+                IsFinalFailure = true,
+                ErrorMessage = failed == 0 ? null : "Auction workflow completed with errors."
+            });
         await context.Publish(new AuctionImportCompletedEvent
         {
             CorrelationId = message.CorrelationId,
@@ -267,21 +240,22 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         ProcessAuctionImportCommand message,
         string correlationId)
     {
-        await context.Publish(new RequestJobCommand
-        {
-            JobType = nameof(JobType.AuctionImport),
-            CorrelationId = correlationId,
-            RequestedBy = message.SellerId,
-            PayloadJson = JsonSerializer.Serialize(new
+        if (message.ParentJobId is null)
+            await context.Publish(new RequestJobCommand
             {
-                message.SellerId,
-                message.SellerUsername,
-                message.Currency,
-                RowCount = message.Rows.Count
-            }),
-            TotalItems = message.Rows.Count,
-            MaxRetryCount = 0
-        });
+                JobType = nameof(JobType.AuctionImport),
+                CorrelationId = correlationId,
+                RequestedBy = message.SellerId,
+                PayloadJson = JsonSerializer.Serialize(new
+                {
+                    message.SellerId,
+                    message.SellerUsername,
+                    message.Currency,
+                    RowCount = message.Rows.Count
+                }),
+                TotalItems = message.Rows.Count,
+                MaxRetryCount = 0
+            });
     }
 
     private static async Task ReportJobBatchProgress(
@@ -290,9 +264,11 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         int completedCount,
         int failedCount)
     {
+        if (context.Message.ParentJobId is not null) return;
         await context.Publish(new ReportJobBatchProgressCommand
         {
             CorrelationId = correlationId,
+            BatchId = "import:complete",
             CompletedCount = completedCount,
             FailedCount = failedCount
         });
@@ -303,6 +279,7 @@ public class ImportAuctionsConsumer : IConsumer<ProcessAuctionImportCommand>
         string correlationId,
         string errorMessage)
     {
+        if (context.Message.ParentJobId is not null) return;
         await context.Publish(new FailJobByCorrelationCommand
         {
             CorrelationId = correlationId,

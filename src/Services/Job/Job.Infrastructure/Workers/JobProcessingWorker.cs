@@ -82,7 +82,7 @@ public class JobProcessingWorker : BackgroundService
         {
             try
             {
-                job.Start();
+                if (job.Status == JobStatus.Pending) job.Start();
                 await jobRepository.UpdateAsync(job, cancellationToken);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -1,3 +1,4 @@
+using JobService.Contracts.Commands;
 using AuctionService.Contracts.Commands;
 using BuildingBlocks.Application.CQRS;
 using BuildingBlocks.Application.Constants;
@@ -8,15 +9,18 @@ namespace Auctions.Application.Features.Auctions.QueueBulkUpdateAuctions;
 
 public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUpdateAuctionsCommand, BackgroundJobResult>
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _publishEndpoint;
     private readonly ILogger<QueueBulkUpdateAuctionsCommandHandler> _logger;
 
     public QueueBulkUpdateAuctionsCommandHandler(
+        IUnitOfWork unitOfWork,
         IEventPublisher publishEndpoint,
         ILogger<QueueBulkUpdateAuctionsCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<BackgroundJobResult>> Handle(
@@ -24,6 +28,15 @@ public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUp
         CancellationToken cancellationToken)
     {
         var correlationId = Guid.NewGuid();
+        await _publishEndpoint.PublishAsync(new RequestJobCommand
+        {
+            CorrelationId = correlationId.ToString(),
+            JobType = "BulkAuctionUpdate",
+            RequestedBy = request.RequestedBy,
+            TotalItems = request.AuctionIds.Count,
+            MaxRetryCount = 0,
+            PayloadJson = "{}"
+        }, cancellationToken);
 
         var command = new ProcessBulkAuctionUpdateCommand
         {
@@ -36,6 +49,8 @@ public class QueueBulkUpdateAuctionsCommandHandler : ICommandHandler<QueueBulkUp
         };
 
         await _publishEndpoint.PublishAsync(command, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Queued bulk auction update job {CorrelationId} for {Count} auctions (Activate={Activate})",

@@ -80,7 +80,6 @@ public class PrivateReportAccessTests
             fileStorage,
             DispatchProxy.Create<IStoredFileRepository, TestProxy>(),
             DispatchProxy.Create<IUnitOfWork, TestProxy>(),
-            Options.Create(new FileStorageSettings()),
             NullLogger<ConfirmPresignedUploadCommandHandler>.Instance,
             DispatchProxy.Create<IAuditPublisher, TestProxy>());
 

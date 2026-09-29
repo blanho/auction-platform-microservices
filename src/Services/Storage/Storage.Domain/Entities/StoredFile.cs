@@ -16,6 +16,8 @@ public class StoredFile : AggregateRoot
     public Guid? OwnerId { get; private set; }
     public FileStatus Status { get; private set; } = FileStatus.Pending;
     public StorageProvider Provider { get; private set; } = StorageProvider.Local;
+    public Guid? ReportRequestId { get; private set; }
+    public DateTimeOffset? UploadExpiresAt { get; private set; }
     public string? Checksum { get; private set; }
     public Dictionary<string, string> Metadata { get; private set; } = new();
 
@@ -59,6 +61,38 @@ public class StoredFile : AggregateRoot
             file.OwnerId));
 
         return file;
+    }
+
+    public static StoredFile ReserveUpload(Guid id, string fileName, string storedFileName,
+        string contentType, long fileSize, string? subFolder, Guid ownerId,
+        StorageProvider provider, DateTimeOffset expiresAt)
+    {
+        return new StoredFile
+        {
+            Id = id,
+            FileName = fileName,
+            StoredFileName = storedFileName,
+            ContentType = contentType,
+            FileSize = fileSize,
+            SubFolder = subFolder,
+            OwnerId = ownerId,
+            Provider = provider,
+            UploadExpiresAt = expiresAt,
+            Status = FileStatus.Pending,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+    }
+
+    public void SetReportRequestId(Guid requestId) => ReportRequestId = requestId;
+
+    public void ConfirmUpload(string url)
+    {
+        if (Status != FileStatus.Pending || UploadExpiresAt <= DateTimeOffset.UtcNow)
+            throw new InvalidOperationException("Upload reservation is no longer valid.");
+        Guard.AgainstNullOrEmpty(url, nameof(url));
+        Url = url;
+        Status = FileStatus.Ready;
+        AddDomainEvent(new FileUploadedDomainEvent(Id, FileName, ContentType, FileSize, Url, OwnerId));
     }
 
     public void MarkAsDeleted(Guid? deletedBy)

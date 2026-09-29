@@ -20,7 +20,6 @@ using Search.Application.Interfaces;
 
 namespace Search.Infrastructure.Services;
 
-
 public class IndexManagementService : IIndexManagementService
 {
     private readonly ElasticsearchClient _client;

@@ -15,7 +15,6 @@ public class OrphanFileCleanupJob : BaseJob
     public const string JobId = "orphan-file-cleanup";
     public const string Description = "Purges soft-deleted file records and cleans up unassociated files";
 
-    private static readonly TimeSpan SoftDeleteRetention = TimeSpan.FromDays(StorageDefaults.Cleanup.SoftDeleteRetentionDays);
     private static readonly TimeSpan UnassociatedFileThreshold = TimeSpan.FromHours(StorageDefaults.Cleanup.UnassociatedFileThresholdHours);
 
     public OrphanFileCleanupJob(
@@ -34,17 +33,19 @@ public class OrphanFileCleanupJob : BaseJob
         var fileStorageService = scopedProvider.GetRequiredService<IFileStorageService>();
         var dbContext = scopedProvider.GetRequiredService<StorageDbContext>();
 
-        await PurgeSoftDeletedRecordsAsync(repository, unitOfWork, dbContext, cancellationToken);
-        await CleanupUnassociatedFilesAsync(repository, unitOfWork, fileStorageService, dbContext, cancellationToken);
+        await PurgeSoftDeletedRecordsAsync(repository, unitOfWork, fileStorageService, dbContext, cancellationToken);
+        await CleanupUnassociatedFilesAsync(repository, unitOfWork, dbContext, cancellationToken);
+        await PurgeSoftDeletedRecordsAsync(repository, unitOfWork, fileStorageService, dbContext, cancellationToken);
     }
 
     private async Task PurgeSoftDeletedRecordsAsync(
         IStoredFileRepository repository,
         IUnitOfWork unitOfWork,
+        IFileStorageService fileStorageService,
         StorageDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var threshold = DateTimeOffset.UtcNow - SoftDeleteRetention;
+        var threshold = DateTimeOffset.UtcNow;
         var totalPurged = 0;
 
         while (!cancellationToken.IsCancellationRequested)
@@ -56,83 +57,57 @@ public class OrphanFileCleanupJob : BaseJob
                 break;
             }
 
-            repository.RemoveRange(batch);
+            var purged = new List<Domain.Entities.StoredFile>();
+            foreach (var file in batch)
+            {
+                try
+                {
+                    await fileStorageService.DeleteAsync(file.StoredFileName, cancellationToken);
+                    if (!await fileStorageService.ExistsAsync(file.StoredFileName, cancellationToken))
+                        purged.Add(file);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    Logger.LogWarning(ex, "Will retry physical deletion for {FileId}", file.Id);
+                }
+            }
+            if (purged.Count == 0) break;
+            repository.RemoveRange(purged);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             dbContext.ChangeTracker.Clear();
 
-            totalPurged += batch.Count;
+            totalPurged += purged.Count;
 
             Logger.LogDebug("Purged {Count} soft-deleted file records", batch.Count);
         }
 
         if (totalPurged > 0)
         {
-            Logger.LogInformation("Purged {TotalCount} soft-deleted file records older than {Retention} days",
-                totalPurged, SoftDeleteRetention.TotalDays);
+            Logger.LogInformation("Purged {TotalCount} soft-deleted file records after physical deletion",
+                totalPurged);
         }
     }
 
     private async Task CleanupUnassociatedFilesAsync(
         IStoredFileRepository repository,
         IUnitOfWork unitOfWork,
-        IFileStorageService fileStorageService,
         StorageDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var threshold = DateTimeOffset.UtcNow - UnassociatedFileThreshold;
-        var totalCleaned = 0;
-        var failedDeletes = 0;
-
         while (!cancellationToken.IsCancellationRequested)
         {
             var batch = await repository.GetUnassociatedOlderThanAsync(threshold, StorageDefaults.Cleanup.BatchSize, cancellationToken);
+            if (batch.Count == 0) break;
 
-            if (batch.Count == 0)
-            {
-                break;
-            }
-
-            var cleanedThisBatch = 0;
             foreach (var file in batch)
             {
-                try
-                {
-                    var deleted = await fileStorageService.DeleteAsync(file.StoredFileName, cancellationToken);
-
-                    if (!deleted)
-                    {
-                        Logger.LogWarning("Physical file not found for orphan cleanup: {StoredFileName}", file.StoredFileName);
-                    }
-
-                    file.MarkAsDeleted(null);
-                    cleanedThisBatch++;
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    failedDeletes++;
-                    Logger.LogError(ex, "Failed to delete orphan file {FileId} ({StoredFileName})",
-                        file.Id, file.StoredFileName);
-                }
+                file.MarkAsDeleted(null);
+                repository.Update(file);
             }
-
-            repository.RemoveRange(batch.Where(f => f.IsDeleted));
             await unitOfWork.SaveChangesAsync(cancellationToken);
             dbContext.ChangeTracker.Clear();
-
-            totalCleaned += cleanedThisBatch;
-
-            if (cleanedThisBatch == 0)
-            {
-                Logger.LogWarning("Orphan cleanup stopped because no files in the batch could be deleted");
-                break;
-            }
-        }
-
-        if (totalCleaned > 0 || failedDeletes > 0)
-        {
-            Logger.LogInformation(
-                "Orphan cleanup: {CleanedCount} files cleaned, {FailedCount} failures",
-                totalCleaned, failedDeletes);
+            Logger.LogDebug("Marked {Count} unassociated files for physical deletion", batch.Count);
         }
     }
 }
