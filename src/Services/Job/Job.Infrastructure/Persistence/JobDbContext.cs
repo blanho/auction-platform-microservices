@@ -9,6 +9,8 @@ public class JobDbContext : DbContext
     {
     }
 
+    public DbSet<JobProgressEntry> ProgressEntries => Set<JobProgressEntry>();
+
     public DbSet<Job> Jobs { get; set; }
     public DbSet<JobItem> JobItems { get; set; }
     public DbSet<JobExecutionLog> JobExecutionLogs { get; set; }
@@ -16,6 +18,9 @@ public class JobDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<JobProgressEntry>().HasKey(x => new { x.CorrelationId, x.BatchId });
+        modelBuilder.Entity<JobProgressEntry>().Property(x => x.CorrelationId).HasMaxLength(255);
+        modelBuilder.Entity<JobProgressEntry>().Property(x => x.BatchId).HasMaxLength(255);
 
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxStateEntity();

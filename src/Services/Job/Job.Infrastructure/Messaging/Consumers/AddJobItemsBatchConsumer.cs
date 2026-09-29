@@ -35,20 +35,25 @@ public class AddJobItemsBatchConsumer : IConsumer<AddJobItemsBatchCommand>
 
         if (job is null)
         {
-            _logger.LogWarning("Job {JobId} not found, skipping item batch", message.JobId);
-            return;
+            throw new InvalidOperationException($"Job {message.JobId} has not been initialized yet.");
         }
 
-        var itemPayloads = message.Items
-            .Select(i => (i.PayloadJson, i.SequenceNumber));
-
-        await _jobItemRepository.BulkCreateItemsAsync(
-            job.Id,
-            job.MaxRetryCount,
-            itemPayloads,
+        var existing = await _jobItemRepository.GetItemsByJobIdAsync(job.Id, context.CancellationToken);
+        var existingBySequence = existing.ToDictionary(x => x.SequenceNumber);
+        var requested = message.Items.GroupBy(x => x.SequenceNumber).Select(group =>
+        {
+            if (group.Select(x => x.PayloadJson).Distinct().Count() != 1)
+                throw new InvalidOperationException("Conflicting payloads for the same item sequence.");
+            return group.First();
+        }).ToList();
+        foreach (var item in requested)
+            if (existingBySequence.TryGetValue(item.SequenceNumber, out var previous) && previous.PayloadJson != item.PayloadJson)
+                throw new InvalidOperationException("An item sequence cannot be reused with a different payload.");
+        var additions = requested.Where(x => !existingBySequence.ContainsKey(x.SequenceNumber)).ToList();
+        if (additions.Count == 0) return;
+        await _jobItemRepository.AddRangeAsync(additions.Select(x => job.AddItem(x.PayloadJson, x.SequenceNumber)),
             context.CancellationToken);
-
-        job.IncrementTotalItems(message.Items.Count);
+        job.IncrementTotalItems(additions.Count);
         await _jobRepository.UpdateAsync(job, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 

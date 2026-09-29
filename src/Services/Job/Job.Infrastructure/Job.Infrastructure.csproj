@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../Auction/Auction.Contracts/AuctionService.Contracts.csproj" />
     <ProjectReference Include="..\Job.Domain\Job.Domain.csproj" />
     <ProjectReference Include="..\Job.Application\Job.Application.csproj" />
     <ProjectReference Include="..\Job.Contracts\JobService.Contracts.csproj" />

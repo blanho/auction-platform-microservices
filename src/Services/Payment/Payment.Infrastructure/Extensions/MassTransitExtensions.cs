@@ -16,6 +16,7 @@ public static class MassTransitExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<BuyerAuctionPaymentStatusesConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
             x.AddConsumer<CreateBuyNowOrderConsumer>();
@@ -38,7 +39,8 @@ public static class MassTransitExtensions
                     ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
                 var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, virtualHost, h =>
+                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
+                cfg.Host(host, port, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);

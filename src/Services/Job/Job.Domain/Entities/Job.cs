@@ -176,6 +176,19 @@ public class Job : AggregateRoot
         CheckForCompletion();
     }
 
+    public void RecordBatchProgress(int completed, int failed)
+    {
+        if (Status == JobStatus.Pending) Start();
+        if (Status != JobStatus.Processing)
+            throw new InvalidEntityStateException(nameof(Job), Status.ToString(), "Job is not processing.");
+        if (completed < 0 || failed < 0 || (long)CompletedItems + FailedItems + completed + failed > TotalItems)
+            throw new DomainInvariantException("Batch progress exceeds the declared job total.");
+        CompletedItems += completed;
+        FailedItems += failed;
+        RecalculateProgress();
+        CheckForCompletion();
+    }
+
     public void RecordBatchCompleted(int count)
     {
         if (Status != JobStatus.Processing)
@@ -239,8 +252,7 @@ public class Job : AggregateRoot
         StartedAt = null;
         CompletedAt = null;
         FailedItems = 0;
-        CompletedItems = 0;
-        ProgressPercentage = 0;
+        RecalculateProgress();
 
         AddExecutionLog(JobExecutionLog.CreateStateTransition(
             Id, previousStatus, JobStatus.Pending, "Job reset for retry."));

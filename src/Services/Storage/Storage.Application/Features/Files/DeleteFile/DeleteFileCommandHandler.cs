@@ -23,7 +23,8 @@ public class DeleteFileCommandHandler(
 
         var file = await repository.GetByIdAsync(request.FileId, cancellationToken);
 
-        if (file is null || file.SubFolder == ReportStorageContract.PrivateFolder)
+        if (file is null || ReportStorageContract.IsPrivatePath(file.SubFolder) ||
+            ReportStorageContract.IsPrivatePath(file.StoredFileName))
         {
             return Result.Failure(StorageErrors.FileNotFound(request.FileId));
         }
@@ -31,17 +32,18 @@ public class DeleteFileCommandHandler(
         var oldFileData = StoredFileAuditData.FromStoredFile(file);
         var storedFileName = file.StoredFileName;
 
-        var deleted = await fileStorageService.DeleteAsync(storedFileName, cancellationToken);
-        if (!deleted)
-        {
-            logger.LogWarning("Failed to delete physical file {StoredFileName} for FileId {FileId}",
-                storedFileName, file.Id);
-            return Result.Failure(StorageErrors.DeleteFailed);
-        }
-
         file.MarkAsDeleted(request.RequestedById);
         repository.Update(file);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await fileStorageService.DeleteAsync(storedFileName, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Physical deletion deferred to cleanup for file {FileId}", file.Id);
+        }
 
         await auditPublisher.PublishAsync(
             file.Id,

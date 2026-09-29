@@ -260,6 +260,7 @@ public class FileEndpoints : ICarterModule
 
     private static async Task<Results<Ok<PresignedUploadDto>, BadRequest<ProblemDetails>>> GeneratePresignedUpload(
         [FromBody] GeneratePresignedUploadCommand command,
+        HttpContext httpContext,
         ISender sender,
         CancellationToken cancellationToken)
     {
@@ -268,7 +269,7 @@ public class FileEndpoints : ICarterModule
             return TypedResults.BadRequest(ReservedFolderError());
         }
 
-        var result = await sender.Send(command, cancellationToken);
+        var result = await sender.Send(command with { OwnerId = UserHelper.GetUserId(httpContext.User) }, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -296,6 +297,7 @@ public class FileEndpoints : ICarterModule
 
     private static async Task<Results<Ok<StoredFileDto>, BadRequest<ProblemDetails>>> ConfirmPresignedUpload(
         [FromBody] ConfirmPresignedUploadCommand command,
+        HttpContext httpContext,
         ISender sender,
         CancellationToken cancellationToken)
     {
@@ -304,7 +306,7 @@ public class FileEndpoints : ICarterModule
             return TypedResults.BadRequest(ReservedFolderError());
         }
 
-        var result = await sender.Send(command, cancellationToken);
+        var result = await sender.Send(command with { OwnerId = UserHelper.GetUserId(httpContext.User) }, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -315,7 +317,7 @@ public class FileEndpoints : ICarterModule
     }
 
     private static bool IsPrivateReportFolder(string? subFolder) =>
-        string.Equals(subFolder, ReportStorageContract.PrivateFolder, StringComparison.OrdinalIgnoreCase);
+        ReportStorageContract.IsPrivatePath(subFolder);
 
     private static ProblemDetails ReservedFolderError() =>
         ProblemDetailsHelper.Create(

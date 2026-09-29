@@ -226,7 +226,7 @@ contracts such as `AuctionService.Contracts`, `BidService.Contracts`, or
 
 ### Domain Layer
 - Entities with private setters (encapsulation)
-- Value Objects (e.g., Money, BidAmount)
+- Value Objects (e.g., BidAmount)
 - Domain Events (raised within aggregates)
 - Enums representing domain concepts
 - No references to infrastructure, EF Core, or external libraries
@@ -518,3 +518,10 @@ graph LR
 | Direct event fan-out for auction completion | Matches the currently deployed consumers and keeps the first release simpler | Cross-service progress is eventually consistent; inactive saga definitions must not be mistaken for runtime behavior |
 | Redis for caching + locking | Fast in-memory cache, built-in distributed lock support | Additional infrastructure dependency |
 | Elasticsearch for search | Purpose-built for full-text search and facets | Separate data sync pipeline; eventual consistency |
+
+## Known Backend Limitations
+
+- The dormant Buy Now saga reserves an auction as `ReservedForBuyNow`, while `ExecuteBuyNow` currently requires `Live`. Resolve this lifecycle mismatch before activating the saga.
+- Bulk notification processing marks a recipient processed even when a delivery channel fails. Channel-level retry policy remains to be defined.
+- `AuctionBulkRepository.CountByCorrelationIdAsync` does not filter by correlation. Import processing no longer uses it; other callers must not treat it as a correlation-specific count.
+- Some legacy repository overloads do not forward cancellation tokens, and clock usage is not uniform across services.

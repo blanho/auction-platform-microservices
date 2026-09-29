@@ -6,6 +6,7 @@ namespace Jobs.Infrastructure.Messaging.Consumers;
 
 public class RequestJobConsumer : IConsumer<RequestJobCommand>
 {
+    private readonly JobProgressStore _progress;
     private readonly IJobRepository _jobRepository;
     private readonly IJobItemRepository _jobItemRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -13,11 +14,13 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
 
     public RequestJobConsumer(
         IJobRepository jobRepository,
+        JobProgressStore progress,
         IJobItemRepository jobItemRepository,
         IUnitOfWork unitOfWork,
         ILogger<RequestJobConsumer> logger)
     {
         _jobRepository = jobRepository;
+        _progress = progress;
         _jobItemRepository = jobItemRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -31,6 +34,7 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
             "Received job request: Type={JobType}, CorrelationId={CorrelationId}",
             message.JobType, message.CorrelationId);
 
+        await _progress.LockAsync(message.CorrelationId, context.CancellationToken);
         var existingJob = await _jobRepository.GetByCorrelationIdAsync(
             message.CorrelationId, context.CancellationToken);
 
@@ -88,6 +92,7 @@ public class RequestJobConsumer : IConsumer<RequestJobCommand>
         }
 
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+        await _progress.ApplyAsync(job, context.CancellationToken);
 
         _logger.LogInformation(
             "Created job {JobId} of type {JobType} with {TotalItems} items from RequestJobCommand",

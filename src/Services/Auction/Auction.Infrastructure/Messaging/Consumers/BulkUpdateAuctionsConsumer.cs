@@ -12,29 +12,31 @@ namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateCommand>
 {
+    private readonly IAuctionWorkflowStore _workflow;
     private readonly IAuctionWriteRepository _writeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTime;
-    private readonly AuctionDbContext _dbContext;
     private readonly ILogger<BulkUpdateAuctionsConsumer> _logger;
 
     public BulkUpdateAuctionsConsumer(
+        IAuctionWorkflowStore workflow,
         IAuctionWriteRepository writeRepository,
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTime,
-        AuctionDbContext dbContext,
         ILogger<BulkUpdateAuctionsConsumer> logger)
     {
         _writeRepository = writeRepository;
         _unitOfWork = unitOfWork;
         _dateTime = dateTime;
-        _dbContext = dbContext;
         _logger = logger;
+        _workflow = workflow;
     }
 
     public async Task Consume(ConsumeContext<ProcessBulkAuctionUpdateCommand> context)
     {
         var message = context.Message;
+        var receiptKey = $"BulkUpdateAuctionsConsumer:{message.CorrelationId}";
+        if (await _workflow.ExistsAsync(receiptKey, context.CancellationToken)) return;
         var stopwatch = Stopwatch.StartNew();
         var correlationId = message.CorrelationId.ToString();
 
@@ -42,25 +44,24 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
             "Processing bulk auction update {CorrelationId}: {Count} auctions, Activate={Activate}",
             correlationId, message.AuctionIds.Count, message.Activate);
 
-        await context.Publish(new RequestJobCommand
-        {
-            JobType = nameof(JobType.BulkAuctionUpdate),
-            CorrelationId = correlationId,
-            RequestedBy = message.RequestedBy,
-            PayloadJson = JsonSerializer.Serialize(new
+        if (message.ParentJobId is null)
+            await context.Publish(new RequestJobCommand
             {
-                message.Activate,
-                message.Reason,
-                AuctionCount = message.AuctionIds.Count
-            }),
-            TotalItems = message.AuctionIds.Count,
-            MaxRetryCount = 0
-        });
+                JobType = nameof(JobType.BulkAuctionUpdate),
+                CorrelationId = correlationId,
+                RequestedBy = message.RequestedBy,
+                PayloadJson = JsonSerializer.Serialize(new
+                {
+                    message.Activate,
+                    message.Reason,
+                    AuctionCount = message.AuctionIds.Count
+                }),
+                TotalItems = message.AuctionIds.Count,
+                MaxRetryCount = 0
+            });
 
         var succeededCount = 0;
         var failedCount = 0;
-        var reportedSucceededCount = 0;
-        var reportedFailedCount = 0;
         var pendingChanges = 0;
 
         foreach (var idBatch in message.AuctionIds.Chunk(AuctionDefaults.Batch.FetchBatchSize))
@@ -91,7 +92,7 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
                         failedCount++;
                     }
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (BuildingBlocks.Domain.Exceptions.DomainInvariantException ex)
                 {
                     _logger.LogWarning(ex,
                         "Failed to update auction {AuctionId} in bulk update {CorrelationId}",
@@ -103,13 +104,6 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
             if (pendingChanges >= AuctionDefaults.Batch.SaveBatchSize)
             {
                 await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-                _dbContext.ChangeTracker.Clear();
-
-                await PublishProgress(context, correlationId,
-                    succeededCount - reportedSucceededCount,
-                    failedCount - reportedFailedCount);
-                reportedSucceededCount = succeededCount;
-                reportedFailedCount = failedCount;
 
                 pendingChanges = 0;
             }
@@ -118,15 +112,9 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
         if (pendingChanges > 0)
         {
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
-            _dbContext.ChangeTracker.Clear();
         }
 
-        if (succeededCount != reportedSucceededCount || failedCount != reportedFailedCount)
-        {
-            await PublishProgress(context, correlationId,
-                succeededCount - reportedSucceededCount,
-                failedCount - reportedFailedCount);
-        }
+        await PublishProgress(context, correlationId, succeededCount, failedCount);
 
         stopwatch.Stop();
 
@@ -134,6 +122,18 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
             "Bulk update {CorrelationId} completed: {Succeeded}/{Total} succeeded in {Duration}ms",
             correlationId, succeededCount, message.AuctionIds.Count, stopwatch.ElapsedMilliseconds);
 
+        await _workflow.CompleteAsync(receiptKey, message.CorrelationId, succeededCount, failedCount,
+            [], 1, context.CancellationToken);
+        if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+            await context.Publish(new ReportJobItemResultCommand
+            {
+                JobId = message.ParentJobId.Value,
+                JobItemId = message.ParentJobItemId.Value,
+                Attempt = message.Attempt,
+                IsSuccess = failedCount == 0,
+                IsFinalFailure = true,
+                ErrorMessage = failedCount == 0 ? null : "Auction workflow completed with errors."
+            });
         await context.Publish(new BulkAuctionUpdateCompletedEvent
         {
             CorrelationId = message.CorrelationId,
@@ -173,11 +173,11 @@ public class BulkUpdateAuctionsConsumer : IConsumer<ProcessBulkAuctionUpdateComm
         string correlationId,
         int completedCount,
         int failedCount) =>
-        context.Publish(new ReportJobBatchProgressCommand
+        context.Message.ParentJobId is not null ? Task.CompletedTask : context.Publish(new ReportJobBatchProgressCommand
         {
             CorrelationId = correlationId,
+            BatchId = "bulk-update:complete",
             CompletedCount = completedCount,
             FailedCount = failedCount
         });
-
 }

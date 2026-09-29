@@ -47,7 +47,9 @@ public class ReportJobItemResultConsumer : IConsumer<ReportJobItemResultCommand>
             return;
         }
 
-        if (jobItem.IsTerminal)
+        if ((message.Attempt ?? 0) != jobItem.RetryCount) return;
+
+        if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing)
         {
             _logger.LogWarning(
                 "Job item {JobItemId} is already in terminal state {Status}, skipping result",
@@ -64,6 +66,8 @@ public class ReportJobItemResultConsumer : IConsumer<ReportJobItemResultCommand>
             return;
         }
 
+        if (job.Status != Jobs.Domain.Enums.JobStatus.Processing) return;
+
         if (message.IsSuccess)
         {
             jobItem.MarkCompleted();
@@ -73,9 +77,9 @@ public class ReportJobItemResultConsumer : IConsumer<ReportJobItemResultCommand>
         }
         else
         {
-            jobItem.MarkFailed(message.ErrorMessage ?? "Unknown error");
+            jobItem.MarkFailed(message.ErrorMessage ?? "Unknown error", message.IsFinalFailure);
 
-            if (jobItem.IsTerminal)
+            if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing)
                 job.RecordItemFailed();
 
             _logger.LogWarning(

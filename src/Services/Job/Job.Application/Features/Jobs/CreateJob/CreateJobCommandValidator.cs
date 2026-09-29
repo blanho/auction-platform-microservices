@@ -16,6 +16,12 @@ public class CreateJobCommandValidator : AbstractValidator<CreateJobCommand>
         RuleFor(x => x.MaxRetryCount)
             .InclusiveBetween(0, JobDefaults.Validation.MaxRetryCountUpperBound);
 
+        RuleFor(x => x.Items).NotEmpty();
+        RuleFor(x => x.TotalItems).Equal(x => x.Items.Count)
+            .WithMessage("TotalItems must match the number of job items.");
+        RuleFor(x => x.Items).Must(items => items.Select(i => i.SequenceNumber).Distinct().Count() == items.Count)
+            .WithMessage("Item sequence numbers must be unique.");
+
         RuleFor(x => x.Type)
             .IsInEnum();
 

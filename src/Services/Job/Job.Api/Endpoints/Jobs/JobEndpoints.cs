@@ -28,6 +28,7 @@ public class JobEndpoints : ICarterModule
 
         group.MapPost("/", CreateJob)
             .WithName("CreateJob")
+            .RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = "Admin" })
             .Produces<JobDto>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict);

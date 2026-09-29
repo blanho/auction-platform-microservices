@@ -12,8 +12,8 @@ public class Auction : AggregateRoot
     private static readonly Dictionary<Status, HashSet<Status>> AllowedTransitions = new()
     {
         [Status.Draft] = [Status.Scheduled, Status.Live, Status.Cancelled],
-        [Status.Scheduled] = [Status.Live, Status.Cancelled],
-        [Status.Live] = [Status.Finished, Status.ReservedNotMet, Status.Cancelled, Status.ReservedForBuyNow],
+        [Status.Scheduled] = [Status.Live, Status.Inactive, Status.Cancelled],
+        [Status.Live] = [Status.Finished, Status.ReservedNotMet, Status.Inactive, Status.Cancelled, Status.ReservedForBuyNow],
         [Status.ReservedForBuyNow] = [Status.Finished, Status.Live, Status.Cancelled],
         [Status.Finished] = [],
         [Status.ReservedNotMet] = [],

@@ -33,7 +33,7 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
 
         try
         {
-            var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId);
+            var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId, context.CancellationToken);
             if (existingOrder != null)
             {
                 _logger.LogWarning(
@@ -59,7 +59,7 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 itemTitle: message.ItemTitle,
                 winningBid: message.BuyNowPrice);
 
-            await _orderRepository.AddAsync(order);
+            await _orderRepository.AddAsync(order, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
             _logger.LogInformation(

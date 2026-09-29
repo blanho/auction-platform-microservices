@@ -82,6 +82,11 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 
             return result;
         }
+        catch (OperationCanceledException)
+        {
+            await _deduplicationService.RemoveAsync(deduplicationKey, CancellationToken.None);
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to place bid for auction {AuctionId}, bidder {BidderId}. Removing idempotency key.", request.AuctionId, request.BidderId);

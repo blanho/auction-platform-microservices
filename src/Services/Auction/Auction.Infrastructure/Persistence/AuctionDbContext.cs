@@ -20,6 +20,9 @@ namespace Auctions.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AuctionWorkflowReceipt>().HasKey(x => x.Key);
+            modelBuilder.Entity<AuctionWorkflowReceipt>().Property(x => x.Key).HasMaxLength(255);
+            modelBuilder.Entity<AuctionWorkflowReceipt>().HasIndex(x => x.CorrelationId);
 
             modelBuilder.AddInboxStateEntity();
             modelBuilder.AddOutboxStateEntity();

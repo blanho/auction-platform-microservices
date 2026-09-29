@@ -14,8 +14,13 @@ public static class MassTransitOutboxExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddScoped<Messaging.JobProgressStore>();
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<ProcessJobItemConsumer>();
+            x.AddConsumer<AuctionWorkflowFaultConsumer>();
+            x.AddConfigureEndpointsCallback((context, name, endpoint) =>
+                endpoint.UseEntityFrameworkOutbox<JobDbContext>(context));
             x.AddConsumer<RequestJobConsumer>();
             x.AddConsumer<ReportJobItemResultConsumer>();
             x.AddConsumer<InitializeStreamingJobConsumer>();
@@ -28,6 +33,7 @@ public static class MassTransitOutboxExtensions
             x.AddEntityFrameworkOutbox<JobDbContext>(o =>
             {
                 o.UsePostgres();
+                o.IsolationLevel = System.Data.IsolationLevel.ReadCommitted;
                 o.QueryDelay = TimeSpan.FromSeconds(JobDefaults.Outbox.QueryDelaySeconds);
                 o.UseBusOutbox();
             });
@@ -42,7 +48,8 @@ public static class MassTransitOutboxExtensions
                     ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
                 var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, virtualHost, h =>
+                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
+                cfg.Host(host, port, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);
@@ -52,6 +59,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-requests", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<RequestJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -62,6 +70,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-results", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobItemResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.HighThroughputRetryLimit,
@@ -73,6 +82,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-streaming-init", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<InitializeStreamingJobConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -83,6 +93,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-batches", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<AddJobItemsBatchConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -95,6 +106,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-finalize-init", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<FinalizeJobInitializationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -105,6 +117,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-item-batch-results", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobItemBatchResultConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.HighThroughputRetryLimit,
@@ -116,6 +129,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-batch-progress", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<ReportJobBatchProgressConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -127,6 +141,7 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("job-fail-by-correlation", e =>
                 {
+                    e.UseEntityFrameworkOutbox<JobDbContext>(context);
                     e.ConfigureConsumer<FailJobByCorrelationConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: JobDefaults.Messaging.StandardRetryLimit,
@@ -134,11 +149,6 @@ public static class MassTransitOutboxExtensions
                         maxInterval: TimeSpan.FromSeconds(JobDefaults.Messaging.MaxIntervalSeconds),
                         intervalDelta: TimeSpan.FromSeconds(JobDefaults.Messaging.IntervalDeltaSeconds)));
                 });
-
-                cfg.UseDelayedRedelivery(r => r.Intervals(
-                    TimeSpan.FromSeconds(JobDefaults.Messaging.RedeliveryFastSeconds),
-                    TimeSpan.FromSeconds(JobDefaults.Messaging.RedeliverySlowSeconds),
-                    TimeSpan.FromMinutes(JobDefaults.Messaging.RedeliveryMaxMinutes)));
 
                 cfg.UseMessageRetry(r => r.Exponential(
                     retryLimit: JobDefaults.Messaging.GlobalRetryLimit,

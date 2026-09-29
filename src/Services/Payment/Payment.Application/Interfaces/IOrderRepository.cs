@@ -10,9 +10,11 @@ public interface IOrderRepository
     Task<Order?> GetByIdAsync(Guid id);
     Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<Order?> GetByAuctionIdAsync(Guid auctionId);
+    Task<Order?> GetByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken);
     Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams);
     Task<PaginatedResult<Order>> GetBySellerUsernameAsync(OrderQueryParams queryParams);
     Task<Order> AddAsync(Order order);
+    Task<Order> AddAsync(Order order, CancellationToken cancellationToken);
     Task<Order> UpdateAsync(Order order);
     Task<Order> UpdateAsync(Order order, CancellationToken cancellationToken);
     Task<int> GetCountByBuyerUsernameAsync(string username);

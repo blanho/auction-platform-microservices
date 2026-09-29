@@ -90,6 +90,26 @@ public class JobItemResultOwnershipTests
         Assert.Equal(1, job.CompletedItems);
     }
 
+    [Fact]
+    public async Task StaleResultCannotCompleteRetriedItem()
+    {
+        var item = JobItem.Create(Guid.NewGuid(), "{}", 1, 3);
+        item.MarkProcessing();
+        item.MarkFailed("temporary failure");
+        item.MarkProcessing();
+        var items = Stub<IJobItemRepository>((method, _) => method.Name switch
+        {
+            nameof(IJobItemRepository.GetByIdForUpdateAsync) => Task.FromResult<JobItem?>(item),
+            _ => throw new InvalidOperationException("Stale result must not write")
+        });
+        var consumer = new ReportJobItemResultConsumer(null!, items, null!,
+            NullLogger<ReportJobItemResultConsumer>.Instance);
+        await consumer.Consume(Context(new ReportJobItemResultCommand
+        { JobId = item.JobId, JobItemId = item.Id, Attempt = 0, IsSuccess = true }));
+        Assert.Equal(JobItemStatus.Processing, item.Status);
+        Assert.Equal(1, item.RetryCount);
+    }
+
     private static ConsumeContext<T> Context<T>(T message) where T : class =>
         Stub<ConsumeContext<T>>((method, _) => method.Name switch
         {

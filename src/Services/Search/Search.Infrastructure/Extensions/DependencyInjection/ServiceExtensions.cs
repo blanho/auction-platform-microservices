@@ -140,8 +140,6 @@ public static class ServiceExtensions
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
 
-
-
                 cfg.ReceiveEndpoint("search-bid-updated", e =>
                 {
                     e.ConfigureConsumer<HighestBidUpdatedConsumer>(context);
@@ -159,8 +157,6 @@ public static class ServiceExtensions
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
                 });
-
-
 
                 cfg.ConfigureEndpoints(context);
             });

@@ -81,6 +81,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             await context.Publish(new ReportJobBatchProgressCommand
             {
                 CorrelationId = correlationId,
+                BatchId = "report:complete",
                 CompletedCount = 1,
                 FailedCount = 0
             });

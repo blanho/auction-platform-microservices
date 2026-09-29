@@ -39,6 +39,8 @@ public class ReportJobItemBatchResultConsumer : IConsumer<ReportJobItemBatchResu
             return;
         }
 
+        if (job.Status != Jobs.Domain.Enums.JobStatus.Processing) return;
+
         var itemIds = message.Results.Select(r => r.JobItemId);
         var jobItems = await _jobItemRepository.GetByIdsForUpdateAsync(
             itemIds, context.CancellationToken);
@@ -63,7 +65,8 @@ public class ReportJobItemBatchResultConsumer : IConsumer<ReportJobItemBatchResu
                 continue;
             }
 
-            if (jobItem.IsTerminal)
+            if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing ||
+                (result.Attempt ?? 0) != jobItem.RetryCount)
                 continue;
 
             if (result.IsSuccess)
@@ -73,20 +76,18 @@ public class ReportJobItemBatchResultConsumer : IConsumer<ReportJobItemBatchResu
             }
             else
             {
-                jobItem.MarkFailed(result.ErrorMessage ?? "Unknown error");
+                jobItem.MarkFailed(result.ErrorMessage ?? "Unknown error", result.IsFinalFailure);
 
-                if (jobItem.IsTerminal)
+                if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing ||
+                (result.Attempt ?? 0) != jobItem.RetryCount)
                     failedCount++;
             }
 
             await _jobItemRepository.UpdateAsync(jobItem, context.CancellationToken);
         }
 
-        if (completedCount > 0)
-            job.RecordBatchCompleted(completedCount);
-
-        if (failedCount > 0)
-            job.RecordBatchFailed(failedCount);
+        if (completedCount + failedCount > 0)
+            job.RecordBatchProgress(completedCount, failedCount);
 
         await _jobRepository.UpdateAsync(job, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);

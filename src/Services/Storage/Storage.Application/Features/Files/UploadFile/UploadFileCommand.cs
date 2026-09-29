@@ -9,5 +9,6 @@ public record UploadFileCommand(
     long FileSize,
     string? SubFolder = null,
     Guid? OwnerId = null,
-    Dictionary<string, string>? Metadata = null
+    Dictionary<string, string>? Metadata = null,
+    Guid? ReportRequestId = null
 ) : ICommand<StoredFileDto>;

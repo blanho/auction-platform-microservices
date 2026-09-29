@@ -1,3 +1,4 @@
+using JobService.Contracts.Commands;
 using AuctionService.Contracts.Commands;
 using Auctions.Domain.Constants;
 using BuildingBlocks.Application.CQRS;
@@ -9,15 +10,18 @@ namespace Auctions.Application.Features.Auctions.QueueAuctionImport;
 
 public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImportCommand, BackgroundJobResult>
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<QueueAuctionImportCommandHandler> _logger;
 
     public QueueAuctionImportCommandHandler(
+        IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         ILogger<QueueAuctionImportCommandHandler> logger)
     {
         _eventPublisher = eventPublisher;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<BackgroundJobResult>> Handle(
@@ -25,6 +29,15 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
         CancellationToken cancellationToken)
     {
         var correlationId = Guid.NewGuid();
+        await _eventPublisher.PublishAsync(new RequestJobCommand
+        {
+            CorrelationId = correlationId.ToString(),
+            JobType = "AuctionImport",
+            RequestedBy = request.SellerId,
+            TotalItems = request.Rows.Count,
+            MaxRetryCount = 0,
+            PayloadJson = "{}"
+        }, cancellationToken);
 
         var payloadRows = request.Rows.Select((row, index) => new ImportAuctionItemPayload
         {
@@ -61,6 +74,8 @@ public class QueueAuctionImportCommandHandler : ICommandHandler<QueueAuctionImpo
 
             await _eventPublisher.PublishAsync(batchCommand, cancellationToken);
         }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Queued auction import {CorrelationId} for seller {SellerId}: {RowCount} rows in {BatchCount} batches",

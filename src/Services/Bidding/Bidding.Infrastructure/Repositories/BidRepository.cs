@@ -336,14 +336,14 @@ namespace Bidding.Infrastructure.Repositories
 
         private IQueryable<Bid> SelectWinningBids(IQueryable<Bid> acceptedBids)
         {
-            return acceptedBids
-                .GroupBy(bid => bid.AuctionId)
-                .Select(group => group.OrderByDescending(bid => bid.Amount).ThenBy(bid => bid.BidTime).First())
-                .Where(bid => !_context.Bids.Any(other =>
-                    !other.IsDeleted &&
-                    other.AuctionId == bid.AuctionId &&
-                    (other.Status == BidStatus.Accepted || other.Status == BidStatus.AcceptedBelowReserve) &&
-                    (other.Amount > bid.Amount || (other.Amount == bid.Amount && other.BidTime < bid.BidTime))));
+            return acceptedBids.Where(bid => bid.Id == _context.Bids
+                .Where(other => !other.IsDeleted && other.AuctionId == bid.AuctionId &&
+                    (other.Status == BidStatus.Accepted || other.Status == BidStatus.AcceptedBelowReserve))
+                .OrderByDescending(other => other.Amount)
+                .ThenBy(other => other.BidTime)
+                .ThenBy(other => other.Id)
+                .Select(other => other.Id)
+                .First());
         }
 
         public async Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default)
@@ -439,6 +439,15 @@ namespace Bidding.Infrastructure.Repositories
             if (filter.ToDate.HasValue)
             {
                 baseQuery = baseQuery.Where(x => x.BidTime <= filter.ToDate.Value);
+            }
+
+            if (filter.IsPaid.HasValue)
+            {
+                var paidIds = filter.PaidAuctionIds?.ToArray()
+                    ?? throw new InvalidOperationException("Payment status is required for the paid filter.");
+                baseQuery = filter.IsPaid.Value
+                    ? baseQuery.Where(x => paidIds.Contains(x.AuctionId))
+                    : baseQuery.Where(x => !paidIds.Contains(x.AuctionId));
             }
 
             var totalCount = await baseQuery.CountAsync(cancellationToken);

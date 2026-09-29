@@ -13,8 +13,17 @@ public static class MassTransitOutboxExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddScoped<IAuctionWorkflowStore, AuctionWorkflowStore>();
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<ImportAuctionsBatchConsumer>();
+            x.AddConsumer<ImportAuctionsConsumer>();
+            x.AddConsumer<ExportAuctionsConsumer>();
+            x.AddConsumer<BulkUpdateAuctionsConsumer>();
+            x.AddConfigureEndpointsCallback((context, name, endpoint) =>
+            {
+                endpoint.UseEntityFrameworkOutbox<AuctionDbContext>(context);
+            });
             x.AddConsumer<BidPlacedConsumer>();
             x.AddConsumer<BidRetractedConsumer>();
 
@@ -36,6 +45,7 @@ public static class MassTransitOutboxExtensions
             x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
             {
                 o.UsePostgres();
+                o.IsolationLevel = System.Data.IsolationLevel.ReadCommitted;
                 o.QueryDelay = TimeSpan.FromSeconds(AuctionDefaults.Messaging.OutboxQueryDelaySeconds);
                 o.UseBusOutbox();
             });
@@ -50,7 +60,8 @@ public static class MassTransitOutboxExtensions
                     ?? throw new InvalidOperationException("RabbitMQ:Password configuration is required");
                 var virtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
 
-                cfg.Host(host, virtualHost, h =>
+                var port = configuration.GetValue<ushort?>("RabbitMQ:Port") ?? 5672;
+                cfg.Host(host, port, virtualHost, h =>
                 {
                     h.Username(username);
                     h.Password(password);
@@ -91,11 +102,6 @@ public static class MassTransitOutboxExtensions
                         maxInterval: TimeSpan.FromSeconds(AuctionDefaults.Messaging.MaxIntervalSeconds),
                         intervalDelta: TimeSpan.FromSeconds(AuctionDefaults.Messaging.IntervalDeltaSeconds)));
                 });
-
-                cfg.UseDelayedRedelivery(r => r.Intervals(
-                    TimeSpan.FromSeconds(AuctionDefaults.Messaging.RedeliveryFastSeconds),
-                    TimeSpan.FromSeconds(AuctionDefaults.Messaging.RedeliverySlowSeconds),
-                    TimeSpan.FromMinutes(AuctionDefaults.Messaging.RedeliveryMaxMinutes)));
 
                 cfg.UseMessageRetry(r => r.Exponential(
                     retryLimit: AuctionDefaults.Messaging.HighThroughputRetryLimit,

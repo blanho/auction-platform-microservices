@@ -46,13 +46,7 @@ public class ImportConsumerFailureCountTests
             published.Add(args[0]!);
             return Task.CompletedTask;
         }
-        var checkpointRepository = DispatchProxy.Create<IImportCheckpointRepository, TestProxy>();
-        ((TestProxy)(object)checkpointRepository).Handler = (method, _) => method.Name switch
-        {
-            nameof(IImportCheckpointRepository.GetCheckpointAsync) => Task.FromResult<ImportCheckpoint?>(null),
-            _ => throw new NotSupportedException(method.Name)
-        };
-        var consumer = new ImportAuctionsConsumer(null!, checkpointRepository, null!, null!,
+        var consumer = new ImportAuctionsConsumer(new TestWorkflowStore(), null!, null!, null!,
             NullLogger<ImportAuctionsConsumer>.Instance);
 
         await consumer.Consume(context);
@@ -91,6 +85,7 @@ public class ImportConsumerFailureCountTests
         ((TestProxy)(object)context).Handler = (method, args) => method.Name switch
         {
             "get_Message" => message,
+            "get_CancellationToken" => CancellationToken.None,
             "Publish" => RecordPublished(args!),
             _ => throw new NotSupportedException(method.Name)
         };
@@ -100,7 +95,7 @@ public class ImportConsumerFailureCountTests
             return Task.CompletedTask;
         }
 
-        var consumer = new ImportAuctionsBatchConsumer(null!, null!, null!,
+        var consumer = new ImportAuctionsBatchConsumer(new TestWorkflowStore(), null!, null!, null!,
             NullLogger<ImportAuctionsBatchConsumer>.Instance);
 
         await consumer.Consume(context);

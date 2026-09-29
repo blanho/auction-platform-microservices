@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../Payment/Payment.Contracts/PaymentService.Contracts.csproj" />
     <ProjectReference Include="..\Bidding.Domain\Bidding.Domain.csproj" />
     <ProjectReference Include="..\Bidding.Application\Bidding.Application.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />

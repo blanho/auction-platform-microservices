@@ -37,7 +37,7 @@ public class ProcessAutoBidsConsumer : IConsumer<ProcessAutoBidsEvent>
                 "Successfully processed auto-bids for auction {AuctionId}",
                 message.AuctionId);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex,
                 "Failed to process auto-bids for auction {AuctionId}. " +

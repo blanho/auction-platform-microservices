@@ -19,6 +19,7 @@ This document covers how the auction platform is deployed across local developme
 - [Database Management](#database-management)
 - [Monitoring and Alerting](#monitoring-and-alerting)
 - [Rollback Procedures](#rollback-procedures)
+- [Queued Workflow Rollout](#queued-workflow-rollout)
 
 ---
 
@@ -527,3 +528,14 @@ EF Core does not have automatic rollback in production. Options:
 Deploy the updated Bidding publisher and Search service together. Search startup adds `lastBidEventTicks` (long) and `lastBidEventIsRetraction` (boolean) mappings to an existing index; its Elasticsearch credentials must allow mapping updates. Stop old Search consumers before relying on the ordering guard. After cutover and verification of the authoritative `search-bid-updated` and `search-bid-retracted` queues, retire the obsolete `search-bid-placed` and `search-auction-high-bid` queues/bindings through normal broker operations. This change does not delete broker queues automatically.
 
 Source timestamps determine bid-event ordering, so publisher clocks must be synchronized. Retractions published by the new Bidding service include `WasHighestBid`; legacy payloads default to the previous highest-bid behavior for compatibility. Previously indexed incorrect prices require a deliberate reconciliation; this deployment does not rewrite historical documents. Coordinate bulk reindexing separately from live bid processing because it replaces projection metadata.
+
+## Queued Workflow Rollout
+
+1. Apply the Auction, Job, and Storage migrations before enabling the updated consumers. These add workflow receipts, retained progress, upload reservations, and unique report request identities.
+2. Deploy the Storage report endpoint and Job consumers before Auction producers; deploy Payment's status responder before Bidding. Coordinate or drain in-flight messages during upgrades. Retain receipts and progress entries for the required replay window.
+3. Progress producers must supply a stable `BatchId`. Legacy messages use transport message IDs, which cannot deduplicate independently republished messages. Item result producers must echo `Attempt` on retries; omitted attempts mean zero. Streaming finalization requires a positive `ExpectedTotalItems`.
+4. Generic `POST /jobs` requires Admin. Item processing supports AuctionImport, BulkAuctionUpdate, and DataExport; unsupported job types fail explicitly.
+5. Clients must obtain a new presigned upload reservation before confirmation. Pre-upgrade untracked uploads cannot be confirmed. Ownership comes from the authenticated user.
+6. Auction and Job use bounded retries compatible with stock RabbitMQ. Monitor error queues and replay failed messages after correcting the cause. Failed physical file deletions remain as database tombstones for scheduled cleanup.
+
+Provider-backed tests use `BACKEND_TEST_POSTGRES` and `BACKEND_TEST_RABBIT_PORT` and are skipped when those variables are absent. They create isolated PostgreSQL databases and exercise RabbitMQ workflows. Auction export tests simulate Storage HTTP responses; deployed Storage/Azure, Stripe, Elasticsearch, Redis, and complete worker lifecycles still require acceptance testing.

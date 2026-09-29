@@ -34,7 +34,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             return;
         }
 
-        var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId);
+        var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId, context.CancellationToken);
         if (existingOrder != null)
         {
             _logger.LogWarning("Order already exists for auction {AuctionId}", message.AuctionId);
@@ -50,7 +50,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
             itemTitle: message.ItemTitle,
             winningBid: message.SoldAmount ?? 0);
 
-        await _orderRepository.AddAsync(order);
+        await _orderRepository.AddAsync(order, context.CancellationToken);
         await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
         _logger.LogInformation(
