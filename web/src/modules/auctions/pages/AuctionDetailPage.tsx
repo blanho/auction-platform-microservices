@@ -65,6 +65,7 @@ export function AuctionDetailPage() {
     buyNowDialogOpen,
     setBuyNowDialogOpen,
     buyNowMutation,
+    purchaseStatus,
     isInWatchlist,
     handleToggleFavorite,
     handleShare,
@@ -242,6 +243,16 @@ export function AuctionDetailPage() {
                 </Stack>
               </Stack>
 
+              {(purchaseStatus?.status === 'Processing' ||
+                purchaseStatus?.status === 'NeedsReview') && (
+                <InlineAlert severity="info" sx={{ mb: 2 }}>
+                  {t(
+                    purchaseStatus.status === 'NeedsReview'
+                      ? 'messages.purchaseReview'
+                      : 'messages.purchasePending'
+                  )}
+                </InlineAlert>
+              )}
               <BidSection
                 auctionId={auction.id}
                 auctionTitle={auction.title}

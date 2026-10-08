@@ -20,6 +20,10 @@ namespace Auctions.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<BuyNowPurchase>().HasKey(x => x.CorrelationId);
+            modelBuilder.Entity<BuyNowPurchase>().Property(x => x.RowVersion).HasColumnName("xmin").IsRowVersion();
+            modelBuilder.Entity<BuyNowPurchase>().HasIndex(x => new { x.AuctionId, x.BuyerId, x.CreatedAt });
+            modelBuilder.Entity<BuyNowPurchase>().Property(x => x.BuyNowPrice).HasPrecision(18, 2);
             modelBuilder.Entity<AuctionWorkflowReceipt>().HasKey(x => x.Key);
             modelBuilder.Entity<AuctionWorkflowReceipt>().Property(x => x.Key).HasMaxLength(255);
             modelBuilder.Entity<AuctionWorkflowReceipt>().HasIndex(x => x.CorrelationId);

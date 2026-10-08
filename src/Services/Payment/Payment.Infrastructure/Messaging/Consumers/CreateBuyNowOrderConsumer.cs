@@ -1,3 +1,5 @@
+using BuildingBlocks.Domain.Exceptions;
+using Payment.Domain.Enums;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Infrastructure.Caching;
@@ -9,22 +11,26 @@ namespace Payment.Infrastructure.Messaging.Consumers;
 
 public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
 {
+    private readonly IBuyNowOrderAttemptStore _attempts;
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateBuyNowOrderConsumer> _logger;
 
     public CreateBuyNowOrderConsumer(
         IOrderRepository orderRepository,
+        IBuyNowOrderAttemptStore attempts,
         IUnitOfWork unitOfWork,
         ILogger<CreateBuyNowOrderConsumer> logger)
     {
         _orderRepository = orderRepository;
+        _attempts = attempts;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<CreateBuyNowOrder> context)
     {
+        context.CancellationToken.ThrowIfCancellationRequested();
         var message = context.Message;
 
         _logger.LogInformation(
@@ -33,9 +39,16 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
 
         try
         {
+            var attempt = await _attempts.GetAsync(message.CorrelationId, message.AuctionId, message.BuyerId, context.CancellationToken);
+            if (attempt.Cancelled)
+                throw new DomainInvariantException("This purchase attempt was cancelled");
             var existingOrder = await _orderRepository.GetByAuctionIdAsync(message.AuctionId, context.CancellationToken);
+            if (existingOrder?.Status == OrderStatus.Cancelled) existingOrder = null;
             if (existingOrder != null)
             {
+                if (existingOrder.BuyNowCorrelationId != message.CorrelationId || existingOrder.BuyerId != message.BuyerId ||
+                    existingOrder.SellerId != message.SellerId || existingOrder.WinningBid != message.BuyNowPrice)
+                    throw new DomainInvariantException("An order already exists for a different purchase attempt");
                 _logger.LogWarning(
                     "Order already exists for auction - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}, OrderId: {OrderId}",
                     message.CorrelationId, message.AuctionId, existingOrder.Id);
@@ -57,7 +70,8 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 sellerId: message.SellerId,
                 sellerUsername: message.SellerUsername,
                 itemTitle: message.ItemTitle,
-                winningBid: message.BuyNowPrice);
+                winningBid: message.BuyNowPrice,
+                buyNowCorrelationId: message.CorrelationId);
 
             await _orderRepository.AddAsync(order, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
@@ -74,7 +88,7 @@ public class CreateBuyNowOrderConsumer : IConsumer<CreateBuyNowOrder>
                 CreatedAt = order.CreatedAt
             });
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (DomainInvariantException ex)
         {
             _logger.LogError(ex,
                 "Failed to create order for Buy Now saga - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",

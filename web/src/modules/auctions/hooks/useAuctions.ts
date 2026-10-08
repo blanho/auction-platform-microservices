@@ -1,3 +1,4 @@
+import { useAuth } from '@/app/hooks/useAuth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { auctionsApi } from '../api'
 import type { AuctionFilters, CreateAuctionRequest, UpdateAuctionRequest } from '../types'
@@ -103,12 +104,27 @@ export const useDeactivateAuction = () => {
   })
 }
 
+export const useMyBuyNowPurchase = (id: string) => {
+  const { isAuthenticated, user } = useAuth()
+  return useQuery({
+    queryKey: ['buy-now-purchase', id, user?.id],
+    queryFn: () => auctionsApi.getMyPurchase(id),
+    enabled: Boolean(id) && isAuthenticated,
+    refetchInterval: (query) => {
+      if (query.state.data?.status === 'Processing') {
+        return 1000
+      }
+      return query.state.data?.status === 'NeedsReview' ? 10000 : false
+    },
+  })
+}
+
 export const useBuyNow = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: (id: string) => auctionsApi.buyNow(id),
-    onSuccess: (_, id) => {
+    onSettled: (_, __, id) => {
+      queryClient.invalidateQueries({ queryKey: ['buy-now-purchase', id] })
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
     },

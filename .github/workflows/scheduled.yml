@@ -51,6 +51,7 @@ jobs:
           - search-api
           - storage-api
           - job-api
+          - orchestration-api
           - gateway-api
     steps:
       - name: Delete old container images

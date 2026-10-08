@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Exceptions;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -51,7 +52,7 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
                 return;
             }
 
-            auction.ExecuteBuyNow(message.BuyerId, message.BuyerUsername);
+            auction.CompleteReservedBuyNow(message.CorrelationId, message.BuyerId, message.BuyerUsername, message.OrderId);
             await _writeRepository.UpdateAsync(auction, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
@@ -67,7 +68,7 @@ public class CompleteBuyNowAuctionConsumer : IConsumer<CompleteBuyNowAuction>
                 CompletedAt = _dateTime.UtcNow
             });
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (DomainInvariantException ex)
         {
             _logger.LogError(ex,
                 "Failed to complete Buy Now auction - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",

@@ -18,6 +18,7 @@ public static class MassTransitConfiguration
 
         services.AddMassTransit(x =>
         {
+            x.AddNotificationConsumer<SendAuctionCompletionNotificationsConsumer>();
             x.AddNotificationConsumer<NotificationRequestedConsumer>(
                 concurrencyLimit: rabbitMqSettings.ConcurrencyLimit);
             x.AddNotificationConsumer<UserCreatedConsumer>(
@@ -132,6 +133,11 @@ public static class MassTransitConfiguration
                         TimeSpan.FromSeconds(NotificationDefaults.Transport.GlobalRetryInitialSeconds),
                         TimeSpan.FromSeconds(NotificationDefaults.Transport.GlobalRetryDeltaSeconds)));
 
+                cfg.ReceiveEndpoint("notification-auction-completion-saga", e =>
+                {
+                    e.UseEntityFrameworkOutbox<NotificationDbContext>(context);
+                    e.ConfigureConsumer<SendAuctionCompletionNotificationsConsumer>(context);
+                });
                 ConfigureReceiveEndpoints(cfg, context, rabbitMqSettings);
 
                 cfg.UseDelayedMessageScheduler();

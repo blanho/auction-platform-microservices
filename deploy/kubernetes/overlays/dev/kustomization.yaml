@@ -99,6 +99,7 @@ patches:
         CATALOG_DB_CONNECTION: Host=postgres;Port=5432;Database=catalog_db;Username=dev_user;Password=dev-only-postgres-password
         STORAGE_DB_CONNECTION: Host=postgres;Port=5432;Database=storage_db;Username=dev_user;Password=dev-only-postgres-password
         JOB_DB_CONNECTION: Host=postgres;Port=5432;Database=job_db;Username=dev_user;Password=dev-only-postgres-password
+        ORCHESTRATION_DB_CONNECTION: Host=postgres;Port=5432;Database=orchestration_db;Username=dev_user;Password=dev-only-postgres-password
         REDIS_CONNECTION: redis:6379,password=dev-only-redis-password
         STRIPE_SECRET_KEY: sk_test_dev_only_placeholder
         STRIPE_WEBHOOK_SECRET: whsec_dev_only_placeholder

@@ -88,6 +88,7 @@ patches:
         CATALOG_DB_CONNECTION: Host=postgres;Port=5432;Database=catalog_db;Username=staging_user;Password=replace-before-shared-staging-postgres
         STORAGE_DB_CONNECTION: Host=postgres;Port=5432;Database=storage_db;Username=staging_user;Password=replace-before-shared-staging-postgres
         JOB_DB_CONNECTION: Host=postgres;Port=5432;Database=job_db;Username=staging_user;Password=replace-before-shared-staging-postgres
+        ORCHESTRATION_DB_CONNECTION: Host=postgres;Port=5432;Database=orchestration_db;Username=staging_user;Password=replace-before-shared-staging-postgres
         REDIS_CONNECTION: redis:6379,password=replace-before-shared-staging-redis
         STRIPE_SECRET_KEY: sk_test_replace_before_shared_staging
         STRIPE_WEBHOOK_SECRET: whsec_replace_before_shared_staging
@@ -133,6 +134,8 @@ images:
   - name: auction-platform/search-api
     newTag: staging
   - name: auction-platform/storage-api
+    newTag: staging
+  - name: auction-platform/orchestration-api
     newTag: staging
   - name: auction-platform/job-api
     newTag: staging

@@ -21,6 +21,8 @@ COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src
 COPY ["src/Services/Payment/Payment.Contracts/PaymentService.Contracts.csproj", "src/Services/Payment/Payment.Contracts/"]
 COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
 
+COPY ["src/Orchestration/Orchestration.Contracts/OrchestrationService.Contracts.csproj", "src/Orchestration/Orchestration.Contracts/"]
+
 RUN dotnet restore "src/Services/Notification/Notification.Api/Notification.Api.csproj"
 
 COPY ["src/", "src/"]

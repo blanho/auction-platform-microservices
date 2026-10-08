@@ -53,7 +53,10 @@ public class OrderRepository : IOrderRepository
     {
         return await _context.Orders
             .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.AuctionId == auctionId, cancellationToken);
+            .Where(o => o.AuctionId == auctionId)
+            .OrderBy(o => o.Status == OrderStatus.Cancelled)
+            .ThenByDescending(o => o.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<PaginatedResult<Order>> GetByBuyerUsernameAsync(OrderQueryParams queryParams)

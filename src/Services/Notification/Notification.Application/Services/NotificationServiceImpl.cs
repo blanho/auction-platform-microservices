@@ -42,18 +42,16 @@ namespace Notification.Application.Services
         {
             var localizedContent = NotificationLocalizationMetadata.ResolveForStorage(dto, _localization);
             var notification = NotificationEntity.Create(
-                dto.UserId,
-                dto.UserId,
-                dto.Type,
-                localizedContent.Title,
-                localizedContent.Message,
-                ChannelType.InApp,
-                localizedContent.Data,
-                null,
-                dto.AuctionId,
-                dto.BidId,
-                null,
-                null);
+                userId: dto.UserId,
+                username: dto.UserId,
+                type: dto.Type,
+                title: localizedContent.Title,
+                message: localizedContent.Message,
+                channels: ChannelType.InApp,
+                data: localizedContent.Data,
+                auctionId: dto.AuctionId,
+                bidId: dto.BidId,
+                referenceId: dto.ReferenceId);
 
             notification.MarkAsSent();
 

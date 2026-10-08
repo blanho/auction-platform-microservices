@@ -28,6 +28,7 @@ public class BuyNowExecutedDomainEventHandler : INotificationHandler<BuyNowExecu
 
         await _eventPublisher.PublishAsync(new BuyNowExecutedEvent
         {
+            OrderCreationManaged = notification.OrderCreationManaged,
             AuctionId = notification.AuctionId,
             Buyer = notification.BuyerUsername,
             Seller = notification.SellerUsername,

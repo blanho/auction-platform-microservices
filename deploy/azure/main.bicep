@@ -44,6 +44,7 @@ var databaseNames = [
   'analytics_db'
   'storage_db'
   'job_db'
+  'orchestration_db'
 ]
 
 resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {

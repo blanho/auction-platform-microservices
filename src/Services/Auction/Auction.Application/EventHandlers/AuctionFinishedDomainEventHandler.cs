@@ -1,3 +1,4 @@
+using OrchestrationService.Contracts.Events;
 using Auctions.Domain.Events;
 using BuildingBlocks.Application.Abstractions.Messaging;
 using MediatR;
@@ -28,6 +29,8 @@ public class AuctionFinishedDomainEventHandler : INotificationHandler<AuctionFin
 
         await _eventPublisher.PublishAsync(new AuctionFinishedEvent
         {
+            OrderCreationManaged = true,
+            IsBuyNow = notification.IsBuyNow,
             AuctionId = notification.AuctionId,
             SellerId = notification.SellerId,
             SellerUsername = notification.SellerUsername,
@@ -37,6 +40,21 @@ public class AuctionFinishedDomainEventHandler : INotificationHandler<AuctionFin
             ItemSold = notification.ItemSold,
             ItemTitle = notification.ItemTitle
         }, cancellationToken);
+        if (notification.ItemSold && !notification.IsBuyNow && notification.WinnerId.HasValue)
+        {
+            await _eventPublisher.PublishAsync(new AuctionCompletionSagaStarted
+            {
+                CorrelationId = notification.AuctionId,
+                AuctionId = notification.AuctionId,
+                WinnerId = notification.WinnerId.Value,
+                WinnerUsername = notification.WinnerUsername ?? string.Empty,
+                SellerId = notification.SellerId,
+                SellerUsername = notification.SellerUsername,
+                WinningBidAmount = notification.SoldAmount ?? 0,
+                ItemTitle = notification.ItemTitle,
+                AuctionEndedAt = DateTimeOffset.UtcNow
+            }, cancellationToken);
+        }
     }
 }
 

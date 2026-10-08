@@ -33,3 +33,11 @@ export interface BackendAuctionFileDto {
   displayOrder: number
   isPrimary: boolean
 }
+
+export interface BuyNowPurchase {
+  correlationId: string
+  auctionId: string
+  orderId: string
+  status: 'Processing' | 'Completed' | 'Failed' | 'NeedsReview'
+  success: boolean
+}

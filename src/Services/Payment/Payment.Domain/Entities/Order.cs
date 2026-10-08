@@ -22,6 +22,9 @@ public class Order : AggregateRoot
         [OrderStatus.Refunded] = [],
     };
 
+    public Guid? BuyNowCorrelationId { get; private set; }
+    public bool AwaitingBuyNowCompletion { get; private set; }
+
     public Guid AuctionId { get; private set; }
     public Guid BuyerId { get; private set; }
     public string BuyerUsername { get; private set; } = string.Empty;
@@ -60,7 +63,8 @@ public class Order : AggregateRoot
         decimal? platformFeePercent = null,
         decimal? shippingCost = null,
         string? shippingAddress = null,
-        string? buyerNotes = null)
+        string? buyerNotes = null,
+        Guid? buyNowCorrelationId = null)
     {
         Guard.AgainstEmpty(auctionId, nameof(auctionId));
         Guard.AgainstEmpty(buyerId, nameof(buyerId));
@@ -81,6 +85,8 @@ public class Order : AggregateRoot
         {
             Id = Guid.NewGuid(),
             AuctionId = auctionId,
+            BuyNowCorrelationId = buyNowCorrelationId,
+            AwaitingBuyNowCompletion = buyNowCorrelationId.HasValue,
             BuyerId = buyerId,
             BuyerUsername = buyerUsername,
             SellerId = sellerId,
@@ -142,8 +148,17 @@ public class Order : AggregateRoot
         });
     }
 
+    public void ConfirmBuyNow(Guid correlationId)
+    {
+        if (BuyNowCorrelationId != correlationId || Status == OrderStatus.Cancelled)
+            throw new DomainInvariantException("The purchase cannot activate this order");
+        AwaitingBuyNowCompletion = false;
+    }
+
     public bool CompletePayment(string? transactionId)
     {
+        if (AwaitingBuyNowCompletion)
+            throw new DomainInvariantException("The auction purchase has not completed yet");
         if (PaymentStatus == PaymentStatus.Completed)
         {
             if (string.Equals(PaymentTransactionId, transactionId, StringComparison.Ordinal))

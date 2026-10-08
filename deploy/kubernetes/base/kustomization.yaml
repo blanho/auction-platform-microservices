@@ -20,6 +20,7 @@ resources:
   - services/search-api.yaml
   - services/storage-api.yaml
   - services/job-api.yaml
+  - services/orchestration-api.yaml
   - services/catalog-api.yaml
   - services/gateway-api.yaml
   - services/web.yaml

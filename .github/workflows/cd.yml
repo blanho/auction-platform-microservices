@@ -53,6 +53,7 @@ jobs:
           - { name: analytics-api, dockerfile: src/Services/Analytics/Analytics.Api/Dockerfile }
           - { name: search-api, dockerfile: src/Services/Search/Search.Api/Dockerfile }
           - { name: storage-api, dockerfile: src/Services/Storage/Storage.Api/Dockerfile }
+          - { name: orchestration-api, dockerfile: src/Orchestration/Orchestration.Api/Dockerfile }
           - { name: job-api, dockerfile: src/Services/Job/Job.Api/Dockerfile }
           - { name: gateway-api, dockerfile: src/Gateway/Gateway.Api/Dockerfile }
           - { name: web, dockerfile: web/Dockerfile }

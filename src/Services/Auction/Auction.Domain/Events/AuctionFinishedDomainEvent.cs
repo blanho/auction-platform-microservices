@@ -5,6 +5,7 @@ namespace Auctions.Domain.Events;
 
 public record AuctionFinishedDomainEvent : DomainEvent
 {
+    public bool IsBuyNow { get; init; }
     public Guid AuctionId { get; init; }
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;

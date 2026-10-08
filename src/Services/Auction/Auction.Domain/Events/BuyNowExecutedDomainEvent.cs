@@ -4,6 +4,7 @@ namespace Auctions.Domain.Events;
 
 public record BuyNowExecutedDomainEvent : DomainEvent
 {
+    public bool OrderCreationManaged { get; init; }
     public Guid AuctionId { get; init; }
     public Guid SellerId { get; init; }
     public string SellerUsername { get; init; } = string.Empty;

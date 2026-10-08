@@ -19,6 +19,7 @@ public class NotificationDto
 
 public class CreateNotificationDto
 {
+    public string? ReferenceId { get; set; }
     public string UserId { get; set; } = string.Empty;
     public NotificationType Type { get; set; }
     public string Title { get; set; } = string.Empty;

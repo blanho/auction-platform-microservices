@@ -68,7 +68,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired();
 
         builder.HasIndex(x => x.AuctionId)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"Status\" <> 7");
 
         builder.HasIndex(x => x.BuyerUsername);
 

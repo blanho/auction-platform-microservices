@@ -43,7 +43,7 @@ The platform follows a **domain-driven microservices** architecture with strict 
 | Domain-Driven Design | Bounded contexts per service, aggregates, value objects, domain events |
 | CQRS | Separate command/query models via MediatR |
 | Domain Events | Aggregate events published through transactional outboxes; current state remains in service databases |
-| Event-driven workflows | MassTransit consumers with idempotent event handling; saga definitions are retained but not deployed |
+| Event-driven workflows | Durable MassTransit sagas for Buy Now and auction completion; idempotent participants and transactional outboxes |
 | Transactional Outbox | Guaranteed message delivery via EF Core outbox |
 | API Gateway | YARP reverse proxy with JWT validation and rate limiting |
 
@@ -146,7 +146,7 @@ graph TB
 | **Search** | 5008 | — | Elasticsearch | Full-text auction search, filtering, facets |
 | **Storage** | 5009 | — | `storage_db` | File upload, validation, Azure Blob / local storage |
 | **Gateway** | 6001 | — | — | YARP reverse proxy, JWT validation, rate limiting |
-| **Orchestration libraries** | — | — | — | Inactive saga definitions; no deployed host or persistence |
+| **Orchestration Service** | 5012 | — | PostgreSQL | Durable sale workflows, deadlines, and Admin recovery API. [Workflow and recovery notes](src/Orchestration/README.md) |
 
 ---
 
@@ -163,7 +163,7 @@ graph TB
 | ORM | Entity Framework Core 9 |
 | Messaging | MassTransit + RabbitMQ |
 | Transactional Outbox | MassTransit Outbox (EF Core) |
-| Workflow coordination | MassTransit consumers; inactive StateMachine definitions retained under `src/Orchestration` |
+| Workflow coordination | MassTransit state machines with PostgreSQL persistence and durable deadlines |
 | gRPC | Grpc.AspNetCore / Grpc.Net.Client |
 | API Gateway | YARP (Yet Another Reverse Proxy) |
 | Auth | Custom JWT (HS256 / RS256), OAuth2 (Google, Facebook) |
@@ -299,7 +299,7 @@ sequenceDiagram
     AUC->>AUC: Persist final auction status
     AUC->>MQ: AuctionFinishedEvent (via Outbox)
     par Event fan-out
-        MQ->>PAY: Create winner order when sold
+        MQ->>PAY: Saga requests idempotent winner order when sold
         MQ->>READ: Update projections and analytics
     end
 ```
@@ -323,14 +323,19 @@ sequenceDiagram
 
     B->>GW: POST /auctions/{id}/buy-now
     GW->>AUC: Forward
-    AUC->>AUC: Validate BuyNow eligibility
-    AUC->>MQ: BuyNowExecutedEvent (via Outbox)
-    AUC-->>B: 200 OK
-
-    par Event fan-out
-        MQ->>PAY: Create idempotent buy-now order
-        MQ->>ANA: Record buy-now analytics
-    end
+    AUC->>AUC: Reserve auction and persist purchase receipt
+    AUC->>MQ: BuyNowSagaStarted (via Outbox)
+    AUC-->>B: 202 Accepted (Processing, correlationId)
+    MQ->>PAY: Saga requests order creation (payment held)
+    PAY->>MQ: Order created
+    MQ->>AUC: Saga requests auction completion
+    AUC->>MQ: Auction completed
+    MQ->>PAY: Saga requests payment hold removal
+    PAY->>MQ: Order confirmed
+    MQ->>AUC: BuyNowSagaCompleted
+    B->>AUC: Poll purchase status
+    AUC-->>B: Completed, orderId
+    AUC->>ANA: Public sale event via RabbitMQ
 ```
 
 ---
@@ -370,8 +375,10 @@ auction-platform-microservices/
 │   │   └── Gateway.Api/               # YARP config, JWT middleware, rate limiting
 │   │
 │   └── Orchestration/
-│       ├── Orchestration.Contracts/   # Inactive future orchestration contracts
-│       └── Orchestration.Sagas/       # State-machine definitions; no deployed host
+│       ├── Orchestration.Contracts/   # Commands and acknowledgements
+│       ├── Orchestration.Sagas/       # Sale state machines
+│       ├── Orchestration.Infrastructure/ # PostgreSQL saga storage, outbox, deadlines
+│       └── Orchestration.Api/         # Worker host and Admin recovery API
 │
 ├── web/                               # React 19 SPA
 │   └── src/

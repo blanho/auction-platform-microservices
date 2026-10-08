@@ -49,6 +49,19 @@ public class OrderOwnershipTests
         Assert.Equal(0, ((OrderRepositoryProxy)(object)repository).UpdateCalls);
     }
 
+    [Fact]
+    public async Task PrepareCheckout_WhenPurchaseIsStillPending_DoesNotUpdateOrder()
+    {
+        var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), "buyer", Guid.NewGuid(), "seller", "item", 100,
+            buyNowCorrelationId: Guid.NewGuid());
+        var repository = CreateRepository(order);
+        var handler = new PrepareCheckoutCommandHandler(repository, null!, null!, null!, null!);
+        var result = await handler.Handle(new PrepareCheckoutCommand(order.Id, order.BuyerId, "address", null), default);
+        Assert.True(result.IsFailure);
+        Assert.Equal("Order.InvalidStatus", result.Error?.Code);
+        Assert.Equal(0, ((OrderRepositoryProxy)(object)repository).UpdateCalls);
+    }
+
     private static Order CreateOrder() => Order.Create(
         Guid.NewGuid(),
         Guid.NewGuid(),
