@@ -298,8 +298,6 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                 })
                 .TransitionTo(ManualInterventionRequired)
         );
-
-        // Late step replies cannot restart forward progress after compensation began.
         During(Compensating, CancellingOrder, ManualInterventionRequired,
             When(OrderCreated).Then(context => context.Saga.OrderId = context.Message.OrderId),
             Ignore(AuctionReserved), Ignore(AuctionReservationFailed),

@@ -1,3 +1,6 @@
+import type { BUY_NOW_STATUS } from '@/modules/auctions/constants/buy-now-status'
+export type BuyNowStatus = (typeof BUY_NOW_STATUS)[keyof typeof BUY_NOW_STATUS]
+
 export interface BackendAuctionDto {
   id: string
   reservePrice: number
@@ -38,6 +41,6 @@ export interface BuyNowPurchase {
   correlationId: string
   auctionId: string
   orderId: string
-  status: 'Processing' | 'Completed' | 'Failed' | 'NeedsReview'
+  status: BuyNowStatus
   success: boolean
 }

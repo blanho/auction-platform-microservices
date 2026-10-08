@@ -16,7 +16,6 @@ public class CancelBuyNowOrderConsumer(IOrderRepository orders, IUnitOfWork unit
         {
             var attempt = await attempts.GetAsync(m.CorrelationId, m.AuctionId, m.BuyerId, context.CancellationToken);
             var order = await orders.GetByAuctionIdAsync(m.AuctionId, context.CancellationToken);
-            // Never cancel an order belonging to another attempt.
             var owned = order?.BuyNowCorrelationId == m.CorrelationId && order.BuyerId == m.BuyerId;
             if (owned && order!.Status != OrderStatus.Cancelled)
             {

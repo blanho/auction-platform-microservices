@@ -1,3 +1,8 @@
+import type { SELLER_APPLICATION_STATUS } from '../constants/seller-application-status'
+
+export type SellerApplicationStatus =
+  (typeof SELLER_APPLICATION_STATUS)[keyof typeof SELLER_APPLICATION_STATUS]
+
 export interface UserProfile {
   id: string
   email: string
@@ -17,7 +22,7 @@ export interface UserProfile {
 
 export interface SellerStatus {
   isSeller: boolean
-  applicationStatus?: 'pending' | 'approved' | 'rejected'
+  applicationStatus?: SellerApplicationStatus
   appliedAt?: string
   approvedAt?: string
   rejectedAt?: string

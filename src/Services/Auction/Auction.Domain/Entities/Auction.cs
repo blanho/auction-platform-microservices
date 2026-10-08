@@ -31,7 +31,6 @@ public class Auction : AggregateRoot
     public Guid? BuyNowCorrelationId { get; private set; }
     public Guid? BuyNowBuyerId { get; private set; }
     public Guid? BuyNowOrderId { get; private set; }
-    // Retained to reject commands delivered after compensation, including across restarts.
     public List<Guid> CancelledBuyNowAttempts { get; private set; } = [];
 
     public Guid SellerId { get; private set; }
@@ -235,7 +234,6 @@ public class Auction : AggregateRoot
             throw new DomainInvariantException("A completed purchase cannot be released");
         if (!CancelledBuyNowAttempts.Contains(correlationId))
             CancelledBuyNowAttempts.Add(correlationId);
-        // A stale release fences its own attempt, never another buyer's reservation.
         if (BuyNowCorrelationId != correlationId) return;
         if (Status == Status.ReservedForBuyNow) ChangeStatus(Status.Live);
         BuyNowCorrelationId = null;

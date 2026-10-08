@@ -1,3 +1,4 @@
+import { BUY_NOW_STATUS } from '@/modules/auctions/constants/buy-now-status'
 import { useAuth } from '@/app/hooks/useAuth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { auctionsApi } from '../api'
@@ -111,10 +112,10 @@ export const useMyBuyNowPurchase = (id: string) => {
     queryFn: () => auctionsApi.getMyPurchase(id),
     enabled: Boolean(id) && isAuthenticated,
     refetchInterval: (query) => {
-      if (query.state.data?.status === 'Processing') {
+      if (query.state.data?.status === BUY_NOW_STATUS.PROCESSING) {
         return 1000
       }
-      return query.state.data?.status === 'NeedsReview' ? 10000 : false
+      return query.state.data?.status === BUY_NOW_STATUS.NEEDS_REVIEW ? 10000 : false
     },
   })
 }

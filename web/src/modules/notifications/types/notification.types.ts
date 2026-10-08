@@ -1,3 +1,4 @@
+import type { NOTIFICATION_STATUS } from '@/modules/notifications/constants/notification-status'
 import type { QueryParameters } from '@/shared/types'
 
 export interface Notification {
@@ -26,7 +27,7 @@ export type NotificationType =
   | 'system'
   | 'promotional'
 
-export type NotificationStatus = 'unread' | 'read' | 'archived'
+export type NotificationStatus = (typeof NOTIFICATION_STATUS)[keyof typeof NOTIFICATION_STATUS]
 
 export interface NotificationSummary {
   unreadCount: number

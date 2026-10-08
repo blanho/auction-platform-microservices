@@ -51,7 +51,6 @@ public class SagaBrokerTests
             await Migrate<AuctionDbContext>(auctions); await Migrate<PaymentDbContext>(payments);
             await Migrate<NotificationDbContext>(notifications); await Migrate<OrchestrationDbContext>(host);
             await Start(auctions); await Start(payments); await Start(notifications); await Start(host);
-            // Keep Payment's durable queue, then suspend it while the saga persists CreatingOrder.
             await Stop(payments);
             var auctionId = await SeedAuction(auctions);
             var buyer = Guid.NewGuid();
@@ -72,12 +71,9 @@ public class SagaBrokerTests
                 var order = await scope.ServiceProvider.GetRequiredService<PaymentDbContext>().Orders.SingleAsync(x => x.AuctionId == auctionId);
                 Assert.Equal(buyer, order.BuyerId); Assert.False(order.AwaitingBuyNowCompletion);
             }
-            // Replaying the start cannot re-open a finalized workflow or create another order.
             await host.GetRequiredService<IBus>().Publish(new BuyNowSagaStarted
             { CorrelationId = result.CorrelationId, AuctionId = auctionId, BuyerId = buyer });
             await Eventually(async () => await State(host, result.CorrelationId) == "Final");
-
-            // A persisted overdue deadline is recovered after a host restart.
             await Stop(host); retired.Add(host);
             var timedOutAuction = await SeedAuction(auctions);
             var timeoutId = Guid.NewGuid();
@@ -112,8 +108,6 @@ public class SagaBrokerTests
                 Assert.Equal(Auctions.Domain.Enums.Status.Live, auction.Status);
                 Assert.Contains(timeoutId, auction.CancelledBuyNowAttempts);
             }
-
-            // An ordinary auction sale creates one winner order and two durable notifications.
             var finishedId = await SeedAuction(auctions);
             await using (var scope = auctions.CreateAsyncScope())
             {

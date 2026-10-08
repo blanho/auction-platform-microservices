@@ -1,3 +1,4 @@
+import type { REPORT_STATUS } from '@/modules/analytics/constants/report-status'
 import type { QueryParameters } from '@/shared/types'
 
 export type ReportType =
@@ -9,7 +10,7 @@ export type ReportType =
   | 'SuspiciousActivity'
   | 'Other'
 
-export type ReportStatus = 'Pending' | 'UnderReview' | 'Resolved' | 'Dismissed'
+export type ReportStatus = (typeof REPORT_STATUS)[keyof typeof REPORT_STATUS]
 
 export type ReportPriority = 'Low' | 'Medium' | 'High' | 'Critical'
 

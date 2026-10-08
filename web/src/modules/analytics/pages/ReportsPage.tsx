@@ -1,3 +1,4 @@
+import { REPORT_STATUS } from '@/modules/analytics/constants/report-status'
 import i18n, { getCurrentLocale } from '@/i18n'
 import { getErrorMessage } from '@/services/http'
 import type { FilterConfig } from '@/shared/ui'
@@ -43,10 +44,10 @@ const REPORT_STATUS_OPTIONS: {
   value: ReportStatus
   color: 'default' | 'warning' | 'success' | 'error'
 }[] = [
-  { value: 'Pending', color: 'warning' },
-  { value: 'UnderReview', color: 'default' },
-  { value: 'Resolved', color: 'success' },
-  { value: 'Dismissed', color: 'error' },
+  { value: REPORT_STATUS.PENDING, color: 'warning' },
+  { value: REPORT_STATUS.UNDER_REVIEW, color: 'default' },
+  { value: REPORT_STATUS.RESOLVED, color: 'success' },
+  { value: REPORT_STATUS.DISMISSED, color: 'error' },
 ]
 
 const REPORT_TYPES: ReportType[] = [
@@ -99,7 +100,7 @@ export const ReportsPage = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [updateStatus, setUpdateStatus] = useState<ReportStatus>('UnderReview')
+  const [updateStatus, setUpdateStatus] = useState<ReportStatus>(REPORT_STATUS.UNDER_REVIEW)
   const [updateResolution, setUpdateResolution] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -180,7 +181,9 @@ export const ReportsPage = () => {
 
   const handleOpenUpdateDialog = (report: Report) => {
     setSelectedReportId(report.id)
-    setUpdateStatus(report.status === 'Pending' ? 'UnderReview' : report.status)
+    setUpdateStatus(
+      report.status === REPORT_STATUS.PENDING ? REPORT_STATUS.UNDER_REVIEW : report.status
+    )
     setUpdateResolution(report.resolution ?? '')
     setUpdateDialogOpen(true)
   }

@@ -60,7 +60,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
 
         try
         {
-
             var auction = await _repository.GetByIdForUpdateAsync(request.AuctionId, cancellationToken);
 
             if (auction == null)
@@ -68,20 +67,26 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                 return Result.Failure<BuyNowResultDto>(AuctionErrors.Auction.NotFound);
             }
 
-            var existingId = request.CorrelationId ?? (auction.BuyNowBuyerId == request.BuyerId ? auction.BuyNowCorrelationId : null);
-            if (existingId.HasValue)
+            var existingCorrelationId = request.CorrelationId
+                ?? (auction.BuyNowBuyerId == request.BuyerId ? auction.BuyNowCorrelationId : null);
+            if (existingCorrelationId.HasValue)
             {
-                var existing = await _purchases.GetAsync(existingId.Value, cancellationToken);
-                if (existing is not null)
-                    return existing.BuyerId == request.BuyerId && existing.AuctionId == request.AuctionId
-                        ? Result<BuyNowResultDto>.Success(BuyNowResultDto.FromPurchase(existing))
+                var existingPurchase = await _purchases.GetAsync(existingCorrelationId.Value, cancellationToken);
+                if (existingPurchase is not null)
+                {
+                    return existingPurchase.BuyerId == request.BuyerId && existingPurchase.AuctionId == request.AuctionId
+                        ? Result<BuyNowResultDto>.Success(BuyNowResultDto.FromPurchase(existingPurchase))
                         : Result.Failure<BuyNowResultDto>(AuctionErrors.BuyNow.Conflict);
+                }
             }
 
             if (auction.BuyNowBuyerId == request.BuyerId && auction.BuyNowCorrelationId.HasValue)
             {
-                var active = await _purchases.GetAsync(auction.BuyNowCorrelationId.Value, cancellationToken);
-                if (active is not null) return Result<BuyNowResultDto>.Success(BuyNowResultDto.FromPurchase(active));
+                var activePurchase = await _purchases.GetAsync(auction.BuyNowCorrelationId.Value, cancellationToken);
+                if (activePurchase is not null)
+                {
+                    return Result<BuyNowResultDto>.Success(BuyNowResultDto.FromPurchase(activePurchase));
+                }
             }
 
             if (!auction.IsBuyNowAvailable)
@@ -139,8 +144,6 @@ public class BuyNowCommandHandler : ICommandHandler<BuyNowCommand, BuyNowResultD
                     request.BuyerUsername,
                     auction.BuyNowPrice!.Value),
                 cancellationToken);
-
-            // Reservation, purchase receipt, saga start, and audit share the bus-outbox commit.
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Buy Now purchase {CorrelationId} accepted for auction {AuctionId}", correlationId, auction.Id);
             return Result<BuyNowResultDto>.Success(BuyNowResultDto.FromPurchase(purchase));

@@ -10,7 +10,6 @@ public class SagaRecoveryConsumer(OrchestrationDbContext db) : IConsumer<SagaRec
 {
     private async Task<SagaRecoveryCase> GetAsync(string workflow, Guid correlation, Guid auction, string step, CancellationToken ct)
     {
-        // Serialize case creation and resolution, including acknowledgements arriving before alerts.
         await db.Database.ExecuteSqlInterpolatedAsync(
             $"SELECT pg_advisory_xact_lock(hashtextextended({workflow + correlation}, 0))", ct);
         var record = await db.RecoveryCases.FindAsync([workflow, correlation, step], ct);

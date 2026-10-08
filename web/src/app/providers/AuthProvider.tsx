@@ -1,3 +1,4 @@
+import { AUTH_STATUS } from '@/modules/auth/constants/auth-status'
 import { getErrorMessage } from '@/services/http'
 import { authApi } from '@/modules/auth/api'
 import type {
@@ -40,7 +41,7 @@ function extractUserFromResponse(response: AuthResponse): AuthUser {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser())
-  const [status, setStatus] = useState<AuthStatus>('idle')
+  const [status, setStatus] = useState<AuthStatus>(AUTH_STATUS.IDLE)
   const [error, setError] = useState<string | null>(null)
 
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     void signalRService.disconnect()
     clearAuthStorage()
     setUser(null)
-    setStatus('unauthenticated')
+    setStatus(AUTH_STATUS.UNAUTHENTICATED)
   }, [])
 
   const silentRefresh = useCallback(async (): Promise<boolean> => {
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setAccessToken(response.accessToken, response.expiresIn)
       setUser(authUser)
       setStoredUser(authUser)
-      setStatus('authenticated')
+      setStatus(AUTH_STATUS.AUTHENTICATED)
       startRefreshTimer()
       await signalRService.connect()
     },
@@ -125,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser(userData)
       setStoredUser(userData)
-      setStatus('authenticated')
+      setStatus(AUTH_STATUS.AUTHENTICATED)
       startRefreshTimer()
 
       await signalRService.connect()
@@ -137,7 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [startRefreshTimer, handleLogout])
 
   const initializeAuth = useCallback(async () => {
-    setStatus('loading')
+    setStatus(AUTH_STATUS.LOADING)
 
     try {
       const refreshed = await silentRefresh()
@@ -148,12 +149,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (refreshed) {
         await refreshUser()
       } else {
-        setStatus('unauthenticated')
+        setStatus(AUTH_STATUS.UNAUTHENTICATED)
         removeStoredUser()
       }
     } catch {
       if (isMountedRef.current) {
-        setStatus('unauthenticated')
+        setStatus(AUTH_STATUS.UNAUTHENTICATED)
         removeStoredUser()
       }
     }
@@ -173,20 +174,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (data: LoginRequest) => {
     setError(null)
-    setStatus('loading')
+    setStatus(AUTH_STATUS.LOADING)
 
     try {
       const response = await authApi.login(data)
 
       if (response.requiresTwoFactor) {
-        setStatus('unauthenticated')
+        setStatus(AUTH_STATUS.UNAUTHENTICATED)
         return { requiresTwoFactor: true, twoFactorStateToken: response.twoFactorStateToken }
       }
 
       await handleAuthSuccess(response)
       return {}
     } catch (err) {
-      setStatus('unauthenticated')
+      setStatus(AUTH_STATUS.UNAUTHENTICATED)
       const message = getErrorMessage(err)
       setError(message)
       throw err
@@ -195,13 +196,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginWith2FA = async (data: TwoFactorLoginRequest) => {
     setError(null)
-    setStatus('loading')
+    setStatus(AUTH_STATUS.LOADING)
 
     try {
       const response = await authApi.loginWith2FA(data)
       await handleAuthSuccess(response)
     } catch (err) {
-      setStatus('unauthenticated')
+      setStatus(AUTH_STATUS.UNAUTHENTICATED)
       const message = getErrorMessage(err)
       setError(message)
       throw err
@@ -210,13 +211,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = async (data: RegisterRequest) => {
     setError(null)
-    setStatus('loading')
+    setStatus(AUTH_STATUS.LOADING)
 
     try {
       const response = await authApi.register(data)
       await handleAuthSuccess(response)
     } catch (err) {
-      setStatus('unauthenticated')
+      setStatus(AUTH_STATUS.UNAUTHENTICATED)
       const message = getErrorMessage(err)
       setError(message)
       throw err
@@ -244,8 +245,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         user,
         status,
-        isAuthenticated: status === 'authenticated' && !!user,
-        isLoading: status === 'loading' || status === 'idle',
+        isAuthenticated: status === AUTH_STATUS.AUTHENTICATED && !!user,
+        isLoading: status === AUTH_STATUS.LOADING || status === AUTH_STATUS.IDLE,
         error,
         login,
         loginWith2FA,

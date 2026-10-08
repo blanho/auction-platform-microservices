@@ -1,3 +1,4 @@
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 import { AutoBidDialog } from '@/modules/bidding/components/AutoBidDialog'
 import { useCountdown } from '@/shared/hooks/useCountdown'
 import { palette } from '@/shared/theme/tokens'
@@ -100,7 +101,7 @@ export function BidSection({
     setBidAmount(amount.toString())
   }
 
-  const isAuctionActive = status === 'active' || status === 'ending-soon'
+  const isAuctionActive = status === AUCTION_STATUS.ACTIVE || status === AUCTION_STATUS.ENDING_SOON
   const displayTimeLeft = isExpired ? t('auctionCard.auctionEnded') : timeLeft
 
   return (

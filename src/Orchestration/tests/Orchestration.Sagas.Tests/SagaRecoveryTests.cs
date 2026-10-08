@@ -111,7 +111,6 @@ public class SagaRecoveryTests
         await harness.Bus.Publish(new BuyNowSagaTimedOut { TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId, CorrelationId = id, AuctionId = auction });
         Assert.NotNull(await saga.Exists(id, x => x.Compensating));
         Assert.True(await harness.Published.Any<ReleaseAuctionReservation>());
-        // A delayed reserve reply must not resume order creation.
         await harness.Bus.Publish(new AuctionReservedForBuyNow { CorrelationId = id, AuctionId = auction });
         Assert.True(await saga.Consumed.Any<AuctionReservedForBuyNow>());
         await harness.Bus.Publish(new AuctionReservationReleased { CorrelationId = id, AuctionId = auction });

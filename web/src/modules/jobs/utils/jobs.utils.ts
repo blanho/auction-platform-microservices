@@ -1,3 +1,4 @@
+import { JOB_STATUS } from '@/modules/jobs/constants/job-status'
 import i18n from '@/i18n'
 import { formatNumber } from '@/shared/utils/formatters'
 import type { JobStatus } from '../types'
@@ -10,15 +11,19 @@ export function getJobProgressLabel(completed: number, total: number): string {
 }
 
 export function isJobActive(status: JobStatus): boolean {
-  return status === 'Initializing' || status === 'Pending' || status === 'Processing'
+  return (
+    status === JOB_STATUS.INITIALIZING ||
+    status === JOB_STATUS.PENDING ||
+    status === JOB_STATUS.PROCESSING
+  )
 }
 
 export function isJobTerminal(status: JobStatus): boolean {
   return (
-    status === 'Completed' ||
-    status === 'CompletedWithErrors' ||
-    status === 'Failed' ||
-    status === 'Cancelled'
+    status === JOB_STATUS.COMPLETED ||
+    status === JOB_STATUS.COMPLETED_WITH_ERRORS ||
+    status === JOB_STATUS.FAILED ||
+    status === JOB_STATUS.CANCELLED
   )
 }
 

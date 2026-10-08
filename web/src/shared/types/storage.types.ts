@@ -1,3 +1,4 @@
+import type { FILE_UPLOAD_STATUS } from '@/shared/constants/file-upload-status'
 export interface StoredFileDto {
   fileId: string
   fileName: string
@@ -16,7 +17,7 @@ export interface FileUrlDto {
   url: string
 }
 
-export type FileUploadStatus = 'idle' | 'uploading' | 'success' | 'error'
+export type FileUploadStatus = (typeof FILE_UPLOAD_STATUS)[keyof typeof FILE_UPLOAD_STATUS]
 
 export interface FileUploadProgress {
   id: string

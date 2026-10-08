@@ -1,3 +1,4 @@
+import { JOB_STATUS } from '@/modules/jobs/constants/job-status'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
 import { formatNumber, formatRelativeTime } from '@/shared/utils/formatters'
@@ -140,7 +141,8 @@ export function JobDetailPage() {
   const totalItems = itemsData?.totalCount ?? 0
 
   const active = job ? isJobActive(job.status) : false
-  const canRetry = job?.status === 'Failed' || job?.status === 'CompletedWithErrors'
+  const canRetry =
+    job?.status === JOB_STATUS.FAILED || job?.status === JOB_STATUS.COMPLETED_WITH_ERRORS
   const progressColor = job ? statusPaletteColors[job.status] : palette.neutral[400]
 
   if (error) {

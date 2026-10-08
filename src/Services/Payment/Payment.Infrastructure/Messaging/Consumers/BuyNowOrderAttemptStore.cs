@@ -9,7 +9,6 @@ public class BuyNowOrderAttemptStore(PaymentDbContext db) : IBuyNowOrderAttemptS
     {
         if (correlationId == Guid.Empty || auctionId == Guid.Empty || buyerId == Guid.Empty)
             throw new DomainInvariantException("Purchase identity is required");
-        // The consumer outbox owns the transaction. Serialize create/cancel for an auction.
         if (db.Database.CurrentTransaction is null)
             throw new InvalidOperationException("Buy Now commands require a transactional consumer outbox");
         await db.Database.ExecuteSqlInterpolatedAsync(

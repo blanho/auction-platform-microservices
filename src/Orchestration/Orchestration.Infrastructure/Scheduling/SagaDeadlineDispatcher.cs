@@ -42,7 +42,6 @@ public class SagaDeadlineDispatcher(OrchestrationDbContext db, IPublishEndpoint 
             }, ct);
             saga.TimeoutAt = null;
         }
-        // Deadline claim and timeout message commit together; the outbox survives host/broker outages.
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return buyNow.Count + completions.Count;

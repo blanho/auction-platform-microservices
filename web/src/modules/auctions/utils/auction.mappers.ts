@@ -1,3 +1,5 @@
+import { BACKEND_AUCTION_STATUS } from '../constants/backend-auction-status'
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 import type {
   AuctionDetails,
   AuctionImage,
@@ -10,24 +12,24 @@ const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_URL || '/api/files'
 
 function mapAuctionStatus(status: string): AuctionStatus {
   const statusMap: Record<string, AuctionStatus> = {
-    Draft: 'draft',
-    Scheduled: 'pending',
-    Pending: 'pending',
-    Live: 'active',
-    Active: 'active',
-    Finished: 'ended',
-    Ended: 'ended',
-    ReservedNotMet: 'ended',
-    Inactive: 'cancelled',
-    Cancelled: 'cancelled',
-    ReservedForBuyNow: 'sold',
-    Sold: 'sold',
+    [BACKEND_AUCTION_STATUS.DRAFT]: AUCTION_STATUS.DRAFT,
+    [BACKEND_AUCTION_STATUS.SCHEDULED]: AUCTION_STATUS.PENDING,
+    [BACKEND_AUCTION_STATUS.PENDING]: AUCTION_STATUS.PENDING,
+    [BACKEND_AUCTION_STATUS.LIVE]: AUCTION_STATUS.ACTIVE,
+    [BACKEND_AUCTION_STATUS.ACTIVE]: AUCTION_STATUS.ACTIVE,
+    [BACKEND_AUCTION_STATUS.FINISHED]: AUCTION_STATUS.ENDED,
+    [BACKEND_AUCTION_STATUS.ENDED]: AUCTION_STATUS.ENDED,
+    [BACKEND_AUCTION_STATUS.RESERVED_NOT_MET]: AUCTION_STATUS.ENDED,
+    [BACKEND_AUCTION_STATUS.INACTIVE]: AUCTION_STATUS.CANCELLED,
+    [BACKEND_AUCTION_STATUS.CANCELLED]: AUCTION_STATUS.CANCELLED,
+    [BACKEND_AUCTION_STATUS.RESERVED_FOR_BUY_NOW]: AUCTION_STATUS.SOLD,
+    [BACKEND_AUCTION_STATUS.SOLD]: AUCTION_STATUS.SOLD,
   }
-  return statusMap[status] || 'draft'
+  return statusMap[status] || AUCTION_STATUS.DRAFT
 }
 
 function isEndingSoon(endTime: string, status: string): boolean {
-  if (status !== 'Active') {
+  if (status !== BACKEND_AUCTION_STATUS.ACTIVE) {
     return false
   }
   const end = new Date(endTime)
@@ -59,7 +61,7 @@ export function mapAuctionDto(dto: BackendAuctionDto): AuctionDetails {
     currentBid: dto.currentHighBid ?? dto.reservePrice,
     reservePrice: dto.reservePrice,
     buyNowPrice: dto.buyNowPrice,
-    status: isEndingSoon(dto.auctionEnd, dto.status) ? 'ending-soon' : baseStatus,
+    status: isEndingSoon(dto.auctionEnd, dto.status) ? AUCTION_STATUS.ENDING_SOON : baseStatus,
     startTime: dto.createdAt,
     endTime: dto.auctionEnd,
     sellerId: dto.sellerId,
@@ -94,7 +96,7 @@ export function mapAuctionListDto(dto: BackendAuctionDto): AuctionListItem {
     title: dto.title,
     currentBid: dto.currentHighBid ?? dto.reservePrice,
     startingPrice: dto.reservePrice,
-    status: isEndingSoon(dto.auctionEnd, dto.status) ? 'ending-soon' : baseStatus,
+    status: isEndingSoon(dto.auctionEnd, dto.status) ? AUCTION_STATUS.ENDING_SOON : baseStatus,
     endTime: dto.auctionEnd,
     bidCount: 0,
     categoryName: dto.categoryName ?? '',

@@ -48,8 +48,6 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
                 });
                 return;
             }
-
-            // Completion won the race: preserve the sale and report its actual outcome.
             if (auction.BuyNowCorrelationId == message.CorrelationId && auction.BuyNowOrderId.HasValue)
             {
                 await context.Publish(new BuyNowAuctionCompleted

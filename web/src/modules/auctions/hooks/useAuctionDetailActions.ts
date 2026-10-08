@@ -1,3 +1,4 @@
+import { BUY_NOW_STATUS } from '@/modules/auctions/constants/buy-now-status'
 import { getErrorMessage } from '@/services/http'
 import { usePlaceBid } from '@/modules/bidding/hooks/useBidding'
 import { useSnackbar } from '@/shared/hooks/useSnackbar'
@@ -48,7 +49,10 @@ export function useAuctionDetailActions(
   )
 
   useEffect(() => {
-    if (purchaseStatus?.status === 'Processing' || purchaseStatus?.status === 'NeedsReview') {
+    if (
+      purchaseStatus?.status === BUY_NOW_STATUS.PROCESSING ||
+      purchaseStatus?.status === BUY_NOW_STATUS.NEEDS_REVIEW
+    ) {
       trackingPurchaseRef.current = true
       return
     }
@@ -56,10 +60,10 @@ export function useAuctionDetailActions(
       return
     }
     trackingPurchaseRef.current = false
-    if (purchaseStatus.status === 'Completed') {
+    if (purchaseStatus.status === BUY_NOW_STATUS.COMPLETED) {
       snackbar.show(t('messages.purchaseSuccess'), 'success')
       orderRedirectTimerRef.current = setTimeout(() => navigate('/orders'), 2000)
-    } else if (purchaseStatus.status === 'Failed') {
+    } else if (purchaseStatus.status === BUY_NOW_STATUS.FAILED) {
       snackbar.show(t('messages.purchaseFailed'), 'error')
     }
   }, [purchaseStatus, navigate, snackbar, t])
