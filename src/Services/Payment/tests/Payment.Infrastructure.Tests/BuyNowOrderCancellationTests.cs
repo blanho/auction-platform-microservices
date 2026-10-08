@@ -38,7 +38,7 @@ public class BuyNowOrderCancellationTests
             Assert.Equal(cancellation.Token, args[1]);
             return Task.FromCanceled<Order?>(cancellation.Token);
         }
-        var consumer = new CreateBuyNowOrderConsumer(orders, null!,
+        var consumer = new CreateBuyNowOrderConsumer(orders, null!, null!,
             NullLogger<CreateBuyNowOrderConsumer>.Instance);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => consumer.Consume(context));

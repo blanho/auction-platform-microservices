@@ -41,7 +41,7 @@ public class PrepareCheckoutCommandHandler : ICommandHandler<PrepareCheckoutComm
             return Result.Failure<OrderDto>(PaymentErrors.Order.NotFoundById(request.OrderId));
         }
 
-        if (order.PaymentStatus != PaymentStatus.Pending ||
+        if (order.AwaitingBuyNowCompletion || order.PaymentStatus != PaymentStatus.Pending ||
             order.Status is not (OrderStatus.Pending or OrderStatus.PaymentPending))
         {
             return Result.Failure<OrderDto>(

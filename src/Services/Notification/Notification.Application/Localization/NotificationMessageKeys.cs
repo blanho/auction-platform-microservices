@@ -2,6 +2,8 @@ namespace Notification.Application.Localization;
 
 public static class NotificationMessageKeys
 {
+    public const string AuctionCompletedTitle = "Notification.AuctionCompleted.Title";
+    public const string AuctionCompletedMessage = "Notification.AuctionCompleted.Message";
     public const string BidAcceptedTitle = "Notification.BidAccepted.Title";
     public const string BidAcceptedMessage = "Notification.BidAccepted.Message";
     public const string BidRejectedTitle = "Notification.BidRejected.Title";

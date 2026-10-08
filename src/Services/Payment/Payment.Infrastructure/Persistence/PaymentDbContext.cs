@@ -17,6 +17,7 @@ public class PaymentDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<BuyNowOrderAttempt>().HasKey(x => x.CorrelationId);
 
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxStateEntity();

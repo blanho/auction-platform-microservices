@@ -1,3 +1,4 @@
+import { PAYMENT_STATUS } from '@/modules/payments/constants/payment-status'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
@@ -44,10 +45,12 @@ export function PaymentSuccessPage() {
     retry: 3,
     retryDelay: 1000,
     refetchInterval: (query) =>
-      verificationTimedOut || query.state.data?.paymentStatus === 'completed' ? false : 1000,
+      verificationTimedOut || query.state.data?.paymentStatus === PAYMENT_STATUS.COMPLETED
+        ? false
+        : 1000,
   })
 
-  const paymentConfirmed = order?.paymentStatus === 'completed'
+  const paymentConfirmed = order?.paymentStatus === PAYMENT_STATUS.COMPLETED
 
   useEffect(() => {
     if (!orderId) {

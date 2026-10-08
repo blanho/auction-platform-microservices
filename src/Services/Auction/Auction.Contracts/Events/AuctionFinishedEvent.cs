@@ -7,6 +7,8 @@ public record AuctionFinishedEvent : IVersionedEvent
     public int Version => 1;
 
     public bool ItemSold { get; init; }
+    public bool OrderCreationManaged { get; init; }
+    public bool IsBuyNow { get; init; }
     public Guid AuctionId { get; init; }
     public Guid? WinnerId { get; init; }
     public string? WinnerUsername { get; init; }

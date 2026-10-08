@@ -1,3 +1,4 @@
+import { FILE_UPLOAD_STATUS } from '@/shared/constants/file-upload-status'
 import {
   ACCEPTED_DOCUMENT_TYPES,
   ACCEPTED_IMAGE_TYPES,
@@ -88,8 +89,8 @@ export function FileUploadZone({
 
   const remainingSlots = maxFiles - attachments.length
   const maxSizeMb = MAX_FILE_SIZE_BYTES / (1024 * 1024)
-  const activeUploads = uploads.filter((u) => u.status === 'uploading')
-  const errorUploads = uploads.filter((u) => u.status === 'error')
+  const activeUploads = uploads.filter((u) => u.status === FILE_UPLOAD_STATUS.UPLOADING)
+  const errorUploads = uploads.filter((u) => u.status === FILE_UPLOAD_STATUS.ERROR)
 
   return (
     <Box>

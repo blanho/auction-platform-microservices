@@ -10,6 +10,7 @@ public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
     public void Configure(EntityTypeBuilder<Auction> builder)
     {
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.CancelledBuyNowAttempts).HasDefaultValueSql("'{}'::uuid[]");
 
         builder.Property(x => x.Version)
             .IsRowVersion();

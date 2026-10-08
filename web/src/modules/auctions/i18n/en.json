@@ -191,6 +191,8 @@
     "shareFailed": "Unable to copy the link. Please copy it from the address bar.",
     "bidPlaced": "Bid placed successfully!",
     "bidFailed": "Failed to place bid",
+    "purchasePending": "Your purchase is being confirmed. You can return to this page to check its progress.",
+    "purchaseReview": "Your purchase needs review. We are checking it; please do not place another purchase.",
     "purchaseSuccess": "Purchase successful! Redirecting to order...",
     "purchaseFailed": "Purchase failed. Please try again.",
     "openingChat": "Opening chat with seller..."

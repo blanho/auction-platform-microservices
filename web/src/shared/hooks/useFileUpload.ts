@@ -1,3 +1,4 @@
+import { FILE_UPLOAD_STATUS } from '@/shared/constants/file-upload-status'
 import i18n from '@/i18n'
 import { getErrorMessage } from '@/services/http'
 import { storageApi } from '@/services/storage'
@@ -167,13 +168,13 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
         id: generateUploadId(),
         file,
         progress: 0,
-        status: 'idle' as const,
+        status: FILE_UPLOAD_STATUS.IDLE,
       }))
 
       setUploads((prev) => [...prev, ...newUploads])
 
       for (const upload of newUploads) {
-        updateUploadState(upload.id, { status: 'uploading' })
+        updateUploadState(upload.id, { status: FILE_UPLOAD_STATUS.UPLOADING })
 
         try {
           const result = await uploadMutation.mutateAsync({
@@ -184,7 +185,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
           })
 
           updateUploadState(upload.id, {
-            status: 'success',
+            status: FILE_UPLOAD_STATUS.SUCCESS,
             progress: 100,
             fileId: result.fileId,
             url: result.url,
@@ -214,7 +215,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
           onUploadComplete?.(attachment)
         } catch (err) {
           const errorMessage = getErrorMessage(err)
-          updateUploadState(upload.id, { status: 'error', error: errorMessage })
+          updateUploadState(upload.id, { status: FILE_UPLOAD_STATUS.ERROR, error: errorMessage })
           errors.push({ file: upload.file, reason: errorMessage })
           onUploadError?.(upload.file, errorMessage)
         }
@@ -283,8 +284,8 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
     setUploads([])
   }, [attachments, revokePreviewUrl])
 
-  const isUploading = uploads.some((u) => u.status === 'uploading')
-  const hasErrors = uploads.some((u) => u.status === 'error')
+  const isUploading = uploads.some((u) => u.status === FILE_UPLOAD_STATUS.UPLOADING)
+  const hasErrors = uploads.some((u) => u.status === FILE_UPLOAD_STATUS.ERROR)
   const remainingSlots = Math.max(0, maxFiles - attachments.length)
   const totalProgress =
     uploads.length > 0

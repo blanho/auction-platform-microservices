@@ -15,6 +15,7 @@ spec:
           - catalog-api
           - identity-api
           - job-api
+          - orchestration-api
           - notification-api
           - payment-api
           - storage-api

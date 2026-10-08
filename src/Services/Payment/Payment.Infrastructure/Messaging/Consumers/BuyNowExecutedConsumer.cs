@@ -26,6 +26,7 @@ public class BuyNowExecutedConsumer : IConsumer<BuyNowExecutedEvent>
     public async Task Consume(ConsumeContext<BuyNowExecutedEvent> context)
     {
         var message = context.Message;
+        if (message.OrderCreationManaged) return;
 
         _logger.LogInformation("Processing BuyNowExecutedEvent for auction {AuctionId}", message.AuctionId);
 

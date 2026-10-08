@@ -1,3 +1,4 @@
+import { NOTIFICATION_STATUS } from '@/modules/notifications/constants/notification-status'
 import { palette } from '@/shared/theme/tokens'
 import { Archive, Circle, Delete, MoreVert } from '@mui/icons-material'
 import {
@@ -33,7 +34,7 @@ export function NotificationItem({
   const { t } = useTranslation('common')
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const link = getNotificationLink(notification)
-  const isUnread = notification.status === 'unread'
+  const isUnread = notification.status === NOTIFICATION_STATUS.UNREAD
 
   const handleClick = () => {
     if (isUnread && onMarkAsRead) {

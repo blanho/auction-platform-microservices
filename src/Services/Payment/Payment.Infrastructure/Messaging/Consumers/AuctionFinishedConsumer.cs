@@ -26,6 +26,7 @@ public class AuctionFinishedConsumer : IConsumer<AuctionFinishedEvent>
     public async Task Consume(ConsumeContext<AuctionFinishedEvent> context)
     {
         var message = context.Message;
+        if (message.OrderCreationManaged) return;
 
         if (!message.ItemSold || string.IsNullOrEmpty(message.WinnerUsername))
         {

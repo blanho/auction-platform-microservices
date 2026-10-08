@@ -1,4 +1,5 @@
-export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated'
+import type { AUTH_STATUS } from '@/modules/auth/constants/auth-status'
+export type AuthStatus = (typeof AUTH_STATUS)[keyof typeof AUTH_STATUS]
 
 export interface AuthUser {
   id: string

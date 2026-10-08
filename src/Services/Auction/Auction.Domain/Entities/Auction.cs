@@ -28,6 +28,11 @@ public class Auction : AggregateRoot
     public bool IsBuyNowEnabled => BuyNowPrice.HasValue && BuyNowPrice > 0;
     public bool IsBuyNowAvailable => IsBuyNowEnabled && Status == Status.Live && !SoldAmount.HasValue;
 
+    public Guid? BuyNowCorrelationId { get; private set; }
+    public Guid? BuyNowBuyerId { get; private set; }
+    public Guid? BuyNowOrderId { get; private set; }
+    public List<Guid> CancelledBuyNowAttempts { get; private set; } = [];
+
     public Guid SellerId { get; private set; }
     public string SellerUsername { get; private set; } = string.Empty;
     public Guid? WinnerId { get; private set; }
@@ -106,6 +111,10 @@ public class Auction : AggregateRoot
         return new Auction
         {
             Id = source.Id,
+            BuyNowCorrelationId = source.BuyNowCorrelationId,
+            BuyNowBuyerId = source.BuyNowBuyerId,
+            BuyNowOrderId = source.BuyNowOrderId,
+            CancelledBuyNowAttempts = [.. source.CancelledBuyNowAttempts],
             SellerId = source.SellerId,
             SellerUsername = source.SellerUsername,
             ReservePrice = source.ReservePrice,
@@ -128,8 +137,8 @@ public class Auction : AggregateRoot
 
     public void UpdateBuyNowPrice(decimal? newPrice)
     {
-        if (Status == Status.Finished)
-            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change buy now price on finished auction");
+        if (Status is Status.Finished or Status.ReservedForBuyNow)
+            throw new InvalidEntityStateException(nameof(Auction), Status.ToString(), "Cannot change buy now price on a reserved or finished auction");
 
         if (newPrice.HasValue && newPrice.Value <= ReservePrice)
             throw new DomainInvariantException("Buy now price must be greater than reserve price");
@@ -201,6 +210,47 @@ public class Auction : AggregateRoot
         });
     }
 
+    public void ReserveBuyNow(Guid correlationId, Guid buyerId)
+    {
+        if (correlationId == Guid.Empty || buyerId == Guid.Empty)
+            throw new DomainInvariantException("Reservation identity is required");
+        if (CancelledBuyNowAttempts.Contains(correlationId))
+            throw new DomainInvariantException("This purchase attempt was cancelled");
+        if (BuyNowCorrelationId == correlationId && BuyNowBuyerId == buyerId && Status == Status.ReservedForBuyNow)
+            return;
+        if (!IsBuyNowAvailable || buyerId == SellerId)
+            throw new DomainInvariantException("Buy now is not available for this buyer");
+
+        BuyNowCorrelationId = correlationId;
+        BuyNowBuyerId = buyerId;
+        ChangeStatus(Status.ReservedForBuyNow);
+    }
+
+    public void ReleaseBuyNow(Guid correlationId)
+    {
+        if (correlationId == Guid.Empty)
+            throw new DomainInvariantException("Reservation identity is required");
+        if (BuyNowCorrelationId == correlationId && BuyNowOrderId.HasValue)
+            throw new DomainInvariantException("A completed purchase cannot be released");
+        if (!CancelledBuyNowAttempts.Contains(correlationId))
+            CancelledBuyNowAttempts.Add(correlationId);
+        if (BuyNowCorrelationId != correlationId) return;
+        if (Status == Status.ReservedForBuyNow) ChangeStatus(Status.Live);
+        BuyNowCorrelationId = null;
+        BuyNowBuyerId = null;
+    }
+
+    public void CompleteReservedBuyNow(Guid correlationId, Guid buyerId, string buyerUsername, Guid orderId)
+    {
+        if (BuyNowCorrelationId != correlationId || BuyNowBuyerId != buyerId || orderId == Guid.Empty)
+            throw new DomainInvariantException("The purchase does not own this reservation");
+        if (BuyNowOrderId == orderId && Status == Status.Finished) return;
+        if (Status != Status.ReservedForBuyNow || CancelledBuyNowAttempts.Contains(correlationId))
+            throw new DomainInvariantException("The reservation is no longer active");
+        BuyNowOrderId = orderId;
+        FinishBuyNow(buyerId, buyerUsername);
+    }
+
     public void ExecuteBuyNow(Guid buyerId, string buyerUsername)
     {
         if (!IsBuyNowAvailable)
@@ -209,6 +259,11 @@ public class Auction : AggregateRoot
         if (buyerId == SellerId)
             throw new DomainInvariantException("Seller cannot buy their own auction");
 
+        FinishBuyNow(buyerId, buyerUsername);
+    }
+
+    private void FinishBuyNow(Guid buyerId, string buyerUsername)
+    {
         GuardValidTransition(Status.Finished);
 
         WinnerId = buyerId;
@@ -218,6 +273,7 @@ public class Auction : AggregateRoot
 
         AddDomainEvent(new BuyNowExecutedDomainEvent
         {
+            OrderCreationManaged = BuyNowCorrelationId.HasValue,
             AuctionId = Id,
             SellerId = SellerId,
             SellerUsername = SellerUsername,
@@ -229,6 +285,7 @@ public class Auction : AggregateRoot
 
         AddDomainEvent(new AuctionFinishedDomainEvent
         {
+            IsBuyNow = true,
             AuctionId = Id,
             SellerId = SellerId,
             SellerUsername = SellerUsername,

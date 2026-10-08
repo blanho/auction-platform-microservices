@@ -1,11 +1,5 @@
-export type JobStatus =
-  | 'Initializing'
-  | 'Pending'
-  | 'Processing'
-  | 'Completed'
-  | 'CompletedWithErrors'
-  | 'Failed'
-  | 'Cancelled'
+import type { JOB_STATUS } from '@/modules/jobs/constants/job-status'
+export type JobStatus = (typeof JOB_STATUS)[keyof typeof JOB_STATUS]
 
 export type JobType =
   | 'AuctionExport'

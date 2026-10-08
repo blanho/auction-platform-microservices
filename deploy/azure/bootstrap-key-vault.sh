@@ -63,6 +63,7 @@ set_secret auction-platform-analytics-db-connection "$(postgres_connection analy
 set_secret auction-platform-catalog-db-connection "$(postgres_connection catalog_db)"
 set_secret auction-platform-storage-db-connection "$(postgres_connection storage_db)"
 set_secret auction-platform-job-db-connection "$(postgres_connection job_db)"
+set_secret auction-platform-orchestration-db-connection "$(postgres_connection orchestration_db)"
 set_secret auction-platform-redis-connection "$REDIS_CONNECTION"
 set_secret auction-platform-elasticsearch-username "$ELASTICSEARCH_USERNAME"
 set_secret auction-platform-elasticsearch-password "$ELASTICSEARCH_PASSWORD"

@@ -1,6 +1,8 @@
 import type { TFunction } from 'i18next'
 import { z } from 'zod'
 
+const MINIMUM_AUCTION_DURATION_MS = 60 * 60 * 1000
+
 const createBaseAuctionSchema = (t: TFunction<'auctions'>) =>
   z.object({
     title: z.string().min(3, t('validation.titleMin')).max(200, t('validation.titleMax')),
@@ -25,23 +27,15 @@ const createBaseAuctionSchema = (t: TFunction<'auctions'>) =>
 
 export const createAuctionSchema = (t: TFunction<'auctions'>) =>
   createBaseAuctionSchema(t)
-    .refine(
-      (data) => {
-        if (data.buyNowPrice && data.buyNowPrice <= data.reservePrice) {
-          return false
-        }
-        return true
-      },
-      {
-        message: t('validation.buyNowGreater'),
-        path: ['buyNowPrice'],
-      }
-    )
+    .refine((data) => !data.buyNowPrice || data.buyNowPrice > data.reservePrice, {
+      message: t('validation.buyNowGreater'),
+      path: ['buyNowPrice'],
+    })
     .refine(
       (data) => {
         const end = new Date(data.auctionEnd)
         const now = new Date()
-        const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000) // Backend requires +1 hour
+        const oneHourFromNow = new Date(now.getTime() + MINIMUM_AUCTION_DURATION_MS)
         return end > oneHourFromNow
       },
       {

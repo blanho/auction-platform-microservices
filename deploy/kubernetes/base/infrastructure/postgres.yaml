@@ -121,3 +121,4 @@ data:
     CREATE DATABASE catalog_db;
     CREATE DATABASE storage_db;
     CREATE DATABASE job_db;
+    CREATE DATABASE orchestration_db;

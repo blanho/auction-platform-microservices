@@ -1,3 +1,4 @@
+import { JOB_STATUS } from '@/modules/jobs/constants/job-status'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
 import { formatNumber, formatRelativeTime } from '@/shared/utils/formatters'
@@ -156,11 +157,14 @@ export function JobsPage() {
 
   const jobStats = useMemo(
     () => ({
-      processing: jobs.filter((j) => j.status === 'Processing').length,
-      pending: jobs.filter((j) => j.status === 'Pending' || j.status === 'Initializing').length,
-      completed: jobs.filter((j) => j.status === 'Completed').length,
-      failed: jobs.filter((j) => j.status === 'Failed' || j.status === 'CompletedWithErrors')
-        .length,
+      processing: jobs.filter((j) => j.status === JOB_STATUS.PROCESSING).length,
+      pending: jobs.filter(
+        (j) => j.status === JOB_STATUS.PENDING || j.status === JOB_STATUS.INITIALIZING
+      ).length,
+      completed: jobs.filter((j) => j.status === JOB_STATUS.COMPLETED).length,
+      failed: jobs.filter(
+        (j) => j.status === JOB_STATUS.FAILED || j.status === JOB_STATUS.COMPLETED_WITH_ERRORS
+      ).length,
       total: totalCount,
     }),
     [jobs, totalCount]
@@ -487,7 +491,8 @@ function JobRow({
 }: Readonly<JobRowProps>) {
   const { t } = useTranslation('jobs')
   const active = isJobActive(job.status)
-  const canRetry = job.status === 'Failed' || job.status === 'CompletedWithErrors'
+  const canRetry =
+    job.status === JOB_STATUS.FAILED || job.status === JOB_STATUS.COMPLETED_WITH_ERRORS
   const progressColor = statusPaletteColors[job.status]
 
   return (
@@ -544,9 +549,9 @@ function JobRow({
         ) : (
           <Typography
             variant="body2"
-            color={job.status === 'Completed' ? 'success.main' : 'text.secondary'}
+            color={job.status === JOB_STATUS.COMPLETED ? 'success.main' : 'text.secondary'}
           >
-            {job.status === 'Completed' ? '100%' : `${job.progress.toFixed(0)}%`}
+            {job.status === JOB_STATUS.COMPLETED ? '100%' : `${job.progress.toFixed(0)}%`}
           </Typography>
         )}
       </TableCell>

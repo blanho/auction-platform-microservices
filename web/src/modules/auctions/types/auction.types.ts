@@ -1,3 +1,4 @@
+import type { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 export interface Auction {
   id: string
   title: string
@@ -22,14 +23,7 @@ export interface Auction {
   updatedAt: string
 }
 
-export type AuctionStatus =
-  | 'draft'
-  | 'pending'
-  | 'active'
-  | 'ending-soon'
-  | 'ended'
-  | 'sold'
-  | 'cancelled'
+export type AuctionStatus = (typeof AUCTION_STATUS)[keyof typeof AUCTION_STATUS]
 
 export interface AuctionImage {
   id: string

@@ -14,6 +14,7 @@ public static class MassTransitOutboxExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IAuctionWorkflowStore, AuctionWorkflowStore>();
+        services.AddScoped<IBuyNowPurchaseRepository, Auctions.Infrastructure.Persistence.Repositories.BuyNowPurchaseRepository>();
         services.AddMassTransit(x =>
         {
             x.AddConsumer<ImportAuctionsBatchConsumer>();
@@ -30,6 +31,7 @@ public static class MassTransitOutboxExtensions
             x.AddConsumer<BrandUpdatedConsumer>();
             x.AddConsumer<CategoryUpdatedConsumer>();
 
+            x.AddConsumer<BuyNowPurchaseStatusConsumer>();
             x.AddConsumer<ReserveAuctionForBuyNowConsumer>();
             x.AddConsumer<CompleteBuyNowAuctionConsumer>();
             x.AddConsumer<ReleaseAuctionReservationConsumer>();
@@ -71,6 +73,8 @@ public static class MassTransitOutboxExtensions
 
                 cfg.ReceiveEndpoint("auction-buy-now-saga", e =>
                 {
+                    e.UseEntityFrameworkOutbox<AuctionDbContext>(context);
+                    e.ConfigureConsumer<BuyNowPurchaseStatusConsumer>(context);
                     e.ConfigureConsumer<ReserveAuctionForBuyNowConsumer>(context);
                     e.ConfigureConsumer<CompleteBuyNowAuctionConsumer>(context);
                     e.ConfigureConsumer<ReleaseAuctionReservationConsumer>(context);

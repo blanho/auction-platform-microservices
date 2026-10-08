@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Exceptions;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
@@ -46,62 +47,7 @@ public class ReserveAuctionForBuyNowConsumer : IConsumer<ReserveAuctionForBuyNow
                 return;
             }
 
-            if (auction.Status == Status.ReservedForBuyNow)
-            {
-                _logger.LogInformation(
-                    "Auction {AuctionId} was already reserved for Buy Now - CorrelationId: {CorrelationId} (idempotent path)",
-                    message.AuctionId, message.CorrelationId);
-
-                await context.Publish(new AuctionReservedForBuyNow
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = auction.Id,
-                    SellerId = auction.SellerId,
-                    SellerUsername = auction.SellerUsername,
-                    BuyNowPrice = auction.BuyNowPrice ?? 0,
-                    ItemTitle = auction.Item.Title,
-                    ReservedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-
-            if (!auction.IsBuyNowAvailable)
-            {
-                await context.Publish(new AuctionReservationFailed
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = message.AuctionId,
-                    Reason = "Buy Now is not available for this auction",
-                    FailedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-
-            if (auction.SellerUsername == message.BuyerUsername)
-            {
-                await context.Publish(new AuctionReservationFailed
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = message.AuctionId,
-                    Reason = "Cannot buy your own auction",
-                    FailedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-
-            if (auction.Status != Status.Live)
-            {
-                await context.Publish(new AuctionReservationFailed
-                {
-                    CorrelationId = message.CorrelationId,
-                    AuctionId = message.AuctionId,
-                    Reason = "Auction is no longer active",
-                    FailedAt = _dateTime.UtcNow
-                });
-                return;
-            }
-
-            auction.ChangeStatus(Status.ReservedForBuyNow);
+            auction.ReserveBuyNow(message.CorrelationId, message.BuyerId);
             await _writeRepository.UpdateAsync(auction, context.CancellationToken);
             await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
@@ -120,7 +66,7 @@ public class ReserveAuctionForBuyNowConsumer : IConsumer<ReserveAuctionForBuyNow
                 ReservedAt = _dateTime.UtcNow
             });
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (DomainInvariantException ex)
         {
             _logger.LogError(ex,
                 "Failed to reserve auction {AuctionId} for Buy Now - CorrelationId: {CorrelationId}",

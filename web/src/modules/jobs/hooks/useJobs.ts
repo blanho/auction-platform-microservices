@@ -1,3 +1,4 @@
+import { isJobActive } from '../utils/jobs.utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { jobsApi } from '../api'
 import type { JobFilterParams, JobItemFilterParams } from '../types'
@@ -15,8 +16,6 @@ export const jobKeys = {
 
 const ACTIVE_POLL_INTERVAL = 3000
 
-const ACTIVE_STATUSES = new Set(['Initializing', 'Pending', 'Processing'])
-
 export const useJobs = (params?: JobFilterParams) => {
   return useQuery({
     queryKey: jobKeys.list(params),
@@ -32,7 +31,7 @@ export const useJob = (id: string) => {
     enabled: Boolean(id),
     refetchInterval: (query) => {
       const status = query.state.data?.status
-      if (status && ACTIVE_STATUSES.has(status)) {
+      if (status && isJobActive(status)) {
         return ACTIVE_POLL_INTERVAL
       }
       return false

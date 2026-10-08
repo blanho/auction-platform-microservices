@@ -1,10 +1,11 @@
+import { BUY_NOW_STATUS } from '@/modules/auctions/constants/buy-now-status'
 import { getErrorMessage } from '@/services/http'
 import { usePlaceBid } from '@/modules/bidding/hooks/useBidding'
 import { useSnackbar } from '@/shared/hooks/useSnackbar'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { useBuyNow } from './useAuctions'
+import { useBuyNow, useMyBuyNowPurchase } from './useAuctions'
 import { useIsInWatchlist, useToggleWatchlist } from './useBookmarks'
 
 interface UseAuctionDetailActionsReturn {
@@ -12,6 +13,7 @@ interface UseAuctionDetailActionsReturn {
   buyNowDialogOpen: boolean
   setBuyNowDialogOpen: (open: boolean) => void
   buyNowMutation: ReturnType<typeof useBuyNow>
+  purchaseStatus: ReturnType<typeof useMyBuyNowPurchase>['data']
   isInWatchlist: boolean
   handleToggleFavorite: () => void
   handleShare: () => Promise<void>
@@ -31,6 +33,8 @@ export function useAuctionDetailActions(
   const { data: isInWatchlist = false } = useIsInWatchlist(auctionId ?? '')
   const toggleWatchlistMutation = useToggleWatchlist()
   const buyNowMutation = useBuyNow()
+  const { data: purchaseStatus } = useMyBuyNowPurchase(auctionId ?? '')
+  const trackingPurchaseRef = useRef(false)
   const placeBidMutation = usePlaceBid()
   const [buyNowDialogOpen, setBuyNowDialogOpen] = useState(false)
   const orderRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -43,6 +47,26 @@ export function useAuctionDetailActions(
     },
     []
   )
+
+  useEffect(() => {
+    if (
+      purchaseStatus?.status === BUY_NOW_STATUS.PROCESSING ||
+      purchaseStatus?.status === BUY_NOW_STATUS.NEEDS_REVIEW
+    ) {
+      trackingPurchaseRef.current = true
+      return
+    }
+    if (!trackingPurchaseRef.current || !purchaseStatus) {
+      return
+    }
+    trackingPurchaseRef.current = false
+    if (purchaseStatus.status === BUY_NOW_STATUS.COMPLETED) {
+      snackbar.show(t('messages.purchaseSuccess'), 'success')
+      orderRedirectTimerRef.current = setTimeout(() => navigate('/orders'), 2000)
+    } else if (purchaseStatus.status === BUY_NOW_STATUS.FAILED) {
+      snackbar.show(t('messages.purchaseFailed'), 'error')
+    }
+  }, [purchaseStatus, navigate, snackbar, t])
 
   const handleToggleFavorite = useCallback(() => {
     if (!auctionId) {
@@ -98,15 +122,15 @@ export function useAuctionDetailActions(
     }
 
     try {
+      trackingPurchaseRef.current = true
       await buyNowMutation.mutateAsync(auctionId)
       setBuyNowDialogOpen(false)
-      snackbar.show(t('messages.purchaseSuccess'), 'success')
-      orderRedirectTimerRef.current = setTimeout(() => navigate('/orders'), 2000)
+      snackbar.show(t('messages.purchasePending'), 'info')
     } catch {
       setBuyNowDialogOpen(false)
       snackbar.show(t('messages.purchaseFailed'), 'error')
     }
-  }, [auctionId, buyNowMutation, navigate, snackbar, t])
+  }, [auctionId, buyNowMutation, snackbar, t])
 
   const handleSellerContact = useCallback(() => {
     snackbar.show(t('messages.openingChat'), 'info')
@@ -117,6 +141,7 @@ export function useAuctionDetailActions(
     buyNowDialogOpen,
     setBuyNowDialogOpen,
     buyNowMutation,
+    purchaseStatus,
     isInWatchlist,
     handleToggleFavorite,
     handleShare,

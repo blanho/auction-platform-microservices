@@ -22,5 +22,19 @@ public class BuyNowSagaState : SagaStateMachineInstance
 
     public int RetryCount { get; set; }
 
+    public uint RowVersion { get; set; }
+    public DateTimeOffset? TimeoutAt { get; set; }
+    public string RecoveryStep { get; set; } = "";
+    public void SetTimeout(TimeSpan delay)
+    {
+        TimeoutTokenId = Guid.NewGuid();
+        TimeoutAt = DateTimeOffset.UtcNow.Add(delay);
+    }
+    public void ClearTimeout()
+    {
+        TimeoutAt = null;
+        TimeoutTokenId = null;
+    }
+
     public Guid? TimeoutTokenId { get; set; }
 }

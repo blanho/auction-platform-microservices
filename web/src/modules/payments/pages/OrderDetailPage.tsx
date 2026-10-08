@@ -1,3 +1,4 @@
+import { ORDER_STATUS } from '@/modules/payments/constants/order-status'
 import { useAuth } from '@/app/hooks/useAuth'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
@@ -276,14 +277,15 @@ export function OrderDetailPage() {
   ]
 
   const activeStep = getOrderActiveStep(order.status)
-  const isCancelled = order.status === 'cancelled' || order.status === 'refunded'
+  const isCancelled =
+    order.status === ORDER_STATUS.CANCELLED || order.status === ORDER_STATUS.REFUNDED
   const currentUserId = (user?.userId || user?.id || '').toLowerCase()
   const isAdmin = user?.roles.some((role) => role.toLowerCase() === 'admin') ?? false
   const isBuyer = order.buyerId.toLowerCase() === currentUserId
   const isSeller = order.sellerId.toLowerCase() === currentUserId
-  const canShip = order.status === 'paid' && (isSeller || isAdmin)
+  const canShip = order.status === ORDER_STATUS.PAID && (isSeller || isAdmin)
   const trackingUrl = getSafeHttpUrl(order.trackingUrl)
-  const canMarkDelivered = order.status === 'shipped' && (isBuyer || isAdmin)
+  const canMarkDelivered = order.status === ORDER_STATUS.SHIPPED && (isBuyer || isAdmin)
 
   const shippingAddress = parseShippingAddress(order.shippingAddress)
 

@@ -48,23 +48,21 @@ public class ReleaseAuctionReservationConsumer : IConsumer<ReleaseAuctionReserva
                 });
                 return;
             }
-
-            if (auction.Status == Status.ReservedForBuyNow)
+            if (auction.BuyNowCorrelationId == message.CorrelationId && auction.BuyNowOrderId.HasValue)
             {
-                auction.ChangeStatus(Status.Live);
-                await _writeRepository.UpdateAsync(auction, context.CancellationToken);
-                await _unitOfWork.SaveChangesAsync(context.CancellationToken);
+                await context.Publish(new BuyNowAuctionCompleted
+                {
+                    CorrelationId = message.CorrelationId,
+                    AuctionId = message.AuctionId,
+                    OrderId = auction.BuyNowOrderId.Value,
+                    CompletedAt = _dateTime.UtcNow
+                });
+                return;
+            }
 
-                _logger.LogInformation(
-                    "Auction reservation released, status set back to Live - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}",
-                    message.CorrelationId, message.AuctionId);
-            }
-            else
-            {
-                _logger.LogWarning(
-                    "Auction not in reserved state, skipping release - CorrelationId: {CorrelationId}, AuctionId: {AuctionId}, CurrentStatus: {Status}",
-                    message.CorrelationId, message.AuctionId, auction.Status);
-            }
+            auction.ReleaseBuyNow(message.CorrelationId);
+            await _writeRepository.UpdateAsync(auction, context.CancellationToken);
+            await _unitOfWork.SaveChangesAsync(context.CancellationToken);
 
             await context.Publish(new AuctionReservationReleased
             {

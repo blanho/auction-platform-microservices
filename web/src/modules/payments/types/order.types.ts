@@ -1,24 +1,10 @@
+import type { PAYMENT_STATUS } from '@/modules/payments/constants/payment-status'
+import type { ORDER_STATUS } from '@/modules/payments/constants/order-status'
 import type { QueryParameters } from '@/shared/types'
 
-export type OrderStatus =
-  | 'pending'
-  | 'payment_pending'
-  | 'paid'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'completed'
-  | 'cancelled'
-  | 'disputed'
-  | 'refunded'
+export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
 
-export type PaymentStatus =
-  | 'pending'
-  | 'processing'
-  | 'completed'
-  | 'failed'
-  | 'refunded'
-  | 'cancelled'
+export type PaymentStatus = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS]
 
 export interface OrderStats {
   totalOrders: number

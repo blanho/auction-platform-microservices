@@ -5,6 +5,7 @@ namespace OrchestrationService.Contracts.Events;
 public record BuyNowSagaTimedOut : IVersionedEvent
 {
     public int Version => 1;
+    public Guid? TimeoutTokenId { get; init; }
     public Guid CorrelationId { get; init; }
     public Guid AuctionId { get; init; }
     public Guid BuyerId { get; init; }

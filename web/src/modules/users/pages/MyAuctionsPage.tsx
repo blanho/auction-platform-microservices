@@ -1,3 +1,4 @@
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 import {
   BulkImportDialog,
   ExportAuctionsDialog,
@@ -174,10 +175,10 @@ export function MyAuctionsPage() {
   const stats = useMemo(
     () => ({
       totalAuctions: allAuctionsTotalCount,
-      activeAuctions: allAuctions.filter((a) => a.status === 'active').length,
+      activeAuctions: allAuctions.filter((a) => a.status === AUCTION_STATUS.ACTIVE).length,
       totalBids: allAuctions.reduce((sum, a) => sum + (a.bidCount || 0), 0),
       totalRevenue: allAuctions
-        .filter((a) => a.status === 'ended')
+        .filter((a) => a.status === AUCTION_STATUS.ENDED)
         .reduce((sum, a) => sum + (a.currentBid || 0), 0),
     }),
     [allAuctions, allAuctionsTotalCount]
@@ -188,19 +189,19 @@ export function MyAuctionsPage() {
       { label: t('myAuctions.tabs.all'), count: allAuctionsTotalCount },
       {
         label: t('myAuctions.tabs.active'),
-        count: allAuctions.filter((a) => a.status === 'active').length,
+        count: allAuctions.filter((a) => a.status === AUCTION_STATUS.ACTIVE).length,
       },
       {
         label: t('myAuctions.tabs.ended'),
-        count: allAuctions.filter((a) => a.status === 'ended').length,
+        count: allAuctions.filter((a) => a.status === AUCTION_STATUS.ENDED).length,
       },
       {
         label: t('myAuctions.tabs.drafts'),
-        count: allAuctions.filter((a) => a.status === 'draft').length,
+        count: allAuctions.filter((a) => a.status === AUCTION_STATUS.DRAFT).length,
       },
       {
         label: t('myAuctions.tabs.pending'),
-        count: allAuctions.filter((a) => a.status === 'pending').length,
+        count: allAuctions.filter((a) => a.status === AUCTION_STATUS.PENDING).length,
       },
     ],
     [allAuctions, allAuctionsTotalCount, t]
@@ -772,7 +773,7 @@ export function MyAuctionsPage() {
         >
           <Edit sx={{ mr: 1.5, fontSize: 20 }} /> {t('myAuctions.edit')}
         </MenuItem>
-        {menuAnchor?.auction.status === 'active' && (
+        {menuAnchor?.auction.status === AUCTION_STATUS.ACTIVE && (
           <MenuItem
             onClick={() => handleDeactivate(menuAnchor.auction.id)}
             disabled={deactivateAuction.isPending}
@@ -785,7 +786,7 @@ export function MyAuctionsPage() {
             {t('myAuctions.deactivate')}
           </MenuItem>
         )}
-        {menuAnchor?.auction.status === 'active' && (
+        {menuAnchor?.auction.status === AUCTION_STATUS.ACTIVE && (
           <MenuItem
             onClick={() => {
               setExtendDialog({
@@ -799,7 +800,7 @@ export function MyAuctionsPage() {
             {t('myAuctions.extendTime')}
           </MenuItem>
         )}
-        {menuAnchor?.auction.status === 'active' && (
+        {menuAnchor?.auction.status === AUCTION_STATUS.ACTIVE && (
           <MenuItem
             onClick={() => {
               setCancelDialog(menuAnchor.auction.id)
@@ -811,7 +812,8 @@ export function MyAuctionsPage() {
             {t('myAuctions.cancelAuction')}
           </MenuItem>
         )}
-        {(menuAnchor?.auction.status === 'draft' || menuAnchor?.auction.status === 'pending') && (
+        {(menuAnchor?.auction.status === AUCTION_STATUS.DRAFT ||
+          menuAnchor?.auction.status === AUCTION_STATUS.PENDING) && (
           <MenuItem
             onClick={() => handleActivate(menuAnchor.auction.id)}
             disabled={activateAuction.isPending}

@@ -1,3 +1,4 @@
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 import { cardHover, fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { InlineAlert, StatusBadge } from '@/shared/ui'
 import { formatCurrency } from '@/shared/utils/formatters'
@@ -131,7 +132,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
             }}
           />
 
-          {auction.status === 'ending-soon' && (
+          {auction.status === AUCTION_STATUS.ENDING_SOON && (
             <Box
               sx={{
                 position: 'absolute',
@@ -171,7 +172,7 @@ function WatchlistCard({ item, onRemove, isRemoving }: Readonly<WatchlistCardPro
             {auction.title}
           </Typography>
 
-          {auction.status !== 'ending-soon' && (
+          {auction.status !== AUCTION_STATUS.ENDING_SOON && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
               <Timer fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
@@ -304,7 +305,7 @@ export function WatchlistPage() {
                     onChange={(e) => {
                       const value = e.target.value
                       if (
-                        value === 'ending-soon' ||
+                        value === AUCTION_STATUS.ENDING_SOON ||
                         value === 'newest' ||
                         value === 'price-low' ||
                         value === 'price-high'

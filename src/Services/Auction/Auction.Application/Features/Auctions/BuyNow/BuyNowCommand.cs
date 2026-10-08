@@ -4,6 +4,7 @@ namespace Auctions.Application.Features.Auctions.BuyNow;
 public record BuyNowCommand(
     Guid AuctionId,
     Guid BuyerId,
-    string BuyerUsername
+    string BuyerUsername,
+    Guid? CorrelationId = null
 ) : ICommand<BuyNowResultDto>;
 

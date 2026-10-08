@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../Orchestration.Infrastructure/Orchestration.Infrastructure.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/BuildingBlocks.Web/BuildingBlocks.Web.csproj" />
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+</Project>

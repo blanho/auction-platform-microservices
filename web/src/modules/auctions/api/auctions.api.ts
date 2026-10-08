@@ -7,7 +7,7 @@ import type {
   UpdateAuctionRequest,
 } from '../types/auction-requests.types'
 import type { AuctionDetails, AuctionListItem, AuctionStatus } from '../types/auction.types'
-import type { BackendAuctionDto } from '../types/backend-dto.types'
+import type { BackendAuctionDto, BuyNowPurchase } from '../types/backend-dto.types'
 import { mapAuctionDto, mapAuctionListDtos } from '../utils/auction.mappers'
 
 const BACKEND_STATUS: Partial<Record<AuctionStatus, string>> = {
@@ -89,11 +89,16 @@ export const auctionsApi = {
     return mapPaginatedResponse(data, mapAuctionListDtos)
   },
 
-  async buyNow(id: string): Promise<{ orderId: string; success: boolean }> {
-    const response = await http.post<{ orderId: string; success: boolean }>(
-      `/auctions/${id}/buy-now`
-    )
+  async buyNow(id: string): Promise<BuyNowPurchase> {
+    const response = await http.post<BuyNowPurchase>(`/auctions/${id}/buy-now`, null, {
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+    })
     return response.data
+  },
+
+  async getMyPurchase(id: string): Promise<BuyNowPurchase | null> {
+    const { data } = await http.get<BuyNowPurchase | null>(`/auctions/${id}/purchase`)
+    return data
   },
 
   async cancelAuction(id: string, reason?: string): Promise<void> {

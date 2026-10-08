@@ -14,12 +14,16 @@ public static class MassTransitExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddScoped<IBuyNowOrderAttemptStore, BuyNowOrderAttemptStore>();
         services.AddMassTransit(x =>
         {
             x.AddConsumer<BuyerAuctionPaymentStatusesConsumer>();
             x.AddConsumer<AuctionFinishedConsumer>();
             x.AddConsumer<BuyNowExecutedConsumer>();
             x.AddConsumer<CreateBuyNowOrderConsumer>();
+            x.AddConsumer<CancelBuyNowOrderConsumer>();
+            x.AddConsumer<ConfirmBuyNowOrderConsumer>();
+            x.AddConsumer<CreateAuctionWinnerOrderConsumer>();
             x.AddConsumer<GenerateOrderReportConsumer>();
 
             x.AddEntityFrameworkOutbox<PaymentDbContext>(o =>
@@ -70,12 +74,21 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("payment-buy-now-saga", e =>
                 {
+                    e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
                     e.ConfigureConsumer<CreateBuyNowOrderConsumer>(context);
+                    e.ConfigureConsumer<CancelBuyNowOrderConsumer>(context);
+                    e.ConfigureConsumer<ConfirmBuyNowOrderConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: WalletDefaults.Messaging.StandardRetryLimit,
                         minInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardMinIntervalSeconds),
                         maxInterval: TimeSpan.FromSeconds(WalletDefaults.Messaging.MaxIntervalSeconds),
                         intervalDelta: TimeSpan.FromSeconds(WalletDefaults.Messaging.StandardIntervalDeltaSeconds)));
+                });
+
+                cfg.ReceiveEndpoint("payment-auction-winner-saga", e =>
+                {
+                    e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
+                    e.ConfigureConsumer<CreateAuctionWinnerOrderConsumer>(context);
                 });
 
                 cfg.ReceiveEndpoint("payment-generate-order-report", e =>

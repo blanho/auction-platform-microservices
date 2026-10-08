@@ -43,7 +43,7 @@ public class PaymentEndpoints : ICarterModule
             return Results.Forbid();
         }
 
-        if (order.PaymentStatus != PaymentStatus.Pending ||
+        if (order.AwaitingBuyNowCompletion || order.PaymentStatus != PaymentStatus.Pending ||
             order.Status is not (OrderStatus.Pending or OrderStatus.PaymentPending))
         {
             return Results.BadRequest(ProblemDetailsHelper.ValidationError(

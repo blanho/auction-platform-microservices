@@ -1,3 +1,4 @@
+import { SELLER_APPLICATION_STATUS } from '../constants/seller-application-status'
 import { getCurrentLocale } from '@/i18n'
 import { getErrorMessage } from '@/services/http'
 import { palette } from '@/shared/theme/tokens'
@@ -128,7 +129,7 @@ export function ProfilePage() {
     }
 
     switch (sellerStatus.applicationStatus) {
-      case 'pending':
+      case SELLER_APPLICATION_STATUS.PENDING:
         return (
           <Chip
             icon={<Pending />}
@@ -137,7 +138,7 @@ export function ProfilePage() {
             size="small"
           />
         )
-      case 'rejected':
+      case SELLER_APPLICATION_STATUS.REJECTED:
         return <Chip icon={<Cancel />} label={t('seller.rejected')} color="error" size="small" />
       default:
         return null
@@ -267,27 +268,28 @@ export function ProfilePage() {
               {getSellerStatusChip()}
             </Box>
 
-            {!sellerStatus?.isSeller && sellerStatus?.applicationStatus !== 'pending' && (
-              <>
-                <Divider sx={{ my: 3 }} />
-                <Button
-                  variant="outlined"
-                  startIcon={<Store />}
-                  onClick={() => setShowSellerDialog(true)}
-                  sx={{
-                    borderColor: palette.brand.primary,
-                    color: palette.brand.primary,
-                    textTransform: 'none',
-                    '&:hover': {
-                      borderColor: '#A16207',
-                      bgcolor: palette.brand.muted,
-                    },
-                  }}
-                >
-                  {t('profile.becomeSeller')}
-                </Button>
-              </>
-            )}
+            {!sellerStatus?.isSeller &&
+              sellerStatus?.applicationStatus !== SELLER_APPLICATION_STATUS.PENDING && (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <Button
+                    variant="outlined"
+                    startIcon={<Store />}
+                    onClick={() => setShowSellerDialog(true)}
+                    sx={{
+                      borderColor: palette.brand.primary,
+                      color: palette.brand.primary,
+                      textTransform: 'none',
+                      '&:hover': {
+                        borderColor: '#A16207',
+                        bgcolor: palette.brand.muted,
+                      },
+                    }}
+                  >
+                    {t('profile.becomeSeller')}
+                  </Button>
+                </>
+              )}
 
             <Divider sx={{ my: 3 }} />
 

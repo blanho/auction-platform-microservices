@@ -1,3 +1,4 @@
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
 import type { WatchlistItem } from '@/modules/auctions/api/bookmarks.api'
 import { useRemoveFromWatchlist, useWatchlist, useWatchlistCount } from '@/modules/auctions/hooks'
 import { palette } from '@/shared/theme/tokens'
@@ -124,8 +125,10 @@ function WishlistItemCard({
               sx={{
                 fontSize: '0.75rem',
                 color:
-                  auction.status === 'ending-soon' ? palette.semantic.error : palette.neutral[500],
-                fontWeight: auction.status === 'ending-soon' ? 600 : 400,
+                  auction.status === AUCTION_STATUS.ENDING_SOON
+                    ? palette.semantic.error
+                    : palette.neutral[500],
+                fontWeight: auction.status === AUCTION_STATUS.ENDING_SOON ? 600 : 400,
               }}
             >
               {formatTimeLeft(auction.endTime)}

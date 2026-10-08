@@ -1,3 +1,4 @@
+import { AUTH_STATUS } from '@/modules/auth/constants/auth-status'
 import { useAuth } from '@/app/providers'
 import { LoadingScreen } from '@/shared/ui'
 import type { ReactNode } from 'react'
@@ -13,7 +14,7 @@ export function GuestRoute({ children, redirectTo = '/' }: GuestRouteProps) {
   const { isAuthenticated, isLoading, status } = useAuth()
   const location = useLocation()
 
-  const hasCheckedAuth = status !== 'idle' && status !== 'loading'
+  const hasCheckedAuth = status !== AUTH_STATUS.IDLE && status !== AUTH_STATUS.LOADING
 
   if (isLoading && !hasCheckedAuth) {
     return <LoadingScreen message="Checking authentication..." />

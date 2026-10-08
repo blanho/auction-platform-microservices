@@ -172,6 +172,8 @@ jobs:
             dockerfile: src/Services/Search/Search.Api/Dockerfile
           - name: storage-api
             dockerfile: src/Services/Storage/Storage.Api/Dockerfile
+          - name: orchestration-api
+            dockerfile: src/Orchestration/Orchestration.Api/Dockerfile
           - name: job-api
             dockerfile: src/Services/Job/Job.Api/Dockerfile
           - name: catalog-api

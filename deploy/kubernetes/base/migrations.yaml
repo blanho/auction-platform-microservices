@@ -276,3 +276,33 @@ spec:
               valueFrom:
                 secretKeyRef: { name: auction-platform-secrets, key: JOB_DB_CONNECTION }
           securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: orchestration-api-migration
+  namespace: auction-platform
+  labels: { app: orchestration-api-migration, tier: backend }
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: { app: orchestration-api-migration, tier: backend }
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: auction-service-account
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
+      containers:
+        - name: migrate
+          image: auction-platform/orchestration-api:latest
+          args: ["--migrate-only"]
+          envFrom:
+            - configMapRef: { name: auction-platform-config }
+            - secretRef: { name: auction-platform-secrets }
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef: { name: auction-platform-secrets, key: ORCHESTRATION_DB_CONNECTION }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }

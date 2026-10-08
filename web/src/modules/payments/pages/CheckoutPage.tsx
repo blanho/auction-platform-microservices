@@ -1,3 +1,4 @@
+import { ORDER_STATUS } from '@/modules/payments/constants/order-status'
 import { fadeInUp, staggerContainer, staggerItem } from '@/shared/lib/animations'
 import { palette } from '@/shared/theme/tokens'
 import { InlineAlert } from '@/shared/ui'
@@ -136,8 +137,8 @@ export function CheckoutPage() {
   useEffect(() => {
     if (
       existingOrder &&
-      existingOrder.status !== 'pending' &&
-      existingOrder.status !== 'payment_pending'
+      existingOrder.status !== ORDER_STATUS.PENDING &&
+      existingOrder.status !== ORDER_STATUS.PAYMENT_PENDING
     ) {
       navigate(`/orders/${existingOrder.id}`)
     }

@@ -1,3 +1,5 @@
+import { AUCTION_STATUS } from '@/modules/auctions/constants/auction-status'
+import { BUY_NOW_STATUS } from '@/modules/auctions/constants/buy-now-status'
 import { useAuth } from '@/app/providers'
 import { getCurrentLocale } from '@/i18n'
 import { useAutoBidForAuction, useBidsForAuction } from '@/modules/bidding/hooks'
@@ -65,6 +67,7 @@ export function AuctionDetailPage() {
     buyNowDialogOpen,
     setBuyNowDialogOpen,
     buyNowMutation,
+    purchaseStatus,
     isInWatchlist,
     handleToggleFavorite,
     handleShare,
@@ -150,7 +153,7 @@ export function AuctionDetailPage() {
                     '&:hover': { bgcolor: palette.neutral[100] },
                   }}
                 />
-                {auction.status === 'ending-soon' && (
+                {auction.status === AUCTION_STATUS.ENDING_SOON && (
                   <Chip
                     label={t('endingSoon')}
                     size="small"
@@ -242,6 +245,16 @@ export function AuctionDetailPage() {
                 </Stack>
               </Stack>
 
+              {(purchaseStatus?.status === BUY_NOW_STATUS.PROCESSING ||
+                purchaseStatus?.status === BUY_NOW_STATUS.NEEDS_REVIEW) && (
+                <InlineAlert severity="info" sx={{ mb: 2 }}>
+                  {t(
+                    purchaseStatus.status === BUY_NOW_STATUS.NEEDS_REVIEW
+                      ? 'messages.purchaseReview'
+                      : 'messages.purchasePending'
+                  )}
+                </InlineAlert>
+              )}
               <BidSection
                 auctionId={auction.id}
                 auctionTitle={auction.title}

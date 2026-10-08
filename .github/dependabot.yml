@@ -85,3 +85,8 @@ updates:
           - "@types/react*"
       dev-dependencies:
         dependency-type: "development"
+
+  - package-ecosystem: "docker"
+    directory: "/src/Orchestration/Orchestration.Api"
+    schedule:
+      interval: "weekly"

@@ -177,6 +177,9 @@ images:
   - name: auction-platform/job-api
     newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/job-api
     newTag: v1.0.0
+  - name: auction-platform/orchestration-api
+    newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/orchestration-api
+    newTag: v1.0.0
   - name: auction-platform/catalog-api
     newName: REPLACE_WITH_ACR_LOGIN_SERVER/auction-platform/catalog-api
     newTag: v1.0.0

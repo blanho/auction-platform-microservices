@@ -1,3 +1,4 @@
+import { AUTH_STATUS } from '@/modules/auth/constants/auth-status'
 import { useAuth, usePermissions } from '@/app/providers'
 import type { Permission } from '@/shared/permissions'
 import { LoadingScreen } from '@/shared/ui'
@@ -26,13 +27,13 @@ export const ProtectedRoute = ({
   const location = useLocation()
   const { t } = useTranslation()
 
-  const hasCheckedAuth = status !== 'idle' && status !== 'loading'
+  const hasCheckedAuth = status !== AUTH_STATUS.IDLE && status !== AUTH_STATUS.LOADING
 
   if (isLoading && !hasCheckedAuth) {
     return fallback ?? <LoadingScreen message={t('auth.verifyingAuth')} />
   }
 
-  if (status === 'loading' && hasCheckedAuth) {
+  if (status === AUTH_STATUS.LOADING && hasCheckedAuth) {
     return <>{children}</>
   }
 

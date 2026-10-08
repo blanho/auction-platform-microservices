@@ -57,10 +57,16 @@ public class AuctionCrudEndpoints : ICarterModule
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/{id:guid}/purchase", async (Guid id, HttpContext context, IBuyNowPurchaseRepository purchases, CancellationToken ct) =>
+        {
+            var purchase = await purchases.GetLatestAsync(id, UserHelper.GetRequiredUserId(context.User), ct);
+            return Results.Ok(purchase is null ? null : BuyNowResultDto.FromPurchase(purchase));
+        }).RequireAuthorization().WithName("GetMyBuyNowPurchase");
+
         group.MapPost("/{id:guid}/buy-now", BuyNow)
             .WithName("BuyNow")
             .RequireAuthorization(new RequirePermissionAttribute(Permissions.Auctions.View))
-            .Produces<BuyNowResultDto>(StatusCodes.Status200OK)
+            .Produces<BuyNowResultDto>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict);
 
@@ -207,11 +213,18 @@ public class AuctionCrudEndpoints : ICarterModule
         var buyerId = UserHelper.GetRequiredUserId(httpContext.User);
         var buyerUsername = UserHelper.GetUsername(httpContext.User);
 
-        var command = new BuyNowCommand(id, buyerId, buyerUsername);
+        Guid? correlationId = null;
+        if (httpContext.Request.Headers.TryGetValue("Idempotency-Key", out var key))
+        {
+            if (!Guid.TryParse(key, out var parsed) || parsed == Guid.Empty)
+                return Results.BadRequest(ProblemDetailsHelper.ValidationError("Idempotency-Key must be a non-empty UUID"));
+            correlationId = parsed;
+        }
+        var command = new BuyNowCommand(id, buyerId, buyerUsername, correlationId);
         var result = await mediator.Send(command, ct);
 
         if (result.IsSuccess)
-            return Results.Ok(result.Value);
+            return Results.Accepted($"/api/v1/auctions/{id}/purchase", result.Value);
 
         var isConflict = result.Error!.Code.StartsWith("BuyNow.Conflict");
         return isConflict
