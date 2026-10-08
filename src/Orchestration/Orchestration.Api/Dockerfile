@@ -26,7 +26,7 @@ RUN dotnet publish "Orchestration.Api.csproj" \
     --no-restore \
     --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine@sha256:1bd70a86abe101145238b07e7462e5f9e5ab0fa50c6fdeff3c3ac6941da56939 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:f62a272ac1b46e83f56b8ed0416572f31cd1128e2c4a5e63eb34d348e4a36095 AS runtime
 ARG BUILD_VERSION=dev
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.version=$BUILD_VERSION \
