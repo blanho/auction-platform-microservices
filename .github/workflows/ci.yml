@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop, 'feature/**', 'release/**']
+    branches: [main, develop, 'feature/**', 'fix/**', 'release/**']
   pull_request:
     branches: [main, develop]
 
@@ -33,12 +33,50 @@ jobs:
       - name: Validate
         run: npm run validate
 
+      - name: Behavioral tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Purchase browser tests
+        run: npm run test:e2e
+
+      - name: Upload browser test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: |
+            web/playwright-report/
+            web/test-results/
 
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    env:
+      BACKEND_TEST_POSTGRES: 'Host=localhost;Port=5432;Database=postgres;Username=auction_test;Password=auction_test'
+      BACKEND_TEST_RABBIT_PORT: '5672'
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: auction_test
+          POSTGRES_PASSWORD: auction_test
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U auction_test -d postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        ports: ['5672:5672']
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 5s --health-timeout 10s --health-retries 30
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -68,7 +106,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', 'Directory.Packages.props') }}
           restore-keys: ${{ runner.os }}-nuget-
 
       - name: Restore
@@ -88,16 +126,11 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.SOLUTION_PATH }} -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
 
-      - name: Test
-        run: |
-          while IFS= read -r test_project; do
-            dotnet test "$test_project" \
-              --no-restore -c Release \
-              --collect:"XPlat Code Coverage" \
-              --results-directory ./coverage \
-              --logger "trx;LogFileName=test-results.trx" \
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          done < <(find src -type f -name '*Tests.csproj' | sort)
+      - name: Verify test-result guard behavior
+        run: python3 -m unittest discover -s scripts/tests -v
+
+      - name: Test (database and broker coverage required)
+        run: bash scripts/run-backend-tests.sh
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

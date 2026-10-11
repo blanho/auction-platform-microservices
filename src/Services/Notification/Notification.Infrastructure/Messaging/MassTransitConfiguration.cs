@@ -18,6 +18,7 @@ public static class MassTransitConfiguration
 
         services.AddMassTransit(x =>
         {
+            x.AddNotificationConsumer<AuctionRoomUpdatesConsumer>();
             x.AddNotificationConsumer<SendAuctionCompletionNotificationsConsumer>();
             x.AddNotificationConsumer<NotificationRequestedConsumer>(
                 concurrencyLimit: rabbitMqSettings.ConcurrencyLimit);

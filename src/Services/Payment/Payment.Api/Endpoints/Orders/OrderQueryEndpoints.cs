@@ -101,16 +101,16 @@ public class OrderQueryEndpoints : ICarterModule
 
     private static async Task<IResult> GetByBuyer(
         string username,
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetOrdersByBuyerQuery(
             username,
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
-            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+            Page: page is > 0 ? page.Value : PaginationDefaults.DefaultPage,
+            PageSize: pageSize is > 0 ? pageSize.Value : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToApiResult(paginatedResult =>
@@ -122,16 +122,16 @@ public class OrderQueryEndpoints : ICarterModule
 
     private static async Task<IResult> GetBySeller(
         string username,
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         var query = new GetOrdersBySellerQuery(
             username,
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
-            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+            Page: page is > 0 ? page.Value : PaginationDefaults.DefaultPage,
+            PageSize: pageSize is > 0 ? pageSize.Value : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToApiResult(paginatedResult =>
@@ -142,8 +142,8 @@ public class OrderQueryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetMyPurchases(
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -152,8 +152,8 @@ public class OrderQueryEndpoints : ICarterModule
 
         var query = new GetOrdersByBuyerQuery(
             username,
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
-            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+            Page: page is > 0 ? page.Value : PaginationDefaults.DefaultPage,
+            PageSize: pageSize is > 0 ? pageSize.Value : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToApiResult(paginatedResult =>
@@ -164,8 +164,8 @@ public class OrderQueryEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetMySales(
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         IMediator mediator,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -174,8 +174,8 @@ public class OrderQueryEndpoints : ICarterModule
 
         var query = new GetOrdersBySellerQuery(
             username,
-            Page: page > 0 ? page : PaginationDefaults.DefaultPage,
-            PageSize: pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize);
+            Page: page is > 0 ? page.Value : PaginationDefaults.DefaultPage,
+            PageSize: pageSize is > 0 ? pageSize.Value : PaginationDefaults.DefaultPageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         return result.ToApiResult(paginatedResult =>

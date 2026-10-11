@@ -1,3 +1,5 @@
+import { auctionKeys } from './useAuctions'
+import { bidKeys } from '@/modules/bidding/hooks/useBidding'
 import type { AuctionStatusPayload, BidUpdatePayload } from '@/services/signalr'
 import { signalRService } from '@/services/signalr'
 import { useSignalRState } from '@/shared/hooks'
@@ -31,8 +33,8 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
       }
 
       signalRLogger.info('New bid placed:', bidUpdate.bidId)
-      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
-      void queryClient.invalidateQueries({ queryKey: ['bids', auctionId] })
+      void queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
+      void queryClient.invalidateQueries({ queryKey: bidKeys.forAuction(auctionId) })
     },
     [auctionId, queryClient]
   )
@@ -44,7 +46,8 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
       }
 
       signalRLogger.info('Auction ended:', status.auctionId)
-      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
+      void queryClient.invalidateQueries({ queryKey: bidKeys.forAuction(auctionId) })
+      void queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
     },
     [auctionId, queryClient]
   )
@@ -56,7 +59,7 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
       }
 
       signalRLogger.info('Auction extended:', status.auctionId)
-      void queryClient.invalidateQueries({ queryKey: ['auction', auctionId] })
+      void queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
     },
     [auctionId, queryClient]
   )
@@ -69,6 +72,13 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
 
     desiredAuctionIdRef.current = auctionId
     let isActive = true
+
+    signalRService.off('BidPlaced', handleBidPlaced)
+    signalRService.off('AuctionEnded', handleAuctionEnded)
+    signalRService.off('AuctionExtended', handleAuctionExtended)
+    signalRService.on('BidPlaced', handleBidPlaced)
+    signalRService.on('AuctionEnded', handleAuctionEnded)
+    signalRService.on('AuctionExtended', handleAuctionExtended)
 
     const joinRoomAndSubscribe = async (): Promise<void> => {
       let joinRequest = joinRequestRef.current
@@ -106,12 +116,8 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
       }
 
       joinedAuctionIdRef.current = auctionId
-      signalRService.off('BidPlaced', handleBidPlaced)
-      signalRService.off('AuctionEnded', handleAuctionEnded)
-      signalRService.off('AuctionExtended', handleAuctionExtended)
-      signalRService.on('BidPlaced', handleBidPlaced)
-      signalRService.on('AuctionEnded', handleAuctionEnded)
-      signalRService.on('AuctionExtended', handleAuctionExtended)
+      void queryClient.invalidateQueries({ queryKey: auctionKeys.detail(auctionId) })
+      void queryClient.invalidateQueries({ queryKey: bidKeys.forAuction(auctionId) })
     }
 
     void joinRoomAndSubscribe()
@@ -132,7 +138,15 @@ export const useAuctionSignalR = ({ auctionId, enabled = true }: UseAuctionSigna
         desiredAuctionIdRef.current = null
       }
     }
-  }, [auctionId, enabled, isConnected, handleBidPlaced, handleAuctionEnded, handleAuctionExtended])
+  }, [
+    auctionId,
+    enabled,
+    isConnected,
+    handleBidPlaced,
+    handleAuctionEnded,
+    handleAuctionExtended,
+    queryClient,
+  ])
 
   return { isConnected }
 }

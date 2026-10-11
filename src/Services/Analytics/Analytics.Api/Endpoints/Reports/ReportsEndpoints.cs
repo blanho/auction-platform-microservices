@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Analytics.Application.DTOs;
+using Analytics.Domain.Enums;
 using Analytics.Application.Features.Reports.CreateReport;
 using Analytics.Application.Features.Reports.DeleteReport;
 using Analytics.Application.Features.Reports.GetReportById;
@@ -62,10 +63,24 @@ public class ReportsEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetReports(
-        [AsParameters] ReportQueryParams queryParams,
+        [AsParameters] GetReportsRequest request,
         ISender sender,
         CancellationToken cancellationToken)
     {
+        var queryParams = new ReportQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new ReportFilter
+            {
+                Status = request.Status,
+                Type = request.Type,
+                Priority = request.Priority,
+                ReportedUsername = request.ReportedUsername
+            }
+        };
         var result = await sender.Send(new GetReportsQuery(queryParams), cancellationToken);
         return result.ToOkResult();
     }

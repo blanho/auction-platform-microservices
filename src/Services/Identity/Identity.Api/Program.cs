@@ -47,6 +47,7 @@ try
 catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Unhandled exception");
+    Environment.ExitCode = 1;
 }
 finally
 {

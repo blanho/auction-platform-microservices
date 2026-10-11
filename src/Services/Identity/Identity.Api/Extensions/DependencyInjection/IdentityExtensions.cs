@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Identity.Infrastructure.Persistence;
+using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -24,6 +25,8 @@ internal static class IdentityExtensions
                         npgsqlOptions.CommandTimeout(30);
                     })
                 .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {

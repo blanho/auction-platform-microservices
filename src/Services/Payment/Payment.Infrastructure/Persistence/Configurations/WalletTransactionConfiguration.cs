@@ -46,6 +46,10 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
 
         builder.HasIndex(x => x.ReferenceId);
 
+        builder.HasIndex(x => x.ReferenceId, "UX_WalletTransactions_PaymentReference")
+            .IsUnique()
+            .HasFilter("\"Type\" = 4 AND \"ReferenceId\" IS NOT NULL");
+
         builder.HasIndex(x => x.Status);
 
         builder.HasIndex(x => x.Type);

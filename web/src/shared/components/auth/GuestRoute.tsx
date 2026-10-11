@@ -16,10 +16,6 @@ export function GuestRoute({ children, redirectTo = '/' }: GuestRouteProps) {
 
   const hasCheckedAuth = status !== AUTH_STATUS.IDLE && status !== AUTH_STATUS.LOADING
 
-  if (isLoading && !hasCheckedAuth) {
-    return <LoadingScreen message="Checking authentication..." />
-  }
-
   if (isAuthenticated) {
     const savedRedirect = getRedirectUrl()
     if (savedRedirect) {
@@ -31,5 +27,11 @@ export function GuestRoute({ children, redirectTo = '/' }: GuestRouteProps) {
     return <Navigate to={from || redirectTo} replace />
   }
 
-  return <>{children}</>
+  const checkingAuth = isLoading && !hasCheckedAuth
+  return (
+    <>
+      {checkingAuth && <LoadingScreen message="Checking authentication..." />}
+      <div hidden={checkingAuth}>{children}</div>
+    </>
+  )
 }

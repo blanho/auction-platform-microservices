@@ -31,6 +31,7 @@ internal static class HostingExtensions
             requiresIdentity: false);
 
         builder.Services.AddCarter();
+        builder.Services.AddCors();
 
         builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {

@@ -1,10 +1,11 @@
 using MassTransit;
+using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Identity.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -17,6 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<RolePermissionString> RolePermissionStrings { get; set; }
     public DbSet<AppUserRole> AppUserRoles { get; set; }
+    DbSet<AppUserRole> IApplicationDbContext.UserRoles => AppUserRoles;
     public DbSet<ResourceAcl> ResourceAcls { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)

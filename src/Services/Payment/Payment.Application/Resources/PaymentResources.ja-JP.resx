@@ -53,4 +53,6 @@
   <data name="Stripe.InvalidWebhookSignature" xml:space="preserve"><value>無効なWebhook署名です。</value></data>
   <data name="Transaction.NotFound" xml:space="preserve"><value>取引が見つかりません。</value></data>
   <data name="Transaction.Failed" xml:space="preserve"><value>取引に失敗しました: {0}</value></data>
+  <data name="Payment.InvalidReference" xml:space="preserve"><value>空でない支払い参照が必要です</value></data>
+  <data name="Payment.ReferenceConflict" xml:space="preserve"><value>この支払い参照は異なる支払い情報で既に使用されています</value></data>
 </root>

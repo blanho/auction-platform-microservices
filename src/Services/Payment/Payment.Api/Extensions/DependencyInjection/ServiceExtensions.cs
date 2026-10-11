@@ -58,6 +58,7 @@ public static class ServiceExtensions
 
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<IWalletPaymentExecutor, WalletPaymentExecutor>();
         services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
         services.AddScoped<IOrderReportGenerator, OrderReportGenerator>();
         services.AddHttpClient<IReportStorageClient, HttpReportStorageClient>();

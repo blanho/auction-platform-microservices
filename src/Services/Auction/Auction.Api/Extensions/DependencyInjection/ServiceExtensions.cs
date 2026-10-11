@@ -53,7 +53,7 @@ namespace Auctions.Api.Extensions.DependencyInjection
                 var logger = sp.GetRequiredService<ILogger<CachedAuctionRepository>>();
                 return new CachedAuctionRepository(inner, cache, logger);
             });
-            services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
+            services.AddScoped<IAuctionReadRepository>(sp => sp.GetRequiredService<AuctionRepository>());
             services.AddScoped<IAuctionWriteRepository>(sp => sp.GetRequiredService<CachedAuctionRepository>());
 
             services.AddScoped<IBookmarkRepository, BookmarkRepository>();
