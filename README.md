@@ -674,15 +674,55 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The current suite contains Payment domain tests and Bidding infrastructure tests
-for authoritative finalization and per-auction serialization. CI discovers every
-`*Tests.csproj` under `src`; add tests next to each service as the project grows.
+The backend has 30 test projects covering service behavior, architecture rules,
+PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
+workflow recovery. CI starts disposable PostgreSQL and RabbitMQ and rejects
+missing, empty, failed, or skipped test runs. Each project produces distinct TRX
+and OpenCover artifacts.
 
 ```bash
-dotnet test src/Services/Bidding/tests/Bidding.Infrastructure.Tests/Bidding.Infrastructure.Tests.csproj
-dotnet test src/Services/Payment/tests/Payment.Domain.Tests/Payment.Domain.Tests.csproj
-cd web && npm run validate                         # Frontend
+docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml up -d --wait
+export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
+export BACKEND_TEST_RABBIT_PORT=15673
+dotnet restore auction.sln
+bash scripts/run-backend-tests.sh
+python3 -m unittest discover -s scripts/tests -v
+docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
 ```
+
+Frontend behavioral tests cover live auction updates and reconnects, bid rejection,
+buy-now polling and outcomes, and authentication refresh. Chromium purchase tests
+run the real app against disposable API fixtures; no payment provider is contacted.
+
+```bash
+cd web
+npm ci
+npm test
+npm run validate
+npm run build
+npx playwright install --with-deps chromium
+npm run test:e2e
+```
+
+Run the browser journeys against all running microservices with isolated databases,
+broker, Redis, Elasticsearch, gateway, and nginx (Docker, Python 3, installed npm
+dependencies and Chromium required):
+
+```bash
+# From the repository root; reserves localhost ports 3000 and 6001.
+bash scripts/run-system-tests.sh
+```
+
+The runner builds images sequentially, waits for health checks, seeds disposable
+users, and runs `web`'s `test:system` suite. It captures service logs in
+`system-test-artifacts/` and removes only its own Compose containers and volumes
+on exit. Tests create auctions, bids and unpaid orders; Stripe is given fake
+credentials and checkout is never invoked. Authentication throttling remains
+enabled, so these journeys can take several minutes.
+
+See [reliability changes and migration guidance](docs/reliability-enhancements.md)
+for reproduced defects, wallet payment semantics, migration preflight, and test
+boundaries, including local validation results and reproduction commands.
 
 ---
 

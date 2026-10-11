@@ -1,21 +1,22 @@
-import type { AlertColor, SxProps, Theme } from '@mui/material'
+import type { AlertProps } from '@mui/material'
 import { Alert, AlertTitle } from '@mui/material'
+import { forwardRef } from 'react'
 import type { ReactNode } from 'react'
 
-interface InlineAlertProps {
-  severity: AlertColor
+interface InlineAlertProps extends Omit<AlertProps, 'title' | 'children'> {
+  severity: NonNullable<AlertProps['severity']>
   title?: string
   children: ReactNode
-  variant?: 'standard' | 'outlined' | 'filled'
-  sx?: SxProps<Theme>
-  onClose?: () => void
 }
 
-export function InlineAlert({ severity, title, children, variant, sx, onClose }: InlineAlertProps) {
+export const InlineAlert = forwardRef<HTMLDivElement, InlineAlertProps>(function InlineAlert(
+  { title, children, ...props },
+  ref
+) {
   return (
-    <Alert severity={severity} variant={variant} sx={sx} onClose={onClose}>
+    <Alert ref={ref} {...props}>
       {title && <AlertTitle>{title}</AlertTitle>}
       {children}
     </Alert>
   )
-}
+})

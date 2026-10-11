@@ -481,6 +481,10 @@ namespace Payment.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Username");
 
+                    b.HasIndex(new[] { "ReferenceId" }, "UX_WalletTransactions_PaymentReference")
+                        .IsUnique()
+                        .HasFilter("\"Type\" = 4 AND \"ReferenceId\" IS NOT NULL");
+
                     b.ToTable("WalletTransactions");
                 });
 

@@ -110,7 +110,7 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
             </Avatar>
             <Box>
               <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
-                {order.auctionTitle}
+                {order.auctionTitle || order.itemTitle}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {t('orders.orderNumber', { number: order.id.slice(0, 8) })}
@@ -124,7 +124,11 @@ function OrdersTable({ role }: { role: 'buyer' | 'seller' }) {
         header: role === 'buyer' ? t('orders.seller') : t('orders.buyer'),
         sortable: true,
         sortKey: role === 'buyer' ? 'sellerName' : 'buyerName',
-        render: (value) => <Typography variant="body2">{String(value)}</Typography>,
+        render: (value, order) => (
+          <Typography variant="body2">
+            {String(value || (role === 'buyer' ? order.sellerUsername : order.buyerUsername))}
+          </Typography>
+        ),
       },
       {
         key: 'totalAmount',

@@ -33,10 +33,27 @@ public class AuditLogsEndpoints : ICarterModule
     }
 
     private static async Task<Ok<PaginatedResult<AuditLogDto>>> GetAuditLogs(
-        [AsParameters] AuditLogQueryParams queryParams,
+        [AsParameters] GetAuditLogsRequest request,
         ISender sender,
         CancellationToken cancellationToken)
     {
+        var queryParams = new AuditLogQueryParams
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new AuditLogFilter
+            {
+                EntityId = request.EntityId,
+                EntityType = request.EntityType,
+                UserId = request.UserId,
+                ServiceName = request.ServiceName,
+                Action = request.Action,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate
+            }
+        };
         var result = await sender.Send(new GetPagedAuditLogsQuery(queryParams), cancellationToken);
         return TypedResults.Ok(result);
     }

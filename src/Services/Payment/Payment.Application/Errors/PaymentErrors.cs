@@ -44,6 +44,8 @@ public static class PaymentErrors
         public static Error Failed(string reason) => LocalizableError.Localizable("Payment.ProcessingFailed", $"Payment failed: {reason}", reason);
         public static Error ProcessingFailed(string reason) => LocalizableError.Localizable("Payment.ProcessingFailed", $"Failed to process payment: {reason}", reason);
         public static Error RefundFailed(string reason) => LocalizableError.Localizable("Payment.RefundFailed", $"Failed to refund payment: {reason}", reason);
+        public static Error InvalidReference => Error.Create("Payment.InvalidReference", "A non-empty payment reference is required");
+        public static Error ReferenceConflict => Error.Create("Payment.ReferenceConflict", "Payment reference was already used with different payment details");
         public static Error InvalidAmount => Error.Create("Payment.InvalidAmount", "Invalid payment amount");
     }
 

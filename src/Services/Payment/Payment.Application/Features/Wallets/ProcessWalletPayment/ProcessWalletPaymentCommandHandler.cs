@@ -22,6 +22,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
     private readonly ILogger<ProcessWalletPaymentCommandHandler> _logger;
     private readonly IDistributedLock _distributedLock;
     private readonly IAuditPublisher _auditPublisher;
+    private readonly IWalletPaymentExecutor _paymentExecutor;
 
     private static readonly TimeSpan LockExpiry = WalletDefaults.Lock.StandardExpiry;
 
@@ -32,7 +33,8 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         IMapper mapper,
         ILogger<ProcessWalletPaymentCommandHandler> logger,
         IDistributedLock distributedLock,
-        IAuditPublisher auditPublisher)
+        IAuditPublisher auditPublisher,
+        IWalletPaymentExecutor paymentExecutor)
     {
         _walletRepository = walletRepository;
         _transactionRepository = transactionRepository;
@@ -41,9 +43,20 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         _logger = logger;
         _distributedLock = distributedLock;
         _auditPublisher = auditPublisher;
+        _paymentExecutor = paymentExecutor;
     }
 
-    public async Task<Result<WalletTransactionDto>> Handle(ProcessWalletPaymentCommand request, CancellationToken cancellationToken)
+    public Task<Result<WalletTransactionDto>> Handle(ProcessWalletPaymentCommand request, CancellationToken cancellationToken)
+    {
+        if (request.ReferenceId == Guid.Empty)
+            return Task.FromResult(Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.InvalidReference));
+        if (request.Amount <= 0 || decimal.Round(request.Amount, 2) != request.Amount)
+            return Task.FromResult(Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.InvalidAmount));
+
+        return _paymentExecutor.ExecuteAsync(request.ReferenceId, ct => ProcessAsync(request, ct), cancellationToken);
+    }
+
+    private async Task<Result<WalletTransactionDto>> ProcessAsync(ProcessWalletPaymentCommand request, CancellationToken cancellationToken)
     {
 
         var referenceIdStr = request.ReferenceId != Guid.Empty ? request.ReferenceId.ToString() : null;
@@ -56,6 +69,15 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
 
             if (existingTransaction != null)
             {
+                if (existingTransaction.Username != request.Username ||
+                    existingTransaction.Amount != request.Amount ||
+                    existingTransaction.Description != request.Description ||
+                    existingTransaction.ReferenceType != WalletReferenceTypes.Order ||
+                    existingTransaction.Status != TransactionStatus.Completed)
+                {
+                    return Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.ReferenceConflict);
+                }
+
                 _logger.LogWarning(
                     "Duplicate payment attempt detected for ReferenceId {ReferenceId}, returning existing transaction {TransactionId}",
                     request.ReferenceId, existingTransaction.Id);
@@ -123,6 +145,8 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
                 [AuditMetadataKeys.NewBalance] = wallet.Balance
             },
             cancellationToken: cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Payment of {Amount} processed for order {ReferenceId} for user: {Username}",
             request.Amount, request.ReferenceId, request.Username);

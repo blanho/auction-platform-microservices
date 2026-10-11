@@ -53,4 +53,6 @@
   <data name="Stripe.InvalidWebhookSignature" xml:space="preserve"><value>Invalid webhook signature.</value></data>
   <data name="Transaction.NotFound" xml:space="preserve"><value>Transaction not found.</value></data>
   <data name="Transaction.Failed" xml:space="preserve"><value>Transaction failed: {0}</value></data>
+  <data name="Payment.InvalidReference" xml:space="preserve"><value>A non-empty payment reference is required</value></data>
+  <data name="Payment.ReferenceConflict" xml:space="preserve"><value>Payment reference was already used with different payment details</value></data>
 </root>

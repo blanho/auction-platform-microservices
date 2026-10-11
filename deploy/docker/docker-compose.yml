@@ -111,6 +111,8 @@ services:
       - "6001:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
       ReverseProxy__Clusters__auction-cluster__Destinations__destination1__Address: http://auction-api:8080
       ReverseProxy__Clusters__payment-cluster__Destinations__destination1__Address: http://payment-api:8080
       ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address: http://notification-api:8080
@@ -121,6 +123,7 @@ services:
       ReverseProxy__Clusters__bid-cluster__Destinations__destination1__Address: http://bidding-api:8080
       ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address: http://identity-api:8080
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       Serilog__WriteTo__0__Name: Seq
       Serilog__WriteTo__0__Args__serverUrl: http://seq:80
@@ -149,7 +152,9 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - auction-network
+      auction-network:
+        aliases:
+          - gateway-api
 
   web-frontend:
     build:
@@ -165,7 +170,7 @@ services:
       gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/ || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -185,6 +190,7 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=auction_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       CatalogService__GrpcUrl: http://catalog-api:8081
       BidService__GrpcUrl: http://bidding-api:8081
@@ -227,6 +233,7 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=bid_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       GrpcServices__AuctionService: http://auction-api:8081
       Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
@@ -263,9 +270,14 @@ services:
       - "5004:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=payment_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -302,9 +314,14 @@ services:
       - "5005:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=notification_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -336,6 +353,8 @@ services:
       - "5001:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=identity_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__IssuerUri: http://identity-api:8080
@@ -374,6 +393,7 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=analytics_db;Username=postgres;Password=postgres123
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -407,6 +427,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=catalog_db;Username=postgres;Password=postgres123
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
       Kestrel__Endpoints__Http__Protocols: Http1
@@ -440,8 +461,13 @@ services:
       - "5008:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__Redis: redis:6379
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -474,8 +500,13 @@ services:
       - "5009:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:8081
+      Kestrel__Endpoints__Grpc__Protocols: Http2
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=storage_db;Username=postgres;Password=postgres123
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       ReportStorage__ApiKey: ${REPORT_STORAGE_API_KEY:-local-development-report-storage-key-change-me}
       RabbitMQ__Host: rabbitmq
@@ -506,8 +537,11 @@ services:
       - "5006:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=job_db;Username=postgres;Password=postgres123
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest
@@ -537,8 +571,11 @@ services:
       - "5012:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Kestrel__Endpoints__Http__Protocols: Http1
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=orchestration_db;Username=postgres;Password=postgres123
       Identity__Authority: http://identity-api:8080
+      Identity__IssuerUri: http://identity-api:8080
       Identity__SecretKey: ${JWT_SECRET:-local-development-jwt-secret-change-me-32}
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Username: guest

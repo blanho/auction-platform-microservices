@@ -117,8 +117,22 @@ public class UserEndpoints : ICarterModule
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 
-    private static async Task<IResult> GetUsers([AsParameters] GetUsersQuery query, ISender sender, CancellationToken cancellationToken)
+    private static async Task<IResult> GetUsers([AsParameters] GetUsersRequest request, ISender sender, CancellationToken cancellationToken)
     {
+        var query = new GetUsersQuery
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDescending = request.SortDescending,
+            Filter = new UserFilter
+            {
+                Search = request.Search,
+                Role = request.Role,
+                IsActive = request.IsActive,
+                IsSuspended = request.IsSuspended
+            }
+        };
         var result = await sender.Send(new GetUsersListQuery(query), cancellationToken);
         return Results.Ok(result.Value);
     }

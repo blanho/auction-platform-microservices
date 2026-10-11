@@ -114,6 +114,7 @@ class HttpService {
           }
 
           if (isRefreshing) {
+            originalRequest._retry = true
             return new Promise((resolve, reject) => {
               subscribeTokenRefresh((token) => {
                 if (token) {
