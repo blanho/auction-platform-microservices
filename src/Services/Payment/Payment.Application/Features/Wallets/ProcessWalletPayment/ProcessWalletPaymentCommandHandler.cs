@@ -50,7 +50,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
     {
         if (request.ReferenceId == Guid.Empty)
             return Task.FromResult(Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.InvalidReference));
-        if (request.Amount <= 0 || decimal.Round(request.Amount, 2) != request.Amount)
+        if (request.Amount <= 0 || decimal.Round(request.Amount, WalletDefaults.Persistence.MoneyScale) != request.Amount)
             return Task.FromResult(Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.InvalidAmount));
 
         return _paymentExecutor.ExecuteAsync(request.ReferenceId, ct => ProcessAsync(request, ct), cancellationToken);
@@ -58,32 +58,13 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
 
     private async Task<Result<WalletTransactionDto>> ProcessAsync(ProcessWalletPaymentCommand request, CancellationToken cancellationToken)
     {
+        var existingTransaction = await _transactionRepository.GetByReferenceIdAsync(
+            request.ReferenceId.ToString(),
+            TransactionType.Payment,
+            cancellationToken);
 
-        var referenceIdStr = request.ReferenceId != Guid.Empty ? request.ReferenceId.ToString() : null;
-        if (!string.IsNullOrEmpty(referenceIdStr))
-        {
-            var existingTransaction = await _transactionRepository.GetByReferenceIdAsync(
-                referenceIdStr,
-                TransactionType.Payment,
-                cancellationToken);
-
-            if (existingTransaction != null)
-            {
-                if (existingTransaction.Username != request.Username ||
-                    existingTransaction.Amount != request.Amount ||
-                    existingTransaction.Description != request.Description ||
-                    existingTransaction.ReferenceType != WalletReferenceTypes.Order ||
-                    existingTransaction.Status != TransactionStatus.Completed)
-                {
-                    return Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.ReferenceConflict);
-                }
-
-                _logger.LogWarning(
-                    "Duplicate payment attempt detected for ReferenceId {ReferenceId}, returning existing transaction {TransactionId}",
-                    request.ReferenceId, existingTransaction.Id);
-                return Result.Success(existingTransaction.ToDto(_mapper));
-            }
-        }
+        if (existingTransaction != null)
+            return ResolveExistingPayment(existingTransaction, request);
 
         var lockKey = WalletDefaults.Lock.GetWalletOperationKey(request.Username);
 
@@ -105,13 +86,12 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
         if (wallet.AvailableBalance < request.Amount)
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.InsufficientBalance);
 
-        var balanceAfter = wallet.Balance - request.Amount;
         var transaction = WalletTransaction.Create(
             userId: wallet.UserId,
             username: request.Username,
             type: TransactionType.Payment,
             amount: request.Amount,
-            balanceAfter: balanceAfter,
+            balanceAfter: wallet.Balance - request.Amount,
             description: request.Description,
             referenceId: request.ReferenceId,
             referenceType: WalletReferenceTypes.Order);
@@ -133,7 +113,42 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
             return Result.Failure<WalletTransactionDto>(PaymentErrors.Wallet.ConcurrencyConflict);
         }
 
-        await _auditPublisher.PublishAsync(
+        await PublishPaymentAuditAsync(transaction, wallet.Balance, request, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Payment of {Amount} processed for order {ReferenceId} for user: {Username}",
+            request.Amount, request.ReferenceId, request.Username);
+
+        return Result.Success(transaction.ToDto(_mapper));
+    }
+
+    private Result<WalletTransactionDto> ResolveExistingPayment(
+        WalletTransaction transaction,
+        ProcessWalletPaymentCommand request)
+    {
+        if (!MatchesPaymentRequest(transaction, request))
+            return Result.Failure<WalletTransactionDto>(PaymentErrors.Payment.ReferenceConflict);
+
+        _logger.LogWarning(
+            "Duplicate payment attempt detected for ReferenceId {ReferenceId}, returning existing transaction {TransactionId}",
+            request.ReferenceId, transaction.Id);
+
+        return Result.Success(transaction.ToDto(_mapper));
+    }
+
+    private static bool MatchesPaymentRequest(WalletTransaction transaction, ProcessWalletPaymentCommand request) =>
+        transaction.Username == request.Username &&
+        transaction.Amount == request.Amount &&
+        transaction.Description == request.Description &&
+        transaction.ReferenceType == WalletReferenceTypes.Order &&
+        transaction.Status == TransactionStatus.Completed;
+
+    private Task PublishPaymentAuditAsync(
+        WalletTransaction transaction,
+        decimal newBalance,
+        ProcessWalletPaymentCommand request,
+        CancellationToken cancellationToken) =>
+        _auditPublisher.PublishAsync(
             transaction.Id,
             WalletTransactionAuditData.FromTransaction(transaction),
             AuditAction.Created,
@@ -142,15 +157,7 @@ public class ProcessWalletPaymentCommandHandler : ICommandHandler<ProcessWalletP
                 [AuditMetadataKeys.Action] = WalletDefaults.Audit.ProcessWalletPayment,
                 [AuditMetadataKeys.Amount] = request.Amount,
                 [AuditMetadataKeys.ReferenceId] = request.ReferenceId,
-                [AuditMetadataKeys.NewBalance] = wallet.Balance
+                [AuditMetadataKeys.NewBalance] = newBalance
             },
             cancellationToken: cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        _logger.LogInformation("Payment of {Amount} processed for order {ReferenceId} for user: {Username}",
-            request.Amount, request.ReferenceId, request.Username);
-
-        return Result.Success(transaction.ToDto(_mapper));
-    }
 }

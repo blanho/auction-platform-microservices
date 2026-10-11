@@ -1,4 +1,3 @@
-using System.Reflection;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;
 using Auctions.Infrastructure.Messaging.Consumers;
@@ -42,38 +41,26 @@ public class BidProjectionPersistenceTests
         })
         {
             await using var db = new AuctionDbContext(options);
-            var audit = Proxy<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null);
+            var audit = TestProxy.Create<IAuditContext>((method, _) => method.Name == "get_UserId" ? Guid.Empty : null);
             var repository = new AuctionRepository(db, new DateTimeProvider(), audit);
-            var uow = Proxy<IUnitOfWork>((method, args) => method.Name == "SaveChangesAsync"
+            var unitOfWork = TestProxy.Create<IUnitOfWork>((method, args) => method.Name == "SaveChangesAsync"
                 ? db.SaveChangesAsync((CancellationToken)args![0]!) : throw new NotSupportedException(method.Name));
             var message = new HighestBidUpdatedEvent
             {
                 Id = Guid.NewGuid(), AuctionId = auction.Id, BidderId = bidder,
                 BidderUsername = "bidder", NewHighestAmount = amount, BidStatus = status
             };
-            var context = Proxy<ConsumeContext<HighestBidUpdatedEvent>>((method, _) => method.Name switch
+            var context = TestProxy.Create<ConsumeContext<HighestBidUpdatedEvent>>((method, _) => method.Name switch
             {
                 "get_Message" => message,
                 "get_CancellationToken" => CancellationToken.None,
                 _ => throw new NotSupportedException(method.Name)
             });
-            await new BidPlacedConsumer(repository, uow, NullLogger<BidPlacedConsumer>.Instance).Consume(context);
+            await new BidPlacedConsumer(repository, unitOfWork, NullLogger<BidPlacedConsumer>.Instance).Consume(context);
         }
         await using var check = new AuctionDbContext(options);
         var persisted = await check.Auctions.SingleAsync();
         Assert.Equal(140m, persisted.CurrentHighBid);
         Assert.Equal(bidder, persisted.WinnerId);
-    }
-
-    private static T Proxy<T>(Func<MethodInfo, object?[]?, object?> handler) where T : class
-    {
-        var proxy = DispatchProxy.Create<T, TestProxy>();
-        ((TestProxy)(object)proxy).Handler = handler;
-        return proxy;
-    }
-    public class TestProxy : DispatchProxy
-    {
-        public Func<MethodInfo, object?[]?, object?> Handler { get; set; } = null!;
-        protected override object? Invoke(MethodInfo? method, object?[]? args) => Handler(method!, args);
     }
 }
