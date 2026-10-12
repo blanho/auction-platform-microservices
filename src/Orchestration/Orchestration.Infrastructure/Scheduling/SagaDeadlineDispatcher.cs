@@ -6,44 +6,44 @@ using OrchestrationService.Contracts.Events;
 
 namespace Orchestration.Infrastructure.Scheduling;
 
-public class SagaDeadlineDispatcher(OrchestrationDbContext db, IPublishEndpoint publish)
+public class SagaDeadlineDispatcher(OrchestrationDbContext dbContext, IPublishEndpoint publisher)
 {
-    public async Task<int> DispatchAsync(CancellationToken ct)
+    public async Task<int> DispatchAsync(CancellationToken cancellationToken)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         var now = DateTimeOffset.UtcNow;
-        var buyNow = await db.BuyNowSagas.FromSqlInterpolated($"""
+        var buyNowSagas = await dbContext.BuyNowSagas.FromSqlInterpolated($"""
             SELECT *, xmin FROM "BuyNowSagas" WHERE "TimeoutAt" <= {now}
             ORDER BY "TimeoutAt" LIMIT 50 FOR UPDATE SKIP LOCKED
-            """).ToListAsync(ct);
-        foreach (var saga in buyNow)
+            """).ToListAsync(cancellationToken);
+        foreach (var saga in buyNowSagas)
         {
-            await publish.Publish(new BuyNowSagaTimedOut
+            await publisher.Publish(new BuyNowSagaTimedOut
             {
                 CorrelationId = saga.CorrelationId,
                 AuctionId = saga.AuctionId,
                 TimeoutTokenId = saga.TimeoutTokenId,
                 TimedOutAt = now
-            }, ct);
+            }, cancellationToken);
             saga.TimeoutAt = null; // Keep the token until the saga consumes this generation's timeout.
         }
-        var completions = await db.AuctionCompletionSagas.FromSqlInterpolated($"""
+        var auctionCompletionSagas = await dbContext.AuctionCompletionSagas.FromSqlInterpolated($"""
             SELECT *, xmin FROM "AuctionCompletionSagas" WHERE "TimeoutAt" <= {now}
             ORDER BY "TimeoutAt" LIMIT 50 FOR UPDATE SKIP LOCKED
-            """).ToListAsync(ct);
-        foreach (var saga in completions)
+            """).ToListAsync(cancellationToken);
+        foreach (var saga in auctionCompletionSagas)
         {
-            await publish.Publish(new AuctionCompletionSagaTimedOut
+            await publisher.Publish(new AuctionCompletionSagaTimedOut
             {
                 CorrelationId = saga.CorrelationId,
                 AuctionId = saga.AuctionId,
                 TimeoutTokenId = saga.TimeoutTokenId,
                 TimedOutAt = now
-            }, ct);
+            }, cancellationToken);
             saga.TimeoutAt = null;
         }
-        await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
-        return buyNow.Count + completions.Count;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return buyNowSagas.Count + auctionCompletionSagas.Count;
     }
 }

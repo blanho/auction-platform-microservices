@@ -60,7 +60,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                     context.Saga.BuyNowPrice = context.Message.BuyNowPrice;
                     context.Saga.ItemTitle = context.Message.ItemTitle;
                     context.Saga.StartedAt = context.Message.StartedAt;
-                    context.Saga.RecoveryStep = "ReleaseReservation";
+                    context.Saga.RecoveryStep = SagaConstants.RecoverySteps.ReleaseReservation;
                 })
                 .Then(context => context.Saga.SetTimeout(SagaConstants.BuyNowTimeout))
                 .Publish(context => new ReserveAuctionForBuyNow
@@ -145,7 +145,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                 .Then(context =>
                 {
                     context.Saga.OrderId = context.Message.OrderId;
-                    context.Saga.RecoveryStep = "ConfirmOrder";
+                    context.Saga.RecoveryStep = SagaConstants.RecoverySteps.ConfirmOrder;
                     context.Saga.RetryCount = 0;
                     context.Saga.SetTimeout(SagaConstants.StepTimeout);
                 })
@@ -183,8 +183,8 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                         {
                             CorrelationId = context.Saga.CorrelationId,
                             AuctionId = context.Saga.AuctionId,
-                            Workflow = "BuyNow",
-                            Step = "ConfirmOrder",
+                            Workflow = SagaConstants.Workflows.BuyNow,
+                            Step = SagaConstants.RecoverySteps.ConfirmOrder,
                             Reason = "Order activation acknowledgement is missing"
                         }).TransitionTo(ManualInterventionRequired),
                     binder => binder
@@ -222,7 +222,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                     BuyerId = context.Saga.BuyerId,
                     Reason = context.Saga.FailureReason ?? "Purchase cancelled"
                 })
-                .Then(context => { context.Saga.RetryCount = 0; context.Saga.RecoveryStep = "CancelOrder"; })
+                .Then(context => { context.Saga.RetryCount = 0; context.Saga.RecoveryStep = SagaConstants.RecoverySteps.CancelOrder; })
                 .Then(context => context.Saga.ClearTimeout())
                 .Then(context => context.Saga.SetTimeout(SagaConstants.StepTimeout))
                 .TransitionTo(CancellingOrder)
@@ -265,7 +265,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                         {
                             CorrelationId = context.Saga.CorrelationId,
                             AuctionId = context.Saga.AuctionId,
-                            Workflow = "BuyNow",
+                            Workflow = SagaConstants.Workflows.BuyNow,
                             Step = context.Saga.RecoveryStep,
                             Reason = "Compensation acknowledgements were not received"
                         })
@@ -292,7 +292,7 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    Workflow = "BuyNow",
+                    Workflow = SagaConstants.Workflows.BuyNow,
                     Step = context.Saga.RecoveryStep,
                     Reason = context.Message.Reason
                 })
@@ -314,14 +314,14 @@ public class BuyNowSagaStateMachine : MassTransitStateMachine<BuyNowSagaState>
         During(ManualInterventionRequired,
             When(RetryRequested)
                 .Then(context => { context.Saga.RetryCount = 0; context.Saga.SetTimeout(SagaConstants.StepTimeout); })
-                .IfElse(context => context.Saga.RecoveryStep == "ConfirmOrder",
+                .IfElse(context => context.Saga.RecoveryStep == SagaConstants.RecoverySteps.ConfirmOrder,
                     confirm => confirm.Publish(context => new ConfirmBuyNowOrder
                     {
                         CorrelationId = context.Saga.CorrelationId,
                         AuctionId = context.Saga.AuctionId,
                         OrderId = context.Saga.OrderId!.Value
                     }).TransitionTo(ConfirmingOrder),
-                    rollback => rollback.IfElse(context => context.Saga.RecoveryStep == "CancelOrder",
+                    rollback => rollback.IfElse(context => context.Saga.RecoveryStep == SagaConstants.RecoverySteps.CancelOrder,
                         cancel => cancel.Publish(context => new CancelBuyNowOrder
                         {
                             CorrelationId = context.Saga.CorrelationId,

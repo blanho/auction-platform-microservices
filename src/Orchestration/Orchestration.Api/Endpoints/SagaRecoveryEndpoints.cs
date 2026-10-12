@@ -1,3 +1,4 @@
+using Orchestration.Sagas;
 using System.Security.Claims;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
@@ -51,23 +52,23 @@ public static class SagaRecoveryEndpoints
         {
             return Results.Conflict();
         }
-        if (workflow == "BuyNow")
+        if (workflow == SagaConstants.Workflows.BuyNow)
         {
             var saga = await dbContext.BuyNowSagas.FindAsync([correlationId], cancellationToken);
-            if (saga?.CurrentState != "ManualInterventionRequired")
+            if (saga?.CurrentState != SagaConstants.States.ManualInterventionRequired)
             {
                 return Results.Conflict();
             }
             await publisher.Publish(new RetryBuyNowSaga { CorrelationId = correlationId, AuctionId = recoveryCase.AuctionId }, cancellationToken);
         }
-        else if (workflow == "AuctionCompletion")
+        else if (workflow == SagaConstants.Workflows.AuctionCompletion)
         {
             var saga = await dbContext.AuctionCompletionSagas.FindAsync([correlationId], cancellationToken);
             if (saga is null)
             {
                 return Results.NotFound();
             }
-            if (step == "Notifications" && saga.OrderId.HasValue)
+            if (step == SagaConstants.RecoverySteps.Notifications && saga.OrderId.HasValue)
             {
                 await publisher.Publish(new SendAuctionCompletionNotifications
                 {
@@ -82,7 +83,7 @@ public static class SagaRecoveryEndpoints
                     Amount = saga.WinningBidAmount
                 }, cancellationToken);
             }
-            else if (saga.CurrentState == "ManualInterventionRequired")
+            else if (saga.CurrentState == SagaConstants.States.ManualInterventionRequired)
             {
                 await publisher.Publish(new RetryAuctionCompletionSaga
                 {

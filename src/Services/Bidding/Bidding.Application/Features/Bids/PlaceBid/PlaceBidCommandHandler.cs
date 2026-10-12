@@ -107,21 +107,23 @@ public class PlaceBidCommandHandler : ICommandHandler<PlaceBidCommand, BidDto>
 
     private static Result<BidDto> ToPlacementResult(BidDto bid)
     {
-        if (Enum.TryParse<BidStatus>(bid.Status, ignoreCase: true, out var status))
+        if (!Enum.TryParse<BidStatus>(bid.Status, ignoreCase: true, out var status))
         {
-            return status switch
-            {
-                BidStatus.Accepted or BidStatus.AcceptedBelowReserve => Result.Success(bid),
-                BidStatus.TooLow => Result.Failure<BidDto>(
-                    BidErrors.BidTooLow(bid.ErrorMessage ?? "Bid amount is below the required minimum.")),
-                BidStatus.Rejected => Result.Failure<BidDto>(
-                    BidErrors.Rejected(bid.ErrorMessage ?? "Bid was rejected.")),
-                _ => Result.Failure<BidDto>(
-                    BidErrors.Rejected(bid.ErrorMessage ?? $"Bid finished with unsupported status '{bid.Status}'."))
-            };
+            return UnsupportedStatus(bid);
         }
 
-        return Result.Failure<BidDto>(
-            BidErrors.Rejected(bid.ErrorMessage ?? $"Bid finished with unsupported status '{bid.Status}'."));
+        return status switch
+        {
+            BidStatus.Accepted or BidStatus.AcceptedBelowReserve => Result.Success(bid),
+            BidStatus.TooLow => Result.Failure<BidDto>(
+                BidErrors.BidTooLow(bid.ErrorMessage ?? "Bid amount is below the required minimum.")),
+            BidStatus.Rejected => Result.Failure<BidDto>(
+                BidErrors.Rejected(bid.ErrorMessage ?? "Bid was rejected.")),
+            _ => UnsupportedStatus(bid)
+        };
     }
+
+    private static Result<BidDto> UnsupportedStatus(BidDto bid) =>
+        Result.Failure<BidDto>(
+            BidErrors.Rejected(bid.ErrorMessage ?? $"Bid finished with unsupported status '{bid.Status}'."));
 }
