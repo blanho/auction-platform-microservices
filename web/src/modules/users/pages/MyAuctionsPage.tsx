@@ -13,6 +13,7 @@ import {
   useMyAuctions,
 } from '@/modules/auctions/hooks'
 import type { AuctionListItem, AuctionStatus } from '@/modules/auctions/types'
+import { useSnackbar } from '@/shared/hooks/useSnackbar'
 import { palette } from '@/shared/theme/tokens'
 import { TableEmptyStateRow } from '@/shared/ui'
 import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
@@ -136,11 +137,7 @@ export function MyAuctionsPage() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false)
   const [importMenuAnchor, setImportMenuAnchor] = useState<HTMLElement | null>(null)
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({ open: false, message: '', severity: 'success' })
+  const snackbar = useSnackbar()
   const [cancelDialog, setCancelDialog] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [extendDialog, setExtendDialog] = useState<{ id: string; currentEndTime: string } | null>(
@@ -211,19 +208,11 @@ export function MyAuctionsPage() {
     if (deleteDialog) {
       deleteAuctionMutation.mutate(deleteDialog, {
         onSuccess: () => {
-          setSnackbar({
-            open: true,
-            message: t('myAuctions.messages.deleted'),
-            severity: 'success',
-          })
+          snackbar.show(t('myAuctions.messages.deleted'), 'success')
           setDeleteDialog(null)
         },
         onError: () => {
-          setSnackbar({
-            open: true,
-            message: t('myAuctions.messages.deleteError'),
-            severity: 'error',
-          })
+          snackbar.show(t('myAuctions.messages.deleteError'), 'error')
         },
       })
     }
@@ -232,19 +221,11 @@ export function MyAuctionsPage() {
   const handleActivate = (id: string) => {
     activateAuction.mutate(id, {
       onSuccess: () => {
-        setSnackbar({
-          open: true,
-          message: t('myAuctions.messages.activated'),
-          severity: 'success',
-        })
+        snackbar.show(t('myAuctions.messages.activated'), 'success')
         setMenuAnchor(null)
       },
       onError: () => {
-        setSnackbar({
-          open: true,
-          message: t('myAuctions.messages.activateError'),
-          severity: 'error',
-        })
+        snackbar.show(t('myAuctions.messages.activateError'), 'error')
       },
     })
   }
@@ -252,19 +233,11 @@ export function MyAuctionsPage() {
   const handleDeactivate = (id: string) => {
     deactivateAuction.mutate(id, {
       onSuccess: () => {
-        setSnackbar({
-          open: true,
-          message: t('myAuctions.messages.deactivated'),
-          severity: 'success',
-        })
+        snackbar.show(t('myAuctions.messages.deactivated'), 'success')
         setMenuAnchor(null)
       },
       onError: () => {
-        setSnackbar({
-          open: true,
-          message: t('myAuctions.messages.deactivateError'),
-          severity: 'error',
-        })
+        snackbar.show(t('myAuctions.messages.deactivateError'), 'error')
       },
     })
   }
@@ -275,20 +248,12 @@ export function MyAuctionsPage() {
         { id: cancelDialog, reason: cancelReason || undefined },
         {
           onSuccess: () => {
-            setSnackbar({
-              open: true,
-              message: t('myAuctions.messages.cancelled'),
-              severity: 'success',
-            })
+            snackbar.show(t('myAuctions.messages.cancelled'), 'success')
             setCancelDialog(null)
             setCancelReason('')
           },
           onError: () => {
-            setSnackbar({
-              open: true,
-              message: t('myAuctions.messages.cancelError'),
-              severity: 'error',
-            })
+            snackbar.show(t('myAuctions.messages.cancelError'), 'error')
           },
         }
       )
@@ -301,20 +266,12 @@ export function MyAuctionsPage() {
         { id: extendDialog.id, newEndTime },
         {
           onSuccess: () => {
-            setSnackbar({
-              open: true,
-              message: t('myAuctions.messages.extended'),
-              severity: 'success',
-            })
+            snackbar.show(t('myAuctions.messages.extended'), 'success')
             setExtendDialog(null)
             setNewEndTime('')
           },
           onError: () => {
-            setSnackbar({
-              open: true,
-              message: t('myAuctions.messages.extendError'),
-              severity: 'error',
-            })
+            snackbar.show(t('myAuctions.messages.extendError'), 'error')
           },
         }
       )
@@ -1003,13 +960,10 @@ export function MyAuctionsPage() {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={snackbar.close}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-        >
+        <Alert severity={snackbar.severity} onClose={snackbar.close}>
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -1020,11 +974,7 @@ export function MyAuctionsPage() {
         open={importDialogOpen}
         onClose={() => setImportDialogOpen(false)}
         onSuccess={() => {
-          setSnackbar({
-            open: true,
-            message: t('myAuctions.messages.imported'),
-            severity: 'success',
-          })
+          snackbar.show(t('myAuctions.messages.imported'), 'success')
         }}
       />
 
@@ -1032,11 +982,7 @@ export function MyAuctionsPage() {
         open={bulkImportDialogOpen}
         onClose={() => setBulkImportDialogOpen(false)}
         onComplete={() => {
-          setSnackbar({
-            open: true,
-            message: t('myAuctions.messages.bulkImportCompleted'),
-            severity: 'success',
-          })
+          snackbar.show(t('myAuctions.messages.bulkImportCompleted'), 'success')
         }}
       />
     </Container>

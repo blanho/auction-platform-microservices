@@ -40,11 +40,11 @@ import {
   Typography,
 } from '@mui/material'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { OrderProgressStepper } from '../components/OrderProgressStepper'
-import { useMarkDelivered, useOrderById, useShipOrder } from '../hooks'
+import { useOrderById } from '../hooks'
+import { useOrderDetailActions } from '../hooks/useOrderDetailActions'
 import type { ShippingAddress } from '../types'
 import { getOrderStatusConfig } from '../utils'
 
@@ -85,61 +85,21 @@ export function OrderDetailPage() {
   const { user } = useAuth()
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const [showShipDialog, setShowShipDialog] = useState(false)
-  const [trackingNumber, setTrackingNumber] = useState('')
-  const [shippingCarrier, setShippingCarrier] = useState('')
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error' | 'info'
-  }>({ open: false, message: '', severity: 'info' })
-
   const { data: order, isLoading, error } = useOrderById(orderId ?? '')
-  const shipOrder = useShipOrder()
-  const markDelivered = useMarkDelivered()
-
-  const handleCopyOrderId = async () => {
-    if (!orderId) {
-      return
-    }
-
-    try {
-      await navigator.clipboard.writeText(orderId)
-      setSnackbar({ open: true, message: t('orderDetail.copied'), severity: 'success' })
-    } catch {
-      setSnackbar({ open: true, message: t('orderDetail.copyFailed'), severity: 'error' })
-    }
-  }
-
-  const handleShipOrder = async () => {
-    if (!trackingNumber || !shippingCarrier || !orderId) {
-      return
-    }
-    try {
-      await shipOrder.mutateAsync({
-        id: orderId,
-        data: { trackingNumber, shippingCarrier },
-      })
-      setShowShipDialog(false)
-      setTrackingNumber('')
-      setShippingCarrier('')
-      setSnackbar({ open: true, message: t('orderDetail.markedShipped'), severity: 'success' })
-    } catch {
-      setSnackbar({ open: true, message: t('orderDetail.updateFailed'), severity: 'error' })
-    }
-  }
-
-  const handleMarkDelivered = async () => {
-    if (!orderId) {
-      return
-    }
-    try {
-      await markDelivered.mutateAsync(orderId)
-      setSnackbar({ open: true, message: t('orderDetail.markedDelivered'), severity: 'success' })
-    } catch {
-      setSnackbar({ open: true, message: t('orderDetail.updateFailed'), severity: 'error' })
-    }
-  }
+  const {
+    showShipDialog,
+    setShowShipDialog,
+    trackingNumber,
+    setTrackingNumber,
+    shippingCarrier,
+    setShippingCarrier,
+    isShipping,
+    isMarkingDelivered,
+    snackbar,
+    handleCopyOrderId,
+    handleShipOrder,
+    handleMarkDelivered,
+  } = useOrderDetailActions(orderId)
 
   if (isLoading) {
     return <OrderDetailPageSkeleton />
@@ -169,6 +129,7 @@ export function OrderDetailPage() {
   const canMarkDelivered = order.status === ORDER_STATUS.SHIPPED && (isBuyer || isAdmin)
 
   const shippingAddress = parseShippingAddress(order.shippingAddress)
+  const statusConfig = getOrderStatusConfig(order.status)
 
   return (
     <Box sx={{ bgcolor: palette.neutral[50], minHeight: '100vh', pb: 8 }}>
@@ -235,8 +196,8 @@ export function OrderDetailPage() {
                 </Stack>
               </Box>
               <Chip
-                label={getOrderStatusConfig(order.status).label}
-                color={getOrderStatusConfig(order.status).color}
+                label={statusConfig.label}
+                color={statusConfig.color}
                 sx={{ fontWeight: 600 }}
               />
             </Box>
@@ -631,7 +592,7 @@ export function OrderDetailPage() {
                             fullWidth
                             startIcon={<Inventory />}
                             onClick={handleMarkDelivered}
-                            disabled={markDelivered.isPending}
+                            disabled={isMarkingDelivered}
                             sx={{
                               bgcolor: palette.semantic.success,
                               textTransform: 'none',
@@ -639,7 +600,7 @@ export function OrderDetailPage() {
                               '&:hover': { bgcolor: '#16A34A' },
                             }}
                           >
-                            {markDelivered.isPending ? (
+                            {isMarkingDelivered ? (
                               <CircularProgress size={20} color="inherit" />
                             ) : (
                               t('orderDetail.markDelivered')
@@ -693,14 +654,14 @@ export function OrderDetailPage() {
           <Button
             variant="contained"
             onClick={handleShipOrder}
-            disabled={!trackingNumber || !shippingCarrier || shipOrder.isPending}
+            disabled={!trackingNumber || !shippingCarrier || isShipping}
             sx={{
               bgcolor: palette.brand.primary,
               textTransform: 'none',
               '&:hover': { bgcolor: '#A16207' },
             }}
           >
-            {shipOrder.isPending ? (
+            {isShipping ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
               t('orderDetail.confirmShipment')
@@ -712,14 +673,10 @@ export function OrderDetailPage() {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        onClose={snackbar.close}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          severity={snackbar.severity}
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-          sx={{ width: '100%' }}
-        >
+        <Alert severity={snackbar.severity} onClose={snackbar.close} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
