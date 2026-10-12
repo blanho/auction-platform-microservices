@@ -29,7 +29,10 @@ public class UploadFileCommandHandler(
         {
             var existing = await repository.GetByReportRequestIdAsync(request.OwnerId.Value,
                 request.ReportRequestId.Value, cancellationToken);
-            if (existing is not null) return Result.Success(MapToDto(existing));
+            if (existing is not null)
+            {
+                return Result.Success(MapToDto(existing));
+            }
         }
 
         var uploadRequest = new FileUploadRequest(
@@ -56,8 +59,17 @@ public class UploadFileCommandHandler(
             provider);
 
         if (request.Metadata is not null)
-            foreach (var pair in request.Metadata) storedFile.Metadata[pair.Key] = pair.Value;
-        if (request.ReportRequestId.HasValue) storedFile.SetReportRequestId(request.ReportRequestId.Value);
+        {
+            foreach (var (key, value) in request.Metadata)
+            {
+                storedFile.Metadata[key] = value;
+            }
+        }
+
+        if (request.ReportRequestId.HasValue)
+        {
+            storedFile.SetReportRequestId(request.ReportRequestId.Value);
+        }
 
         try
         {
@@ -66,32 +78,7 @@ public class UploadFileCommandHandler(
         }
         catch
         {
-            try
-            {
-                var mayHaveCommitted = false;
-                if (request.ReportRequestId.HasValue && request.OwnerId.HasValue)
-                {
-                    try
-                    {
-                        var committed = await repository.GetByReportRequestIdAsync(request.OwnerId.Value,
-                            request.ReportRequestId.Value, CancellationToken.None);
-                        mayHaveCommitted = committed?.StoredFileName == storedFile.StoredFileName;
-                    }
-                    catch { mayHaveCommitted = true; }
-                }
-                if (!mayHaveCommitted && !await fileStorageService.DeleteAsync(storedFile.StoredFileName, CancellationToken.None))
-                {
-                    logger.LogWarning("Failed to roll back blob {StoredFileName} after database failure",
-                        storedFile.StoredFileName);
-                }
-            }
-            catch (Exception rollbackError)
-            {
-                logger.LogWarning(rollbackError,
-                    "Failed to roll back blob {StoredFileName} after database failure",
-                    storedFile.StoredFileName);
-            }
-
+            await RollbackUncommittedBlobAsync(request, storedFile);
             throw;
         }
 
@@ -110,6 +97,49 @@ public class UploadFileCommandHandler(
         logger.LogInformation("File uploaded: {FileId} ({FileName})", storedFile.Id, storedFile.FileName);
 
         return Result.Success(MapToDto(storedFile));
+    }
+
+    private async Task RollbackUncommittedBlobAsync(UploadFileCommand request, StoredFile storedFile)
+    {
+        try
+        {
+            if (await MayHaveCommittedAsync(request, storedFile))
+            {
+                return;
+            }
+
+            if (!await fileStorageService.DeleteAsync(storedFile.StoredFileName, CancellationToken.None))
+            {
+                logger.LogWarning("Failed to roll back blob {StoredFileName} after database failure",
+                    storedFile.StoredFileName);
+            }
+        }
+        catch (Exception rollbackError)
+        {
+            logger.LogWarning(rollbackError,
+                "Failed to roll back blob {StoredFileName} after database failure",
+                storedFile.StoredFileName);
+        }
+    }
+
+    private async Task<bool> MayHaveCommittedAsync(UploadFileCommand request, StoredFile storedFile)
+    {
+        if (!request.ReportRequestId.HasValue || !request.OwnerId.HasValue)
+        {
+            return false;
+        }
+
+        try
+        {
+            var committedFile = await repository.GetByReportRequestIdAsync(
+                request.OwnerId.Value, request.ReportRequestId.Value, CancellationToken.None);
+            return committedFile?.StoredFileName == storedFile.StoredFileName;
+        }
+        catch
+        {
+            // A lost commit acknowledgement must not cause deletion of a possibly committed file.
+            return true;
+        }
     }
 
     private static StoredFileDto MapToDto(StoredFile file) =>
