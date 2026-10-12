@@ -59,6 +59,23 @@ public sealed class PaymentOrderConsumerTests
     }
 
     [Fact]
+    public async Task AuctionFinished_WhenSagaManagesOrderCreation_DoesNotCreateALegacyOrder()
+    {
+        var repository = new FakeOrderRepository();
+        var unitOfWork = new FakeUnitOfWork();
+        var consumer = new AuctionFinishedConsumer(
+            repository,
+            unitOfWork,
+            NullLogger<AuctionFinishedConsumer>.Instance);
+        var message = CreateAuctionFinishedEvent() with { OrderCreationManaged = true };
+
+        await consumer.Consume(ConsumeContextFactory.Create(message));
+
+        Assert.Empty(repository.AddedOrders);
+        Assert.Equal(0, unitOfWork.SaveCalls);
+    }
+
+    [Fact]
     public async Task AuctionFinished_WhenItemWasSold_CreatesOrderAndCommits()
     {
         var repository = new FakeOrderRepository();

@@ -67,19 +67,34 @@ Frontend tests exercise real hooks with controlled HTTP/SignalR boundaries: bid 
 
 The live runner derives an isolated Compose project, binds loopback ports 3000/6001 and other original ports plus 20000, builds sequentially, waits for readiness and seeds its own users. It exercises actual HTTP, WebSocket, gRPC, database, broker and saga boundaries. Authentication throttling remains enabled. It retains logs in `system-test-artifacts/`, browser traces in `web/system-test-results/` and removes only its own containers and volumes on exit. `SYSTEM_TEST_SKIP_BUILD=1` reuses already-built images. Fake Stripe credentials are supplied; buy-now stops at an unpaid order and never invokes checkout.
 
+## Architecture regression coverage
+
+The additional test pass added 30 backend cases and five frontend cases without changing service implementations:
+
+- [Service boundary guards](../src/Tests/Architecture.Tests/ServiceBoundaryTests.cs): 15 checks across all ten services and orchestration, shared building blocks, contracts and production/test dependencies. Temporarily inserting forbidden references made both the cross-service and contract guards fail; the exact project files were restored afterward.
+- [Auction completion routing](../src/Services/Auction/tests/Auction.Application.Tests/AuctionCompletionRoutingTests.cs) and [legacy payment consumer](../src/Services/Payment/tests/Payment.Infrastructure.Tests/PaymentOrderConsumerTests.cs): only an eligible winner sale starts the completion saga; managed events cannot also create a legacy order. Buy-now, unsold and missing-winner cases are covered.
+- [Wallet persistence](../src/Services/Payment/tests/Payment.Infrastructure.Tests/WalletPaymentIdempotencyTests.cs): different references cannot overdraw a wallet; failure or cancellation after the first save rolls back the debit and transaction, clears tracked mutations and allows the reference to retry. A separate connection verifies uncommitted changes stay invisible.
+- [Saga recovery](../src/Orchestration/tests/Orchestration.Sagas.Tests/SagaRecoveryTests.cs): simultaneous purchases remain isolated and operator retries resume only the pending release, cancellation or confirmation step.
+- [Recovery persistence](../src/Orchestration/tests/Orchestration.Infrastructure.Tests/SagaRecoveryPersistenceTests.cs): eight concurrent deliveries create one durable case, late messages cannot reopen a completed purchase, and acknowledgements affect only their workflow and step. Direct-consumer tests use a PostgreSQL transaction matching the production receive-outbox boundary.
+- [SignalR lifecycle](../web/src/modules/auctions/hooks/useAuctionSignalR.test.tsx): initial disconnection, enable/disable, unmount during join, recovery after a rejected join, and extension events that preserve unchanged bid history.
+
+The architecture guide was corrected to describe the existing durable orchestration host and saga-managed order creation. The commands above reproduce the complete suite.
+
 ## Local validation results (2026-10-12)
 
 | Check | Result |
 |---|---|
 | Backend Release solution build | Passed; zero warnings/errors |
-| Backend tests | 274 passed across 30 projects; zero failed/skipped |
-| Frontend behavioral tests | 16 passed across 4 files |
+| Backend tests | 304 passed across 30 projects; zero failed/skipped |
+| Frontend behavioral tests | 21 passed across 4 files |
 | Frontend formatting, ESLint, TypeScript, translations and build | Passed |
 | Chromium fixture purchase journeys | 2 passed |
 | CI result-verifier tests | 2 passed |
-| Live disposable-stack journeys | 3 passed; all 18 containers healthy |
+| Live disposable-stack journeys (earlier run) | 3 passed; all 18 containers healthy |
 
 The live tests verified public/authenticated APIs and refresh cookies; two viewers converging on bids, low-bid and duplicate-key rejection, and recovery after one viewer missed a bid during a forced WebSocket disconnect; and the real buy-now saga producing a visible unpaid order while another viewer observed auction closure. Every WebSocket frame went to/from the real server; only the transport break was controlled. The final fresh-volume run reused previously built images.
+
+Those live journeys were not rerun for this test-only expansion. Current validation executed all 30 backend projects, including real database/broker duplicate-delivery and host-restart tests, followed by both affected projects after the final routing cases were added. The result verifier checked all final reports. Frontend behavioral tests, validation, build and both fixture browser journeys ran again. Initial local test-host socket restrictions and a missing temporary Chromium installation were resolved before the final passing runs; deliberate dependency-mutation failures are separate from those results.
 
 An intermediate backend rerun failed after Docker killed its disposable dependencies for lack of memory (`OOMKilled`). The complete suite passed after restarting them. Sequential image builds reduce memory demand.
 

@@ -680,6 +680,12 @@ workflow recovery. CI starts disposable PostgreSQL and RabbitMQ and rejects
 missing, empty, failed, or skipped test runs. Each project produces distinct TRX
 and OpenCover artifacts.
 
+Architecture guards cover every service and the orchestration host: cross-service
+references must use contracts, contracts cannot depend on implementations, and
+shared building blocks cannot depend on service projects. Recovery tests cover
+operator retries, purchase correlation isolation, duplicate recovery records,
+late acknowledgements, and wallet rollback after audit failure or cancellation.
+
 ```bash
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml up -d --wait
 export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
@@ -690,8 +696,9 @@ python3 -m unittest discover -s scripts/tests -v
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
 ```
 
-Frontend behavioral tests cover live auction updates and reconnects, bid rejection,
-buy-now polling and outcomes, and authentication refresh. Chromium purchase tests
+Frontend behavioral tests cover live auction updates and reconnects, subscription
+enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
+and authentication refresh. Chromium purchase tests
 run the real app against disposable API fixtures; no payment provider is contacted.
 
 ```bash

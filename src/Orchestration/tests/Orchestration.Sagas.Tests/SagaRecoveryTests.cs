@@ -18,6 +18,115 @@ public class SagaRecoveryTests
     }).BuildServiceProvider(true);
 
     [Fact]
+    public async Task ConcurrentPurchasesKeepTheirStateAndOrdersIsolated()
+    {
+        await using var provider = Provider();
+        var harness = provider.GetRequiredService<ITestHarness>();
+        await harness.Start();
+        var saga = harness.GetSagaStateMachineHarness<BuyNowSagaStateMachine, BuyNowSagaState>();
+        var first = new BuyNowSagaStarted { CorrelationId = Guid.NewGuid(), AuctionId = Guid.NewGuid() };
+        var second = new BuyNowSagaStarted { CorrelationId = Guid.NewGuid(), AuctionId = Guid.NewGuid() };
+        var orderId = Guid.NewGuid();
+
+        await Task.WhenAll(harness.Bus.Publish(first), harness.Bus.Publish(second));
+        Assert.NotNull(await saga.Exists(first.CorrelationId, state => state.ReservingAuction));
+        Assert.NotNull(await saga.Exists(second.CorrelationId, state => state.ReservingAuction));
+
+        await harness.Bus.Publish(new AuctionReservedForBuyNow { CorrelationId = first.CorrelationId });
+        Assert.NotNull(await saga.Exists(first.CorrelationId, state => state.CreatingOrder));
+        await harness.Bus.Publish(new BuyNowOrderCreated { CorrelationId = first.CorrelationId, OrderId = orderId });
+        Assert.NotNull(await saga.Exists(first.CorrelationId, state => state.CompletingAuction));
+        await harness.Bus.Publish(new BuyNowAuctionCompleted { CorrelationId = first.CorrelationId, OrderId = orderId });
+        Assert.NotNull(await saga.Exists(first.CorrelationId, state => state.ConfirmingOrder));
+        await harness.Bus.Publish(new BuyNowOrderConfirmed { CorrelationId = first.CorrelationId, OrderId = orderId });
+
+        Assert.True(await harness.Published.Any<BuyNowSagaCompleted>(message =>
+            message.Context.Message.CorrelationId == first.CorrelationId &&
+            message.Context.Message.AuctionId == first.AuctionId &&
+            message.Context.Message.OrderId == orderId && message.Context.Message.Success));
+        Assert.NotNull(await saga.Exists(second.CorrelationId, state => state.ReservingAuction));
+        Assert.Equal(second.AuctionId, saga.Created.Contains(second.CorrelationId)!.AuctionId);
+        Assert.Null(saga.Created.Contains(second.CorrelationId)!.OrderId);
+        Assert.DoesNotContain(harness.Published.Select<BuyNowSagaCompleted>(), message =>
+            message.Context.Message.CorrelationId == second.CorrelationId);
+    }
+
+    [Theory]
+    [InlineData("ReleaseReservation", "Compensating")]
+    [InlineData("CancelOrder", "CancellingOrder")]
+    [InlineData("ConfirmOrder", "ConfirmingOrder")]
+    public async Task OperatorRetryResumesOnlyThePendingRecoveryStep(string recoveryStep, string expectedState)
+    {
+        await using var provider = Provider();
+        var harness = provider.GetRequiredService<ITestHarness>();
+        await harness.Start();
+        var saga = harness.GetSagaStateMachineHarness<BuyNowSagaStateMachine, BuyNowSagaState>();
+        var id = Guid.NewGuid();
+        var auctionId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        await harness.Bus.Publish(new BuyNowSagaStarted { CorrelationId = id, AuctionId = auctionId });
+        Assert.NotNull(await saga.Exists(id, state => state.ReservingAuction));
+
+        if (recoveryStep == "ConfirmOrder")
+        {
+            await harness.Bus.Publish(new AuctionReservedForBuyNow { CorrelationId = id });
+            Assert.NotNull(await saga.Exists(id, state => state.CreatingOrder));
+            await harness.Bus.Publish(new BuyNowOrderCreated { CorrelationId = id, OrderId = orderId });
+            Assert.NotNull(await saga.Exists(id, state => state.CompletingAuction));
+            await harness.Bus.Publish(new BuyNowAuctionCompleted { CorrelationId = id, OrderId = orderId });
+            Assert.NotNull(await saga.Exists(id, state => state.ConfirmingOrder));
+            for (var retry = 0; retry < SagaConstants.MaxStepRetries; retry++)
+            {
+                var timeout = new BuyNowSagaTimedOut
+                {
+                    CorrelationId = id,
+                    TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId
+                };
+                await harness.Bus.Publish(timeout);
+                Assert.True(await saga.Consumed.Any<BuyNowSagaTimedOut>(message =>
+                    message.Context.Message.Timestamp == timeout.Timestamp));
+            }
+        }
+        else
+        {
+            await harness.Bus.Publish(new BuyNowSagaTimedOut
+            {
+                CorrelationId = id,
+                TimeoutTokenId = saga.Created.Contains(id)!.TimeoutTokenId
+            });
+            Assert.NotNull(await saga.Exists(id, state => state.Compensating));
+            if (recoveryStep == "CancelOrder")
+            {
+                await harness.Bus.Publish(new AuctionReservationReleased { CorrelationId = id });
+                Assert.NotNull(await saga.Exists(id, state => state.CancellingOrder));
+            }
+            await harness.Bus.Publish(new BuyNowCompensationFailed { CorrelationId = id, Reason = "injected failure" });
+        }
+
+        Assert.NotNull(await saga.Exists(id, state => state.ManualInterventionRequired));
+        Assert.True(await harness.Published.Any<SagaRecoveryRequired>(message =>
+            message.Context.Message.CorrelationId == id && message.Context.Message.Step == recoveryStep));
+        var releases = harness.Published.Select<ReleaseAuctionReservation>().Count();
+        var cancellations = harness.Published.Select<CancelBuyNowOrder>().Count();
+        var confirmations = harness.Published.Select<ConfirmBuyNowOrder>().Count();
+
+        await harness.Bus.Publish(new RetryBuyNowSaga { CorrelationId = id, AuctionId = auctionId });
+        Assert.NotNull(await saga.Exists(id, state => state.GetState(expectedState)));
+
+        Assert.Equal(releases + (recoveryStep == "ReleaseReservation" ? 1 : 0),
+            harness.Published.Select<ReleaseAuctionReservation>().Count());
+        Assert.Equal(cancellations + (recoveryStep == "CancelOrder" ? 1 : 0),
+            harness.Published.Select<CancelBuyNowOrder>().Count());
+        Assert.Equal(confirmations + (recoveryStep == "ConfirmOrder" ? 1 : 0),
+            harness.Published.Select<ConfirmBuyNowOrder>().Count());
+        var recovered = saga.Created.Contains(id)!;
+        Assert.Equal(0, recovered.RetryCount);
+        Assert.NotNull(recovered.TimeoutTokenId);
+        Assert.Equal(auctionId, recovered.AuctionId);
+        Assert.Empty(harness.Published.Select<BuyNowSagaCompleted>());
+    }
+
+    [Fact]
     public async Task StaleTimeoutCannotCancelAProgressedPurchase()
     {
         await using var provider = Provider();

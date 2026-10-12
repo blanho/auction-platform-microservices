@@ -40,6 +40,83 @@ public class WalletPaymentIdempotencyTests
     }
 
     [PostgresFact]
+    public async Task DifferentPaymentReferencesCannotOverdrawTheSameWallet()
+    {
+        await using var database = await CreateDatabase();
+        using var gate = new SemaphoreSlim(1);
+        var requests = new[] { Request() with { Amount = 75 }, Request() with { Amount = 75 } };
+
+        var results = await Task.WhenAll(requests.Select(async request =>
+        {
+            await using var db = Context(database);
+            return await Handler(db, gate).Handle(request, default);
+        }));
+
+        Assert.Single(results, result => result.IsSuccess);
+        var rejected = Assert.Single(results, result => result.IsFailure);
+        Assert.Equal("Wallet.InsufficientBalance", rejected.Error?.Code);
+        await using var check = Context(database);
+        Assert.Equal(25m, (await check.Wallets.SingleAsync()).Balance);
+        Assert.Equal(75m, (await check.WalletTransactions.SingleAsync()).Amount);
+    }
+
+    [PostgresFact]
+    public async Task AuditFailureAfterPersistenceRollsBackPaymentAndAllowsSameReferenceToRetry()
+    {
+        await using var database = await CreateDatabase();
+        await using var db = Context(database);
+        var request = Request();
+        var failure = new InvalidOperationException("injected audit failure");
+        var audit = TestProxy.Create<IAuditPublisher>((_, _) => FailAfterFirstSave());
+
+        async Task FailAfterFirstSave()
+        {
+            Assert.Single(await db.WalletTransactions.AsNoTracking().ToListAsync());
+            Assert.Equal(75m, (await db.Wallets.AsNoTracking().SingleAsync()).Balance);
+            await AssertWalletUnchanged(database);
+            throw failure;
+        }
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Handler(db, auditPublisher: audit).Handle(request, default));
+
+        Assert.Same(failure, thrown);
+        Assert.Empty(db.ChangeTracker.Entries());
+        await AssertWalletUnchanged(database);
+        Assert.True((await Handler(db).Handle(request, default)).IsSuccess);
+        Assert.Equal(75m, (await db.Wallets.AsNoTracking().SingleAsync()).Balance);
+        Assert.Single(await db.WalletTransactions.ToListAsync());
+    }
+
+    [PostgresFact]
+    public async Task CancellationAfterPersistenceRollsBackAndReleasesTheReferenceLock()
+    {
+        await using var database = await CreateDatabase();
+        await using var db = Context(database);
+        using var cancellation = new CancellationTokenSource();
+        var request = Request();
+        var audit = TestProxy.Create<IAuditPublisher>((_, _) => CancelAfterFirstSave());
+
+        async Task CancelAfterFirstSave()
+        {
+            Assert.Single(await db.WalletTransactions.AsNoTracking().ToListAsync());
+            cancellation.Cancel();
+            await Task.FromCanceled(cancellation.Token);
+        }
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            Handler(db, auditPublisher: audit).Handle(request, cancellation.Token));
+
+        Assert.Empty(db.ChangeTracker.Entries());
+        await AssertWalletUnchanged(database);
+        await using var retry = Context(database);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        Assert.True((await Handler(retry).Handle(request, timeout.Token)).IsSuccess);
+        Assert.Equal(75m, (await retry.Wallets.AsNoTracking().SingleAsync()).Balance);
+        Assert.Single(await retry.WalletTransactions.ToListAsync());
+    }
+
+    [PostgresFact]
     public async Task ChangedOwnerAmountOrDescriptionCannotReuseAReference()
     {
         await using var database = await CreateDatabase();
@@ -150,7 +227,17 @@ public class WalletPaymentIdempotencyTests
         return database;
     }
 
-    private static ProcessWalletPaymentCommandHandler Handler(PaymentDbContext db, SemaphoreSlim? gate = null)
+    private static async Task AssertWalletUnchanged(PostgresTestDatabase database)
+    {
+        await using var check = Context(database);
+        Assert.Equal(100m, (await check.Wallets.AsNoTracking().SingleAsync()).Balance);
+        Assert.Empty(await check.WalletTransactions.ToListAsync());
+    }
+
+    private static ProcessWalletPaymentCommandHandler Handler(
+        PaymentDbContext db,
+        SemaphoreSlim? gate = null,
+        IAuditPublisher? auditPublisher = null)
     {
         var mediator = TestProxy.Create<IMediator>((_, _) => Task.CompletedTask);
         var mapper = TestProxy.Create<IMapper>((_, args) =>
@@ -158,7 +245,7 @@ public class WalletPaymentIdempotencyTests
             var transaction = (WalletTransaction)args![0]!;
             return new WalletTransactionDto { Id = transaction.Id, Amount = transaction.Amount };
         });
-        var audit = TestProxy.Create<IAuditPublisher>((_, _) => Task.CompletedTask);
+        var audit = auditPublisher ?? TestProxy.Create<IAuditPublisher>((_, _) => Task.CompletedTask);
         gate ??= new SemaphoreSlim(1);
         var distributedLock = TestProxy.Create<IDistributedLock>((_, _) => Acquire(gate));
         return new ProcessWalletPaymentCommandHandler(new WalletRepository(db), new WalletTransactionRepository(db),

@@ -33,7 +33,7 @@ function emit(event: string, auctionId: string) {
   act(() => hub.handlers.get(event)?.forEach((callback) => callback({ auctionId, bidId: 'bid' })))
 }
 
-function setup(id = 'a') {
+function setup(id = 'a', enabled = true) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   })
@@ -42,15 +42,16 @@ function setup(id = 'a') {
   const wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   )
+  const initialProps: { auctionId: string; enabled?: boolean } = { auctionId: id, enabled }
   const hook = renderHook(
-    ({ auctionId }) => {
-      useAuctionSignalR({ auctionId })
+    ({ auctionId, enabled }) => {
+      useAuctionSignalR({ auctionId, enabled })
       return {
         auction: useQuery({ queryKey: auctionKeys.detail(auctionId), queryFn: auction }).data,
         bids: useQuery({ queryKey: bidKeys.forAuction(auctionId), queryFn: bids }).data,
       }
     },
-    { initialProps: { auctionId: id }, wrapper }
+    { initialProps, wrapper }
   )
   return { ...hook, client, auction, bids }
 }
@@ -63,6 +64,98 @@ beforeEach(() => {
 })
 
 describe('auction live updates', () => {
+  it('waits for an initial connection before joining and fetches the current state', async () => {
+    hub.state = HubConnectionState.Disconnected
+    const view = setup()
+    await waitFor(() => expect(view.result.current.auction?.price).toBe(10))
+    expect(hub.joinAuctionRoom).not.toHaveBeenCalled()
+    expect(hub.handlers.size).toBe(0)
+
+    view.auction.mockResolvedValue({ price: 60, status: 'Ended' })
+    view.bids.mockResolvedValue(['missed bid'])
+    hub.state = HubConnectionState.Connected
+    view.rerender({ auctionId: 'a' })
+
+    await waitFor(() => expect(view.result.current.auction?.price).toBe(60))
+    await waitFor(() => expect(view.result.current.bids).toEqual(['missed bid']))
+    expect(hub.joinAuctionRoom).toHaveBeenCalledExactlyOnceWith('a')
+  })
+
+  it('subscribes only while enabled and removes every listener when disabled', async () => {
+    const view = setup('a', false)
+    await waitFor(() => expect(view.result.current.auction).toBeDefined())
+    expect(hub.joinAuctionRoom).not.toHaveBeenCalled()
+    expect(hub.handlers.size).toBe(0)
+
+    view.rerender({ auctionId: 'a', enabled: true })
+    await waitFor(() => expect(hub.joinAuctionRoom).toHaveBeenCalledExactlyOnceWith('a'))
+    await act(async () => {
+      await hub.joinAuctionRoom.mock.results[0].value
+    })
+    view.rerender({ auctionId: 'a', enabled: false })
+
+    expect(hub.leaveAuctionRoom).toHaveBeenCalledExactlyOnceWith('a')
+    for (const event of ['BidPlaced', 'AuctionEnded', 'AuctionExtended']) {
+      expect(hub.handlers.get(event)?.size).toBe(0)
+    }
+    const requests = view.auction.mock.calls.length
+    emit('BidPlaced', 'a')
+    expect(view.auction).toHaveBeenCalledTimes(requests)
+  })
+
+  it('leaves an in-flight room join that completes after unmount', async () => {
+    let complete!: () => void
+    hub.joinAuctionRoom.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          complete = resolve
+        })
+    )
+    const view = setup()
+    view.unmount()
+    await act(async () => complete())
+
+    expect(hub.leaveAuctionRoom).toHaveBeenCalledExactlyOnceWith('a')
+    for (const event of ['BidPlaced', 'AuctionEnded', 'AuctionExtended']) {
+      expect(hub.handlers.get(event)?.size).toBe(0)
+    }
+  })
+
+  it('recovers from a rejected room join when the connection is restored', async () => {
+    hub.joinAuctionRoom.mockRejectedValueOnce(new Error('transport closed during join'))
+    const view = setup()
+    await waitFor(() => expect(view.result.current.auction).toBeDefined())
+    expect(hub.leaveAuctionRoom).not.toHaveBeenCalled()
+
+    hub.state = HubConnectionState.Reconnecting
+    view.rerender({ auctionId: 'a' })
+    view.auction.mockResolvedValue({ price: 70, status: 'Active' })
+    view.bids.mockResolvedValue(['recovered bid'])
+    hub.state = HubConnectionState.Connected
+    view.rerender({ auctionId: 'a' })
+
+    await waitFor(() => expect(view.result.current.auction?.price).toBe(70))
+    await waitFor(() => expect(view.result.current.bids).toEqual(['recovered bid']))
+    expect(hub.joinAuctionRoom).toHaveBeenCalledTimes(2)
+    for (const event of ['BidPlaced', 'AuctionEnded', 'AuctionExtended']) {
+      expect(hub.handlers.get(event)?.size).toBe(1)
+    }
+  })
+
+  it('refreshes auction timing without refetching unchanged bid history on extension', async () => {
+    const view = setup()
+    await waitFor(() => expect(view.result.current.bids).toEqual(['first']))
+    const previousBids = view.bids.mock.calls.length
+    view.auction.mockResolvedValue({ price: 10, status: 'Extended' })
+    view.bids.mockResolvedValue(['should not be fetched'])
+
+    emit('AuctionExtended', 'a')
+
+    await waitFor(() => expect(view.result.current.auction?.status).toBe('Extended'))
+    expect(view.bids).toHaveBeenCalledTimes(previousBids)
+    expect(view.result.current.bids).toEqual(['first'])
+  })
+
   it.each(['BidPlaced', 'AuctionEnded', 'AuctionExtended'])(
     'refreshes active queries on %s',
     async (event) => {
