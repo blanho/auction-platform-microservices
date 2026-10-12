@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import type * as ReactI18next from 'react-i18next'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ordersApi } from '../api'
@@ -45,6 +45,7 @@ function renderOrder() {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={['/orders/order-123']}>
+        <Link to="/orders/order-456">Open next order</Link>
         <Routes>
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
         </Routes>
@@ -191,6 +192,69 @@ describe('order fulfillment through the detail page', () => {
     await waitFor(() =>
       expect(!!screen.queryByRole('button', { name: 'orderDetail.markDelivered' })).toBe(!succeeds)
     )
+  })
+
+  it('starts with an empty shipment form when navigating to another order', async () => {
+    vi.mocked(ordersApi.getOrderById).mockImplementation(async (id) => ({
+      ...order(),
+      id,
+      itemTitle: id === 'order-123' ? 'Vintage watch' : 'Second watch',
+    }))
+    renderOrder()
+    const dialog = await openShipment()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'common:cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    fireEvent.click(screen.getByRole('link', { name: 'Open next order' }))
+    await screen.findByText('Second watch')
+    fireEvent.click(screen.getByRole('button', { name: 'orderDetail.markShipped' }))
+    const nextDialog = await screen.findByRole('dialog')
+    expect(
+      (within(nextDialog).getByLabelText('orderDetail.shippingCarrier') as HTMLInputElement).value
+    ).toBe('')
+    expect(
+      (within(nextDialog).getByLabelText('orderDetail.trackingNumber') as HTMLInputElement).value
+    ).toBe('')
+    expect(ordersApi.shipOrder).not.toHaveBeenCalled()
+  })
+
+  it('does not let a previous order shipment close the current order form', async () => {
+    vi.mocked(ordersApi.getOrderById).mockImplementation(async (id) => ({
+      ...order(),
+      id,
+      itemTitle: id === 'order-123' ? 'Vintage watch' : 'Second watch',
+    }))
+    let finish!: (value: Order) => void
+    vi.mocked(ordersApi.shipOrder).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        })
+    )
+    renderOrder()
+    const dialog = await openShipment()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'orderDetail.confirmShipment' }))
+    await waitFor(() => expect(ordersApi.shipOrder).toHaveBeenCalledTimes(1))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'common:cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    fireEvent.click(screen.getByRole('link', { name: 'Open next order' }))
+    await screen.findByText('Second watch')
+    const nextDialog = await openShipment()
+    fireEvent.change(within(nextDialog).getByLabelText('orderDetail.trackingNumber'), {
+      target: { value: 'SECOND-ORDER' },
+    })
+    await act(async () => finish(order('shipped')))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'orderDetail.confirmShipment' })).not.toBeNull()
+    )
+    expect(screen.getByRole('dialog')).toBe(nextDialog)
+    expect(
+      (within(nextDialog).getByLabelText('orderDetail.trackingNumber') as HTMLInputElement).value
+    ).toBe('SECOND-ORDER')
+    expect(screen.queryByText('orderDetail.markedShipped')).toBeNull()
+    expect(ordersApi.shipOrder).toHaveBeenCalledExactlyOnceWith('order-123', {
+      trackingNumber: 'TRACK-123',
+      shippingCarrier: 'Test carrier',
+    })
   })
 
   it.each([true, false])('reports clipboard success=%s accurately', async (succeeds) => {

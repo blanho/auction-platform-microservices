@@ -81,9 +81,13 @@ function parseShippingAddress(value: string | ShippingAddress | undefined): Ship
 }
 
 export function OrderDetailPage() {
+  const { orderId } = useParams<{ orderId: string }>()
+  return <OrderDetailContent key={orderId} orderId={orderId} />
+}
+
+function OrderDetailContent({ orderId }: Readonly<{ orderId: string | undefined }>) {
   const { t } = useTranslation('payments')
   const { user } = useAuth()
-  const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
   const { data: order, isLoading, error } = useOrderById(orderId ?? '')
   const {

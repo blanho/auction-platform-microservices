@@ -140,3 +140,86 @@ phase does not force arbitrary file-size limits or add generic action wrappers.
 Browser fixtures do not prove cross-service behavior, real shipping integrations,
 Stripe behavior, or production readiness. Existing dependency audit findings and
 bundle-size warnings were not addressed by this refactor.
+
+## Research-guided continuation
+
+The next pass consulted published Clean Code previews and official React guidance.
+The full book was not available in the workspace or through the public previews;
+this review does not claim to have read it in full. The relevant sources and their
+application are:
+
+| Source | Applied principle and concrete change |
+|---|---|
+| [Clean Code: Meaningful Names](https://www.oreilly.com/library/view/clean-code-a/9780136083238/chapter02.xhtml) | Seller selection variables now name the auction ID or auction being acted on, rather than calling IDs dialogs. |
+| [Clean Code: Functions](https://www.oreilly.com/library/view/clean-code-a/9780136083238/chapter03.xhtml) | Seller confirmation rendering, form state, and request handling form one cohesive component. Guards reduce nesting; repeated dismissal/reset logic has named handlers. |
+| [React: Choosing the State Structure](https://react.dev/learn/choosing-the-state-structure) | Cancellation reason and extension input belong to the confirmation workflow, while the seller page retains selection and list state. |
+| [React: You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) | Order identity is expressed with a React key to reset the content subtree, avoiding a synchronization effect that first renders with the previous order's state. |
+
+### Behavior-preserving seller refactor
+
+`web/src/modules/users/components/dialogs/AuctionManagementDialogs.tsx` now owns
+the delete, cancel, and extend confirmation forms and their existing mutation
+hooks. `MyAuctionsPage.tsx` retains list queries, filters, selection, activation,
+deactivation, and page feedback. Its size decreased from 992 to 776 lines because
+an existing responsibility moved, rather than through layout compression.
+
+The dialog component remains mounted after dismissal. This preserves feedback
+from pending requests that finish after the user closes a dialog. It also retains
+the existing independent close callbacks, labels, styling, request payloads,
+failure behavior, and dismissal rules. No generic confirmation framework or new
+dependency was introduced.
+
+Nine tests in `MyAuctionsPage.test.tsx` passed before and after extraction. They
+cover all three actions succeeding/failing, input retention on failure, reset on
+dismissal, and a pending cancellation completing after dismissal. They render
+the real seller page and mutation/query hooks; unrelated import/export dialogs
+are stubbed.
+
+### Reproduced order navigation bugs
+
+Two new tests in `OrderDetailPage.test.tsx` failed before the fix:
+
+1. Dismissing an unfinished shipment for order A and navigating within the SPA to
+   order B retained A's carrier/tracking fields in B's shipment form.
+2. A pending shipment for A that completed after navigating to B cleared B's
+   current form and could close it or display feedback for A on B's page.
+
+`OrderDetailPage.tsx` now resolves the route ID and renders `OrderDetailContent`
+with that ID as its key. The order-specific actions, dialog, and feedback state
+therefore have the same lifetime as the viewed order. Both regression tests and
+the sixteen existing order tests pass. The late-completion test also verifies
+that the original request still targets A exactly once with its original payload.
+Navigation does not cancel a request or undo server work.
+
+The reproduction result is retained locally at
+`/private/tmp/auction-frontend-order-navigation-reproduction.log`.
+
+### Updated validation
+
+- Baseline: 62 frontend tests passed.
+- Final: 73 frontend tests across 8 files and all 3 Chromium fixture journeys
+  passed, with zero failures or skips.
+- Formatting, ESLint, TypeScript, and production build passed. Existing bundle
+  size and SignalR annotation warnings remain.
+- `npm run validate` still stops at the already deleted i18n checker. The
+  unmodified committed checker passed for all 11 namespaces from a temporary
+  directory against the current source, using the command documented above.
+- The seven pre-existing script deletions remain outside this work. Backend and
+  isolated full-system suites were not rerun for these frontend changes.
+
+Run the same validation commands in the Reproduce section above. For focused
+checks, run from `web/`:
+
+```bash
+npx vitest run src/modules/users/pages/MyAuctionsPage.test.tsx src/modules/payments/pages/OrderDetailPage.test.tsx
+```
+
+Logs for this continuation use the prefix `/private/tmp/auction-frontend-react-`
+and suffixes `baseline.log`, `focused.log`, `tests.log`, `validate.log`,
+`build.log`, and `browser.log`. Seller pre-extraction evidence is in
+`/private/tmp/auction-frontend-seller-characterization.log`.
+
+Additional inspection covered auth callback/registration effects, import/export
+dialogs, two-factor setup, file-upload cleanup, and search filter/debounce logic.
+Those areas were left unchanged. Search URL/state synchronization and overlapping
+auth callback effects merit their own regression coverage before refactoring.

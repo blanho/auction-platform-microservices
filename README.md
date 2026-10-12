@@ -699,8 +699,9 @@ docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.test
 Frontend behavioral tests cover live auction updates and reconnects, subscription
 enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
 auto-bid and seller-list mutation refreshes, transient HTTP retry limits, authentication
-refresh, and order fulfillment permissions, validation, pending requests, and failure
-recovery. Chromium journeys run the real app against disposable API fixtures; no
+refresh, seller confirmations, and order fulfillment permissions, validation, pending
+requests, failure recovery, and state isolation when navigating between orders.
+Chromium journeys run the real app against disposable API fixtures; no
 payment provider is contacted. They cover buy-now completion/failure, order progress,
 seller shipment, and buyer delivery confirmation. Python tests verify result-report enforcement and isolated
 system-test resource names, ports, and health checks.
