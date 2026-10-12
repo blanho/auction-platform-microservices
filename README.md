@@ -536,7 +536,7 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 
 `deploy/docker/docker-compose.yml` defines the complete local stack:
 - **5 infrastructure services** — PostgreSQL, Redis, RabbitMQ, Elasticsearch, Seq
-- **11 backend containers** — 10 microservices plus the gateway
+- **12 backend containers** — 10 microservices, the orchestration host, and the gateway
 - **1 frontend container** — Nginx-served React SPA
 - Health checks on every container, named volumes, shared bridge network
 - Frontend available at **http://localhost:3000** when running the full Compose stack
@@ -698,8 +698,11 @@ docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.test
 
 Frontend behavioral tests cover live auction updates and reconnects, subscription
 enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
-and authentication refresh. Chromium purchase tests
+auto-bid mutation refreshes, transient HTTP retry limits, and authentication refresh. Chromium purchase tests
 run the real app against disposable API fixtures; no payment provider is contacted.
+The successful purchase journey also opens the resulting order and checks its
+progress display. Python tests verify result-report enforcement and isolated
+system-test resource names, ports, and health checks.
 
 ```bash
 cd web
@@ -735,11 +738,21 @@ boundaries, including local validation results and reproduction commands.
 
 ## Code Quality
 
-- **SonarCloud** — automated quality gate on every push
+- **SonarCloud** — analysis and quality gate on `main`/`develop` pushes and pull requests targeting those branches
 - **ESLint 9** + **Prettier 3** — frontend style enforcement
 - **Husky + lint-staged** — pre-commit hooks
-- **FluentValidation** — request validation on all command handlers
+- **FluentValidation** — request validation
 - **Directory.Packages.props** — centralized NuGet version pinning
+
+Use meaningful names, cohesive responsibilities, and explicit side effects when
+refactoring. Preserve useful comments about business rules and failure handling.
+Keep database transactions, outbox ordering, and public contracts intact; validate
+behavior before and after changes. Avoid introducing abstractions only to reduce
+method or file length.
+
+See the [Clean Code review inventory](docs/clean-code-review.md) for the areas
+reviewed, implemented changes, regression evidence, remaining risks, and exact
+validation commands.
 
 ---
 
