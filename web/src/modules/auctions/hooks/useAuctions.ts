@@ -12,7 +12,8 @@ export const auctionKeys = {
   details: () => [...auctionKeys.all, 'detail'] as const,
   detail: (id: string) => [...auctionKeys.details(), id] as const,
   batch: (ids: string[]) => [...auctionKeys.all, 'batch', ids] as const,
-  my: (filters: AuctionFilters) => [...auctionKeys.all, 'my', filters] as const,
+  myLists: () => [...auctionKeys.all, 'my'] as const,
+  my: (filters: AuctionFilters) => [...auctionKeys.myLists(), filters] as const,
 }
 
 export const useAuctions = (filters: AuctionFilters) => {
@@ -51,6 +52,7 @@ export const useCreateAuction = () => {
     mutationFn: (data: CreateAuctionRequest) => auctionsApi.createAuction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -64,6 +66,7 @@ export const useUpdateAuction = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -75,6 +78,7 @@ export const useDeleteAuction = () => {
     mutationFn: (id: string) => auctionsApi.deleteAuction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -87,7 +91,7 @@ export const useActivateAuction = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: auctionKeys.my({}) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -100,7 +104,7 @@ export const useDeactivateAuction = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: auctionKeys.my({}) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -141,7 +145,7 @@ export const useCancelAuction = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: auctionKeys.my({}) })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }
@@ -155,6 +159,7 @@ export const useExtendAuction = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: auctionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: auctionKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: auctionKeys.myLists() })
     },
   })
 }

@@ -698,10 +698,11 @@ docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.test
 
 Frontend behavioral tests cover live auction updates and reconnects, subscription
 enable/disable and pending-join cleanup, bid rejection, buy-now polling and outcomes,
-auto-bid mutation refreshes, transient HTTP retry limits, and authentication refresh. Chromium purchase tests
-run the real app against disposable API fixtures; no payment provider is contacted.
-The successful purchase journey also opens the resulting order and checks its
-progress display. Python tests verify result-report enforcement and isolated
+auto-bid and seller-list mutation refreshes, transient HTTP retry limits, authentication
+refresh, and order fulfillment permissions, validation, pending requests, and failure
+recovery. Chromium journeys run the real app against disposable API fixtures; no
+payment provider is contacted. They cover buy-now completion/failure, order progress,
+seller shipment, and buyer delivery confirmation. Python tests verify result-report enforcement and isolated
 system-test resource names, ports, and health checks.
 
 ```bash
@@ -753,6 +754,10 @@ method or file length.
 See the [Clean Code review inventory](docs/clean-code-review.md) for the areas
 reviewed, implemented changes, regression evidence, remaining risks, and exact
 validation commands.
+
+The [frontend Clean Code follow-up](docs/frontend-clean-code.md) records the order
+action refactor, seller cache regression tests, browser fulfillment journey, and
+current validation limitations.
 
 ---
 
