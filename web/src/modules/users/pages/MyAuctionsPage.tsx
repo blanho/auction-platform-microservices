@@ -4,19 +4,12 @@ import {
   ExportAuctionsDialog,
   ImportAuctionsDialog,
 } from '@/modules/auctions/components'
-import {
-  useActivateAuction,
-  useCancelAuction,
-  useDeactivateAuction,
-  useDeleteAuction,
-  useExtendAuction,
-  useMyAuctions,
-} from '@/modules/auctions/hooks'
+import { useActivateAuction, useDeactivateAuction, useMyAuctions } from '@/modules/auctions/hooks'
 import type { AuctionListItem, AuctionStatus } from '@/modules/auctions/types'
 import { useSnackbar } from '@/shared/hooks/useSnackbar'
 import { palette } from '@/shared/theme/tokens'
 import { TableEmptyStateRow } from '@/shared/ui'
-import { formatCurrency, formatDateTime } from '@/shared/utils/formatters'
+import { formatCurrency } from '@/shared/utils/formatters'
 import {
   Add,
   Cancel,
@@ -45,10 +38,6 @@ import {
   Chip,
   CircularProgress,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Grid,
   IconButton,
   InputAdornment,
@@ -71,6 +60,7 @@ import {
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { AuctionManagementDialogs } from '../components/dialogs/AuctionManagementDialogs'
 import { formatTimeLeft } from '../utils'
 
 const statusConfig: Record<
@@ -132,18 +122,17 @@ export function MyAuctionsPage() {
     el: HTMLElement
     auction: AuctionListItem
   } | null>(null)
-  const [deleteDialog, setDeleteDialog] = useState<string | null>(null)
+  const [auctionToDeleteId, setAuctionToDeleteId] = useState<string | null>(null)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false)
   const [importMenuAnchor, setImportMenuAnchor] = useState<HTMLElement | null>(null)
   const snackbar = useSnackbar()
-  const [cancelDialog, setCancelDialog] = useState<string | null>(null)
-  const [cancelReason, setCancelReason] = useState('')
-  const [extendDialog, setExtendDialog] = useState<{ id: string; currentEndTime: string } | null>(
-    null
-  )
-  const [newEndTime, setNewEndTime] = useState('')
+  const [auctionToCancelId, setAuctionToCancelId] = useState<string | null>(null)
+  const [auctionToExtend, setAuctionToExtend] = useState<{
+    id: string
+    currentEndTime: string
+  } | null>(null)
 
   const statusFilter = STATUS_TAB_MAP[tabValue]
 
@@ -158,9 +147,6 @@ export function MyAuctionsPage() {
 
   const activateAuction = useActivateAuction()
   const deactivateAuction = useDeactivateAuction()
-  const deleteAuctionMutation = useDeleteAuction()
-  const cancelAuctionMutation = useCancelAuction()
-  const extendAuctionMutation = useExtendAuction()
 
   const auctions = auctionsData?.items ?? []
   const totalCount = auctionsData?.totalCount ?? 0
@@ -204,20 +190,6 @@ export function MyAuctionsPage() {
     [allAuctions, allAuctionsTotalCount, t]
   )
 
-  const handleDeleteAuction = () => {
-    if (deleteDialog) {
-      deleteAuctionMutation.mutate(deleteDialog, {
-        onSuccess: () => {
-          snackbar.show(t('myAuctions.messages.deleted'), 'success')
-          setDeleteDialog(null)
-        },
-        onError: () => {
-          snackbar.show(t('myAuctions.messages.deleteError'), 'error')
-        },
-      })
-    }
-  }
-
   const handleActivate = (id: string) => {
     activateAuction.mutate(id, {
       onSuccess: () => {
@@ -240,42 +212,6 @@ export function MyAuctionsPage() {
         snackbar.show(t('myAuctions.messages.deactivateError'), 'error')
       },
     })
-  }
-
-  const handleCancelAuction = () => {
-    if (cancelDialog) {
-      cancelAuctionMutation.mutate(
-        { id: cancelDialog, reason: cancelReason || undefined },
-        {
-          onSuccess: () => {
-            snackbar.show(t('myAuctions.messages.cancelled'), 'success')
-            setCancelDialog(null)
-            setCancelReason('')
-          },
-          onError: () => {
-            snackbar.show(t('myAuctions.messages.cancelError'), 'error')
-          },
-        }
-      )
-    }
-  }
-
-  const handleExtendAuction = () => {
-    if (extendDialog && newEndTime) {
-      extendAuctionMutation.mutate(
-        { id: extendDialog.id, newEndTime },
-        {
-          onSuccess: () => {
-            snackbar.show(t('myAuctions.messages.extended'), 'success')
-            setExtendDialog(null)
-            setNewEndTime('')
-          },
-          onError: () => {
-            snackbar.show(t('myAuctions.messages.extendError'), 'error')
-          },
-        }
-      )
-    }
   }
 
   if (isLoading) {
@@ -746,7 +682,7 @@ export function MyAuctionsPage() {
         {menuAnchor?.auction.status === AUCTION_STATUS.ACTIVE && (
           <MenuItem
             onClick={() => {
-              setExtendDialog({
+              setAuctionToExtend({
                 id: menuAnchor.auction.id,
                 currentEndTime: menuAnchor.auction.endTime,
               })
@@ -760,7 +696,7 @@ export function MyAuctionsPage() {
         {menuAnchor?.auction.status === AUCTION_STATUS.ACTIVE && (
           <MenuItem
             onClick={() => {
-              setCancelDialog(menuAnchor.auction.id)
+              setAuctionToCancelId(menuAnchor.auction.id)
               setMenuAnchor(null)
             }}
             sx={{ color: palette.semantic.warning }}
@@ -786,7 +722,7 @@ export function MyAuctionsPage() {
         )}
         <MenuItem
           onClick={() => {
-            setDeleteDialog(menuAnchor?.auction.id || null)
+            setAuctionToDeleteId(menuAnchor?.auction.id || null)
             setMenuAnchor(null)
           }}
           sx={{ color: palette.semantic.error }}
@@ -795,167 +731,15 @@ export function MyAuctionsPage() {
         </MenuItem>
       </Menu>
 
-      <Dialog
-        open={Boolean(deleteDialog)}
-        onClose={() => setDeleteDialog(null)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.deleteTitle')}</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: palette.neutral[500] }}>
-            {t('myAuctions.deleteDescription')}
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => setDeleteDialog(null)}
-            sx={{ color: palette.neutral[500], textTransform: 'none' }}
-          >
-            {t('profile.cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleDeleteAuction}
-            disabled={deleteAuctionMutation.isPending}
-            sx={{
-              bgcolor: palette.semantic.error,
-              textTransform: 'none',
-              '&:hover': { bgcolor: palette.semantic.errorHover },
-            }}
-          >
-            {deleteAuctionMutation.isPending ? (
-              <CircularProgress size={20} sx={{ color: 'white' }} />
-            ) : (
-              t('myAuctions.delete')
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(cancelDialog)}
-        onClose={() => {
-          setCancelDialog(null)
-          setCancelReason('')
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.cancelAuction')}</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-            {t('myAuctions.cancelDescription')}
-          </Typography>
-          <TextField
-            fullWidth
-            label={t('myAuctions.cancelReason')}
-            multiline
-            rows={3}
-            value={cancelReason}
-            onChange={(e) => setCancelReason(e.target.value)}
-            placeholder={t('myAuctions.cancelReasonPlaceholder')}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => {
-              setCancelDialog(null)
-              setCancelReason('')
-            }}
-            sx={{ color: palette.neutral[500], textTransform: 'none' }}
-          >
-            {t('myAuctions.keepAuction')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleCancelAuction}
-            disabled={cancelAuctionMutation.isPending}
-            sx={{
-              bgcolor: palette.semantic.warning,
-              color: palette.neutral[900],
-              textTransform: 'none',
-              fontWeight: 600,
-              '&:hover': { bgcolor: '#D97706' },
-            }}
-          >
-            {cancelAuctionMutation.isPending ? (
-              <CircularProgress size={20} />
-            ) : (
-              t('myAuctions.cancelAuction')
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(extendDialog)}
-        onClose={() => {
-          setExtendDialog(null)
-          setNewEndTime('')
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>{t('myAuctions.extendAuction')}</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: palette.neutral[500], mb: 2 }}>
-            {t('myAuctions.extendDescription')}
-          </Typography>
-          {extendDialog && (
-            <Typography sx={{ fontSize: '0.875rem', color: palette.neutral[600], mb: 2 }}>
-              {t('myAuctions.currentEndTime', {
-                time: formatDateTime(extendDialog.currentEndTime),
-              })}
-            </Typography>
-          )}
-          <TextField
-            fullWidth
-            label={t('myAuctions.newEndTime')}
-            type="datetime-local"
-            value={newEndTime}
-            onChange={(e) => setNewEndTime(e.target.value)}
-            slotProps={{
-              inputLabel: { shrink: true },
-              htmlInput: {
-                min: extendDialog
-                  ? new Date(extendDialog.currentEndTime).toISOString().slice(0, 16)
-                  : undefined,
-              },
-            }}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button
-            onClick={() => {
-              setExtendDialog(null)
-              setNewEndTime('')
-            }}
-            sx={{ color: palette.neutral[500], textTransform: 'none' }}
-          >
-            {t('profile.cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleExtendAuction}
-            disabled={extendAuctionMutation.isPending || !newEndTime}
-            sx={{
-              bgcolor: palette.semantic.info,
-              textTransform: 'none',
-              fontWeight: 600,
-              '&:hover': { bgcolor: '#0284C7' },
-            }}
-          >
-            {extendAuctionMutation.isPending ? (
-              <CircularProgress size={20} sx={{ color: 'white' }} />
-            ) : (
-              t('myAuctions.extendAuction')
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AuctionManagementDialogs
+        deleteAuctionId={auctionToDeleteId}
+        cancelAuctionId={auctionToCancelId}
+        auctionToExtend={auctionToExtend}
+        onDeleteClose={() => setAuctionToDeleteId(null)}
+        onCancelClose={() => setAuctionToCancelId(null)}
+        onExtendClose={() => setAuctionToExtend(null)}
+        onFeedback={snackbar.show}
+      />
 
       <Snackbar
         open={snackbar.open}
