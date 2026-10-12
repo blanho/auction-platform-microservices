@@ -1,7 +1,7 @@
 import i18n, { getBackendCulture } from '@/i18n'
 import { getCsrfToken } from '@/modules/auth/utils/csrf.utils'
 import { clearAuthStorage, getAccessToken, setAccessToken } from '@/modules/auth/utils/token.utils'
-import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import type { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import axios from 'axios'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '')
@@ -91,71 +91,80 @@ class HttpService {
 
     this.client.interceptors.response.use(
       (response) => response,
-      async (error: AxiosError) => {
-        const originalRequest: RetryableRequestConfig | undefined = error.config
-
-        if (!originalRequest) {
-          return Promise.reject(error)
-        }
-
-        if (isRetryableError(error) && shouldRetry(originalRequest)) {
-          originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
-          const baseDelay = RETRY_DELAY_MS * Math.pow(2, originalRequest._retryCount - 1)
-          const jitter = baseDelay * 0.2 * Math.random()
-          const backoffDelay = baseDelay + jitter
-          await delay(backoffDelay)
-          return this.client(originalRequest)
-        }
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          if (originalRequest.url?.includes('/auth/refresh')) {
-            clearAuthStorage()
-            return Promise.reject(error)
-          }
-
-          if (isRefreshing) {
-            originalRequest._retry = true
-            return new Promise((resolve, reject) => {
-              subscribeTokenRefresh((token) => {
-                if (token) {
-                  originalRequest.headers.Authorization = `Bearer ${token}`
-                  resolve(this.client(originalRequest))
-                } else {
-                  reject(error)
-                }
-              })
-            })
-          }
-
-          originalRequest._retry = true
-          isRefreshing = true
-
-          try {
-            const response = await axios.post<{ accessToken: string; expiresIn: number }>(
-              `${API_BASE_URL}/auth/refresh`,
-              {},
-              {
-                withCredentials: true,
-                headers: { 'Accept-Language': getBackendCulture() },
-              }
-            )
-            const { accessToken, expiresIn } = response.data
-            setAccessToken(accessToken, expiresIn)
-            onTokenRefreshed(accessToken)
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`
-            return this.client(originalRequest)
-          } catch (_refreshError) {
-            onTokenRefreshed(null)
-            clearAuthStorage()
-            return Promise.reject(error)
-          } finally {
-            isRefreshing = false
-          }
-        }
-
-        return Promise.reject(error)
-      }
+      (error: AxiosError) => this.handleResponseError(error)
     )
+  }
+
+  private async handleResponseError(error: AxiosError): Promise<AxiosResponse> {
+    const request: RetryableRequestConfig | undefined = error.config
+    if (!request) {
+      throw error
+    }
+
+    if (isRetryableError(error) && shouldRetry(request)) {
+      return this.retryRequest(request)
+    }
+
+    if (error.response?.status !== 401 || request._retry) {
+      throw error
+    }
+
+    if (request.url?.includes('/auth/refresh')) {
+      clearAuthStorage()
+      throw error
+    }
+
+    request._retry = true
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        subscribeTokenRefresh((token) => {
+          if (token) {
+            request.headers.Authorization = `Bearer ${token}`
+            resolve(this.client(request))
+          } else {
+            reject(error)
+          }
+        })
+      })
+    }
+
+    return this.refreshAuthenticationAndRetry(request, error)
+  }
+
+  private async retryRequest(request: RetryableRequestConfig): Promise<AxiosResponse> {
+    request._retryCount = (request._retryCount || 0) + 1
+    const baseDelay = RETRY_DELAY_MS * 2 ** (request._retryCount - 1)
+    const jitter = baseDelay * 0.2 * Math.random()
+    await delay(baseDelay + jitter)
+    return this.client(request)
+  }
+
+  private async refreshAuthenticationAndRetry(
+    request: RetryableRequestConfig,
+    originalError: AxiosError
+  ): Promise<AxiosResponse> {
+    isRefreshing = true
+    try {
+      const response = await axios.post<{ accessToken: string; expiresIn: number }>(
+        `${API_BASE_URL}/auth/refresh`,
+        {},
+        {
+          withCredentials: true,
+          headers: { 'Accept-Language': getBackendCulture() },
+        }
+      )
+      const { accessToken, expiresIn } = response.data
+      setAccessToken(accessToken, expiresIn)
+      onTokenRefreshed(accessToken)
+      request.headers.Authorization = `Bearer ${accessToken}`
+      return this.client(request)
+    } catch {
+      onTokenRefreshed(null)
+      clearAuthStorage()
+      throw originalError
+    } finally {
+      isRefreshing = false
+    }
   }
 
   get<T>(url: string, config?: { params?: object }) {

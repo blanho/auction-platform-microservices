@@ -187,17 +187,7 @@ namespace Notification.Application.Services
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
-            return new NotificationPreferenceDto
-            {
-                Id = preference.Id,
-                UserId = preference.UserId,
-                EmailEnabled = preference.EmailEnabled,
-                PushEnabled = preference.PushEnabled,
-                BidUpdates = preference.BidUpdates,
-                AuctionUpdates = preference.AuctionUpdates,
-                PromotionalEmails = preference.PromotionalEmails,
-                SystemAlerts = preference.SystemAlerts
-            };
+            return MapPreference(preference);
         }
 
         public async Task<NotificationPreferenceDto> UpdatePreferencesAsync(string userId, UpdateNotificationPreferenceDto dto, CancellationToken cancellationToken = default)
@@ -221,7 +211,11 @@ namespace Notification.Application.Services
             await _preferenceRepository.UpdateAsync(preference, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new NotificationPreferenceDto
+            return MapPreference(preference);
+        }
+
+        private static NotificationPreferenceDto MapPreference(NotificationPreference preference) =>
+            new NotificationPreferenceDto
             {
                 Id = preference.Id,
                 UserId = preference.UserId,
@@ -232,7 +226,6 @@ namespace Notification.Application.Services
                 PromotionalEmails = preference.PromotionalEmails,
                 SystemAlerts = preference.SystemAlerts
             };
-        }
 
         private NotificationDto Localize(NotificationDto notification)
         {

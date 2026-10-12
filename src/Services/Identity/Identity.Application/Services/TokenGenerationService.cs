@@ -327,29 +327,6 @@ public class TokenGenerationService : ITokenGenerationService
         return Convert.ToBase64String(hash);
     }
 
-    private async Task RevokeDescendantTokensAsync(RefreshToken token, string? ipAddress, string reason)
-    {
-        if (!string.IsNullOrEmpty(token.ReplacedByToken))
-        {
-            var childToken = await _context.RefreshTokens
-                .FirstOrDefaultAsync(t => t.Token == token.ReplacedByToken);
-
-            if (childToken != null)
-            {
-                if (childToken.IsActive)
-                {
-                    childToken.IsRevoked = true;
-                    childToken.RevokedAt = DateTimeOffset.UtcNow;
-                    childToken.RevokedByIp = ipAddress;
-                }
-
-                await RevokeDescendantTokensAsync(childToken, ipAddress, reason);
-            }
-        }
-
-        await _context.SaveChangesAsync();
-    }
-
     private static string GenerateSecureToken()
     {
         var randomBytes = new byte[64];

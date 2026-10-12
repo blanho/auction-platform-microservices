@@ -1,4 +1,3 @@
-
 namespace Auctions.Infrastructure.Messaging.Consumers;
 
 public class BidPlacedConsumer : IConsumer<BidPlacedEvent>, IConsumer<HighestBidUpdatedEvent>
@@ -20,28 +19,34 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>, IConsumer<HighestBid
     public Task Consume(ConsumeContext<HighestBidUpdatedEvent> context)
     {
         var message = context.Message;
-        return ApplyAcceptedBid(message.Id, message.AuctionId, message.NewHighestAmount,
+        return ApplyAcceptedBidAsync(message.Id, message.AuctionId, message.NewHighestAmount,
             message.BidderId, message.BidderUsername, message.BidStatus, context.CancellationToken);
     }
 
     public Task Consume(ConsumeContext<BidPlacedEvent> context)
     {
         var message = context.Message;
-        return ApplyAcceptedBid(message.Id, message.AuctionId, message.BidAmount,
+        return ApplyAcceptedBidAsync(message.Id, message.AuctionId, message.BidAmount,
             message.BidderId, message.Bidder, message.BidStatus, context.CancellationToken);
     }
 
-    private async Task ApplyAcceptedBid(Guid id, Guid auctionId, decimal amount, Guid bidderId,
-        string bidder, string status, CancellationToken ct)
+    private async Task ApplyAcceptedBidAsync(
+        Guid eventId,
+        Guid auctionId,
+        decimal amount,
+        Guid bidderId,
+        string bidderUsername,
+        string status,
+        CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Consuming BidPlacedEvent {EventId} for auction {AuctionId}, Amount: {Amount}, Status: {Status}",
-            id, auctionId, amount, status);
+            "Processing bid update {EventId} for auction {AuctionId}, Amount: {Amount}, Status: {Status}",
+            eventId, auctionId, amount, status);
 
-        var auction = await _writeRepository.GetByIdForUpdateAsync(auctionId, ct);
+        var auction = await _writeRepository.GetByIdForUpdateAsync(auctionId, cancellationToken);
         if (auction == null)
         {
-            _logger.LogWarning("Auction {AuctionId} not found for event {EventId}", auctionId, id);
+            _logger.LogWarning("Auction {AuctionId} not found for event {EventId}", auctionId, eventId);
             return;
         }
 
@@ -51,7 +56,7 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>, IConsumer<HighestBid
         {
             _logger.LogDebug(
                 "Bid {EventId} not accepted (Status: {Status}), skipping update",
-                id, status);
+                eventId, status);
             return;
         }
 
@@ -59,16 +64,16 @@ public class BidPlacedConsumer : IConsumer<BidPlacedEvent>, IConsumer<HighestBid
         {
             _logger.LogDebug(
                 "Bid {EventId} amount {BidAmount} is not higher than current {CurrentBid}, skipping (idempotent)",
-                id, amount, auction.CurrentHighBid.Value);
+                eventId, amount, auction.CurrentHighBid.Value);
             return;
         }
 
-        auction.UpdateHighBid(amount, bidderId, bidder);
-        await _writeRepository.UpdateAsync(auction, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+        auction.UpdateHighBid(amount, bidderId, bidderUsername);
+        await _writeRepository.UpdateAsync(auction, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Updated auction {AuctionId} high bid to {Amount} by {Bidder}",
-            auctionId, amount, bidder);
+            auctionId, amount, bidderUsername);
     }
 }

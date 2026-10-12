@@ -93,8 +93,8 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    Workflow = "AuctionCompletion",
-                    Step = "CreateOrder",
+                    Workflow = SagaConstants.Workflows.AuctionCompletion,
+                    Step = SagaConstants.RecoverySteps.CreateOrder,
                     Reason = context.Saga.FailureReason!
                 })
                 .TransitionTo(ManualInterventionRequired)
@@ -130,8 +130,8 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    Workflow = "AuctionCompletion",
-                    Step = "Notifications",
+                    Workflow = SagaConstants.Workflows.AuctionCompletion,
+                    Step = SagaConstants.RecoverySteps.Notifications,
                     Reason = "Notification delivery requires follow-up"
                 })
                 .Publish(context => new AuctionCompletionSagaCompleted
@@ -153,8 +153,8 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    Workflow = "AuctionCompletion",
-                    Step = "CreateOrder",
+                    Workflow = SagaConstants.Workflows.AuctionCompletion,
+                    Step = SagaConstants.RecoverySteps.CreateOrder,
                     Reason = "Order creation outcome is unknown; reconcile or retry the same command"
                 })
                 .TransitionTo(ManualInterventionRequired)
@@ -167,8 +167,8 @@ public class AuctionCompletionSagaStateMachine : MassTransitStateMachine<Auction
                 {
                     CorrelationId = context.Saga.CorrelationId,
                     AuctionId = context.Saga.AuctionId,
-                    Workflow = "AuctionCompletion",
-                    Step = "Notifications",
+                    Workflow = SagaConstants.Workflows.AuctionCompletion,
+                    Step = SagaConstants.RecoverySteps.Notifications,
                     Reason = "Notification delivery requires follow-up"
                 })
                 .Publish(context => new AuctionCompletionSagaCompleted

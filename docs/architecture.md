@@ -28,7 +28,7 @@ This document explains how the auction platform is designed, how services intera
 
 ## High-Level Architecture
 
-The platform is composed of **10 microservices**, a **YARP API gateway**, a **React SPA**, and shared **BuildingBlocks** libraries. Each service is independently deployable and owns its bounded context.
+The platform is composed of **10 domain microservices**, a **durable orchestration host**, a **YARP API gateway**, a **React SPA**, and shared **BuildingBlocks** libraries. Each service is independently deployable and owns its bounded context.
 
 ```mermaid
 graph TB
@@ -61,7 +61,7 @@ graph TB
     end
 
     subgraph Orchestration
-        ORC["Saga definitions<br/>(not deployed)"]
+        ORC["Durable sale sagas<br/>Orchestration API"]
     end
 
     subgraph Infra["Infrastructure"]
@@ -75,6 +75,8 @@ graph TB
     GW --> Core & Supporting
     Core & Supporting <--> RMQ
     Core & Supporting --> PG
+    ORC <--> RMQ
+    ORC --> PG
     AUC & BID & NOT --> RD
     SRC --> ES
     AUC <-->|gRPC| BID
@@ -99,7 +101,7 @@ Each microservice maps to a single bounded context. Services never share databas
 | **File Management** | Storage Service | Files, Upload Validation, Blob Storage |
 | **Analytics** | Analytics Service | Events, Reports, Dashboards |
 | **Scheduling** | Job Service | Scheduled Tasks, Auction Lifecycle Triggers |
-| **Transaction Coordination** | Orchestration libraries | Saga definitions retained in source but not registered by a deployed host |
+| **Transaction Coordination** | Orchestration host | Durable buy-now and auction-completion sagas, deadlines, compensation and recovery cases |
 
 **Rules:**
 - Services communicate only through messages (RabbitMQ) or synchronous queries (REST/gRPC)
@@ -136,13 +138,12 @@ Each microservice maps to a single bounded context. Services never share databas
 
 ### Orchestration
 
-The repository contains MassTransit state-machine definitions for auction
-completion and buy-now flows, but no deployed application currently registers
-or hosts them. The active auction-completion path publishes
-`AuctionFinishedEvent` after Auction persists the final state; Payment creates
-the winner order directly and the remaining consumers update their projections.
-Treat the orchestration assemblies as inactive design work until a host,
-persistence, start-event producer, health checks, and deployment are added.
+`Orchestration.Api` hosts the MassTransit state machines for auction completion
+and buy-now flows. Saga state and recovery cases live in its own PostgreSQL
+database. Auction, Payment and Notification perform their own work through
+contracts; the coordinator does not reference their implementation projects.
+The host runs deadline dispatch, exposes health and authorized recovery endpoints,
+and has Docker and Kubernetes deployment configuration.
 
 ---
 
@@ -294,7 +295,7 @@ graph LR
 | Pattern | Use Case | Example |
 |---|---|---|
 | Domain Events (MassTransit) | Cross-service reactions | `BidPlacedEvent` → Search updates index, Notification sends alerts |
-| Integration Events | Bounded context communication | `AuctionFinishedEvent` → Payment creates an order and read models update |
+| Integration Events | Bounded context communication | `AuctionFinishedEvent` updates projections; `AuctionCompletionSagaStarted` coordinates the winner order |
 | Commands via Bus | Explicit workflow commands where registered | Consumers handle commands through MassTransit endpoints |
 
 ### Real-Time
@@ -322,8 +323,11 @@ Redis-backed job lock, then performs the following steps:
 1. Find auctions whose end time has passed.
 2. Request the authoritative winner from Bidding over internal gRPC.
 3. Apply reserve-price rules and persist the final Auction aggregate.
-4. Publish `AuctionFinishedEvent` through the outbox.
-5. Let Payment and read-model consumers process the event idempotently.
+4. Publish `AuctionFinishedEvent` through the outbox and start the completion saga
+   for a sold auction with a winner, excluding buy-now purchases.
+5. Let the saga coordinate the winner order and notification while read-model
+   consumers process the completion event idempotently. Managed events tell the
+   legacy Payment consumer to skip direct order creation.
 
 Auto-bid lock contention raises a retryable timeout so the MassTransit consumer
 can retry instead of acknowledging work that was not processed.
@@ -376,16 +380,23 @@ for compatible schema evolution.
 
 ## Saga Orchestration
 
-`src/Orchestration` contains contracts and MassTransit state-machine classes for
-possible future orchestration. These projects compile as libraries, but they are
-not an active runtime component: there is no Orchestration API/worker,
-registration, saga repository, Kubernetes Deployment, or producer for
-`AuctionCompletionSagaStarted` in the current repository.
+`OrchestrationRegistration.AddOrchestration` registers both state machines with
+PostgreSQL EF repositories, optimistic concurrency, receive retries and a
+transactional inbox/outbox. The deadline worker dispatches overdue timeouts from
+persisted state, allowing the host to resume after a restart.
 
-Do not depend on these sagas in production behavior. If orchestration is enabled
-later, add a dedicated host and durable saga persistence, make every consumer
-idempotent, define timeout/compensation behavior, and add deployment and failure
-tests before switching away from the current event fan-out.
+Buy-now reserves an auction, creates a held order, completes the auction and
+confirms the order. Failure releases the reservation and cancels the order;
+missing acknowledgements retain a recovery case instead of declaring rollback
+complete. Auction completion creates the winner order before notification.
+Operator retries resume the recorded recovery step, and late acknowledgements
+can resolve retained work. Notification failure does not undo a successful sale.
+
+Tests cover correlation isolation, stale timeouts, duplicate delivery,
+compensation, operator retries, recovery-case persistence and host restart with
+real PostgreSQL/RabbitMQ. Project-reference guards also reject implementation
+dependencies across bounded contexts and implementation references in contracts.
+See [testing instructions](../README.md#testing) for the mandatory test runner.
 
 ---
 

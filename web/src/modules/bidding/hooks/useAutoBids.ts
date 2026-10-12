@@ -43,7 +43,7 @@ export const useMyAutoBids = (activeOnly?: boolean, page = 1, pageSize = 20) => 
 export const useAutoBidForAuction = (auctionId: string | undefined, enabled = true) => {
   const { t } = useTranslation('bidding')
   return useQuery({
-    queryKey: ['autobid', 'auction', auctionId],
+    queryKey: QUERY_KEYS.autoBidForAuction(auctionId),
     queryFn: () => {
       if (!auctionId) {
         throw new Error(t('validation.auctionIdRequired'))

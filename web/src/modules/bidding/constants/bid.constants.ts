@@ -17,6 +17,8 @@ export const BID_CONSTANTS = {
     bidIncrement: (currentBid: number) => ['bids', 'increment', currentBid] as const,
     autoBids: ['autoBids'] as const,
     autoBidById: (id: string) => ['autoBids', id] as const,
+    autoBidForAuction: (auctionId: string | undefined) =>
+      ['autoBids', 'auction', auctionId] as const,
     myAutoBids: (activeOnly?: boolean, page?: number, pageSize?: number) =>
       ['autoBids', 'my', { activeOnly, page, pageSize }] as const,
   },
