@@ -9,6 +9,21 @@ for (const outcome of ['Completed', 'Failed'] as const) {
     let purchased = false
     let polls = 0
     let purchaseRequests = 0
+    const order = {
+      id: 'order',
+      auctionId,
+      itemTitle: 'Fixture auction watch',
+      auctionTitle: 'Fixture auction watch',
+      buyerId: userId,
+      buyerUsername: 'buyer',
+      sellerId: 'seller',
+      sellerUsername: 'seller',
+      winningBid: 250,
+      totalAmount: 250,
+      status: 'payment_pending',
+      paymentStatus: 'pending',
+      createdAt: new Date().toISOString(),
+    }
     const receipt = (status: string) => ({
       auctionId,
       correlationId: 'correlation',
@@ -81,27 +96,10 @@ for (const outcome of ['Completed', 'Failed'] as const) {
         body = 0
       } else if (path.includes('/reviews')) {
         body = { items: [], totalCount: 0, averageRating: 0 }
+      } else if (path === '/api/orders/order') {
+        body = order
       } else if (path.includes('/orders/buyer/')) {
-        body =
-          outcome === 'Completed'
-            ? [
-                {
-                  id: 'order',
-                  auctionId,
-                  itemTitle: 'Fixture auction watch',
-                  auctionTitle: 'Fixture auction watch',
-                  buyerId: userId,
-                  buyerUsername: 'buyer',
-                  sellerId: 'seller',
-                  sellerUsername: 'seller',
-                  winningBid: 250,
-                  totalAmount: 250,
-                  status: 'payment_pending',
-                  paymentStatus: 'pending',
-                  createdAt: new Date().toISOString(),
-                },
-              ]
-            : []
+        body = outcome === 'Completed' ? [order] : []
       }
       await route.fulfill({
         status,
@@ -121,6 +119,10 @@ for (const outcome of ['Completed', 'Failed'] as const) {
     if (outcome === 'Completed') {
       await expect(page).toHaveURL(/\/orders$/, { timeout: 15000 })
       await expect(page.getByText('Fixture auction watch').first()).toBeVisible()
+      await page.goto('/orders/order')
+      await expect(page.getByRole('link', { name: 'Fixture auction watch' })).toBeVisible()
+      await expect(page.getByText('Order Placed', { exact: true })).toBeVisible()
+      await expect(page.getByText('Payment', { exact: true })).toBeVisible()
     } else {
       await expect(
         page.getByText(/purchase.*failed|could not.*purchase|could not be completed/i).first()
