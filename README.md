@@ -532,6 +532,31 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 
 ## Cloud and Deployment
 
+### Infrastructure and Deployment Tools
+
+Terraform is not required for the current Azure deployment. The repository
+already defines its Azure infrastructure as code with Bicep, with separate
+configuration for running and deploying the application:
+
+| Purpose | Tool | Configuration |
+|---|---|---|
+| Run the local stack | Docker Compose | [`deploy/docker/docker-compose.yml`](deploy/docker/docker-compose.yml) |
+| Provision Azure infrastructure | Bicep | [`deploy/azure/main.bicep`](deploy/azure/main.bicep) |
+| Configure Kubernetes workloads per environment | Kubernetes manifests + Kustomize | [`deploy/kubernetes/`](deploy/kubernetes/) |
+| Build container images and deploy to AKS | GitHub Actions | [`.github/workflows/cd.yml`](.github/workflows/cd.yml) |
+
+The Bicep template provisions AKS, Azure Container Registry, PostgreSQL Flexible
+Server, optional Azure Managed Redis, Key Vault, Blob Storage, networking,
+identities, and Log Analytics. Kubernetes manifests define the application
+workloads running on that infrastructure.
+
+Keep Bicep for the current Azure deployment. Consider Terraform if the team
+standardizes on it or needs to manage infrastructure across multiple providers.
+Adopting it would require a deliberate migration of resource ownership; do not
+manage the same resources with both Bicep and Terraform. See Microsoft's
+[Bicep and Terraform comparison](https://learn.microsoft.com/en-us/azure/developer/terraform/comparing-terraform-and-bicep)
+for the tooling tradeoffs.
+
 ### Docker Compose (Local)
 
 `deploy/docker/docker-compose.yml` defines the complete local stack:
@@ -676,9 +701,8 @@ managed observability integration only when the project needs it.
 
 The backend has 30 test projects covering service behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
-workflow recovery. CI starts disposable PostgreSQL and RabbitMQ and rejects
-missing, empty, failed, or skipped test runs. Each project produces distinct TRX
-and OpenCover artifacts.
+workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
+backend tests so provider-backed coverage can execute.
 
 Architecture guards cover every service and the orchestration host: cross-service
 references must use contracts, contracts cannot depend on implementations, and
@@ -691,8 +715,7 @@ docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.test
 export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
 export BACKEND_TEST_RABBIT_PORT=15673
 dotnet restore auction.sln
-bash scripts/run-backend-tests.sh
-python3 -m unittest discover -s scripts/tests -v
+dotnet test auction.sln -c Release --no-restore
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
 ```
 
@@ -703,8 +726,7 @@ refresh, seller confirmations, and order fulfillment permissions, validation, pe
 requests, failure recovery, and state isolation when navigating between orders.
 Chromium journeys run the real app against disposable API fixtures; no
 payment provider is contacted. They cover buy-now completion/failure, order progress,
-seller shipment, and buyer delivery confirmation. Python tests verify result-report enforcement and isolated
-system-test resource names, ports, and health checks.
+seller shipment, and buyer delivery confirmation.
 
 ```bash
 cd web
@@ -716,25 +738,10 @@ npx playwright install --with-deps chromium
 npm run test:e2e
 ```
 
-Run the browser journeys against all running microservices with isolated databases,
-broker, Redis, Elasticsearch, gateway, and nginx (Docker, Python 3, installed npm
-dependencies and Chromium required):
-
-```bash
-# From the repository root; reserves localhost ports 3000 and 6001.
-bash scripts/run-system-tests.sh
-```
-
-The runner builds images sequentially, waits for health checks, seeds disposable
-users, and runs `web`'s `test:system` suite. It captures service logs in
-`system-test-artifacts/` and removes only its own Compose containers and volumes
-on exit. Tests create auctions, bids and unpaid orders; Stripe is given fake
-credentials and checkout is never invoked. Authentication throttling remains
-enabled, so these journeys can take several minutes.
-
-See [reliability changes and migration guidance](docs/reliability-enhancements.md)
-for reproduced defects, wallet payment semantics, migration preflight, and test
-boundaries, including local validation results and reproduction commands.
+Additional full-stack browser journeys are defined in `web/system-tests/`, with
+configuration in `web/playwright.system.config.ts`. These require a separately
+provisioned application stack and test users; the Playwright configuration does
+not start or clean up the stack.
 
 ---
 
@@ -752,13 +759,6 @@ Keep database transactions, outbox ordering, and public contracts intact; valida
 behavior before and after changes. Avoid introducing abstractions only to reduce
 method or file length.
 
-See the [Clean Code review inventory](docs/clean-code-review.md) for the areas
-reviewed, implemented changes, regression evidence, remaining risks, and exact
-validation commands.
-
-The [frontend Clean Code follow-up](docs/frontend-clean-code.md) records the order
-action refactor, seller cache regression tests, browser fulfillment journey, and
-current validation limitations.
 
 ---
 
