@@ -701,9 +701,8 @@ managed observability integration only when the project needs it.
 
 The backend has 30 test projects covering service behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
-workflow recovery. CI starts disposable PostgreSQL and RabbitMQ and rejects
-missing, empty, failed, or skipped test runs. Each project produces distinct TRX
-and OpenCover artifacts.
+workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
+backend tests so provider-backed coverage can execute.
 
 Architecture guards cover every service and the orchestration host: cross-service
 references must use contracts, contracts cannot depend on implementations, and
@@ -716,8 +715,7 @@ docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.test
 export BACKEND_TEST_POSTGRES='Host=localhost;Port=15432;Database=postgres;Username=auction_test;Password=auction_test'
 export BACKEND_TEST_RABBIT_PORT=15673
 dotnet restore auction.sln
-bash scripts/run-backend-tests.sh
-python3 -m unittest discover -s scripts/tests -v
+dotnet test auction.sln -c Release --no-restore
 docker compose -p auction-reliability-tests -f deploy/docker/docker-compose.tests.yml down -v
 ```
 
@@ -728,8 +726,7 @@ refresh, seller confirmations, and order fulfillment permissions, validation, pe
 requests, failure recovery, and state isolation when navigating between orders.
 Chromium journeys run the real app against disposable API fixtures; no
 payment provider is contacted. They cover buy-now completion/failure, order progress,
-seller shipment, and buyer delivery confirmation. Python tests verify result-report enforcement and isolated
-system-test resource names, ports, and health checks.
+seller shipment, and buyer delivery confirmation.
 
 ```bash
 cd web
@@ -741,25 +738,10 @@ npx playwright install --with-deps chromium
 npm run test:e2e
 ```
 
-Run the browser journeys against all running microservices with isolated databases,
-broker, Redis, Elasticsearch, gateway, and nginx (Docker, Python 3, installed npm
-dependencies and Chromium required):
-
-```bash
-# From the repository root; reserves localhost ports 3000 and 6001.
-bash scripts/run-system-tests.sh
-```
-
-The runner builds images sequentially, waits for health checks, seeds disposable
-users, and runs `web`'s `test:system` suite. It captures service logs in
-`system-test-artifacts/` and removes only its own Compose containers and volumes
-on exit. Tests create auctions, bids and unpaid orders; Stripe is given fake
-credentials and checkout is never invoked. Authentication throttling remains
-enabled, so these journeys can take several minutes.
-
-See [reliability changes and migration guidance](docs/reliability-enhancements.md)
-for reproduced defects, wallet payment semantics, migration preflight, and test
-boundaries, including local validation results and reproduction commands.
+Additional full-stack browser journeys are defined in `web/system-tests/`, with
+configuration in `web/playwright.system.config.ts`. These require a separately
+provisioned application stack and test users; the Playwright configuration does
+not start or clean up the stack.
 
 ---
 
@@ -777,13 +759,6 @@ Keep database transactions, outbox ordering, and public contracts intact; valida
 behavior before and after changes. Avoid introducing abstractions only to reduce
 method or file length.
 
-See the [Clean Code review inventory](docs/clean-code-review.md) for the areas
-reviewed, implemented changes, regression evidence, remaining risks, and exact
-validation commands.
-
-The [frontend Clean Code follow-up](docs/frontend-clean-code.md) records the order
-action refactor, seller cache regression tests, browser fulfillment journey, and
-current validation limitations.
 
 ---
 
