@@ -1,4 +1,5 @@
 using BuildingBlocks.Application.Abstractions;
+using BuildingBlocks.Application.Localization;
 using Notification.Application.DTOs;
 using Notification.Application.Filtering;
 using Notification.Application.Interfaces;
@@ -75,7 +76,7 @@ internal static class NotificationRecordExtensions
         Subject = record.Subject,
         Recipient = record.Recipient,
         Status = record.Status.ToString(),
-        ErrorMessage = record.ErrorMessage,
+        ErrorMessage = UserMessageLocalizer.TranslateOptional(record.ErrorMessage),
         SentAt = record.SentAt,
         ExternalId = record.ExternalId,
         CreatedAt = record.CreatedAt

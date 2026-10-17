@@ -15,8 +15,6 @@ public sealed class StorageJobFiles(
     {
         if (fileId == Guid.Empty || requestedBy == Guid.Empty)
             throw new StorageJobValidationException("FileId and requester are required.");
-
-        // The consumer outbox holds this transaction through persistence and result publication.
         var file = await db.StoredFiles.FromSqlInterpolated(
             $"SELECT *, xmin FROM \"StoredFiles\" WHERE \"Id\" = {fileId} FOR UPDATE").SingleOrDefaultAsync(ct);
         if (file is null || file.OwnerId != requestedBy || file.IsDeleted ||

@@ -17,7 +17,7 @@ public static partial class ValidationErrorLocalizer
     public static string LocalizeMessage(string message, ILocalizationService? localizer)
     {
         if (localizer is null)
-            return message;
+            return UserMessageLocalizer.Translate(message);
 
         return TryLocalize(MustContainAtLeastOnePattern(), message, localizer, LocalizationKeys.Validation.MustContainAtLeastOne, 1) ??
             TryLocalize(PasswordComplexityPattern(), message, localizer, LocalizationKeys.Validation.PasswordComplexity) ??

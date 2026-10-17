@@ -30,8 +30,6 @@ public sealed class AggregateDailyStatsConsumer(AnalyticsDbContext db) : IConsum
             ? await db.Database.BeginTransactionAsync(ct) : null;
         if (error is null)
         {
-            // Serialize aggregate writers while ordinary dashboard readers and fact ingestion
-            // continue. A single INSERT statement below reads all facts from one snapshot.
             await db.Database.ExecuteSqlRawAsync("""
                 LOCK TABLE analytics.daily_auction_stats, analytics.daily_bid_stats,
                     analytics.daily_revenue_stats IN SHARE ROW EXCLUSIVE MODE

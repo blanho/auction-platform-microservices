@@ -1,6 +1,4 @@
 namespace StorageService.Contracts.Commands;
-
-// Bytes are uploaded directly to storage before this command is submitted.
 public record FinalizeFileUploadCommand
 {
     public Guid FileId { get; init; }

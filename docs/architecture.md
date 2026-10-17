@@ -541,7 +541,15 @@ graph LR
 
 The web app and HTTP APIs support English (`en-US`) and Japanese (`ja-JP`). The web client sends `Accept-Language` and refreshes cached queries after a language change. Service resources supply business messages; shared resources supply validation labels and fallback messages. Unrecognized technical errors receive a generic Japanese message while stored diagnostics remain available for troubleshooting.
 
-Queued auction imports and order reports carry the requesting culture. Consumers scope the culture to each delivery; older messages without a culture use English. Deploy updated consumers before producers to ensure queued requests retain their language. Job DTOs and notification metadata resolve stored messages in the reader's current language without modifying the original diagnostic or template arguments.
+Queued auction imports and order reports carry the requesting culture. Consumers scope the culture to each delivery; older messages without a culture use English. Deploy updated consumers before producers to ensure queued requests retain their language. Job DTOs, notification delivery records, and notification metadata resolve stored messages in the reader's current language without modifying the original diagnostic or template arguments. This includes validation and broker-failure results for reports, bulk notifications, image processing, upload finalization, search reindexing, and analytics aggregation. Shared validation and exception responses also localize when a service-specific localizer is unavailable.
+
+New user-facing backend messages require matching English and Japanese resources.
+Use service error codes and `ProblemDetailsHelper` for API errors. Keep job error
+text invariant in storage and resolve it through `UserMessageLocalizer` on reads;
+never persist a worker's current language as a replacement for the diagnostic.
+Configuration errors and internal logs remain operational diagnostics. Keep
+handwritten backend source free of comments and record design rationale here or
+in a service guide.
 
 Excel and PDF order reports localize headings, status labels, and dates. PDF reports embed the licensed Noto Sans JP font for Japanese text. CSV headers, enum values, API field names, and error codes remain invariant for integrations. User-provided titles and notification content retain their original text.
 

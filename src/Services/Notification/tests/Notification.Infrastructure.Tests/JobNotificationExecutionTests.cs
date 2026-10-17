@@ -43,7 +43,7 @@ public class JobNotificationExecutionTests
         Assert.Empty(fixture.Published.OfType<ReportJobBatchProgressCommand>());
         Assert.Equal(1, Assert.Single(fixture.Published.OfType<BulkNotificationCompletedEvent>()).SuccessCount);
 
-        await fixture.Consume(retry); // Broker redelivery must not resend recorded successes.
+        await fixture.Consume(retry);
         Assert.Equal(1, fixture.EmailSends);
         Assert.Equal(2, fixture.PushSends);
     }

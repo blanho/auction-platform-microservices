@@ -66,9 +66,8 @@ public class PaymentEndpoints : ICarterModule
         if (!TryGetFrontendBaseUrl(configuration["FrontendUrl"], out var frontendBaseUrl))
         {
             logger.LogError("FrontendUrl is missing or is not a valid HTTP(S) URL");
-            return Results.Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Payment configuration error");
+            return Results.Problem(ProblemDetailsHelper.InternalError(
+                "Payment is temporarily unavailable. Please try again later."));
         }
 
         long amountInCents;

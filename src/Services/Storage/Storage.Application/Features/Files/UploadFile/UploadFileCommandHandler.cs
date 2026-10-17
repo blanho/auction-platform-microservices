@@ -137,7 +137,6 @@ public class UploadFileCommandHandler(
         }
         catch
         {
-            // A lost commit acknowledgement must not cause deletion of a possibly committed file.
             return true;
         }
     }

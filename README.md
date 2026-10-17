@@ -754,10 +754,17 @@ not start or clean up the stack.
 - **Directory.Packages.props** — centralized NuGet version pinning
 
 Use meaningful names, cohesive responsibilities, and explicit side effects when
-refactoring. Preserve useful comments about business rules and failure handling.
+refactoring. Keep handwritten backend source free of comments; document business
+rules and failure-handling rationale in the architecture and service guides.
 Keep database transactions, outbox ordering, and public contracts intact; validate
 behavior before and after changes. Avoid introducing abstractions only to reduce
 method or file length.
+
+Backend user-facing messages must support English (`en-US`) and Japanese
+(`ja-JP`). Use the service/shared resources for API errors and validation. Persist
+background-job diagnostics unchanged, then localize job DTOs in the reader's
+request culture. Add matching English/Japanese resources and localization tests
+for new messages; keep error codes, API fields, and user-authored content stable.
 
 
 ---

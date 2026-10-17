@@ -190,4 +190,56 @@
   <data name="Job timed out while processing" xml:space="preserve"><value>Job timed out while processing</value></data>
   <data name="Job execution details were recorded." xml:space="preserve"><value>Job execution details were recorded.</value></data>
   <data name="Bulk notification job queued for {0} recipients" xml:space="preserve"><value>Bulk notification job queued for {0} recipients</value></data>
+  <data name="Only JPEG, PNG, GIF, and WebP images are supported." xml:space="preserve"><value>Only JPEG, PNG, GIF, and WebP images are supported.</value></data>
+  <data name="The image is corrupt or uses an unsupported format." xml:space="preserve"><value>The image is corrupt or uses an unsupported format.</value></data>
+  <data name="Image bytes do not match the declared content type." xml:space="preserve"><value>Image bytes do not match the declared content type.</value></data>
+  <data name="Image dimensions exceed the 16-megapixel limit." xml:space="preserve"><value>Image dimensions exceed the 16-megapixel limit.</value></data>
+  <data name="The image is corrupt or incomplete." xml:space="preserve"><value>The image is corrupt or incomplete.</value></data>
+  <data name="The generated thumbnail exceeds the size limit." xml:space="preserve"><value>The generated thumbnail exceeds the size limit.</value></data>
+  <data name="FileId and requester are required." xml:space="preserve"><value>FileId and requester are required.</value></data>
+  <data name="File not found or not owned by the requester." xml:space="preserve"><value>File not found or not owned by the requester.</value></data>
+  <data name="The file's storage provider is not configured." xml:space="preserve"><value>The file's storage provider is not configured.</value></data>
+  <data name="The file exceeds the configured size limit." xml:space="preserve"><value>The file exceeds the configured size limit.</value></data>
+  <data name="The uploaded file is missing from storage." xml:space="preserve"><value>The uploaded file is missing from storage.</value></data>
+  <data name="The uploaded file size does not match its reservation." xml:space="preserve"><value>The uploaded file size does not match its reservation.</value></data>
+  <data name="The uploaded file exceeds its declared size." xml:space="preserve"><value>The uploaded file exceeds its declared size.</value></data>
+  <data name="The uploaded file is incomplete." xml:space="preserve"><value>The uploaded file is incomplete.</value></data>
+  <data name="A parent job and item are required." xml:space="preserve"><value>A parent job and item are required.</value></data>
+  <data name="The upload reservation is no longer valid." xml:space="preserve"><value>The upload reservation is no longer valid.</value></data>
+  <data name="The reserved file type is not allowed." xml:space="preserve"><value>The reserved file type is not allowed.</value></data>
+  <data name="The uploaded file has no storage URL." xml:space="preserve"><value>The uploaded file has no storage URL.</value></data>
+  <data name="The upload reservation expired while validating the file." xml:space="preserve"><value>The upload reservation expired while validating the file.</value></data>
+  <data name="Only confirmed uploads can be processed." xml:space="preserve"><value>Only confirmed uploads can be processed.</value></data>
+  <data name="Image processing failed after broker retries." xml:space="preserve"><value>Image processing failed after broker retries.</value></data>
+  <data name="File upload finalization failed after broker retries." xml:space="preserve"><value>File upload finalization failed after broker retries.</value></data>
+  <data name="Report generation failed after broker retries." xml:space="preserve"><value>Report generation failed after broker retries.</value></data>
+  <data name="Bulk notification failed after broker retries." xml:space="preserve"><value>Bulk notification failed after broker retries.</value></data>
+  <data name="Search reindexing failed after broker retries." xml:space="preserve"><value>Search reindexing failed after broker retries.</value></data>
+  <data name="Analytics aggregation failed after broker retries." xml:space="preserve"><value>Analytics aggregation failed after broker retries.</value></data>
+  <data name="Provide a requester and 1–500 distinct, nonempty auction IDs." xml:space="preserve"><value>Provide a requester and 1–500 distinct, nonempty auction IDs.</value></data>
+  <data name="Search reindexing failed or conflicted with an index update." xml:space="preserve"><value>Search reindexing failed or conflicted with an index update.</value></data>
+  <data name="Some requested auctions are missing from the search projection. Restore them before retrying." xml:space="preserve"><value>Some requested auctions are missing from the search projection. Restore them before retrying.</value></data>
+  <data name="Provide a requester and an inclusive range of 1–31 UTC dates, ending no later than today." xml:space="preserve"><value>Provide a requester and an inclusive range of 1–31 UTC dates, ending no later than today.</value></data>
+  <data name="A job item and requester are required." xml:space="preserve"><value>A job item and requester are required.</value></data>
+  <data name="TemplateKey, Title, Message, and GlobalParameters are required." xml:space="preserve"><value>TemplateKey, Title, Message, and GlobalParameters are required.</value></data>
+  <data name="A nonempty, bounded recipient list with valid user IDs is required." xml:space="preserve"><value>A nonempty, bounded recipient list with valid user IDs is required.</value></data>
+  <data name="Recipient user IDs must be unique within a job item." xml:space="preserve"><value>Recipient user IDs must be unique within a job item.</value></data>
+  <data name="Specify supported notification channels." xml:space="preserve"><value>Specify supported notification channels.</value></data>
+  <data name="Every email recipient must have an email address." xml:space="preserve"><value>Every email recipient must have an email address.</value></data>
+  <data name="Every SMS recipient must have a phone number." xml:space="preserve"><value>Every SMS recipient must have a phone number.</value></data>
+  <data name="ScheduledAt is not supported for Jobs-dispatched notifications; submit the job when it is due." xml:space="preserve"><value>ScheduledAt is not supported for Jobs-dispatched notifications; submit the job when it is due.</value></data>
+  <data name="Delivery failed for {0} of {1} recipients." xml:space="preserve"><value>Delivery failed for {0} of {1} recipients.</value></data>
+  <data name="Invalid report type, format, status filter, or date range." xml:space="preserve"><value>Invalid report type, format, status filter, or date range.</value></data>
+  <data name="Payment is temporarily unavailable. Please try again later." xml:space="preserve"><value>Payment is temporarily unavailable. Please try again later.</value></data>
+  <data name="Resource not found" xml:space="preserve"><value>Resource not found</value></data>
+  <data name="Operation conflict" xml:space="preserve"><value>Operation conflict</value></data>
+  <data name="Invalid operation" xml:space="preserve"><value>Invalid operation</value></data>
+  <data name="Business rule violation" xml:space="preserve"><value>Business rule violation</value></data>
+  <data name="Domain error" xml:space="preserve"><value>Domain error</value></data>
+  <data name="An unexpected error occurred." xml:space="preserve"><value>An unexpected error occurred.</value></data>
+  <data name="Invalid argument" xml:space="preserve"><value>Invalid argument</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Unauthorized</value></data>
+  <data name="Request timeout" xml:space="preserve"><value>Request timeout</value></data>
+  <data name="An internal server error occurred. Please try again later." xml:space="preserve"><value>An internal server error occurred. Please try again later.</value></data>
+  <data name="Label.BatchSize" xml:space="preserve"><value>BatchSize</value></data>
 </root>

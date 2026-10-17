@@ -5,12 +5,44 @@ using Notification.Application.DTOs;
 using Notification.Application.Helpers;
 using Notification.Application.Localization;
 using Notification.Application.Resources;
+using Notification.Application.Interfaces;
+using Notification.Application.Services;
+using Notification.Domain.Entities;
+using TestSupport;
 using Xunit;
 
 namespace Notification.Infrastructure.Tests;
 
 public class NotificationLocalizationTests
 {
+    [Theory]
+    [InlineData("Bulk notification failed after broker retries.", "再試行後も一括通知に失敗しました。")]
+    [InlineData("Provider connection failed at internal-host:123", "操作を完了できませんでした。もう一度お試しいただくか、サポートにお問い合わせください。")]
+    [InlineData(null, null)]
+    public async Task DeliveryRecordErrorsLocalizeWithoutChangingStoredContent(string? diagnostic, string? japanese)
+    {
+        var record = NotificationRecord.Create(Guid.NewGuid(), "announcement", "Email", "User-written subject", "reader@example.test");
+        if (diagnostic is not null) record.MarkAsFailed(diagnostic);
+        var repository = TestProxy.Create<INotificationRecordRepository>((method, _) => method.Name switch
+        {
+            nameof(INotificationRecordRepository.GetByIdAsync) => Task.FromResult<NotificationRecord?>(record),
+            _ => throw new NotSupportedException(method.Name)
+        });
+        var service = new NotificationRecordService(repository);
+        foreach (var language in new[] { "ja-JP", "en-US", "ja-JP" })
+        {
+            using var culture = new RequestCultureScope(language);
+            var result = await service.GetByIdAsync(record.Id);
+            Assert.NotNull(result);
+            Assert.Equal(language == "ja-JP" ? japanese : diagnostic, result.ErrorMessage);
+            Assert.Equal(record.Subject, result.Subject);
+            Assert.Equal(record.Channel, result.Channel);
+            Assert.Equal(record.Status.ToString(), result.Status);
+            Assert.Equal(record.Recipient, result.Recipient);
+        }
+        Assert.Equal(diagnostic, record.ErrorMessage);
+    }
+
     [Fact]
     public void JobNotificationCanBeReadInBothLanguagesWithoutChangingStoredArguments()
     {

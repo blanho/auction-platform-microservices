@@ -52,7 +52,6 @@ public sealed class ImageProcessor
         ct.ThrowIfCancellationRequested();
         if (encoded.Size > StorageDefaults.Images.MaxThumbnailBytes)
             throw new StorageJobValidationException("The generated thumbnail exceeds the size limit.");
-        // Encoding a fresh surface omits the source's EXIF/GPS and other metadata.
         return Task.FromResult(new ProcessedImage(width, height,
             "data:image/jpeg;base64," + Convert.ToBase64String(encoded.ToArray())));
     }

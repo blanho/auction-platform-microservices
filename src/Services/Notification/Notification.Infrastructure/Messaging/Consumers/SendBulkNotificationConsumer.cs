@@ -161,8 +161,6 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         NotificationTemplate? template,
         CancellationToken cancellationToken)
     {
-        // An operator retry changes the attempt correlation, but successful deliveries
-        // belong to the same persisted job item and must not be sent again.
         var operationId = message.ParentJobItemId ?? message.CorrelationId;
         var idempotencyKey = $"{operationId}:{recipient.UserId}";
 

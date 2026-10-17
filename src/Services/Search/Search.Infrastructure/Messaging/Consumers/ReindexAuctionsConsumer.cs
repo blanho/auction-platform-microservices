@@ -29,8 +29,6 @@ public sealed class ReindexAuctionsConsumer(ElasticsearchClient client, IOptions
         }
         else
         {
-            // Reprocess existing _source under the current mapping. Internal version checks
-            // prevent a snapshot from overwriting bids or other concurrent document updates.
             var response = await client.UpdateByQueryAsync(options.Value.GetIndexName(), r => r
                 .Query(q => q.Ids(i => i.Values(new Ids(message.AuctionIds.Select(id => id.ToString())))))
                 .Conflicts(Conflicts.Abort)

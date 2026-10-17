@@ -60,7 +60,6 @@ public class AggregationJobTests
         Assert.Equal(1, bids.UniqueBidders);
         Assert.Equal(60, bids.TotalBidValue);
         Assert.Equal(30, bids.AvgBidAmount);
-        // A late fact is included on the next run, while unrelated dates are retained.
         db.FactBids.Add(Bid(auction, buyer, 60));
         var outside = Bid(auction, buyer, 90); outside.DateKey = Day.AddDays(-1);
         db.FactBids.Add(outside);
@@ -69,7 +68,6 @@ public class AggregationJobTests
         await Run(db, command);
         Assert.Equal(2, await db.DailyBidStats.CountAsync());
         Assert.Equal(120, (await db.DailyBidStats.AsNoTracking().SingleAsync(s => s.DateKey == Day)).TotalBidValue);
-        // Removing all source rows also removes obsolete aggregate rows for the selected date.
         await db.FactBids.Where(b => b.DateKey == Day).ExecuteDeleteAsync();
         await Run(db, command);
         Assert.Equal(Day.AddDays(-1), (await db.DailyBidStats.AsNoTracking().SingleAsync()).DateKey);

@@ -91,7 +91,7 @@ public static class ExceptionHandlingMiddleware
 
         var problem = new ProblemDetails
         {
-            Title = title,
+            Title = UserMessageLocalizer.Translate(title),
             Detail = UserMessageLocalizer.Translate(ex.Message),
             Status = (int)status,
             Type = $"https://httpstatuses.com/{(int)status}",
@@ -157,8 +157,8 @@ public static class ExceptionHandlingMiddleware
 
         var problem = new ProblemDetails
         {
-            Title = title,
-            Detail = detail,
+            Title = UserMessageLocalizer.Translate(title),
+            Detail = UserMessageLocalizer.Translate(detail),
             Status = (int)status,
             Type = $"https://httpstatuses.com/{(int)status}",
             Instance = context.Request.Path
