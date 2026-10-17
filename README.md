@@ -532,6 +532,31 @@ All client traffic enters through the YARP gateway on port **6001**. JWT tokens 
 
 ## Cloud and Deployment
 
+### Infrastructure and Deployment Tools
+
+Terraform is not required for the current Azure deployment. The repository
+already defines its Azure infrastructure as code with Bicep, with separate
+configuration for running and deploying the application:
+
+| Purpose | Tool | Configuration |
+|---|---|---|
+| Run the local stack | Docker Compose | [`deploy/docker/docker-compose.yml`](deploy/docker/docker-compose.yml) |
+| Provision Azure infrastructure | Bicep | [`deploy/azure/main.bicep`](deploy/azure/main.bicep) |
+| Configure Kubernetes workloads per environment | Kubernetes manifests + Kustomize | [`deploy/kubernetes/`](deploy/kubernetes/) |
+| Build container images and deploy to AKS | GitHub Actions | [`.github/workflows/cd.yml`](.github/workflows/cd.yml) |
+
+The Bicep template provisions AKS, Azure Container Registry, PostgreSQL Flexible
+Server, optional Azure Managed Redis, Key Vault, Blob Storage, networking,
+identities, and Log Analytics. Kubernetes manifests define the application
+workloads running on that infrastructure.
+
+Keep Bicep for the current Azure deployment. Consider Terraform if the team
+standardizes on it or needs to manage infrastructure across multiple providers.
+Adopting it would require a deliberate migration of resource ownership; do not
+manage the same resources with both Bicep and Terraform. See Microsoft's
+[Bicep and Terraform comparison](https://learn.microsoft.com/en-us/azure/developer/terraform/comparing-terraform-and-bicep)
+for the tooling tradeoffs.
+
 ### Docker Compose (Local)
 
 `deploy/docker/docker-compose.yml` defines the complete local stack:
