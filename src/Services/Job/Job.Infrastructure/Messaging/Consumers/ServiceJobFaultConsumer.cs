@@ -1,13 +1,30 @@
 using JobService.Contracts.Commands;
 using NotificationService.Contracts.Commands;
 using PaymentService.Contracts.Commands;
+using StorageService.Contracts.Commands;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 
 public class ServiceJobFaultConsumer :
     IConsumer<Fault<GenerateOrderReportCommand>>,
-    IConsumer<Fault<SendBulkNotificationCommand>>
+    IConsumer<Fault<SendBulkNotificationCommand>>,
+    IConsumer<Fault<ProcessImageCommand>>,
+    IConsumer<Fault<FinalizeFileUploadCommand>>
 {
+    public Task Consume(ConsumeContext<Fault<ProcessImageCommand>> context)
+    {
+        var command = context.Message.Message;
+        return Report(context, command.CorrelationId, command.ParentJobId,
+            command.ParentJobItemId, command.Attempt, "Image processing failed after broker retries.");
+    }
+
+    public Task Consume(ConsumeContext<Fault<FinalizeFileUploadCommand>> context)
+    {
+        var command = context.Message.Message;
+        return Report(context, command.CorrelationId, command.ParentJobId,
+            command.ParentJobItemId, command.Attempt, "File upload finalization failed after broker retries.");
+    }
+
     public Task Consume(ConsumeContext<Fault<GenerateOrderReportCommand>> context)
     {
         var command = context.Message.Message;

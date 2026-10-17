@@ -108,7 +108,7 @@ public class BrokerReliabilityTests
             await bus.Publish(new RequestJobCommand
             {
                 CorrelationId = itemCorrelation,
-                JobType = "ImageProcessing",
+                JobType = "UserImport",
                 RequestedBy = Guid.NewGuid(),
                 PayloadJson = "{}",
                 Items = [new RequestJobItemPayload { PayloadJson = "{}", SequenceNumber = 1 }]

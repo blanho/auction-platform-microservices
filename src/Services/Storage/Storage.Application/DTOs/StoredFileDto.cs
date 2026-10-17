@@ -6,8 +6,12 @@ public record StoredFileDto(
     string ContentType,
     long FileSize,
     string Url,
-    DateTimeOffset UploadedAt
+    DateTimeOffset UploadedAt,
+    string? Checksum = null,
+    ProcessedImageDto? Image = null
 );
+
+public record ProcessedImageDto(int Width, int Height, string ThumbnailDataUrl);
 
 public record BatchUploadResultDto(
     List<StoredFileDto> Files

@@ -16,6 +16,8 @@ An administrator can create these item-based jobs with `POST /api/v1/jobs/`:
 | `DataExport` | Auction | One auction export command |
 | `ReportGeneration` | Payment | One order report request |
 | `BulkNotification` | Notification | One bounded recipient batch |
+| `ImageProcessing` | Storage | Validate and create a thumbnail for one owned image |
+| `BulkFileUpload` | Storage | Finalize one previously reserved, uploaded file |
 
 `ReportGeneration` and `BulkNotification` can also originate from their existing
 service endpoints. Those standalone operations retain their correlation-based
@@ -89,6 +91,70 @@ attempts. The current Redis receipts expire after 24 hours: retries after expiry
 Redis data loss, or a crash between sending and recording a receipt can resend a
 notification. This is not an exactly-once delivery guarantee.
 
+## Storage jobs
+
+Both storage job types use the same create-job envelope above, with one file per
+item. Set `type` to `ImageProcessing` or `BulkFileUpload`, and serialize this object
+into each item's `payloadJson`:
+
+```json
+{
+  "fileId": "00000000-0000-0000-0000-000000000001"
+}
+```
+
+Use the ID of a file owned by the authenticated administrator creating the job.
+The dispatcher supplies the requester and tracking IDs. Storage resolves the
+object key from its own database; supplied URLs, paths, owner IDs, or file metadata
+cannot redirect the work. Private report files are excluded.
+
+### Image processing
+
+Confirmed JPEG, PNG, GIF, and WebP uploads already request `ImageProcessing` jobs
+automatically when they have an owner. Existing queued payloads containing extra
+file metadata remain readable; only `fileId` is used. An administrator can also
+submit a job for their own confirmed images.
+
+The executor checks the configured file-size limit and actual byte length, rejects
+corrupt images and mismatched content types, and limits decoding to 16 megapixels.
+It decodes the first frame of animated images, applies EXIF orientation, and makes
+a JPEG thumbnail that fits within 320 × 320 pixels without upscaling. Transparent
+areas become white; source EXIF/GPS metadata is not copied to the thumbnail. The
+original object is not modified.
+
+SHA-256, oriented dimensions, and the thumbnail are saved atomically on the
+existing file record. `GET /api/v1/files/{fileId}` exposes `checksum` and an `image`
+object containing `width`, `height`, and `thumbnailDataUrl`. The thumbnail is
+stored as a data URL in PostgreSQL metadata, capped at 128 KiB of JPEG data before
+base64 encoding. This avoids separate thumbnail objects and their cleanup, at the
+cost of larger metadata responses and database records. Replays with the same
+checksum and processor version reuse the saved result.
+
+Image decoding uses [SkiaSharp](https://www.nuget.org/packages/SkiaSharp/4.153.1),
+with matching Linux native assets included for container deployment.
+
+### Bulk upload finalization
+
+`BulkFileUpload` completes the existing direct-to-storage upload flow; it does not
+transport binary files through RabbitMQ or download arbitrary URLs:
+
+1. Reserve each upload with `POST /api/v1/files/presigned-upload` as the same owner.
+2. Upload the bytes using the returned presigned URL and headers before expiry.
+3. Submit one `BulkFileUpload` job item per returned file ID.
+4. Check each item's result; retry failed items only after fixing the underlying
+   upload. Expired reservations require a new reservation and job item.
+
+Each item validates ownership, allowed file type, reservation expiry, and actual
+byte length before changing `Pending` to `Ready`. Finalization raises the usual
+file-uploaded event, which can enqueue image processing. Row locking prevents
+concurrent confirmations from emitting the event twice; a ready file can be
+confirmed again without another event. Local storage does not support presigned
+uploads, so use its existing multipart upload endpoint instead.
+
+Storage errors and cancellation propagate for broker retry without marking a
+successful item. Invalid or missing files produce terminal item failures. Both
+consumers use the Storage database outbox for their results.
+
 ## Progress, failures, and retries
 
 - `GET /api/v1/jobs/{id}` returns aggregate progress.
@@ -104,19 +170,19 @@ terminal results are ignored. Invalid payloads fail the item; service exceptions
 use broker retry policies, then a fault consumer records a terminal item failure.
 The report and notification paths require an explicit job retry after that point.
 
-Deploy the updated Payment and Notification consumers before the updated Job
-service. Older consumers do not understand parent-item tracking. No database
-migration is required for this stage.
+Deploy the updated Payment, Notification, and Storage consumers before the
+updated Job service. Older consumers do not understand the added command routes
+or parent-item tracking. No database migration is required for stages 1–2.
 
 ## Remaining implementation stages
 
-Only the five types listed above currently have item dispatch support. The other
+Only the seven types listed above currently have item dispatch support. The other
 enum values are declarations, not executable workflows through Jobs.
 
 | Stage | Types / service | Work still required |
 |---|---|---|
 | 1 — implemented | `ReportGeneration`, `BulkNotification` | Parent-item dispatch, completion, fault handling, and regression coverage |
-| 2 | `ImageProcessing`, `BulkFileUpload` / Storage | Define image variants and file-source limits; implement storage-owned consumers and results. Uploads currently request image jobs without an executor. |
+| 2 — implemented | `ImageProcessing`, `BulkFileUpload` / Storage | Image validation, checksum and thumbnails, owned upload finalization, outbox results, and replay protection |
 | 3 | `SearchReindex` / Search; `AnalyticsAggregation` / Analytics | Define rebuild scope, projection consistency, aggregation periods, and resumable batches. |
 | 4 | `UserImport` / Identity | Define accepted columns, account activation/invitation behavior, duplicate handling, and role restrictions. |
 | 5 | `AuctionSettlement` / Auction, Bidding, Payment; `PaymentCycle` / Payment | Define settlement eligibility, payout timing, failure/compensation rules, and provider idempotency before enabling money-moving work. |

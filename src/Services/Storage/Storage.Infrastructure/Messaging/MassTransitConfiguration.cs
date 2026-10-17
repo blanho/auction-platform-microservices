@@ -18,6 +18,10 @@ public static class MassTransitConfiguration
         services.AddMassTransit(x =>
         {
             x.AddConsumer<ImageProcessingTriggerConsumer>();
+            x.AddConsumer<ProcessImageConsumer>();
+            x.AddConsumer<FinalizeFileUploadConsumer>();
+            x.AddConfigureEndpointsCallback((context, _, endpoint) =>
+                endpoint.UseEntityFrameworkOutbox<StorageDbContext>(context));
 
             x.AddEntityFrameworkOutbox<StorageDbContext>(o =>
             {

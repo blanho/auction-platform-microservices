@@ -8,6 +8,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Contracts.Commands;
 using PaymentService.Contracts.Commands;
+using StorageService.Contracts.Commands;
 using TestSupport;
 using Xunit;
 
@@ -22,7 +23,7 @@ public class JobItemRoutingTests
         var options = new DbContextOptionsBuilder<JobDbContext>().UseNpgsql(database.ConnectionString).Options;
         await using var db = new JobDbContext(options);
         await db.Database.MigrateAsync();
-        foreach (var type in new[] { JobType.ReportGeneration, JobType.BulkNotification })
+        foreach (var type in new[] { JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload })
         foreach (var payload in new[] { "null", "[]", "{\"attempt\":\"invalid\"}" })
         {
             var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", Guid.NewGuid(), 1);
@@ -59,13 +60,13 @@ public class JobItemRoutingTests
         await using var db = new JobDbContext(options);
         await db.Database.MigrateAsync();
         foreach (var type in new[] { JobType.AuctionImport, JobType.BulkAuctionUpdate, JobType.DataExport,
-                     JobType.ReportGeneration, JobType.BulkNotification })
+                     JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload })
         {
             var owner = Guid.NewGuid();
             var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", owner, 1);
             var item = job.AddItem(System.Text.Json.JsonSerializer.Serialize(new
             {
-                RequestedBy = Guid.NewGuid(), SellerId = Guid.NewGuid(),
+                FileId = owner, RequestedBy = Guid.NewGuid(), SellerId = Guid.NewGuid(),
                 ParentJobId = Guid.NewGuid(), ParentJobItemId = Guid.NewGuid(), Attempt = 99
             }), 1);
             job.Start();
@@ -112,6 +113,20 @@ public class JobItemRoutingTests
                     Assert.Equal(item.Id, notification.ParentJobItemId);
                     Assert.Equal(0, notification.Attempt);
                     Assert.NotEqual(Guid.Empty, notification.CorrelationId);
+                    break;
+                case ProcessImageCommand image:
+                    Assert.Equal(owner, image.FileId);
+                    Assert.Equal(owner, image.RequestedBy);
+                    Assert.Equal(job.Id, image.ParentJobId);
+                    Assert.Equal(item.Id, image.ParentJobItemId);
+                    Assert.Equal(0, image.Attempt);
+                    break;
+                case FinalizeFileUploadCommand upload:
+                    Assert.Equal(owner, upload.FileId);
+                    Assert.Equal(owner, upload.RequestedBy);
+                    Assert.Equal(job.Id, upload.ParentJobId);
+                    Assert.Equal(item.Id, upload.ParentJobItemId);
+                    Assert.Equal(0, upload.Attempt);
                     break;
                 default: Assert.Fail("Unexpected routed command"); break;
             }

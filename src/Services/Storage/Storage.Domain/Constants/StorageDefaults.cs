@@ -4,6 +4,18 @@ namespace Storage.Domain.Constants;
 
 public static class StorageDefaults
 {
+    public static class Images
+    {
+        public const int ThumbnailSize = 320;
+        public const long MaxPixels = 16_000_000;
+        public const int MaxThumbnailBytes = 128 * 1024;
+        public const string ProcessingVersion = "1";
+        public const string VersionKey = "ImageProcessingVersion";
+        public const string WidthKey = "ImageWidth";
+        public const string HeightKey = "ImageHeight";
+        public const string ThumbnailKey = "ThumbnailDataUrl";
+    }
+
     public static class Cleanup
     {
         public const int BatchSize = 100;

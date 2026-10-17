@@ -3,6 +3,7 @@ using Jobs.Infrastructure.Messaging.Consumers;
 using MassTransit;
 using NotificationService.Contracts.Commands;
 using PaymentService.Contracts.Commands;
+using StorageService.Contracts.Commands;
 using TestSupport;
 using Xunit;
 
@@ -10,6 +11,33 @@ namespace Jobs.Infrastructure.Tests;
 
 public class ServiceJobFaultTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task StorageFault_ReportsParentItemAndAttempt(bool image)
+    {
+        var jobId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var published = new List<object>();
+        var consumer = new ServiceJobFaultConsumer();
+        if (image)
+            await consumer.Consume(Context(new ProcessImageCommand
+            {
+                ParentJobId = jobId, ParentJobItemId = itemId, Attempt = 2
+            }, published));
+        else
+            await consumer.Consume(Context(new FinalizeFileUploadCommand
+            {
+                ParentJobId = jobId, ParentJobItemId = itemId, Attempt = 2
+            }, published));
+        var result = Assert.IsType<ReportJobItemResultCommand>(Assert.Single(published));
+        Assert.Equal(jobId, result.JobId);
+        Assert.Equal(itemId, result.JobItemId);
+        Assert.Equal(2, result.Attempt);
+        Assert.False(result.IsSuccess);
+        Assert.True(result.IsFinalFailure);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
