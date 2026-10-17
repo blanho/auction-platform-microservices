@@ -765,8 +765,9 @@ method or file length.
 ## Documentation
 
 The Job service can dispatch auction imports, bulk auction updates, auction
-exports, order reports, bulk notifications, image processing, and upload
-finalization to their owning services. See the
+exports, order reports, bulk notifications, image processing, upload
+finalization, bounded search reindexing, and daily analytics aggregation to their
+owning services. See the
 [background jobs guide](docs/background-jobs.md) for request payloads, retry
 behavior, and the remaining implementation stages.
 

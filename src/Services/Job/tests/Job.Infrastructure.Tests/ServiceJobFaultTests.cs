@@ -1,3 +1,5 @@
+using SearchService.Contracts.Commands;
+using AnalyticsService.Contracts.Commands;
 using JobService.Contracts.Commands;
 using Jobs.Infrastructure.Messaging.Consumers;
 using MassTransit;
@@ -11,6 +13,33 @@ namespace Jobs.Infrastructure.Tests;
 
 public class ServiceJobFaultTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ProjectionFault_ReportsParentItemAndAttempt(bool search)
+    {
+        var jobId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var published = new List<object>();
+        var consumer = new ServiceJobFaultConsumer();
+        if (search)
+            await consumer.Consume(Context(new ReindexAuctionsCommand
+            {
+                ParentJobId = jobId, ParentJobItemId = itemId, Attempt = 2
+            }, published));
+        else
+            await consumer.Consume(Context(new AggregateDailyStatsCommand
+            {
+                ParentJobId = jobId, ParentJobItemId = itemId, Attempt = 2
+            }, published));
+        var result = Assert.IsType<ReportJobItemResultCommand>(Assert.Single(published));
+        Assert.Equal(jobId, result.JobId);
+        Assert.Equal(itemId, result.JobItemId);
+        Assert.Equal(2, result.Attempt);
+        Assert.False(result.IsSuccess);
+        Assert.True(result.IsFinalFailure);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

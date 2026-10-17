@@ -1,3 +1,5 @@
+using SearchService.Contracts.Commands;
+using AnalyticsService.Contracts.Commands;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -98,6 +100,28 @@ public class ProcessJobItemConsumer(JobDbContext db) : IConsumer<ProcessJobItemC
                 case JobType.BulkFileUpload:
                     var upload = Deserialize<FinalizeFileUploadCommand>(item.PayloadJson);
                     await context.Publish(upload with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.SearchReindex:
+                    var reindex = Deserialize<ReindexAuctionsCommand>(item.PayloadJson);
+                    await context.Publish(reindex with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.AnalyticsAggregation:
+                    var aggregate = Deserialize<AggregateDailyStatsCommand>(item.PayloadJson);
+                    await context.Publish(aggregate with
                     {
                         CorrelationId = correlation,
                         RequestedBy = job.RequestedBy,

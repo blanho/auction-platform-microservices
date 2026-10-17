@@ -35,4 +35,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../Search/Search.Contracts/SearchService.Contracts.csproj" />
+    <ProjectReference Include="../../Analytics/Analytics.Contracts/AnalyticsService.Contracts.csproj" />
+  </ItemGroup>
 </Project>

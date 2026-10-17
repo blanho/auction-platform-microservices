@@ -1,3 +1,5 @@
+using SearchService.Contracts.Commands;
+using AnalyticsService.Contracts.Commands;
 using AuctionService.Contracts.Commands;
 using Jobs.Domain.Entities;
 using Jobs.Domain.Enums;
@@ -23,7 +25,7 @@ public class JobItemRoutingTests
         var options = new DbContextOptionsBuilder<JobDbContext>().UseNpgsql(database.ConnectionString).Options;
         await using var db = new JobDbContext(options);
         await db.Database.MigrateAsync();
-        foreach (var type in new[] { JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload })
+        foreach (var type in new[] { JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload, JobType.SearchReindex, JobType.AnalyticsAggregation })
         foreach (var payload in new[] { "null", "[]", "{\"attempt\":\"invalid\"}" })
         {
             var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", Guid.NewGuid(), 1);
@@ -60,7 +62,7 @@ public class JobItemRoutingTests
         await using var db = new JobDbContext(options);
         await db.Database.MigrateAsync();
         foreach (var type in new[] { JobType.AuctionImport, JobType.BulkAuctionUpdate, JobType.DataExport,
-                     JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload })
+                     JobType.ReportGeneration, JobType.BulkNotification, JobType.ImageProcessing, JobType.BulkFileUpload, JobType.SearchReindex, JobType.AnalyticsAggregation })
         {
             var owner = Guid.NewGuid();
             var job = Job.Create(type, Guid.NewGuid().ToString(), "{}", owner, 1);
@@ -127,6 +129,18 @@ public class JobItemRoutingTests
                     Assert.Equal(job.Id, upload.ParentJobId);
                     Assert.Equal(item.Id, upload.ParentJobItemId);
                     Assert.Equal(0, upload.Attempt);
+                    break;
+                case ReindexAuctionsCommand reindex:
+                    Assert.Equal(owner, reindex.RequestedBy);
+                    Assert.Equal(job.Id, reindex.ParentJobId);
+                    Assert.Equal(item.Id, reindex.ParentJobItemId);
+                    Assert.Equal(0, reindex.Attempt);
+                    break;
+                case AggregateDailyStatsCommand aggregate:
+                    Assert.Equal(owner, aggregate.RequestedBy);
+                    Assert.Equal(job.Id, aggregate.ParentJobId);
+                    Assert.Equal(item.Id, aggregate.ParentJobItemId);
+                    Assert.Equal(0, aggregate.Attempt);
                     break;
                 default: Assert.Fail("Unexpected routed command"); break;
             }

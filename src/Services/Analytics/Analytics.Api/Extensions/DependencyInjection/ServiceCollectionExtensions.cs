@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddMassTransit(x =>
         {
+            x.AddConsumer<AggregateDailyStatsConsumer>();
             x.AddConsumer<AuditEventConsumer>();
             x.AddConsumer<AuctionCreatedAnalyticsConsumer>();
             x.AddConsumer<AuctionFinishedAnalyticsConsumer>();
@@ -88,6 +89,7 @@ public static class ServiceCollectionExtensions
             x.AddEntityFrameworkOutbox<AnalyticsDbContext>(o =>
             {
                 o.UsePostgres();
+                o.IsolationLevel = System.Data.IsolationLevel.ReadCommitted;
                 o.QueryDelay = TimeSpan.FromSeconds(AnalyticsDefaults.Messaging.OutboxQueryDelaySeconds);
                 o.UseBusOutbox();
             });
@@ -106,6 +108,13 @@ public static class ServiceCollectionExtensions
                 {
                     h.Username(rabbitUser);
                     h.Password(rabbitPass);
+                });
+
+                cfg.ReceiveEndpoint("analytics-aggregate-daily-stats", e =>
+                {
+                    e.ConfigureRetryAndConcurrency(prefetchCount: 1, concurrentLimit: 1);
+                    e.UseEntityFrameworkOutbox<AnalyticsDbContext>(context);
+                    e.ConfigureConsumer<AggregateDailyStatsConsumer>(context);
                 });
 
                 cfg.ConfigureAuditEndpoint(context);

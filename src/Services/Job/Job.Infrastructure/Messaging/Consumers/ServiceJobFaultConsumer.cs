@@ -1,3 +1,5 @@
+using SearchService.Contracts.Commands;
+using AnalyticsService.Contracts.Commands;
 using JobService.Contracts.Commands;
 using NotificationService.Contracts.Commands;
 using PaymentService.Contracts.Commands;
@@ -9,7 +11,9 @@ public class ServiceJobFaultConsumer :
     IConsumer<Fault<GenerateOrderReportCommand>>,
     IConsumer<Fault<SendBulkNotificationCommand>>,
     IConsumer<Fault<ProcessImageCommand>>,
-    IConsumer<Fault<FinalizeFileUploadCommand>>
+    IConsumer<Fault<FinalizeFileUploadCommand>>,
+    IConsumer<Fault<ReindexAuctionsCommand>>,
+    IConsumer<Fault<AggregateDailyStatsCommand>>
 {
     public Task Consume(ConsumeContext<Fault<ProcessImageCommand>> context)
     {
@@ -37,6 +41,20 @@ public class ServiceJobFaultConsumer :
         var command = context.Message.Message;
         return Report(context, command.CorrelationId, command.ParentJobId,
             command.ParentJobItemId, command.Attempt, "Bulk notification failed after broker retries.");
+    }
+
+    public Task Consume(ConsumeContext<Fault<ReindexAuctionsCommand>> context)
+    {
+        var command = context.Message.Message;
+        return Report(context, command.CorrelationId, command.ParentJobId,
+            command.ParentJobItemId, command.Attempt, "Search reindexing failed after broker retries.");
+    }
+
+    public Task Consume(ConsumeContext<Fault<AggregateDailyStatsCommand>> context)
+    {
+        var command = context.Message.Message;
+        return Report(context, command.CorrelationId, command.ParentJobId,
+            command.ParentJobItemId, command.Attempt, "Analytics aggregation failed after broker retries.");
     }
 
     private static Task Report(ConsumeContext context, Guid correlation, Guid? jobId,
