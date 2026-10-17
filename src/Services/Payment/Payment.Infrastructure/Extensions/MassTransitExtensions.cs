@@ -93,6 +93,7 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("payment-generate-order-report", e =>
                 {
+                    e.UseEntityFrameworkOutbox<PaymentDbContext>(context);
                     e.ConfigureConsumer<GenerateOrderReportConsumer>(context);
                     e.UseMessageRetry(r => r.Exponential(
                         retryLimit: WalletDefaults.Messaging.StandardRetryLimit,

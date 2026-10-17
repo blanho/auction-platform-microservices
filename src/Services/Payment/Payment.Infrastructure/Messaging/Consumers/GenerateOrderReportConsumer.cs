@@ -41,19 +41,22 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
             "Processing order report generation {CorrelationId} - Type: {ReportType}, Format: {Format}",
             correlationId, message.ReportType, message.Format);
 
-        await PublishJobStarted(context, message);
+        if (!message.ParentJobId.HasValue)
+            await PublishJobStarted(context, message);
 
         var reportType = ParseReportType(message.ReportType);
         var format = ParseReportFormat(message.Format);
         var statusFilter = ParseStatusFilter(message.StatusFilter);
 
-        if (reportType is null || format is null)
+        if (reportType is null || format is null ||
+            (!string.IsNullOrWhiteSpace(message.StatusFilter) && statusFilter is null) ||
+            (message.StartDate.HasValue && message.EndDate.HasValue && message.EndDate <= message.StartDate))
         {
             _logger.LogWarning(
                 "Invalid report type or format for {CorrelationId}: Type={ReportType}, Format={Format}",
                 correlationId, message.ReportType, message.Format);
 
-            await PublishJobFailed(context, correlationId, "Invalid report type or format specified");
+            await PublishJobFailed(context, "Invalid report type, format, status filter, or date range.");
             return;
         }
 
@@ -79,13 +82,22 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
                 "Order report generation completed {CorrelationId} - Records: {TotalRecords}, Size: {FileSizeBytes} bytes, Duration: {Duration}ms",
                 correlationId, result.TotalRecords, result.FileSizeBytes, stopwatch.ElapsedMilliseconds);
 
-            await context.Publish(new ReportJobBatchProgressCommand
-            {
-                CorrelationId = correlationId,
-                BatchId = "report:complete",
-                CompletedCount = 1,
-                FailedCount = 0
-            });
+            if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+                await context.Publish(new ReportJobItemResultCommand
+                {
+                    JobId = message.ParentJobId.Value,
+                    JobItemId = message.ParentJobItemId.Value,
+                    Attempt = message.Attempt,
+                    IsSuccess = true
+                });
+            else
+                await context.Publish(new ReportJobBatchProgressCommand
+                {
+                    CorrelationId = correlationId,
+                    BatchId = "report:complete",
+                    CompletedCount = 1,
+                    FailedCount = 0
+                });
 
             await PublishCompletionEvent(context, message, stopwatch.Elapsed, result, downloadUrl);
         }
@@ -95,7 +107,7 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
                 "Order report generation failed {CorrelationId}: {ErrorMessage}",
                 correlationId, result.ErrorMessage);
 
-            await PublishJobFailed(context, correlationId, result.ErrorMessage ?? "Report generation failed");
+            await PublishJobFailed(context, result.ErrorMessage ?? "Report generation failed");
         }
     }
 
@@ -144,28 +156,40 @@ public class GenerateOrderReportConsumer : IConsumer<GenerateOrderReportCommand>
         });
     }
 
-    private static async Task PublishJobFailed(ConsumeContext<GenerateOrderReportCommand> context, string correlationId, string errorMessage)
+    private static async Task PublishJobFailed(ConsumeContext<GenerateOrderReportCommand> context, string errorMessage)
     {
-        await context.Publish(new FailJobByCorrelationCommand
-        {
-            CorrelationId = correlationId,
-            ErrorMessage = errorMessage
-        });
+        var message = context.Message;
+        if (message.ParentJobId.HasValue && message.ParentJobItemId.HasValue)
+            await context.Publish(new ReportJobItemResultCommand
+            {
+                JobId = message.ParentJobId.Value,
+                JobItemId = message.ParentJobItemId.Value,
+                Attempt = message.Attempt,
+                IsSuccess = false,
+                IsFinalFailure = true,
+                ErrorMessage = errorMessage
+            });
+        else
+            await context.Publish(new FailJobByCorrelationCommand
+            {
+                CorrelationId = message.CorrelationId.ToString(),
+                ErrorMessage = errorMessage
+            });
     }
 
     private static ReportType? ParseReportType(string value)
     {
-        return Enum.TryParse<ReportType>(value, ignoreCase: true, out var result) ? result : null;
+        return Enum.TryParse<ReportType>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
     }
 
     private static ReportFormat? ParseReportFormat(string value)
     {
-        return Enum.TryParse<ReportFormat>(value, ignoreCase: true, out var result) ? result : null;
+        return Enum.TryParse<ReportFormat>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
     }
 
     private static OrderStatus? ParseStatusFilter(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null :
-            Enum.TryParse<OrderStatus>(value, ignoreCase: true, out var result) ? result : null;
+            Enum.TryParse<OrderStatus>(value, ignoreCase: true, out var result) && Enum.IsDefined(result) ? result : null;
     }
 }

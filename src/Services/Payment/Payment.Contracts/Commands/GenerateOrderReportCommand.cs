@@ -2,6 +2,9 @@ namespace PaymentService.Contracts.Commands;
 
 public record GenerateOrderReportCommand
 {
+    public Guid? ParentJobId { get; init; }
+    public Guid? ParentJobItemId { get; init; }
+    public int Attempt { get; init; }
     public string? Culture { get; init; }
     public Guid CorrelationId { get; init; }
     public Guid RequestedBy { get; init; }

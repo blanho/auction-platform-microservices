@@ -2,6 +2,9 @@ namespace NotificationService.Contracts.Commands;
 
 public record SendBulkNotificationCommand
 {
+    public Guid? ParentJobId { get; init; }
+    public Guid? ParentJobItemId { get; init; }
+    public int Attempt { get; init; }
     public Guid CorrelationId { get; init; }
     public Guid RequestedBy { get; init; }
     public string TemplateKey { get; init; } = string.Empty;

@@ -60,9 +60,19 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         _logger.LogInformation(
             "Processing bulk notification {CorrelationId} - Template: {TemplateKey}, Recipients: {RecipientCount}",
-            correlationId, message.TemplateKey, message.Recipients.Count);
+            correlationId, message.TemplateKey, message.Recipients?.Count ?? 0);
 
-        await PublishJobStarted(context, message);
+        if (message.ParentJobId.HasValue)
+        {
+            var validationError = ValidateJobItem(message);
+            if (validationError is not null)
+            {
+                await PublishItemResult(context, validationError);
+                return;
+            }
+        }
+        else
+            await PublishJobStarted(context, message);
 
         var template = await _templateRepo.GetByKeyAsync(message.TemplateKey, context.CancellationToken);
 
@@ -70,7 +80,8 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         int failureCount = 0;
         int processedCount = 0;
 
-        var batches = message.Recipients
+        var recipients = message.Recipients ?? throw new ArgumentException("Recipients are required.");
+        var batches = recipients
             .Select((recipient, index) => new { recipient, index })
             .GroupBy(x => x.index / message.BatchSize)
             .Select(g => g.Select(x => x.recipient).ToList())
@@ -107,13 +118,14 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
             failureCount += batchFailureCount;
             processedCount += batch.Count;
 
-            await _publishEndpoint.Publish(new ReportJobBatchProgressCommand
-            {
-                CorrelationId = correlationId,
-                BatchId = $"notification:{processedCount}",
-                CompletedCount = batchSuccessCount,
-                FailedCount = batchFailureCount
-            }, context.CancellationToken);
+            if (!message.ParentJobId.HasValue)
+                await _publishEndpoint.Publish(new ReportJobBatchProgressCommand
+                {
+                    CorrelationId = correlationId,
+                    BatchId = $"notification:{processedCount}",
+                    CompletedCount = batchSuccessCount,
+                    FailedCount = batchFailureCount
+                }, context.CancellationToken);
 
             _logger.LogInformation(
                 "Bulk notification progress {CorrelationId}: {ProcessedCount}/{TotalCount}",
@@ -121,6 +133,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         }
 
         stopwatch.Stop();
+
+        if (message.ParentJobId.HasValue)
+            await PublishItemResult(context, failureCount == 0 ? null :
+                $"Delivery failed for {failureCount} of {message.Recipients.Count} recipients.");
 
         await _publishEndpoint.Publish(new BulkNotificationCompletedEvent
         {
@@ -145,7 +161,10 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
         NotificationTemplate? template,
         CancellationToken cancellationToken)
     {
-        var idempotencyKey = $"{message.CorrelationId}:{recipient.UserId}";
+        // An operator retry changes the attempt correlation, but successful deliveries
+        // belong to the same persisted job item and must not be sent again.
+        var operationId = message.ParentJobItemId ?? message.CorrelationId;
+        var idempotencyKey = $"{operationId}:{recipient.UserId}";
 
         if (await _idempotency.IsProcessedAsync(idempotencyKey, "bulk", cancellationToken))
         {
@@ -165,27 +184,90 @@ public class SendBulkNotificationConsumer : IConsumer<SendBulkNotificationComman
 
         if (message.Channels.Contains(NotificationChannelNames.Email) && !string.IsNullOrEmpty(recipient.Email))
         {
-            tasks.Add(SendEmailAsync(message, recipient, template, parameters, cancellationToken));
+            tasks.Add(SendChannelAsync(NotificationChannelNames.Email,
+                () => SendEmailAsync(message, recipient, template, parameters, cancellationToken)));
         }
 
         if (message.Channels.Contains(NotificationChannelNames.Sms) && !string.IsNullOrEmpty(recipient.PhoneNumber))
         {
-            tasks.Add(SendSmsAsync(message, recipient, template, parameters, cancellationToken));
+            tasks.Add(SendChannelAsync(NotificationChannelNames.Sms,
+                () => SendSmsAsync(message, recipient, template, parameters, cancellationToken)));
         }
 
         if (message.Channels.Contains(NotificationChannelNames.Push))
         {
-            tasks.Add(SendPushAsync(message, recipient, template, parameters, cancellationToken));
+            tasks.Add(SendChannelAsync(NotificationChannelNames.Push,
+                () => SendPushAsync(message, recipient, template, parameters, cancellationToken)));
         }
 
         if (message.Channels.Contains(NotificationChannelNames.InApp))
         {
-            tasks.Add(SendInAppAsync(message, recipient, parameters, cancellationToken));
+            tasks.Add(SendChannelAsync(NotificationChannelNames.InApp,
+                () => SendInAppAsync(message, recipient, parameters, cancellationToken)));
         }
 
         var results = await Task.WhenAll(tasks);
-        await _idempotency.MarkAsProcessedAsync(idempotencyKey, "bulk", message.CorrelationId.ToString(), ct: cancellationToken);
-        return results.All(success => success);
+        var succeeded = results.All(success => success);
+        if (succeeded)
+            await _idempotency.MarkAsProcessedAsync(idempotencyKey, "bulk", operationId.ToString(), ct: cancellationToken);
+        return succeeded;
+
+        async Task<bool> SendChannelAsync(string channel, Func<Task<bool>> send)
+        {
+            if (await _idempotency.IsProcessedAsync(idempotencyKey, channel, cancellationToken))
+                return true;
+
+            var sent = await send();
+            if (sent)
+                await _idempotency.MarkAsProcessedAsync(idempotencyKey, channel, operationId.ToString(), ct: cancellationToken);
+            return sent;
+        }
+    }
+
+    private static string? ValidateJobItem(SendBulkNotificationCommand message)
+    {
+        if (!message.ParentJobItemId.HasValue || message.ParentJobItemId == Guid.Empty ||
+            message.ParentJobId == Guid.Empty || message.RequestedBy == Guid.Empty)
+            return "A job item and requester are required.";
+        if (string.IsNullOrWhiteSpace(message.TemplateKey) || string.IsNullOrWhiteSpace(message.Title) ||
+            string.IsNullOrWhiteSpace(message.Message) || message.GlobalParameters is null)
+            return "TemplateKey, Title, Message, and GlobalParameters are required.";
+        if (message.BatchSize < NotificationDefaults.Bulk.MinBatchSize ||
+            message.BatchSize > NotificationDefaults.Bulk.MaxBatchSize)
+            return $"BatchSize must be between {NotificationDefaults.Bulk.MinBatchSize} and {NotificationDefaults.Bulk.MaxBatchSize}.";
+        if (message.Recipients is null || message.Recipients.Count == 0 ||
+            message.Recipients.Count > NotificationDefaults.Bulk.MaxRecipients ||
+            message.Recipients.Any(r => r is null || r.UserId == Guid.Empty || r.Parameters is null))
+            return "A nonempty, bounded recipient list with valid user IDs is required.";
+        if (message.Recipients.Select(r => r.UserId).Distinct().Count() != message.Recipients.Count)
+            return "Recipient user IDs must be unique within a job item.";
+        if (message.Channels is null || message.Channels.Count == 0 || message.Channels.Any(c =>
+                c is not (NotificationChannelNames.Email or NotificationChannelNames.Sms or
+                    NotificationChannelNames.Push or NotificationChannelNames.InApp)))
+            return "Specify supported notification channels.";
+        if (message.Channels.Contains(NotificationChannelNames.Email) &&
+            message.Recipients.Any(r => string.IsNullOrWhiteSpace(r.Email)))
+            return "Every email recipient must have an email address.";
+        if (message.Channels.Contains(NotificationChannelNames.Sms) &&
+            message.Recipients.Any(r => string.IsNullOrWhiteSpace(r.PhoneNumber)))
+            return "Every SMS recipient must have a phone number.";
+        if (message.ScheduledAt.HasValue)
+            return "ScheduledAt is not supported for Jobs-dispatched notifications; submit the job when it is due.";
+        return null;
+    }
+
+    private static Task PublishItemResult(ConsumeContext<SendBulkNotificationCommand> context, string? error)
+    {
+        var message = context.Message;
+        return context.Publish(new ReportJobItemResultCommand
+        {
+            JobId = message.ParentJobId!.Value,
+            JobItemId = message.ParentJobItemId.GetValueOrDefault(),
+            Attempt = message.Attempt,
+            IsSuccess = error is null,
+            IsFinalFailure = error is not null,
+            ErrorMessage = error
+        }, context.CancellationToken);
     }
 
     private async Task<bool> SendEmailAsync(

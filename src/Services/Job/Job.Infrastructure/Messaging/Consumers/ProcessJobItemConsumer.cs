@@ -5,6 +5,8 @@ using AuctionService.Contracts.Commands;
 using Jobs.Infrastructure.Persistence;
 using Jobs.Domain.Enums;
 using JobService.Contracts.Commands;
+using NotificationService.Contracts.Commands;
+using PaymentService.Contracts.Commands;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 
@@ -50,6 +52,29 @@ public class ProcessJobItemConsumer(JobDbContext db) : IConsumer<ProcessJobItemC
                 case JobType.DataExport:
                     var export = Deserialize<ProcessAuctionExportCommand>(item.PayloadJson);
                     await context.Publish(export with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.ReportGeneration:
+                    var report = Deserialize<GenerateOrderReportCommand>(item.PayloadJson);
+                    await context.Publish(report with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        RequestedAt = job.CreatedAt,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.BulkNotification:
+                    var notification = Deserialize<SendBulkNotificationCommand>(item.PayloadJson);
+                    await context.Publish(notification with
                     {
                         CorrelationId = correlation,
                         RequestedBy = job.RequestedBy,

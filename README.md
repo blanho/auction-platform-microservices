@@ -140,7 +140,7 @@ graph TB
 | **Bidding** | 5003 | 5012 | `bid_db` | Bid placement, auto-bids, bid history, authoritative winner selection |
 | **Payment** | 5004 | — | `payment_db` | Stripe integration, wallets, order processing, refunds |
 | **Notification** | 5005 | — | `notification_db` | Email (SendGrid), SMS (Twilio), Push (Firebase), SignalR hub |
-| **Job** | 5006 | — | `job_db` | General scheduled and operational jobs |
+| **Job** | 5006 | — | `job_db` | Tracked bulk operations, item dispatch, progress, and retries |
 | **Analytics** | 5007 | — | `analytics_db` | Event ingestion, reporting, dashboards |
 | **Catalog** | 5013 | 8081 internal | `catalog_db` | Categories, brands, catalog queries |
 | **Search** | 5008 | — | Elasticsearch | Full-text auction search, filtering, facets |
@@ -764,11 +764,17 @@ method or file length.
 
 ## Documentation
 
+The Job service can dispatch auction imports, bulk auction updates, auction
+exports, order reports, and bulk notifications to their owning services. See the
+[background jobs guide](docs/background-jobs.md) for request payloads, retry
+behavior, and the remaining implementation stages.
+
 | Document | Description |
 |---|---|
 | [Architecture Guide](docs/architecture.md) | System design, bounded contexts, data flow, design decisions |
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
+| [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 
