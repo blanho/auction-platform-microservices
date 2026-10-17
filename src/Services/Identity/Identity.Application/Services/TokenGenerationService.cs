@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Identity.Domain.Events;
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using IdentityService.Contracts.Events;

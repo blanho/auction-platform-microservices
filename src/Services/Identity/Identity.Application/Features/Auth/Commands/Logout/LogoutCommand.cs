@@ -1,9 +1,6 @@
 namespace Identity.Application.Features.Auth.Commands.Logout;
 
-using Identity.Application.DTOs.Auth;
-using Identity.Application.DTOs.External;
-using Identity.Application.DTOs.TwoFactor;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Application.Features.Auth.Helpers;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;

@@ -1,4 +1,4 @@
-namespace Identity.Application.DTOs.Audit;
+namespace Identity.Application.DTOs;
 
 public record UserAuditData
 {

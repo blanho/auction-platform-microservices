@@ -2,14 +2,13 @@ namespace Identity.Application.Features.Users.Helpers;
 
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.Abstractions.Auditing;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Application.Errors;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using AutoMapper;
-using Identity.Application.DTOs.Audit;
 using Identity.Domain.Constants;
 using BuildingBlocks.Application.Constants;
 

@@ -1,6 +1,6 @@
 using Storage.Domain.Entities;
 
-namespace Storage.Application.DTOs.Audit;
+namespace Storage.Application.DTOs;
 
 public sealed record StoredFileAuditData(
     Guid FileId,

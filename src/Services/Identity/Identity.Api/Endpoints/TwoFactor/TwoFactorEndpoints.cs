@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;
-using Identity.Application.DTOs.TwoFactor;
+using Identity.Application.DTOs;
 using Identity.Application.Errors;
 using Identity.Application.Features.TwoFactor.Queries.GetStatus;
 using Identity.Application.Features.TwoFactor.Commands.SetupAuthenticator;

@@ -1,6 +1,6 @@
 using BuildingBlocks.Application.Paging;
 
-namespace Identity.Application.DTOs.Users;
+namespace Identity.Application.DTOs;
 
 public class UserFilter
 {

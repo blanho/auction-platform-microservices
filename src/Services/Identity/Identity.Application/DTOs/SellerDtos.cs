@@ -1,4 +1,4 @@
-namespace Identity.Application.DTOs.Seller;
+namespace Identity.Application.DTOs;
 
 public class SellerStatusResponse
 {

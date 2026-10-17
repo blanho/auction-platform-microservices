@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Auctions.Domain.Constants;
 
-namespace Auctions.Application.DTOs.Auctions;
+namespace Auctions.Application.DTOs;
 
 public class CreateAuctionWithFileIdsDto
 {

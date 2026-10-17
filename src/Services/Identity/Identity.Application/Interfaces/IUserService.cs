@@ -1,5 +1,4 @@
-using Identity.Application.DTOs.Seller;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 

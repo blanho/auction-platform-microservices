@@ -1,4 +1,4 @@
-namespace Auctions.Application.DTOs.Auctions;
+namespace Auctions.Application.DTOs;
 
 public record ExportAuctionRow(
     Guid AuctionId,

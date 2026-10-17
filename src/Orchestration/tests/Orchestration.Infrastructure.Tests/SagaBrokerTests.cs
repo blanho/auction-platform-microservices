@@ -221,7 +221,7 @@ public class SagaBrokerTests
             10, DateTimeOffset.UtcNow.AddHours(1), BuyNowPrice: 100));
         auction.ClearDomainEvents(); db.Add(auction); await db.SaveChangesAsync(); return auction.Id;
     }
-    private static async Task<Auctions.Application.DTOs.Auctions.BuyNowResultDto> Buy(ServiceProvider provider, Guid auction, Guid buyer)
+    private static async Task<Auctions.Application.DTOs.BuyNowResultDto> Buy(ServiceProvider provider, Guid auction, Guid buyer)
     {
         await using var scope = provider.CreateAsyncScope();
         var result = await scope.ServiceProvider.GetRequiredService<BuyNowCommandHandler>().Handle(new BuyNowCommand(auction, buyer, "buyer"), default);

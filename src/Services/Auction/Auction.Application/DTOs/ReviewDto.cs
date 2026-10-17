@@ -1,4 +1,4 @@
-namespace Auctions.Application.DTOs.Reviews;
+namespace Auctions.Application.DTOs;
 
 public record ReviewDto(
     Guid Id,

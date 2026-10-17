@@ -8,7 +8,6 @@ using Auctions.Application.Features.Auctions.DeleteAuction;
 using Auctions.Application.Features.Auctions.ExtendAuction;
 using Auctions.Application.Features.Auctions.UpdateAuction;
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Auctions;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Web.Authorization;
 using BuildingBlocks.Web.Helpers;

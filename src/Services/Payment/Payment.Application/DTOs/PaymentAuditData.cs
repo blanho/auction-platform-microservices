@@ -1,7 +1,7 @@
 using Payment.Domain.Entities;
 using Payment.Domain.Constants;
 
-namespace Payment.Application.DTOs.Audit;
+namespace Payment.Application.DTOs;
 
 public record OrderAuditData
 {

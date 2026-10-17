@@ -11,11 +11,8 @@ global using BuildingBlocks.Web.OpenApi;
 
 global using Microsoft.Extensions.Logging;
 
-global using Auctions.Application.DTOs.Auctions;
-global using Auctions.Application.DTOs.Bookmarks;
+global using Auctions.Application.DTOs;
 
-global using Auctions.Application.DTOs.Reviews;
-global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Interfaces;
 global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 global using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;

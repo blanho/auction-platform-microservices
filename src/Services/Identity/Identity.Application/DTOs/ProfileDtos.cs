@@ -1,4 +1,4 @@
-namespace Identity.Application.DTOs.Profile;
+namespace Identity.Application.DTOs;
 
 public class UserProfileDto
 {

@@ -1,6 +1,6 @@
 using BuildingBlocks.Application.Constants;
 
-namespace Auctions.Application.DTOs.Auctions;
+namespace Auctions.Application.DTOs;
 
 public sealed record GetAuctionsRequest(
     string? Status = null,

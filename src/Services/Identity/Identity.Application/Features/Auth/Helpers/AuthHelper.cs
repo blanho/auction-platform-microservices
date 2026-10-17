@@ -1,13 +1,12 @@
 namespace Identity.Application.Features.Auth.Helpers;
 
 using BuildingBlocks.Application.Abstractions.Auditing;
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using Identity.Domain.Events;
 using MediatR;
 using System.Net.Mail;
-using Identity.Application.DTOs.Audit;
 using Microsoft.Extensions.Logging;
 
 public class AuthHelper(

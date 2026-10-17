@@ -1,7 +1,6 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using Notification.Application.DTOs;
-using Notification.Application.DTOs.Audit;
 using Notification.Application.Interfaces;
 using Notification.Domain.Enums;
 

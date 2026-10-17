@@ -1,6 +1,6 @@
 using Jobs.Domain.Entities;
 
-namespace Jobs.Application.DTOs.Audit;
+namespace Jobs.Application.DTOs;
 
 public sealed record JobAuditData(
     Guid JobId,

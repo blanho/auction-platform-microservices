@@ -1,6 +1,6 @@
 using Notification.Domain.Entities;
 
-namespace Notification.Application.DTOs.Audit;
+namespace Notification.Application.DTOs;
 
 public sealed record NotificationAuditData(
     Guid NotificationId,

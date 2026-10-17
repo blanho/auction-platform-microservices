@@ -1,5 +1,4 @@
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Audit;
 using Auctions.Application.Errors;
 using AutoMapper;
 using Auctions.Domain.Enums;

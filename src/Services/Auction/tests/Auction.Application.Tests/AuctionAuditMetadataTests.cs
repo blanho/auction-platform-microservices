@@ -1,4 +1,4 @@
-using Auctions.Application.DTOs.Audit;
+using Auctions.Application.DTOs;
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Constants;
 using Xunit;

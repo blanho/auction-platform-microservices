@@ -1,6 +1,6 @@
 namespace Identity.Application.Features.Profile.Commands.ChangePassword;
 
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using MediatR;
 
 public record ChangePasswordCommand(string UserId, ChangePasswordRequest Request) : ICommand;

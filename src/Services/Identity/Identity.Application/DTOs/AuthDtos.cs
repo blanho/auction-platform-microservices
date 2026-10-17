@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using BuildingBlocks.Domain.Constants;
 
-namespace Identity.Application.DTOs.Auth;
+namespace Identity.Application.DTOs;
 
 public class ForgotPasswordRequest
 {

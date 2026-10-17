@@ -1,4 +1,4 @@
-using Bidding.Application.DTOs.Audit;
+using Bidding.Application.DTOs;
 using Bidding.Application.Errors;
 using Bidding.Domain.Constants;
 using BuildingBlocks.Application.Abstractions.Auditing;

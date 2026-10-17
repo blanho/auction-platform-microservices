@@ -2,7 +2,7 @@ namespace Identity.Application.Features.TwoFactor.Commands.EnableAuthenticator;
 
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS.Commands;
-using Identity.Application.DTOs.TwoFactor;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using MediatR;
 

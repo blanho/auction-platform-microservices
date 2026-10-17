@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Identity.Application.DTOs.External;
+namespace Identity.Application.DTOs;
 
 public class ExternalLoginRequest
 {

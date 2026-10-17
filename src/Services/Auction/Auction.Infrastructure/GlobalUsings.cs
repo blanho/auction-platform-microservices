@@ -8,8 +8,7 @@ global using BuildingBlocks.Infrastructure.Scheduling;
 global using ICacheService = BuildingBlocks.Application.Abstractions.ICacheService;
 global using IUnitOfWork = BuildingBlocks.Application.Abstractions.IUnitOfWork;
 
-global using Auctions.Application.DTOs.Auctions;
-global using Auctions.Application.DTOs.Stats;
+global using Auctions.Application.DTOs;
 global using Auctions.Application.Interfaces;
 global using Auction = Auctions.Domain.Entities.Auction;
 global using Auctions.Infrastructure.Persistence.Repositories;

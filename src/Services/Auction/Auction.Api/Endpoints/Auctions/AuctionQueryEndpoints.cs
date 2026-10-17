@@ -1,6 +1,5 @@
 #nullable enable
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Auctions;
 using Auctions.Application.Features.Auctions.GetAuctionById;
 using Auctions.Application.Features.Auctions.GetAuctionsByIds;
 using Auctions.Application.Features.Auctions.GetAuctions;

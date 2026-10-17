@@ -1,5 +1,4 @@
 using Bidding.Application.DTOs;
-using Bidding.Application.DTOs.Audit;
 using Bidding.Application.Interfaces;
 using Bidding.Domain.Constants;
 using Bidding.Domain.Enums;

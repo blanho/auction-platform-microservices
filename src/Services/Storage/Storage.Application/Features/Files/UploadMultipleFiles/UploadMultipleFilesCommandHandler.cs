@@ -3,7 +3,7 @@ using BuildingBlocks.Application.Abstractions.Storage;
 using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.Constants;
 using Microsoft.Extensions.Options;
-using Storage.Application.DTOs.Audit;
+using Storage.Application.DTOs;
 using Storage.Application.Errors;
 using Storage.Application.Interfaces;
 using Storage.Domain.Constants;

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Identity.Application.DTOs.TwoFactor;
+namespace Identity.Application.DTOs;
 
 public class Enable2FARequest
 {

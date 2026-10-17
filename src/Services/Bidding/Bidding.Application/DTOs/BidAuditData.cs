@@ -1,7 +1,7 @@
 using Bidding.Application.DTOs;
 using Bidding.Domain.Entities;
 
-namespace Bidding.Application.DTOs.Audit;
+namespace Bidding.Application.DTOs;
 
 public record BidAuditData
 {

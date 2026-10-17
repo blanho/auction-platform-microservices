@@ -1,7 +1,7 @@
 using Auctions.Domain.Enums;
 using BuildingBlocks.Application.Constants;
 
-namespace Auctions.Application.DTOs.Audit;
+namespace Auctions.Application.DTOs;
 
 public static class AuctionAuditMetadata
 {

@@ -3,8 +3,7 @@ namespace Identity.Application.Features.Profile.Queries.GetProfile;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
-using Identity.Application.DTOs.Profile;
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using MediatR;
 

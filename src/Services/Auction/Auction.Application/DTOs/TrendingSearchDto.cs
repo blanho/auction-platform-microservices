@@ -1,4 +1,4 @@
-namespace Auctions.Application.DTOs.Stats;
+namespace Auctions.Application.DTOs;
 
 public class TrendingSearchDto
 {

@@ -1,7 +1,7 @@
 using Auctions.Domain.Entities;
 using Auctions.Domain.Constants;
 
-namespace Auctions.Application.DTOs.Audit;
+namespace Auctions.Application.DTOs;
 
 public record AuctionAuditData
 {

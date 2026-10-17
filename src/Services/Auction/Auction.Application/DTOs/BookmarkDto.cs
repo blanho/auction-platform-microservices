@@ -1,4 +1,4 @@
-namespace Auctions.Application.DTOs.Bookmarks;
+namespace Auctions.Application.DTOs;
 
 public class AddBookmarkDto
 {
