@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Extensions;
 using Jobs.Application.Interfaces;
 using Jobs.Domain.Entities;
 using Jobs.Domain.Enums;
@@ -27,14 +28,10 @@ public class JobExecutionLogRepository : IJobExecutionLogRepository
         if (logLevel.HasValue)
             query = query.Where(l => l.LogLevel == logLevel.Value);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
+        return await query
             .OrderByDescending(l => l.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return new PaginatedResult<JobExecutionLog>(items, totalCount, page, pageSize);
+            .ThenBy(entity => entity.Id)
+            .ToPaginatedResultAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<List<JobExecutionLog>> GetStateTransitionsAsync(

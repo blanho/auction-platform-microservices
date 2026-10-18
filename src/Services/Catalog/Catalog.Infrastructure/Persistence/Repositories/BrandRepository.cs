@@ -1,4 +1,5 @@
 #nullable enable
+using BuildingBlocks.Infrastructure.Repository;
 using Catalog.Domain.Entities;
 using Catalog.Application.Filtering;
 using Catalog.Infrastructure.Persistence;
@@ -6,30 +7,16 @@ using BuildingBlocks.Application.Abstractions.Auditing;
 
 namespace Catalog.Infrastructure.Persistence.Repositories;
 
-public class BrandRepository : IBrandRepository
+public class BrandRepository : EfRepository<Brand, CatalogDbContext>, IBrandRepository
 {
-    private readonly CatalogDbContext _context;
-    private readonly IDateTimeProvider _dateTime;
-    private readonly IAuditContext _auditContext;
-
     public BrandRepository(CatalogDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        : base(context, dateTime, auditContext)
     {
-        _context = context;
-        _dateTime = dateTime;
-        _auditContext = auditContext;
-    }
-
-    public async Task<Brand?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Brands
-            .Where(b => !b.IsDeleted)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
     public async Task<Brand?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
-        return await _context.Brands
+        return await Context.Brands
             .Where(b => !b.IsDeleted)
             .AsNoTracking()
             .FirstOrDefaultAsync(b => b.Slug == slug, cancellationToken);
@@ -37,7 +24,7 @@ public class BrandRepository : IBrandRepository
 
     public async Task<PaginatedResult<Brand>> GetPagedAsync(BrandQueryParams parameters, CancellationToken cancellationToken = default)
     {
-        var query = BrandQueries.Filter(_context.Brands.AsNoTracking(), parameters);
+        var query = BrandQueries.Filter(Context.Brands.AsNoTracking(), parameters);
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await BrandQueries.Page(query, parameters).ToListAsync(cancellationToken);
         return new PaginatedResult<Brand>(items, totalCount, parameters.Page, parameters.PageSize);
@@ -45,33 +32,9 @@ public class BrandRepository : IBrandRepository
 
     public async Task<bool> SlugExistsAsync(string slug, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Brands.Where(b => b.Slug == slug);
+        var query = Context.Brands.Where(b => b.Slug == slug);
         if (excludeId.HasValue)
             query = query.Where(b => b.Id != excludeId.Value);
         return await query.AnyAsync(cancellationToken);
-    }
-
-    public async Task<Brand> AddAsync(Brand brand, CancellationToken cancellationToken = default)
-    {
-        brand.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        await _context.Brands.AddAsync(brand, cancellationToken);
-        return brand;
-    }
-
-    public Task UpdateAsync(Brand brand, CancellationToken cancellationToken = default)
-    {
-        brand.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-        _context.Brands.Update(brand);
-        return Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        var brand = await _context.Brands
-            .Where(b => !b.IsDeleted)
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-
-        if (brand != null)
-            brand.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
     }
 }

@@ -22,6 +22,19 @@ public class QueryParametersValidator : AbstractValidator<QueryParameters>
             .MaximumLength(100)
             .When(x => x.SortBy != null)
             .WithMessage(ValidationConstants.Messages.MaxLength("SortBy", 100));
+
+        RuleForEach(x => x.Sorts)
+            .NotNull()
+            .WithMessage(ValidationConstants.Messages.Required("Sort"));
+
+        RuleForEach(x => x.Sorts).ChildRules(sort =>
+        {
+            sort.RuleFor(x => x.Field)
+                .NotEmpty()
+                .WithMessage(ValidationConstants.Messages.Required("SortBy"))
+                .MaximumLength(100)
+                .WithMessage(ValidationConstants.Messages.MaxLength("SortBy", 100));
+        });
     }
 }
 

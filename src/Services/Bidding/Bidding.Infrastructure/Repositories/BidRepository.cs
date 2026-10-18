@@ -1,3 +1,5 @@
+using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
 using Bidding.Application.Filtering;
 using Bidding.Application.Interfaces;
@@ -14,12 +16,8 @@ using Bidding.Domain.Entities;
 
 namespace Bidding.Infrastructure.Repositories
 {
-    public class BidRepository : IBidRepository
+    public class BidRepository : EfRepository<Bid, BidDbContext>, IBidRepository
     {
-        private readonly BidDbContext _context;
-        private readonly IDateTimeProvider _dateTime;
-        private readonly IAuditContext _auditContext;
-
         private static readonly Dictionary<string, Expression<Func<Bid, object>>> BidSortMap =
             new(StringComparer.OrdinalIgnoreCase)
             {
@@ -30,122 +28,28 @@ namespace Bidding.Infrastructure.Repositories
             };
 
         public BidRepository(BidDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+            : base(context, dateTime, auditContext)
         {
-            _context = context;
-            _dateTime = dateTime;
-            _auditContext = auditContext;
         }
 
-        public async Task<PaginatedResult<Bid>> GetPagedAsync(
+        public override async Task<PaginatedResult<Bid>> GetPagedAsync(
             int page,
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var query = _context.Bids
+            var query = Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
                 .OrderByDescending(x => x.BidTime);
 
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Bid>(items, totalCount, page, pageSize);
-        }
-
-        public async Task<Bid?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Bids
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        }
-
-        public async Task<Bid?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Bids
-                .Where(x => !x.IsDeleted)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        }
-
-        public async Task<Bid> CreateAsync(Bid bid, CancellationToken cancellationToken = default)
-        {
-            bid.SetCreatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-
-            await _context.Bids.AddAsync(bid, cancellationToken);
-            return bid;
-        }
-
-        public async Task<IEnumerable<Bid>> AddRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
-        {
-            var batch = bids as IList<Bid> ?? bids.ToList();
-            var utcNow = _dateTime.UtcNow;
-            foreach (var bid in batch)
-            {
-                bid.SetCreatedAudit(_auditContext.UserId, utcNow);
-            }
-            await _context.Bids.AddRangeAsync(batch, cancellationToken);
-            return batch;
-        }
-
-        public Task UpdateAsync(Bid bid, CancellationToken cancellationToken = default)
-        {
-            bid.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-            _context.Bids.Update(bid);
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateRangeAsync(IEnumerable<Bid> bids, CancellationToken cancellationToken = default)
-        {
-            var batch = bids as IList<Bid> ?? bids.ToList();
-            var utcNow = _dateTime.UtcNow;
-            foreach (var bid in batch)
-            {
-                bid.SetUpdatedAudit(_auditContext.UserId, utcNow);
-            }
-            _context.Bids.UpdateRange(batch);
-            return Task.CompletedTask;
-        }
-
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            var bid = await _context.Bids
-                .Where(x => !x.IsDeleted)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-            if (bid != null)
-            {
-                bid.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-            }
-        }
-
-        public async Task DeleteRangeAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
-        {
-            var utcNow = _dateTime.UtcNow;
-            var bids = await _context.Bids
-                .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
-                .ToListAsync(cancellationToken);
-
-            foreach (var bid in bids)
-            {
-                bid.MarkAsDeleted(_auditContext.UserId, utcNow);
-            }
-            _context.Bids.UpdateRange(bids);
-        }
-
-        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Bids
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted)
-                .AnyAsync(x => x.Id == id, cancellationToken);
+            return await query
+                .ThenBy(entity => entity.Id)
+                .ToPaginatedResultAsync(page, pageSize, cancellationToken);
         }
 
         public async Task<int> CountAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
                 .CountAsync(cancellationToken);
@@ -153,7 +57,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<List<Bid>> GetBidsByAuctionIdAsync(Guid auctionId, CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
                 .OrderByDescending(x => x.BidTime)
@@ -162,7 +66,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<List<Bid>> GetBidsByBidderUsernameAsync(string bidderUsername, CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderUsername == bidderUsername)
                 .OrderByDescending(x => x.BidTime)
@@ -171,7 +75,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<Bid?> GetHighestBidForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
@@ -188,7 +92,7 @@ namespace Bidding.Infrastructure.Repositories
                 return new Dictionary<Guid, Bid>();
             }
 
-            var highestBids = await _context.Bids
+            var highestBids = await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && auctionIdList.Contains(x.AuctionId) &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve))
@@ -204,7 +108,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<int> GetBidCountForAuctionAsync(Guid auctionId, CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
                 .CountAsync(cancellationToken);
@@ -212,7 +116,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<int> GetBidPositionAsync(Guid auctionId, decimal amount, DateTimeOffset bidTime, CancellationToken cancellationToken = default)
         {
-            var higherCount = await _context.Bids
+            var higherCount = await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId)
                 .Where(x => x.Amount > amount || (x.Amount == amount && x.BidTime < bidTime))
@@ -223,7 +127,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<Bid?> GetSecondHighestBidForAuctionAsync(Guid auctionId, Guid excludeBidId, CancellationToken cancellationToken = default)
         {
-            return await _context.Bids
+            return await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.AuctionId == auctionId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve) &&
@@ -235,12 +139,12 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<BidStatsDto> GetBidStatsAsync(CancellationToken cancellationToken = default)
         {
-            var now = _dateTime.UtcNow;
+            var now = Clock.UtcNow;
             var today = now.Date;
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
             var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, TimeSpan.Zero);
 
-            var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted);
+            var query = Context.Bids.AsNoTracking().Where(x => !x.IsDeleted);
 
             var totalBids = await query.CountAsync(cancellationToken);
             var uniqueBidders = await query.Select(b => b.BidderId).Distinct().CountAsync(cancellationToken);
@@ -263,9 +167,9 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<List<DailyBidStatDto>> GetDailyBidStatsAsync(int days, CancellationToken cancellationToken = default)
         {
-            var startDate = _dateTime.UtcNow.Date.AddDays(-days);
+            var startDate = Clock.UtcNow.Date.AddDays(-days);
 
-            var dailyStats = await _context.Bids
+            var dailyStats = await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidTime >= startDate)
                 .GroupBy(x => x.BidTime.Date)
@@ -282,7 +186,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<List<TopBidderDto>> GetTopBiddersAsync(int limit, CancellationToken cancellationToken = default)
         {
-            var topBidders = await _context.Bids
+            var topBidders = await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted)
                 .GroupBy(x => new { x.BidderId, x.BidderUsername })
@@ -302,7 +206,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<int> GetWinningBidsCountForUserAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var acceptedBids = _context.Bids
+            var acceptedBids = Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve));
@@ -312,7 +216,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<UserBidStatsDto> GetUserBidStatsAsync(string username, CancellationToken cancellationToken = default)
         {
-            var query = _context.Bids.AsNoTracking().Where(x => !x.IsDeleted && x.BidderUsername == username);
+            var query = Context.Bids.AsNoTracking().Where(x => !x.IsDeleted && x.BidderUsername == username);
 
             var totalBids = await query.CountAsync(cancellationToken);
             var activeBids = await query.CountAsync(b => b.Status == BidStatus.Accepted || b.Status == BidStatus.AcceptedBelowReserve, cancellationToken);
@@ -336,7 +240,7 @@ namespace Bidding.Infrastructure.Repositories
 
         private IQueryable<Bid> SelectWinningBids(IQueryable<Bid> acceptedBids)
         {
-            return acceptedBids.Where(bid => bid.Id == _context.Bids
+            return acceptedBids.Where(bid => bid.Id == Context.Bids
                 .Where(other => !other.IsDeleted && other.AuctionId == bid.AuctionId &&
                     (other.Status == BidStatus.Accepted || other.Status == BidStatus.AcceptedBelowReserve))
                 .OrderByDescending(other => other.Amount)
@@ -348,7 +252,7 @@ namespace Bidding.Infrastructure.Repositories
 
         public async Task<Dictionary<Guid, int>> GetBidCountsForAuctionsAsync(List<Guid> auctionIds, CancellationToken cancellationToken = default)
         {
-            var bidCounts = await _context.Bids
+            var bidCounts = await Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && auctionIds.Contains(x.AuctionId))
                 .GroupBy(x => x.AuctionId)
@@ -376,10 +280,10 @@ namespace Bidding.Infrastructure.Repositories
                 .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
                 .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
 
-            var query = _context.Bids
+            var query = Context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -404,10 +308,10 @@ namespace Bidding.Infrastructure.Repositories
                 .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
                 .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
 
-            var query = _context.Bids
+            var query = Context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -422,7 +326,7 @@ namespace Bidding.Infrastructure.Repositories
         {
             var filter = queryParams.Filter;
 
-            var acceptedBids = _context.Bids
+            var acceptedBids = Context.Bids
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted && x.BidderId == userId &&
                     (x.Status == BidStatus.Accepted || x.Status == BidStatus.AcceptedBelowReserve));
@@ -453,7 +357,7 @@ namespace Bidding.Infrastructure.Repositories
             var totalCount = await baseQuery.CountAsync(cancellationToken);
 
             var winningBids = await baseQuery
-                .OrderByDescending(b => b.BidTime)
+                .ApplySorting(queryParams, BidSortMap, b => b.BidTime, tieBreaker: b => b.Id)
                 .ApplyPaging(queryParams)
                 .ToListAsync(cancellationToken);
 
@@ -472,10 +376,10 @@ namespace Bidding.Infrastructure.Repositories
                 .WhenHasValue(filter.FromDate, x => x.BidTime >= filter.FromDate!.Value)
                 .WhenHasValue(filter.ToDate, x => x.BidTime <= filter.ToDate!.Value);
 
-            var query = _context.Bids
+            var query = Context.Bids
                 .AsNoTracking()
                 .ApplyFiltering(filterBuilder)
-                .ApplySorting(queryParams, BidSortMap, x => x.BidTime);
+                .ApplySorting(queryParams, BidSortMap, x => x.BidTime, tieBreaker: x => x.Id);
 
             var totalCount = await query.CountAsync(cancellationToken);
 

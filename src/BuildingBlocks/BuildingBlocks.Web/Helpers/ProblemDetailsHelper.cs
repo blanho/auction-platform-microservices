@@ -48,7 +48,10 @@ public static class ProblemDetailsHelper
             var template = localizer.GetLocalizedString(error.Code);
             return template.ResourceNotFound
                 ? UserMessageLocalizer.Translate(error.Message)
-                : string.Format(template.Value, localizableError.Parameters);
+                : string.Format(template.Value, localizableError.Parameters
+                    .Select((parameter, index) => index == localizableError.DiagnosticParameterIndex
+                        ? UserMessageLocalizer.Translate((string)parameter)
+                        : parameter).ToArray());
         }
 
         var localized = localizer.GetLocalizedString(error.Code);

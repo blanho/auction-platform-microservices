@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Analytics.Domain\Analytics.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Analytics.Contracts/AnalyticsService.Contracts.csproj" />
+    <ProjectReference Include="../../Job/Job.Contracts/JobService.Contracts.csproj" />
+  </ItemGroup>
 </Project>

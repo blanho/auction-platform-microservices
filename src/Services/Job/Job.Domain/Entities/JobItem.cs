@@ -15,6 +15,8 @@ public class JobItem : BaseEntity
     public int RetryCount { get; private set; }
     public int MaxRetryCount { get; private set; }
     public string? ErrorMessage { get; private set; }
+    public string? ErrorCode { get; private set; }
+    public string[] ErrorArguments { get; private set; } = [];
     public DateTimeOffset? StartedAt { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
 
@@ -58,15 +60,20 @@ public class JobItem : BaseEntity
         Status = JobItemStatus.Completed;
         CompletedAt = DateTimeOffset.UtcNow;
         ErrorMessage = null;
+        ErrorCode = null;
+        ErrorArguments = [];
     }
 
-    public void MarkFailed(string errorMessage, bool terminal = false)
+    public void MarkFailed(string errorMessage, bool terminal = false,
+        string? errorCode = null, string[]? errorArguments = null)
     {
         if (Status != JobItemStatus.Processing)
             throw new InvalidEntityStateException(nameof(JobItem), Status.ToString(),
                 "Item can only be failed from Processing status.");
 
         ErrorMessage = errorMessage;
+        ErrorCode = string.IsNullOrWhiteSpace(errorCode) ? null : errorCode;
+        ErrorArguments = ErrorCode is null ? [] : errorArguments?.ToArray() ?? [];
         RetryCount++;
 
         if (terminal || RetryCount >= MaxRetryCount)
@@ -85,6 +92,8 @@ public class JobItem : BaseEntity
     {
         Status = JobItemStatus.Skipped;
         ErrorMessage = reason;
+        ErrorCode = null;
+        ErrorArguments = [];
         CompletedAt = DateTimeOffset.UtcNow;
     }
 
@@ -96,6 +105,8 @@ public class JobItem : BaseEntity
 
         Status = JobItemStatus.Pending;
         ErrorMessage = null;
+        ErrorCode = null;
+        ErrorArguments = [];
         StartedAt = null;
         CompletedAt = null;
     }

@@ -1,6 +1,5 @@
 #nullable enable
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Auctions;
 using Auctions.Application.Features.Auctions.GetAuctionById;
 using Auctions.Application.Features.Auctions.GetAuctionsByIds;
 using Auctions.Application.Features.Auctions.GetAuctions;
@@ -68,13 +67,10 @@ public class AuctionQueryEndpoints : ICarterModule
         IMediator mediator = null!,
         CancellationToken ct = default)
     {
-        var validPage = page > 0 ? page : 1;
-        var validPageSize = pageSize > 0 && pageSize <= 50 ? pageSize : 8;
-
         var query = new GetAuctionsQuery(
             null, null, null, null,
             null, true,
-            validPage, validPageSize, "auctionEnd", false);
+            page, pageSize, "enddate", false);
 
         var result = await mediator.Send(query, ct);
 

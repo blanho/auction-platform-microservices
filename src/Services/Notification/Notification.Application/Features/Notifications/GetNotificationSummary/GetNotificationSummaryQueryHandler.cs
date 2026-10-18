@@ -24,14 +24,16 @@ public class GetNotificationSummaryQueryHandler : IQueryHandler<GetNotificationS
     {
         _logger.LogInformation("Getting notification summary for user {UserId}", request.UserId);
 
-        var allNotifications = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var notifications = await _repository.GetPaginatedAsync(PaginationDefaults.DefaultPage,
+            NotificationDefaults.Pagination.RecentNotificationsCount, request.UserId,
+            cancellationToken: cancellationToken);
         var unreadCount = await _repository.GetUnreadCountByUserIdAsync(request.UserId, cancellationToken);
 
         var summary = new NotificationSummaryDto
         {
             UnreadCount = unreadCount,
-            TotalCount = allNotifications.Count,
-            RecentNotifications = allNotifications.Take(NotificationDefaults.Pagination.RecentNotificationsCount).ToList().ToDtoList(_mapper)
+            TotalCount = notifications.TotalCount,
+            RecentNotifications = notifications.Items.ToDtoList(_mapper)
         };
 
         return Result.Success(summary);

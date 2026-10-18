@@ -140,7 +140,7 @@ graph TB
 | **Bidding** | 5003 | 5012 | `bid_db` | Bid placement, auto-bids, bid history, authoritative winner selection |
 | **Payment** | 5004 | — | `payment_db` | Stripe integration, wallets, order processing, refunds |
 | **Notification** | 5005 | — | `notification_db` | Email (SendGrid), SMS (Twilio), Push (Firebase), SignalR hub |
-| **Job** | 5006 | — | `job_db` | General scheduled and operational jobs |
+| **Job** | 5006 | — | `job_db` | Tracked bulk operations, item dispatch, progress, and retries |
 | **Analytics** | 5007 | — | `analytics_db` | Event ingestion, reporting, dashboards |
 | **Catalog** | 5013 | 8081 internal | `catalog_db` | Categories, brands, catalog queries |
 | **Search** | 5008 | — | Elasticsearch | Full-text auction search, filtering, facets |
@@ -699,7 +699,7 @@ managed observability integration only when the project needs it.
 
 ## Testing
 
-The backend has 30 test projects covering service behavior, architecture rules,
+The backend has 32 test projects covering service behavior, architecture rules,
 PostgreSQL persistence, bid/finalization serialization, and RabbitMQ-backed sale
 workflow recovery. Start disposable PostgreSQL and RabbitMQ before running the
 backend tests so provider-backed coverage can execute.
@@ -754,21 +754,46 @@ not start or clean up the stack.
 - **Directory.Packages.props** — centralized NuGet version pinning
 
 Use meaningful names, cohesive responsibilities, and explicit side effects when
-refactoring. Preserve useful comments about business rules and failure handling.
+refactoring. Keep handwritten backend source free of comments; document business
+rules and failure-handling rationale in the architecture and service guides.
 Keep database transactions, outbox ordering, and public contracts intact; validate
 behavior before and after changes. Avoid introducing abstractions only to reduce
 method or file length.
+
+Backend user-facing messages must support English (`en-US`) and Japanese
+(`ja-JP`). Use the service/shared resources for API errors and validation. Persist
+background-job diagnostics unchanged, then localize job DTOs in the reader's
+request culture. Add matching English/Japanese resources and localization tests
+for new messages. Mark nested failure reasons with `LocalizableError.WithDiagnostic`
+so they are translated inside localized errors; keep error codes, API fields, and
+user-authored content stable. New notification job validation uses stable message
+keys and arguments, persisted with an English compatibility fallback; see the
+[background jobs guide](docs/background-jobs.md) for the required Job migration.
 
 
 ---
 
 ## Documentation
 
+The Job service can dispatch auction imports, bulk auction updates, auction
+exports, order reports, bulk notifications, image processing, upload
+finalization, bounded search reindexing, and daily analytics aggregation to their
+owning services. See the
+[background jobs guide](docs/background-jobs.md) for request payloads, retry
+behavior, and the remaining implementation stages.
+
+Identity also runs scheduled inactivity locks, expired refresh-token cleanup,
+and disabled-account session revocation. The guide documents their schedules,
+retention, batch limits, and token security behavior.
+
 | Document | Description |
 |---|---|
 | [Architecture Guide](docs/architecture.md) | System design, bounded contexts, data flow, design decisions |
 | [Getting Started Guide](docs/getting-started.md) | Step-by-step onboarding for new developers |
 | [API Reference](docs/api-reference.md) | Gateway routes, authentication, request/response schemas |
+| [Background Jobs](docs/background-jobs.md) | Supported job operations, payload examples, retries, and staged roadmap |
+| [Paging Consistency](docs/paging-consistency.md) | Shared paging rules, service coverage, compatibility differences, and verification |
+| [Common Repositories](docs/common-repositories.md) | Research, shared EF Core CRUD, audit policies, transaction boundaries, and adoption |
 | [Deployment Guide](docs/deployment.md) | Docker, Kubernetes, CI/CD pipeline details |
 | [Azure Deployment Guide](deploy/azure/README.md) | Provision and deploy the Azure AKS environment |
 

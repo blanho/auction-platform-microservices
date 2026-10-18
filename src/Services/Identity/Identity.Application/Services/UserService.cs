@@ -6,9 +6,7 @@ using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Filtering;
 using BuildingBlocks.Application.Paging;
 using Identity.Domain.Constants;
-using Identity.Application.DTOs.Audit;
-using Identity.Application.DTOs.Seller;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
 using MediatR;
@@ -83,7 +81,7 @@ public class UserService : IUserService
             .Include(u => u.UserRoles)
             .ApplyUserFilters(query.Filter.Search, query.Filter.IsActive, query.Filter.IsSuspended)
             .ApplyRoleFilter(roleId)
-            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt);
+            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 

@@ -19,6 +19,9 @@ COPY ["src/Services/Identity/Identity.Contracts/IdentityService.Contracts.csproj
 COPY ["src/Services/Bidding/Bidding.Contracts/BidService.Contracts.csproj", "src/Services/Bidding/Bidding.Contracts/"]
 COPY ["src/Services/Payment/Payment.Contracts/PaymentService.Contracts.csproj", "src/Services/Payment/Payment.Contracts/"]
 
+COPY ["src/Services/Job/Job.Contracts/JobService.Contracts.csproj", "src/Services/Job/Job.Contracts/"]
+COPY ["src/Services/Analytics/Analytics.Contracts/AnalyticsService.Contracts.csproj", "src/Services/Analytics/Analytics.Contracts/"]
+
 RUN dotnet restore "src/Services/Analytics/Analytics.Api/Analytics.Api.csproj"
 
 COPY ["src/", "src/"]

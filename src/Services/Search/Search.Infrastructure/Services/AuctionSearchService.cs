@@ -1,4 +1,7 @@
 using Search.Infrastructure.Configuration;
+using System.Globalization;
+using BuildingBlocks.Application.Localization;
+using BuildingBlocks.Application.Paging;
 using Microsoft.Extensions.DependencyInjection;
 
 using BuildingBlocks.Application.Abstractions;
@@ -49,14 +52,19 @@ public class AuctionSearchService : IAuctionSearchService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var pageSize = Math.Min(request.PageSize, _options.MaxPageSize);
+        var requestedSize = QueryParameters.Create(1, request.PageSize ?? _options.DefaultPageSize).PageSize;
+        var paging = QueryParameters.Create(request.Page, Math.Min(requestedSize, _options.MaxPageSize));
+        if ((long)paging.Skip + paging.Take > _options.MaxResultWindow)
+            throw new ArgumentException(UserMessageLocalizer.FormatInvariant(
+                "Search pagination cannot exceed {0} results.",
+                [_options.MaxResultWindow.ToString(CultureInfo.InvariantCulture)]));
 
         try
         {
             var response = await _client.SearchAsync<AuctionDocument>(s => s
                 .Index(_indexName)
-                .From((request.Page - 1) * pageSize)
-                .Size(pageSize)
+                .From(paging.Skip)
+                .Size(paging.Take)
                 .Query(q => BuildQuery(request))
                 .Highlight(h => h
                     .PreTags(new[] { SearchDefaults.HighlightPreTag })
@@ -83,7 +91,7 @@ public class AuctionSearchService : IAuctionSearchService
             if (!response.IsValidResponse)
             {
                 _logger.LogError("Search failed: {Error}", response.DebugInformation);
-                return AuctionSearchResponse.Empty(request.Page, pageSize);
+                return AuctionSearchResponse.Empty(paging.Page, paging.PageSize);
             }
 
             var results = response.Documents.ToResultList(response.Hits);
@@ -93,9 +101,9 @@ public class AuctionSearchService : IAuctionSearchService
             {
                 Results = results,
                 TotalCount = totalHits,
-                Page = request.Page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalHits / pageSize),
+                Page = paging.Page,
+                PageSize = paging.PageSize,
+                TotalPages = (int)Math.Ceiling((double)totalHits / paging.PageSize),
                 Facets = response.Aggregations.ToFacets(),
                 Took = response.Took
             };

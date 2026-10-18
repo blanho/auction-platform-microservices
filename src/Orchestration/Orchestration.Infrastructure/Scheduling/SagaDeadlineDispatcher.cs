@@ -25,7 +25,7 @@ public class SagaDeadlineDispatcher(OrchestrationDbContext dbContext, IPublishEn
                 TimeoutTokenId = saga.TimeoutTokenId,
                 TimedOutAt = now
             }, cancellationToken);
-            saga.TimeoutAt = null; // Keep the token until the saga consumes this generation's timeout.
+            saga.TimeoutAt = null;
         }
         var auctionCompletionSagas = await dbContext.AuctionCompletionSagas.FromSqlInterpolated($"""
             SELECT *, xmin FROM "AuctionCompletionSagas" WHERE "TimeoutAt" <= {now}

@@ -1,6 +1,6 @@
 namespace Identity.Application.Features.Auth.Commands.ChangePassword;
 
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 
 public record ChangePasswordCommand(string UserId, ChangePasswordRequest Request) : ICommand;
 

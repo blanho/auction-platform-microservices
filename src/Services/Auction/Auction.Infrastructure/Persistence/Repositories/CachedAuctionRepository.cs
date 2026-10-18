@@ -4,6 +4,10 @@ using Auctions.Domain.Constants;
 using Auctions.Domain.Entities;
 using BuildingBlocks.Application.Constants;
 using Auctions.Domain.Enums;
+using BuildingBlocks.Application.Paging;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using BuildingBlocks.Infrastructure.Caching;
 using BuildingBlocks.Infrastructure.Repository;
 
@@ -29,7 +33,8 @@ public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepo
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var key = CacheKeys.AuctionList($"page:{page}:size:{pageSize}");
+        var parameters = QueryParameters.Create(page, pageSize);
+        var key = CacheKeys.AuctionList($"v2:page:{parameters.Page}:size:{parameters.PageSize}");
         var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
         if (cached != null)
         {
@@ -38,7 +43,7 @@ public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepo
         }
 
         _logger.LogDebug("Cache MISS for paged auctions - fetching from database");
-        var result = await _inner.GetPagedAsync(page, pageSize, cancellationToken);
+        var result = await _inner.GetPagedAsync(parameters.Page, parameters.PageSize, cancellationToken);
         await _cache.SetAsync(key, result, AuctionListTtl, cancellationToken);
         return result;
     }
@@ -47,8 +52,8 @@ public class CachedAuctionRepository : IAuctionReadRepository, IAuctionWriteRepo
         AuctionFilterDto filter,
         CancellationToken cancellationToken = default)
     {
-        var filterParams = filter.Filter;
-        var key = CacheKeys.AuctionList($"page:{filter.Page}:size:{filter.PageSize}:status:{filterParams.Status}:seller:{filterParams.Seller}:winner:{filterParams.Winner}:search:{filterParams.SearchTerm}:category:{filterParams.Category}:featured:{filterParams.IsFeatured}:orderBy:{filter.SortBy}:desc:{filter.SortDescending}");
+        var queryHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(filter))));
+        var key = CacheKeys.AuctionList($"v2:query:{queryHash}");
         var cached = await _cache.GetAsync<PaginatedResult<Auction>>(key, cancellationToken);
         if (cached != null)
         {

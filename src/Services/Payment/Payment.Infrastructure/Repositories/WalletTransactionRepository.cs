@@ -58,7 +58,7 @@ public class WalletTransactionRepository : IWalletTransactionRepository
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .ApplySorting(queryParams, TransactionSortMap, t => t.CreatedAt)
+            .ApplySorting(queryParams, TransactionSortMap, t => t.CreatedAt, tieBreaker: t => t.Id)
             .ApplyPaging(queryParams)
             .ToListAsync(cancellationToken);
 

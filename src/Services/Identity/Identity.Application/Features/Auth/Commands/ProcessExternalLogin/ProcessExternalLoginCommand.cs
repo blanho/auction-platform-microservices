@@ -1,10 +1,7 @@
 namespace Identity.Application.Features.Auth.Commands.ProcessExternalLogin;
 
 using System.Security.Claims;
-using Identity.Application.DTOs.Auth;
-using Identity.Application.DTOs.External;
-using Identity.Application.DTOs.TwoFactor;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Application.Features.Auth.Helpers;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;

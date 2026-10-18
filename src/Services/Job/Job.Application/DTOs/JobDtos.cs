@@ -44,6 +44,8 @@ public record JobItemDto
     public int RetryCount { get; init; }
     public int MaxRetryCount { get; init; }
     public string? ErrorMessage { get; init; }
+    public string? ErrorCode { get; init; }
+    public string[] ErrorArguments { get; init; } = [];
     public DateTimeOffset? StartedAt { get; init; }
     public DateTimeOffset? CompletedAt { get; init; }
 }

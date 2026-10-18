@@ -1,5 +1,5 @@
 using System.Reflection;
-using Auctions.Application.DTOs.Audit;
+using Auctions.Application.DTOs;
 using Auctions.Application.Features.Auctions.BulkUpdateAuctions;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;

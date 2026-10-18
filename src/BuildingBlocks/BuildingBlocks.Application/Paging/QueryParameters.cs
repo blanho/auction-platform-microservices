@@ -9,7 +9,7 @@ public class QueryParameters
 
     public int Page
     {
-        get => _page;
+        get => (int)Math.Min(_page, (long)int.MaxValue / PageSize + 1);
         init => _page = value < 1 ? PaginationDefaults.DefaultPage : value;
     }
 

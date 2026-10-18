@@ -17,7 +17,7 @@ public static partial class ValidationErrorLocalizer
     public static string LocalizeMessage(string message, ILocalizationService? localizer)
     {
         if (localizer is null)
-            return message;
+            return UserMessageLocalizer.Translate(message);
 
         return TryLocalize(MustContainAtLeastOnePattern(), message, localizer, LocalizationKeys.Validation.MustContainAtLeastOne, 1) ??
             TryLocalize(PasswordComplexityPattern(), message, localizer, LocalizationKeys.Validation.PasswordComplexity) ??
@@ -51,7 +51,8 @@ public static partial class ValidationErrorLocalizer
         var arguments = groupIndexes
             .Select(index => (object)UserMessageLocalizer.Label(match.Groups[index].Value))
             .ToArray();
-        return localizer.GetString(key, arguments);
+        var localized = localizer.GetLocalizedString(key, arguments);
+        return localized.ResourceNotFound ? null : localized.Value;
     }
 
     [GeneratedRegex("^At least one (.+) is required\\.?$", RegexOptions.IgnoreCase)]

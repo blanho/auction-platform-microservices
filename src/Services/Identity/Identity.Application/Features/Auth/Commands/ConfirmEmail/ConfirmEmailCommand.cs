@@ -1,7 +1,7 @@
 namespace Identity.Application.Features.Auth.Commands.ConfirmEmail;
 
 using System.Web;
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using Identity.Application.Features.Auth.Helpers;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Abstractions;

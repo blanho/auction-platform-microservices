@@ -14,6 +14,40 @@ namespace Architecture.Tests;
 public class UserMessageLocalizationTests
 {
     [Theory]
+    [InlineData("ja-JP", "タイトルは必須です。")]
+    [InlineData("en-US", "Title is required.")]
+    public void ValidationErrorsLocalizeWithoutAServiceLocalizer(string language, string expected)
+    {
+        using var culture = new RequestCultureScope(language);
+        var problem = ProblemDetailsHelper.ValidationError(fieldName: "Title", errorMessage: "Title is required.");
+        var errors = Assert.IsType<Dictionary<string, string[]>>(problem.Extensions["errors"]);
+        Assert.Equal(expected, Assert.Single(errors["Title"]));
+        Assert.Equal(expected, ValidationErrorLocalizer.LocalizeMessage("Title is required.", null));
+    }
+
+    [Theory]
+    [InlineData(true, "業務ルールに違反しています。", "出品者は自分の商品を購入できません。")]
+    [InlineData(false, "無効な操作です。", "現在、お支払いを利用できません。しばらくしてからもう一度お試しください。")]
+    public async Task ExceptionTitlesAndDetailsLocalizeWithoutAServiceLocalizer(bool domain, string title, string detail)
+    {
+        using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        using var culture = new RequestCultureScope("ja-JP");
+        var app = new ApplicationBuilder(services);
+        app.UseAppExceptionHandling();
+        Exception exception = domain
+            ? new DomainInvariantException("Seller cannot buy their own auction")
+            : new InvalidOperationException("Payment is temporarily unavailable. Please try again later.");
+        app.Run(_ => throw exception);
+        var context = new DefaultHttpContext { RequestServices = services };
+        context.Response.Body = new MemoryStream();
+        await app.Build()(context);
+        context.Response.Body.Position = 0;
+        using var result = await JsonDocument.ParseAsync(context.Response.Body);
+        Assert.Equal(title, result.RootElement.GetProperty("title").GetString());
+        Assert.Equal(detail, result.RootElement.GetProperty("detail").GetString());
+    }
+
+    [Theory]
     [InlineData("Title is required.", "タイトルは必須です。")]
     [InlineData("Title must not exceed 200 characters.", "タイトルは200文字以内で入力してください。")]
     [InlineData("Year must be between 1900 and 2027.", "年は1900から2027の間である必要があります。")]

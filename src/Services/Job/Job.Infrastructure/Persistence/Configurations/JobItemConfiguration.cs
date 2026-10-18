@@ -33,6 +33,9 @@ public class JobItemConfiguration : IEntityTypeConfiguration<JobItem>
         builder.Property(x => x.ErrorMessage)
             .HasMaxLength(JobDefaults.Persistence.ErrorMessageMaxLength);
 
+        builder.Property(x => x.ErrorCode).HasMaxLength(256);
+        builder.Property(x => x.ErrorArguments).HasColumnType("text[]").IsRequired();
+
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 

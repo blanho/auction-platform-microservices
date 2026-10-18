@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using BuildingBlocks.Application.Abstractions;
-using BuildingBlocks.Application.Constants;
 using BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,17 +13,15 @@ public static class EfCoreQueryExtensions
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var normalizedPageSize = Math.Clamp(pageSize, 1, PaginationDefaults.MaxPageSize);
-        var normalizedPage = Math.Max(page, 1);
+        var parameters = QueryParameters.Create(page, pageSize);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .Skip((normalizedPage - 1) * normalizedPageSize)
-            .Take(normalizedPageSize)
+            .ApplyPaging(parameters)
             .ToListAsync(cancellationToken);
 
-        return new PaginatedResult<T>(items, totalCount, normalizedPage, normalizedPageSize);
+        return new PaginatedResult<T>(items, totalCount, parameters.Page, parameters.PageSize);
     }
 
     public static async Task<PaginatedResult<T>> ToPaginatedResultAsync<T>(
@@ -40,18 +37,16 @@ public static class EfCoreQueryExtensions
         Expression<Func<T, TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        var normalizedPageSize = Math.Clamp(pageSize, 1, PaginationDefaults.MaxPageSize);
-        var normalizedPage = Math.Max(page, 1);
+        var parameters = QueryParameters.Create(page, pageSize);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .Skip((normalizedPage - 1) * normalizedPageSize)
-            .Take(normalizedPageSize)
+            .ApplyPaging(parameters)
             .Select(selector)
             .ToListAsync(cancellationToken);
 
-        return new PaginatedResult<TResult>(items, totalCount, normalizedPage, normalizedPageSize);
+        return new PaginatedResult<TResult>(items, totalCount, parameters.Page, parameters.PageSize);
     }
 
     public static async Task<PaginatedResult<TResult>> ToPaginatedResultAsync<T, TResult>(

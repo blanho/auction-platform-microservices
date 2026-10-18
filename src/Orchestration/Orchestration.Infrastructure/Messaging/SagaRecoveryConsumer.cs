@@ -60,7 +60,6 @@ public class SagaRecoveryConsumer(OrchestrationDbContext dbContext) :
         string step,
         CancellationToken cancellationToken)
     {
-        // The receive outbox transaction holds this lock through the case update.
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"SELECT pg_advisory_xact_lock(hashtextextended({workflow + correlationId}, 0))",
             cancellationToken);
@@ -92,7 +91,6 @@ public class SagaRecoveryConsumer(OrchestrationDbContext dbContext) :
     {
         foreach (var step in steps)
         {
-            // Keep resolved cases even when completion arrives before the failure event.
             var recoveryCase = await GetOrCreateCaseAsync(
                 workflow, correlationId, auctionId, step, cancellationToken);
             recoveryCase.ResolvedAt = DateTimeOffset.UtcNow;

@@ -27,6 +27,8 @@
     <PackageVersion Include="Microsoft.Extensions.Localization" Version="9.0.13" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.13" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
+    <PackageVersion Include="SkiaSharp" Version="4.153.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 
 namespace Identity.Application.Interfaces;
 

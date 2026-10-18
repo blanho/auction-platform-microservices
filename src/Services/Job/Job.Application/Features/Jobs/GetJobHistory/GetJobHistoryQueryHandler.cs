@@ -48,6 +48,8 @@ public class GetJobHistoryQueryHandler : IQueryHandler<GetJobHistoryQuery, JobHi
             Type = job.Type,
             CurrentStatus = job.Status,
             TotalLogEntries = logsPage.TotalCount,
+            Page = logsPage.Page,
+            PageSize = logsPage.PageSize,
             Entries = entries
         });
     }

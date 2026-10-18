@@ -1,6 +1,6 @@
 namespace Identity.Application.Features.Auth.Helpers;
 
-using Identity.Application.DTOs.Auth;
+using Identity.Application.DTOs;
 using Identity.Domain.Entities;
 
 public interface IAuthHelper

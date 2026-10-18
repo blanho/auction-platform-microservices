@@ -47,7 +47,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
         var totalCount = await query.CountAsync(ct);
 
         var items = await query
-            .ApplySorting(queryParams, SortMap, r => r.CreatedAt)
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt, tieBreaker: r => r.Id)
             .ApplyPaging(queryParams)
             .ToListAsync(ct);
 
@@ -65,8 +65,8 @@ public class NotificationRecordRepository : INotificationRecordRepository
             .AsNoTracking()
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
-            .Skip(skip)
-            .Take(take)
+            .ThenBy(n => n.Id)
+            .ApplyOffsetPaging(skip, take)
             .ToListAsync(ct);
     }
 
@@ -130,7 +130,7 @@ public class NotificationRecordRepository : INotificationRecordRepository
         var query = _context.Records
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, SortMap, r => r.CreatedAt);
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt, tieBreaker: r => r.Id);
 
         var totalCount = await query.CountAsync(ct);
 

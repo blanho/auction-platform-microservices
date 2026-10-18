@@ -76,7 +76,8 @@ public class ReportJobItemBatchResultConsumer : IConsumer<ReportJobItemBatchResu
             }
             else
             {
-                jobItem.MarkFailed(result.ErrorMessage ?? "Unknown error", result.IsFinalFailure);
+                jobItem.MarkFailed(result.ErrorMessage ?? "Unknown error", result.IsFinalFailure,
+                    result.ErrorCode, result.ErrorArguments);
 
                 if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing ||
                 (result.Attempt ?? 0) != jobItem.RetryCount)

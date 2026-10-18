@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using BuildingBlocks.Application.Localization;
 using Xunit;
 
 namespace Architecture.Tests;
@@ -9,6 +10,84 @@ public sealed class RepositoryStructureTests
     private static readonly string RepositoryRoot = FindRepositoryRoot();
     private static readonly string SourceRoot = Path.Combine(RepositoryRoot, "src");
     private static readonly string ServicesRoot = Path.Combine(RepositoryRoot, "src", "Services");
+
+    [Fact]
+    public void ServiceRepositories_DoNotCalculatePageOffsets()
+    {
+        var violations = Directory.EnumerateFiles(ServicesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(IsProductionSource)
+            .Where(path => path.Contains($"{Path.DirectorySeparatorChar}Repositories{Path.DirectorySeparatorChar}"))
+            .Where(path => Regex.IsMatch(File.ReadAllText(path), @"\.Skip\s*\([^\r\n]*[Pp]age"))
+            .Select(path => $"Use shared paging extensions in {Relative(path)}")
+            .ToList();
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
+    public void ServiceMessageKeysHaveEnglishAndJapaneseResources()
+    {
+        var shared = Path.Combine(SourceRoot, "BuildingBlocks", "BuildingBlocks.Application", "Resources");
+        var violations = new List<string>();
+        foreach (var service in Directory.EnumerateDirectories(ServicesRoot))
+        {
+            var keys = Directory.EnumerateFiles(service, "*MessageKeys.cs", SearchOption.AllDirectories)
+                .Where(IsProductionSource)
+                .SelectMany(path => Regex.Matches(File.ReadAllText(path),
+                    "public const string \\w+\\s*=\\s*\"([^\"]+)\"")
+                    .Select(match => match.Groups[1].Value)).ToList();
+            foreach (var culture in new[] { "", "ja-JP" })
+            {
+                var available = ReadResourceKeys(shared, culture).Concat(ReadResourceKeys(service, culture)).ToHashSet();
+                violations.AddRange(keys.Where(key => !available.Contains(key))
+                    .Select(key => $"Missing {culture} message resource '{key}' for {Relative(service)}"));
+            }
+        }
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
+    public void ServiceValidationFieldLabelsHaveJapaneseTranslations()
+    {
+        var available = ReadResourceKeysFromFile(Path.Combine(SourceRoot, "BuildingBlocks",
+            "BuildingBlocks.Application", "Resources", "UserMessages.ja-JP.resx"))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var violations = Directory.EnumerateFiles(ServicesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(IsProductionSource)
+            .SelectMany(path => Regex.Matches(File.ReadAllText(path),
+                    "ValidationConstants\\.Messages\\.\\w+\\(\\s*\"([^\"\\r\\n]+)\"")
+                .Select(match => (Path: path, Label: match.Groups[1].Value)))
+            .Where(item => !available.Contains("Label." + item.Label))
+            .Select(item => $"Missing validation label '{item.Label}' in {Relative(item.Path)}")
+            .ToList();
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
+
+    [Fact]
+    public void ConsumerSenderAndValidatorMessagesHaveSpecificJapaneseTranslations()
+    {
+        using var culture = new RequestCultureScope("ja-JP");
+        var violations = new List<string>();
+        var paths = Directory.EnumerateFiles(ServicesRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(IsProductionSource)
+            .Where(path => path.Contains($"{Path.DirectorySeparatorChar}Consumers{Path.DirectorySeparatorChar}") ||
+                path.Contains($"{Path.DirectorySeparatorChar}Senders{Path.DirectorySeparatorChar}") ||
+                path.Contains($"{Path.DirectorySeparatorChar}Processing{Path.DirectorySeparatorChar}") ||
+                path.EndsWith("Validator.cs", StringComparison.Ordinal));
+        foreach (var path in paths)
+        {
+            var messages = Regex.Matches(File.ReadAllText(path),
+                "(?:\\.WithMessage\\(|StorageJobValidationException\\(|\\b(?:error|ErrorMessage)\\s*=|Error:|\\breturn\\s+)\\s*\"([^\"\\r\\n]+)\"")
+                .Select(match => match.Groups[1].Value)
+                .Where(message => message.Contains(' '));
+            foreach (var message in messages)
+            {
+                var translated = UserMessageLocalizer.Translate(message, "__MissingDiagnosticTranslation");
+                if (!Regex.IsMatch(translated, @"[\p{IsHiragana}\p{IsKatakana}\p{IsCJKUnifiedIdeographs}]"))
+                    violations.Add($"Untranslated message '{message}' in {Relative(path)}");
+            }
+        }
+        Assert.True(violations.Count == 0, FormatViolations(violations));
+    }
 
     [Fact]
     public void DomainProjects_DoNotReferenceOuterLayersOrContracts()
@@ -277,7 +356,7 @@ public sealed class RepositoryStructureTests
     private static IEnumerable<string> ExtractErrorCodes(string source) =>
         Regex.Matches(
                 source,
-                @"(?:(?:Error|ValidationError)\.Create|LocalizableError\.Localizable)\s*\(\s*""([^""]+)""",
+                @"(?:(?:Error|ValidationError)\.Create|LocalizableError\.(?:Localizable|WithDiagnostic))\s*\(\s*""([^""]+)""",
                 RegexOptions.Multiline)
             .Select(match => match.Groups[1].Value);
 

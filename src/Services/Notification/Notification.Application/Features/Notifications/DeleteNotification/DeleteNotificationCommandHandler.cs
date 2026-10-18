@@ -1,5 +1,5 @@
 using BuildingBlocks.Application.Abstractions.Auditing;
-using Notification.Application.DTOs.Audit;
+using Notification.Application.DTOs;
 using Notification.Application.Interfaces;
 
 namespace Notification.Application.Features.Notifications.DeleteNotification;

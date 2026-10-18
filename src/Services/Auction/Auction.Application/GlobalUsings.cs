@@ -10,11 +10,8 @@ global using Microsoft.Extensions.Logging;
 
 global using AuctionService.Contracts.Events;
 
-global using Auctions.Application.DTOs.Auctions;
-global using Auctions.Application.DTOs.Bookmarks;
+global using Auctions.Application.DTOs;
 
-global using Auctions.Application.DTOs.Reviews;
-global using Auctions.Application.DTOs.Stats;
 global using Auctions.Application.Enums;
 global using Auctions.Application.Interfaces;
 global using Auction = Auctions.Domain.Entities.Auction;

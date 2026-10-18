@@ -72,15 +72,16 @@ namespace Notification.Application.Services
 
         public async Task<NotificationSummaryDto> GetNotificationSummaryAsync(string userId, CancellationToken cancellationToken = default)
         {
-            var allNotifications = await _repository.GetByUserIdAsync(userId, cancellationToken);
+            var notifications = await _repository.GetPaginatedAsync(PaginationDefaults.DefaultPage,
+                NotificationDefaults.Pagination.RecentNotificationsCount, userId,
+                cancellationToken: cancellationToken);
             var unreadCount = await _repository.GetUnreadCountByUserIdAsync(userId, cancellationToken);
 
             return new NotificationSummaryDto
             {
                 UnreadCount = unreadCount,
-                TotalCount = allNotifications.Count,
-                RecentNotifications = allNotifications
-                    .Take(NotificationDefaults.Pagination.RecentNotificationsCount)
+                TotalCount = notifications.TotalCount,
+                RecentNotifications = notifications.Items
                     .Select(notification => Localize(notification.ToDto(_mapper)))
                     .ToList()
             };

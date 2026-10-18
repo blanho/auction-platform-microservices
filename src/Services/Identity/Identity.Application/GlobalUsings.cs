@@ -21,4 +21,3 @@ global using BuildingBlocks.Application.CQRS.Queries;
 global using BuildingBlocks.Application.Constants;
 global using BuildingBlocks.Application.Abstractions.Auditing;
 global using Identity.Domain.Events;
-global using Identity.Application.DTOs.Audit;

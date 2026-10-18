@@ -1,4 +1,6 @@
 #nullable enable
+using BuildingBlocks.Infrastructure.Repository;
+using BuildingBlocks.Infrastructure.Extensions;
 using System.Linq.Expressions;
 using Auctions.Application.DTOs;
 using Auctions.Domain.Entities;
@@ -9,12 +11,8 @@ using Auctions.Domain.Enums;
 
 namespace Auctions.Infrastructure.Persistence.Repositories
 {
-    public class AuctionRepository : IAuctionReadRepository, IAuctionWriteRepository
+    public class AuctionRepository : EfRepository<Auction, AuctionDbContext>, IAuctionReadRepository, IAuctionWriteRepository
     {
-        private readonly AuctionDbContext _context;
-        private readonly IDateTimeProvider _dateTime;
-        private readonly IAuditContext _auditContext;
-
         private static readonly Dictionary<string, Expression<Func<Auction, object>>> AuctionSortMap =
             new(StringComparer.OrdinalIgnoreCase)
             {
@@ -25,18 +23,30 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             };
 
         private IQueryable<Auction> ActiveAuctionsWithItemDetails =>
-            _context.Auctions
+            Context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item);
 
-        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+        protected override IQueryable<Auction> Query => ActiveAuctionsWithItemDetails;
+
+        protected override void ApplyCreatedAudit(Auction auction, DateTimeOffset timestamp)
         {
-            _context = context;
-            _dateTime = dateTime;
-            _auditContext = auditContext;
+            base.ApplyCreatedAudit(auction, timestamp);
+            auction.Item?.SetCreatedAudit(GetCreatedBy(auction), timestamp);
         }
 
-        public async Task<PaginatedResult<Auction>> GetPagedAsync(
+        protected override void TrackUpdate(Auction auction)
+        {
+            if (Context.Entry(auction).State == EntityState.Detached)
+                Context.Auctions.Update(auction);
+        }
+
+        public AuctionRepository(AuctionDbContext context, IDateTimeProvider dateTime, IAuditContext auditContext)
+            : base(context, dateTime, auditContext)
+        {
+        }
+
+        public override async Task<PaginatedResult<Auction>> GetPagedAsync(
             int page,
             int pageSize,
             CancellationToken cancellationToken = default)
@@ -45,13 +55,9 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt);
 
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new PaginatedResult<Auction>(items, totalCount, page, pageSize);
+            return await query
+                .ThenBy(entity => entity.Id)
+                .ToPaginatedResultAsync(page, pageSize, cancellationToken);
         }
 
         public async Task<PaginatedResult<Auction>> GetPagedAsync(
@@ -102,26 +108,13 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt);
+            query = query.ApplySorting(filter, AuctionSortMap, x => x.UpdatedAt ?? x.CreatedAt, tieBreaker: x => x.Id);
 
             var items = await query
                 .ApplyPaging(filter)
                 .ToListAsync(cancellationToken);
 
             return new PaginatedResult<Auction>(items, totalCount, filter.Page, filter.PageSize);
-        }
-
-        public async Task<Auction?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await ActiveAuctionsWithItemDetails
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        }
-
-        public async Task<Auction?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await ActiveAuctionsWithItemDetails
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public async Task<List<Auction>> GetByIdsForUpdateAsync(
@@ -137,58 +130,11 @@ namespace Auctions.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Auction> CreateAsync(Auction auction, CancellationToken cancellationToken = default)
-        {
-            var utcNow = _dateTime.UtcNow;
-            auction.SetCreatedAudit(_auditContext.UserId, utcNow);
-
-            if (auction.Item != null)
-            {
-                auction.Item.SetCreatedAudit(_auditContext.UserId, utcNow);
-            }
-
-            await _context.Auctions.AddAsync(auction, cancellationToken);
-
-            return auction;
-        }
-
-        public Task UpdateAsync(Auction auction, CancellationToken cancellationToken = default)
-        {
-            auction.SetUpdatedAudit(_auditContext.UserId, _dateTime.UtcNow);
-
-            if (_context.Entry(auction).State == EntityState.Detached)
-                _context.Auctions.Update(auction);
-            return Task.CompletedTask;
-        }
-
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            var auction = await _context.Auctions
-                .Where(x => !x.IsDeleted)
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-            if (auction != null)
-            {
-                auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-            }
-        }
-
-        public Task DeleteAsync(Auction auction, CancellationToken cancellationToken = default)
-        {
-            auction.MarkAsDeleted(_auditContext.UserId, _dateTime.UtcNow);
-            return Task.CompletedTask;
-        }
-
-        public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Auctions.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
-        }
-
         public async Task<List<Auction>> GetFinishedAuctionsAsync(CancellationToken cancellationToken = default)
         {
-            var now = _dateTime.UtcNow;
+            var now = Clock.UtcNow;
 
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted
                     && x.AuctionEnd < now
                     && x.Status != Status.Finished
@@ -202,9 +148,9 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetAuctionsToAutoDeactivateAsync(CancellationToken cancellationToken = default)
         {
-            var now = _dateTime.UtcNow;
+            var now = Clock.UtcNow;
 
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted
                     && x.AuctionEnd < now
                     && x.Status == Status.Live)
@@ -219,7 +165,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             DateTimeOffset? endDate = null,
             CancellationToken cancellationToken = default)
         {
-            var query = _context.Auctions
+            var query = Context.Auctions
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Item)
                 .AsNoTracking()
@@ -252,7 +198,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetScheduledAuctionsToActivateAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted
                     && x.Status == Status.Scheduled)
                 .Include(x => x.Item)
@@ -264,7 +210,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
             DateTime endTime,
             CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted
                     && x.Status == Status.Live
                     && x.AuctionEnd >= startTime
@@ -298,7 +244,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetActiveAuctionsBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted &&
                            x.SellerId == sellerId &&
                            (x.Status == Status.Live || x.Status == Status.Scheduled))
@@ -308,7 +254,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetAllBySellerIdAsync(Guid sellerId, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted && x.SellerId == sellerId)
                 .Include(x => x.Item)
                 .OrderByDescending(x => x.CreatedAt)
@@ -317,7 +263,7 @@ namespace Auctions.Infrastructure.Persistence.Repositories
 
         public async Task<List<Auction>> GetAuctionsWithWinnerIdAsync(Guid winnerId, CancellationToken cancellationToken = default)
         {
-            return await _context.Auctions
+            return await Context.Auctions
                 .Where(x => !x.IsDeleted && x.WinnerId == winnerId)
                 .Include(x => x.Item)
                 .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)

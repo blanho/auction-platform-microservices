@@ -1,3 +1,5 @@
+using SearchService.Contracts.Commands;
+using AnalyticsService.Contracts.Commands;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -5,6 +7,9 @@ using AuctionService.Contracts.Commands;
 using Jobs.Infrastructure.Persistence;
 using Jobs.Domain.Enums;
 using JobService.Contracts.Commands;
+using NotificationService.Contracts.Commands;
+using PaymentService.Contracts.Commands;
+using StorageService.Contracts.Commands;
 
 namespace Jobs.Infrastructure.Messaging.Consumers;
 
@@ -50,6 +55,73 @@ public class ProcessJobItemConsumer(JobDbContext db) : IConsumer<ProcessJobItemC
                 case JobType.DataExport:
                     var export = Deserialize<ProcessAuctionExportCommand>(item.PayloadJson);
                     await context.Publish(export with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.ReportGeneration:
+                    var report = Deserialize<GenerateOrderReportCommand>(item.PayloadJson);
+                    await context.Publish(report with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        RequestedAt = job.CreatedAt,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.BulkNotification:
+                    var notification = Deserialize<SendBulkNotificationCommand>(item.PayloadJson);
+                    await context.Publish(notification with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.ImageProcessing:
+                    var image = Deserialize<ProcessImageCommand>(item.PayloadJson);
+                    await context.Publish(image with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.BulkFileUpload:
+                    var upload = Deserialize<FinalizeFileUploadCommand>(item.PayloadJson);
+                    await context.Publish(upload with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.SearchReindex:
+                    var reindex = Deserialize<ReindexAuctionsCommand>(item.PayloadJson);
+                    await context.Publish(reindex with
+                    {
+                        CorrelationId = correlation,
+                        RequestedBy = job.RequestedBy,
+                        ParentJobId = job.Id,
+                        ParentJobItemId = item.Id,
+                        Attempt = item.RetryCount
+                    });
+                    break;
+                case JobType.AnalyticsAggregation:
+                    var aggregate = Deserialize<AggregateDailyStatsCommand>(item.PayloadJson);
+                    await context.Publish(aggregate with
                     {
                         CorrelationId = correlation,
                         RequestedBy = job.RequestedBy,

@@ -75,6 +75,7 @@ public static class ServiceExtensions
         services.AddMassTransit(x =>
         {
 
+            x.AddConsumer<ReindexAuctionsConsumer>();
             x.AddConsumer<AuctionCreatedConsumer>();
             x.AddConsumer<AuctionUpdatedConsumer>();
             x.AddConsumer<AuctionDeletedConsumer>();
@@ -156,6 +157,14 @@ public static class ServiceExtensions
                     e.UseDelayedRedelivery(r => r.Intervals(
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliveryFastSeconds),
                         TimeSpan.FromSeconds(MessagingDefaults.RedeliverySlowSeconds)));
+                });
+
+                cfg.ReceiveEndpoint("search-reindex-auctions", e =>
+                {
+                    e.PrefetchCount = 1;
+                    e.ConcurrentMessageLimit = 1;
+                    e.UseInMemoryOutbox(context);
+                    e.ConfigureConsumer<ReindexAuctionsConsumer>(context);
                 });
 
                 cfg.ConfigureEndpoints(context);

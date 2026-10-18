@@ -62,7 +62,7 @@ public class ReportRepository : IReportRepository
         var query = _context.Reports
             .AsNoTracking()
             .ApplyFiltering(filterBuilder)
-            .ApplySorting(queryParams, SortMap, r => r.CreatedAt);
+            .ApplySorting(queryParams, SortMap, r => r.CreatedAt, tieBreaker: r => r.Id);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

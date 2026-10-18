@@ -146,9 +146,7 @@ public class BidEndpoints : ICarterModule
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        var page = filter.Page < 1 ? BidDefaults.DefaultPage : filter.Page;
-        var pageSize = filter.PageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(filter.PageSize, BidDefaults.MaxPageSize);
-        var query = new GetWinningBidsQuery(userId, Page: page, PageSize: pageSize);
+        var query = new GetWinningBidsQuery(userId, Page: filter.Page, PageSize: filter.PageSize);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }
@@ -160,16 +158,14 @@ public class BidEndpoints : ICarterModule
         CancellationToken ct = default)
     {
         var userId = UserHelper.GetRequiredUserId(context.User);
-        var page = filter.Page < 1 ? BidDefaults.DefaultPage : filter.Page;
-        var pageSize = filter.PageSize < 1 ? BidDefaults.DefaultPageSize : Math.Min(filter.PageSize, BidDefaults.MaxPageSize);
         var query = new GetBidHistoryQuery(
             AuctionId: filter.AuctionId,
             UserId: userId,
             Status: filter.Status,
             FromDate: filter.FromDate,
             ToDate: filter.ToDate,
-            Page: page,
-            PageSize: pageSize);
+            Page: filter.Page,
+            PageSize: filter.PageSize);
         var result = await mediator.Send(query, ct);
         return result.ToOkResult();
     }

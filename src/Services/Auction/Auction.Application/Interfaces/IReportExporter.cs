@@ -1,4 +1,4 @@
-using Auctions.Application.DTOs.Auctions;
+using Auctions.Application.DTOs;
 using Auctions.Application.Enums;
 
 namespace Auctions.Application.Interfaces;

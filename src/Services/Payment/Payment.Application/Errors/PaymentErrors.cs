@@ -22,8 +22,8 @@ public static class PaymentErrors
         public static Error AlreadyShippedById(Guid id) => Error.Create("Order.AlreadyShipped", $"Order {id} has already been shipped");
         public static Error AlreadyDelivered => Error.Create("Order.AlreadyDelivered", "Order has already been delivered");
         public static Error NotShipped => Error.Create("Order.NotShipped", "Order has not been shipped yet");
-        public static Error CreateFailed(string reason) => LocalizableError.Localizable("Order.CreateFailed", $"Failed to create order: {reason}", reason);
-        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("Order.UpdateFailed", $"Failed to update order: {reason}", reason);
+        public static Error CreateFailed(string reason) => LocalizableError.WithDiagnostic("Order.CreateFailed", $"Failed to create order: {reason}", reason);
+        public static Error UpdateFailed(string reason) => LocalizableError.WithDiagnostic("Order.UpdateFailed", $"Failed to update order: {reason}", reason);
     }
 
     public static class Wallet
@@ -36,14 +36,14 @@ public static class PaymentErrors
         public static Error InsufficientBalanceWithDetails(decimal required, decimal available) => Error.Create("Wallet.InsufficientBalance", $"Insufficient balance. Required: {required:C}, Available: {available:C}");
         public static Error InsufficientHeldAmount => Error.Create("Wallet.InsufficientHeldAmount", "Insufficient held amount to release");
         public static Error ConcurrencyConflict => Error.Create("Wallet.ConcurrencyConflict", "Wallet was modified by another operation. Please try again.");
-        public static Error CreateFailed(string reason) => LocalizableError.Localizable("Wallet.CreateFailed", $"Failed to create wallet: {reason}", reason);
+        public static Error CreateFailed(string reason) => LocalizableError.WithDiagnostic("Wallet.CreateFailed", $"Failed to create wallet: {reason}", reason);
     }
 
     public static class Payment
     {
-        public static Error Failed(string reason) => LocalizableError.Localizable("Payment.ProcessingFailed", $"Payment failed: {reason}", reason);
-        public static Error ProcessingFailed(string reason) => LocalizableError.Localizable("Payment.ProcessingFailed", $"Failed to process payment: {reason}", reason);
-        public static Error RefundFailed(string reason) => LocalizableError.Localizable("Payment.RefundFailed", $"Failed to refund payment: {reason}", reason);
+        public static Error Failed(string reason) => LocalizableError.WithDiagnostic("Payment.ProcessingFailed", $"Payment failed: {reason}", reason);
+        public static Error ProcessingFailed(string reason) => LocalizableError.WithDiagnostic("Payment.ProcessingFailed", $"Failed to process payment: {reason}", reason);
+        public static Error RefundFailed(string reason) => LocalizableError.WithDiagnostic("Payment.RefundFailed", $"Failed to refund payment: {reason}", reason);
         public static Error InvalidReference => Error.Create("Payment.InvalidReference", "A non-empty payment reference is required");
         public static Error ReferenceConflict => Error.Create("Payment.ReferenceConflict", "Payment reference was already used with different payment details");
         public static Error InvalidAmount => Error.Create("Payment.InvalidAmount", "Invalid payment amount");
@@ -51,14 +51,14 @@ public static class PaymentErrors
 
     public static class Stripe
     {
-        public static Error SessionCreationFailed(string reason) => LocalizableError.Localizable("Stripe.SessionCreationFailed", $"Failed to create Stripe session: {reason}", reason);
-        public static Error WebhookProcessingFailed(string reason) => LocalizableError.Localizable("Stripe.WebhookProcessingFailed", $"Failed to process Stripe webhook: {reason}", reason);
+        public static Error SessionCreationFailed(string reason) => LocalizableError.WithDiagnostic("Stripe.SessionCreationFailed", $"Failed to create Stripe session: {reason}", reason);
+        public static Error WebhookProcessingFailed(string reason) => LocalizableError.WithDiagnostic("Stripe.WebhookProcessingFailed", $"Failed to process Stripe webhook: {reason}", reason);
         public static Error InvalidWebhookSignature => Error.Create("Stripe.InvalidWebhookSignature", "Invalid webhook signature");
     }
 
     public static class Transaction
     {
         public static Error NotFound => Error.Create("Transaction.NotFound", "Transaction not found");
-        public static Error Failed(string reason) => LocalizableError.Localizable("Transaction.Failed", $"Transaction failed: {reason}", reason);
+        public static Error Failed(string reason) => LocalizableError.WithDiagnostic("Transaction.Failed", $"Transaction failed: {reason}", reason);
     }
 }

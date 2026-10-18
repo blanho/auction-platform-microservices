@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Diagnostics;
 using AuctionService.Contracts.Commands;
 using AuctionService.Contracts.Events;
-using Auctions.Application.DTOs.Auctions;
+using Auctions.Application.DTOs;
 using Auctions.Application.Enums;
 using Auctions.Application.Interfaces;
 using Auctions.Domain.Entities;

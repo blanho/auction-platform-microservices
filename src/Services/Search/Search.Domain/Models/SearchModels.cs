@@ -30,7 +30,7 @@ public class AuctionSearchRequest
     public bool FeaturedOnly { get; set; }
 
     public int Page { get; set; } = SearchDefaults.DefaultPage;
-    public int PageSize { get; set; } = SearchDefaults.DefaultPageSize;
+    public int? PageSize { get; set; }
 
     public bool IncludeFacets { get; set; }
 }

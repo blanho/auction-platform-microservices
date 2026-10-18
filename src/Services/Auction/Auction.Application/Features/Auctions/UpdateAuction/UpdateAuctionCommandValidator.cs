@@ -59,7 +59,7 @@ public class UpdateAuctionCommandValidator : AbstractValidator<UpdateAuctionComm
         {
             RuleFor(x => x.AuctionEnd!.Value)
                 .GreaterThan(DateTimeOffset.UtcNow)
-                .WithMessage(ValidationConstants.Messages.Invalid("Auction end date must be in the future"));
+                .WithMessage("Auction end date must be in the future.");
         });
     }
 }

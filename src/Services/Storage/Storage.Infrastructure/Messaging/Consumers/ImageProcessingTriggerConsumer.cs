@@ -3,6 +3,7 @@ using JobService.Contracts.Commands;
 using JobService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using StorageService.Contracts.Events;
+using StorageService.Contracts.Commands;
 
 namespace Storage.Infrastructure.Messaging.Consumers;
 
@@ -34,7 +35,7 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
     {
         var message = context.Message;
 
-        if (!ImageContentTypes.Contains(message.ContentType))
+        if (!ImageContentTypes.Contains(message.ContentType) || message.OwnerId is null || message.OwnerId == Guid.Empty)
         {
             _logger.LogDebug(
                 "File {FileId} is not an image ({ContentType}), skipping image processing",
@@ -46,14 +47,9 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
             "Triggering image processing for file {FileId} ({ContentType}, {FileSize} bytes)",
             message.FileId, message.ContentType, message.FileSize);
 
-        var payload = JsonSerializer.Serialize(new ImageProcessingPayload
+        var payload = JsonSerializer.Serialize(new ProcessImageCommand
         {
-            FileId = message.FileId,
-            FileName = message.FileName,
-            ContentType = message.ContentType,
-            FileSize = message.FileSize,
-            Url = message.Url,
-            OwnerId = message.OwnerId
+            FileId = message.FileId
         });
 
         var correlationId = $"img-proc-{message.FileId}";
@@ -81,14 +77,4 @@ public class ImageProcessingTriggerConsumer : IConsumer<FileUploadedEvent>
             "Published ImageProcessing job request for file {FileId}, correlationId: {CorrelationId}",
             message.FileId, correlationId);
     }
-}
-
-public record ImageProcessingPayload
-{
-    public Guid FileId { get; init; }
-    public string FileName { get; init; } = string.Empty;
-    public string ContentType { get; init; } = string.Empty;
-    public long FileSize { get; init; }
-    public string Url { get; init; } = string.Empty;
-    public Guid? OwnerId { get; init; }
 }

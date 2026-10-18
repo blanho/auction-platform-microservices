@@ -1,6 +1,5 @@
 #nullable enable
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Reviews;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;

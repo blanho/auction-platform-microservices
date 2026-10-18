@@ -77,7 +77,8 @@ public class ReportJobItemResultConsumer : IConsumer<ReportJobItemResultCommand>
         }
         else
         {
-            jobItem.MarkFailed(message.ErrorMessage ?? "Unknown error", message.IsFinalFailure);
+            jobItem.MarkFailed(message.ErrorMessage ?? "Unknown error", message.IsFinalFailure,
+                message.ErrorCode, message.ErrorArguments);
 
             if (jobItem.Status != Jobs.Domain.Enums.JobItemStatus.Processing)
                 job.RecordItemFailed();

@@ -1,5 +1,4 @@
 using Auctions.Application.DTOs;
-using Auctions.Application.DTOs.Audit;
 using Auctions.Domain.Entities;
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions;

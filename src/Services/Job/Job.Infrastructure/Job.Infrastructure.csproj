@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Auction/Auction.Contracts/AuctionService.Contracts.csproj" />
+    <ProjectReference Include="../../Payment/Payment.Contracts/PaymentService.Contracts.csproj" />
+    <ProjectReference Include="../../Notification/Notification.Contracts/NotificationService.Contracts.csproj" />
+    <ProjectReference Include="../../Storage/Storage.Contracts/StorageService.Contracts.csproj" />
     <ProjectReference Include="..\Job.Domain\Job.Domain.csproj" />
     <ProjectReference Include="..\Job.Application\Job.Application.csproj" />
     <ProjectReference Include="..\Job.Contracts\JobService.Contracts.csproj" />
@@ -32,4 +35,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../Search/Search.Contracts/SearchService.Contracts.csproj" />
+    <ProjectReference Include="../../Analytics/Analytics.Contracts/AnalyticsService.Contracts.csproj" />
+  </ItemGroup>
 </Project>

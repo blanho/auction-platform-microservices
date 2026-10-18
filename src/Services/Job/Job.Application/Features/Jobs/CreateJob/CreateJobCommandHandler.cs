@@ -1,7 +1,7 @@
 using AutoMapper;
 using BuildingBlocks.Application.Abstractions.Auditing;
 using BuildingBlocks.Application.Constants;
-using Jobs.Application.DTOs.Audit;
+using Jobs.Application.DTOs;
 using Jobs.Application.Errors;
 using Jobs.Domain.Entities;
 

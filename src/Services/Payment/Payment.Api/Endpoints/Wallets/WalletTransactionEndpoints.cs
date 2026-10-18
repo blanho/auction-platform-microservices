@@ -32,8 +32,8 @@ public class WalletTransactionEndpoints : ICarterModule
 
     private static async Task<IResult> GetTransactions(
         string username,
-        int page,
-        int pageSize,
+        int? page,
+        int? pageSize,
         ClaimsPrincipal user,
         IMediator mediator,
         HttpContext httpContext,
@@ -44,8 +44,8 @@ public class WalletTransactionEndpoints : ICarterModule
             !user.HasPermission(Permissions.Wallets.View))
             return Results.Forbid();
 
-        var effectivePage = page > 0 ? page : PaginationDefaults.DefaultPage;
-        var effectivePageSize = pageSize > 0 ? pageSize : PaginationDefaults.DefaultPageSize;
+        var effectivePage = page ?? PaginationDefaults.DefaultPage;
+        var effectivePageSize = pageSize ?? PaginationDefaults.DefaultPageSize;
 
         var result = await mediator.Send(new GetWalletTransactionsQuery
         {
@@ -57,8 +57,8 @@ public class WalletTransactionEndpoints : ICarterModule
         return result.ToApiResult(paginatedResult =>
         {
             httpContext.Response.Headers.Append("X-Total-Count", paginatedResult.TotalCount.ToString());
-            httpContext.Response.Headers.Append("X-Page", effectivePage.ToString());
-            httpContext.Response.Headers.Append("X-Page-Size", effectivePageSize.ToString());
+            httpContext.Response.Headers.Append("X-Page", paginatedResult.Page.ToString());
+            httpContext.Response.Headers.Append("X-Page-Size", paginatedResult.PageSize.ToString());
 
             return Results.Ok(paginatedResult.Items);
         });

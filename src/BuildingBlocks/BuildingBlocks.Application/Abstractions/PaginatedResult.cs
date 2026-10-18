@@ -12,6 +12,11 @@ public record PaginatedResult<T>(
     public bool HasPreviousPage => Page > 1;
     public bool HasNextPage => Page < TotalPages;
 
-    public static PaginatedResult<T> Empty(int page = 1, int pageSize = 20) =>
-        new(Array.Empty<T>(), 0, page, pageSize);
+    public static PaginatedResult<T> Empty(
+        int page = PaginationDefaults.DefaultPage,
+        int pageSize = PaginationDefaults.DefaultPageSize)
+    {
+        var parameters = Paging.QueryParameters.Create(page, pageSize);
+        return new(Array.Empty<T>(), 0, parameters.Page, parameters.PageSize);
+    }
 }

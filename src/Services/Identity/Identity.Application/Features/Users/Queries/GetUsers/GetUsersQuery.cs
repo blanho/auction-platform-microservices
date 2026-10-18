@@ -5,8 +5,7 @@ namespace Identity.Application.Features.Users.Queries.GetUsers;
 using BuildingBlocks.Application.Abstractions;
 using BuildingBlocks.Application.CQRS.Commands;
 using BuildingBlocks.Application.CQRS.Queries;
-using Identity.Application.DTOs.Users;
-using Identity.Application.DTOs.Seller;
+using Identity.Application.DTOs;
 using Identity.Application.Interfaces;
 using BuildingBlocks.Application.Paging;
 using MediatR;
@@ -37,7 +36,7 @@ public class GetUsersListQueryHandler(
             .Include(u => u.UserRoles)
             .ApplyUserFilters(query.Filter?.Search, query.Filter?.IsActive, query.Filter?.IsSuspended)
             .ApplyRoleFilter(roleId)
-            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt);
+            .ApplySorting(query, UserSortMap.Map, u => u.CreatedAt, tieBreaker: u => u.Id);
 
         var totalCount = await dbQuery.CountAsync(cancellationToken);
 

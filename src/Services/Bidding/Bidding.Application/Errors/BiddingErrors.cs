@@ -11,7 +11,7 @@ public static class BiddingErrors
         public static Error AlreadyRejected => Error.Create("Bid.AlreadyRejected", "Cannot retract a rejected bid");
         public static Error AlreadyRetracted => Error.Create("Bid.AlreadyRetracted", "This bid has already been retracted");
         public static Error RetractWindowExpired(int minutes) => LocalizableError.Localizable("Bid.RetractWindowExpired", $"Bids can only be retracted within {minutes} minutes of placement", minutes);
-        public static Error PlaceFailed(string reason) => LocalizableError.Localizable("Bid.PlaceFailed", $"Bid placement failed: {reason}", reason);
+        public static Error PlaceFailed(string reason) => LocalizableError.WithDiagnostic("Bid.PlaceFailed", $"Bid placement failed: {reason}", reason);
         public static Error TooLow(decimal minimum) => LocalizableError.Localizable("Bid.TooLow", $"Bid must be at least {minimum:C}", minimum);
         public static Error AuctionNotLive => Error.Create("Bid.AuctionNotLive", "This auction is not accepting bids");
         public static Error SelfBidding => Error.Create("Bid.SelfBidding", "You cannot bid on your own auction");
@@ -26,8 +26,8 @@ public static class BiddingErrors
         public static Error AlreadyCancelled => Error.Create("AutoBid.AlreadyCancelled", "This auto-bid is already cancelled");
         public static Error Inactive => Error.Create("AutoBid.Inactive", "This auto-bid is no longer active");
         public static Error MaxAmountTooLow(decimal currentBid) => LocalizableError.Localizable("AutoBid.MaxAmountTooLow", $"Max amount must be higher than current bid ({currentBid:C})", currentBid);
-        public static Error UpdateFailed(string reason) => LocalizableError.Localizable("AutoBid.UpdateFailed", $"Failed to update auto-bid: {reason}", reason);
-        public static Error CreateFailed(string reason) => LocalizableError.Localizable("AutoBid.CreateFailed", $"Failed to create auto-bid: {reason}", reason);
+        public static Error UpdateFailed(string reason) => LocalizableError.WithDiagnostic("AutoBid.UpdateFailed", $"Failed to update auto-bid: {reason}", reason);
+        public static Error CreateFailed(string reason) => LocalizableError.WithDiagnostic("AutoBid.CreateFailed", $"Failed to create auto-bid: {reason}", reason);
     }
 
     public static class Auction

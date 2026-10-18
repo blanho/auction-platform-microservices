@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Search.Application\Search.Application.csproj" />
@@ -21,4 +21,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Search.Contracts/SearchService.Contracts.csproj" />
+    <ProjectReference Include="../../Job/Job.Contracts/JobService.Contracts.csproj" />
+  </ItemGroup>
 </Project>

@@ -19,6 +19,7 @@ public static class MassTransitOutboxExtensions
         {
             x.AddConsumer<ProcessJobItemConsumer>();
             x.AddConsumer<AuctionWorkflowFaultConsumer>();
+            x.AddConsumer<ServiceJobFaultConsumer>();
             x.AddConfigureEndpointsCallback((context, name, endpoint) =>
                 endpoint.UseEntityFrameworkOutbox<JobDbContext>(context));
             x.AddConsumer<RequestJobConsumer>();

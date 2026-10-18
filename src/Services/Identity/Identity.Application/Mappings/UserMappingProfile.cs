@@ -1,7 +1,5 @@
 using AutoMapper;
-using Identity.Application.DTOs.External;
-using Identity.Application.DTOs.Profile;
-using Identity.Application.DTOs.Users;
+using Identity.Application.DTOs;
 using Identity.Domain.Entities;
 
 namespace Identity.Application.Mappings;

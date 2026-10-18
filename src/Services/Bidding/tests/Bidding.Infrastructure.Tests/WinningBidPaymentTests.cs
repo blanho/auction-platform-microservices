@@ -60,4 +60,49 @@ public class WinningBidPaymentTests
             NullLogger<GetWinningBidsQueryHandler>.Instance);
         await Assert.ThrowsAsync<TimeoutException>(() => handler.Handle(new GetWinningBidsQuery(Guid.NewGuid()), default));
     }
+
+    [PostgresFact]
+    public async Task EqualBidTimes_UseIdTieBreakerAndHonorWhitelistedSorts()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        await using var db = new BidDbContext(new DbContextOptionsBuilder<BidDbContext>()
+            .UseNpgsql(database.ConnectionString).Options);
+        await db.Database.MigrateAsync();
+        var user = Guid.NewGuid();
+        var timestamp = DateTimeOffset.UtcNow.AddDays(-1);
+        var bids = Enumerable.Range(1, 3).Select(index => Bid.Create(Guid.NewGuid(), user, "buyer", index * 10m, timestamp)).ToArray();
+        foreach (var bid in bids) bid.Accept();
+        db.Bids.AddRange(bids);
+        await db.SaveChangesAsync();
+        var repository = new BidRepository(db, new DateTimeProvider(), null!);
+        var first = await repository.GetWinningBidsForUserAsync(user, new WinningBidQueryParams { PageSize = 1 });
+        var second = await repository.GetWinningBidsForUserAsync(user, new WinningBidQueryParams { Page = 2, PageSize = 1 });
+        Assert.Equal(bids.OrderBy(bid => bid.Id).Take(2).Select(bid => bid.Id),
+            first.Items.Concat(second.Items).Select(bid => bid.Id));
+        var sorted = await repository.GetWinningBidsForUserAsync(user,
+            new WinningBidQueryParams { SortBy = "amount", SortDescending = true, PageSize = 1 });
+        Assert.Equal(30m, Assert.Single(sorted.Items).Amount);
+    }
+
+    [Fact]
+    public async Task AutoBidWrites_KeepOwnerAuditAndRequesterDeletionAudit()
+    {
+        await using var db = new BidDbContext(new DbContextOptionsBuilder<BidDbContext>()
+            .UseNpgsql("Host=localhost;Database=auto_bid_audit_state").Options);
+        var requester = Guid.NewGuid();
+        var audit = TestProxy.Create<BuildingBlocks.Application.Abstractions.Auditing.IAuditContext>((_, _) => requester);
+        var repository = new AutoBidRepository(db, new DateTimeProvider(), audit);
+        var first = AutoBid.Create(Guid.NewGuid(), Guid.NewGuid(), "first", 100);
+        var second = AutoBid.Create(Guid.NewGuid(), Guid.NewGuid(), "second", 100);
+
+        await repository.AddRangeAsync([first, second]);
+        await repository.UpdateRangeAsync([first, second]);
+        await repository.DeleteAsync(first);
+
+        Assert.Equal(first.UserId, first.CreatedBy);
+        Assert.Equal(second.UserId, second.CreatedBy);
+        Assert.Equal(first.UserId, first.UpdatedBy);
+        Assert.Equal(second.UserId, second.UpdatedBy);
+        Assert.Equal(requester, first.DeletedBy);
+    }
 }

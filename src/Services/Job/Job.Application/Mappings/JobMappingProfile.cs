@@ -12,6 +12,8 @@ public class JobMappingProfile : Profile
             .ForMember(dto => dto.ErrorMessage, opt => opt.MapFrom(job => UserMessageLocalizer.TranslateOptional(job.ErrorMessage)));
         CreateMap<Job, JobSummaryDto>();
         CreateMap<JobItem, JobItemDto>()
-            .ForMember(dto => dto.ErrorMessage, opt => opt.MapFrom(item => UserMessageLocalizer.TranslateOptional(item.ErrorMessage)));
+            .ForMember(dto => dto.ErrorMessage, opt => opt.MapFrom(item => item.ErrorCode == null
+                ? UserMessageLocalizer.TranslateOptional(item.ErrorMessage)
+                : UserMessageLocalizer.Format(item.ErrorCode, item.ErrorArguments, item.ErrorMessage)));
     }
 }

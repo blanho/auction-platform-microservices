@@ -1,4 +1,5 @@
 using Catalog.Application.Filtering;
+using BuildingBlocks.Application.Paging;
 using Catalog.Domain.Entities;
 
 namespace Catalog.Infrastructure.Persistence.Repositories;
@@ -31,6 +32,6 @@ public static class BrandQueries
             ("displayorder", true) => query.OrderByDescending(brand => brand.DisplayOrder).ThenBy(brand => brand.Name),
             _ => query.OrderBy(brand => brand.DisplayOrder).ThenBy(brand => brand.Name)
         };
-        return ordered.ThenBy(brand => brand.Id).Skip(parameters.Skip).Take(parameters.Take);
+        return ordered.ThenBy(brand => brand.Id).ApplyPaging(parameters);
     }
 }

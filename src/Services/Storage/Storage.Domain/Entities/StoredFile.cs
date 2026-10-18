@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Guards;
+using Storage.Domain.Constants;
 using Storage.Domain.Enums;
 using Storage.Domain.Events;
 
@@ -84,6 +85,22 @@ public class StoredFile : AggregateRoot
     }
 
     public void SetReportRequestId(Guid requestId) => ReportRequestId = requestId;
+
+    public void RecordProcessedImage(string checksum, int width, int height, string thumbnailDataUrl)
+    {
+        if (Status != FileStatus.Ready || IsDeleted)
+            throw new InvalidOperationException("Only ready files can be processed.");
+        Guard.AgainstNullOrEmpty(checksum, nameof(checksum));
+        Guard.AgainstNonPositive(width, nameof(width));
+        Guard.AgainstNonPositive(height, nameof(height));
+        Guard.AgainstNullOrEmpty(thumbnailDataUrl, nameof(thumbnailDataUrl));
+        Checksum = checksum;
+        Metadata[StorageDefaults.Images.WidthKey] = width.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Metadata[StorageDefaults.Images.HeightKey] = height.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Metadata[StorageDefaults.Images.ThumbnailKey] = thumbnailDataUrl;
+        Metadata[StorageDefaults.Images.VersionKey] = StorageDefaults.Images.ProcessingVersion;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 
     public void ConfirmUpload(string url)
     {
